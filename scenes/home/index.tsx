@@ -35,7 +35,7 @@ export default function HomeScene() {
                         </div>
                     ) : (
                         <Slider spaceBetween={16} className="px-6 lg:px-0 pb-4">
-                            {featuredData?.items?.map((ad) => (
+                            {(featuredData?.items || []).map((ad) => (
                                 <PropertyCard
                                     key={ad.adId}
                                     variant="horizontal"
@@ -47,7 +47,7 @@ export default function HomeScene() {
                                     category={ad.categoryPath.subcategoryKey}
                                     className="w-70 lg:w-85"
                                 />
-                            )) || []}
+                            ))}
                         </Slider>
                     )}
                 </section>
@@ -95,7 +95,7 @@ export default function HomeScene() {
                                 <div key={i} className="aspect-square bg-soft-bg animate-pulse rounded-[25px]" />
                             ))
                         ) : (
-                            exploreData?.items?.map((ad) => (
+                            (exploreData?.items || []).map((ad) => (
                                 <PropertyCard
                                     key={ad.adId}
                                     title={ad.title}

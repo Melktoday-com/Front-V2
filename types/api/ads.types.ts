@@ -12,6 +12,7 @@ export interface AdSummary {
     title: string;
     categoryPath: CategoryPath;
     pricing: Record<string, number>;
+    mediaIds: string[];
     createdAt: string;
 }
 

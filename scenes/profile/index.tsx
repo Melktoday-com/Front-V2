@@ -13,7 +13,7 @@ import {
     User
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function ProfileScene() {
     const { user, isLoggedIn, isLoading: isAuthLoading } = useAuth();
@@ -29,13 +29,14 @@ export default function ProfileScene() {
     );
     const { balance, isLoadingBalance } = useWallet();
 
-    if (isAuthLoading)
-        return <div className="p-10 text-center">در حال بارگذاری...</div>;
+    useEffect(() => {
+        if (!isAuthLoading && !isLoggedIn) {
+            router.push("/auth");
+        }
+    }, [isLoggedIn, isAuthLoading, router]);
 
-    if (!isLoggedIn) {
-        router.push("/auth");
-        return null;
-    }
+    if (isAuthLoading || !isLoggedIn)
+        return <div className="p-10 text-center text-brand font-bold animate-pulse">در حال بارگذاری...</div>;
 
     const formatCurrency = (amount = 0) => {
         return new Intl.NumberFormat("fa-IR").format(amount / 10); // Convert Rial to Toman

@@ -21,7 +21,16 @@ apiClient.interceptors.request.use((config) => {
 
 // Response Interceptor: Handle errors globally
 apiClient.interceptors.response.use(
-    (response) => response,
+    (response) => {
+        // If the response follows our standard envelope, unwrap the data
+        if (response.data && response.data.success === true && "data" in response.data) {
+            return {
+                ...response,
+                data: response.data.data,
+            };
+        }
+        return response;
+    },
     async (error: AxiosError) => {
         if (error.response?.status === 401) {
             // Handle unauthorized - clear token if needed
