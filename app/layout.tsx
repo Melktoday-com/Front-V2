@@ -1,6 +1,8 @@
 import { MobileNav, Sidebar } from "@/components/layout/Navigation";
+import { QueryProvider } from "@/components/providers/QueryProvider";
 import type { Metadata } from "next";
 import { Vazirmatn } from "next/font/google";
+import { Toaster } from "sonner";
 import "./globals.css";
 
 const vazirmatn = Vazirmatn({
@@ -23,13 +25,16 @@ export default function RootLayout({
       <body
         className={`${vazirmatn.variable} antialiased font-vazirmatn flex min-h-screen`}
       >
-        <Sidebar />
-        <main className="flex-1 w-full bg-white lg:bg-soft-bg/30">
-          <div className="max-w-screen-2xl mx-auto min-h-screen bg-white">
-            {children}
-          </div>
-        </main>
-        <MobileNav />
+        <QueryProvider>
+          <Sidebar />
+          <main className="flex-1 w-full bg-white lg:bg-soft-bg/30">
+            <div className="max-w-screen-2xl mx-auto min-h-screen bg-white">
+              {children}
+            </div>
+          </main>
+          <MobileNav />
+          <Toaster position="top-center" richColors />
+        </QueryProvider>
       </body>
     </html>
   );

@@ -1,14 +1,17 @@
 "use client";
 
-import { authImage1 } from "@/assets";
 import { PropertyCard } from "@/components/ui/PropertyCard";
 import { Slider } from "@/components/ui/Slider";
+import { useAds } from "@/hooks/useAds";
 import { AgentAvatar } from "../../components/AgentAvatar";
 import { CategoryFilter } from "../../components/CategoryFilter";
 import { SearchHeader } from "../../components/SearchHeader";
 import { SectionHeader } from "../../components/SectionHeader";
 
 export default function HomeScene() {
+    const { data: featuredData, isLoading: isFeaturedLoading } = useAds({ limit: 6, status: "PUBLISHED" });
+    const { data: exploreData, isLoading: isExploreLoading } = useAds({ limit: 8, status: "PUBLISHED" });
+
     return (
         <div className="min-h-screen bg-white pb-24 lg:pb-10">
             <div className="p-0 lg:p-10 space-y-12">
@@ -24,38 +27,29 @@ export default function HomeScene() {
                     <div className="px-6 lg:px-0">
                         <SectionHeader title="املاک ویژه" />
                     </div>
-                    <Slider spaceBetween={16} className="px-6 lg:px-0 pb-4">
-                        <PropertyCard
-                            variant="horizontal"
-                            title="آپارتمان مدرن سعادت آباد"
-                            price="25,000"
-                            rating={4.8}
-                            location="تهران، سعادت آباد"
-                            image="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=400&q=80"
-                            category="آپارتمان"
-                            className="w-70 lg:w-85"
-                        />
-                        <PropertyCard
-                            variant="horizontal"
-                            title="ویلای ساحلی شمال"
-                            price="45,000"
-                            rating={4.9}
-                            location="مازندران، نمک آبرود"
-                            image="https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=400&q=80"
-                            category="ویلا"
-                            className="w-70 lg:w-85"
-                        />
-                        <PropertyCard
-                            variant="horizontal"
-                            title="پنت‌هاوس مدرن فرمانیه"
-                            price="65,000"
-                            rating={5.0}
-                            location="تهران، فرمانیه"
-                            image="https://images.unsplash.com/photo-1567496898669-ee935f5f647a?auto=format&fit=crop&w=400&q=80"
-                            category="پنت‌هوس"
-                            className="w-70 lg:w-85"
-                        />
-                    </Slider>
+                    {isFeaturedLoading ? (
+                        <div className="flex gap-4 px-6 lg:px-0 overflow-hidden">
+                            {[1, 2, 3].map((i) => (
+                                <div key={i} className="w-70 lg:w-85 h-40 bg-soft-bg animate-pulse rounded-[25px]" />
+                            ))}
+                        </div>
+                    ) : (
+                        <Slider spaceBetween={16} className="px-6 lg:px-0 pb-4">
+                            {featuredData?.items?.map((ad) => (
+                                <PropertyCard
+                                    key={ad.adId}
+                                    variant="horizontal"
+                                    title={ad.title}
+                                    price={Object.values(ad.pricing)[0]?.toLocaleString() || "0"}
+                                    rating={4.5}
+                                    location="تهران"
+                                    image="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=400&q=80"
+                                    category={ad.categoryPath.subcategoryKey}
+                                    className="w-70 lg:w-85"
+                                />
+                            )) || []}
+                        </Slider>
+                    )}
                 </section>
 
                 {/* Top Locations */}
@@ -96,41 +90,27 @@ export default function HomeScene() {
                 <section className="px-6 lg:px-0">
                     <SectionHeader title="گشت و گذار در املاک" />
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-                        <PropertyCard
-                            title="آپارتمان لوکس فرمانیه"
-                            price="32,000"
-                            rating={4.5}
-                            location="تهران، فرمانیه"
-                            image="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=400&q=80"
-                            category="آپارتمان"
-                        />
-                        <PropertyCard
-                            title="پنت هاوس الهیه"
-                            price="55,000"
-                            rating={5.0}
-                            location="تهران، الهیه"
-                            image={authImage1.src}
-                            category="پنت هاوس"
-                        />
-                        <PropertyCard
-                            title="خانه ویلایی لواسان"
-                            price="80,000"
-                            rating={4.7}
-                            location="تهران، لواسان"
-                            image="https://images.unsplash.com/photo-1600566752355-35792bedcfea?auto=format&fit=crop&w=400&q=80"
-                            category="ویلا"
-                        />
-                        <PropertyCard
-                            title="آپارتمان مدرن چیتگر"
-                            price="18,000"
-                            rating={4.2}
-                            location="تهران، دریاچه چیتگر"
-                            image="https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=400&q=80"
-                            category="آپارتمان"
-                        />
+                        {isExploreLoading ? (
+                            Array.from({ length: 4 }).map((_, i) => (
+                                <div key={i} className="aspect-square bg-soft-bg animate-pulse rounded-[25px]" />
+                            ))
+                        ) : (
+                            exploreData?.items?.map((ad) => (
+                                <PropertyCard
+                                    key={ad.adId}
+                                    title={ad.title}
+                                    price={Object.values(ad.pricing)[0]?.toLocaleString() || "0"}
+                                    rating={4.5}
+                                    location="تهران"
+                                    image="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=400&q=80"
+                                    category={ad.categoryPath.subcategoryKey}
+                                />
+                            ))
+                        )}
                     </div>
                 </section>
             </div>
         </div>
     );
 }
+

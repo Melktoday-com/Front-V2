@@ -1,7 +1,13 @@
+"use client";
+
 import { Button } from "@/components/ui/Button";
+import { useAuth } from "@/hooks/useAuth";
 import { Bell, MapPin, Search, User } from "lucide-react";
+import Link from "next/link";
 
 export function SearchHeader() {
+    const { isLoggedIn } = useAuth();
+
     return (
         <div className="space-y-6 lg:space-y-10">
             <div className="flex justify-between items-center">
@@ -14,10 +20,19 @@ export function SearchHeader() {
                         <Search className="w-5 h-5 text-brand lg:hidden" />
                         <Bell className="w-5 h-5 text-brand" />
                     </Button>
-                    <div className="hidden lg:flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-soft-bg border border-soft-border flex items-center justify-center overflow-hidden">
-                            <User className="w-5 h-5 text-brand" />
-                        </div>
+                    <div className="flex items-center gap-3">
+                        {isLoggedIn ? (
+                            <Link href="/profile" className="w-10 h-10 rounded-full bg-soft-bg border border-soft-border flex items-center justify-center overflow-hidden transition-all hover:border-primary">
+                                <User className="w-5 h-5 text-brand" />
+                            </Link>
+                        ) : (
+                            <Link href="/auth">
+                                <Button size="sm" className="hidden lg:flex rounded-full h-10 px-6">ورود | ثبت نام</Button>
+                                <div className="lg:hidden w-10 h-10 rounded-full bg-soft-bg border border-soft-border flex items-center justify-center">
+                                    <User className="w-5 h-5 text-brand" />
+                                </div>
+                            </Link>
+                        )}
                     </div>
                 </div>
             </div>
@@ -42,3 +57,4 @@ export function SearchHeader() {
         </div>
     );
 }
+

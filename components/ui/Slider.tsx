@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode } from "react";
+import { Children, ReactNode } from "react";
 import { FreeMode, Pagination } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
 
@@ -10,7 +10,7 @@ import "swiper/css/free-mode";
 import "swiper/css/pagination";
 
 interface SliderProps {
-    children: ReactNode[];
+    children: ReactNode | ReactNode[];
     slidesPerView?: number | "auto";
     spaceBetween?: number;
     freeMode?: boolean;
@@ -40,7 +40,7 @@ export function Slider({
             breakpoints={breakpoints}
             className={className}
         >
-            {children.map((child, index) => (
+            {Children.map(children, (child, index) => (
                 <SwiperSlide key={index} className="w-auto!">
                     {child}
                 </SwiperSlide>

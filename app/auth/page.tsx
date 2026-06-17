@@ -2,6 +2,8 @@
 "use client";
 
 import { authImage1, authImage2, authImage3, authImage4 } from "@/assets/auth";
+import { useRequestOtp, useVerifyOtp } from "@/hooks/useAuth";
+import { normalizeApiError } from "@/lib/api/error-handler";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
@@ -10,6 +12,10 @@ export default function Auth() {
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
   const [timer, setTimer] = useState(59);
+  const [error, setError] = useState<string | null>(null);
+
+  const requestOtpMutation = useRequestOtp();
+  const verifyOtpMutation = useVerifyOtp();
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -21,17 +27,44 @@ export default function Auth() {
     return () => clearInterval(interval);
   }, [step, timer]);
 
-  const handleRequestOtp = (e: React.FormEvent) => {
+  const normalizePhone = (num: string) => {
+    let normalized = num.replace(/\D/g, "");
+    if (normalized.startsWith("0")) {
+      normalized = normalized.substring(1);
+    }
+    if (!normalized.startsWith("98")) {
+      normalized = "98" + normalized;
+    }
+    return "+" + normalized;
+  };
+
+  const handleRequestOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (phone.length >= 10) {
+    setError(null);
+    const normalizedPhone = normalizePhone(phone);
+
+    try {
+      await requestOtpMutation.mutateAsync({ mobileNumber: normalizedPhone });
       setStep("otp");
       setTimer(59);
+    } catch (err: any) {
+      setError(normalizeApiError(err));
     }
   };
 
-  const handleVerifyOtp = (e: React.FormEvent) => {
+  const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Logic for verification would go here
+    setError(null);
+    const normalizedPhone = normalizePhone(phone);
+
+    try {
+      await verifyOtpMutation.mutateAsync({
+        mobileNumber: normalizedPhone,
+        otp: otp,
+      });
+    } catch (err: any) {
+      setError(normalizeApiError(err));
+    }
   };
 
   return (
@@ -53,6 +86,12 @@ export default function Auth() {
       </div>
 
       <div className="w-full max-w-85">
+        {error && (
+          <div className="bg-red-50 text-red-500 p-4 rounded-xl text-xs font-bold mb-6 text-center">
+            {error}
+          </div>
+        )}
+
         {step === "phone" ? (
           <div className="transition-all duration-500 transform">
             <h1 className="text-2xl font-bold text-brand mb-3">بزن بریم!</h1>
@@ -76,9 +115,10 @@ export default function Auth() {
 
               <button
                 type="submit"
-                className="w-full bg-brand text-white py-4 rounded-button font-bold text-lg shadow-xl shadow-brand/20 transition-all hover:-translate-y-0.5 active:translate-y-0"
+                disabled={requestOtpMutation.isPending}
+                className="w-full bg-brand text-white py-4 rounded-button font-bold text-lg shadow-xl shadow-brand/20 transition-all hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50"
               >
-                دریافت کد ورود
+                {requestOtpMutation.isPending ? "در حال ارسال..." : "دریافت کد ورود"}
               </button>
             </form>
 
@@ -102,7 +142,7 @@ export default function Auth() {
 
             <h1 className="text-2xl font-bold text-brand mb-3">تایید شماره</h1>
             <p className="text-text-light mb-10 text-sm leading-relaxed">
-              کد ۵ رقمی که برات اس‌ام‌اس کردیم رو اینجا بنویس.
+              کد ۶ رقمی که برات اس‌ام‌اس کردیم رو اینجا بنویس.
             </p>
 
             <form onSubmit={handleVerifyOtp} className="space-y-8">
@@ -112,13 +152,20 @@ export default function Auth() {
                   {timer > 0 ? (
                     <span className="text-[10px] font-bold text-text-light/50">{timer} ثانیه تا ارسال مجدد</span>
                   ) : (
-                    <button type="button" onClick={() => setTimer(59)} className="text-[10px] font-bold text-primary hover:underline">ارسال دوباره</button>
+                    <button
+                      type="button"
+                      onClick={handleRequestOtp}
+                      disabled={requestOtpMutation.isPending}
+                      className="text-[10px] font-bold text-primary hover:underline"
+                    >
+                      ارسال دوباره
+                    </button>
                   )}
                 </div>
                 <input
                   type="text"
-                  maxLength={5}
-                  placeholder="· · · · ·"
+                  maxLength={6}
+                  placeholder="· · · · · ·"
                   dir="ltr"
                   value={otp}
                   onChange={(e) => setOtp(e.target.value)}
@@ -129,9 +176,10 @@ export default function Auth() {
 
               <button
                 type="submit"
-                className="w-full bg-primary text-white py-4 rounded-button font-bold text-lg shadow-xl shadow-primary/20 transition-all hover:-translate-y-0.5 active:translate-y-0"
+                disabled={verifyOtpMutation.isPending}
+                className="w-full bg-primary text-white py-4 rounded-button font-bold text-lg shadow-xl shadow-primary/20 transition-all hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50"
               >
-                بزن بریم تو!
+                {verifyOtpMutation.isPending ? "در حال تایید..." : "بزن بریم تو!"}
               </button>
             </form>
           </div>
@@ -140,3 +188,4 @@ export default function Auth() {
     </main>
   );
 }
+

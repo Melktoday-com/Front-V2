@@ -1,6 +1,6 @@
+import ProfileScene from "@/scenes/profile";
 
-export default function Profile() {
-  return (
-    <></>
-  );
+export default function ProfilePage() {
+  return <ProfileScene />;
 }
+

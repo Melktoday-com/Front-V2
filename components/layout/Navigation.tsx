@@ -1,7 +1,8 @@
 "use client";
 
+import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
-import { Heart, Home, MapPin, Search, User } from "lucide-react";
+import { Heart, Home, LogIn, MapPin, Search, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -15,6 +16,7 @@ const navItems = [
 
 export function Sidebar() {
     const pathname = usePathname();
+    const { isLoggedIn } = useAuth();
 
     return (
         <aside className="hidden lg:flex flex-col w-64 bg-white border-l border-soft-border h-screen sticky top-0 p-6">
@@ -27,6 +29,8 @@ export function Sidebar() {
             <nav className="flex-1 space-y-2">
                 {navItems.map((item) => {
                     const active = pathname === item.href;
+                    // If it's profile and not logged in, maybe show login? 
+                    // No, for now let them click and get redirected.
                     return (
                         <Link
                             key={item.href}
@@ -46,6 +50,16 @@ export function Sidebar() {
                         </Link>
                     );
                 })}
+
+                {!isLoggedIn && (
+                    <Link
+                        href="/auth"
+                        className="flex items-center gap-3 px-4 py-3 rounded-2xl text-primary hover:bg-primary/5 transition-all mt-4 border border-dashed border-primary/30"
+                    >
+                        <LogIn className="w-5 h-5" />
+                        <span className="font-bold text-sm">ورود به حساب</span>
+                    </Link>
+                )}
             </nav>
 
             <div className="mt-auto p-4 bg-soft-bg rounded-3xl border border-soft-border">
@@ -56,8 +70,10 @@ export function Sidebar() {
     );
 }
 
+
 export function MobileNav() {
     const pathname = usePathname();
+    const { isLoggedIn } = useAuth();
 
     return (
         <div className="lg:hidden fixed bottom-6 left-6 right-6 h-18 bg-brand rounded-full flex items-center justify-around px-2 shadow-xl shadow-brand/40 z-50">
@@ -89,10 +105,10 @@ export function MobileNav() {
                 <Heart className="w-6 h-6" />
             </Link>
             <Link
-                href="/profile"
+                href={isLoggedIn ? "/profile" : "/auth"}
                 className={cn(
                     "p-2 transition-colors",
-                    pathname === "/profile" ? "text-white" : "text-white/60"
+                    (pathname === "/profile" || pathname === "/auth") ? "text-white" : "text-white/60"
                 )}
             >
                 <User className="w-6 h-6" />
@@ -100,3 +116,4 @@ export function MobileNav() {
         </div>
     );
 }
+
