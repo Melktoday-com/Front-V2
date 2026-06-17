@@ -11,14 +11,20 @@ import { SectionHeader } from "../../components/SectionHeader";
 export default function HomeScene() {
     return (
         <div className="min-h-screen bg-white pb-24 lg:pb-10">
-            <div className="p-6 lg:p-10 space-y-12">
-                <SearchHeader />
-                <CategoryFilter />
+            <div className="p-0 lg:p-10 space-y-12">
+                <div className="px-6 lg:px-0 pt-6 lg:pt-0">
+                    <SearchHeader />
+                </div>
+                <div className="pr-6 lg:px-0">
+                    <CategoryFilter />
+                </div>
 
                 {/* Featured Estates */}
                 <section>
-                    <SectionHeader title="املاک ویژه" />
-                    <Slider spaceBetween={16} className="-mx-6 px-6 lg:mx-0 lg:px-0 pb-4">
+                    <div className="px-6 lg:px-0">
+                        <SectionHeader title="املاک ویژه" />
+                    </div>
+                    <Slider spaceBetween={16} className="px-6 lg:px-0 pb-4">
                         <PropertyCard
                             variant="horizontal"
                             title="آپارتمان مدرن سعادت آباد"
@@ -54,10 +60,15 @@ export default function HomeScene() {
 
                 {/* Top Locations */}
                 <section>
-                    <SectionHeader title="مناطق محبوب" />
-                    <Slider spaceBetween={12} className="-mx-6 px-6 lg:mx-0 lg:px-0 pb-2">
-                        {["پاسداران", "سعادت آباد", "نیاوران", "فرشته", "زعفرانیه", "ونک", "تجریش"].map((loc) => (
-                            <button key={loc} className="px-5 py-3 bg-soft-bg rounded-[15px] text-xs font-bold text-brand whitespace-nowrap border border-soft-border transition-all hover:bg-brand hover:text-white">
+                    <div className="px-6 lg:px-0">
+                        <SectionHeader title="مناطق محبوب" />
+                    </div>
+                    <Slider spaceBetween={12} className="px-6 lg:px-0 pb-4">
+                        {["سعادت آباد", "پاسداران", "نیاوران", "فرشته", "زعفرانیه", "ونک", "تجریش", "الهیه"].map((loc) => (
+                            <button
+                                key={loc}
+                                className="px-6 py-3.5 bg-soft-bg rounded-[22px] text-sm font-bold text-brand whitespace-nowrap border border-soft-border transition-all hover:bg-brand hover:text-white hover:shadow-lg hover:shadow-brand/20 active:scale-95"
+                            >
                                 {loc}
                             </button>
                         ))}
@@ -66,8 +77,10 @@ export default function HomeScene() {
 
                 {/* Top Agents */}
                 <section>
-                    <SectionHeader title="مشاورین برتر" />
-                    <Slider spaceBetween={24} className="-mx-6 px-6 lg:mx-0 lg:px-0">
+                    <div className="px-6 lg:px-0">
+                        <SectionHeader title="مشاورین برتر" />
+                    </div>
+                    <Slider spaceBetween={24} className="px-6 lg:px-0">
                         <AgentAvatar name="محمد علوی" image="https://i.pravatar.cc/150?u=1" />
                         <AgentAvatar name="سارا کریمی" image="https://i.pravatar.cc/150?u=2" />
                         <AgentAvatar name="امیر حسینی" image="https://i.pravatar.cc/150?u=3" />
@@ -80,7 +93,7 @@ export default function HomeScene() {
                 </section>
 
                 {/* Explore Estates */}
-                <section>
+                <section className="px-6 lg:px-0">
                     <SectionHeader title="گشت و گذار در املاک" />
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
                         <PropertyCard
