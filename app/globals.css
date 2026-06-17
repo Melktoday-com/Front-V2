@@ -26,3 +26,10 @@ body {
   color: #252B5C;
   font-family: var(--font-vazirmatn), sans-serif;
 }
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

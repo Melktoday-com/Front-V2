@@ -1,3 +1,4 @@
+import { MobileNav, Sidebar } from "@/components/layout/Navigation";
 import type { Metadata } from "next";
 import { Vazirmatn } from "next/font/google";
 import "./globals.css";
@@ -20,9 +21,15 @@ export default function RootLayout({
   return (
     <html lang="fa" dir="rtl">
       <body
-        className={`${vazirmatn.variable} antialiased font-vazirmatn`}
+        className={`${vazirmatn.variable} antialiased font-vazirmatn flex min-h-screen`}
       >
-        {children}
+        <Sidebar />
+        <main className="flex-1 w-full bg-white lg:bg-soft-bg/30">
+          <div className="max-w-screen-2xl mx-auto min-h-screen bg-white">
+            {children}
+          </div>
+        </main>
+        <MobileNav />
       </body>
     </html>
   );

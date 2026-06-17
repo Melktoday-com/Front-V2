@@ -1,6 +1,8 @@
 
 "use client";
 
+import { authImage1, authImage2, authImage3, authImage4 } from "@/assets/auth";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 
 export default function Auth() {
@@ -35,14 +37,22 @@ export default function Auth() {
   return (
     <main className="min-h-screen bg-white flex flex-col items-center p-6 text-right">
       {/* Visual Header - House/Property Images Grid */}
-      <div className="grid grid-cols-2 gap-4 mb-12 mt-6 w-full max-w-[340px]">
-        <div className="aspect-square bg-[#8BC83F]/10 rounded-[28px] overflow-hidden flex items-center justify-center text-primary text-4xl shadow-sm">🏠</div>
-        <div className="aspect-square bg-[#252B5C]/5 rounded-[28px] overflow-hidden flex items-center justify-center text-brand text-4xl shadow-sm">🏢</div>
-        <div className="aspect-square bg-[#252B5C]/5 rounded-[28px] overflow-hidden flex items-center justify-center text-brand text-4xl shadow-sm">🏘️</div>
-        <div className="aspect-square bg-[#8BC83F]/10 rounded-[28px] overflow-hidden flex items-center justify-center text-primary text-4xl shadow-sm">🏛️</div>
+      <div className="grid grid-cols-2 gap-2 mb-12 mt-6 w-full max-w-85">
+        <div className="aspect-square bg-primary/10 rounded-xl overflow-hidden flex items-center justify-center text-primary text-4xl shadow-sm relative">
+          <Image src={authImage1} alt="Property 1" fill className="object-cover" />
+        </div>
+        <div className="aspect-square bg-[#252B5C]/5 rounded-xl overflow-hidden flex items-center justify-center text-brand text-4xl shadow-sm relative">
+          <Image src={authImage2} alt="Property 2" fill className="object-cover" />
+        </div>
+        <div className="aspect-square bg-[#252B5C]/5 rounded-xl overflow-hidden flex items-center justify-center text-brand text-4xl shadow-sm relative">
+          <Image src={authImage3} alt="Property 3" fill className="object-cover" />
+        </div>
+        <div className="aspect-square bg-primary/10 rounded-xl overflow-hidden flex items-center justify-center text-primary text-4xl shadow-sm relative">
+          <Image src={authImage4} alt="Property 4" fill className="object-cover" />
+        </div>
       </div>
 
-      <div className="w-full max-w-[340px]">
+      <div className="w-full max-w-85">
         {step === "phone" ? (
           <div className="transition-all duration-500 transform">
             <h1 className="text-2xl font-bold text-brand mb-3">بزن بریم!</h1>
@@ -66,7 +76,7 @@ export default function Auth() {
 
               <button
                 type="submit"
-                className="w-full bg-brand text-white py-4 rounded-button font-bold text-lg shadow-xl shadow-brand/20 transition-all hover:translate-y-[-2px] active:translate-y-0"
+                className="w-full bg-brand text-white py-4 rounded-button font-bold text-lg shadow-xl shadow-brand/20 transition-all hover:-translate-y-0.5 active:translate-y-0"
               >
                 دریافت کد ورود
               </button>
@@ -74,9 +84,9 @@ export default function Auth() {
 
             <div className="mt-12 flex flex-col items-center gap-6">
               <div className="flex items-center gap-3 w-full text-text-light/20">
-                <div className="h-[1px] flex-1 bg-current" />
+                <div className="h-px flex-1 bg-current" />
                 <span className="text-[10px] uppercase tracking-[0.2em] font-black">Melktoday</span>
-                <div className="h-[1px] flex-1 bg-current" />
+                <div className="h-px flex-1 bg-current" />
               </div>
             </div>
           </div>
@@ -119,7 +129,7 @@ export default function Auth() {
 
               <button
                 type="submit"
-                className="w-full bg-primary text-white py-4 rounded-button font-bold text-lg shadow-xl shadow-primary/20 transition-all hover:translate-y-[-2px] active:translate-y-0"
+                className="w-full bg-primary text-white py-4 rounded-button font-bold text-lg shadow-xl shadow-primary/20 transition-all hover:-translate-y-0.5 active:translate-y-0"
               >
                 بزن بریم تو!
               </button>

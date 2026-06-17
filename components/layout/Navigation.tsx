@@ -1,0 +1,102 @@
+"use client";
+
+import { cn } from "@/lib/utils";
+import { Heart, Home, MapPin, Search, User } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+
+const navItems = [
+    { icon: Home, label: "خانه", href: "/" },
+    { icon: MapPin, label: "کاوش", href: "/explore" },
+    { icon: Search, label: "جستجو", href: "/ads" },
+    { icon: Heart, label: "علاقه‌مندی", href: "/favorites" },
+    { icon: User, label: "پروفایل", href: "/profile" },
+];
+
+export function Sidebar() {
+    const pathname = usePathname();
+
+    return (
+        <aside className="hidden lg:flex flex-col w-64 bg-white border-l border-soft-border h-screen sticky top-0 p-6">
+            <div className="mb-10 px-2">
+                <span className="text-2xl font-black text-brand tracking-tighter">
+                    MELK<span className="text-primary">TODAY</span>
+                </span>
+            </div>
+
+            <nav className="flex-1 space-y-2">
+                {navItems.map((item) => {
+                    const active = pathname === item.href;
+                    return (
+                        <Link
+                            key={item.href}
+                            href={item.href}
+                            className={cn(
+                                "flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 group",
+                                active
+                                    ? "bg-brand text-white shadow-lg shadow-brand/20"
+                                    : "text-secondary hover:bg-soft-bg"
+                            )}
+                        >
+                            <item.icon className={cn(
+                                "w-5 h-5",
+                                active ? "text-primary" : "text-secondary group-hover:text-brand"
+                            )} />
+                            <span className="font-bold text-sm">{item.label}</span>
+                        </Link>
+                    );
+                })}
+            </nav>
+
+            <div className="mt-auto p-4 bg-soft-bg rounded-3xl border border-soft-border">
+                <p className="text-xs text-secondary font-bold mb-2">نیاز به کمک داری؟</p>
+                <button className="text-[10px] text-primary font-black underline">با پشتیبانی تماس بگیر</button>
+            </div>
+        </aside>
+    );
+}
+
+export function MobileNav() {
+    const pathname = usePathname();
+
+    return (
+        <div className="lg:hidden fixed bottom-6 left-6 right-6 h-18 bg-brand rounded-full flex items-center justify-around px-2 shadow-xl shadow-brand/40 z-50">
+            <Link
+                href="/"
+                className={cn(
+                    "flex items-center justify-center w-12 h-12 rounded-full transition-all",
+                    pathname === "/" ? "bg-primary text-white shadow-lg shadow-primary/30" : "text-white/60"
+                )}
+            >
+                <Home className="w-6 h-6" />
+            </Link>
+            <Link
+                href="/explore"
+                className={cn(
+                    "p-2 transition-colors",
+                    pathname === "/explore" ? "text-white" : "text-white/60"
+                )}
+            >
+                <MapPin className="w-6 h-6" />
+            </Link>
+            <Link
+                href="/favorites"
+                className={cn(
+                    "p-2 transition-colors",
+                    pathname === "/favorites" ? "text-white" : "text-white/60"
+                )}
+            >
+                <Heart className="w-6 h-6" />
+            </Link>
+            <Link
+                href="/profile"
+                className={cn(
+                    "p-2 transition-colors",
+                    pathname === "/profile" ? "text-white" : "text-white/60"
+                )}
+            >
+                <User className="w-6 h-6" />
+            </Link>
+        </div>
+    );
+}
