@@ -80,7 +80,7 @@ export default function HomeScene() {
                     <div className="px-6 lg:px-0">
                         <SectionHeader title="مشاورین برتر" />
                     </div>
-                    <Slider spaceBetween={24} className="px-6 lg:px-0">
+                    <Slider spaceBetween={24} className="px-6 py-10 lg:px-0">
                         <AgentAvatar name="محمد علوی" image="https://i.pravatar.cc/150?u=1" />
                         <AgentAvatar name="سارا کریمی" image="https://i.pravatar.cc/150?u=2" />
                         <AgentAvatar name="امیر حسینی" image="https://i.pravatar.cc/150?u=3" />
