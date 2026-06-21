@@ -1,5 +1,6 @@
 "use client";
 
+import { useCity } from "@/components/providers/CityProvider";
 import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/hooks/useAuth";
 import { useSearchSuggestions } from "@/hooks/useSearch";
@@ -10,12 +11,11 @@ import { useEffect, useState } from "react";
 import { CitySelector } from "./CitySelector";
 
 interface SearchHeaderProps {
-    selectedCity: { id: string; name: string };
-    onCityChange: (city: { id: string; name: string }) => void;
     isInitialOpen?: boolean;
 }
 
-export function SearchHeader({ selectedCity, onCityChange, isInitialOpen }: SearchHeaderProps) {
+export function SearchHeader({ isInitialOpen }: SearchHeaderProps) {
+    const { selectedCity, setSelectedCity } = useCity();
     const { isLoggedIn } = useAuth();
     const router = useRouter();
     const [searchQuery, setSearchQuery] = useState("");
@@ -150,7 +150,10 @@ export function SearchHeader({ selectedCity, onCityChange, isInitialOpen }: Sear
             <CitySelector
                 isOpen={isSelectorOpen}
                 onClose={() => setIsSelectorOpen(false)}
-                onSelect={onCityChange}
+                onSelect={(city) => {
+                    setSelectedCity(city);
+                    setIsSelectorOpen(false);
+                }}
                 currentCityId={selectedCity.id}
             />
         </div>

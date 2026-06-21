@@ -1,19 +1,23 @@
 "use client";
 
 import { CitySelector } from "@/components/CitySelector";
+import { useCity } from "@/components/providers/CityProvider";
 import { AgencyCard } from "@/components/ui/AgencyCard";
 import { useAgencies } from "@/hooks/useAgencies";
 import { useGeoHierarchy } from "@/hooks/useGeoHierarchy";
-import { ChevronLeft, MapPin, Search } from "lucide-react";
+import { ChevronDown, MapPin, Search, X } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 
 export default function AgencyScene() {
     const searchParams = useSearchParams();
     const router = useRouter();
+    const { selectedCity, setSelectedCity } = useCity();
+
     const urlSearch = searchParams.get("search") || "";
-    const urlCityId = searchParams.get("cityId") || undefined;
-    const urlCityName = searchParams.get("cityName") || "";
+    // Priority: URL Param -> Global State
+    const effectiveCityId = searchParams.get("cityId") || selectedCity.id || undefined;
+    const effectiveCityName = searchParams.get("cityName") || selectedCity.name || "همه شهرها";
 
     const [isCitySelectorOpen, setIsCitySelectorOpen] = useState(false);
     const [search, setSearch] = useState(urlSearch);
@@ -21,7 +25,7 @@ export default function AgencyScene() {
     const { data: agenciesData, isLoading } = useAgencies({
         limit: 12,
         search: search || undefined,
-        cityId: urlCityId
+        cityId: effectiveCityId
     });
 
     const { data: hierarchy } = useGeoHierarchy();
@@ -38,10 +42,11 @@ export default function AgencyScene() {
     }, [hierarchy]);
 
     const handleCitySelect = (city: { id: string; name: string }) => {
+        setSelectedCity(city);
         const params = new URLSearchParams(searchParams.toString());
         params.set("cityId", city.id);
         params.set("cityName", city.name);
-        router.push(`/agency?${params.toString()}`);
+        router.push(`${window.location.pathname}?${params.toString()}`);
         setIsCitySelectorOpen(false);
     };
 
@@ -49,35 +54,38 @@ export default function AgencyScene() {
         const params = new URLSearchParams(searchParams.toString());
         params.delete("cityId");
         params.delete("cityName");
-        router.push(`/agency?${params.toString()}`);
+        router.push(`${window.location.pathname}?${params.toString()}`);
     };
 
     return (
         <div className="min-h-screen bg-white pb-24 lg:pb-10">
             <div className="p-6 lg:p-10 space-y-8">
-                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-soft-border">
                     <div className="space-y-2">
                         <h1 className="text-brand text-2xl lg:text-3xl font-black">آژانس‌های املاک</h1>
-                        <p className="text-secondary text-sm font-bold">برترین متخصصان ملکی در کنار شما</p>
+                        <p className="text-secondary text-sm font-medium">بهترین آژانس‌های فعال در {effectiveCityName}</p>
                     </div>
 
-                    <div
-                        onClick={() => setIsCitySelectorOpen(true)}
-                        className="flex items-center gap-3 bg-soft-bg px-5 py-3 rounded-[20px] border border-soft-border cursor-pointer hover:border-primary/50 transition-all group shrink-0"
-                    >
-                        <MapPin className="w-5 h-5 text-primary" />
-                        <span className="text-brand font-black text-sm">
-                            {urlCityName || "همه شهرها"}
-                        </span>
-                        {urlCityId && (
+                    <div className="flex items-center gap-3">
+                        <div
+                            onClick={() => setIsCitySelectorOpen(true)}
+                            className="flex items-center gap-2 bg-soft-bg px-4 py-2.5 rounded-[18px] border border-soft-border group cursor-pointer hover:border-primary/50 transition-all shadow-sm"
+                        >
+                            <MapPin className="w-5 h-5 text-primary shrink-0" />
+                            <div className="flex items-center gap-2">
+                                <span className="text-brand font-black text-xs">
+                                    {effectiveCityName}
+                                </span>
+                                <ChevronDown className="w-3 h-3 text-secondary group-hover:text-primary transition-colors" />
+                            </div>
+                        </div>
+
+                        {effectiveCityId && (
                             <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    clearCityFilter();
-                                }}
-                                className="mr-2 p-1 hover:bg-soft-border/30 rounded-full transition-colors"
+                                onClick={clearCityFilter}
+                                className="p-2.5 bg-soft-bg border border-soft-border rounded-[18px] text-secondary hover:text-red-500 transition-colors"
                             >
-                                <ChevronLeft className="w-4 h-4 text-secondary rotate-90" />
+                                <X className="w-4 h-4" />
                             </button>
                         )}
                     </div>
@@ -124,7 +132,7 @@ export default function AgencyScene() {
                 isOpen={isCitySelectorOpen}
                 onClose={() => setIsCitySelectorOpen(false)}
                 onSelect={handleCitySelect}
-                currentCityId={urlCityId}
+                currentCityId={effectiveCityId}
             />
         </div>
     );

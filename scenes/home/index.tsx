@@ -2,6 +2,7 @@
 
 import { AgentAvatar } from "@/components/AgentAvatar";
 import CategoryFilter from "@/components/CategoryFilter";
+import { useCity } from "@/components/providers/CityProvider";
 import { SearchHeader } from "@/components/SearchHeader";
 import { SectionHeader } from "@/components/SectionHeader";
 import { PropertyCard } from "@/components/ui/PropertyCard";
@@ -15,34 +16,17 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
 export const HomeScene = () => {
-    const [selectedCity, setSelectedCity] = useState<{ id: string; name: string }>({
-        id: "",
-        name: ""
-    });
+    const { selectedCity, setSelectedCity } = useCity();
 
     const [isInitialModalOpen, setIsInitialModalOpen] = useState(false);
 
-    // Initial load from localStorage
+    // Initial load from localStorage logic moved to CityProvider
     useEffect(() => {
         const saved = localStorage.getItem('selectedCity');
-        if (saved) {
-            try {
-                setSelectedCity(JSON.parse(saved));
-            } catch (e) {
-                console.error("Failed to parse saved city", e);
-                setIsInitialModalOpen(true);
-            }
-        } else {
+        if (!saved) {
             setIsInitialModalOpen(true);
         }
     }, []);
-
-    // Persist city to localStorage
-    useEffect(() => {
-        if (selectedCity.id) {
-            localStorage.setItem('selectedCity', JSON.stringify(selectedCity));
-        }
-    }, [selectedCity]);
 
     // Use real data from hooks
     const { data: featuredData, isLoading: isFeaturedLoading, error: featuredError, refetch: refetchFeatured } = useAds({
@@ -83,8 +67,6 @@ export const HomeScene = () => {
     return (
         <div className="flex flex-col gap-16 pb-16">
             <SearchHeader
-                selectedCity={selectedCity}
-                onCityChange={setSelectedCity}
                 isInitialOpen={isInitialModalOpen}
             />
 
