@@ -4,6 +4,7 @@ import {
     AdDetail,
     ListAdsQuery,
     PaginatedAdsResponse,
+    CategoryListItem,
 } from "@/types/api/ads.types";
 
 export const adsService = {
@@ -23,4 +24,9 @@ export const adsService = {
         const response = await apiClient.get<AdContactInfo>(`/ads/${adId}/contact`);
         return response.data;
     },
+
+    async listCategories(): Promise<CategoryListItem[]> {
+        const response = await apiClient.get<{ categories: CategoryListItem[] }>("/ads/categories");
+        return response.data.categories;
+    }
 };

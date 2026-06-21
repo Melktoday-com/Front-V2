@@ -1,116 +1,229 @@
 "use client";
 
+import { AgentAvatar } from "@/components/AgentAvatar";
+import CategoryFilter from "@/components/CategoryFilter";
+import { SearchHeader } from "@/components/SearchHeader";
+import { SectionHeader } from "@/components/SectionHeader";
 import { PropertyCard } from "@/components/ui/PropertyCard";
 import { Slider } from "@/components/ui/Slider";
-import { useAds } from "@/hooks/useAds";
-import { AgentAvatar } from "../../components/AgentAvatar";
-import { CategoryFilter } from "../../components/CategoryFilter";
-import { SearchHeader } from "../../components/SearchHeader";
-import { SectionHeader } from "../../components/SectionHeader";
+import { EmptyState, ErrorState } from "@/components/ui/StatusStates";
+import { useAds, useCategories } from "@/hooks/useAds";
+import { useAgencies } from "@/hooks/useAgencies";
+import { useZones } from "@/hooks/useGeo";
+import { AgencySummary } from "@/types/api/agency.types";
+import Link from "next/link";
+import { useState } from "react";
 
-export default function HomeScene() {
-    const { data: featuredData, isLoading: isFeaturedLoading } = useAds({ limit: 6, status: "PUBLISHED" });
-    const { data: exploreData, isLoading: isExploreLoading } = useAds({ limit: 8, status: "PUBLISHED" });
+export const HomeScene = () => {
+    const [selectedCity, setSelectedCity] = useState<{ id: string; name: string }>({
+        id: "", // Will be populated by first root zone
+        name: "Tehran"
+    });
+
+    // Use real data from hooks
+    const { data: featuredData, isLoading: isFeaturedLoading, error: featuredError, refetch: refetchFeatured } = useAds({
+        isFeatured: true,
+        limit: 10,
+        cityId: selectedCity.id || undefined,
+    });
+
+    const { data: recentData, isLoading: isRecentLoading, error: recentError, refetch: refetchRecent } = useAds({
+        limit: 8,
+        cityId: selectedCity.id || undefined,
+    });
+
+    const { data: categoriesData, isLoading: isCategoriesLoading } = useCategories();
+
+    const { data: agencyData, isLoading: isAgenciesLoading } = useAgencies({
+        cityId: selectedCity.id || undefined,
+    });
+
+    const { data: tempRentData, isLoading: isTempRentLoading, error: tempRentError, refetch: refetchTempRent } = useAds({
+        businessModelKey: "temporary_rent",
+        limit: 4,
+        cityId: selectedCity.id || undefined,
+    });
+
+    const { data: regionsData, isLoading: isRegionsLoading, error: regionsError, refetch: refetchRegions } = useZones(selectedCity.id);
+
+    // Map Backend Agency response to Component expected shape
+    const topAgencies = (agencyData?.agencies || []).map((agency: AgencySummary) => ({
+        id: agency.id,
+        name: agency.name,
+        image: agency.logoUrl || "/assets/images/agency-placeholder.png",
+        listingsCount: 0, // Backend currently doesn't provide this in list view
+    }));
 
     return (
-        <div className="min-h-screen bg-white pb-24 lg:pb-10">
-            <div className="p-0 lg:p-10 space-y-12">
-                <div className="px-6 lg:px-0 pt-6 lg:pt-0">
-                    <SearchHeader />
-                </div>
-                <div className="pr-6 lg:px-0">
-                    <CategoryFilter />
-                </div>
+        <div className="flex flex-col gap-16 pb-16">
+            <SearchHeader
+                selectedCity={selectedCity}
+                onCityChange={setSelectedCity}
+            />
 
-                {/* Featured Estates */}
-                <section>
-                    <div className="px-6 lg:px-0">
-                        <SectionHeader title="املاک ویژه" />
-                    </div>
-                    {isFeaturedLoading ? (
-                        <div className="flex gap-4 px-6 lg:px-0 overflow-hidden">
-                            {[1, 2, 3].map((i) => (
-                                <div key={i} className="w-70 lg:w-85 h-40 bg-soft-bg animate-pulse rounded-[25px]" />
+            {/* Browse by Regions */}
+            {regionsData?.zones && regionsData.zones.length > 0 && (
+                <section className="container mx-auto px-4">
+                    <SectionHeader
+                        title={`Explore ${selectedCity.name}`}
+                        subtitle="Browse listings by neighborhood"
+                    />
+                    {isRegionsLoading ? (
+                        <div className="flex gap-4 overflow-hidden">
+                            {[1, 2, 3, 4, 5, 6].map(i => (
+                                <div key={i} className="min-w-[150px] h-12 bg-gray-100 animate-pulse rounded-full" />
                             ))}
                         </div>
+                    ) : regionsError ? (
+                        <ErrorState onRetry={refetchRegions} />
                     ) : (
-                        <Slider spaceBetween={16} className="px-6 lg:px-0 pb-4">
-                            {(featuredData?.items || []).map((ad) => (
-                                <PropertyCard
-                                    key={ad.adId}
-                                    variant="horizontal"
-                                    title={ad.title}
-                                    price={Object.values(ad.pricing)[0]?.toLocaleString() || "0"}
-                                    rating={4.5}
-                                    location="تهران"
-                                    image="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=400&q=80"
-                                    category={ad.categoryPath.subcategoryKey}
-                                    className="w-70 lg:w-85"
-                                />
+                        <Slider>
+                            {regionsData.zones.map((zone) => (
+                                <Link
+                                    key={zone.id}
+                                    href={`/explore?cityName=${selectedCity.name}&neighbourhoodName=${zone.name}`}
+                                    className="px-6 py-3 rounded-full bg-soft-bg border border-soft-border hover:border-primary hover:text-primary transition-all whitespace-nowrap font-bold text-brand shadow-sm"
+                                >
+                                    {zone.name}
+                                </Link>
                             ))}
                         </Slider>
                     )}
                 </section>
+            )}
 
-                {/* Top Locations */}
-                <section>
-                    <div className="px-6 lg:px-0">
-                        <SectionHeader title="مناطق محبوب" />
+            {/* Categories */}
+            <section className="container mx-auto px-4">
+                <CategoryFilter
+                    categories={categoriesData || []}
+                    isLoading={isCategoriesLoading}
+                />
+            </section>
+
+            {/* Featured Properties */}
+            <section className="container mx-auto px-4">
+                <SectionHeader
+                    title="Featured Estates"
+                    subtitle="Hand-picked premium listings"
+                    link="/explore?isFeatured=true"
+                />
+                {isFeaturedLoading ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {[1, 2, 3].map((i) => (
+                            <div key={i} className="h-64 bg-gray-100 animate-pulse rounded-xl" />
+                        ))}
                     </div>
-                    <Slider spaceBetween={12} className="px-6 lg:px-0 pb-4">
-                        {["سعادت آباد", "پاسداران", "نیاوران", "فرشته", "زعفرانیه", "ونک", "تجریش", "الهیه"].map((loc) => (
-                            <button
-                                key={loc}
-                                className="px-6 py-3.5 bg-soft-bg rounded-[22px] text-sm font-bold text-brand whitespace-nowrap border border-soft-border transition-all hover:bg-brand hover:text-white hover:shadow-lg hover:shadow-brand/20 active:scale-95"
-                            >
-                                {loc}
-                            </button>
+                ) : featuredError ? (
+                    <ErrorState onRetry={refetchFeatured} />
+                ) : !featuredData?.items.length ? (
+                    <EmptyState message="No featured properties available" />
+                ) : (
+                    <Slider>
+                        {featuredData?.items.map((property) => (
+                            <PropertyCard
+                                key={property.adId}
+                                adId={property.adId}
+                                title={property.title}
+                                price={Object.values(property.pricing)[0]?.toLocaleString() || "0"}
+                                rating={5.0}
+                                location="Tehran"
+                                image={property.mediaIds?.[0] ? `${process.env.NEXT_PUBLIC_API_URL}/media/${property.mediaIds[0]}` : "/assets/images/property-placeholder.png"}
+                                category={property.categoryPath.subcategoryKey}
+                            />
                         ))}
                     </Slider>
-                </section>
+                )}
+            </section>
 
-                {/* Top Agents */}
-                <section>
-                    <div className="px-6 lg:px-0">
-                        <SectionHeader title="مشاورین برتر" />
+            {/* Latest Listings */}
+            <section className="container mx-auto px-4">
+                <SectionHeader
+                    title="Recently Added"
+                    subtitle="Fresh listings in your area"
+                    link="/explore"
+                />
+                {isRecentLoading ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                            <div key={i} className="h-64 bg-gray-100 animate-pulse rounded-xl" />
+                        ))}
                     </div>
-                    <Slider spaceBetween={24} className="px-6 py-10 lg:px-0">
-                        <AgentAvatar name="محمد علوی" image="https://i.pravatar.cc/150?u=1" />
-                        <AgentAvatar name="سارا کریمی" image="https://i.pravatar.cc/150?u=2" />
-                        <AgentAvatar name="امیر حسینی" image="https://i.pravatar.cc/150?u=3" />
-                        <AgentAvatar name="رضا احمدی" image="https://i.pravatar.cc/150?u=4" />
-                        <AgentAvatar name="نرگس قاسمی" image="https://i.pravatar.cc/150?u=5" />
-                        <AgentAvatar name="مریم تهرانی" image="https://i.pravatar.cc/150?u=6" />
-                        <AgentAvatar name="علی مرادی" image="https://i.pravatar.cc/150?u=7" />
-                        <AgentAvatar name="هدیه صبوری" image="https://i.pravatar.cc/150?u=8" />
-                    </Slider>
-                </section>
+                ) : recentError ? (
+                    <ErrorState onRetry={refetchRecent} />
+                ) : !recentData?.items.length ? (
+                    <EmptyState message="No recent listings found" />
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {recentData.items.map((property) => (
+                            <PropertyCard
+                                key={property.adId}
+                                adId={property.adId}
+                                title={property.title}
+                                price={Object.values(property.pricing)[0]?.toLocaleString() || "0"}
+                                rating={4.8}
+                                location="Tehran"
+                                image={property.mediaIds?.[0] ? `${process.env.NEXT_PUBLIC_API_URL}/media/${property.mediaIds[0]}` : "/assets/images/property-placeholder.png"}
+                                category={property.categoryPath.subcategoryKey}
+                            />
+                        ))}
+                    </div>
+                )}
+            </section>
 
-                {/* Explore Estates */}
-                <section className="px-6 lg:px-0">
-                    <SectionHeader title="گشت و گذار در املاک" />
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-                        {isExploreLoading ? (
-                            Array.from({ length: 4 }).map((_, i) => (
-                                <div key={i} className="aspect-square bg-soft-bg animate-pulse rounded-[25px]" />
-                            ))
-                        ) : (
-                            (exploreData?.items || []).map((ad) => (
-                                <PropertyCard
-                                    key={ad.adId}
-                                    title={ad.title}
-                                    price={Object.values(ad.pricing)[0]?.toLocaleString() || "0"}
-                                    rating={4.5}
-                                    location="تهران"
-                                    image="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=400&q=80"
-                                    category={ad.categoryPath.subcategoryKey}
-                                />
-                            ))
-                        )}
+            {/* Temporary Rentals */}
+            <section className="container mx-auto px-4 bg-orange-50/30 py-12 rounded-3xl">
+                <SectionHeader
+                    title="Weekend Getaways"
+                    subtitle="Discover amazing short-term rentals"
+                    link="/explore?businessModelKey=temporary_rent"
+                />
+                {isTempRentLoading ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {[1, 2, 3, 4].map((i) => (
+                            <div key={i} className="h-64 bg-gray-100 animate-pulse rounded-xl" />
+                        ))}
                     </div>
-                </section>
-            </div>
+                ) : tempRentError ? (
+                    <ErrorState onRetry={refetchTempRent} />
+                ) : !tempRentData?.items.length ? (
+                    <EmptyState message="No temporary rentals found" />
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {tempRentData.items.map((property) => (
+                            <PropertyCard
+                                key={property.adId}
+                                adId={property.adId}
+                                title={property.title}
+                                price={Object.values(property.pricing)[0]?.toLocaleString() || "0"}
+                                rating={4.9}
+                                location="Tehran"
+                                image={property.mediaIds?.[0] ? `${process.env.NEXT_PUBLIC_API_URL}/media/${property.mediaIds[0]}` : "/assets/images/property-placeholder.png"}
+                                category={property.categoryPath.subcategoryKey}
+                            />
+                        ))}
+                    </div>
+                )}
+            </section>
+
+            {/* Top Agencies */}
+            <section className="container mx-auto px-4">
+                <SectionHeader
+                    title="Top Agencies"
+                    subtitle="Work with the best in the business"
+                    link="/agency"
+                />
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+                    {isAgenciesLoading
+                        ? [1, 2, 3, 4, 5, 6].map((i) => (
+                            <div key={i} className="h-40 bg-gray-100 animate-pulse rounded-xl" />
+                        ))
+                        : topAgencies.map((agency) => (
+                            <AgentAvatar key={agency.id} name={agency.name} image={agency.image} />
+                        ))}
+                </div>
+            </section>
         </div>
     );
-}
+};
 
+export default HomeScene;

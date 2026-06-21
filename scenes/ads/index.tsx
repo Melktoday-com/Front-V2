@@ -1,18 +1,27 @@
 "use client";
 
-import { CategoryFilter } from "@/components/CategoryFilter";
+import CategoryFilter from "@/components/CategoryFilter";
 import { PropertyCard } from "@/components/ui/PropertyCard";
-import { useAds } from "@/hooks/useAds";
+import { useAds, useCategories } from "@/hooks/useAds";
 import { Search } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 export default function AdsScene() {
-    const [search, setSearch] = useState("");
+    const searchParams = useSearchParams();
+    const urlSearch = searchParams.get("search") || "";
+    const urlCityId = searchParams.get("cityId") || undefined;
+    const urlCityName = searchParams.get("cityName") || "";
+
+    const [search, setSearch] = useState(urlSearch);
     const { data, isLoading } = useAds({
         limit: 12,
         status: "PUBLISHED",
-        search: search || undefined
+        search: search || undefined,
+        cityId: urlCityId
     });
+
+    const { data: categoriesData, isLoading: isCategoriesLoading } = useCategories();
 
     return (
         <div className="min-h-screen bg-white pb-24 lg:pb-10">
@@ -31,7 +40,10 @@ export default function AdsScene() {
                     </div>
                 </div>
 
-                <CategoryFilter />
+                <CategoryFilter
+                    categories={categoriesData || []}
+                    isLoading={isCategoriesLoading}
+                />
 
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
                     {isLoading ? (
@@ -46,13 +58,14 @@ export default function AdsScene() {
                         (data?.items || []).map((ad) => (
                             <PropertyCard
                                 key={ad.adId}
+                                adId={ad.adId}
                                 title={ad.title}
                                 price={Object.values(ad.pricing)[0]?.toLocaleString() || "0"}
                                 rating={4.5}
-                                location="تهران"
+                                location={urlCityName || "ایران"}
                                 image={ad.mediaIds && ad.mediaIds.length > 0
-                                    ? `http://localhost:9000/melktoday-media/${ad.mediaIds[0]}`
-                                    : "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=400&q=80"
+                                    ? `${process.env.NEXT_PUBLIC_API_URL}/media/${ad.mediaIds[0]}`
+                                    : "/assets/images/property-placeholder.png"
                                 }
                                 category={ad.categoryPath.subcategoryKey}
                             />

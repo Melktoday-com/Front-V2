@@ -24,3 +24,10 @@ export function useAdContact(adId: string) {
         enabled: !!adId,
     });
 }
+
+export function useCategories() {
+    return useQuery({
+        queryKey: ["categories"],
+        queryFn: () => adsService.listCategories(),
+    });
+}

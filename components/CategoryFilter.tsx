@@ -1,42 +1,55 @@
 "use client";
 
-import { cn } from "@/lib/utils";
-import { Building, Building2, Home, LayoutGrid, Map, Palmtree, Store, Trees, Warehouse } from "lucide-react";
-import { useState } from "react";
-import { Slider } from "./ui/Slider";
+import React from "react";
+import Image from "next/image";
+import { CategoryListItem } from "@/types/api/ads.types";
 
-const categories = [
-    { name: "همه", icon: LayoutGrid },
-    { name: "آپارتمان", icon: Building2 },
-    { name: "ویلایی", icon: Palmtree },
-    { name: "خانه", icon: Home },
-    { name: "زمین", icon: Map },
-    { name: "تجاری", icon: Store },
-    { name: "اداری", icon: Building },
-    { name: "باغ", icon: Trees },
-    { name: "انبار", icon: Warehouse },
-];
-
-export function CategoryFilter() {
-    const [active, setActive] = useState("همه");
-
-    return (
-        <Slider spaceBetween={12} className="pb-4">
-            {categories.map((category) => (
-                <button
-                    key={category.name}
-                    onClick={() => setActive(category.name)}
-                    className={cn(
-                        "flex items-center gap-2 px-5 py-2.5 rounded-2xl text-sm font-bold transition-all whitespace-nowrap border",
-                        active === category.name
-                            ? "bg-brand text-white border-brand shadow-lg shadow-brand/20 scale-105"
-                            : "bg-soft-bg text-secondary border-soft-border hover:bg-soft-border"
-                    )}
-                >
-                    <category.icon className={cn("w-4 h-4", active === category.name ? "text-white" : "text-primary")} />
-                    {category.name}
-                </button>
-            ))}
-        </Slider>
-    );
+interface CategoryFilterProps {
+  categories: CategoryListItem[];
+  isLoading?: boolean;
 }
+
+const CategoryFilter = ({ categories, isLoading }: CategoryFilterProps) => {
+  if (isLoading) {
+    return (
+      <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
+        {[1, 2, 3, 4, 5, 6].map((i) => (
+          <div
+            key={i}
+            className="flex-shrink-0 w-24 h-24 bg-gray-100 animate-pulse rounded-2xl"
+          />
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
+      {categories.map((category) => (
+        <div
+          key={category.id}
+          className="flex-shrink-0 flex flex-col items-center gap-2 cursor-pointer group"
+        >
+          <div className="w-16 h-16 rounded-2xl bg-gray-50 flex items-center justify-center border border-gray-100 group-hover:bg-primary-light group-hover:border-primary transition-all">
+            {category.icon ? (
+              <Image 
+                src={category.icon} 
+                alt={category.displayName} 
+                width={32} 
+                height={32} 
+                className="group-hover:scale-110 transition-transform"
+              />
+            ) : (
+              <span className="text-2xl">🏠</span>
+            )}
+          </div>
+          <span className="text-xs font-medium text-gray-600 group-hover:text-primary transition-colors">
+            {category.displayName}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+export default CategoryFilter;
