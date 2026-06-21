@@ -19,19 +19,41 @@ export function SearchHeader({ selectedCity, onCityChange }: SearchHeaderProps) 
     const router = useRouter();
     const [searchQuery, setSearchQuery] = useState("");
     const [isSearching, setIsSearching] = useState(false);
+    const [selectedProvinceId, setSelectedProvinceId] = useState<string>("");
 
-    const { data: citiesData } = useZones("root");
+    const { data: provincesData } = useZones("root");
+    const { data: citiesData } = useZones(selectedProvinceId);
     const { data: suggestions, isLoading: suggestionsLoading } = useSearchSuggestions(searchQuery);
 
-    // Auto-select first city if none selected
+    const filteredProvinces = provincesData?.zones.filter(z => z.metadata?.isProvince) || [];
+    const filteredCities = citiesData?.zones.filter(z => z.metadata?.isCity) || [];
+
+    // Auto-select Tehran or first province and city if none selected
     useEffect(() => {
-        if (!selectedCity.id && citiesData?.zones && citiesData.zones.length > 0) {
-            onCityChange({
-                id: citiesData.zones[0].id,
-                name: citiesData.zones[0].name
-            });
+        if (!selectedProvinceId && filteredProvinces.length > 0) {
+            const tehranProv = filteredProvinces.find(p => p.name === "تهران");
+            setSelectedProvinceId(tehranProv ? tehranProv.id : filteredProvinces[0].id);
         }
-    }, [citiesData, selectedCity.id, onCityChange]);
+    }, [filteredProvinces, selectedProvinceId]);
+
+    useEffect(() => {
+        if (selectedProvinceId && !selectedCity.id) {
+            const selectedProv = filteredProvinces.find(p => p.id === selectedProvinceId);
+            const centerCityExists = filteredCities.some(c => c.name === selectedProv?.name);
+
+            if (selectedProv && !centerCityExists) {
+                onCityChange({
+                    id: selectedProv.id,
+                    name: selectedProv.name
+                });
+            } else if (filteredCities.length > 0) {
+                onCityChange({
+                    id: filteredCities[0].id,
+                    name: filteredCities[0].name
+                });
+            }
+        }
+    }, [filteredCities, selectedCity.id, onCityChange, selectedProvinceId, filteredProvinces]);
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
@@ -43,20 +65,55 @@ export function SearchHeader({ selectedCity, onCityChange }: SearchHeaderProps) 
     return (
         <div className="space-y-6 lg:space-y-10">
             <div className="flex justify-between items-center">
-                <div className="flex items-center gap-2 bg-soft-bg px-4 py-2 rounded-[20px] border border-soft-border relative group cursor-pointer">
-                    <MapPin className="w-4 h-4 text-primary" />
-                    <select
-                        value={selectedCity.id}
-                        onChange={(e) => {
-                            const city = citiesData?.zones.find(z => z.id === e.target.value);
-                            if (city) onCityChange({ id: city.id, name: city.name });
-                        }}
-                        className="bg-transparent text-brand font-bold text-xs border-none focus:ring-0 outline-none cursor-pointer appearance-none pr-4"
-                    >
-                        {citiesData?.zones.map(city => (
-                            <option key={city.id} value={city.id}>{city.name}</option>
-                        )) || <option value="">Loading cities...</option>}
-                    </select>
+                <div className="flex items-center gap-2 bg-soft-bg px-4 py-2 rounded-[20px] border border-soft-border relative group cursor-pointer overflow-hidden">
+                    <MapPin className="w-4 h-4 text-primary shrink-0" />
+                    <div className="flex items-center gap-1 divide-x divide-soft-border rtl:divide-x-reverse">
+                        <select
+                            value={selectedProvinceId}
+                            onChange={(e) => {
+                                setSelectedProvinceId(e.target.value);
+                                // Reset city when province changes to allow the second useEffect to select the first city
+                                onCityChange({ id: "", name: "" });
+                            }}
+                            className="bg-transparent text-secondary font-medium text-[10px] border-none focus:ring-0 outline-none cursor-pointer appearance-none pr-4"
+                        >
+                            {provincesData?.zones
+                                .filter(z => z.metadata?.isProvince)
+                                .map(province => (
+                                    <option key={province.id} value={province.id}>{province.name}</option>
+                                )) || <option value="">...</option>}
+                        </select>
+                        <select
+                            value={selectedCity.id}
+                            onChange={(e) => {
+                                // Find in filtered cities or check if it's the province itself (handled as center)
+                                const city = filteredCities.find(z => z.id === e.target.value) ||
+                                    filteredProvinces.find(p => p.id === e.target.value);
+                                if (city) onCityChange({ id: city.id, name: city.name });
+                            }}
+                            className="bg-transparent text-brand font-bold text-xs border-none focus:ring-0 outline-none cursor-pointer appearance-none pr-4 pl-2"
+                        >
+                            {/* Special case for Tehran and other provinces where the center city name might match province name and be missing from children due to unique constraint */}
+                            {(() => {
+                                const selectedProv = filteredProvinces.find(p => p.id === selectedProvinceId);
+                                const centerCityExists = filteredCities.some(c => c.name === selectedProv?.name);
+
+                                return (
+                                    <>
+                                        {selectedProv && !centerCityExists && (
+                                            <option key={selectedProv.id} value={selectedProv.id}>{selectedProv.name}</option>
+                                        )}
+                                        {filteredCities.map(city => (
+                                            <option key={city.id} value={city.id}>{city.name}</option>
+                                        ))}
+                                    </>
+                                );
+                            })()}
+                            {filteredCities.length === 0 && !filteredProvinces.find(p => p.id === selectedProvinceId) && (
+                                <option value="">انتخاب شهر</option>
+                            )}
+                        </select>
+                    </div>
                 </div>
                 <div className="flex items-center gap-3">
                     <Button variant="secondary" size="icon" className="rounded-full w-10 h-10 transition-transform hover:scale-105">
