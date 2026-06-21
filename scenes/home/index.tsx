@@ -15,27 +15,32 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 export const HomeScene = () => {
-    const [selectedCity, setSelectedCity] = useState<{ id: string; name: string }>(() => {
-        if (typeof window !== 'undefined') {
-            const saved = localStorage.getItem('selectedCity');
-            if (saved) return JSON.parse(saved);
-        }
-        return {
-            id: "",
-            name: ""
-        };
+    const [selectedCity, setSelectedCity] = useState<{ id: string; name: string }>({
+        id: "",
+        name: ""
     });
 
     const [isInitialModalOpen, setIsInitialModalOpen] = useState(false);
 
-    // Persist city to localStorage and check for initial modal
+    // Initial load from localStorage
     useEffect(() => {
-        if (typeof window !== 'undefined') {
-            if (selectedCity.id) {
-                localStorage.setItem('selectedCity', JSON.stringify(selectedCity));
-            } else {
+        const saved = localStorage.getItem('selectedCity');
+        if (saved) {
+            try {
+                setSelectedCity(JSON.parse(saved));
+            } catch (e) {
+                console.error("Failed to parse saved city", e);
                 setIsInitialModalOpen(true);
             }
+        } else {
+            setIsInitialModalOpen(true);
+        }
+    }, []);
+
+    // Persist city to localStorage
+    useEffect(() => {
+        if (selectedCity.id) {
+            localStorage.setItem('selectedCity', JSON.stringify(selectedCity));
         }
     }, [selectedCity]);
 
