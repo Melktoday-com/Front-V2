@@ -12,6 +12,8 @@ import { useAds, useCategories } from "@/hooks/useAds";
 import { useAgencies } from "@/hooks/useAgencies";
 import { useZones } from "@/hooks/useGeo";
 import { useTemporaryRentAds } from "@/hooks/useTemporaryRent";
+import { TemporaryRentAdSummary } from "@/services/temporary-rent.service";
+import { AdSummary } from "@/types/api/ads.types";
 import { AgencySummary } from "@/types/api/agency.types";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
@@ -34,23 +36,23 @@ export const HomeScene = () => {
         isFeatured: true,
         limit: 10,
         cityId: selectedCity.id || undefined,
-    });
+    }, { enabled: !!selectedCity.id });
 
     const { data: recentData, isLoading: isRecentLoading, error: recentError, refetch: refetchRecent } = useAds({
         limit: 8,
         cityId: selectedCity.id || undefined,
-    });
+    }, { enabled: !!selectedCity.id });
 
     const { data: categoriesData, isLoading: isCategoriesLoading } = useCategories();
 
     const { data: agencyData, isLoading: isAgenciesLoading } = useAgencies({
         cityId: selectedCity.id || undefined,
-    });
+    }, { enabled: !!selectedCity.id });
 
     const { data: tempRentData, isLoading: isTempRentLoading, error: tempRentError, refetch: refetchTempRent } = useTemporaryRentAds({
         limit: 4,
         cityId: selectedCity.id || undefined,
-    });
+    }, { enabled: !!selectedCity.id });
 
     const { data: regionsData, isLoading: isRegionsLoading, error: regionsError, refetch: refetchRegions } = useZones(selectedCity.id);
 
@@ -80,7 +82,7 @@ export const HomeScene = () => {
                     {isRegionsLoading ? (
                         <div className="flex gap-4 overflow-hidden">
                             {[1, 2, 3, 4, 5, 6].map(i => (
-                                <div key={i} className="min-w-[150px] h-12 bg-gray-100 animate-pulse rounded-full" />
+                                <div key={i} className="min-w-37.5 h-12 bg-gray-100 animate-pulse rounded-full" />
                             ))}
                         </div>
                     ) : regionsError ? (
@@ -128,7 +130,7 @@ export const HomeScene = () => {
                     <EmptyState message="No featured properties available" />
                 ) : (
                     <Slider>
-                        {featuredData?.items.map((property) => (
+                        {featuredData?.items.map((property: AdSummary) => (
                             <PropertyCard
                                 key={property.adId}
                                 adId={property.adId}
@@ -163,7 +165,7 @@ export const HomeScene = () => {
                     <EmptyState message="No recent listings found" />
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {recentData.items.map((property) => (
+                        {recentData.items.map((property: AdSummary) => (
                             <PropertyCard
                                 key={property.adId}
                                 adId={property.adId}
@@ -198,7 +200,7 @@ export const HomeScene = () => {
                     <EmptyState message="No temporary rentals found" />
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {tempRentData.items.map((property) => (
+                        {tempRentData.items.map((property: TemporaryRentAdSummary) => (
                             <PropertyCard
                                 key={property.id}
                                 adId={property.id}
@@ -227,7 +229,7 @@ export const HomeScene = () => {
                         ? [1, 2, 3, 4, 5, 6].map((i) => (
                             <div key={i} className="h-40 bg-gray-100 animate-pulse rounded-xl" />
                         ))
-                        : topAgencies.map((agency) => (
+                        : topAgencies.map((agency: { id: string; name: string; image: string; listingsCount: number }) => (
                             <AgentAvatar key={agency.id} name={agency.name} image={agency.image} />
                         ))}
                 </div>

@@ -5,6 +5,7 @@ import { useCity } from "@/components/providers/CityProvider";
 import { AgencyCard } from "@/components/ui/AgencyCard";
 import { useAgencies } from "@/hooks/useAgencies";
 import { useGeoHierarchy } from "@/hooks/useGeoHierarchy";
+import { AgencySummary } from "@/types/api/agency.types";
 import { ChevronDown, MapPin, Search, X } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
@@ -26,7 +27,7 @@ export default function AgencyScene() {
         limit: 12,
         search: search || undefined,
         cityId: effectiveCityId
-    });
+    }, { enabled: !!effectiveCityId });
 
     const { data: hierarchy } = useGeoHierarchy();
 
@@ -105,14 +106,14 @@ export default function AgencyScene() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {isLoading ? (
                         Array.from({ length: 6 }).map((_, i) => (
-                            <div key={i} className="h-[200px] bg-soft-bg animate-pulse rounded-[30px]" />
+                            <div key={i} className="h-50 bg-soft-bg animate-pulse rounded-[30px]" />
                         ))
                     ) : agenciesData?.agencies?.length === 0 ? (
                         <div className="col-span-full py-20 text-center space-y-4">
                             <div className="text-secondary-400 font-bold">آژانسی در این محله یافت نشد</div>
                         </div>
                     ) : (
-                        (agenciesData?.agencies || []).map((agency) => (
+                        (agenciesData?.agencies || []).map((agency: AgencySummary) => (
                             <AgencyCard
                                 key={agency.id}
                                 id={agency.id}

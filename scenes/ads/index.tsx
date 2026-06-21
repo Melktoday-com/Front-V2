@@ -5,6 +5,7 @@ import { CitySelector } from "@/components/CitySelector";
 import { useCity } from "@/components/providers/CityProvider";
 import { PropertyCard } from "@/components/ui/PropertyCard";
 import { useAds, useCategories } from "@/hooks/useAds";
+import { AdSummary } from "@/types/api/ads.types";
 import { ChevronDown, MapPin, Search } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -27,7 +28,7 @@ export default function AdsScene() {
         status: "PUBLISHED",
         search: search || undefined,
         cityId: effectiveCityId
-    });
+    }, { enabled: !!effectiveCityId });
 
     const { data: categoriesData, isLoading: isCategoriesLoading } = useCategories();
 
@@ -88,7 +89,7 @@ export default function AdsScene() {
                             <div className="text-secondary-400 font-bold">ملکی با این مشخصات پیدا نشد</div>
                         </div>
                     ) : (
-                        (data?.items || []).map((ad) => (
+                        (data?.items || []).map((ad: AdSummary) => (
                             <PropertyCard
                                 key={ad.adId}
                                 adId={ad.adId}

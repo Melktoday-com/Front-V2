@@ -1,11 +1,12 @@
 import { adsService } from "@/services/ads.service";
-import { ListAdsQuery } from "@/types/api/ads.types";
-import { useQuery } from "@tanstack/react-query";
+import { ListAdsQuery, PaginatedAdsResponse } from "@/types/api/ads.types";
+import { useQuery, UseQueryOptions } from "@tanstack/react-query";
 
-export function useAds(query: ListAdsQuery = {}) {
+export function useAds(query: ListAdsQuery = {}, options?: Partial<UseQueryOptions<PaginatedAdsResponse, Error>>) {
     return useQuery({
         queryKey: ["ads", query],
         queryFn: () => adsService.list(query),
+        ...options
     });
 }
 

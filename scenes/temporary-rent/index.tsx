@@ -24,7 +24,7 @@ export default function TemporaryRentScene() {
         limit: 12,
         status: "PUBLISHED",
         cityId: effectiveCityId
-    });
+    }, { enabled: !!effectiveCityId });
 
     const handleCitySelect = (city: { id: string; name: string }) => {
         setSelectedCity(city);
