@@ -11,6 +11,7 @@ import { EmptyState, ErrorState } from "@/components/ui/StatusStates";
 import { useAds, useCategories } from "@/hooks/useAds";
 import { useAgencies } from "@/hooks/useAgencies";
 import { useZones } from "@/hooks/useGeo";
+import { useTemporaryRentAds } from "@/hooks/useTemporaryRent";
 import { AgencySummary } from "@/types/api/agency.types";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
@@ -46,8 +47,7 @@ export const HomeScene = () => {
         cityId: selectedCity.id || undefined,
     });
 
-    const { data: tempRentData, isLoading: isTempRentLoading, error: tempRentError, refetch: refetchTempRent } = useAds({
-        businessModelKey: "temporary_rent",
+    const { data: tempRentData, isLoading: isTempRentLoading, error: tempRentError, refetch: refetchTempRent } = useTemporaryRentAds({
         limit: 4,
         cityId: selectedCity.id || undefined,
     });
@@ -184,7 +184,7 @@ export const HomeScene = () => {
                 <SectionHeader
                     title="اجاره روزانه"
                     subtitle="بهترین گزینه‌ها برای سفرهای کوتاه"
-                    link="/explore?businessModelKey=temporary_rent"
+                    link="/temporary-rent"
                 />
                 {isTempRentLoading ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -200,14 +200,15 @@ export const HomeScene = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         {tempRentData.items.map((property) => (
                             <PropertyCard
-                                key={property.adId}
-                                adId={property.adId}
+                                key={property.id}
+                                adId={property.id}
+                                href={`/temporary-rent/${property.id}`}
                                 title={property.title}
-                                price={Object.values(property.pricing)[0]?.toLocaleString() || "0"}
+                                price={property.pricing.nightlyPrice.toLocaleString() || "0"}
                                 rating={4.9}
                                 location={selectedCity.name}
                                 image={property.mediaIds?.[0] ? `${process.env.NEXT_PUBLIC_API_URL}/media/${property.mediaIds[0]}` : "/assets/images/property-placeholder.png"}
-                                category={property.categoryPath.subcategoryKey}
+                                category="اجاره روزانه"
                             />
                         ))}
                     </div>

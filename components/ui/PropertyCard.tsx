@@ -13,6 +13,7 @@ interface PropertyCardProps {
     category: string;
     variant?: "vertical" | "horizontal";
     className?: string;
+    href?: string;
 }
 
 export function PropertyCard({
@@ -25,6 +26,7 @@ export function PropertyCard({
     category,
     variant = "vertical",
     className,
+    href,
 }: PropertyCardProps) {
     const cardContent = (
         <>
@@ -102,9 +104,9 @@ export function PropertyCard({
         className
     );
 
-    if (adId) {
+    if (href || adId) {
         return (
-            <Link href={`/ads/${adId}`} className={containerClasses}>
+            <Link href={href || `/ads/${adId}`} className={containerClasses}>
                 {cardContent}
             </Link>
         );
