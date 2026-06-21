@@ -10,6 +10,7 @@ const buttonVariants = cva(
                 primary: "bg-primary text-white hover:bg-primary/90 shadow-md",
                 brand: "bg-brand text-white hover:bg-brand/90 shadow-md",
                 secondary: "bg-white text-secondary border border-soft-border hover:bg-soft-bg shadow-sm",
+                outline: "border-2 border-primary text-primary bg-transparent hover:bg-primary/5",
                 ghost: "hover:bg-soft-bg text-secondary",
                 link: "text-primary underline-offset-4 hover:underline",
             },
