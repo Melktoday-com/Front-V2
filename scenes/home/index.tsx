@@ -12,7 +12,7 @@ import { useAgencies } from "@/hooks/useAgencies";
 import { useZones } from "@/hooks/useGeo";
 import { AgencySummary } from "@/types/api/agency.types";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export const HomeScene = () => {
     const [selectedCity, setSelectedCity] = useState<{ id: string; name: string }>({
@@ -71,12 +71,14 @@ export const HomeScene = () => {
     const { data: regionsData, isLoading: isRegionsLoading, error: regionsError, refetch: refetchRegions } = useZones(selectedCity.id);
 
     // Map Backend Agency response to Component expected shape
-    const topAgencies = (agencyData?.agencies || []).map((agency: AgencySummary) => ({
-        id: agency.id,
-        name: agency.name,
-        image: agency.logoUrl || "/assets/images/agency-placeholder.png",
-        listingsCount: 0, // Backend currently doesn't provide this in list view
-    }));
+    const topAgencies = useMemo(() => {
+        return (agencyData?.agencies || []).map((agency: AgencySummary) => ({
+            id: agency.id,
+            name: agency.name,
+            image: agency.logoUrl || "/assets/images/agency-placeholder.png",
+            listingsCount: 0, // Backend currently doesn't provide this in list view
+        }));
+    }, [agencyData]);
 
     return (
         <div className="flex flex-col gap-16 pb-16">
@@ -90,8 +92,8 @@ export const HomeScene = () => {
             {regionsData?.zones && regionsData.zones.length > 0 && (
                 <section className="container mx-auto px-4">
                     <SectionHeader
-                        title={`Explore ${selectedCity.name}`}
-                        subtitle="Browse listings by neighborhood"
+                        title={`جستجو در ${selectedCity.name}`}
+                        subtitle="مشاهده آگهی‌ها به تفکیک محله"
                     />
                     {isRegionsLoading ? (
                         <div className="flex gap-4 overflow-hidden">
@@ -128,8 +130,8 @@ export const HomeScene = () => {
             {/* Featured Properties */}
             <section className="container mx-auto px-4">
                 <SectionHeader
-                    title="Featured Estates"
-                    subtitle="Hand-picked premium listings"
+                    title="املاک ویژه"
+                    subtitle="منتخب آگهی‌های برتر"
                     link="/explore?isFeatured=true"
                 />
                 {isFeaturedLoading ? (
@@ -163,8 +165,8 @@ export const HomeScene = () => {
             {/* Latest Listings */}
             <section className="container mx-auto px-4">
                 <SectionHeader
-                    title="Recently Added"
-                    subtitle="Fresh listings in your area"
+                    title="تازه ترین‌ها"
+                    subtitle="جدیدترین آگهی‌های منطقه شما"
                     link="/explore"
                 />
                 {isRecentLoading ? (
@@ -198,8 +200,8 @@ export const HomeScene = () => {
             {/* Temporary Rentals */}
             <section className="container mx-auto px-4 bg-orange-50/30 py-12 rounded-3xl">
                 <SectionHeader
-                    title="Weekend Getaways"
-                    subtitle="Discover amazing short-term rentals"
+                    title="اجاره روزانه"
+                    subtitle="بهترین گزینه‌ها برای سفرهای کوتاه"
                     link="/explore?businessModelKey=temporary_rent"
                 />
                 {isTempRentLoading ? (
@@ -233,9 +235,9 @@ export const HomeScene = () => {
             {/* Top Agencies */}
             <section className="container mx-auto px-4">
                 <SectionHeader
-                    title="Top Agencies"
-                    subtitle="Work with the best in the business"
-                    link="/agency"
+                    title="آژانس‌های برتر"
+                    subtitle="همکاری با بهترین متخصصان"
+                    link={selectedCity.id ? `/agency?cityId=${selectedCity.id}&cityName=${selectedCity.name}` : "/agency"}
                 />
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
                     {isAgenciesLoading

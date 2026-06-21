@@ -1,9 +1,13 @@
 export interface AgencySummary {
     id: string;
+    cityId: string;
     name: string;
-    logoUrl?: string;
+    bio?: string;
+    phone?: string | null;
+    logoUrl?: string | null;
     isVerified: boolean;
     rating: number;
+    createdAt: string;
 }
 
 export interface ListAgenciesResponse {

@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
-import { Heart, Home, LogIn, MapPin, Search, User } from "lucide-react";
+import { Building2, Heart, Home, LogIn, MapPin, Search, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -10,6 +10,7 @@ const navItems = [
     { icon: Home, label: "خانه", href: "/" },
     { icon: MapPin, label: "کاوش", href: "/explore" },
     { icon: Search, label: "جستجو", href: "/ads" },
+    { icon: Building2, label: "آژانس‌ها", href: "/agency" },
     { icon: Heart, label: "علاقه‌مندی", href: "/favorites" },
     { icon: User, label: "پروفایل", href: "/profile" },
 ];
@@ -94,6 +95,15 @@ export function MobileNav() {
                 )}
             >
                 <MapPin className="w-6 h-6" />
+            </Link>
+            <Link
+                href="/agency"
+                className={cn(
+                    "p-2 transition-colors",
+                    pathname === "/agency" ? "text-white" : "text-white/60"
+                )}
+            >
+                <Building2 className="w-6 h-6" />
             </Link>
             <Link
                 href="/favorites"
