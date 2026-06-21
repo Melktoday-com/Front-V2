@@ -12,13 +12,32 @@ import { useAgencies } from "@/hooks/useAgencies";
 import { useZones } from "@/hooks/useGeo";
 import { AgencySummary } from "@/types/api/agency.types";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export const HomeScene = () => {
-    const [selectedCity, setSelectedCity] = useState<{ id: string; name: string }>({
-        id: "", // Will be populated by first root zone
-        name: "Tehran"
+    const [selectedCity, setSelectedCity] = useState<{ id: string; name: string }>(() => {
+        if (typeof window !== 'undefined') {
+            const saved = localStorage.getItem('selectedCity');
+            if (saved) return JSON.parse(saved);
+        }
+        return {
+            id: "",
+            name: ""
+        };
     });
+
+    const [isInitialModalOpen, setIsInitialModalOpen] = useState(false);
+
+    // Persist city to localStorage and check for initial modal
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            if (selectedCity.id) {
+                localStorage.setItem('selectedCity', JSON.stringify(selectedCity));
+            } else {
+                setIsInitialModalOpen(true);
+            }
+        }
+    }, [selectedCity]);
 
     // Use real data from hooks
     const { data: featuredData, isLoading: isFeaturedLoading, error: featuredError, refetch: refetchFeatured } = useAds({
@@ -59,6 +78,7 @@ export const HomeScene = () => {
             <SearchHeader
                 selectedCity={selectedCity}
                 onCityChange={setSelectedCity}
+                isInitialOpen={isInitialModalOpen}
             />
 
             {/* Browse by Regions */}
@@ -126,7 +146,7 @@ export const HomeScene = () => {
                                 title={property.title}
                                 price={Object.values(property.pricing)[0]?.toLocaleString() || "0"}
                                 rating={5.0}
-                                location="Tehran"
+                                location={selectedCity.name}
                                 image={property.mediaIds?.[0] ? `${process.env.NEXT_PUBLIC_API_URL}/media/${property.mediaIds[0]}` : "/assets/images/property-placeholder.png"}
                                 category={property.categoryPath.subcategoryKey}
                             />
@@ -161,7 +181,7 @@ export const HomeScene = () => {
                                 title={property.title}
                                 price={Object.values(property.pricing)[0]?.toLocaleString() || "0"}
                                 rating={4.8}
-                                location="Tehran"
+                                location={selectedCity.name}
                                 image={property.mediaIds?.[0] ? `${process.env.NEXT_PUBLIC_API_URL}/media/${property.mediaIds[0]}` : "/assets/images/property-placeholder.png"}
                                 category={property.categoryPath.subcategoryKey}
                             />
@@ -196,7 +216,7 @@ export const HomeScene = () => {
                                 title={property.title}
                                 price={Object.values(property.pricing)[0]?.toLocaleString() || "0"}
                                 rating={4.9}
-                                location="Tehran"
+                                location={selectedCity.name}
                                 image={property.mediaIds?.[0] ? `${process.env.NEXT_PUBLIC_API_URL}/media/${property.mediaIds[0]}` : "/assets/images/property-placeholder.png"}
                                 category={property.categoryPath.subcategoryKey}
                             />

@@ -6,20 +6,28 @@ import { useSearchSuggestions } from "@/hooks/useSearch";
 import { Bell, ChevronDown, Loader2, MapPin, Search, User, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CitySelector } from "./CitySelector";
 
 interface SearchHeaderProps {
     selectedCity: { id: string; name: string };
     onCityChange: (city: { id: string; name: string }) => void;
+    isInitialOpen?: boolean;
 }
 
-export function SearchHeader({ selectedCity, onCityChange }: SearchHeaderProps) {
+export function SearchHeader({ selectedCity, onCityChange, isInitialOpen }: SearchHeaderProps) {
     const { isLoggedIn } = useAuth();
     const router = useRouter();
     const [searchQuery, setSearchQuery] = useState("");
     const [isSearching, setIsSearching] = useState(false);
     const [isSelectorOpen, setIsSelectorOpen] = useState(false);
+
+    // Effect to open modal if selectedCity is empty and isInitialOpen is true
+    useEffect(() => {
+        if (isInitialOpen && !selectedCity.id) {
+            setIsSelectorOpen(true);
+        }
+    }, [isInitialOpen, selectedCity.id]);
 
     const { data: suggestions, isLoading: suggestionsLoading } = useSearchSuggestions(searchQuery);
 
