@@ -4,7 +4,7 @@ export interface UserProfile {
     firstName?: string;
     lastName?: string;
     kycStatus: "Pending" | "Verified" | "Rejected";
-    active: boolean;
+    status: "Active" | "Inactive";
     createdAt: string;
 }
 

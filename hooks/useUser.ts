@@ -2,8 +2,26 @@
 
 import { userService } from "@/services/user.service";
 import { UpdateUserProfileRequest, VerifyKycRequest } from "@/types/api/user.types";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+
+export function useUserProfile(userId?: string) {
+    return useQuery({
+        queryKey: ["user", userId],
+        queryFn: () => {
+            if (!userId) throw new Error("User ID is required");
+            return userService.getProfile(userId);
+        },
+        enabled: !!userId,
+    });
+}
+
+export function useMeProfile() {
+    return useQuery({
+        queryKey: ["user", "me"],
+        queryFn: () => userService.getMe(),
+    });
+}
 
 export function useUser(userId?: string) {
     const queryClient = useQueryClient();

@@ -21,6 +21,24 @@ export const userService = {
     },
 
     /**
+     * Get user profile by ID
+     * GET /users/:userId
+     */
+    getProfile: async (userId: string): Promise<UserProfile> => {
+        const response = await api.get(`/users/${userId}`);
+        return response.data;
+    },
+
+    /**
+     * Get current authenticated user profile
+     * GET /users/me
+     */
+    getMe: async (): Promise<UserProfile> => {
+        const response = await api.get("/users/me");
+        return response.data;
+    },
+
+    /**
      * Verify KYC verification
      * POST /users/:userId/kyc/verify
      */
@@ -37,15 +55,4 @@ export const userService = {
         const response = await api.get("/users/roles");
         return response.data;
     },
-
-    /**
-     * FIXME: Backend is missing a GET /users/me or GET /users/:userId endpoint.
-     * For now, this is a placeholder.
-     */
-    getProfile: async (userId: string): Promise<UserProfile> => {
-        // This endpoint doesn't exist yet in the backend!
-        // const response = await api.get(`/users/${userId}`);
-        // return response.data;
-        throw new Error("Endpoint GET /users/:userId not implemented in backend");
-    }
 };

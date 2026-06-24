@@ -3,9 +3,10 @@
 import { RoleGuard } from "@/components/RoleGuard";
 import { Button } from "@/components/ui/Button";
 import { useAuth, useLogout } from "@/hooks/useAuth";
-import { useUser } from "@/hooks/useUser";
+import { useMeProfile, useUser } from "@/hooks/useUser";
 import { useWallet } from "@/hooks/useWallet";
-import { cn } from "@/lib/utils";
+import { cn, formatCurrency } from "@/lib/utils";
+import { RoleName } from "@/types/access";
 import {
     ChevronLeft,
     CreditCard,
@@ -18,15 +19,24 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function ProfileScene() {
-    const { user, isLoggedIn, activeRole, hasPermission, isLoading: isAuthLoading } = useAuth();
+    const { user, isLoggedIn, activeRole, isLoading: isAuthLoading } = useAuth();
     const { logout } = useLogout();
     const router = useRouter();
 
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
 
+    const { data: profile } = useMeProfile();
     const { updateProfile, isUpdating } = useUser(user?.userId);
-    const { balance } = useWallet();
+
+    useEffect(() => {
+        if (profile) {
+            setFirstName(profile.firstName || "");
+            setLastName(profile.lastName || "");
+        }
+    }, [profile]);
+
+    const { balance, isLoadingBalance } = useWallet();
 
     const roleLabels: Record<string, string> = {
         user: "کاربر معمولی",
@@ -130,7 +140,7 @@ export default function ProfileScene() {
                         </Button>
                     </RoleGuard>
 
-                    <RoleGuard roles={['admin', 'super-admin']}>
+                    <RoleGuard roles={[RoleName.Admin, RoleName.SuperAdmin]}>
                         <Button
                             variant="outline"
                             className="w-full h-16 rounded-[25px] flex items-center justify-between px-6 border-primary/20 hover:bg-primary/5"
@@ -158,7 +168,7 @@ export default function ProfileScene() {
                             <span className="font-bold text-brand">کیف پول و تراکنش‌ها</span>
                         </div>
                         <div className="flex items-center gap-2">
-                            <span className="text-secondary text-xs">{formatCurrency(balance)} تومان</span>
+                            <span className="text-secondary text-xs">{formatCurrency(balance?.balance)} تومان</span>
                             <ChevronLeft className="w-5 h-5 text-secondary" />
                         </div>
                     </Button>
@@ -208,8 +218,14 @@ export default function ProfileScene() {
                             </span>
                         </div>
                         <div className="flex items-center gap-2">
-                            <span className="text-[10px] bg-red-50 text-red-500 px-2 py-1 rounded-full font-bold">
-                                تایید نشده
+                            <span className={cn(
+                                "text-[10px] px-2 py-1 rounded-full font-bold",
+                                profile?.kycStatus === 'Verified' ? "bg-green-50 text-green-600" :
+                                    profile?.kycStatus === 'Pending' ? "bg-orange-50 text-orange-600" :
+                                        "bg-red-50 text-red-500"
+                            )}>
+                                {profile?.kycStatus === 'Verified' ? "تایید شده" :
+                                    profile?.kycStatus === 'Pending' ? "در انتظار تایید" : "تایید نشده"}
                             </span>
                             <ChevronLeft className="w-4 h-4 text-secondary" />
                         </div>
