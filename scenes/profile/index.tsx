@@ -1,9 +1,11 @@
 "use client";
 
+import { RoleGuard } from "@/components/RoleGuard";
 import { Button } from "@/components/ui/Button";
 import { useAuth, useLogout } from "@/hooks/useAuth";
 import { useUser } from "@/hooks/useUser";
 import { useWallet } from "@/hooks/useWallet";
+import { cn } from "@/lib/utils";
 import {
     ChevronLeft,
     CreditCard,
@@ -16,18 +18,23 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function ProfileScene() {
-    const { user, isLoggedIn, isLoading: isAuthLoading } = useAuth();
+    const { user, isLoggedIn, activeRole, hasPermission, isLoading: isAuthLoading } = useAuth();
     const { logout } = useLogout();
     const router = useRouter();
 
-    // We use common state for now since we don't have GET /users/:id
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
 
-    const { updateProfile, isUpdating, verifyKyc, isVerifying } = useUser(
-        user?.userId,
-    );
-    const { balance, isLoadingBalance } = useWallet();
+    const { updateProfile, isUpdating } = useUser(user?.userId);
+    const { balance } = useWallet();
+
+    const roleLabels: Record<string, string> = {
+        user: "کاربر معمولی",
+        admin: "ادمین",
+        "super-admin": "مدیر کل",
+        agent: "مشاور املاک",
+        landlord: "میزبان",
+    };
 
     useEffect(() => {
         if (!isAuthLoading && !isLoggedIn) {
@@ -38,10 +45,6 @@ export default function ProfileScene() {
     if (isAuthLoading || !isLoggedIn)
         return <div className="p-10 text-center text-brand font-bold animate-pulse">در حال بارگذاری...</div>;
 
-    const formatCurrency = (amount = 0) => {
-        return new Intl.NumberFormat("fa-IR").format(amount / 10); // Convert Rial to Toman
-    };
-
     return (
         <div className="min-h-screen bg-white pb-24 lg:pb-10">
             <div className="p-6 lg:p-10 space-y-10 max-w-2xl mx-auto">
@@ -49,6 +52,10 @@ export default function ProfileScene() {
                     <h1 className="text-brand text-2xl lg:text-3xl font-black">
                         حساب کاربری
                     </h1>
+                    <Button variant="ghost" onClick={logout} className="text-error flex items-center gap-2">
+                        <LogOut className="w-5 h-5" />
+                        <span className="font-bold">خروج</span>
+                    </Button>
                 </header>
 
                 {/* Profile Info */}
@@ -59,9 +66,16 @@ export default function ProfileScene() {
                         </div>
                         <div>
                             <div className="text-brand font-black text-lg">
-                                کاربر ملک تودی
+                                {firstName || "کاربر"} {lastName || "ملک تودی"}
                             </div>
-                            <div className="text-secondary text-sm">کاربر عادی</div>
+                            <div className="flex items-center gap-2">
+                                <span className={cn(
+                                    "px-2 py-0.5 rounded-lg text-[10px] font-black uppercase",
+                                    activeRole === 'user' ? "bg-secondary/10 text-secondary" : "bg-primary/10 text-primary"
+                                )}>
+                                    {roleLabels[activeRole || 'user']}
+                                </span>
+                            </div>
                         </div>
                     </div>
 
@@ -96,6 +110,58 @@ export default function ProfileScene() {
                             {isUpdating ? "در حال ثبت..." : "بروزرسانی مشخصات"}
                         </Button>
                     </div>
+                </section>
+
+                {/* Dashboard Options based on Permissions */}
+                <section className="grid gap-4">
+                    <RoleGuard permissions={['read_agent_dashboard']}>
+                        <Button
+                            variant="outline"
+                            className="w-full h-16 rounded-[25px] flex items-center justify-between px-6 border-brand/10 hover:bg-brand/5"
+                            onClick={() => router.push('/agent/dashboard')}
+                        >
+                            <div className="flex items-center gap-4">
+                                <div className="p-3 rounded-2xl bg-brand/5 text-brand">
+                                    <ShieldCheck className="w-6 h-6" />
+                                </div>
+                                <span className="font-bold text-brand">پنل مشاورین</span>
+                            </div>
+                            <ChevronLeft className="w-5 h-5 text-secondary" />
+                        </Button>
+                    </RoleGuard>
+
+                    <RoleGuard roles={['admin', 'super-admin']}>
+                        <Button
+                            variant="outline"
+                            className="w-full h-16 rounded-[25px] flex items-center justify-between px-6 border-primary/20 hover:bg-primary/5"
+                            onClick={() => router.push('/admin')}
+                        >
+                            <div className="flex items-center gap-4">
+                                <div className="p-3 rounded-2xl bg-primary/10 text-primary">
+                                    <ShieldCheck className="w-6 h-6" />
+                                </div>
+                                <span className="font-bold text-brand">پنل مدیریت</span>
+                            </div>
+                            <ChevronLeft className="w-5 h-5 text-secondary" />
+                        </Button>
+                    </RoleGuard>
+
+                    <Button
+                        variant="outline"
+                        className="w-full h-16 rounded-[25px] flex items-center justify-between px-6 border-soft-border hover:bg-soft-bg"
+                        onClick={() => router.push('/wallet')}
+                    >
+                        <div className="flex items-center gap-4">
+                            <div className="p-3 rounded-2xl bg-soft-bg text-secondary">
+                                <CreditCard className="w-6 h-6" />
+                            </div>
+                            <span className="font-bold text-brand">کیف پول و تراکنش‌ها</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="text-secondary text-xs">{formatCurrency(balance)} تومان</span>
+                            <ChevronLeft className="w-5 h-5 text-secondary" />
+                        </div>
+                    </Button>
                 </section>
 
                 {/* Account Actions */}

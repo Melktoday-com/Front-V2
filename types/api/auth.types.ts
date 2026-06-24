@@ -39,3 +39,13 @@ export interface SwitchActiveRoleResponse {
     activeRoleId: string;
     roleName: string;
 }
+
+export interface JwtPayload {
+    sub: string;
+    sessionId: string;
+    activeRoleId: string | null;
+    activeRoleName: string | null;
+    type: 'access' | 'refresh';
+    iat: number;
+    exp: number;
+}

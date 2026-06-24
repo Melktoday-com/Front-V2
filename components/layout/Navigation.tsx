@@ -1,8 +1,10 @@
 "use client";
 
+import { RoleGuard } from "@/components/RoleGuard";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
-import { Building2, Heart, Home, LogIn, MapPin, Search, User } from "lucide-react";
+import { RoleName } from "@/types/access";
+import { Building2, Heart, Home, LogIn, MapPin, Search, ShieldCheck, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -30,8 +32,6 @@ export function Sidebar() {
             <nav className="flex-1 space-y-2">
                 {navItems.map((item) => {
                     const active = pathname === item.href;
-                    // If it's profile and not logged in, maybe show login? 
-                    // No, for now let them click and get redirected.
                     return (
                         <Link
                             key={item.href}
@@ -51,6 +51,21 @@ export function Sidebar() {
                         </Link>
                     );
                 })}
+
+                <RoleGuard roles={[RoleName.Admin, RoleName.SuperAdmin]}>
+                    <Link
+                        href="/admin"
+                        className={cn(
+                            "flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 group",
+                            pathname.startsWith("/admin")
+                                ? "bg-primary text-white shadow-lg shadow-primary/20"
+                                : "text-primary/70 hover:bg-primary/5"
+                        )}
+                    >
+                        <ShieldCheck className="w-5 h-5" />
+                        <span className="font-bold text-sm">پنل مدیریت</span>
+                    </Link>
+                </RoleGuard>
 
                 {!isLoggedIn && (
                     <Link
