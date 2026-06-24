@@ -243,7 +243,7 @@ export default function SingleAdScene() {
                 </div>
 
                 {/* Map Preview */}
-                <div className="relative w-full aspect-[327/235] rounded-[25px] overflow-hidden group">
+                <div className="relative w-full aspect-[16/7] lg:aspect-[16/5] rounded-[25px] overflow-hidden group">
                     <Image
                         src="https://www.figma.com/api/mcp/asset/eac6179f-e99c-4942-a213-b27f60186f8d"
                         alt="Map View"
@@ -285,57 +285,6 @@ export default function SingleAdScene() {
                     <p className="text-secondary text-[9px] mt-1">* میانگین هزینه شهروندان در این منطقه</p>
                 </div>
             </section>
-
-            {/* Reviews */}
-            <section className="px-6 mt-10">
-                <h2 className="text-brand font-black text-xl mb-4">نظرات</h2>
-                <div className="bg-brand/10 p-4 rounded-[25px] flex items-center gap-6 mb-6">
-                    <div className="w-14 h-14 bg-black/10 rounded-2xl flex items-center justify-center text-2xl">⭐</div>
-                    <div>
-                        <div className="flex items-center gap-2">
-                            <div className="flex text-yellow-400">
-                                {[1, 2, 3, 4].map(i => <Star key={i} className="w-3 h-3 fill-current" />)}
-                            </div>
-                            <span className="text-lg font-black text-brand">۴.۹</span>
-                        </div>
-                        <p className="text-secondary text-[9px]">از ۱۱۲ نظردهنده</p>
-                    </div>
-                    <div className="flex -space-x-2 mr-auto rtl:space-x-reverse">
-                        {[1, 2, 3].map(i => (
-                            <div key={i} className="relative w-8 h-8 rounded-full border-2 border-white overflow-hidden bg-gray-200">
-                                <Image src={`https://www.figma.com/api/mcp/asset/f0df5c7e-3253-4ed4-a4af-1434f961b48a`} alt="U" fill className="object-cover" />
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                <div className="space-y-4">
-                    {reviews.map(review => (
-                        <div key={review.id} className="bg-soft-bg p-4 rounded-[25px]">
-                            <div className="flex gap-3">
-                                <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-white">
-                                    <Image src={review.image} alt={review.name} fill className="object-cover" />
-                                </div>
-                                <div className="flex-1">
-                                    <div className="flex justify-between items-center">
-                                        <h4 className="text-brand font-bold text-xs">{review.name}</h4>
-                                        <div className="flex text-yellow-400">
-                                            {[1, 2, 3, 4, 5].map(i => <Star key={i} className={cn("w-2.5 h-2.5", i > review.rating && "text-gray-300 fill-none")} />)}
-                                        </div>
-                                    </div>
-                                    <p className="text-secondary text-[10px] mt-2 leading-relaxed">{review.comment}</p>
-                                    <span className="text-gray-400 text-[8px] mt-2 block">{review.date}</span>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-
-                <Button variant="secondary" className="w-full mt-4 h-12 rounded-[15px] border-none bg-soft-bg text-secondary text-[10px]">
-                    مشاهده تمام نظرات
-                </Button>
-            </section>
-
             {/* Nearby Estates */}
             <section className="mt-10 mb-10">
                 <div className="px-6 flex justify-between items-center mb-6">
@@ -353,18 +302,13 @@ export default function SingleAdScene() {
                                 location={ad.location}
                                 image={ad.image}
                                 category={ad.category}
+                                unit="/ماهانه"
+                                currency="$"
                             />
                         </div>
                     ))}
                 </div>
             </section>
-
-            {/* Floating Action Button / Buy Now */}
-            <div className="fixed bottom-6 left-6 right-6 lg:static lg:px-6 lg:mt-12 z-50">
-                <Button className="w-full h-[60px] rounded-[20px] shadow-xl shadow-primary/30">
-                    تایید و پرداخت
-                </Button>
-            </div>
         </div>
     );
 }

@@ -16,3 +16,11 @@ export const useAgencies = (query: AgencyListQuery = {}, options?: Partial<UseQu
         ...options
     });
 };
+
+export const useAgency = (agencyId: string) => {
+    return useQuery({
+        queryKey: ["agency", agencyId],
+        queryFn: () => agencyService.getAgency(agencyId),
+        enabled: !!agencyId,
+    });
+};

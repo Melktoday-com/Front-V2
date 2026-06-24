@@ -11,6 +11,8 @@ interface PropertyCardProps {
     location: string;
     image: string;
     category: string;
+    unit?: string;
+    currency?: string;
     variant?: "vertical" | "horizontal";
     className?: string;
     href?: string;
@@ -24,6 +26,8 @@ export function PropertyCard({
     location,
     image,
     category,
+    unit = "/ماهانه",
+    currency = "$",
     variant = "vertical",
     className,
     href,
@@ -63,46 +67,40 @@ export function PropertyCard({
                             <span className="text-[10px] lg:text-xs text-text-light font-bold">{rating}</span>
                         </div>
                     </div>
-                    <div className="space-y-1">
+                    <div className="space-y-1 min-w-0">
                         <div className="flex items-center gap-1">
-                            <MapPin className="w-3 h-3 text-text-light" />
-                            <span className="text-[10px] lg:text-xs text-text-light">{location}</span>
+                            <MapPin className="w-3 h-3 text-text-light shrink-0" />
+                            <span className="text-[10px] lg:text-xs text-text-light truncate">{location}</span>
                         </div>
-                        <div className="flex items-center gap-1">
-                            <span className="text-brand font-black text-sm lg:text-lg">$ {price}</span>
-                            <span className="text-[10px] lg:text-xs text-text-light">/ماهانه</span>
+                        <div className="flex items-center gap-1 flex-wrap">
+                            <span className="text-brand font-black text-sm lg:text-lg whitespace-nowrap">{currency} {price}</span>
+                            <span className="text-[10px] lg:text-xs text-text-light whitespace-nowrap">{unit}</span>
                         </div>
                     </div>
                 </div>
             ) : (
-                <div className="mt-3 px-1 pb-2">
-                    <div className="flex justify-between items-start">
-                        <h3 className="text-brand font-black text-sm lg:text-base leading-tight ml-2 line-clamp-2">{title}</h3>
-                        <div className="flex items-center gap-1 bg-white px-2 py-1 rounded-xl shadow-sm border border-soft-border">
+                <div className="mt-3 px-1 pb-2 min-w-0">
+                    <div className="flex justify-between items-start gap-1">
+                        <h3 className="text-brand font-black text-sm lg:text-base leading-tight line-clamp-2">{title}</h3>
+                        <div className="flex items-center gap-1 shrink-0 bg-white px-2 py-1 rounded-xl shadow-sm border border-soft-border">
                             <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
                             <span className="text-[10px] lg:text-xs text-brand font-black">{rating}</span>
                         </div>
                     </div>
                     <div className="flex items-center gap-1 mt-2">
-                        <MapPin className="w-3 h-3 text-text-light" />
-                        <span className="text-[10px] lg:text-xs text-text-light">{location}</span>
+                        <MapPin className="w-3 h-3 text-text-light shrink-0" />
+                        <span className="text-[10px] lg:text-xs text-text-light truncate">{location}</span>
                     </div>
-                    <div className="flex items-center gap-1 mt-3">
-                        <span className="text-brand font-black text-sm lg:text-lg">$ {price}</span>
-                        <span className="text-[10px] lg:text-xs text-text-light">/ماهانه</span>
+                    <div className="flex items-center gap-1 mt-3 flex-wrap">
+                        <span className="text-brand font-black text-sm lg:text-lg whitespace-nowrap">{currency} {price}</span>
+                        <span className="text-[10px] lg:text-xs text-text-light whitespace-nowrap">{unit}</span>
                     </div>
                 </div>
             )}
         </>
     );
 
-    const containerClasses = cn(
-        "shadow-sm transition-all hover:shadow-md group",
-        variant === "horizontal"
-            ? "flex bg-white p-2 rounded-[25px] gap-4 border border-soft-border hover:border-primary/20"
-            : "bg-soft-bg p-2 rounded-[25px] w-full border border-soft-border hover:bg-white",
-        className
-    );
+
 
     if (href || adId) {
         const slug = title
@@ -111,14 +109,14 @@ export function PropertyCard({
         const finalHref = href || `/ads/${adId}/${slug}`;
 
         return (
-            <Link href={finalHref} className={containerClasses}>
+            <Link href={finalHref} >
                 {cardContent}
             </Link>
         );
     }
 
     return (
-        <div className={containerClasses}>
+        <div>
             {cardContent}
         </div>
     );

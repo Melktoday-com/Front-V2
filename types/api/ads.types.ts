@@ -28,6 +28,7 @@ export interface ListAdsQuery {
     categoryKey?: string;
     subcategoryKey?: string;
     businessModelKey?: string;
+    ownerId?: string;
 }
 
 export interface PaginatedResponse<T> {

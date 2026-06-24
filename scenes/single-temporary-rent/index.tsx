@@ -21,16 +21,16 @@ import Image from "next/image";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 
-export default function SingleAdScene() {
+export default function ResidenceDetailScene() {
     const params = useParams();
     const id = params.id as string;
-    const { data: ad, isLoading, error, refetch } = useTemporaryRentAdDetail(id);
+    const { data: residence, isLoading, error, refetch } = useTemporaryRentAdDetail(id);
 
-    const { data: similarAds } = useTemporaryRentAds({
+    const { data: similarResidences } = useTemporaryRentAds({
         limit: 6,
-        cityId: ad?.cityId,
+        cityId: residence?.cityId,
         status: "PUBLISHED"
-    }, { enabled: !!ad?.cityId });
+    }, { enabled: !!residence?.cityId });
 
     const [isFavorite, setIsFavorite] = useState(false);
 
@@ -44,19 +44,19 @@ export default function SingleAdScene() {
         );
     }
 
-    if (error || !ad) {
+    if (error || !residence) {
         return (
             <div className="p-6">
-                <ErrorState message="خطا در بارگذاری اطلاعات آگهی" onRetry={() => refetch()} />
+                <ErrorState message="خطا در بارگذاری اطلاعات اقامتگاه" onRetry={() => refetch()} />
             </div>
         );
     }
 
-    const mainImage = ad.mediaIds?.[0]
-        ? `${process.env.NEXT_PUBLIC_API_URL}/media/${ad.mediaIds[0]}`
+    const mainImage = residence.mediaIds?.[0]
+        ? `${process.env.NEXT_PUBLIC_API_URL}/media/${residence.mediaIds[0]}`
         : "/assets/images/property-placeholder.png";
 
-    const galleryImages = ad.mediaIds?.slice(1).map((mid: string) =>
+    const galleryImages = residence.mediaIds?.slice(1).map((mid: string) =>
         `${process.env.NEXT_PUBLIC_API_URL}/media/${mid}`
     ) || [];
 
@@ -75,7 +75,7 @@ export default function SingleAdScene() {
                 <div className="relative w-full h-full overflow-hidden rounded-[40px] lg:rounded-[50px] shadow-xl">
                     <Image
                         src={mainImage}
-                        alt={ad.title}
+                        alt={residence.title}
                         fill
                         className="object-cover"
                         priority
@@ -142,14 +142,14 @@ export default function SingleAdScene() {
             <section className="px-6 mt-8">
                 <div className="flex justify-between items-start">
                     <div>
-                        <h1 className="text-brand font-black text-2xl lg:text-3xl">{ad.title}</h1>
+                        <h1 className="text-brand font-black text-2xl lg:text-3xl">{residence.title}</h1>
                         <div className="flex items-center gap-1 mt-2 text-secondary">
                             <MapPin className="w-4 h-4" />
-                            <span className="text-sm">{ad.cityName || "مشهد"}</span>
+                            <span className="text-sm">{residence.cityName || "مشهد"}</span>
                         </div>
                     </div>
                     <div className="text-left">
-                        <div className="text-brand font-black text-2xl lg:text-3xl line-clamp-1">{ad.pricing.nightlyPrice.toLocaleString()} تومان</div>
+                        <div className="text-brand font-black text-2xl lg:text-3xl line-clamp-1">{residence.pricing.nightlyPrice.toLocaleString()} تومان</div>
                         <div className="text-secondary text-xs mt-1">هر شب</div>
                     </div>
                 </div>
@@ -158,7 +158,7 @@ export default function SingleAdScene() {
                 <div className="mt-8">
                     <h2 className="text-brand font-black text-xl mb-4">توضیحات</h2>
                     <p className="text-secondary text-sm leading-relaxed whitespace-pre-line">
-                        {ad.description || "توضیحاتی برای این آگهی ثبت نشده است."}
+                        {residence.description || "توضیحاتی برای این اقامتگاه ثبت نشده است."}
                     </p>
                 </div>
             </section>
@@ -169,14 +169,14 @@ export default function SingleAdScene() {
                     <div className="flex items-center gap-3">
                         <div className="relative w-[50px] h-[50px] rounded-full overflow-hidden border-2 border-white">
                             <Image
-                                src={ad.owner?.avatarUrl || "https://www.figma.com/api/mcp/asset/376e2731-44dd-49d5-a571-bc96b8031d99"}
+                                src={residence.owner?.avatarUrl || "https://www.figma.com/api/mcp/asset/376e2731-44dd-49d5-a571-bc96b8031d99"}
                                 alt="Agent"
                                 fill
                                 className="object-cover"
                             />
                         </div>
                         <div>
-                            <h3 className="text-brand font-bold text-sm">{ad.owner?.fullName || "میزبان مَلک‌تودی"}</h3>
+                            <h3 className="text-brand font-bold text-sm">{residence.owner?.fullName || "میزبان مَلک‌تودی"}</h3>
                             <p className="text-secondary text-[10px]">میزبان</p>
                         </div>
                     </div>
@@ -192,9 +192,9 @@ export default function SingleAdScene() {
             <section className="px-6 mt-8 overflow-x-auto no-scrollbar">
                 <div className="flex gap-3">
                     {[
-                        { icon: Users, label: `${ad.guestCapacity || 0} نفر ظرفیت` },
-                        { icon: Bed, label: `${ad.attributes?.rooms || 0} اتاق خواب` },
-                        { icon: Bath, label: `${ad.attributes?.bathrooms || 0} سرویس` },
+                        { icon: Users, label: `${residence.guestCapacity || 0} نفر ظرفیت` },
+                        { icon: Bed, label: `${residence.attributes?.rooms || 0} اتاق خواب` },
+                        { icon: Bath, label: `${residence.attributes?.bathrooms || 0} سرویس` },
                         { icon: Wifi, label: "اینترنت رایگان" }
                     ].map((item, i) => (
                         <div key={i} className="shrink-0 flex items-center gap-2 bg-soft-bg px-6 py-4 rounded-full">
@@ -212,11 +212,11 @@ export default function SingleAdScene() {
                     <div className="w-[50px] h-[50px] bg-soft-bg rounded-full flex items-center justify-center">
                         <MapPin className="w-5 h-5 text-secondary" />
                     </div>
-                    <p className="text-secondary text-xs leading-relaxed">{ad.address || "آدرسی ثبت نشده است"}</p>
+                    <p className="text-secondary text-xs leading-relaxed">{residence.address || "آدرسی ثبت نشده است"}</p>
                 </div>
 
                 {/* Map Preview */}
-                <div className="relative w-full aspect-[327/235] rounded-[25px] overflow-hidden group">
+                <div className="relative w-full aspect-[16/7] lg:aspect-[16/5] rounded-[25px] overflow-hidden group">
                     <Image
                         src="https://www.figma.com/api/mcp/asset/eac6179f-e99c-4942-a213-b27f60186f8d"
                         alt="Map View"
@@ -261,26 +261,28 @@ export default function SingleAdScene() {
             </section>
 
             {/* Similar Properties */}
-            {similarAds?.items && similarAds.items.length > 0 && (
+            {similarResidences?.items && similarResidences.items.length > 0 && (
                 <section className="mt-10 mb-10">
                     <div className="px-6 flex justify-between items-center mb-6">
                         <h2 className="text-brand font-black text-xl">موارد مشابه</h2>
                         <Button variant="link" size="sm" className="text-secondary text-xs">مشاهده همه</Button>
                     </div>
                     <div className="flex gap-4 overflow-x-auto px-6 no-scrollbar">
-                        {similarAds.items.filter(item => item.id !== id).map((item) => (
-                            <div key={item.id} className="w-[200px] flex-shrink-0">
+                        {similarResidences.items.filter(item => item.id !== id).map((item) => (
+                            <div key={item.id} className="w-[180px] flex-shrink-0">
                                 <PropertyCard
                                     adId={item.id}
                                     title={item.title}
                                     price={item.pricing.nightlyPrice.toLocaleString()}
                                     rating={4.9}
-                                    location={ad.cityName || "مشهد"}
+                                    location={residence.cityName || "مشهد"}
                                     image={item.mediaIds?.[0]
                                         ? `${process.env.NEXT_PUBLIC_API_URL}/media/${item.mediaIds[0]}`
                                         : "/assets/images/property-placeholder.png"
                                     }
                                     category="اجاره روزانه"
+                                    unit="/شب"
+                                    currency=""
                                     href={`/temporary-rent/${item.id}`}
                                 />
                             </div>
@@ -288,18 +290,6 @@ export default function SingleAdScene() {
                     </div>
                 </section>
             )}
-
-            {/* Floating Action Button */}
-            <div className="fixed bottom-6 left-6 right-6 lg:static lg:px-6 lg:mt-12 z-50">
-                <div className="flex gap-4">
-                    <Button variant="secondary" className="bg-soft-bg border-none h-[60px] w-[60px] rounded-[20px]">
-                        <Share2 className="w-5 h-5 text-brand" />
-                    </Button>
-                    <Button className="flex-1 h-[60px] rounded-[20px] shadow-xl shadow-primary/30 text-lg font-black">
-                        درخواست رزرو نهایی
-                    </Button>
-                </div>
-            </div>
         </div>
     );
 }

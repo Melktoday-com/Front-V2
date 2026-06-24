@@ -8,4 +8,9 @@ export const agencyService = {
         });
         return response.data;
     },
+
+    async getAgency(agencyId: string): Promise<AgencySummary> {
+        const response = await apiClient.get<AgencySummary>(`/agencies/${agencyId}`);
+        return response.data;
+    },
 };

@@ -1,5 +1,5 @@
-import SingleAdScene from "@/scenes/single-add";
+import ResidenceDetailScene from "@/scenes/single-temporary-rent";
 
 export default function PropertyDetailPage() {
-    return <SingleAdScene />;
+    return <ResidenceDetailScene />;
 }
