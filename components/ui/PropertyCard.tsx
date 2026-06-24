@@ -105,8 +105,13 @@ export function PropertyCard({
     );
 
     if (href || adId) {
+        const slug = title
+            ? title.replace(/\s+/g, '-').replace(/\//g, '-')
+            : 'property';
+        const finalHref = href || `/ads/${adId}/${slug}`;
+
         return (
-            <Link href={href || `/ads/${adId}`} className={containerClasses}>
+            <Link href={finalHref} className={containerClasses}>
                 {cardContent}
             </Link>
         );
