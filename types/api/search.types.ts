@@ -1,3 +1,4 @@
+import { JsonObject } from "../common";
 import { AdSummary } from "./ads.types";
 
 export interface SearchListingsQuery {
@@ -8,7 +9,7 @@ export interface SearchListingsQuery {
     neighborhoodId?: string;
     minPrice?: number;
     maxPrice?: number;
-    attributes?: Record<string, any>;
+    attributes?: JsonObject;
     sortBy?: string;
     sortOrder?: 'ASC' | 'DESC';
 }
@@ -16,5 +17,5 @@ export interface SearchListingsQuery {
 export interface SearchResponse {
     items: AdSummary[];
     total: number;
-    facets?: Record<string, any>;
+    facets?: JsonObject;
 }

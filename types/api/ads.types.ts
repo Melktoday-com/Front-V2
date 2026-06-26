@@ -40,9 +40,11 @@ export interface PaginatedResponse<T> {
 
 export type PaginatedAdsResponse = PaginatedResponse<AdSummary>;
 
+import { JsonObject } from "../common";
+
 export interface AdDetail extends AdSummary {
     description: string;
-    attributes: Record<string, any>;
+    attributes: JsonObject;
     updatedAt: string;
 }
 

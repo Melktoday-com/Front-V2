@@ -1,5 +1,7 @@
 import apiClient from "@/lib/api/client";
 import {
+    RefreshTokenRequest,
+    RefreshTokenResponse,
     RequestOtpRequest,
     RequestOtpResponse,
     SwitchActiveRoleRequest,
@@ -18,6 +20,11 @@ export const authService = {
 
     async verifyOtp(data: VerifyOtpRequest): Promise<VerifyOtpResponse> {
         const response = await apiClient.post<VerifyOtpResponse>("/auth/otp/verify", data);
+        return response.data;
+    },
+
+    async refreshToken(data: RefreshTokenRequest): Promise<RefreshTokenResponse> {
+        const response = await apiClient.post<RefreshTokenResponse>("/auth/refresh", data);
         return response.data;
     },
 

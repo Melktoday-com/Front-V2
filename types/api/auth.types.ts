@@ -40,6 +40,16 @@ export interface SwitchActiveRoleResponse {
     roleName: string;
 }
 
+export interface RefreshTokenRequest {
+    refreshToken: string;
+}
+
+export interface RefreshTokenResponse {
+    accessToken: string;
+    refreshToken: string;
+    expiresIn: number;
+}
+
 export interface JwtPayload {
     sub: string;
     sessionId: string;

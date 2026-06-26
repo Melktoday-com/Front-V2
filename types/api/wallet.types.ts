@@ -5,12 +5,14 @@ export interface WalletBalance {
     currency: string;
 }
 
+import { JsonObject } from "../common";
+
 export interface ChargeWalletRequest {
     amount: number;
     currency: string;
     idempotencyKey: string;
     reason: string;
-    metadata?: Record<string, any>;
+    metadata?: JsonObject;
 }
 
 export interface ChargeWalletResponse {

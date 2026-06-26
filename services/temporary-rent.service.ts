@@ -1,5 +1,6 @@
 import apiClient from "@/lib/api/client";
 import { PaginatedResponse } from "@/types/api/ads.types";
+import { TemporaryRentAd, TemporaryRentContactInfo } from "@/types/api/temporary-rent.types";
 
 export interface TemporaryRentAdSummary {
     id: string;
@@ -30,13 +31,13 @@ export const temporaryRentService = {
         return response.data;
     },
 
-    async getById(id: string): Promise<any> {
-        const response = await apiClient.get<any>(`/temporary-rent/${id}`);
+    async getById(id: string): Promise<TemporaryRentAd> {
+        const response = await apiClient.get<TemporaryRentAd>(`/temporary-rent/${id}`);
         return response.data;
     },
 
-    async getContactInfo(id: string): Promise<any> {
-        const response = await apiClient.get<any>(`/temporary-rent/${id}/contact`);
+    async getContactInfo(id: string): Promise<TemporaryRentContactInfo> {
+        const response = await apiClient.get<TemporaryRentContactInfo>(`/temporary-rent/${id}/contact`);
         return response.data;
     }
 };

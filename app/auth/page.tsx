@@ -47,8 +47,8 @@ export default function Auth() {
       await requestOtpMutation.mutateAsync({ mobileNumber: normalizedPhone });
       setStep("otp");
       setTimer(59);
-    } catch (err: any) {
-      setError(normalizeApiError(err));
+    } catch (err) {
+      setError(normalizeApiError(err as Error));
     }
   };
 
@@ -62,8 +62,8 @@ export default function Auth() {
         mobileNumber: normalizedPhone,
         otp: otp,
       });
-    } catch (err: any) {
-      setError(normalizeApiError(err));
+    } catch (err) {
+      setError(normalizeApiError(err as Error));
     }
   };
 
