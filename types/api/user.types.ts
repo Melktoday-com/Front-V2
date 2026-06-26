@@ -3,7 +3,7 @@ export interface UserProfile {
     mobileNumber: string;
     firstName?: string;
     lastName?: string;
-    kycStatus: "Pending" | "Verified" | "Rejected";
+    kycStatus: "pending" | "verified" | "rejected" | "in_progress";
     status: "Active" | "Inactive";
     createdAt: string;
 }
@@ -28,7 +28,7 @@ export interface VerifyKycRequest {
 
 export interface VerifyKycResponse {
     userId: string;
-    status: "Verified" | "Rejected" | "Failed";
+    status: "verified" | "rejected" | "failed";
     similarityPercentage: number;
     reason?: string;
 }

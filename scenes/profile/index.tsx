@@ -220,12 +220,12 @@ export default function ProfileScene() {
                         <div className="flex items-center gap-2">
                             <span className={cn(
                                 "text-[10px] px-2 py-1 rounded-full font-bold",
-                                profile?.kycStatus === 'Verified' ? "bg-green-50 text-green-600" :
-                                    profile?.kycStatus === 'Pending' ? "bg-orange-50 text-orange-600" :
+                                profile?.kycStatus === 'verified' ? "bg-green-50 text-green-600" :
+                                    profile?.kycStatus === 'pending' || profile?.kycStatus === 'in_progress' ? "bg-orange-50 text-orange-600" :
                                         "bg-red-50 text-red-500"
                             )}>
-                                {profile?.kycStatus === 'Verified' ? "تایید شده" :
-                                    profile?.kycStatus === 'Pending' ? "در انتظار تایید" : "تایید نشده"}
+                                {profile?.kycStatus === 'verified' ? "تایید شده" :
+                                    profile?.kycStatus === 'pending' || profile?.kycStatus === 'in_progress' ? "در انتظار تایید" : "تایید نشده"}
                             </span>
                             <ChevronLeft className="w-4 h-4 text-secondary" />
                         </div>

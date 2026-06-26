@@ -43,7 +43,7 @@ export function useUser(userId?: string) {
             return userService.verifyKyc(userId, data);
         },
         onSuccess: (data) => {
-            if (data.status === "Verified") {
+            if (data.status === "verified") {
                 toast.success("احراز هویت با موفقیت انجام شد");
             } else {
                 toast.error("احراز هویت شکست خورد: " + (data.reason || "خطای ناشناخته"));
