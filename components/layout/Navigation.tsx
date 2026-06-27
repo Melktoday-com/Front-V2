@@ -22,6 +22,7 @@ export function Sidebar() {
     const { isLoggedIn } = useAuth();
 
     if (pathname.includes('/profile/chat')) return null;
+    if (pathname.startsWith('/admin')) return null;
 
     return (
         <aside className="hidden lg:flex flex-col w-64 bg-white border-l border-soft-border h-screen sticky top-0 p-6">
@@ -94,6 +95,7 @@ export function MobileNav() {
     const { isLoggedIn } = useAuth();
 
     if (pathname.includes('/profile/chat')) return null;
+    if (pathname.startsWith('/admin')) return null;
 
     return (
         <div className="lg:hidden fixed bottom-6 left-6 right-6 h-18 bg-white/80 backdrop-blur-xl border border-white/20 rounded-full flex items-center justify-around px-2 shadow-2xl shadow-brand/5 z-50">

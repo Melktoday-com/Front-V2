@@ -30,7 +30,7 @@ export default function RootLayout({
           <CityProvider>
             <Sidebar />
             <main className="flex-1 w-full bg-white lg:bg-soft-bg/30">
-              <div className="mx-auto min-h-screen bg-white has-[.chat-page-content]:max-w-none has-[.chat-page-content]:p-0 max-w-screen-2xl">
+              <div className="mx-auto min-h-screen bg-white has-[.chat-page-content]:max-w-none has-[.chat-page-content]:p-0 has-[.admin-layout]:max-w-none has-[.admin-layout]:p-0 max-w-screen-2xl">
                 {children}
               </div>
             </main>
