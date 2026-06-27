@@ -95,7 +95,7 @@ function ConversationListContent() {
                                             conv.subjectType === 'RENTAL' ? "bg-purple-100 text-purple-700" :
                                                 "bg-blue-100 text-blue-700"
                                 )}>
-                                    {conv.subjectType === 'AGENCY' ? 'املاکی' :
+                                    {conv.subjectType === 'AGENCY' ? 'آژانس' :
                                         conv.subjectType === 'SUPPORT' ? 'پشتیبانی' :
                                             conv.subjectType === 'RENTAL' ? 'اجاره موقت' :
                                                 'آگهی'}

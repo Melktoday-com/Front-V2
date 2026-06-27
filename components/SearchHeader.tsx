@@ -62,12 +62,12 @@ export function SearchHeader({ isInitialOpen }: SearchHeaderProps) {
                             <span className="absolute top-3 left-3 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-soft-bg" />
                         </button>
                     )}
-                    <Link href={isLoggedIn ? "/profile" : "/auth"}>
+                    {!isLoggedIn && <Link href={"/auth"}>
                         <Button variant="outline" className="h-[52px] px-6 rounded-[18px] flex items-center gap-2 border-soft-border bg-white shadow-sm">
                             <User className="w-5 h-5" />
-                            <span className="font-bold">{isLoggedIn ? "حساب کاربری" : "ورود / ثبت‌نام"}</span>
+                            <span className="font-bold">{"ورود / ثبت‌نام"}</span>
                         </Button>
-                    </Link>
+                    </Link>}
                 </div>
             </div>
 

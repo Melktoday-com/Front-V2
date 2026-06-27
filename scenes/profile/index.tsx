@@ -59,7 +59,7 @@ export default function ProfileScene() {
     return (
         <div className="min-h-screen bg-white pb-24 lg:pb-10">
             <div className="p-6 lg:p-10 space-y-10 max-w-2xl mx-auto">
-                <header className="flex justify-between items-center">
+                {/* <header className="flex justify-between items-center">
                     <h1 className="text-brand text-2xl lg:text-3xl font-black">
                         حساب کاربری
                     </h1>
@@ -67,7 +67,7 @@ export default function ProfileScene() {
                         <LogOut className="w-5 h-5" />
                         <span className="font-bold">خروج</span>
                     </Button>
-                </header>
+                </header> */}
 
                 {/* Profile Info */}
                 <section className="bg-soft-bg rounded-[30px] p-6 space-y-6 border border-soft-border">

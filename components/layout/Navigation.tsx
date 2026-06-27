@@ -96,12 +96,12 @@ export function MobileNav() {
     if (pathname.includes('/profile/chat')) return null;
 
     return (
-        <div className="lg:hidden fixed bottom-6 left-6 right-6 h-18 bg-brand rounded-full flex items-center justify-around px-2 shadow-xl shadow-brand/40 z-50">
+        <div className="lg:hidden fixed bottom-6 left-6 right-6 h-18 bg-white/80 backdrop-blur-xl border border-white/20 rounded-full flex items-center justify-around px-2 shadow-2xl shadow-brand/5 z-50">
             <Link
                 href="/"
                 className={cn(
                     "flex items-center justify-center w-12 h-12 rounded-full transition-all",
-                    pathname === "/" ? "bg-primary text-white shadow-lg shadow-primary/30" : "text-white/60"
+                    pathname === "/" ? "bg-primary text-white shadow-lg shadow-primary/30" : "text-secondary"
                 )}
             >
                 <Home className="w-6 h-6" />
@@ -109,8 +109,8 @@ export function MobileNav() {
             <Link
                 href="/explore"
                 className={cn(
-                    "p-2 transition-colors",
-                    pathname === "/explore" ? "text-white" : "text-white/60"
+                    "flex items-center justify-center w-12 h-12 rounded-full transition-all",
+                    pathname === "/explore" ? "bg-primary text-white shadow-lg shadow-primary/30" : "text-secondary"
                 )}
             >
                 <MapPin className="w-6 h-6" />
@@ -118,8 +118,8 @@ export function MobileNav() {
             <Link
                 href="/agency"
                 className={cn(
-                    "p-2 transition-colors",
-                    pathname === "/agency" ? "text-white" : "text-white/60"
+                    "flex items-center justify-center w-12 h-12 rounded-full transition-all",
+                    pathname === "/agency" ? "bg-primary text-white shadow-lg shadow-primary/30" : "text-secondary"
                 )}
             >
                 <Building2 className="w-6 h-6" />
@@ -127,8 +127,8 @@ export function MobileNav() {
             <Link
                 href="/favorites"
                 className={cn(
-                    "p-2 transition-colors",
-                    pathname === "/favorites" ? "text-white" : "text-white/60"
+                    "flex items-center justify-center w-12 h-12 rounded-full transition-all",
+                    pathname === "/favorites" ? "bg-primary text-white shadow-lg shadow-primary/30" : "text-secondary"
                 )}
             >
                 <Heart className="w-6 h-6" />
@@ -136,8 +136,8 @@ export function MobileNav() {
             <Link
                 href={isLoggedIn ? "/profile" : "/auth"}
                 className={cn(
-                    "p-2 transition-colors",
-                    (pathname === "/profile" || pathname === "/auth") ? "text-white" : "text-white/60"
+                    "flex items-center justify-center w-12 h-12 rounded-full transition-all",
+                    (pathname === "/profile" || pathname === "/auth") ? "bg-primary text-white shadow-lg shadow-primary/30" : "text-secondary"
                 )}
             >
                 <User className="w-6 h-6" />
