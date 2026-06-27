@@ -21,6 +21,8 @@ export function Sidebar() {
     const pathname = usePathname();
     const { isLoggedIn } = useAuth();
 
+    if (pathname.includes('/profile/chat')) return null;
+
     return (
         <aside className="hidden lg:flex flex-col w-64 bg-white border-l border-soft-border h-screen sticky top-0 p-6">
             <div className="mb-10 px-2">
@@ -90,6 +92,8 @@ export function Sidebar() {
 export function MobileNav() {
     const pathname = usePathname();
     const { isLoggedIn } = useAuth();
+
+    if (pathname.includes('/profile/chat')) return null;
 
     return (
         <div className="lg:hidden fixed bottom-6 left-6 right-6 h-18 bg-brand rounded-full flex items-center justify-around px-2 shadow-xl shadow-brand/40 z-50">

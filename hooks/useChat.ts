@@ -12,10 +12,18 @@ export const useConversations = () => {
     });
 };
 
+export const useConversation = (id?: string) => {
+    return useQuery({
+        queryKey: ["conversation", id],
+        queryFn: () => chatService.listConversations().then(list => list.find(c => c.id === id)),
+        enabled: !!id,
+    });
+};
+
 export const useMessages = (conversationId?: string) => {
     return useInfiniteQuery({
         queryKey: ["messages", conversationId],
-        queryFn: ({ pageParam }) => 
+        queryFn: ({ pageParam }) =>
             chatService.getMessages(conversationId!, { lastMessageId: pageParam as string }),
         initialPageParam: undefined as string | undefined,
         getNextPageParam: (lastPage) => {

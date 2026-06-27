@@ -24,13 +24,13 @@ export default function RootLayout({
   return (
     <html lang="fa" dir="rtl">
       <body
-        className={`${vazirmatn.variable} antialiased font-vazirmatn flex min-h-screen`}
+        className={`${vazirmatn.variable} antialiased font-vazirmatn flex min-h-screen overflow-x-hidden`}
       >
         <QueryProvider>
           <CityProvider>
             <Sidebar />
             <main className="flex-1 w-full bg-white lg:bg-soft-bg/30">
-              <div className="max-w-screen-2xl mx-auto min-h-screen bg-white">
+              <div className="mx-auto min-h-screen bg-white has-[.chat-page-content]:max-w-none has-[.chat-page-content]:p-0 max-w-screen-2xl">
                 {children}
               </div>
             </main>
