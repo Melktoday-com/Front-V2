@@ -56,7 +56,7 @@ export default function AdsScene() {
                     isLoading={isCategoriesLoading}
                 />
 
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 2xl:grid-cols-6 gap-x-4 gap-y-6 items-stretch">
                     {/* ... existing properties list ... */}
                     {isLoading ? (
                         Array.from({ length: 8 }).map((_, i) => (

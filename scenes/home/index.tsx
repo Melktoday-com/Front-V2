@@ -67,14 +67,14 @@ export const HomeScene = () => {
     }, [agencyData]);
 
     return (
-        <div className="flex flex-col gap-16 pb-16 pt-5 px-5">
+        <div className="flex flex-col gap-10 pb-36 pt-5 ">
             <SearchHeader
                 isInitialOpen={isInitialModalOpen}
             />
 
             {/* Browse by Regions */}
             {regionsData?.zones && regionsData.zones.length > 0 && (
-                <section className="container mx-auto px-4">
+                <section className="container mx-auto pr-4">
                     <SectionHeader
                         title={`جستجو در ${selectedCity.name}`}
                         subtitle="مشاهده آگهی‌ها به تفکیک محله"
@@ -82,7 +82,7 @@ export const HomeScene = () => {
                     {isRegionsLoading ? (
                         <div className="flex gap-4 overflow-hidden">
                             {[1, 2, 3, 4, 5, 6].map(i => (
-                                <div key={i} className="min-w-37.5 h-12 bg-gray-100 animate-pulse rounded-full" />
+                                <div key={i} className="min-w-37.5 h-10 bg-gray-100 animate-pulse rounded-full" />
                             ))}
                         </div>
                     ) : regionsError ? (
@@ -93,7 +93,7 @@ export const HomeScene = () => {
                                 <Link
                                     key={zone.id}
                                     href={`/explore?cityName=${selectedCity.name}&neighbourhoodName=${zone.name}`}
-                                    className="px-6 py-3 rounded-full bg-soft-bg border border-soft-border hover:border-primary hover:text-primary transition-all whitespace-nowrap font-bold text-brand shadow-sm"
+                                    className="px-4 py-2 rounded-full bg-soft-bg border border-soft-border hover:border-primary hover:text-primary transition-all whitespace-nowrap font-bold text-brand text-xs shadow-sm"
                                 >
                                     {zone.name}
                                 </Link>
@@ -104,7 +104,7 @@ export const HomeScene = () => {
             )}
 
             {/* Categories */}
-            <section className="container mx-auto px-4">
+            <section className="container mx-auto pr-4">
                 <CategoryFilter
                     categories={categoriesData || []}
                     isLoading={isCategoriesLoading}
@@ -112,16 +112,16 @@ export const HomeScene = () => {
             </section>
 
             {/* Featured Properties */}
-            <section className="container mx-auto px-4">
+            <section className="container mx-auto pr-4">
                 <SectionHeader
                     title="املاک ویژه"
                     subtitle="منتخب آگهی‌های برتر"
                     link="/explore?isFeatured=true"
                 />
                 {isFeaturedLoading ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="flex gap-4 overflow-hidden">
                         {[1, 2, 3].map((i) => (
-                            <div key={i} className="h-64 bg-gray-100 animate-pulse rounded-xl" />
+                            <div key={i} className="min-w-[180px] aspect-square bg-gray-100 animate-pulse rounded-2xl" />
                         ))}
                     </div>
                 ) : featuredError ? (
@@ -140,58 +140,46 @@ export const HomeScene = () => {
                                 location={selectedCity.name}
                                 image={property.mediaIds?.[0] ? `${process.env.NEXT_PUBLIC_API_URL}/media/${property.mediaIds[0]}` : "/assets/images/property-placeholder.png"}
                                 category={property.categoryPath.subcategoryKey}
+                                className="w-[160px] lg:w-[200px]"
                             />
                         ))}
                     </Slider>
                 )}
             </section>
 
-            {/* Latest Listings */}
-            <section className="container mx-auto px-4">
+            {/* Top Agencies */}
+            <section className="container mx-auto pr-4">
                 <SectionHeader
-                    title="تازه ترین‌ها"
-                    subtitle="جدیدترین آگهی‌های منطقه شما"
-                    link="/explore"
+                    title="آژانس‌های برتر"
+                    subtitle="همکاری با بهترین متخصصان"
+                    link={selectedCity.id ? `/agency?cityId=${selectedCity.id}&cityName=${selectedCity.name}` : "/agency"}
                 />
-                {isRecentLoading ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-                            <div key={i} className="h-64 bg-gray-100 animate-pulse rounded-xl" />
+                {isAgenciesLoading ? (
+                    <div className="flex gap-4 overflow-hidden">
+                        {[1, 2, 3, 4, 5, 6].map((i) => (
+                            <div key={i} className="min-w-32 h-40 bg-gray-100 animate-pulse rounded-xl" />
                         ))}
                     </div>
-                ) : recentError ? (
-                    <ErrorState onRetry={refetchRecent} />
-                ) : !recentData?.items.length ? (
-                    <EmptyState message="No recent listings found" />
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {recentData.items.map((property: AdSummary) => (
-                            <PropertyCard
-                                key={property.adId}
-                                adId={property.adId}
-                                title={property.title}
-                                price={Object.values(property.pricing)[0]?.toLocaleString() || "0"}
-                                rating={4.8}
-                                location={selectedCity.name}
-                                image={property.mediaIds?.[0] ? `${process.env.NEXT_PUBLIC_API_URL}/media/${property.mediaIds[0]}` : "/assets/images/property-placeholder.png"}
-                                category={property.categoryPath.subcategoryKey}
-                            />
+                    <Slider>
+                        {topAgencies.map((agency: { id: string; name: string; image: string; listingsCount: number }) => (
+                            <AgentAvatar key={agency.id} name={agency.name} image={agency.image} />
                         ))}
-                    </div>
+                    </Slider>
                 )}
             </section>
 
             {/* Temporary Rentals */}
-            <section className="container mx-auto px-4 bg-orange-50/30 py-12 rounded-3xl">
+            <section className="container mx-auto pr-4 bg-orange-50/20 py-8 rounded-2xl">
                 <SectionHeader
                     title="اجاره روزانه"
                     subtitle="بهترین گزینه‌ها برای سفرهای کوتاه"
                     link="/temporary-rent"
                 />
                 {isTempRentLoading ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div className="flex gap-4 overflow-hidden">
                         {[1, 2, 3, 4].map((i) => (
-                            <div key={i} className="h-64 bg-gray-100 animate-pulse rounded-xl" />
+                            <div key={i} className="min-w-72 h-64 bg-gray-100 animate-pulse rounded-xl" />
                         ))}
                     </div>
                 ) : tempRentError ? (
@@ -199,7 +187,7 @@ export const HomeScene = () => {
                 ) : !tempRentData?.items.length ? (
                     <EmptyState message="No temporary rentals found" />
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <Slider>
                         {tempRentData.items.map((property: TemporaryRentAdSummary) => (
                             <PropertyCard
                                 key={property.id}
@@ -211,28 +199,47 @@ export const HomeScene = () => {
                                 location={selectedCity.name}
                                 image={property.mediaIds?.[0] ? `${process.env.NEXT_PUBLIC_API_URL}/media/${property.mediaIds[0]}` : "/assets/images/property-placeholder.png"}
                                 category="اجاره روزانه"
+                                className="w-[160px] lg:w-[200px]"
                             />
                         ))}
-                    </div>
+                    </Slider>
                 )}
             </section>
 
-            {/* Top Agencies */}
-            <section className="container mx-auto px-4">
+            {/* Latest Listings */}
+            <section className="container mx-auto pr-4">
                 <SectionHeader
-                    title="آژانس‌های برتر"
-                    subtitle="همکاری با بهترین متخصصان"
-                    link={selectedCity.id ? `/agency?cityId=${selectedCity.id}&cityName=${selectedCity.name}` : "/agency"}
+                    title="تازه ترین‌ها"
+                    subtitle="جدیدترین آگهی‌های منطقه شما"
+                    link="/explore"
                 />
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-                    {isAgenciesLoading
-                        ? [1, 2, 3, 4, 5, 6].map((i) => (
-                            <div key={i} className="h-40 bg-gray-100 animate-pulse rounded-xl" />
-                        ))
-                        : topAgencies.map((agency: { id: string; name: string; image: string; listingsCount: number }) => (
-                            <AgentAvatar key={agency.id} name={agency.name} image={agency.image} />
+                {isRecentLoading ? (
+                    <div className="flex gap-4 overflow-hidden">
+                        {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                            <div key={i} className="min-w-[180px] aspect-square bg-gray-100 animate-pulse rounded-2xl" />
                         ))}
-                </div>
+                    </div>
+                ) : recentError ? (
+                    <ErrorState onRetry={refetchRecent} />
+                ) : !recentData?.items.length ? (
+                    <EmptyState message="No recent listings found" />
+                ) : (
+                    <Slider>
+                        {recentData.items.map((property: AdSummary) => (
+                            <PropertyCard
+                                key={property.adId}
+                                adId={property.adId}
+                                title={property.title}
+                                price={Object.values(property.pricing)[0]?.toLocaleString() || "0"}
+                                rating={4.8}
+                                location={selectedCity.name}
+                                image={property.mediaIds?.[0] ? `${process.env.NEXT_PUBLIC_API_URL}/media/${property.mediaIds[0]}` : "/assets/images/property-placeholder.png"}
+                                category={property.categoryPath.subcategoryKey}
+                                className="w-[160px] lg:w-[200px]"
+                            />
+                        ))}
+                    </Slider>
+                )}
             </section>
         </div>
     );

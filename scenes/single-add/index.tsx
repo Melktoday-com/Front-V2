@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/Button";
 import { PropertyCard } from "@/components/ui/PropertyCard";
+import { useAd } from "@/hooks/useAds";
 import { useAuth } from "@/hooks/useAuth";
 import { useCreateConversation } from "@/hooks/useChat";
 import { cn } from "@/lib/utils";
@@ -25,25 +26,6 @@ const galleryImages = [
     "https://www.figma.com/api/mcp/asset/39d18335-660a-4b97-9611-e5a0167e72aa",
     "https://www.figma.com/api/mcp/asset/f11753dd-babb-46f4-a35e-fefeed5a16c2",
     "https://www.figma.com/api/mcp/asset/c1ef6fad-2f26-402e-9240-d9b3f38145dc",
-];
-
-const reviews = [
-    {
-        id: 1,
-        name: "کورت مولینز",
-        image: "https://www.figma.com/api/mcp/asset/608c0ce8-233b-4b2d-be69-86566fd14cb1",
-        rating: 5,
-        date: "۸ روز پیش",
-        comment: "لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است."
-    },
-    {
-        id: 2,
-        name: "کی سوانسون",
-        image: "https://www.figma.com/api/mcp/asset/0aa50e49-9fcf-4816-bb78-1ef513b445bd",
-        rating: 4,
-        date: "۱۲ روز پیش",
-        comment: "لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ."
-    }
 ];
 
 const nearbyAds = [
@@ -75,6 +57,7 @@ export default function SingleAdScene() {
 
     const { isLoggedIn } = useAuth();
     const chatMutation = useCreateConversation();
+    const { data: ad, isLoading, error } = useAd(id);
 
     const handleChat = () => {
         if (!isLoggedIn) {
@@ -86,6 +69,18 @@ export default function SingleAdScene() {
             subjectId: id,
         });
     };
+
+    if (isLoading) return (
+        <div className="flex flex-col items-center justify-center min-h-screen">
+            <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+        </div>
+    );
+
+    if (error || !ad) return (
+        <div className="p-6">
+            <p className="text-secondary text-center py-20 font-bold">آگهی یافت نشد</p>
+        </div>
+    );
 
     return (
         <div className="flex flex-col pb-24 lg:pb-8">
@@ -133,7 +128,7 @@ export default function SingleAdScene() {
                                 <span className="text-sm font-bold">۴.۹</span>
                             </div>
                             <div className="bg-brand/70 backdrop-blur-md text-white px-5 py-3 rounded-[25px]">
-                                <span className="text-sm font-bold">آپارتمان</span>
+                                <span className="text-sm font-bold">{ad.categoryPath.categoryKey}</span>
                             </div>
                         </div>
 
@@ -157,15 +152,15 @@ export default function SingleAdScene() {
             <section className="px-6 mt-8">
                 <div className="flex justify-between items-start">
                     <div>
-                        <h1 className="text-brand font-black text-2xl lg:text-3xl">برج وینگز</h1>
+                        <h1 className="text-brand font-black text-2xl lg:text-3xl">{ad.title}</h1>
                         <div className="flex items-center gap-1 mt-2 text-secondary">
                             <MapPin className="w-4 h-4" />
-                            <span className="text-sm">جاکارتا، اندونزی</span>
+                            <span className="text-sm">مشهد، ایران</span>
                         </div>
                     </div>
                     <div className="text-left">
-                        <div className="text-brand font-black text-2xl lg:text-3xl line-clamp-1">$ ۲۲۰</div>
-                        <div className="text-secondary text-xs mt-1">در هر ماه</div>
+                        <div className="text-brand font-black text-2xl lg:text-3xl line-clamp-1">{ad.pricing?.buy?.toLocaleString() || ad.pricing?.rent?.toLocaleString() || "۰"}</div>
+                        <div className="text-secondary text-xs mt-1">تومان</div>
                     </div>
                 </div>
 
@@ -215,7 +210,7 @@ export default function SingleAdScene() {
                         </div>
                     </div>
                     <div className="flex gap-2">
-                        <button 
+                        <button
                             onClick={handleChat}
                             disabled={chatMutation.isPending}
                             className="w-10 h-10 bg-brand text-white rounded-full flex items-center justify-center hover:bg-brand/90 transition-all disabled:opacity-50"
@@ -308,6 +303,7 @@ export default function SingleAdScene() {
                     <p className="text-secondary text-[9px] mt-1">* میانگین هزینه شهروندان در این منطقه</p>
                 </div>
             </section>
+
             {/* Nearby Estates */}
             <section className="mt-10 mb-10">
                 <div className="px-6 flex justify-between items-center mb-6">

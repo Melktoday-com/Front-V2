@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/Button";
 import { PropertyCard } from "@/components/ui/PropertyCard";
+import { ReviewsSection } from "@/components/ui/ReviewsSection";
 import { ErrorState } from "@/components/ui/StatusStates";
 import { useTemporaryRentAdDetail, useTemporaryRentAds } from "@/hooks/useTemporaryRent";
 import { cn } from "@/lib/utils";
@@ -236,29 +237,7 @@ export default function ResidenceDetailScene() {
             </section>
 
             {/* Reviews */}
-            <section className="px-6 mt-10">
-                <h2 className="text-brand font-black text-xl mb-4">نظرات</h2>
-                <div className="bg-brand/10 p-4 rounded-[25px] flex items-center gap-6 mb-6">
-                    <div className="w-14 h-14 bg-black/10 rounded-2xl flex items-center justify-center text-2xl">⭐</div>
-                    <div>
-                        <div className="flex items-center gap-2">
-                            <div className="flex text-yellow-400">
-                                {[1, 2, 3, 4, 5].map(i => <Star key={i} className="w-3 h-3 fill-current" />)}
-                            </div>
-                            <span className="text-lg font-black text-brand">۴.۹</span>
-                        </div>
-                        <p className="text-secondary text-[9px]">از نظرات مهمانان قبلی</p>
-                    </div>
-                </div>
-
-                <div className="space-y-4">
-                    {/* If API supports reviews, map them here */}
-                </div>
-
-                <Button variant="secondary" className="w-full mt-4 h-12 rounded-[15px] border-none bg-soft-bg text-secondary text-[10px]">
-                    مشاهده تمام نظرات
-                </Button>
-            </section>
+            <ReviewsSection targetId={id} targetType="temporary-rent" />
 
             {/* Similar Properties */}
             {similarResidences?.items && similarResidences.items.length > 0 && (

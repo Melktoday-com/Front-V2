@@ -1,8 +1,8 @@
 "use client";
 
-import React from "react";
-import Image from "next/image";
 import { CategoryListItem } from "@/types/api/ads.types";
+import Image from "next/image";
+import { Slider } from "./ui/Slider";
 
 interface CategoryFilterProps {
   categories: CategoryListItem[];
@@ -12,7 +12,7 @@ interface CategoryFilterProps {
 const CategoryFilter = ({ categories, isLoading }: CategoryFilterProps) => {
   if (isLoading) {
     return (
-      <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
+      <div className="flex gap-4 overflow-hidden">
         {[1, 2, 3, 4, 5, 6].map((i) => (
           <div
             key={i}
@@ -24,19 +24,19 @@ const CategoryFilter = ({ categories, isLoading }: CategoryFilterProps) => {
   }
 
   return (
-    <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
+    <Slider className="pb-4">
       {categories.map((category) => (
         <div
           key={category.id}
-          className="flex-shrink-0 flex flex-col items-center gap-2 cursor-pointer group"
+          className="flex flex-col items-center gap-2 cursor-pointer group"
         >
           <div className="w-16 h-16 rounded-2xl bg-gray-50 flex items-center justify-center border border-gray-100 group-hover:bg-primary-light group-hover:border-primary transition-all">
             {category.icon ? (
-              <Image 
-                src={category.icon} 
-                alt={category.displayName} 
-                width={32} 
-                height={32} 
+              <Image
+                src={category.icon}
+                alt={category.displayName}
+                width={32}
+                height={32}
                 className="group-hover:scale-110 transition-transform"
               />
             ) : (
@@ -48,7 +48,7 @@ const CategoryFilter = ({ categories, isLoading }: CategoryFilterProps) => {
           </span>
         </div>
       ))}
-    </div>
+    </Slider>
   );
 };
 

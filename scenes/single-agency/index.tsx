@@ -1,6 +1,7 @@
 "use client";
 
 import { PropertyCard } from "@/components/ui/PropertyCard";
+import { ReviewsSection } from "@/components/ui/ReviewsSection";
 import { ErrorState } from "@/components/ui/StatusStates";
 import { useAds } from "@/hooks/useAds";
 import { useAgency, useFollowAgency, useUnfollowAgency } from "@/hooks/useAgencies";
@@ -192,6 +193,10 @@ export default function SingleAgencyScene() {
                         {[1, 2, 3, 4].map(i => (
                             <div key={i} className="aspect-[160/250] bg-soft-bg rounded-[25px] animate-pulse" />
                         ))}
+                    </div>
+                ) : activeTab === "reviews" ? (
+                    <div className="bg-white rounded-3xl pb-10">
+                        <ReviewsSection targetId={id} targetType="agency" />
                     </div>
                 ) : activeTab === "listings" && ads.length > 0 ? (
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">

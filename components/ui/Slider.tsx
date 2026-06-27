@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import { Children, ReactNode } from "react";
 import { FreeMode, Pagination } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -38,10 +39,10 @@ export function Slider({
             freeMode={freeMode}
             modules={[FreeMode, Pagination]}
             breakpoints={breakpoints}
-            className={className}
+            className={cn("h-full", className)}
         >
             {Children.map(children, (child, index) => (
-                <SwiperSlide key={index} className="w-auto!">
+                <SwiperSlide key={index} className="w-auto! h-auto!">
                     {child}
                 </SwiperSlide>
             ))}

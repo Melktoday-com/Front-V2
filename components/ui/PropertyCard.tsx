@@ -33,10 +33,10 @@ export function PropertyCard({
     href,
 }: PropertyCardProps) {
     const cardContent = (
-        <>
+        <div className={cn("group flex flex-col h-full", className)}>
             <div className={cn(
                 "relative shrink-0",
-                variant === "horizontal" ? "w-[130px] h-[140px] lg:w-[160px] lg:h-[160px]" : "aspect-[160/170] w-full overflow-hidden rounded-[20px]"
+                variant === "horizontal" ? "w-20 h-20 lg:w-24 lg:h-24" : "aspect-[4/3] w-full overflow-hidden rounded-xl"
             )}>
                 <Image
                     src={image}
@@ -44,60 +44,52 @@ export function PropertyCard({
                     fill
                     className={cn(
                         "object-cover",
-                        variant === "horizontal" ? "rounded-[20px]" : "transition-transform duration-500 group-hover:scale-110"
+                        variant === "horizontal" ? "rounded-lg" : "transition-transform duration-500 group-hover:scale-110"
                     )}
                 />
                 <button
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                    className="absolute top-2 left-2 w-6 h-6 lg:w-8 lg:h-8 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center transition-colors hover:bg-white/40"
+                    className="absolute top-1 left-1 w-5 h-5 bg-white/30 backdrop-blur-md rounded-full flex items-center justify-center transition-colors hover:bg-white/50"
                 >
-                    <Heart className="w-3 h-3 lg:w-4 lg:h-4 text-white hover:fill-white" />
+                    <Heart className="w-2.5 h-2.5 text-white hover:fill-white" />
                 </button>
-                <div className="absolute bottom-2 left-2 bg-brand/70 backdrop-blur-sm text-white text-[10px] px-2 py-1 rounded-lg">
+                <div className="absolute bottom-1 right-1 bg-brand/60 backdrop-blur-sm text-white text-[8px] px-1.5 py-0.5 rounded-md font-bold">
                     {category}
                 </div>
             </div>
 
             {variant === "horizontal" ? (
-                <div className="flex flex-col justify-between py-2 flex-1">
-                    <div>
-                        <h3 className="text-brand font-black text-sm lg:text-base line-clamp-1">{title}</h3>
-                        <div className="flex items-center gap-1 mt-1">
-                            <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
-                            <span className="text-[10px] lg:text-xs text-text-light font-bold">{rating}</span>
-                        </div>
+                <div className="flex flex-col justify-center px-3 flex-1 min-w-0">
+                    <h3 className="text-brand font-bold text-[11px] lg:text-xs line-clamp-1">{title}</h3>
+                    <div className="flex items-center gap-1 mt-1">
+                        <MapPin className="w-2 h-2 text-text-light shrink-0" />
+                        <span className="text-[9px] text-text-light truncate">{location}</span>
                     </div>
-                    <div className="space-y-1 min-w-0">
-                        <div className="flex items-center gap-1">
-                            <MapPin className="w-3 h-3 text-text-light shrink-0" />
-                            <span className="text-[10px] lg:text-xs text-text-light truncate">{location}</span>
-                        </div>
-                        <div className="flex items-center gap-1 flex-wrap">
-                            <span className="text-brand font-black text-sm lg:text-lg whitespace-nowrap">{currency} {price}</span>
-                            <span className="text-[10px] lg:text-xs text-text-light whitespace-nowrap">{unit}</span>
-                        </div>
+                    <div className="flex items-center gap-1 mt-1">
+                        <span className="text-brand font-black text-xs lg:text-sm">{currency}{price}</span>
+                        <span className="text-[8px] text-text-light">{unit}</span>
                     </div>
                 </div>
             ) : (
-                <div className="mt-3 px-1 pb-2 min-w-0">
-                    <div className="flex justify-between items-start gap-1">
-                        <h3 className="text-brand font-black text-sm lg:text-base leading-tight line-clamp-2">{title}</h3>
-                        <div className="flex items-center gap-1 shrink-0 bg-white px-2 py-1 rounded-xl shadow-sm border border-soft-border">
-                            <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
-                            <span className="text-[10px] lg:text-xs text-brand font-black">{rating}</span>
+                <div className="mt-1.5 px-0.5 pb-1 min-w-0 flex flex-col flex-1">
+                    <div className="flex justify-between items-center h-4">
+                        <h3 className="text-brand font-bold text-[11px] lg:text-xs line-clamp-1 flex-1">{title}</h3>
+                        <div className="flex items-center gap-0.5 shrink-0 ml-1">
+                            <Star className="w-2 h-2 text-yellow-500 fill-yellow-500" />
+                            <span className="text-[9px] text-brand font-bold">{rating}</span>
                         </div>
                     </div>
-                    <div className="flex items-center gap-1 mt-2">
-                        <MapPin className="w-3 h-3 text-text-light shrink-0" />
-                        <span className="text-[10px] lg:text-xs text-text-light truncate">{location}</span>
+                    <div className="flex items-center gap-1 mt-0.5 h-3">
+                        <MapPin className="w-2 h-2 text-text-light shrink-0" />
+                        <span className="text-[9px] text-text-light truncate">{location}</span>
                     </div>
-                    <div className="flex items-center gap-1 mt-3 flex-wrap">
-                        <span className="text-brand font-black text-sm lg:text-lg whitespace-nowrap">{currency} {price}</span>
-                        <span className="text-[10px] lg:text-xs text-text-light whitespace-nowrap">{unit}</span>
+                    <div className="mt-auto pt-1 flex items-baseline gap-0.5">
+                        <span className="text-brand font-black text-xs lg:text-sm">{currency}{price}</span>
+                        <span className="text-[8px] text-text-light">{unit}</span>
                     </div>
                 </div>
             )}
-        </>
+        </div>
     );
 
 
@@ -109,14 +101,14 @@ export function PropertyCard({
         const finalHref = href || `/ads/${adId}/${slug}`;
 
         return (
-            <Link href={finalHref} >
+            <Link href={finalHref} className="block h-full">
                 {cardContent}
             </Link>
         );
     }
 
     return (
-        <div>
+        <div className="h-full">
             {cardContent}
         </div>
     );
