@@ -1,14 +1,29 @@
-import { JsonObject } from "../common";
+import { JsonValue } from "../common";
 
-export interface TemporaryRentAd extends JsonObject {
+export interface TemporaryRentAd {
     id: string;
     title: string;
     description?: string;
-    price: number;
-    // Add other fields as needed based on backend
+    cityId: string;
+    cityName?: string;
+    address?: string;
+    mediaIds?: string[];
+    pricing: {
+        nightlyPrice: number;
+    };
+    guestCapacity?: number;
+    owner?: {
+        fullName?: string;
+        avatarUrl?: string;
+    };
+    attributes?: {
+        rooms?: number;
+        bathrooms?: number;
+        [key: string]: JsonValue | undefined;
+    };
 }
 
-export interface TemporaryRentContactInfo extends JsonObject {
+export interface TemporaryRentContactInfo {
     phoneNumber: string;
     ownerName?: string;
 }

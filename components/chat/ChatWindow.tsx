@@ -3,6 +3,7 @@
 import { useConversation, useMessages, useSendMessage } from "@/hooks/useChat";
 import { useMeProfile } from "@/hooks/useUser";
 import { cn } from "@/lib/utils";
+import { ChatMessage } from "@/services/chat.service";
 import { Building2, ChevronRight, Loader2, MessageCircle, Send, ShieldCheck, User } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -139,8 +140,8 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
                     </div>
                 )}
 
-                {messages.map((msg: any, idx) => {
-                    const isMine = msg.senderId === me?.id;
+                {messages.map((msg: ChatMessage, idx) => {
+                    const isMine = msg.senderId === me?.userId;
 
                     return (
                         <div

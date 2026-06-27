@@ -36,6 +36,7 @@ export interface ChatConversation {
         id: string;
         name?: string;
         avatar?: string;
+        type?: string;
     };
 }
 

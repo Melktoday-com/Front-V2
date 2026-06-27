@@ -3,6 +3,7 @@
 import { useConversations } from "@/hooks/useChat";
 import { useMeProfile } from "@/hooks/useUser";
 import { cn } from "@/lib/utils";
+import { ChatConversation } from "@/services/chat.service";
 import { Building2, MessageSquare, ShieldCheck, User } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -37,8 +38,8 @@ function ConversationListContent() {
 
     return (
         <div className="space-y-2 pb-20 lg:pb-0">
-            {conversations.map((conv) => {
-                const otherId = conv.participants.find(p => p !== me?.id);
+            {conversations.map((conv: ChatConversation) => {
+                const otherId = conv.participants.find(p => p !== me?.userId);
 
                 return (
                     <Link
@@ -53,7 +54,9 @@ function ConversationListContent() {
                         )}
                     >
                         <div className="relative">
-                            <div className="w-11 h-11 rounded-full bg-soft-bg flex items-center justify-center border border-soft-border overflow-hidden shrink-0">
+                            <div className="w-11 h-11 rounded-full
+                             bg-soft-bg flex items-center justify-center border
+                              border-soft-border overflow-hidden shrink-0">
                                 {conv.otherParticipant?.avatar ? (
                                     <img
                                         src={conv.otherParticipant.avatar}
@@ -68,11 +71,11 @@ function ConversationListContent() {
                                     <User className="w-6 h-6 text-brand/40" />
                                 )}
                             </div>
-                            {conv.unreadCount && conv.unreadCount > 0 && (
+                            {conv.unreadCount && conv.unreadCount > 0 ? (
                                 <span className="absolute -top-1 -right-1 w-5 h-5 bg-error text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-white shadow-sm animate-in zoom-in">
                                     {conv.unreadCount}
                                 </span>
-                            )}
+                            ) : <></>}
                         </div>
 
                         <div className="flex-1 min-w-0 font-medium">

@@ -1,5 +1,10 @@
 import TemporaryRentScene from "@/scenes/temporary-rent";
+import { Suspense } from "react";
 
 export default function TemporaryRentPage() {
-    return <TemporaryRentScene />;
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <TemporaryRentScene />
+        </Suspense>
+    );
 }
