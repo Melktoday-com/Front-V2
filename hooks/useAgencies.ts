@@ -1,6 +1,6 @@
 import { agencyService } from "@/services/agency.service";
 import { ListAgenciesResponse } from "@/types/api/agency.types";
-import { useQuery, UseQueryOptions } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient, UseQueryOptions } from "@tanstack/react-query";
 
 interface AgencyListQuery {
     cityId?: string;
@@ -22,5 +22,25 @@ export const useAgency = (agencyId: string) => {
         queryKey: ["agency", agencyId],
         queryFn: () => agencyService.getAgency(agencyId),
         enabled: !!agencyId,
+    });
+};
+
+export const useFollowAgency = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (agencyId: string) => agencyService.followAgency(agencyId),
+        onSuccess: (_, agencyId) => {
+            queryClient.invalidateQueries({ queryKey: ["agency", agencyId] });
+        },
+    });
+};
+
+export const useUnfollowAgency = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (agencyId: string) => agencyService.unfollowAgency(agencyId),
+        onSuccess: (_, agencyId) => {
+            queryClient.invalidateQueries({ queryKey: ["agency", agencyId] });
+        },
     });
 };

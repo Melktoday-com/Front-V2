@@ -1,7 +1,7 @@
 import { JsonValue } from "@/types/common";
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 import { deleteCookie, getCookie, setCookie } from "cookies-next";
-    
+
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 
@@ -18,6 +18,7 @@ interface StandardResponse<T = JsonValue> {
 
 export const apiClient = axios.create({
     baseURL: API_URL,
+    withCredentials: true,
     headers: {
         "Content-Type": "application/json",
     },
@@ -44,6 +45,16 @@ apiClient.interceptors.request.use((config) => {
     if (token && config.headers) {
         config.headers.Authorization = `Bearer ${token}`;
     }
+
+    // Add CSRF token for unsafe methods (POST, PUT, PATCH, DELETE)
+    const unsafeMethods = ["post", "put", "patch", "delete"];
+    if (config.method && unsafeMethods.includes(config.method.toLowerCase())) {
+        const csrfToken = getCookie("XSRF-TOKEN");
+        if (csrfToken && config.headers) {
+            config.headers["x-xsrf-token"] = csrfToken;
+        }
+    }
+
     return config;
 });
 

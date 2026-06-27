@@ -13,4 +13,12 @@ export const agencyService = {
         const response = await apiClient.get<AgencySummary>(`/agencies/${agencyId}`);
         return response.data;
     },
+
+    async followAgency(agencyId: string): Promise<void> {
+        await apiClient.post(`/agencies/${agencyId}/follow`);
+    },
+
+    async unfollowAgency(agencyId: string): Promise<void> {
+        await apiClient.delete(`/agencies/${agencyId}/follow`);
+    },
 };

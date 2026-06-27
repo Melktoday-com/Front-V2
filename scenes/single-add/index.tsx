@@ -2,6 +2,8 @@
 
 import { Button } from "@/components/ui/Button";
 import { PropertyCard } from "@/components/ui/PropertyCard";
+import { useAuth } from "@/hooks/useAuth";
+import { useCreateConversation } from "@/hooks/useChat";
 import { cn } from "@/lib/utils";
 import {
     Bath,
@@ -15,6 +17,7 @@ import {
     Wifi
 } from "lucide-react";
 import Image from "next/image";
+import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 
 const mainImage = "https://www.figma.com/api/mcp/asset/d693cfef-5c0b-4f23-9620-7bcd0a7697db";
@@ -65,8 +68,24 @@ const nearbyAds = [
 ];
 
 export default function SingleAdScene() {
+    const { id } = useParams() as { id: string };
+    const router = useRouter();
     const [transactionType, setTransactionType] = useState<"rent" | "buy">("rent");
     const [isFavorite, setIsFavorite] = useState(true);
+
+    const { isLoggedIn } = useAuth();
+    const chatMutation = useCreateConversation();
+
+    const handleChat = () => {
+        if (!isLoggedIn) {
+            router.push("/auth");
+            return;
+        }
+        chatMutation.mutate({
+            subjectType: "PROPERTY",
+            subjectId: id,
+        });
+    };
 
     return (
         <div className="flex flex-col pb-24 lg:pb-8">
@@ -196,7 +215,11 @@ export default function SingleAdScene() {
                         </div>
                     </div>
                     <div className="flex gap-2">
-                        <button className="w-10 h-10 bg-brand text-white rounded-full flex items-center justify-center hover:bg-brand/90 transition-all">
+                        <button 
+                            onClick={handleChat}
+                            disabled={chatMutation.isPending}
+                            className="w-10 h-10 bg-brand text-white rounded-full flex items-center justify-center hover:bg-brand/90 transition-all disabled:opacity-50"
+                        >
                             <MessageCircle className="w-5 h-5" />
                         </button>
                     </div>
