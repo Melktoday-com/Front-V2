@@ -136,25 +136,4 @@ export const adminService = {
         const response = await api.put("/admin/config/plan-limits", data);
         return response.data;
     },
-
-    // Geo
-    listGeoZones: async (type?: string, parentId?: string) => {
-        const response = await api.get("/admin/geo/zones", { params: { type, parentId } });
-        return response.data;
-    },
-
-    createGeoZone: async (data: any) => {
-        const response = await api.post("/admin/geo/zones", data);
-        return response.data;
-    },
-
-    updateGeoZone: async (zoneId: string, data: any) => {
-        const response = await api.put(`/admin/geo/zones/${zoneId}`, data);
-        return response.data;
-    },
-
-    archiveGeoZone: async (zoneId: string) => {
-        const response = await api.delete(`/admin/geo/zones/${zoneId}`);
-        return response.data;
-    },
 };

@@ -2,7 +2,7 @@
 
 import { adminService } from "@/services/admin.service";
 import { AdminReport } from "@/types/api/admin.types";
-import { ReportStatus } from "@/types/api/enums";
+import { ReportStatus, ReportTargetType } from "@/types/api/enums";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns-jalali";
 import { AlertOctagon, CheckCircle, Clock, ExternalLink, XCircle } from "lucide-react";
@@ -61,7 +61,7 @@ export default function AdminReportsPage() {
                                 <td className="px-6 py-4">
                                     <div className="flex flex-col">
                                         <span className="text-sm font-semibold text-gray-800">
-                                            {report.targetType === "LISTING" ? "آگهی" : report.targetType === "USER" ? "کاربر" : report.targetType}
+                                            {report.targetType === ReportTargetType.LISTING ? "آگهی" : report.targetType === ReportTargetType.USER ? "کاربر" : report.targetType}
                                         </span>
                                         <span className="text-xs text-gray-400 font-mono mt-1">{report.targetId}</span>
                                     </div>

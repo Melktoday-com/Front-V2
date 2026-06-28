@@ -7,7 +7,7 @@ import { Bell, Info, Send, Smartphone, Users } from "lucide-react";
 import React, { useState } from "react";
 import { toast } from "sonner";
 
-type AudienceType = "ALL" | "AGENTS" | "HOSTS" | "USERS";
+type AudienceType = BroadcastNotificationRequest['audience'];
 
 export default function AdminNotificationsPage() {
     const [title, setTitle] = useState("");
@@ -33,9 +33,7 @@ export default function AdminNotificationsPage() {
         broadcastMutation.mutate({
             title,
             body,
-            audience: {
-                roles: audience === "ALL" ? undefined : [audience === "AGENTS" ? "agent" : audience === "HOSTS" ? "manager" : "user"]
-            }
+            audience
         });
     };
 
@@ -50,7 +48,14 @@ export default function AdminNotificationsPage() {
                 <div className="bg-gradient-to-r from-indigo-600 to-blue-600 p-8 text-white relative overflow-hidden">
                     <div className="relative z-10 flex items-center justify-between">
                         <div className="space-y-1">
-                            <h3 className="text-xl font-bold">ارسال برای {audience === 'ALL' ? 'همه کاربران' : audience === 'AGENTS' ? 'مشاورین املاک' : audience === 'HOSTS' ? 'میزبانان اجاره روزانه' : 'کاربران عادی'}</h3>
+                            <h3 className="text-xl font-bold">ارسال برای {
+                                audience === 'ALL' ? 'همه کاربران' :
+                                    audience === 'AGENTS' ? 'مشاورین املاک' :
+                                        audience === 'BUYERS' ? 'خریداران' :
+                                            audience === 'SELLERS' ? 'فروشندگان' :
+                                                audience === 'TENANTS' ? 'مستاجران' :
+                                                    'مالکین و میزبانان'
+                            }</h3>
                             <p className="text-indigo-100 opacity-80 text-sm italic">ارسال پیام مستقیم سیستمی</p>
                         </div>
                         <div className="bg-white/20 p-4 rounded-2xl backdrop-blur-md">
@@ -62,12 +67,14 @@ export default function AdminNotificationsPage() {
                 <form onSubmit={handleSend} className="p-8 space-y-6">
                     <div className="space-y-4">
                         <label className="text-sm font-bold text-gray-700 block">انتخاب گروه مخاطبان</label>
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
                             {[
                                 { id: "ALL", label: "همه کاربران", icon: Users },
                                 { id: "AGENTS", label: "مشاورین املاک", icon: Smartphone },
-                                { id: "HOSTS", label: "میزبانان", icon: Bell },
-                                { id: "USERS", label: "کاربران عادی", icon: Users },
+                                { id: "BUYERS", label: "خریداران", icon: Users },
+                                { id: "SELLERS", label: "فروشندگان", icon: Bell },
+                                { id: "TENANTS", label: "مستاجران", icon: Users },
+                                { id: "LANDLORDS", label: "مالکین/میزبانان", icon: Bell },
                             ].map((item) => (
                                 <button
                                     key={item.id}

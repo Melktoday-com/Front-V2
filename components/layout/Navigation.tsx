@@ -13,7 +13,7 @@ const navItems = [
     { icon: MapPin, label: "کاوش", href: "/explore" },
     { icon: Search, label: "جستجو", href: "/ads" },
     { icon: Building2, label: "آژانس‌ها", href: "/agency" },
-    { icon: Heart, label: "علاقه‌مندی", href: "/favorites" },
+    { icon: Heart, label: "فید", href: "/favorites" },
     { icon: User, label: "پروفایل", href: "/profile" },
 ];
 
@@ -42,7 +42,7 @@ export function Sidebar() {
                             className={cn(
                                 "flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 group",
                                 active
-                                    ? "bg-brand text-white shadow-lg shadow-brand/20"
+                                    ? "bg-primary text-white shadow-lg shadow-brand/20"
                                     : "text-secondary hover:bg-soft-bg"
                             )}
                         >

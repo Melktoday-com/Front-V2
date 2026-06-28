@@ -16,6 +16,8 @@ interface PropertyCardProps {
     variant?: "vertical" | "horizontal";
     className?: string;
     href?: string;
+    isFavorited?: boolean;
+    onToggleFavorite?: (adId: string) => Promise<void>;
 }
 
 export function PropertyCard({
@@ -31,6 +33,8 @@ export function PropertyCard({
     variant = "vertical",
     className,
     href,
+    isFavorited,
+    onToggleFavorite,
 }: PropertyCardProps) {
     const cardContent = (
         <div className={cn("group flex flex-col h-full", className)}>
@@ -48,10 +52,22 @@ export function PropertyCard({
                     )}
                 />
                 <button
-                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                    className="absolute top-1 left-1 w-5 h-5 bg-white/30 backdrop-blur-md rounded-full flex items-center justify-center transition-colors hover:bg-white/50"
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (adId && onToggleFavorite) {
+                            onToggleFavorite(adId);
+                        }
+                    }}
+                    className={cn(
+                        "absolute top-1 left-1 w-5 h-5 backdrop-blur-md rounded-full flex items-center justify-center transition-colors",
+                        isFavorited ? "bg-red-500/80 hover:bg-red-500" : "bg-white/30 hover:bg-white/50"
+                    )}
                 >
-                    <Heart className="w-2.5 h-2.5 text-white hover:fill-white" />
+                    <Heart className={cn(
+                        "w-2.5 h-2.5 transition-colors",
+                        isFavorited ? "text-white fill-white" : "text-white"
+                    )} />
                 </button>
                 <div className="absolute bottom-1 right-1 bg-brand/60 backdrop-blur-sm text-white text-[8px] px-1.5 py-0.5 rounded-md font-bold">
                     {category}
