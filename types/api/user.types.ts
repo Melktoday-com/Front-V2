@@ -1,10 +1,12 @@
+import { KYCStatus, UserStatus } from "./enums";
+
 export interface UserProfile {
     userId: string;
     mobileNumber: string;
     firstName?: string;
     lastName?: string;
-    kycStatus: "pending" | "verified" | "rejected" | "in_progress";
-    status: "Active" | "Inactive";
+    kycStatus: KYCStatus;
+    status: UserStatus;
     createdAt: string;
 }
 

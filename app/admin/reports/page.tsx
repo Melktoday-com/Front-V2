@@ -2,6 +2,7 @@
 
 import { adminService } from "@/services/admin.service";
 import { AdminReport } from "@/types/api/admin.types";
+import { ReportStatus } from "@/types/api/enums";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns-jalali";
 import { AlertOctagon, CheckCircle, Clock, ExternalLink, XCircle } from "lucide-react";
@@ -75,17 +76,17 @@ export default function AdminReportsPage() {
                                     </div>
                                 </td>
                                 <td className="px-6 py-4">
-                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${report.status === "PENDING" ? "bg-amber-100 text-amber-800" :
-                                        report.status === "RESOLVED" ? "bg-green-100 text-green-800" :
+                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${report.status === ReportStatus.PENDING ? "bg-amber-100 text-amber-800" :
+                                        report.status === ReportStatus.RESOLVED ? "bg-green-100 text-green-800" :
                                             "bg-gray-100 text-gray-800"
                                         }`}>
-                                        {report.status === "PENDING" ? "در حال بررسی" :
-                                            report.status === "RESOLVED" ? "حل شده" : "رد شده"}
+                                        {report.status === ReportStatus.PENDING ? "در حال بررسی" :
+                                            report.status === ReportStatus.RESOLVED ? "حل شده" : "رد شده"}
                                     </span>
                                 </td>
                                 <td className="px-6 py-4">
                                     <div className="flex items-center gap-2">
-                                        {report.status === "PENDING" && (
+                                        {report.status === ReportStatus.PENDING && (
                                             <>
                                                 <button
                                                     onClick={() => moderateMutation.mutate({ id: report.id, action: "RESOLVE" })}

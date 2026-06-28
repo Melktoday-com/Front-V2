@@ -23,11 +23,13 @@ export interface ChargeWalletResponse {
     currency: string;
 }
 
+import { TransactionStatus, TransactionType } from "./enums";
+
 export interface WalletTransaction {
     id: string;
     amount: number;
-    type: "CREDIT" | "DEBIT";
-    status: "PENDING" | "SUCCESS" | "FAILED";
+    type: TransactionType;
+    status: TransactionStatus;
     reason: string;
     createdAt: string;
     currency: string;

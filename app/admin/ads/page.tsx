@@ -3,6 +3,7 @@
 import { useAds } from "@/hooks/useAds";
 import { adminService } from "@/services/admin.service";
 import { AdSummary } from "@/types/api/ads.types";
+import { AdStatus } from "@/types/api/enums";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AlertCircle, Check, Clock, Eye, X } from "lucide-react";
 import { useState } from "react";
@@ -10,7 +11,7 @@ import { toast } from "sonner";
 
 export default function AdminAdsPage() {
     const queryClient = useQueryClient();
-    const [statusFilter, setStatusFilter] = useState("PENDING_APPROVAL");
+    const [statusFilter, setStatusFilter] = useState<AdStatus>(AdStatus.PENDING_APPROVAL);
 
     const { data, isLoading } = useAds({
         status: statusFilter,
@@ -66,26 +67,26 @@ export default function AdminAdsPage() {
 
                 <div className="flex gap-2 bg-white p-1 rounded-lg border border-gray-200">
                     <button
-                        onClick={() => setStatusFilter("PENDING_APPROVAL")}
-                        className={`px-4 py-2 text-sm rounded-md transition-all ${statusFilter === "PENDING_APPROVAL" ? "bg-blue-600 text-white shadow-sm" : "text-gray-600 hover:bg-gray-50"}`}
+                        onClick={() => setStatusFilter(AdStatus.PENDING_APPROVAL)}
+                        className={`px-4 py-2 text-sm rounded-md transition-all ${statusFilter === AdStatus.PENDING_APPROVAL ? "bg-blue-600 text-white shadow-sm" : "text-gray-600 hover:bg-gray-50"}`}
                     >
                         در انتظار تایید
                     </button>
                     <button
-                        onClick={() => setStatusFilter("PUBLISHED")}
-                        className={`px-4 py-2 text-sm rounded-md transition-all ${statusFilter === "PUBLISHED" ? "bg-blue-600 text-white shadow-sm" : "text-gray-600 hover:bg-gray-50"}`}
+                        onClick={() => setStatusFilter(AdStatus.PUBLISHED)}
+                        className={`px-4 py-2 text-sm rounded-md transition-all ${statusFilter === AdStatus.PUBLISHED ? "bg-blue-600 text-white shadow-sm" : "text-gray-600 hover:bg-gray-50"}`}
                     >
                         منتشر شده
                     </button>
                     <button
-                        onClick={() => setStatusFilter("ARCHIVED")}
-                        className={`px-4 py-2 text-sm rounded-md transition-all ${statusFilter === "ARCHIVED" ? "bg-blue-600 text-white shadow-sm" : "text-gray-600 hover:bg-gray-50"}`}
+                        onClick={() => setStatusFilter(AdStatus.ARCHIVED)}
+                        className={`px-4 py-2 text-sm rounded-md transition-all ${statusFilter === AdStatus.ARCHIVED ? "bg-blue-600 text-white shadow-sm" : "text-gray-600 hover:bg-gray-50"}`}
                     >
                         آرشیو شده
                     </button>
                     <button
-                        onClick={() => setStatusFilter("REJECTED")}
-                        className={`px-4 py-2 text-sm rounded-md transition-all ${statusFilter === "REJECTED" ? "bg-blue-600 text-white shadow-sm" : "text-gray-600 hover:bg-gray-50"}`}
+                        onClick={() => setStatusFilter(AdStatus.REJECTED)}
+                        className={`px-4 py-2 text-sm rounded-md transition-all ${statusFilter === AdStatus.REJECTED ? "bg-blue-600 text-white shadow-sm" : "text-gray-600 hover:bg-gray-50"}`}
                     >
                         رد شده
                     </button>
@@ -131,12 +132,12 @@ export default function AdminAdsPage() {
                                 </td>
                                 <td className="px-6 py-4">
                                     <div className="flex items-center gap-1.5">
-                                        {ad.status === "PENDING_APPROVAL" && <Clock size={14} className="text-amber-500" />}
-                                        {ad.status === "PUBLISHED" && <Check size={14} className="text-green-500" />}
-                                        {ad.status === "REJECTED" && <AlertCircle size={14} className="text-red-500" />}
+                                        {ad.status === AdStatus.PENDING_APPROVAL && <Clock size={14} className="text-amber-500" />}
+                                        {ad.status === AdStatus.PUBLISHED && <Check size={14} className="text-green-500" />}
+                                        {ad.status === AdStatus.REJECTED && <AlertCircle size={14} className="text-red-500" />}
                                         <span className="text-xs font-medium">
-                                            {ad.status === "PENDING_APPROVAL" ? "در انتظار" : ad.status === "PUBLISHED" ? "منتشر شده" :
-                                                ad.status === "REJECTED" ? "رد شده" : ad.status}
+                                            {ad.status === AdStatus.PENDING_APPROVAL ? "در انتظار" : ad.status === AdStatus.PUBLISHED ? "منتشر شده" :
+                                                ad.status === AdStatus.REJECTED ? "رد شده" : ad.status}
                                         </span>
                                     </div>
                                 </td>
@@ -148,7 +149,7 @@ export default function AdminAdsPage() {
                                         >
                                             <Eye size={18} />
                                         </button>
-                                        {ad.status === "PENDING_APPROVAL" && (
+                                        {ad.status === AdStatus.PENDING_APPROVAL && (
                                             <>
                                                 <button
                                                     onClick={() => handleApprove(ad.adId)}

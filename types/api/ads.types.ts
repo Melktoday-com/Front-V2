@@ -1,3 +1,5 @@
+import { AdStatus } from "./enums";
+
 export interface CategoryPath {
     categoryKey: string;
     subcategoryKey: string;
@@ -9,7 +11,7 @@ export interface AdSummary {
     adId: string;
     ownerId: string;
     cityId: string;
-    status: string;
+    status: AdStatus;
     title: string;
     categoryPath: CategoryPath;
     pricing: Record<string, number>;
@@ -19,7 +21,7 @@ export interface AdSummary {
 }
 
 export interface ListAdsQuery {
-    status?: string;
+    status?: AdStatus | string;
     cityId?: string;
     search?: string;
     page?: number;

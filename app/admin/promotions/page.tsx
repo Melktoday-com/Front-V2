@@ -3,6 +3,7 @@
 import { usePendingPromotions } from "@/hooks/useAdmin";
 import { adminService } from "@/services/admin.service";
 import { PromotionSummary } from "@/types/api/admin.types";
+import { PromotionStatus } from "@/types/api/enums";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Check, X, Clock, ExternalLink } from "lucide-react";
 import { useState } from "react";

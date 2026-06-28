@@ -3,12 +3,16 @@
 import { useAdminUsers } from "@/hooks/useAdmin";
 import { adminService } from "@/services/admin.service";
 import { AdminUser } from "@/types/api/admin.types";
+import { UserStatus } from "@/types/api/enums";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
+    Clock,
     History,
     ShieldCheck,
+    Ban,
     UserX,
-    WalletIcon
+    WalletIcon,
+    Loader2
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -121,11 +125,11 @@ export default function AdminUsersPage() {
                                     </div>
                                 </td>
                                 <td className="px-6 py-4">
-                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.status === "active" ? "bg-green-100 text-green-800" :
-                                        user.status === "banned" ? "bg-red-100 text-red-800" :
+                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.status === UserStatus.ACTIVE ? "bg-green-100 text-green-800" :
+                                        user.status === UserStatus.BLOCKED ? "bg-red-100 text-red-800" :
                                             "bg-amber-100 text-amber-800"
                                         }`}>
-                                        {user.status === "active" ? "فعال" : user.status === "banned" ? "مسدود" : "غیرفعال"}
+                                        {user.status === UserStatus.ACTIVE ? "فعال" : user.status === UserStatus.BLOCKED ? "مسدود" : "غیرفعال"}
                                     </span>
                                 </td>
                                 <td className="px-6 py-4 text-gray-500">
@@ -146,7 +150,7 @@ export default function AdminUsersPage() {
                                             <History size={16} />
                                         </button>
                                         
-                                        {user.status === "active" ? (
+                                        {user.status === UserStatus.ACTIVE ? (
                                             <>
                                                 <button
                                                     onClick={() => handleSuspend(user.id)}
@@ -163,18 +167,10 @@ export default function AdminUsersPage() {
                                                     <UserX size={16} />
                                                 </button>
                                             </>
-                                        ) : user.status === "suspended" ? (
-                                            <button
-                                                onClick={() => handleReinstate(user.id)}
-                                                title="لغو تعلیق"
-                                                className="p-1.5 text-green-600 hover:bg-green-50 rounded-md"
-                                            >
-                                                <ShieldCheck size={16} />
-                                            </button>
                                         ) : (
                                             <button
                                                 onClick={() => handleUnban(user.id)}
-                                                title="رفع مسدودیت"
+                                                title="رفع محدودیت"
                                                 className="p-1.5 text-green-600 hover:bg-green-50 rounded-md"
                                             >
                                                 <ShieldCheck size={16} />

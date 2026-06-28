@@ -1,3 +1,5 @@
+import { AdStatus, PromotionStatus, ReportStatus, ReportTargetType, UserStatus } from "./enums";
+
 export interface ModerationHistory {
     id: string;
     targetUserId: string;
@@ -63,7 +65,7 @@ export interface PromotionSummary {
     promotionType: string;
     durationDays: number;
     pricePaidRials: string | number;
-    status: string;
+    status: PromotionStatus;
     requestedAt: string;
     reviewedBy?: string;
     reviewedAt?: string;
@@ -132,7 +134,7 @@ export interface AdminUser {
     mobileNumber: string;
     firstName?: string;
     lastName?: string;
-    status: string;
+    status: UserStatus;
     roles: string[];
     createdAt: string;
 }
@@ -145,7 +147,7 @@ export interface ListUsersResponse {
 export interface AdminAd {
     id: string;
     title: string;
-    status: 'DRAFT' | 'PENDING_APPROVAL' | 'PUBLISHED' | 'ARCHIVED' | 'REJECTED';
+    status: AdStatus;
     price: number;
     ownerName: string;
     createdAt: string;
@@ -155,10 +157,10 @@ export interface AdminAd {
 export interface AdminReport {
     id: string;
     reportedBy: string;
-    targetType: string;
+    targetType: ReportTargetType;
     targetId: string;
     reason: string;
-    status: 'PENDING' | 'RESOLVED' | 'DISMISSED';
+    status: ReportStatus;
     note?: string;
     createdAt: string;
 }
