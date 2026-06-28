@@ -27,10 +27,57 @@ export default function AdminUsersPage() {
         }
     });
 
+    const unbanMutation = useMutation({
+        mutationFn: ({ userId, note }: { userId: string, note?: string }) =>
+            adminService.unbanUser(userId, { note }),
+        onSuccess: () => {
+            toast.success("محدودیت کاربر رفع شد");
+            queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
+        }
+    });
+
+    const suspendMutation = useMutation({
+        mutationFn: ({ userId, reason, duration }: { userId: string, reason: string, duration: number }) =>
+            adminService.suspendUser(userId, { reasonCode: "ADMIN_MANUAL", reasonDetail: reason, durationDays: duration }),
+        onSuccess: () => {
+            toast.success("کاربر تعلیق شد");
+            queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
+        }
+    });
+
+    const reinstateMutation = useMutation({
+        mutationFn: ({ userId, note }: { userId: string, note?: string }) =>
+            adminService.reinstateUser(userId, { note }),
+        onSuccess: () => {
+            toast.success("تعلیق کاربر لغو شد");
+            queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
+        }
+    });
+
     const handleBan = (userId: string) => {
         const reason = prompt("علت مسدودسازی را وارد کنید:");
         if (reason) {
             banMutation.mutate({ userId, reason });
+        }
+    };
+
+    const handleUnban = (userId: string) => {
+        if (confirm("آیا از رفع مسدودیت این کاربر اطمینان دارید؟")) {
+            unbanMutation.mutate({ userId });
+        }
+    };
+
+    const handleSuspend = (userId: string) => {
+        const reason = prompt("علت تعلیق را وارد کنید:");
+        const days = prompt("مدت تعلیق (روز):", "7");
+        if (reason && days) {
+            suspendMutation.mutate({ userId, reason, duration: parseInt(days, 10) });
+        }
+    };
+
+    const handleReinstate = (userId: string) => {
+        if (confirm("آیا از لغو تعلیق این کاربر اطمینان دارید؟")) {
+            reinstateMutation.mutate({ userId });
         }
     };
 
@@ -98,16 +145,35 @@ export default function AdminUsersPage() {
                                         >
                                             <History size={16} />
                                         </button>
+                                        
                                         {user.status === "active" ? (
+                                            <>
+                                                <button
+                                                    onClick={() => handleSuspend(user.id)}
+                                                    title="تعلیق موقت"
+                                                    className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-md"
+                                                >
+                                                    <Clock size={16} />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleBan(user.id)}
+                                                    title="مسدود کردن"
+                                                    className="p-1.5 text-red-600 hover:bg-red-50 rounded-md"
+                                                >
+                                                    <UserX size={16} />
+                                                </button>
+                                            </>
+                                        ) : user.status === "suspended" ? (
                                             <button
-                                                onClick={() => handleBan(user.id)}
-                                                title="مسدود کردن"
-                                                className="p-1.5 text-red-600 hover:bg-red-50 rounded-md"
+                                                onClick={() => handleReinstate(user.id)}
+                                                title="لغو تعلیق"
+                                                className="p-1.5 text-green-600 hover:bg-green-50 rounded-md"
                                             >
-                                                <UserX size={16} />
+                                                <ShieldCheck size={16} />
                                             </button>
                                         ) : (
                                             <button
+                                                onClick={() => handleUnban(user.id)}
                                                 title="رفع مسدودیت"
                                                 className="p-1.5 text-green-600 hover:bg-green-50 rounded-md"
                                             >

@@ -106,7 +106,7 @@ export default function AdminNotificationsPage() {
                     </div>
 
                     <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 flex gap-3 text-blue-700 text-sm">
-                        <Info className="flex-shrink-0 mt-0.5" size={18} />
+                        <Info className="shrink-0 mt-0.5" size={18} />
                         <p>
                             پیام شما به محض کلیک روی دکمه ارسال، برای تمامی کاربران گروه هدف ارسال خواهد شد.
                             امکان لغو عملیات وجود ندارد.

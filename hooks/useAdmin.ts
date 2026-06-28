@@ -22,3 +22,17 @@ export function useGeoZones(zoneType: string) {
         queryFn: () => adminService.listGeoZones(zoneType),
     });
 }
+
+export function usePendingPromotions(params: { page?: number; limit?: number } = {}) {
+    return useQuery({
+        queryKey: ["admin", "promotions", "pending", params],
+        queryFn: () => adminService.listPendingPromotions(params),
+    });
+}
+
+export function usePendingCampaigns(params: { page?: number; limit?: number } = {}) {
+    return useQuery({
+        queryKey: ["admin", "campaigns", "pending", params],
+        queryFn: () => adminService.listPendingCampaigns(params),
+    });
+}

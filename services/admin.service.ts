@@ -108,4 +108,53 @@ export const adminService = {
         const response = await api.patch(`/admin/reports/${reportId}/moderate`, { action, note });
         return response.data;
     },
+
+    // Promotions
+    listPendingPromotions: async (params: { page?: number; limit?: number } = {}) => {
+        const response = await api.get("/admin/promotions/pending", { params });
+        return response.data;
+    },
+
+    reviewPromotion: async (promotionId: string, action: 'APPROVE' | 'REJECT', reason?: string) => {
+        const response = await api.patch(`/admin/promotions/${promotionId}/review`, { action, reason });
+        return response.data;
+    },
+
+    // Campaigns
+    listPendingCampaigns: async (params: { page?: number; limit?: number } = {}) => {
+        const response = await api.get("/admin/campaigns/pending", { params });
+        return response.data;
+    },
+
+    reviewCampaign: async (campaignId: string, action: 'APPROVE' | 'REJECT', reason?: string) => {
+        const response = await api.patch(`/admin/campaigns/${campaignId}/review`, { action, reason });
+        return response.data;
+    },
+
+    // Config
+    updatePlanLimits: async (data: { plan: string; limits: any }) => {
+        const response = await api.put("/admin/config/plan-limits", data);
+        return response.data;
+    },
+
+    // Geo
+    listGeoZones: async (type?: string, parentId?: string) => {
+        const response = await api.get("/admin/geo/zones", { params: { type, parentId } });
+        return response.data;
+    },
+
+    createGeoZone: async (data: any) => {
+        const response = await api.post("/admin/geo/zones", data);
+        return response.data;
+    },
+
+    updateGeoZone: async (zoneId: string, data: any) => {
+        const response = await api.put(`/admin/geo/zones/${zoneId}`, data);
+        return response.data;
+    },
+
+    archiveGeoZone: async (zoneId: string) => {
+        const response = await api.delete(`/admin/geo/zones/${zoneId}`);
+        return response.data;
+    },
 };

@@ -47,17 +47,59 @@ export interface AdjustWalletRequest {
 export interface BroadcastNotificationRequest {
     title: string;
     body: string;
-    audience: {
-        roles?: string[];
-        cities?: string[];
-        lastActiveDays?: number;
-    };
+    audience: 'ALL' | 'BUYERS' | 'SELLERS' | 'AGENTS' | 'TENANTS' | 'LANDLORDS';
 }
 
 export interface AdminActionResponse {
     success: boolean;
     message?: string;
     transactionId?: string;
+}
+
+export interface PromotionSummary {
+    promotionId: string;
+    requestedBy: string;
+    listingId: string;
+    promotionType: string;
+    durationDays: number;
+    pricePaidRials: string | number;
+    status: string;
+    requestedAt: string;
+    reviewedBy?: string;
+    reviewedAt?: string;
+    rejectionReason?: string;
+}
+
+export interface ListPendingPromotionsResponse {
+    items: PromotionSummary[];
+    total: number;
+}
+
+export interface CampaignSummary {
+    campaignId: string;
+    title: string;
+    sponsorId: string;
+    status: string;
+    createdAt: string;
+}
+
+export interface ListPendingCampaignsResponse {
+    items: CampaignSummary[];
+    total: number;
+}
+
+export interface PlanLimits {
+    maxActiveListings: number | null;
+    hasAnalytics: boolean;
+    hasPriorityRanking: boolean;
+    hasProBadge: boolean;
+    hasUnlimitedMessaging: boolean;
+    canBoost: boolean;
+}
+
+export interface UpdatePlanLimitsRequest {
+    plan: 'FREE' | 'PRO';
+    limits: PlanLimits;
 }
 
 export interface GeoZone {

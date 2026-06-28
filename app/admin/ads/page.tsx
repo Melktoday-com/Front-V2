@@ -112,7 +112,7 @@ export default function AdminAdsPage() {
                             <tr key={ad.adId} className="hover:bg-gray-50 transition-colors">
                                 <td className="px-6 py-4">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                                        <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden shrink-0">
                                             {/* Media preview would go here */}
                                         </div>
                                         <div>

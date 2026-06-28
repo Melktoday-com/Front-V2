@@ -248,7 +248,7 @@ export default function ResidenceDetailScene() {
                     </div>
                     <div className="flex gap-4 overflow-x-auto px-6 no-scrollbar">
                         {similarResidences.items.filter(item => item.id !== id).map((item) => (
-                            <div key={item.id} className="w-[180px] flex-shrink-0">
+                            <div key={item.id} className="w-[180px] shrink-0">
                                 <PropertyCard
                                     adId={item.id}
                                     title={item.title}

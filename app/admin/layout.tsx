@@ -4,12 +4,15 @@ import { RoleGuard } from "@/components/RoleGuard";
 import { RoleName } from "@/types/access";
 import {
     AlertTriangle,
+    BarChart3,
     Bell,
     FileText,
     LayoutDashboard,
     Map,
+    Settings,
     Users,
-    Wallet
+    Wallet,
+    Zap
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -20,9 +23,12 @@ const sidebarItems = [
     { name: "آگهی‌ها", href: "/admin/ads", icon: FileText },
     { name: "کاربران", href: "/admin/users", icon: Users },
     { name: "کیف پول", href: "/admin/wallet", icon: Wallet },
+    { name: "ارتقا آگهی", href: "/admin/promotions", icon: Zap },
+    { name: "کمپین‌ها", href: "/admin/campaigns", icon: BarChart3 },
     { name: "مناطق جغرافیایی", href: "/admin/geo", icon: Map },
     { name: "گزارش‌ها", href: "/admin/reports", icon: AlertTriangle },
     { name: "اطلاع‌رسانی", href: "/admin/notifications", icon: Bell },
+    { name: "تنظیمات پلن‌ها", href: "/admin/config", icon: Settings },
 ];
 
 export default function AdminLayout({

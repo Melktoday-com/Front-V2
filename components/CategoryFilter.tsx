@@ -16,7 +16,7 @@ const CategoryFilter = ({ categories, isLoading }: CategoryFilterProps) => {
         {[1, 2, 3, 4, 5, 6].map((i) => (
           <div
             key={i}
-            className="flex-shrink-0 w-24 h-24 bg-gray-100 animate-pulse rounded-2xl"
+            className="shrink-0 w-24 h-24 bg-gray-100 animate-pulse rounded-2xl"
           />
         ))}
       </div>

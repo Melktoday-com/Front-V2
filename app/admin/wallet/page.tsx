@@ -131,7 +131,7 @@ export default function AdminWalletPage() {
                     </div>
 
                     <div className="bg-amber-50 rounded-xl p-4 flex items-start gap-3 text-amber-700 text-sm">
-                        <Info className="flex-shrink-0 mt-0.5" size={18} />
+                        <Info className="shrink-0 mt-0.5" size={18} />
                         <p>
                             دقت کنید که این عملیات مستقیماً روی موجودی کیف پول کاربر تاثیر می‌گذارد و غیرقابل بازگشت است.
                             تمامی این تغییرات در گزارش‌های بازرسی ثبت می‌شوند.

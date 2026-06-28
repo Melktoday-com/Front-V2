@@ -6,8 +6,15 @@ import {
     LucideIcon,
     TrendingUp,
     Users,
-    Wallet
+    Wallet,
+    Zap,
+    BarChart3,
+    ArrowUpRight,
+    Check,
+    FileText,
+    Map
 } from "lucide-react";
+import Link from "next/link";
 
 interface StatsCardProps {
     title: string;
@@ -32,6 +39,22 @@ const StatsCard = ({ title, value, icon: Icon, color, description }: StatsCardPr
         </div>
     </div>
 );
+
+function QuickActionLink({ href, title, description, icon: Icon }: any) {
+    return (
+        <Link href={href} className="group bg-white p-4 rounded-xl border border-gray-200 hover:border-blue-400 hover:shadow-md transition-all">
+            <div className="flex items-start gap-4">
+                <div className="p-2 bg-gray-50 text-gray-400 group-hover:bg-blue-50 group-hover:text-blue-600 rounded-lg transition-colors">
+                    <Icon size={20} />
+                </div>
+                <div>
+                    <h4 className="font-bold text-sm text-gray-800 group-hover:text-blue-600 transition-colors">{title}</h4>
+                    <p className="text-xs text-gray-500 mt-1">{description}</p>
+                </div>
+            </div>
+        </Link>
+    );
+}
 
 export default function AdminDashboard() {
     return (
@@ -72,54 +95,30 @@ export default function AdminDashboard() {
                 />
             </div>
 
-            {/* Recent Activities Section (Placeholders) */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                    <div className="p-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-                        <h3 className="font-semibold text-gray-700">آخرین آگهی‌های منتظر تایید</h3>
-                        <button className="text-sm text-blue-600 hover:underline">مشاهده همه</button>
-                    </div>
-                    <div className="divide-y divide-gray-100">
-                        {[1, 2, 3].map(i => (
-                            <div key={i} className="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 bg-gray-200 rounded-md"></div>
-                                    <div>
-                                        <p className="text-sm font-medium text-gray-800">آپارتمان ۷۵ متری - سعادت آباد</p>
-                                        <p className="text-xs text-gray-500">توسط: علی محمدی • ۲ ساعت پیش</p>
-                                    </div>
-                                </div>
-                                <div className="flex gap-2">
-                                    <button className="p-1 px-3 text-xs bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors">تایید</button>
-                                    <button className="p-1 px-3 text-xs bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors">رد</button>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+            {/* Quick Actions */}
+            <div className="space-y-6">
+                <h3 className="text-lg font-bold text-gray-800">دسترسی سریع به پنل‌ها</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+                    <QuickActionLink href="/admin/ads" title="تایید آگهی‌ها" description="بررسی آگهی‌های معلق" icon={FileText} />
+                    <QuickActionLink href="/admin/reports" title="گزارش‌های تخلف" description="بررسی گزارش‌های کاربران" icon={AlertTriangle} />
+                    <QuickActionLink href="/admin/promotions" title="درخواست‌های ارتقا" description="بررسی نردبان و فوری" icon={Zap} />
+                    <QuickActionLink href="/admin/users" title="مدیریت کاربران" description="جستجو و تغییر دسترسی" icon={Users} />
+                    <QuickActionLink href="/admin/notifications" title="ارسال پیام انبوه" description="اطلاع‌رسانی به کاربران" icon={BarChart3} />
+                    <QuickActionLink href="/admin/config" title="تنظیمات سیستم" description="پلن‌ها و محدودیت‌ها" icon={ArrowUpRight} />
+                    <QuickActionLink href="/admin/geo" title="مناطق جغرافیایی" description="مدیریت شهرها و محله‌ها" icon={Map} />
+                    <QuickActionLink href="/admin/wallet" title="امور مالی" description="مشاهده تراکنش‌ها و تسویه" icon={Wallet} />
                 </div>
+            </div>
 
-                <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                    <div className="p-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-                        <h3 className="font-semibold text-gray-700">گزارش‌های اخیر تخلف</h3>
-                        <button className="text-sm text-blue-600 hover:underline">مشاهده همه</button>
-                    </div>
-                    <div className="divide-y divide-gray-100">
-                        {[1, 2, 3].map(i => (
-                            <div key={i} className="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 bg-red-100 text-red-600 rounded-full flex items-center justify-center">
-                                        <AlertTriangle size={16} />
-                                    </div>
-                                    <div>
-                                        <p className="text-sm font-medium text-gray-800">محتوای نامناسب در آگهی</p>
-                                        <p className="text-xs text-gray-500">شناسه آگهی: #۱۲۳۴۵ • ۴ ساعت پیش</p>
-                                    </div>
-                                </div>
-                                <button className="p-1 px-3 text-xs border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50">بررسی</button>
-                            </div>
-                        ))}
-                    </div>
+            {/* System Health / Placeholder for Dynamic activities */}
+            <div className="bg-white rounded-xl border border-gray-200 p-8 flex flex-col items-center justify-center text-center">
+                <div className="w-16 h-16 bg-green-50 text-green-600 rounded-full flex items-center justify-center mb-4">
+                    <Check size={32} />
                 </div>
+                <h3 className="font-bold text-gray-800 text-lg">وضعیت سیستم: سالم</h3>
+                <p className="text-sm text-gray-500 mt-2 max-w-md mx-auto">
+                    تمامی سرویس‌های زیرمجموعه از جمله پایگاه داده، سیستم پیامک و درگاه پرداخت در وضعیت عملیاتی قرار دارند.
+                </p>
             </div>
         </div>
     );

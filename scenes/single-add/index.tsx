@@ -229,7 +229,7 @@ export default function SingleAdScene() {
                         { icon: Bath, label: "۱ سرویس" },
                         { icon: Wifi, label: "اینترنت" }
                     ].map((item, i) => (
-                        <div key={i} className="flex-shrink-0 flex items-center gap-2 bg-soft-bg px-6 py-4 rounded-full">
+                        <div key={i} className="shrink-0 flex items-center gap-2 bg-soft-bg px-6 py-4 rounded-full">
                             <item.icon className="w-5 h-5 text-secondary" />
                             <span className="text-xs font-medium text-secondary whitespace-nowrap">{item.label}</span>
                         </div>
@@ -282,7 +282,7 @@ export default function SingleAdScene() {
                 {/* Nearby Facility Tags */}
                 <div className="flex gap-3 mt-4 overflow-x-auto no-scrollbar">
                     {["۲ بیمارستان", "۴ پمپ بنزین", "۳ مدرسه"].map((tag, i) => (
-                        <div key={i} className="flex-shrink-0 bg-soft-bg px-6 py-4 rounded-[20px]">
+                        <div key={i} className="shrink-0 bg-soft-bg px-6 py-4 rounded-[20px]">
                             <span className="text-[10px] font-medium text-secondary whitespace-nowrap">{tag}</span>
                         </div>
                     ))}
@@ -312,7 +312,7 @@ export default function SingleAdScene() {
                 </div>
                 <div className="flex gap-4 overflow-x-auto px-6 no-scrollbar">
                     {nearbyAds.map((ad, i) => (
-                        <div key={i} className="w-[180px] flex-shrink-0">
+                        <div key={i} className="w-[180px] shrink-0">
                             <PropertyCard
                                 adId={ad.adId}
                                 title={ad.title}
