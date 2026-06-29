@@ -1,6 +1,11 @@
 import apiClient from "@/lib/api/client";
 import { PaginatedResponse } from "@/types/api/ads.types";
-import { TemporaryRentAd, TemporaryRentContactInfo } from "@/types/api/temporary-rent.types";
+import {
+    CreateTemporaryRentDraftRequest,
+    TemporaryRentAd,
+    TemporaryRentContactInfo,
+    TemporaryRentMutationResponse
+} from "@/types/api/temporary-rent.types";
 
 export interface TemporaryRentAdSummary {
     id: string;
@@ -13,7 +18,7 @@ export interface TemporaryRentAdSummary {
     };
     mediaIds?: string[];
     createdAt: string;
-    guestCapacity?: number;
+    maxGuests?: number;
 }
 
 export interface ListTemporaryRentQuery {
@@ -39,5 +44,17 @@ export const temporaryRentService = {
     async getContactInfo(id: string): Promise<TemporaryRentContactInfo> {
         const response = await apiClient.get<TemporaryRentContactInfo>(`/temporary-rent/${id}/contact`);
         return response.data;
-    }
+    },
+
+    async createDraft(data: CreateTemporaryRentDraftRequest): Promise<TemporaryRentMutationResponse> {
+        const response = await apiClient.post<TemporaryRentMutationResponse>("/temporary-rent/drafts", data);
+        return response.data;
+    },
+
+    async publish(id: string): Promise<TemporaryRentMutationResponse> {
+        const response = await apiClient.post<TemporaryRentMutationResponse>(`/temporary-rent/${id}/publish`);
+        return response.data;    },
+
+    async delete(adId: string): Promise<void> {
+        await apiClient.delete(`/temporary-rent/${adId}`);    }
 };
