@@ -98,8 +98,8 @@ export const adminService = {
         return response.data;
     },
 
-    importGeoZonesKml: async (data: { kmlContent: string; parentZoneId?: string }) => {
-        const response = await api.post("/geo/zones/import/kml", data);
+    importGeoZonesKml: async (data: { content: string; type: string; parentZoneId?: string }) => {
+        const response = await api.post("/geo/zones/import", data);
         return response.data;
     },
 
@@ -139,6 +139,32 @@ export const adminService = {
     // Config
     updatePlanLimits: async (data: { plan: string; limits: any }) => {
         const response = await api.put("/admin/config/plan-limits", data);
+        return response.data;
+    },
+
+    // Categories Management
+    createCategory: async (data: { key: string; displayName: string }) => {
+        const response = await api.post("/ads/categories", data);
+        return response.data;
+    },
+
+    updateCategory: async (categoryId: string, data: { displayName: string }) => {
+        const response = await api.patch(`/ads/categories/${categoryId}`, data);
+        return response.data;
+    },
+
+    archiveCategory: async (categoryId: string) => {
+        const response = await api.delete(`/ads/categories/${categoryId}`);
+        return response.data;
+    },
+
+    addSubcategory: async (categoryId: string, data: { subcategoryKey: string; displayName: string }) => {
+        const response = await api.post(`/ads/categories/${categoryId}/subcategories`, data);
+        return response.data;
+    },
+
+    archiveSubcategory: async (categoryId: string, subcategoryKey: string) => {
+        const response = await api.delete(`/ads/categories/${categoryId}/subcategories/${subcategoryKey}`);
         return response.data;
     },
 };

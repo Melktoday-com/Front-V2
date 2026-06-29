@@ -8,3 +8,10 @@ export const useZones = (parentId?: string) => {
         enabled: parentId !== undefined && parentId !== ""
     });
 };
+
+export const useCities = (params?: { page?: number; limit?: number; provinceId?: number; status?: string; search?: string }) => {
+    return useQuery({
+        queryKey: ["cities", params],
+        queryFn: () => geoService.listCities(params)
+    });
+};

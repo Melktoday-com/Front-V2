@@ -106,8 +106,10 @@ export interface UpdatePlanLimitsRequest {
 
 export interface GeoZone {
     id: string;
+    externalId?: number;
     name: string;
-    zoneType: 'PROVINCE' | 'CITY' | 'DISTRICT' | 'NEIGHBORHOOD';
+    zoneType: 'PROVINCE' | 'CITY' | 'DISTRICT' | 'NEIGHBORHOOD' | 'MAP_ZONE';
+    status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
     centerLatitude?: number;
     centerLongitude?: number;
     parentZoneId?: string;

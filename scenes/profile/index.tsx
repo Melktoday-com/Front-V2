@@ -8,6 +8,7 @@ import { useWallet } from "@/hooks/useWallet";
 import { cn, formatCurrency } from "@/lib/utils";
 import { RoleName } from "@/types/access";
 import {
+    Building2,
     ChevronLeft,
     CreditCard,
     LayoutList,
@@ -126,17 +127,17 @@ export default function ProfileScene() {
 
                 {/* Dashboard Options based on Permissions */}
                 <section className="grid gap-4">
-                    <RoleGuard permissions={['read_agent_dashboard']}>
+                    <RoleGuard roles={['AGENT']}>
                         <Button
                             variant="outline"
                             className="w-full h-16 rounded-[25px] flex items-center justify-between px-6 border-brand/10 hover:bg-brand/5"
-                            onClick={() => router.push('/agent/dashboard')}
+                            onClick={() => router.push('/agency/panel')}
                         >
                             <div className="flex items-center gap-4">
                                 <div className="p-3 rounded-2xl bg-brand/5 text-brand">
-                                    <ShieldCheck className="w-6 h-6" />
+                                    <Building2 className="w-6 h-6" />
                                 </div>
-                                <span className="font-bold text-brand">پنل مشاورین</span>
+                                <span className="font-bold text-brand">مدیریت آژانس من</span>
                             </div>
                             <ChevronLeft className="w-5 h-5 text-secondary" />
                         </Button>
