@@ -22,7 +22,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function ProfileScene() {
-    const { user, isLoggedIn, activeRole, isLoading: isAuthLoading } = useAuth();
+    const { user, activeRole } = useAuth();
     const { logout } = useLogout();
     const router = useRouter();
 
@@ -48,15 +48,6 @@ export default function ProfileScene() {
         agent: "مشاور املاک",
         landlord: "میزبان",
     };
-
-    useEffect(() => {
-        if (!isAuthLoading && !isLoggedIn) {
-            router.push("/auth");
-        }
-    }, [isLoggedIn, isAuthLoading, router]);
-
-    if (isAuthLoading || !isLoggedIn)
-        return <div className="p-10 text-center text-brand font-bold animate-pulse">در حال بارگذاری...</div>;
 
     return (
         <div className="min-h-screen bg-white pb-24 lg:pb-10">

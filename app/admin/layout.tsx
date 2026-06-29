@@ -1,6 +1,6 @@
 "use client";
 
-import { RoleGuard } from "@/components/RoleGuard";
+import { AccessGuard } from "@/components/AccessGuard";
 import { cn } from "@/lib/utils";
 import { RoleName } from "@/types/access";
 import {
@@ -44,7 +44,7 @@ export default function AdminLayout({
     const pathname = usePathname();
 
     return (
-        <RoleGuard roles={[RoleName.Admin, RoleName.SuperAdmin]}>
+        <AccessGuard roles={[RoleName.Admin, RoleName.SuperAdmin]}>
             <div className="flex min-h-screen bg-soft-bg admin-layout" dir="rtl">
                 {/* Sidebar */}
                 <aside className="w-64 bg-white border-l border-soft-border sticky top-0 h-screen overflow-y-auto p-6 flex flex-col">
@@ -122,6 +122,6 @@ export default function AdminLayout({
                     </div>
                 </main>
             </div>
-        </RoleGuard>
+        </AccessGuard>
     );
 }
