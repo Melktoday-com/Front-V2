@@ -5,6 +5,10 @@ import { createContext, ReactNode, useContext, useEffect, useState } from "react
 interface City {
     id: string;
     name: string;
+    centerPoint?: {
+        latitude: number;
+        longitude: number;
+    };
 }
 
 interface CityContextType {
@@ -22,7 +26,17 @@ export function CityProvider({ children }: { children: ReactNode }) {
         const saved = localStorage.getItem('selectedCity');
         if (saved) {
             try {
-                setSelectedCityState(JSON.parse(saved));
+                const parsed = JSON.parse(saved);
+
+                // Compatibility layer: map old 'lat/lng' to new 'latitude/longitude' if present
+                if (parsed.centerPoint && (parsed.centerPoint.lat !== undefined || parsed.centerPoint.lng !== undefined)) {
+                    parsed.centerPoint = {
+                        latitude: parsed.centerPoint.latitude ?? parsed.centerPoint.lat,
+                        longitude: parsed.centerPoint.longitude ?? parsed.centerPoint.lng
+                    };
+                }
+
+                setSelectedCityState(parsed);
             } catch (e) {
                 console.error("Failed to parse saved city", e);
             }

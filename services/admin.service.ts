@@ -98,6 +98,11 @@ export const adminService = {
         return response.data;
     },
 
+    importGeoZonesKml: async (data: { kmlContent: string; parentZoneId?: string }) => {
+        const response = await api.post("/geo/zones/import/kml", data);
+        return response.data;
+    },
+
     // Reports
     listPendingReports: async () => {
         const response = await api.get("/admin/reports/pending");

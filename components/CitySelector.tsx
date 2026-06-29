@@ -8,7 +8,11 @@ import { useEffect, useMemo, useState } from "react";
 interface CitySelectorProps {
     isOpen: boolean;
     onClose: () => void;
-    onSelect: (city: { id: string; name: string }) => void;
+    onSelect: (city: {
+        id: string;
+        name: string;
+        centerPoint?: { latitude: number; longitude: number }
+    }) => void;
     currentCityId?: string;
 }
 

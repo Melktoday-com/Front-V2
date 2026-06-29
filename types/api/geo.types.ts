@@ -17,6 +17,10 @@ export interface CitySummary {
     id: string;
     name: string;
     geoCityId?: number;
+    centerPoint?: {
+        latitude: number;
+        longitude: number;
+    };
 }
 
 export interface ProvinceHierarchy {

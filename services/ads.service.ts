@@ -2,9 +2,12 @@ import apiClient from "@/lib/api/client";
 import {
     AdContactInfo,
     AdDetail,
+    AdMutationResponse,
+    CategoryListItem,
+    CreateAdDraftRequest,
+    EditAdRequest,
     ListAdsQuery,
     PaginatedAdsResponse,
-    CategoryListItem,
 } from "@/types/api/ads.types";
 
 export const adsService = {
@@ -28,5 +31,36 @@ export const adsService = {
     async listCategories(): Promise<CategoryListItem[]> {
         const response = await apiClient.get<{ categories: CategoryListItem[] }>("/ads/categories");
         return response.data.categories;
+    },
+
+    async createDraft(data: CreateAdDraftRequest): Promise<AdMutationResponse> {
+        const response = await apiClient.post<AdMutationResponse>("/ads", data);
+        return response.data;
+    },
+
+    async update(adId: string, data: EditAdRequest): Promise<AdMutationResponse> {
+        const response = await apiClient.patch<AdMutationResponse>(`/ads/${adId}`, data);
+        return response.data;
+    },
+
+    async submitForReview(adId: string): Promise<AdMutationResponse> {
+        const response = await apiClient.post<AdMutationResponse>(`/ads/${adId}/submit`);
+        return response.data;
+    },
+
+    async delete(adId: string): Promise<void> {
+        await apiClient.delete(`/ads/${adId}`);
+    },
+
+    async archive(adId: string): Promise<AdMutationResponse> {
+        const response = await apiClient.post<AdMutationResponse>(`/ads/${adId}/archive`);
+        return response.data;
+    },
+
+    async listMyAds(query: { page?: number; limit?: number } = {}): Promise<PaginatedAdsResponse> {
+        const response = await apiClient.get<PaginatedAdsResponse>("/ads/my", {
+            params: query,
+        });
+        return response.data;
     }
 };

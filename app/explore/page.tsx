@@ -4,7 +4,7 @@ import { Suspense } from "react";
 export default function Explore() {
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <AdsScene />
+      <AdsScene initialViewMode="map" />
     </Suspense>
   );
 }

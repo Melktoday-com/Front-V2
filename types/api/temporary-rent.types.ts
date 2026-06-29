@@ -12,6 +12,10 @@ export interface TemporaryRentAd {
         nightlyPrice: number;
     };
     guestCapacity?: number;
+    location: {
+        latitude: number;
+        longitude: number;
+    };
     owner?: {
         fullName?: string;
         avatarUrl?: string;

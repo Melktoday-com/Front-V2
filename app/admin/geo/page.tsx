@@ -3,8 +3,8 @@
 import { adminService } from "@/services/admin.service";
 import { CreateGeoZoneRequest, GeoZone } from "@/types/api/admin.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Edit3, MapPin, Plus, Save, Search, Trash2, X } from "lucide-react";
-import { useState } from "react";
+import { Edit3, FileUp, MapPin, Plus, Save, Search, Trash2, X } from "lucide-react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 
 type ZoneCategory = "CITY" | "NEIGHBORHOOD" | "MAP_ZONE";
@@ -15,6 +15,7 @@ export default function AdminGeoPage() {
     const [searchTerm, setSearchTerm] = useState("");
     const [isAdding, setIsAdding] = useState(false);
     const [newZoneName, setNewZoneName] = useState("");
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const { data: zones, isLoading } = useQuery<GeoZone[]>({
         queryKey: ["admin", "geo", zoneType],
@@ -40,6 +41,29 @@ export default function AdminGeoPage() {
         }
     });
 
+    const importKmlMutation = useMutation({
+        mutationFn: (data: { kmlContent: string }) => adminService.importGeoZonesKml(data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["admin", "geo", zoneType] });
+            toast.success("مناطق از فایل KML با موفقیت وارد شدند");
+        },
+        onError: () => {
+            toast.error("خطا در وارد کردن فایل KML");
+        }
+    });
+
+    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const content = event.target?.result as string;
+            importKmlMutation.mutate({ kmlContent: content });
+        };
+        reader.readAsText(file);
+    };
+
     const filteredZones = zones?.filter((z: GeoZone) => z.name.includes(searchTerm)) || [];
 
     return (
@@ -49,13 +73,30 @@ export default function AdminGeoPage() {
                     <h1 className="text-2xl font-bold text-gray-800">مدیریت محدوده جغرافیایی</h1>
                     <p className="text-gray-500 font-medium">پیکربندی شهرها، محله‌ها و مناطق شهری</p>
                 </div>
-                <button
-                    onClick={() => setIsAdding(true)}
-                    className="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-semibold flex items-center gap-2 hover:bg-blue-700 transition-all shadow-lg shadow-blue-100"
-                >
-                    <Plus size={20} />
-                    افزودن {zoneType === 'CITY' ? 'شهر' : zoneType === 'NEIGHBORHOOD' ? 'محله' : 'منطقه'} جدید
-                </button>
+                <div className="flex gap-3">
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleFileUpload}
+                        accept=".kml"
+                        className="hidden"
+                    />
+                    <button
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={importKmlMutation.isPending}
+                        className="bg-white text-gray-700 border border-gray-200 px-5 py-2.5 rounded-xl font-semibold flex items-center gap-2 hover:bg-gray-50 transition-all shadow-sm"
+                    >
+                        <FileUp size={20} />
+                        {importKmlMutation.isPending ? 'در حال وارد کردن...' : 'وارد کردن KML'}
+                    </button>
+                    <button
+                        onClick={() => setIsAdding(true)}
+                        className="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-semibold flex items-center gap-2 hover:bg-blue-700 transition-all shadow-lg shadow-blue-100"
+                    >
+                        <Plus size={20} />
+                        افزودن {zoneType === 'CITY' ? 'شهر' : zoneType === 'NEIGHBORHOOD' ? 'محله' : 'منطقه'} جدید
+                    </button>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">

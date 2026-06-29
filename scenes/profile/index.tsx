@@ -10,6 +10,7 @@ import { RoleName } from "@/types/access";
 import {
     ChevronLeft,
     CreditCard,
+    LayoutList,
     LogOut,
     MessageSquare,
     Plus,
@@ -172,6 +173,20 @@ export default function ProfileScene() {
                             <span className="text-secondary text-xs">{formatCurrency(balance?.balance)} تومان</span>
                             <ChevronLeft className="w-5 h-5 text-secondary" />
                         </div>
+                    </Button>
+
+                    <Button
+                        variant="outline"
+                        className="w-full h-16 rounded-[25px] flex items-center justify-between px-6 border-soft-border hover:bg-soft-bg"
+                        onClick={() => router.push('/profile/ads')}
+                    >
+                        <div className="flex items-center gap-4">
+                            <div className="p-3 rounded-2xl bg-soft-bg text-secondary">
+                                <LayoutList className="w-6 h-6" />
+                            </div>
+                            <span className="font-bold text-brand">آگهی‌های من</span>
+                        </div>
+                        <ChevronLeft className="w-5 h-5 text-secondary" />
                     </Button>
                 </section>
 

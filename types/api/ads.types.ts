@@ -18,6 +18,10 @@ export interface AdSummary {
     isFeatured: boolean;
     mediaIds?: string[];
     createdAt: string;
+    location: {
+        latitude: number;
+        longitude: number;
+    };
 }
 
 export interface ListAdsQuery {
@@ -47,6 +51,33 @@ import { JsonObject } from "../common";
 export interface AdDetail extends AdSummary {
     description: string;
     attributes: JsonObject;
+    updatedAt: string;
+}
+
+export interface CreateAdDraftRequest {
+    cityId: string;
+    categoryPath: CategoryPath;
+    title: string;
+    description: string;
+    rawPricing: Record<string, number>;
+    attributes: JsonObject;
+    latitude: number;
+    longitude: number;
+    mediaIds?: string[];
+}
+
+export interface EditAdRequest {
+    title?: string;
+    description?: string;
+    rawPricing?: Record<string, number>;
+    attributes?: JsonObject;
+}
+
+export interface AdMutationResponse {
+    adId: string;
+    ownerId: string;
+    cityId: string;
+    status: AdStatus;
     updatedAt: string;
 }
 

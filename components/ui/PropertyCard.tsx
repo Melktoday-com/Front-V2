@@ -40,7 +40,7 @@ export function PropertyCard({
         <div className={cn("group flex flex-col h-full", className)}>
             <div className={cn(
                 "relative shrink-0",
-                variant === "horizontal" ? "w-20 h-20 lg:w-24 lg:h-24" : "aspect-[4/3] w-full overflow-hidden rounded-xl"
+                variant === "horizontal" ? "w-20 h-20 lg:w-24 lg:h-24" : "aspect-4/3 w-full overflow-hidden rounded-xl"
             )}>
                 <Image
                     src={image}

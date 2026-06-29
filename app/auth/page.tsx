@@ -6,13 +6,13 @@ import { useRequestOtp, useVerifyOtp } from "@/hooks/useAuth";
 import { normalizeApiError } from "@/lib/api/error-handler";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export default function Auth() {
   const [step, setStep] = useState<"phone" | "otp">("phone");
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
   const [timer, setTimer] = useState(59);
-  const [error, setError] = useState<string | null>(null);
 
   const requestOtpMutation = useRequestOtp();
   const verifyOtpMutation = useVerifyOtp();
@@ -40,7 +40,6 @@ export default function Auth() {
 
   const handleRequestOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
     const normalizedPhone = normalizePhone(phone);
 
     try {
@@ -48,13 +47,12 @@ export default function Auth() {
       setStep("otp");
       setTimer(59);
     } catch (err) {
-      setError(normalizeApiError(err as Error));
+      toast.error(normalizeApiError(err as Error));
     }
   };
 
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
     const normalizedPhone = normalizePhone(phone);
 
     try {
@@ -63,7 +61,7 @@ export default function Auth() {
         otp: otp,
       });
     } catch (err) {
-      setError(normalizeApiError(err as Error));
+      toast.error(normalizeApiError(err as Error));
     }
   };
 
@@ -86,12 +84,6 @@ export default function Auth() {
       </div>
 
       <div className="w-full max-w-85">
-        {error && (
-          <div className="bg-red-50 text-red-500 p-4 rounded-xl text-xs font-bold mb-6 text-center">
-            {error}
-          </div>
-        )}
-
         {step === "phone" ? (
           <div className="transition-all duration-500 transform">
             <h1 className="text-2xl font-bold text-brand mb-3">بزن بریم!</h1>

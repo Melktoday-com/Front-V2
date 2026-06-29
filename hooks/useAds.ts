@@ -32,3 +32,10 @@ export function useCategories() {
         queryFn: () => adsService.listCategories(),
     });
 }
+
+export function useMyAds() {
+    return useQuery({
+        queryKey: ["my-ads"],
+        queryFn: () => adsService.listMyAds(),
+    });
+}
