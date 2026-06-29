@@ -58,7 +58,7 @@ export function CitySelector({ isOpen, onClose, onSelect, currentCityId }: CityS
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[10000] flex items-end lg:items-center justify-center">
+        <div className="fixed inset-0 z-10000 flex items-end lg:items-center justify-center">
             {/* Backdrop */}
             <div
                 className="absolute inset-0 bg-brand/40 backdrop-blur-sm animate-in fade-in duration-300"
