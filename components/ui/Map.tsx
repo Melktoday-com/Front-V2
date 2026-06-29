@@ -3,7 +3,8 @@
 import { AdSummary } from "@/types/api/ads.types";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
+import { useEffect } from "react";
+import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
 import { PropertyCard } from "./PropertyCard";
 
 // Fix for default marker icons in Leaflet with Next.js
@@ -16,14 +17,32 @@ const DefaultIcon = L.icon({
 
 L.Marker.prototype.options.icon = DefaultIcon;
 
+function MapViewHandler({ center, zoom, bounds }: { center: [number, number]; zoom: number; bounds?: L.LatLngBoundsExpression }) {
+    const map = useMap();
+
+    useEffect(() => {
+        if (bounds) {
+            map.fitBounds(bounds, { padding: [50, 50], animate: true });
+        } else {
+            map.flyTo(center, zoom, {
+                duration: 1.5,
+                easeLinearity: 0.25
+            });
+        }
+    }, [center, zoom, bounds, map]);
+
+    return null;
+}
+
 interface MapProps {
     ads: AdSummary[];
     center?: [number, number];
     zoom?: number;
+    bounds?: L.LatLngBoundsExpression;
     onAdSelect?: (ad: AdSummary) => void;
 }
 
-export default function Map({ ads, center = [35.6892, 51.3890], zoom = 12, onAdSelect }: MapProps) {
+export default function Map({ ads, center = [35.6892, 51.3890], zoom = 12, bounds, onAdSelect }: MapProps) {
     // Sanitize center - if it contains undefined/NaN or isn't a valid pair, use default
     const sanitizedCenter: [number, number] = (
         Array.isArray(center) &&
@@ -38,7 +57,9 @@ export default function Map({ ads, center = [35.6892, 51.3890], zoom = 12, onAdS
     const adsWithLocation = ads.filter(ad =>
         ad.location &&
         typeof ad.location.latitude === 'number' &&
-        typeof ad.location.longitude === 'number'
+        !isNaN(ad.location.latitude) &&
+        typeof ad.location.longitude === 'number' &&
+        !isNaN(ad.location.longitude)
     );
 
     return (
@@ -53,6 +74,7 @@ export default function Map({ ads, center = [35.6892, 51.3890], zoom = 12, onAdS
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
+                <MapViewHandler center={sanitizedCenter} zoom={zoom} bounds={bounds} />
                 {adsWithLocation.map((ad) => (
                     <Marker
                         key={ad.adId}

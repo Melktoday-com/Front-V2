@@ -21,6 +21,12 @@ export interface CitySummary {
         latitude: number;
         longitude: number;
     };
+    boundingBox?: {
+        minLatitude: number;
+        minLongitude: number;
+        maxLatitude: number;
+        maxLongitude: number;
+    } | null;
 }
 
 export interface ProvinceHierarchy {

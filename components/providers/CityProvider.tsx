@@ -9,6 +9,12 @@ interface City {
         latitude: number;
         longitude: number;
     };
+    boundingBox?: {
+        minLatitude: number;
+        minLongitude: number;
+        maxLatitude: number;
+        maxLongitude: number;
+    } | null;
 }
 
 interface CityContextType {
