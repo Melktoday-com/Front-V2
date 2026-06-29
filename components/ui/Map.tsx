@@ -17,6 +17,20 @@ const DefaultIcon = L.icon({
 
 L.Marker.prototype.options.icon = DefaultIcon;
 
+const createPriceIcon = (price: string) => L.divIcon({
+    className: 'price-tag-icon',
+    html: `
+        <div class="flex flex-col items-center transform -translate-x-1/2 -translate-y-full">
+            <div class="bg-brand text-white px-2 py-1 rounded-full shadow-lg border-2 border-white text-[10px] font-black whitespace-nowrap mb-0.5 hover:scale-110 transition-transform duration-200">
+                ${price}
+            </div>
+            <div class="w-2 h-2 bg-brand rounded-full border border-white shadow-sm"></div>
+        </div>
+    `,
+    iconSize: [0, 0],
+    iconAnchor: [0, 0],
+});
+
 function MapViewHandler({ center, zoom, bounds }: { center: [number, number]; zoom: number; bounds?: L.LatLngBoundsExpression }) {
     const map = useMap();
 
@@ -39,10 +53,9 @@ interface MapProps {
     center?: [number, number];
     zoom?: number;
     bounds?: L.LatLngBoundsExpression;
-    onAdSelect?: (ad: AdSummary) => void;
 }
 
-export default function Map({ ads, center = [35.6892, 51.3890], zoom = 12, bounds, onAdSelect }: MapProps) {
+export default function Map({ ads, center = [35.6892, 51.3890], zoom = 12, bounds }: MapProps) {
     // Sanitize center - if it contains undefined/NaN or isn't a valid pair, use default
     const sanitizedCenter: [number, number] = (
         Array.isArray(center) &&
@@ -63,7 +76,7 @@ export default function Map({ ads, center = [35.6892, 51.3890], zoom = 12, bound
     );
 
     return (
-        <div className="w-full h-full rounded-[25px] overflow-hidden border border-soft-bg shadow-sm z-0">
+        <div className="relative w-full h-full rounded-[25px] overflow-hidden border border-soft-bg shadow-sm z-0">
             <MapContainer
                 center={sanitizedCenter}
                 zoom={zoom}
@@ -75,32 +88,38 @@ export default function Map({ ads, center = [35.6892, 51.3890], zoom = 12, bound
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
                 <MapViewHandler center={sanitizedCenter} zoom={zoom} bounds={bounds} />
-                {adsWithLocation.map((ad) => (
-                    <Marker
-                        key={ad.adId}
-                        position={[ad.location.latitude, ad.location.longitude]}
-                        eventHandlers={{
-                            click: () => onAdSelect?.(ad),
-                        }}
-                    >
-                        <Popup className="property-popup">
-                            <div className="w-64 p-1">
-                                <PropertyCard
-                                    adId={ad.adId}
-                                    title={ad.title}
-                                    price={Object.values(ad.pricing)[0]?.toLocaleString() || "0"}
-                                    rating={4.5}
-                                    location={ad.cityId}
-                                    image={ad.mediaIds && ad.mediaIds.length > 0
-                                        ? `${process.env.NEXT_PUBLIC_API_URL}/media/${ad.mediaIds[0]}`
-                                        : "/assets/images/property-placeholder.png"
-                                    }
-                                    category={ad.categoryPath.subcategoryKey}
-                                />
-                            </div>
-                        </Popup>
-                    </Marker>
-                ))}
+                {adsWithLocation.map((ad) => {
+                    const price = Object.values(ad.pricing)[0];
+                    const priceLabel = price ?
+                        (price >= 1000000000 ? `${(price / 1000000000).toFixed(1)} میلیارد` :
+                            (price >= 1000000 ? `${(price / 1000000).toFixed(0)} میلیون` : price.toLocaleString()))
+                        : "توافقی";
+
+                    return (
+                        <Marker
+                            key={ad.adId}
+                            position={[ad.location.latitude, ad.location.longitude]}
+                            icon={createPriceIcon(priceLabel)}
+                        >
+                            <Popup className="property-popup">
+                                <div className="w-64 p-1">
+                                    <PropertyCard
+                                        adId={ad.adId}
+                                        title={ad.title}
+                                        price={price?.toLocaleString() || "0"}
+                                        rating={4.5}
+                                        location={ad.cityId}
+                                        image={ad.mediaIds && ad.mediaIds.length > 0
+                                            ? `${process.env.NEXT_PUBLIC_API_URL}/media/${ad.mediaIds[0]}`
+                                            : "/assets/images/property-placeholder.png"
+                                        }
+                                        category={ad.categoryPath.subcategoryKey}
+                                    />
+                                </div>
+                            </Popup>
+                        </Marker>
+                    );
+                })}
             </MapContainer>
         </div>
     );

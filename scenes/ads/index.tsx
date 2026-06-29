@@ -36,7 +36,7 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
     const [search, setSearch] = useState(urlSearch);
 
     const { data, isLoading } = useAds({
-        limit: 12,
+        limit: 20,
         status: "PUBLISHED",
         search: search || undefined,
         cityId: effectiveCityId
@@ -101,8 +101,8 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
     };
 
     return (
-        <div className="min-h-screen bg-white pb-24 lg:pb-10">
-            <div className="p-6 lg:p-10 space-y-8">
+        <div className="h-screen bg-white flex flex-col overflow-hidden">
+            <div className="flex-none p-6 lg:px-10 lg:pt-10 lg:pb-0 space-y-6">
                 <PageHeader
                     title="جستجوی املاک"
                     searchPlaceholder="نام منطقه، محله یا نوع ملک..."
@@ -117,37 +117,15 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
                     categories={categoriesData || []}
                     isLoading={isCategoriesLoading}
                 />
+            </div>
 
-                <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-xl font-bold text-brand">
-                        {viewMode === "list" ? "لیست آگهی‌ها" : "نمایش روی نقشه"}
-                    </h2>
-                    <div className="flex bg-soft-bg p-1 rounded-xl gap-1">
-                        <button
-                            onClick={() => setViewMode("list")}
-                            className={cn(
-                                "flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all",
-                                viewMode === "list" ? "bg-white shadow-sm text-brand" : "text-text-light hover:text-brand"
-                            )}
-                        >
-                            <LayoutGrid size={18} />
-                            <span className="text-sm font-bold">لیست</span>
-                        </button>
-                        <button
-                            onClick={() => setViewMode("map")}
-                            className={cn(
-                                "flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all",
-                                viewMode === "map" ? "bg-white shadow-sm text-brand" : "text-text-light hover:text-brand"
-                            )}
-                        >
-                            <MapIcon size={18} />
-                            <span className="text-sm font-bold">نقشه</span>
-                        </button>
-                    </div>
-                </div>
-
-                {viewMode === "list" ? (
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 2xl:grid-cols-6 gap-x-4 gap-y-6 items-stretch">
+            <div className="flex-1 relative flex flex-col lg:flex-row gap-4 p-4 lg:p-10 lg:pt-4 overflow-hidden">
+                {/* List Section - 2 columns on side panel */}
+                <div className={cn(
+                    "flex-1 overflow-y-auto custom-scrollbar transition-all duration-300 px-2",
+                    viewMode === "map" ? "hidden lg:block" : "block"
+                )}>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-6 pb-20 lg:pb-0">
                         {isLoading ? (
                             Array.from({ length: 8 }).map((_, i) => (
                                 <div key={i} className="aspect-square bg-soft-bg animate-pulse rounded-[25px]" />
@@ -174,22 +152,44 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
                             ))
                         )}
                     </div>
-                ) : (
-                    <div className="h-150 w-full animate-in fade-in duration-500">
-                        <Map
-                            ads={adsForMap}
-                            center={(currentCityCoords && typeof currentCityCoords.latitude === 'number' && typeof currentCityCoords.longitude === 'number')
-                                ? [currentCityCoords.latitude, currentCityCoords.longitude]
-                                : (adsForMap.length > 0 && typeof adsForMap[0].location.latitude === 'number' && typeof adsForMap[0].location.longitude === 'number')
-                                    ? [adsForMap[0].location.latitude, adsForMap[0].location.longitude]
-                                    : [35.6892, 51.3890]
-                            }
-                            zoom={12}
-                            onAdSelect={(ad) => router.push(`/ads/${ad.adId}`)}
-                        />
-                    </div>
-                )}
+                </div>
+
+                {/* Map Section - Wider on Desktop */}
+                <div className={cn(
+                    "relative flex-1 lg:flex-[1.5] transition-all duration-300 h-full overflow-hidden",
+                    viewMode === "list" ? "hidden lg:block" : "block"
+                )}>
+                    <Map
+                        ads={adsForMap}
+                        center={(currentCityCoords && typeof currentCityCoords.latitude === 'number' && typeof currentCityCoords.longitude === 'number')
+                            ? [currentCityCoords.latitude, currentCityCoords.longitude]
+                            : (adsForMap.length > 0 && typeof adsForMap[0].location.latitude === 'number' && typeof adsForMap[0].location.longitude === 'number')
+                                ? [adsForMap[0].location.latitude, adsForMap[0].location.longitude]
+                                : [35.6892, 51.3890]
+                        }
+                        zoom={12}
+                    />
+                </div>
+
+                {/* Mobile Floating Toggle Button */}
+                <button
+                    onClick={() => setViewMode(viewMode === "list" ? "map" : "list")}
+                    className="lg:hidden fixed bottom-24 left-1/2 -translate-x-1/2 z-50 bg-brand text-white px-6 py-3 rounded-full shadow-lg flex items-center gap-2 font-bold animate-in fade-in zoom-in duration-300"
+                >
+                    {viewMode === "list" ? (
+                        <>
+                            <MapIcon size={20} />
+                            <span>مشاهده روی نقشه</span>
+                        </>
+                    ) : (
+                        <>
+                            <LayoutGrid size={20} />
+                            <span>مشاهده آگهی‌ها</span>
+                        </>
+                    )}
+                </button>
             </div>
         </div>
     );
 }
+
