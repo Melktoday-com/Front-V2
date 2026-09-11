@@ -28,6 +28,24 @@ const nextConfig: NextConfig = {
         port: "3000",
         pathname: "/api/media/**",
       },
+      {
+        protocol: "http",
+        hostname: "109.122.254.238",
+        port: "",
+        pathname: "/media/**",
+      },
+      {
+        protocol: "http",
+        hostname: "109.122.254.238",
+        port: "",
+        pathname: "/backend/media/**",
+      },
+      {
+        protocol: "http",
+        hostname: "109.122.254.238",
+        port: "3001",
+        pathname: "/media/**",
+      },
     ],
   },
 };

@@ -1,0 +1,9 @@
+services:
+  web:
+    image: melktoday-frontend:prod
+    container_name: melktoday-prod-frontend
+    env_file:
+      - .env.production
+    ports:
+      - "127.0.0.1:${FRONTEND_PROD_PORT:-3002}:3000"
+    restart: unless-stopped

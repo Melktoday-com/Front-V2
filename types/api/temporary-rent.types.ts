@@ -22,9 +22,11 @@ export interface TemporaryRentAd {
         nightlyPrice: number;
     };
     maxGuests: number;
+    guestCapacity?: number;
     mediaIds: string[];
     latitude: number;
     longitude: number;
+    address?: string;
     availabilityWindow: TemporaryRentAvailabilityWindow;
     attributes: Record<string, any>;
     createdAt: string;

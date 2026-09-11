@@ -11,6 +11,7 @@ export interface TemporaryRentAdSummary {
     id: string;
     ownerId: string;
     cityId: string;
+    cityName?: string;
     status: string;
     title: string;
     pricing: {
@@ -22,6 +23,7 @@ export interface TemporaryRentAdSummary {
 }
 
 export interface ListTemporaryRentQuery {
+    ownerId?: string;
     status?: string;
     cityId?: string;
     page?: number;

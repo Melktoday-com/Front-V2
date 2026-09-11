@@ -118,7 +118,7 @@ export default function ProfileScene() {
 
                 {/* Dashboard Options based on Permissions */}
                 <section className="grid gap-4">
-                    <RoleGuard roles={['AGENT']}>
+                    <RoleGuard roles={[RoleName.Agent]}>
                         <Button
                             variant="outline"
                             className="w-full h-16 rounded-[25px] flex items-center justify-between px-6 border-brand/10 hover:bg-brand/5"
