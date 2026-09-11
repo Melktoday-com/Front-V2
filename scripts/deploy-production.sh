@@ -3,7 +3,7 @@ set -Eeuo pipefail
 
 APP_DIR="${APP_DIR:-/core/projects/Front_end/Front-V2}"
 BRANCH="${BRANCH:-main}"
-COMPOSE_PROJECT="${COMPOSE_PROJECT:-melktoday_frontend_prod}"
+COMPOSE_PROJECT="${COMPOSE_PROJECT:-melktoday_front_prod}"
 COMPOSE_FILES=(-f docker-compose.yml -f docker-compose.prod.yml)
 
 cd "$APP_DIR"
