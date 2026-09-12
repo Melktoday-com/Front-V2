@@ -34,7 +34,6 @@ export interface TemporaryRentAd {
         avatarUrl?: string;
     };
     cityName?: string;
-    address?: string;
 }
 
 export interface CreateTemporaryRentDraftRequest {
