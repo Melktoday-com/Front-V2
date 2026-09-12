@@ -3,7 +3,7 @@ import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 import { deleteCookie, getCookie, setCookie } from "cookies-next";
 
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface FailedRequest {
     resolve: (token: string | null) => void;
