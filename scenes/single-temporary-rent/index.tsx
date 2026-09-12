@@ -193,7 +193,7 @@ export default function ResidenceDetailScene() {
             <section className="px-6 mt-8 overflow-x-auto no-scrollbar">
                 <div className="flex gap-3">
                     {[
-                        { icon: Users, label: `${residence.guestCapacity || 0} نفر ظرفیت` },
+                        { icon: Users, label: `${residence.maxGuests || residence.guestCapacity || 0} نفر ظرفیت` },
                         { icon: Bed, label: `${residence.attributes?.rooms || 0} اتاق خواب` },
                         { icon: Bath, label: `${residence.attributes?.bathrooms || 0} سرویس` },
                         { icon: Wifi, label: "اینترنت رایگان" }

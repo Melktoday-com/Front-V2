@@ -1,6 +1,7 @@
 import { agencyService } from "@/services/agency.service";
 import { ListAgenciesResponse } from "@/types/api/agency.types";
 import { useMutation, useQuery, useQueryClient, UseQueryOptions } from "@tanstack/react-query";
+import { useAuth } from "./useAuth";
 
 interface AgencyListQuery {
     cityId?: string;
