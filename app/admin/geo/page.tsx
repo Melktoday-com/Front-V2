@@ -20,7 +20,7 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 
-type ZoneCategory = "PROVINCE" | "CITY" | "NEIGHBORHOOD";
+type ZoneCategory = "PROVINCE" | "CITY" | "DISTRICT" | "NEIGHBORHOOD";
 
 export default function AdminGeoPage() {
     const queryClient = useQueryClient();
@@ -43,45 +43,72 @@ export default function AdminGeoPage() {
         queryFn: () => geoService.listProvinces({ limit: 100 }),
     });
 
-    // Fetch Cities for parent selection if NEIGHBORHOOD is selected
+    // Fetch Cities for parent selection if NEIGHBORHOOD or DISTRICT is selected
     const { data: citiesData } = useQuery({
         queryKey: ["geo", "cities", provinceId],
         queryFn: () => geoService.listCities({ provinceId: provinceId ? parseInt(provinceId) : undefined, limit: 1000 }),
-        enabled: zoneType === "NEIGHBORHOOD" || zoneType === "CITY"
+        enabled: zoneType === "NEIGHBORHOOD" || zoneType === "CITY" || zoneType === "DISTRICT"
     });
 
-    // Fetch Main Data (Cities or Provinces or Neighborhoods)
+    // Fetch Main Data (Cities, Provinces, Districts/Rural Districts, or Neighborhoods)
     const { data: mainData, isLoading } = useQuery({
         queryKey: ["admin", "geo", zoneType, page, searchTerm, statusFilter, provinceId, cityId],
-        queryFn: () => {
+        queryFn: async () => {
             if (zoneType === "PROVINCE") {
-                return geoService.listProvinces({
+                const res = await geoService.listProvinces({
                     page,
                     limit,
                     search: searchTerm,
                     status: statusFilter || undefined
                 });
+                return {
+                    items: res.items || res.zones || [],
+                    total: res.total || 0,
+                    totalPages: res.totalPages || Math.ceil((res.total || 0) / limit),
+                };
             } else if (zoneType === "CITY") {
-                return geoService.listCities({
+                const res = await geoService.listCities({
                     page,
                     limit,
                     search: searchTerm,
                     status: statusFilter || undefined,
                     provinceId: provinceId ? parseInt(provinceId) : undefined
                 });
-            } else {
-                // For Neighborhoods, use admin list zones
-                return adminService.listGeoZones("NEIGHBORHOOD").then(zones => {
-                    let filtered = zones || [];
-                    if (cityId) filtered = filtered.filter((z: any) => z.parentZoneId === cityId);
-                    if (searchTerm) filtered = filtered.filter((z: any) => z.name.includes(searchTerm));
-
-                    const start = (page - 1) * limit;
-                    return {
-                        items: filtered.slice(start, start + limit),
-                        total: filtered.length
-                    };
+                return {
+                    items: res.items || res.zones || [],
+                    total: res.total || 0,
+                    totalPages: res.totalPages || Math.ceil((res.total || 0) / limit),
+                };
+            } else if (zoneType === "DISTRICT") {
+                const res = await geoService.listZones({
+                    types: "DISTRICT,RURAL_DISTRICT",
+                    page,
+                    limit,
+                    search: searchTerm,
+                    status: statusFilter || undefined,
+                    provinceId: provinceId ? parseInt(provinceId) : undefined,
+                    cityId: cityId ? parseInt(cityId) : undefined
                 });
+                return {
+                    items: res.zones || [],
+                    total: res.total || 0,
+                    totalPages: res.totalPages || Math.ceil((res.total || 0) / limit),
+                };
+            } else {
+                const res = await geoService.listZones({
+                    type: "NEIGHBORHOOD",
+                    page,
+                    limit,
+                    search: searchTerm,
+                    status: statusFilter || undefined,
+                    provinceId: provinceId ? parseInt(provinceId) : undefined,
+                    cityId: cityId ? parseInt(cityId) : undefined
+                });
+                return {
+                    items: res.zones || [],
+                    total: res.total || 0,
+                    totalPages: res.totalPages || Math.ceil((res.total || 0) / limit),
+                };
             }
         },
     });
@@ -134,16 +161,26 @@ export default function AdminGeoPage() {
         }
     });
 
-    const provincesMap = new Map<number | string, string>(
-        provincesData?.items?.map((p: any) => [p.geoProvinceId, p.name]) || []
-    );
+    const provincesMap = new Map<number | string, string>();
+    provincesData?.items?.forEach((p: any) => {
+        if (p.geoProvinceId) {
+            provincesMap.set(p.geoProvinceId, p.name);
+            provincesMap.set(String(p.geoProvinceId), p.name);
+        }
+        if (p.id) provincesMap.set(p.id, p.name);
+    });
 
-    const citiesMap = new Map<number | string, string>(
-        citiesData?.items?.map((c: any) => [c.id || c.geoCityId, c.name]) || []
-    );
+    const citiesMap = new Map<number | string, string>();
+    citiesData?.items?.forEach((c: any) => {
+        if (c.id) citiesMap.set(c.id, c.name);
+        if (c.geoCityId) {
+            citiesMap.set(c.geoCityId, c.name);
+            citiesMap.set(String(c.geoCityId), c.name);
+        }
+    });
 
     const toggleStatus = (zone: any) => {
-        const nextStatus = zone.status === "PUBLISHED" ? "DRAFT" : "PUBLISHED";
+        const nextStatus = zone.status === "PUBLISHED" ? "ARCHIVED" : "PUBLISHED";
         updateStatusMutation.mutate({ id: zone.id, status: nextStatus });
     };
 
@@ -193,7 +230,7 @@ export default function AdminGeoPage() {
                 return (
                     <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gray-50 text-gray-700 text-xs font-bold border border-gray-100">
                         <Archive size={12} />
-                        بایگانی شده
+                        غیرفعال
                     </span>
                 );
             default:
@@ -203,22 +240,29 @@ export default function AdminGeoPage() {
 
     const items = mainData?.items || [];
     const totalItems = mainData?.total || 0;
-    const totalPages = Math.ceil(totalItems / limit);
+    const totalPages = mainData?.totalPages || Math.ceil(totalItems / limit) || 1;
 
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-end">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-800">مدیریت مناطق جغرافیایی</h1>
-                    <p className="text-gray-500 font-medium">پیکربندی استان‌ها، شهرها و محله‌های فعال در سامانه</p>
+                    <p className="text-gray-500 font-medium">پیکربندی و مدیریت وضعیت استان‌ها، شهرها، دهستان‌ها و محله‌ها در سامانه</p>
                 </div>
-                <button
-                    onClick={() => setIsCreateModalOpen(true)}
-                    className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-md shadow-blue-100"
-                >
-                    <Plus size={18} />
-                    افزودن {zoneType === 'CITY' ? 'شهر' : zoneType === 'PROVINCE' ? 'استان' : 'محله'} جدید
-                </button>
+                {zoneType === 'NEIGHBORHOOD' ? (
+                    <button
+                        onClick={() => setIsCreateModalOpen(true)}
+                        className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-md shadow-blue-100"
+                    >
+                        <Plus size={18} />
+                        افزودن محله / بارگذاری KML
+                    </button>
+                ) : (
+                    <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 text-xs font-bold rounded-xl border border-blue-100">
+                        <CheckCircle2 size={16} />
+                        اطلاعات رسمی کشور — مدیریت از طریق دکمه‌های فعال/غیرفعال‌سازی
+                    </div>
+                )}
             </div>
 
             <div className="flex flex-wrap gap-4 items-center bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
@@ -226,19 +270,25 @@ export default function AdminGeoPage() {
                 <div className="flex bg-gray-100 p-1 rounded-xl">
                     <button
                         onClick={() => { setZoneType("CITY"); setPage(1); }}
-                        className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${zoneType === "CITY" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+                        className={`px-5 py-2 rounded-lg text-sm font-bold transition-all ${zoneType === "CITY" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
                     >
                         شهرها
                     </button>
                     <button
                         onClick={() => { setZoneType("PROVINCE"); setPage(1); }}
-                        className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${zoneType === "PROVINCE" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+                        className={`px-5 py-2 rounded-lg text-sm font-bold transition-all ${zoneType === "PROVINCE" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
                     >
                         استان‌ها
                     </button>
                     <button
+                        onClick={() => { setZoneType("DISTRICT"); setPage(1); }}
+                        className={`px-5 py-2 rounded-lg text-sm font-bold transition-all ${zoneType === "DISTRICT" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+                    >
+                        دهستان‌ها و بخش‌ها
+                    </button>
+                    <button
                         onClick={() => { setZoneType("NEIGHBORHOOD"); setPage(1); }}
-                        className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${zoneType === "NEIGHBORHOOD" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+                        className={`px-5 py-2 rounded-lg text-sm font-bold transition-all ${zoneType === "NEIGHBORHOOD" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
                     >
                         محله‌ها
                     </button>
@@ -256,24 +306,24 @@ export default function AdminGeoPage() {
                     />
                 </div>
 
-                {/* Province Filter (Only for Cities and Neighborhoods) */}
-                {(zoneType === "CITY" || zoneType === "NEIGHBORHOOD") && (
+                {/* Province Filter */}
+                {zoneType !== "PROVINCE" && (
                     <select
                         value={provinceId}
-                        onChange={(e) => { setProvinceId(e.target.value); setPage(1); }}
+                        onChange={(e) => { setProvinceId(e.target.value); setCityId(""); setPage(1); }}
                         className="px-4 py-2 rounded-xl border border-gray-200 outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white"
                     >
                         <option value="">همه استان‌ها</option>
                         {provincesData?.items?.map((p: any) => (
-                            <option key={p.geoProvinceId} value={p.geoProvinceId}>
+                            <option key={p.geoProvinceId || p.id} value={p.geoProvinceId || p.id}>
                                 {p.name}
                             </option>
                         ))}
                     </select>
                 )}
 
-                {/* City Filter (Only for Neighborhoods) */}
-                {zoneType === "NEIGHBORHOOD" && (
+                {/* City Filter (For Districts and Neighborhoods) */}
+                {(zoneType === "DISTRICT" || zoneType === "NEIGHBORHOOD") && (
                     <select
                         value={cityId}
                         onChange={(e) => { setCityId(e.target.value); setPage(1); }}
@@ -297,7 +347,7 @@ export default function AdminGeoPage() {
                     <option value="">همه وضعیت‌ها</option>
                     <option value="PUBLISHED">فعال</option>
                     <option value="DRAFT">پیش‌نویس</option>
-                    <option value="ARCHIVED">بایگانی</option>
+                    <option value="ARCHIVED">غیرفعال / بایگانی</option>
                 </select>
             </div>
 
@@ -306,13 +356,16 @@ export default function AdminGeoPage() {
                     <thead>
                         <tr className="bg-gray-50 text-gray-600 text-sm uppercase">
                             <th className="px-6 py-4 font-bold border-b border-gray-100">نام</th>
-                            {zoneType === "CITY" && (
+                            {zoneType !== "PROVINCE" && (
                                 <th className="px-6 py-4 font-bold border-b border-gray-100">استان</th>
                             )}
-                            {zoneType === "NEIGHBORHOOD" && (
+                            {(zoneType === "DISTRICT" || zoneType === "NEIGHBORHOOD") && (
                                 <th className="px-6 py-4 font-bold border-b border-gray-100">شهر</th>
                             )}
-                            <th className="px-6 py-4 font-bold border-b border-gray-100 uppercase">کد {zoneType === 'CITY' ? 'شهر' : zoneType === 'PROVINCE' ? 'استان' : 'محله'}</th>
+                            <th className="px-6 py-4 font-bold border-b border-gray-100 uppercase">
+                                کد {zoneType === 'CITY' ? 'شهر' : zoneType === 'PROVINCE' ? 'استان' : zoneType === 'DISTRICT' ? 'دهستان/بخش' : 'محله'}
+                            </th>
+                            <th className="px-6 py-4 font-bold border-b border-gray-100 text-center">نوع</th>
                             <th className="px-6 py-4 font-bold border-b border-gray-100 text-center">وضعیت</th>
                             <th className="px-6 py-4 font-bold border-b border-gray-100 text-center">عملیات</th>
                         </tr>
@@ -320,7 +373,7 @@ export default function AdminGeoPage() {
                     <tbody className="divide-y divide-gray-50">
                         {isLoading ? (
                             <tr>
-                                <td colSpan={zoneType === 'PROVINCE' ? 4 : 5} className="py-20 text-center">
+                                <td colSpan={zoneType === 'PROVINCE' ? 5 : zoneType === 'CITY' ? 6 : 7} className="py-20 text-center">
                                     <div className="flex flex-col items-center gap-3 text-gray-400">
                                         <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
                                         <span>در حال دریافت اطلاعات...</span>
@@ -329,7 +382,7 @@ export default function AdminGeoPage() {
                             </tr>
                         ) : items.length === 0 ? (
                             <tr>
-                                <td colSpan={zoneType === 'PROVINCE' ? 4 : 5} className="py-20 text-center text-gray-400">
+                                <td colSpan={zoneType === 'PROVINCE' ? 5 : zoneType === 'CITY' ? 6 : 7} className="py-20 text-center text-gray-400">
                                     موردی یافت نشد.
                                 </td>
                             </tr>
@@ -344,18 +397,29 @@ export default function AdminGeoPage() {
                                             <span className="font-bold text-gray-800">{zone.name}</span>
                                         </div>
                                     </td>
-                                    {zoneType === "CITY" && (
+                                    {zoneType !== "PROVINCE" && (
                                         <td className="px-6 py-4 text-gray-600 font-medium">
-                                            {provincesMap.get(zone.geoProvinceId) || "—"}
+                                            {provincesMap.get(zone.geoProvinceId) || provincesMap.get(String(zone.geoProvinceId)) || "—"}
                                         </td>
                                     )}
-                                    {zoneType === "NEIGHBORHOOD" && (
+                                    {(zoneType === "DISTRICT" || zoneType === "NEIGHBORHOOD") && (
                                         <td className="px-6 py-4 text-gray-600 font-medium">
-                                            {citiesMap.get(zone.parentZoneId) || "—"}
+                                            {citiesMap.get(zone.geoCityId) || citiesMap.get(String(zone.geoCityId)) || citiesMap.get(zone.parentZoneId) || "—"}
                                         </td>
                                     )}
                                     <td className="px-6 py-4 font-mono text-sm text-gray-500 uppercase">
-                                        {zoneType === 'CITY' ? zone.geoCityId : (zoneType === 'PROVINCE' ? zone.geoProvinceId : zone.id.substring(0, 8))}
+                                        {zoneType === 'CITY'
+                                            ? (zone.geoCityId ?? "—")
+                                            : zoneType === 'PROVINCE'
+                                            ? (zone.geoProvinceId ?? "—")
+                                            : zoneType === 'DISTRICT'
+                                            ? (zone.geoDistrictId || zone.geoRuralDistrictId || "—")
+                                            : (zone.id?.substring(0, 8) ?? "—")}
+                                    </td>
+                                    <td className="px-6 py-4 text-center">
+                                        <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-gray-100 text-gray-700">
+                                            {zone.type === 'RURAL_DISTRICT' ? 'دهستان' : zone.type === 'DISTRICT' ? 'بخش' : zone.type === 'CITY' ? 'شهر' : zone.type === 'PROVINCE' ? 'استان' : zone.type === 'COUNTY' ? 'شهرستان' : 'محله'}
+                                        </span>
                                     </td>
                                     <td className="px-6 py-4 text-center">
                                         <div className="flex justify-center">
