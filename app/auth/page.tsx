@@ -66,7 +66,7 @@ export default function Auth() {
   };
 
   return (
-    <main className="min-h-screen bg-white flex flex-col items-center p-6 text-right">
+    <main className="min-h-screen bg-white flex flex-col items-center p-6  text-right">
       {/* Visual Header - House/Property Images Grid */}
       <div className="grid grid-cols-2 gap-2 mb-12 mt-6 w-full max-w-85">
         <div className="aspect-square bg-primary/10 rounded-xl overflow-hidden flex items-center justify-center text-primary text-4xl shadow-sm relative">
@@ -83,7 +83,7 @@ export default function Auth() {
         </div>
       </div>
 
-      <div className="w-full max-w-85">
+      <div className="w-full max-w-85  pb-10">
         {step === "phone" ? (
           <div className="transition-all duration-500 transform">
             <h1 className="text-2xl font-bold text-brand mb-3">بزن بریم!</h1>
