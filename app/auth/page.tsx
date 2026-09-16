@@ -123,7 +123,7 @@ export default function Auth() {
             </div>
           </div>
         ) : (
-          <div className="animate-in fade-in duration-700">
+          <div className="animate-in fade-in duration-700 pb-15">
             <button
               onClick={() => setStep("phone")}
               className="mb-8 flex items-center gap-2 text-text-light hover:text-brand transition-colors group"
