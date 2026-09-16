@@ -1,10 +1,11 @@
 import apiClient from "@/lib/api/client";
-import { GeoHierarchyResponse, ListZonesResponse } from "@/types/api/geo.types";
+import { GeoHierarchyResponse, ListZonesParams, ListZonesResponse } from "@/types/api/geo.types";
 
 export const geoService = {
-    async listZones(parentId?: string): Promise<ListZonesResponse> {
+    async listZones(params?: ListZonesParams | string): Promise<ListZonesResponse> {
+        const queryParams = typeof params === 'string' ? { parentId: params } : params;
         const response = await apiClient.get<ListZonesResponse>("/geo/zones", {
-            params: { parentId },
+            params: queryParams,
         });
         return response.data;
     },

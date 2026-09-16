@@ -1,16 +1,39 @@
+export type ZoneType = 'PROVINCE' | 'COUNTY' | 'CITY' | 'DISTRICT' | 'RURAL_DISTRICT' | 'NEIGHBORHOOD' | 'CUSTOM';
+
 export interface ZoneSummary {
     id: string;
     name: string;
-    centerPoint: {
+    type?: ZoneType;
+    status?: string;
+    geoProvinceId?: number | null;
+    geoCityId?: number | null;
+    geoDistrictId?: number | null;
+    geoRuralDistrictId?: number | null;
+    centerPoint?: {
         latitude: number;
         longitude: number;
     };
     parentZoneId: string | null;
 }
 
+export interface ListZonesParams {
+    parentId?: string;
+    type?: ZoneType;
+    types?: string;
+    provinceId?: number;
+    cityId?: number;
+    search?: string;
+    status?: string;
+    page?: number;
+    limit?: number;
+}
+
 export interface ListZonesResponse {
     zones: ZoneSummary[];
     total: number;
+    page?: number;
+    limit?: number;
+    totalPages?: number;
 }
 
 export interface CitySummary {
