@@ -59,6 +59,17 @@ export interface ProvinceHierarchy {
     cities: CitySummary[];
 }
 
+export interface GetGeoHierarchyParams {
+    page?: number;
+    limit?: number;
+    search?: string;
+    provinceId?: number;
+}
+
 export interface GeoHierarchyResponse {
     provinces: ProvinceHierarchy[];
+    total?: number;
+    page?: number;
+    limit?: number;
+    totalPages?: number;
 }

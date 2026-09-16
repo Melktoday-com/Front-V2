@@ -1,5 +1,5 @@
 import apiClient from "@/lib/api/client";
-import { GeoHierarchyResponse, ListZonesParams, ListZonesResponse } from "@/types/api/geo.types";
+import { GeoHierarchyResponse, GetGeoHierarchyParams, ListZonesParams, ListZonesResponse } from "@/types/api/geo.types";
 
 export const geoService = {
     async listZones(params?: ListZonesParams | string): Promise<ListZonesResponse> {
@@ -10,8 +10,8 @@ export const geoService = {
         return response.data;
     },
 
-    async getProvincesHierarchy(): Promise<GeoHierarchyResponse> {
-        const response = await apiClient.get<GeoHierarchyResponse>("/geo/hierarchy");
+    async getProvincesHierarchy(params?: GetGeoHierarchyParams): Promise<GeoHierarchyResponse> {
+        const response = await apiClient.get<GeoHierarchyResponse>("/geo/hierarchy", { params });
         return response.data;
     },
 

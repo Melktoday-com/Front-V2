@@ -418,7 +418,18 @@ export default function AdminGeoPage() {
                                     </td>
                                     <td className="px-6 py-4 text-center">
                                         <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-gray-100 text-gray-700">
-                                            {zone.type === 'RURAL_DISTRICT' ? 'دهستان' : zone.type === 'DISTRICT' ? 'بخش' : zone.type === 'CITY' ? 'شهر' : zone.type === 'PROVINCE' ? 'استان' : zone.type === 'COUNTY' ? 'شهرستان' : 'محله'}
+                                            {(() => {
+                                                const rawType = zone.type || (zoneType === 'CITY' ? 'CITY' : zoneType === 'PROVINCE' ? 'PROVINCE' : zoneType === 'DISTRICT' ? 'DISTRICT' : 'NEIGHBORHOOD');
+                                                switch (rawType) {
+                                                    case 'PROVINCE': return 'استان';
+                                                    case 'CITY': return 'شهر';
+                                                    case 'COUNTY': return 'شهرستان';
+                                                    case 'DISTRICT': return 'بخش';
+                                                    case 'RURAL_DISTRICT': return 'دهستان';
+                                                    case 'NEIGHBORHOOD': return 'محله';
+                                                    default: return 'ناحیه';
+                                                }
+                                            })()}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 text-center">

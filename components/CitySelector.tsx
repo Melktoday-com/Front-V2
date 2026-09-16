@@ -1,9 +1,9 @@
 "use client";
 
-import { useGeoHierarchy } from "@/hooks/useGeoHierarchy";
+import { useInfiniteGeoHierarchy } from "@/hooks/useGeoHierarchy";
 import { cn } from "@/lib/utils";
 import { Check, MapPin, Search, X } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 interface CitySelectorProps {
     isOpen: boolean;
@@ -17,9 +17,48 @@ interface CitySelectorProps {
 }
 
 export function CitySelector({ isOpen, onClose, onSelect, currentCityId }: CitySelectorProps) {
-    const { data: hierarchy, isLoading } = useGeoHierarchy();
     const [searchQuery, setSearchQuery] = useState("");
-    const [selectedProvinceId, setSelectedProvinceId] = useState<string | null>(null);
+    const [debouncedSearch, setDebouncedSearch] = useState("");
+    const listContainerRef = useRef<HTMLDivElement>(null);
+
+    // Debounce search query to reduce backend calls while typing
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearch(searchQuery);
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [searchQuery]);
+
+    // Fetch hierarchy paginated with infinite scroll
+    const {
+        data,
+        isLoading,
+        isFetchingNextPage,
+        hasNextPage,
+        fetchNextPage,
+    } = useInfiniteGeoHierarchy({
+        search: debouncedSearch,
+        limit: 6,
+    });
+
+    // Flatten all loaded province pages
+    const provinces = useMemo(() => {
+        if (!data?.pages) return [];
+        return data.pages.flatMap((page) => page.provinces || []);
+    }, [data]);
+
+    // Handle infinite scrolling when reaching near bottom
+    const handleScroll = useCallback(() => {
+        const container = listContainerRef.current;
+        if (!container) return;
+
+        const { scrollTop, scrollHeight, clientHeight } = container;
+        if (scrollHeight - scrollTop - clientHeight < 150) {
+            if (hasNextPage && !isFetchingNextPage) {
+                fetchNextPage();
+            }
+        }
+    }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
     // Prevent scrolling when open
     useEffect(() => {
@@ -32,28 +71,6 @@ export function CitySelector({ isOpen, onClose, onSelect, currentCityId }: CityS
             document.body.style.overflow = "unset";
         };
     }, [isOpen]);
-
-    const filteredData = useMemo(() => {
-        if (!hierarchy) return [];
-        if (!searchQuery) return hierarchy;
-
-        const query = searchQuery.toLowerCase();
-        return hierarchy.map(province => {
-            const matchedCities = province.cities.filter(city =>
-                city.name.toLowerCase().includes(query)
-            );
-
-            const provinceMatches = province.name.toLowerCase().includes(query);
-
-            if (provinceMatches || matchedCities.length > 0) {
-                return {
-                    ...province,
-                    cities: provinceMatches ? province.cities : matchedCities
-                };
-            }
-            return null;
-        }).filter(Boolean) as typeof hierarchy;
-    }, [hierarchy, searchQuery]);
 
     if (!isOpen) return null;
 
@@ -68,7 +85,7 @@ export function CitySelector({ isOpen, onClose, onSelect, currentCityId }: CityS
             {/* Content Container */}
             <div className={cn(
                 "relative w-full lg:max-w-2xl bg-white rounded-t-[30px] lg:rounded-[30px] shadow-2xl flex flex-col overflow-hidden transition-transform duration-300 transform",
-                "h-[85vh] lg:h-[70vh]", // Height adjustment
+                "h-[85vh] lg:h-[70vh]",
                 "animate-in slide-in-from-bottom lg:slide-in-from-bottom-10"
             )}>
                 {/* Header */}
@@ -94,19 +111,23 @@ export function CitySelector({ isOpen, onClose, onSelect, currentCityId }: CityS
                 </div>
 
                 {/* Cities List */}
-                <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
+                <div
+                    ref={listContainerRef}
+                    onScroll={handleScroll}
+                    className="flex-1 overflow-y-auto p-4 custom-scrollbar"
+                >
                     {isLoading ? (
                         <div className="flex flex-col items-center justify-center h-full space-y-4">
                             <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
                             <span className="text-secondary font-bold">درحال دریافت اطلاعات...</span>
                         </div>
-                    ) : filteredData.length === 0 ? (
+                    ) : provinces.length === 0 ? (
                         <div className="flex flex-col items-center justify-center h-full text-secondary font-bold">
                             شهری با این مشخصات پیدا نشد
                         </div>
                     ) : (
                         <div className="space-y-6">
-                            {filteredData.map((province) => (
+                            {provinces.map((province) => (
                                 <div key={province.id} className="space-y-2">
                                     <div className="px-4 py-2 bg-soft-bg rounded-[15px] text-primary font-black text-sm flex items-center gap-2">
                                         <MapPin className="w-4 h-4" />
@@ -134,6 +155,12 @@ export function CitySelector({ isOpen, onClose, onSelect, currentCityId }: CityS
                                     </div>
                                 </div>
                             ))}
+
+                            {isFetchingNextPage && (
+                                <div className="flex justify-center py-4">
+                                    <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
@@ -144,3 +171,4 @@ export function CitySelector({ isOpen, onClose, onSelect, currentCityId }: CityS
         </div>
     );
 }
+
