@@ -28,7 +28,7 @@ export const mediaService = {
     },
 
     async getDetails(mediaId: string): Promise<MediaDetails> {
-        const response = await apiClient.get<MediaDetails>(`/media/${mediaId}`);
+        const response = await apiClient.get<MediaDetails>(`/media/${mediaId}/details`);
         return response.data;
     },
 

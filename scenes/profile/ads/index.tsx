@@ -47,7 +47,7 @@ export default function MyAdsScene() {
                     <div className="text-center py-20">
                         <p className="text-gray-500 font-bold mb-4">شما هنوز آگهی‌ای ثبت نکرده‌اید</p>
                         <button
-                            onClick={() => router.push('/submit-ad')}
+                            onClick={() => router.push('/ads/submit')}
                             className="bg-primary text-white px-6 py-2 rounded-xl font-bold"
                         >
                             ثبت آگهی جدید
@@ -97,7 +97,7 @@ export default function MyAdsScene() {
                                     </button>
                                 )}
                                 <button
-                                    onClick={() => router.push(`/submit-ad?edit=${ad.adId}`)}
+                                    onClick={() => router.push(`/ads/submit?edit=${ad.adId}`)}
                                     className="bg-brand/5 text-brand px-3 py-1.5 rounded-xl text-xs font-black"
                                 >
                                     ویرایش

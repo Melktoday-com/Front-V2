@@ -4,7 +4,18 @@ import { RoleGuard } from "@/components/RoleGuard";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import { RoleName } from "@/types/access";
-import { Building2, Heart, Home, LogIn, MapPin, Search, ShieldCheck, User } from "lucide-react";
+import {
+    Building2,
+    Heart,
+    Home,
+    LogIn,
+    MapPin,
+    Plus,
+    PlusCircle,
+    Search,
+    ShieldCheck,
+    User,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -13,7 +24,7 @@ const navItems = [
     { icon: MapPin, label: "کاوش", href: "/explore" },
     { icon: Search, label: "جستجو", href: "/ads" },
     { icon: Building2, label: "آژانس‌ها", href: "/agency" },
-    { icon: Heart, label: "فید", href: "/favorites" },
+    { icon: Heart, label: "علاقه‌مندی‌ها", href: "/favorites" },
     { icon: User, label: "پروفایل", href: "/profile" },
 ];
 
@@ -21,20 +32,34 @@ export function Sidebar() {
     const pathname = usePathname();
     const { isLoggedIn } = useAuth();
 
-    if (pathname.includes('/profile/chat')) return null;
-    if (pathname.startsWith('/admin')) return null;
+    if (pathname.includes("/profile/chat")) return null;
+    if (pathname.startsWith("/admin")) return null;
+
+    const isItemActive = (href: string) => {
+        if (href === "/") return pathname === "/";
+        return pathname.startsWith(href);
+    };
 
     return (
-        <aside className="hidden lg:flex flex-col w-64 bg-white border-l border-soft-border h-screen sticky top-0 p-6">
-            <div className="mb-10 px-2">
-                <span className="text-2xl font-black text-brand tracking-tighter">
+        <aside className="hidden lg:flex flex-col w-64 bg-white border-l border-soft-border h-screen sticky top-0 p-6 z-30">
+            <div className="mb-8 px-2 flex items-center justify-between">
+                <Link href="/" className="text-2xl font-black text-brand tracking-tighter">
                     MELK<span className="text-primary">TODAY</span>
-                </span>
+                </Link>
             </div>
 
-            <nav className="flex-1 space-y-2">
+            {/* Prominent Submit Ad CTA Button */}
+            <Link
+                href="/ads/submit"
+                className="flex items-center justify-center gap-2 w-full py-3.5 px-4 rounded-2xl bg-brand text-white font-bold text-sm shadow-md hover:bg-brand/90 transition-all mb-6 group"
+            >
+                <PlusCircle className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
+                <span>ثبت رایگان آگهی</span>
+            </Link>
+
+            <nav className="flex-1 space-y-2 overflow-y-auto">
                 {navItems.map((item) => {
-                    const active = pathname === item.href;
+                    const active = isItemActive(item.href);
                     return (
                         <Link
                             key={item.href}
@@ -42,15 +67,17 @@ export function Sidebar() {
                             className={cn(
                                 "flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 group",
                                 active
-                                    ? "bg-primary text-white shadow-lg shadow-brand/20"
-                                    : "text-secondary hover:bg-soft-bg"
+                                    ? "bg-primary text-white shadow-lg shadow-brand/20 font-black"
+                                    : "text-secondary hover:bg-soft-bg font-bold"
                             )}
                         >
-                            <item.icon className={cn(
-                                "w-5 h-5",
-                                active ? "text-primary" : "text-secondary group-hover:text-brand"
-                            )} />
-                            <span className="font-bold text-sm">{item.label}</span>
+                            <item.icon
+                                className={cn(
+                                    "w-5 h-5",
+                                    active ? "text-white" : "text-secondary group-hover:text-brand"
+                                )}
+                            />
+                            <span className="text-sm">{item.label}</span>
                         </Link>
                     );
                 })}
@@ -59,92 +86,128 @@ export function Sidebar() {
                     <Link
                         href="/admin"
                         className={cn(
-                            "flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 group",
+                            "flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 group font-bold",
                             pathname.startsWith("/admin")
                                 ? "bg-primary text-white shadow-lg shadow-primary/20"
                                 : "text-primary/70 hover:bg-primary/5"
                         )}
                     >
                         <ShieldCheck className="w-5 h-5" />
-                        <span className="font-bold text-sm">پنل مدیریت</span>
+                        <span className="text-sm">پنل مدیریت</span>
                     </Link>
                 </RoleGuard>
 
                 {!isLoggedIn && (
                     <Link
                         href="/auth"
-                        className="flex items-center gap-3 px-4 py-3 rounded-2xl text-primary hover:bg-primary/5 transition-all mt-4 border border-dashed border-primary/30"
+                        className="flex items-center gap-3 px-4 py-3 rounded-2xl text-primary hover:bg-primary/5 transition-all mt-4 border border-dashed border-primary/30 font-bold"
                     >
                         <LogIn className="w-5 h-5" />
-                        <span className="font-bold text-sm">ورود به حساب</span>
+                        <span className="text-sm">ورود به حساب</span>
                     </Link>
                 )}
             </nav>
 
             <div className="mt-auto p-4 bg-soft-bg rounded-3xl border border-soft-border">
-                <p className="text-xs text-secondary font-bold mb-2">نیاز به کمک داری؟</p>
-                <button className="text-[10px] text-primary font-black underline">با پشتیبانی تماس بگیر</button>
+                <p className="text-xs text-secondary font-bold mb-2">نیاز به راهنمایی دارید؟</p>
+                <Link href="/profile/chat" className="text-[11px] text-primary font-black hover:underline">
+                    تماس با پشتیبانی آنلاین
+                </Link>
             </div>
         </aside>
     );
 }
 
-
 export function MobileNav() {
     const pathname = usePathname();
     const { isLoggedIn } = useAuth();
 
-    if (pathname.includes('/profile/chat')) return null;
-    if (pathname.startsWith('/admin')) return null;
+    if (pathname.includes("/profile/chat")) return null;
+    if (pathname.startsWith("/admin")) return null;
+
+    const isHome = pathname === "/";
+    const isExplore =
+        (pathname.startsWith("/explore") || pathname.startsWith("/ads")) &&
+        pathname !== "/ads/submit";
+    const isSubmit = pathname === "/ads/submit";
+    const isFavorites = pathname.startsWith("/favorites");
+    const isProfile =
+        pathname.startsWith("/profile") || (!isLoggedIn && pathname.startsWith("/auth"));
 
     return (
-        <div className="lg:hidden fixed bottom-6 left-6 right-6 h-18 bg-white/80 backdrop-blur-xl border border-white/20 rounded-full flex items-center justify-around px-2 shadow-2xl shadow-brand/5 z-50">
+        <nav
+            aria-label="منوی موبایل"
+            className="lg:hidden fixed bottom-5 left-4 right-4 h-16 bg-white/90 backdrop-blur-xl border border-gray-100/60 rounded-full flex items-center justify-around px-3 shadow-2xl shadow-brand/10 z-50"
+        >
+            {/* 1. Home */}
             <Link
                 href="/"
+                aria-label="خانه"
                 className={cn(
-                    "flex items-center justify-center w-12 h-12 rounded-full transition-all",
-                    pathname === "/" ? "bg-primary text-white shadow-lg shadow-primary/30" : "text-secondary"
+                    "flex flex-col items-center justify-center w-11 h-11 rounded-full transition-all",
+                    isHome
+                        ? "bg-primary text-white shadow-md shadow-primary/30"
+                        : "text-secondary hover:text-brand"
                 )}
             >
-                <Home className="w-6 h-6" />
+                <Home className="w-5 h-5" />
             </Link>
+
+            {/* 2. Explore / Search */}
             <Link
                 href="/explore"
+                aria-label="کاوش و جستجو"
                 className={cn(
-                    "flex items-center justify-center w-12 h-12 rounded-full transition-all",
-                    pathname === "/explore" ? "bg-primary text-white shadow-lg shadow-primary/30" : "text-secondary"
+                    "flex flex-col items-center justify-center w-11 h-11 rounded-full transition-all",
+                    isExplore
+                        ? "bg-primary text-white shadow-md shadow-primary/30"
+                        : "text-secondary hover:text-brand"
                 )}
             >
-                <MapPin className="w-6 h-6" />
+                <MapPin className="w-5 h-5" />
             </Link>
+
+            {/* 3. Center Elevated Submit Ad Button */}
             <Link
-                href="/agency"
+                href="/ads/submit"
+                aria-label="ثبت آگهی جدید"
                 className={cn(
-                    "flex items-center justify-center w-12 h-12 rounded-full transition-all",
-                    pathname === "/agency" ? "bg-primary text-white shadow-lg shadow-primary/30" : "text-secondary"
+                    "flex items-center justify-center w-13 h-13 -mt-6 rounded-full transition-transform active:scale-90 border-4 border-white shadow-lg",
+                    isSubmit
+                        ? "bg-brand text-white shadow-brand/40"
+                        : "bg-primary text-white shadow-primary/40 hover:bg-primary/90"
                 )}
             >
-                <Building2 className="w-6 h-6" />
+                <Plus className="w-7 h-7 stroke-[2.5]" />
             </Link>
+
+            {/* 4. Favorites */}
             <Link
                 href="/favorites"
+                aria-label="علاقه‌مندی‌ها"
                 className={cn(
-                    "flex items-center justify-center w-12 h-12 rounded-full transition-all",
-                    pathname === "/favorites" ? "bg-primary text-white shadow-lg shadow-primary/30" : "text-secondary"
+                    "flex flex-col items-center justify-center w-11 h-11 rounded-full transition-all",
+                    isFavorites
+                        ? "bg-primary text-white shadow-md shadow-primary/30"
+                        : "text-secondary hover:text-brand"
                 )}
             >
-                <Heart className="w-6 h-6" />
+                <Heart className="w-5 h-5" />
             </Link>
+
+            {/* 5. Profile */}
             <Link
                 href={isLoggedIn ? "/profile" : "/auth"}
+                aria-label="حساب کاربری"
                 className={cn(
-                    "flex items-center justify-center w-12 h-12 rounded-full transition-all",
-                    (pathname === "/profile" || pathname === "/auth") ? "bg-primary text-white shadow-lg shadow-primary/30" : "text-secondary"
+                    "flex flex-col items-center justify-center w-11 h-11 rounded-full transition-all",
+                    isProfile
+                        ? "bg-primary text-white shadow-md shadow-primary/30"
+                        : "text-secondary hover:text-brand"
                 )}
             >
-                <User className="w-6 h-6" />
+                <User className="w-5 h-5" />
             </Link>
-        </div>
+        </nav>
     );
 }
-

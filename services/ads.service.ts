@@ -34,7 +34,7 @@ export const adsService = {
     },
 
     async createDraft(data: CreateAdDraftRequest): Promise<AdMutationResponse> {
-        const response = await apiClient.post<AdMutationResponse>("/ads", data);
+        const response = await apiClient.post<AdMutationResponse>("/ads/drafts", data);
         return response.data;
     },
 
@@ -44,7 +44,7 @@ export const adsService = {
     },
 
     async submitForReview(adId: string): Promise<AdMutationResponse> {
-        const response = await apiClient.post<AdMutationResponse>(`/ads/${adId}/submit`);
+        const response = await apiClient.post<AdMutationResponse>(`/ads/${adId}/submit-for-review`);
         return response.data;
     },
 

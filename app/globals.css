@@ -17,6 +17,11 @@
   /* Text */
   --color-text-main: #252B5C;
   --color-text-light: #53587A;
+  /* Status Colors */
+  --color-status-error: #EF4444;
+  --color-status-warning: #F59E0B;
+  --color-status-success: #22C55E;
+
   /* Utility */
   --radius-button: 10px;
 }

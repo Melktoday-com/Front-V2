@@ -7,8 +7,8 @@ export interface AgencySummary {
     logoUrl?: string | null;
     isVerified: boolean;
     rating: number;
-    followerCount: number;
-    isFollowing: boolean;
+    followerCount?: number;
+    isFollowing?: boolean;
     createdAt: string;
 }
 

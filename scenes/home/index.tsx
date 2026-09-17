@@ -127,7 +127,7 @@ export const HomeScene = () => {
                 ) : featuredError ? (
                     <ErrorState onRetry={refetchFeatured} />
                 ) : !featuredData?.items.length ? (
-                    <EmptyState message="No featured properties available" />
+                    <EmptyState message="در حال حاضر آگهی ویژه‌ای در این شهر ثبت نشده است" />
                 ) : (
                     <Slider>
                         {featuredData?.items.map((property: AdSummary) => (
@@ -135,12 +135,12 @@ export const HomeScene = () => {
                                 key={property.adId}
                                 adId={property.adId}
                                 title={property.title}
-                                price={Object.values(property.pricing)[0]?.toLocaleString() || "0"}
+                                price={Object.values(property.pricing)[0] ?? 0}
                                 rating={5.0}
                                 location={selectedCity.name}
-                                image={property.mediaIds?.[0] ? `${process.env.NEXT_PUBLIC_API_URL}/media/${property.mediaIds[0]}` : "/assets/images/property-placeholder.png"}
+                                image={property.mediaIds?.[0] ? `${process.env.NEXT_PUBLIC_API_URL}/media/${property.mediaIds[0]}` : "/property-placeholder.svg"}
                                 category={property.categoryPath.subcategoryKey}
-                                className="w-[160px] lg:w-[200px]"
+                                className="w-[210px] lg:w-[250px]"
                             />
                         ))}
                     </Slider>
@@ -185,7 +185,7 @@ export const HomeScene = () => {
                 ) : tempRentError ? (
                     <ErrorState onRetry={refetchTempRent} />
                 ) : !tempRentData?.items.length ? (
-                    <EmptyState message="No temporary rentals found" />
+                    <EmptyState message="در حال حاضر اقامتگاه روزانه‌ای در این شهر ثبت نشده است" />
                 ) : (
                     <Slider>
                         {tempRentData.items.map((property: TemporaryRentAdSummary) => (
@@ -194,12 +194,13 @@ export const HomeScene = () => {
                                 adId={property.id}
                                 href={`/temporary-rent/${property.id}`}
                                 title={property.title}
-                                price={property.pricing.nightlyPrice.toLocaleString() || "0"}
+                                price={property.pricing.nightlyPrice}
+                                unit="/شب"
                                 rating={4.9}
                                 location={selectedCity.name}
-                                image={property.mediaIds?.[0] ? `${process.env.NEXT_PUBLIC_API_URL}/media/${property.mediaIds[0]}` : "/assets/images/property-placeholder.png"}
+                                image={property.mediaIds?.[0] ? `${process.env.NEXT_PUBLIC_API_URL}/media/${property.mediaIds[0]}` : "/property-placeholder.svg"}
                                 category="اجاره روزانه"
-                                className="w-[160px] lg:w-[200px]"
+                                className="w-[210px] lg:w-[250px]"
                             />
                         ))}
                     </Slider>
@@ -222,7 +223,7 @@ export const HomeScene = () => {
                 ) : recentError ? (
                     <ErrorState onRetry={refetchRecent} />
                 ) : !recentData?.items.length ? (
-                    <EmptyState message="No recent listings found" />
+                    <EmptyState message="در حال حاضر آگهی جدیدی در این شهر ثبت نشده است" />
                 ) : (
                     <Slider>
                         {recentData.items.map((property: AdSummary) => (
@@ -230,12 +231,12 @@ export const HomeScene = () => {
                                 key={property.adId}
                                 adId={property.adId}
                                 title={property.title}
-                                price={Object.values(property.pricing)[0]?.toLocaleString() || "0"}
+                                price={Object.values(property.pricing)[0] ?? 0}
                                 rating={4.8}
                                 location={selectedCity.name}
-                                image={property.mediaIds?.[0] ? `${process.env.NEXT_PUBLIC_API_URL}/media/${property.mediaIds[0]}` : "/assets/images/property-placeholder.png"}
+                                image={property.mediaIds?.[0] ? `${process.env.NEXT_PUBLIC_API_URL}/media/${property.mediaIds[0]}` : "/property-placeholder.svg"}
                                 category={property.categoryPath.subcategoryKey}
-                                className="w-[160px] lg:w-[200px]"
+                                className="w-[210px] lg:w-[250px]"
                             />
                         ))}
                     </Slider>
