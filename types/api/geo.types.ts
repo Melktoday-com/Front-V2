@@ -39,7 +39,17 @@ export interface ListZonesResponse {
 export interface CitySummary {
     id: string;
     name: string;
+    nameEn?: string;
     geoCityId?: number;
+    isCapital?: boolean;
+    isCountySeat?: boolean;
+    role?: 'PROVINCIAL_CAPITAL' | 'COUNTY_SEAT' | 'CITY' | string;
+    rank?: number;
+    osmId?: number | string;
+    osmType?: string;
+    osmUrl?: string;
+    wikidataId?: string;
+    geonamesId?: string;
     centerPoint?: {
         latitude: number;
         longitude: number;
@@ -55,7 +65,17 @@ export interface CitySummary {
 export interface ProvinceHierarchy {
     id: string;
     name: string;
+    nameEn?: string;
+    capitalName?: string;
+    capitalNameEn?: string;
     geoProvinceId?: number;
+    osmId?: number | string;
+    osmType?: string;
+    osmUrl?: string;
+    centerPoint?: {
+        latitude: number;
+        longitude: number;
+    };
     cities: CitySummary[];
 }
 

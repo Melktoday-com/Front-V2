@@ -142,14 +142,21 @@ export function CitySelector({ isOpen, onClose, onSelect, currentCityId }: CityS
                                                     onClose();
                                                 }}
                                                 className={cn(
-                                                    "text-right px-4 py-3 rounded-[15px] text-sm font-bold transition-all border",
+                                                    "text-right px-3.5 py-2.5 rounded-[15px] text-sm font-bold transition-all border flex items-center justify-between gap-1",
                                                     currentCityId === city.id
                                                         ? "bg-primary/10 border-primary text-primary"
                                                         : "bg-white border-soft-border text-brand hover:border-primary/30 hover:bg-soft-bg"
                                                 )}
                                             >
-                                                {city.name}
-                                                {currentCityId === city.id && <Check className="w-4 h-4 inline-block mr-2" />}
+                                                <div className="flex items-center gap-1.5 min-w-0">
+                                                    <span className="truncate">{city.name}</span>
+                                                    {city.isCapital && (
+                                                        <span className="shrink-0 text-[10px] font-medium text-primary bg-primary/10 px-1.5 py-0.5 rounded-full">
+                                                            مرکز استان
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                {currentCityId === city.id && <Check className="w-4 h-4 shrink-0 text-primary" />}
                                             </button>
                                         ))}
                                     </div>
