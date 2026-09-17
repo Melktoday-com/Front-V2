@@ -2,6 +2,7 @@
 
 import { PropertyCard } from "@/components/ui/PropertyCard";
 import { ReviewsSection } from "@/components/ui/ReviewsSection";
+import { Select } from "@/components/ui/Select";
 import { ErrorState } from "@/components/ui/StatusStates";
 import { useAds } from "@/hooks/useAds";
 import { useAgency, useFollowAgency, useUnfollowAgency } from "@/hooks/useAgencies";
@@ -441,18 +442,19 @@ export default function SingleAgencyScene() {
 
                         <div className="space-y-4 text-xs">
                             <div>
-                                <label className="block font-bold text-brand mb-1.5">موضوع مشاوره</label>
-                                <select
+                                <Select
+                                    label="موضوع مشاوره"
                                     value={consultationSubject}
-                                    onChange={(e) => setConsultationSubject(e.target.value)}
-                                    className="w-full p-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-primary outline-hidden font-medium"
-                                >
-                                    <option value="مشاوره خرید ملک">مشاوره خرید ملک</option>
-                                    <option value="مشاوره رهن و اجاره">مشاوره رهن و اجاره</option>
-                                    <option value="کارشناسی قیمت ملک">کارشناسی قیمت ملک</option>
-                                    <option value="مشاوره سرمایه‌گذاری ملکی">مشاوره سرمایه‌گذاری ملکی</option>
-                                    <option value="مشاوره عمومی ملک">سایر موارد</option>
-                                </select>
+                                    onChange={(val) => setConsultationSubject(val)}
+                                    options={[
+                                        { value: "مشاوره خرید ملک", label: "مشاوره خرید ملک" },
+                                        { value: "مشاوره رهن و اجاره", label: "مشاوره رهن و اجاره" },
+                                        { value: "کارشناسی قیمت ملک", label: "کارشناسی قیمت ملک" },
+                                        { value: "مشاوره سرمایه‌گذاری ملکی", label: "مشاوره سرمایه‌گذاری ملکی" },
+                                        { value: "مشاوره عمومی ملک", label: "سایر موارد" },
+                                    ]}
+                                    placeholder="موضوع مشاوره را انتخاب کنید..."
+                                />
                             </div>
 
                             <div>

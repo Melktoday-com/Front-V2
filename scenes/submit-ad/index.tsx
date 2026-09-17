@@ -1,5 +1,8 @@
 "use client";
 
+import { useCity } from "@/components/providers/CityProvider";
+import { CitySelector } from "@/components/CitySelector";
+import { Select } from "@/components/ui/Select";
 import { useAd, useCategories } from "@/hooks/useAds";
 import { useGeoHierarchy } from "@/hooks/useGeoHierarchy";
 import { useUploadMedia } from "@/hooks/useMedia";
@@ -43,10 +46,15 @@ export default function SubmitAdScene() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const editAdId = searchParams.get("edit");
+    const { selectedCity } = useCity();
 
     const [step, setStep] = useState<Step>("CATEGORY");
     const [submitForApproval, setSubmitForApproval] = useState(false);
+    const [isCitySelectorOpen, setIsCitySelectorOpen] = useState(false);
+    const [cityName, setCityName] = useState(selectedCity?.name || "");
+
     const [formData, setFormData] = useState<Partial<CreateAdDraftRequest>>({
+        cityId: selectedCity?.id || undefined,
         attributes: {
             area: 0,
             rooms: 0,
@@ -57,8 +65,8 @@ export default function SubmitAdScene() {
             rent_price: 0,
             deposit_price: 0,
         },
-        latitude: 35.6892,
-        longitude: 51.389,
+        latitude: selectedCity?.centerPoint?.latitude ?? 35.6892,
+        longitude: selectedCity?.centerPoint?.longitude ?? 51.389,
         mediaIds: [] as string[],
     });
 
@@ -85,6 +93,34 @@ export default function SubmitAdScene() {
             });
         }
     }, [existingAd]);
+
+    // Ensure default city is set from selectedCity if not in edit mode and cityId is empty
+    useEffect(() => {
+        if (!editAdId && selectedCity?.id && !formData.cityId) {
+            setFormData((prev) => ({
+                ...prev,
+                cityId: selectedCity.id,
+                latitude: selectedCity.centerPoint?.latitude ?? prev.latitude ?? 35.6892,
+                longitude: selectedCity.centerPoint?.longitude ?? prev.longitude ?? 51.389,
+            }));
+            if (!cityName) {
+                setCityName(selectedCity.name);
+            }
+        }
+    }, [editAdId, selectedCity, formData.cityId, cityName]);
+
+    // Resolve city name from geoHierarchy if we have cityId but no cityName (e.g. in edit mode)
+    useEffect(() => {
+        if (formData.cityId && !cityName && geoHierarchy) {
+            for (const province of geoHierarchy) {
+                const found = province.cities.find((c) => c.id === formData.cityId);
+                if (found) {
+                    setCityName(found.name);
+                    break;
+                }
+            }
+        }
+    }, [formData.cityId, cityName, geoHierarchy]);
 
     const submitMutation = useMutation({
         mutationFn: async ({ shouldPublish }: { shouldPublish: boolean }) => {
@@ -265,18 +301,29 @@ export default function SubmitAdScene() {
                                 <div className="grid grid-cols-1 gap-5">
                                     <div>
                                         <label className="block text-xs font-bold text-brand mb-2">شهر ملک</label>
-                                        <select
-                                            className="w-full p-3 border border-gray-200 rounded-xl bg-gray-50 text-sm focus:bg-white focus:ring-2 focus:ring-primary outline-hidden font-medium"
-                                            value={formData.cityId || ""}
-                                            onChange={(e) => setFormData({ ...formData, cityId: e.target.value })}
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsCitySelectorOpen(true)}
+                                            className="w-full flex items-center justify-between p-3.5 sm:p-4 bg-soft-bg hover:bg-soft-bg/80 border border-soft-border hover:border-primary/50 rounded-2xl transition-all group text-right focus:outline-none focus:ring-2 focus:ring-primary/20"
                                         >
-                                            <option value="">انتخاب شهر...</option>
-                                            {geoHierarchy?.flatMap((p) => p.cities).map((city) => (
-                                                <option key={city.id} value={city.id}>
-                                                    {city.name}
-                                                </option>
-                                            ))}
-                                        </select>
+                                            <div className="flex items-center gap-3 min-w-0">
+                                                <div className="w-10 h-10 rounded-xl bg-white border border-soft-border flex items-center justify-center group-hover:border-primary/30 group-hover:text-primary transition-colors text-brand shrink-0">
+                                                    <MapPin className="w-5 h-5 text-primary" />
+                                                </div>
+                                                <div className="min-w-0 text-right">
+                                                    <span className={cn("text-sm font-black block truncate", cityName ? "text-brand" : "text-secondary/60")}>
+                                                        {cityName || "انتخاب شهر ملک..."}
+                                                    </span>
+                                                    <span className="text-[11px] text-secondary font-medium">
+                                                        {cityName ? "برای تغییر شهر کلیک کنید" : "شهر مورد نظر خود را انتخاب کنید"}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-1.5 text-xs font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-xl group-hover:bg-primary group-hover:text-white transition-all shrink-0">
+                                                <span>تغییر شهر</span>
+                                                <ChevronLeft className="w-4 h-4" />
+                                            </div>
+                                        </button>
                                     </div>
 
                                     <div>
@@ -345,28 +392,28 @@ export default function SubmitAdScene() {
 
                                     {formData.categoryPath?.categoryKey && (
                                         <div>
-                                            <label className="block text-xs font-bold text-brand mb-2">زیردسته ملک</label>
-                                            <select
-                                                className="w-full p-3 border border-gray-200 rounded-xl bg-gray-50 text-sm focus:bg-white focus:ring-2 focus:ring-primary outline-hidden font-medium"
+                                            <Select
+                                                label="زیردسته ملک"
                                                 value={formData.categoryPath?.subcategoryKey || ""}
-                                                onChange={(e) =>
+                                                onChange={(val) =>
                                                     setFormData({
                                                         ...formData,
                                                         categoryPath: {
                                                             ...(formData.categoryPath || ({} as any)),
-                                                            subcategoryKey: e.target.value,
+                                                            subcategoryKey: val,
                                                         },
                                                     })
                                                 }
-                                            >
-                                                {categories
-                                                    ?.find((c) => c.key === formData.categoryPath?.categoryKey)
-                                                    ?.subcategories?.map((sub) => (
-                                                        <option key={sub.key} value={sub.key}>
-                                                            {sub.displayName}
-                                                        </option>
-                                                    ))}
-                                            </select>
+                                                options={
+                                                    categories
+                                                        ?.find((c) => c.key === formData.categoryPath?.categoryKey)
+                                                        ?.subcategories?.map((sub) => ({
+                                                            value: sub.key,
+                                                            label: sub.displayName,
+                                                        })) || []
+                                                }
+                                                placeholder="انتخاب زیردسته..."
+                                            />
                                         </div>
                                     )}
                                 </div>
@@ -679,6 +726,22 @@ export default function SubmitAdScene() {
                     </div>
                 </div>
             </div>
+
+            {/* City Selector Modal */}
+            <CitySelector
+                isOpen={isCitySelectorOpen}
+                onClose={() => setIsCitySelectorOpen(false)}
+                currentCityId={formData.cityId}
+                onSelect={(city) => {
+                    setFormData((prev) => ({
+                        ...prev,
+                        cityId: city.id,
+                        latitude: city.centerPoint?.latitude ?? prev.latitude,
+                        longitude: city.centerPoint?.longitude ?? prev.longitude,
+                    }));
+                    setCityName(city.name);
+                }}
+            />
         </div>
     );
 }

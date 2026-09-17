@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/Button";
+import { Select } from "@/components/ui/Select";
 import { useCreateAgency } from "@/hooks/useAgencies";
 import { useCities } from "@/hooks/useGeo";
 import { Building2, ChevronLeft, FileText, Globe, MapPin, Phone } from "lucide-react";
@@ -70,20 +71,21 @@ export default function CreateAgencyScene() {
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-brand text-xs font-black pr-2 uppercase">شهر فعالیت (اجباری)</label>
-                        <div className="relative group">
-                            <MapPin className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-secondary group-focus-within:text-brand transition-colors" />
-                            <select
-                                value={formData.cityId}
-                                onChange={(e) => setFormData({ ...formData, cityId: e.target.value })}
-                                className="w-full bg-soft-bg border border-soft-border rounded-2xl py-4 pr-12 pl-4 text-sm font-bold text-brand focus:ring-2 focus:ring-brand/10 outline-none transition-all appearance-none"
-                            >
-                                <option value="">انتخاب شهر...</option>
-                                {(citiesData?.items || citiesData?.cities)?.map((city) => (
-                                    <option key={city.id} value={city.id}>{city.name}</option>
-                                ))}
-                            </select>
-                        </div>
+                        <Select
+                            label="شهر فعالیت (اجباری)"
+                            value={formData.cityId}
+                            onChange={(val) => setFormData({ ...formData, cityId: val })}
+                            options={
+                                (citiesData?.items || citiesData?.cities || []).map((city) => ({
+                                    value: city.id,
+                                    label: city.name,
+                                }))
+                            }
+                            placeholder="انتخاب شهر..."
+                            searchable
+                            searchPlaceholder="جستجوی نام شهر..."
+                            icon={<MapPin className="w-5 h-5 text-secondary" />}
+                        />
                     </div>
 
                     <div className="space-y-2">

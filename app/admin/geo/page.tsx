@@ -1,5 +1,6 @@
 'use client';
 
+import { Select } from "@/components/ui/Select";
 import { adminService } from "@/services/admin.service";
 import { geoService } from "@/services/geo.service";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -308,47 +309,60 @@ export default function AdminGeoPage() {
 
                 {/* Province Filter */}
                 {zoneType !== "PROVINCE" && (
-                    <select
-                        value={provinceId}
-                        onChange={(e) => { setProvinceId(e.target.value); setCityId(""); setPage(1); }}
-                        className="px-4 py-2 rounded-xl border border-gray-200 outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white"
-                    >
-                        <option value="">همه استان‌ها</option>
-                        {provincesData?.items?.map((p: any) => (
-                            <option key={p.geoProvinceId || p.id} value={p.geoProvinceId || p.id}>
-                                {p.name}
-                            </option>
-                        ))}
-                    </select>
+                    <div className="w-full sm:w-48">
+                        <Select
+                            value={provinceId}
+                            onChange={(val) => { setProvinceId(val); setCityId(""); setPage(1); }}
+                            options={[
+                                { value: "", label: "همه استان‌ها" },
+                                ...(provincesData?.items?.map((p: any) => ({
+                                    value: p.geoProvinceId || p.id,
+                                    label: p.name,
+                                })) || [])
+                            ]}
+                            placeholder="همه استان‌ها"
+                            size="sm"
+                            variant="white"
+                        />
+                    </div>
                 )}
 
                 {/* City Filter (For Districts and Neighborhoods) */}
                 {(zoneType === "DISTRICT" || zoneType === "NEIGHBORHOOD") && (
-                    <select
-                        value={cityId}
-                        onChange={(e) => { setCityId(e.target.value); setPage(1); }}
-                        className="px-4 py-2 rounded-xl border border-gray-200 outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white"
-                    >
-                        <option value="">همه شهرها</option>
-                        {citiesData?.items?.map((c: any) => (
-                            <option key={c.id || c.geoCityId} value={c.id || c.geoCityId}>
-                                {c.name}
-                            </option>
-                        ))}
-                    </select>
+                    <div className="w-full sm:w-48">
+                        <Select
+                            value={cityId}
+                            onChange={(val) => { setCityId(val); setPage(1); }}
+                            options={[
+                                { value: "", label: "همه شهرها" },
+                                ...(citiesData?.items?.map((c: any) => ({
+                                    value: c.id || c.geoCityId,
+                                    label: c.name,
+                                })) || [])
+                            ]}
+                            placeholder="همه شهرها"
+                            size="sm"
+                            variant="white"
+                        />
+                    </div>
                 )}
 
                 {/* Status Filter */}
-                <select
-                    value={statusFilter}
-                    onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-                    className="px-4 py-2 rounded-xl border border-gray-200 outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white"
-                >
-                    <option value="">همه وضعیت‌ها</option>
-                    <option value="PUBLISHED">فعال</option>
-                    <option value="DRAFT">پیش‌نویس</option>
-                    <option value="ARCHIVED">غیرفعال / بایگانی</option>
-                </select>
+                <div className="w-full sm:w-44">
+                    <Select
+                        value={statusFilter}
+                        onChange={(val) => { setStatusFilter(val); setPage(1); }}
+                        options={[
+                            { value: "", label: "همه وضعیت‌ها" },
+                            { value: "PUBLISHED", label: "فعال" },
+                            { value: "DRAFT", label: "پیش‌نویس" },
+                            { value: "ARCHIVED", label: "غیرفعال / بایگانی" },
+                        ]}
+                        placeholder="همه وضعیت‌ها"
+                        size="sm"
+                        variant="white"
+                    />
+                </div>
             </div>
 
             <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
@@ -566,57 +580,57 @@ export default function AdminGeoPage() {
 
                             {zoneType === "CITY" && (
                                 <div className="space-y-2">
-                                    <label className="text-sm font-bold text-gray-700">استان</label>
-                                    <select
-                                        required
+                                    <Select
+                                        label="استان"
                                         value={newZoneParentId}
-                                        onChange={(e) => setNewZoneParentId(e.target.value)}
-                                        className="w-full px-4 py-2.5 rounded-xl border border-gray-200 outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white"
-                                    >
-                                        <option value="">انتخاب استان...</option>
-                                        {provincesData?.items?.map((p: any) => (
-                                            <option key={p.geoProvinceId} value={p.geoProvinceId}>
-                                                {p.name}
-                                            </option>
-                                        ))}
-                                    </select>
+                                        onChange={(val) => setNewZoneParentId(val)}
+                                        options={
+                                            provincesData?.items?.map((p: any) => ({
+                                                value: p.geoProvinceId,
+                                                label: p.name,
+                                            })) || []
+                                        }
+                                        placeholder="انتخاب استان..."
+                                        searchable
+                                        variant="white"
+                                    />
                                 </div>
                             )}
 
                             {zoneType === "NEIGHBORHOOD" && (
                                 <>
                                     <div className="space-y-2">
-                                        <label className="text-sm font-bold text-gray-700">استان</label>
-                                        <select
-                                            required
+                                        <Select
+                                            label="استان"
                                             value={provinceId}
-                                            onChange={(e) => setProvinceId(e.target.value)}
-                                            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white"
-                                        >
-                                            <option value="">انتخاب استان...</option>
-                                            {provincesData?.items?.map((p: any) => (
-                                                <option key={p.geoProvinceId} value={p.geoProvinceId}>
-                                                    {p.name}
-                                                </option>
-                                            ))}
-                                        </select>
+                                            onChange={(val) => setProvinceId(val)}
+                                            options={
+                                                provincesData?.items?.map((p: any) => ({
+                                                    value: p.geoProvinceId,
+                                                    label: p.name,
+                                                })) || []
+                                            }
+                                            placeholder="انتخاب استان..."
+                                            searchable
+                                            variant="white"
+                                        />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-sm font-bold text-gray-700">شهر</label>
-                                        <select
-                                            required
+                                        <Select
+                                            label="شهر"
                                             value={newZoneParentId}
-                                            onChange={(e) => setNewZoneParentId(e.target.value)}
+                                            onChange={(val) => setNewZoneParentId(val)}
                                             disabled={!provinceId}
-                                            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white disabled:opacity-50"
-                                        >
-                                            <option value="">انتخاب شهر...</option>
-                                            {citiesData?.items?.map((c: any) => (
-                                                <option key={c.id || c.geoCityId} value={c.id || c.geoCityId}>
-                                                    {c.name}
-                                                </option>
-                                            ))}
-                                        </select>
+                                            options={
+                                                citiesData?.items?.map((c: any) => ({
+                                                    value: c.id || c.geoCityId,
+                                                    label: c.name,
+                                                })) || []
+                                            }
+                                            placeholder="انتخاب شهر..."
+                                            searchable
+                                            variant="white"
+                                        />
                                     </div>
                                 </>
                             )}
