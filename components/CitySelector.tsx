@@ -2,8 +2,19 @@
 
 import { useInfiniteGeoHierarchy } from "@/hooks/useGeoHierarchy";
 import { cn } from "@/lib/utils";
-import { Check, MapPin, Search, X } from "lucide-react";
+import { geoService } from "@/services/geo.service";
+import { useQuery } from "@tanstack/react-query";
+import { Check, Flame, Loader2, MapPin, Search, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+const POPULAR_CITIES = [
+    { name: "تهران" },
+    { name: "مشهد" },
+    { name: "تبریز" },
+    { name: "اصفهان" },
+    { name: "کیش" },
+    { name: "شیراز" },
+];
 
 interface CitySelectorProps {
     isOpen: boolean;
@@ -19,7 +30,31 @@ interface CitySelectorProps {
 export function CitySelector({ isOpen, onClose, onSelect, currentCityId }: CitySelectorProps) {
     const [searchQuery, setSearchQuery] = useState("");
     const [debouncedSearch, setDebouncedSearch] = useState("");
+    const [loadingTagCity, setLoadingTagCity] = useState<string | null>(null);
     const listContainerRef = useRef<HTMLDivElement>(null);
+
+    // Preload popular cities once so quick access tags are instant
+    const { data: preloadedPopularCities } = useQuery({
+        queryKey: ["popular-cities-quick-access"],
+        queryFn: async () => {
+            try {
+                const results = await Promise.all(
+                    POPULAR_CITIES.map(async (c) => {
+                        const res = await geoService.getProvincesHierarchy({ search: c.name, limit: 1 });
+                        return res.provinces?.flatMap((p) => p.cities).find((city) => city.name === c.name);
+                    })
+                );
+                return results.filter(Boolean) as {
+                    id: string;
+                    name: string;
+                    centerPoint?: { latitude: number; longitude: number };
+                }[];
+            } catch {
+                return [];
+            }
+        },
+        staleTime: 1000 * 60 * 60 * 24, // 24 hours
+    });
 
     // Debounce search query to reduce backend calls while typing
     useEffect(() => {
@@ -46,6 +81,53 @@ export function CitySelector({ isOpen, onClose, onSelect, currentCityId }: CityS
         if (!data?.pages) return [];
         return data.pages.flatMap((page) => page.provinces || []);
     }, [data]);
+
+    const handlePopularClick = async (targetName: string) => {
+        // 1. Check preloaded popular cities
+        const foundPreloaded = preloadedPopularCities?.find((c) => c.name === targetName);
+        if (foundPreloaded) {
+            onSelect({
+                id: foundPreloaded.id,
+                name: foundPreloaded.name,
+                centerPoint: foundPreloaded.centerPoint,
+            });
+            onClose();
+            return;
+        }
+
+        // 2. Check loaded provinces
+        const foundInProvinces = provinces.flatMap((p) => p.cities).find((c) => c.name === targetName);
+        if (foundInProvinces) {
+            onSelect({
+                id: foundInProvinces.id,
+                name: foundInProvinces.name,
+                centerPoint: foundInProvinces.centerPoint,
+            });
+            onClose();
+            return;
+        }
+
+        // 3. Fallback: fetch directly via service
+        try {
+            setLoadingTagCity(targetName);
+            const res = await geoService.getProvincesHierarchy({ search: targetName, limit: 1 });
+            const city = res.provinces?.flatMap((p) => p.cities).find((c) => c.name === targetName);
+            if (city) {
+                onSelect({
+                    id: city.id,
+                    name: city.name,
+                    centerPoint: city.centerPoint,
+                });
+                onClose();
+            } else {
+                setSearchQuery(targetName);
+            }
+        } catch {
+            setSearchQuery(targetName);
+        } finally {
+            setLoadingTagCity(null);
+        }
+    };
 
     // Handle infinite scrolling when reaching near bottom
     const handleScroll = useCallback(() => {
@@ -107,6 +189,43 @@ export function CitySelector({ isOpen, onClose, onSelect, currentCityId }: CityS
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="w-full bg-soft-bg border border-soft-border rounded-[20px] py-4 pr-12 pl-4 text-sm font-bold text-brand focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-secondary-400"
                         />
+                    </div>
+
+                    {/* Quick Access Popular Cities */}
+                    <div className="space-y-2 pt-1">
+                        <div className="flex items-center gap-1.5 text-xs font-bold text-secondary">
+                            <Flame className="w-3.5 h-3.5 text-amber-500" />
+                            <span>شهرهای پربازدید:</span>
+                        </div>
+                        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 -mx-1 px-1">
+                            {POPULAR_CITIES.map((item) => {
+                                const matchedCity =
+                                    preloadedPopularCities?.find((c) => c?.name === item.name) ||
+                                    provinces.flatMap((p) => p.cities).find((c) => c.name === item.name);
+                                const isSelected = matchedCity?.id === currentCityId;
+                                const isLoadingTag = loadingTagCity === item.name;
+
+                                return (
+                                    <button
+                                        key={item.name}
+                                        type="button"
+                                        disabled={Boolean(loadingTagCity)}
+                                        onClick={() => handlePopularClick(item.name)}
+                                        className={cn(
+                                            "shrink-0 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 border select-none cursor-pointer",
+                                            isSelected
+                                                ? "bg-primary text-white border-primary shadow-xs"
+                                                : "bg-soft-bg hover:bg-primary/10 text-brand hover:text-primary border-soft-border hover:border-primary/30 active:scale-95"
+                                        )}
+                                    >
+                                        {isLoadingTag ? (
+                                            <Loader2 className="w-3 h-3 animate-spin text-primary" />
+                                        ) : null}
+                                        <span>{item.name}</span>
+                                    </button>
+                                );
+                            })}
+                        </div>
                     </div>
                 </div>
 
