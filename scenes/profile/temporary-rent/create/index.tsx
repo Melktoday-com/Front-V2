@@ -3,7 +3,6 @@
 import { CitySelector } from "@/components/CitySelector";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
-import { DynamicPriceModelSelector } from "@/components/dynamic-form/DynamicPriceModelSelector";
 import { DynamicPricingFields } from "@/components/dynamic-form/DynamicPricingFields";
 import { DynamicAttributeRenderer } from "@/components/dynamic-form/DynamicAttributeRenderer";
 import { useUploadMedia } from "@/hooks/useMedia";
@@ -22,6 +21,7 @@ import {
     ChevronRight,
     Image as ImageIcon,
     Loader2,
+    LucideIcon,
     MapPin,
     Plus,
     Tag,
@@ -41,7 +41,7 @@ const DynamicMapPicker = dynamic(() => import("@/components/ui/MapPicker"), { ss
 
 type Step = "CATEGORY" | "DETAILS" | "LOCATION" | "MEDIA" | "REVIEW";
 
-const STEPS_CONFIG: { id: Step; label: string; icon: any }[] = [
+const STEPS_CONFIG: { id: Step; label: string; icon: LucideIcon }[] = [
     { id: "CATEGORY", icon: Tag, label: "دسته‌بندی و شهر" },
     { id: "DETAILS", icon: Wallet, label: "قیمت و مشخصات" },
     { id: "LOCATION", icon: MapPin, label: "موقعیت" },
@@ -78,7 +78,7 @@ export default function CreateTemporaryRentScene() {
         attributes: {},
     });
 
-    const [rawPricing, setRawPricing] = useState<Record<string, any>>({});
+    const [rawPricing, setRawPricing] = useState<Record<string, number | string | boolean>>({});
     const [priceModelKey, setPriceModelKey] = useState<string>("DAILY_RENT_STANDARD");
 
     const { mutateAsync: uploadMedia, isPending: isUploading } = useUploadMedia();
@@ -250,7 +250,7 @@ export default function CreateTemporaryRentScene() {
                 ? Number(formData.attributes.max_guests)
                 : formData.maxGuests || 2;
 
-            const payload: any = {
+            const payload: CreateTemporaryRentDraftRequest = {
                 ...formData,
                 nightlyPrice: resolvedNightlyPrice,
                 maxGuests: resolvedMaxGuests,
@@ -265,8 +265,9 @@ export default function CreateTemporaryRentScene() {
             await createDraftMutation.mutateAsync(payload);
             toast.success("اقامتگاه با موفقیت به عنوان پیش‌نویس ثبت شد");
             router.push("/profile/temporary-rent");
-        } catch (err: any) {
-            const msg = err?.response?.data?.message || "خطا در ثبت اقامتگاه";
+        } catch (err: unknown) {
+            const errorObj = err as { response?: { data?: { message?: string } } };
+            const msg = errorObj?.response?.data?.message || "خطا در ثبت اقامتگاه";
             toast.error(msg);
         }
     };
@@ -423,29 +424,79 @@ export default function CreateTemporaryRentScene() {
                                     </div>
 
                                     {formData.categoryPath.categoryKey && (
-                                        <div>
-                                            <Select
-                                                label="زیردسته اقامتگاه *"
-                                                value={formData.categoryPath.subcategoryKey || ""}
-                                                onChange={(val) => {
-                                                    setFormData((prev) => ({
-                                                        ...prev,
-                                                        categoryPath: {
-                                                            ...prev.categoryPath,
-                                                            subcategoryKey: val,
-                                                        },
-                                                    }));
-                                                }}
-                                                options={
-                                                    categories
-                                                        ?.find((c) => c.key === formData.categoryPath.categoryKey)
-                                                        ?.subcategories?.map((sub) => ({
-                                                            value: sub.key,
-                                                            label: sub.displayName,
-                                                        })) || []
-                                                }
-                                                placeholder="انتخاب زیردسته..."
-                                            />
+                                        <div className="space-y-4">
+                                            <div>
+                                                <Select
+                                                    label="زیردسته اقامتگاه *"
+                                                    value={formData.categoryPath.subcategoryKey || ""}
+                                                    onChange={(val) => {
+                                                        setFormData((prev) => ({
+                                                            ...prev,
+                                                            categoryPath: {
+                                                                ...prev.categoryPath,
+                                                                subcategoryKey: val,
+                                                            },
+                                                        }));
+                                                        setRawPricing({});
+                                                    }}
+                                                    options={
+                                                        categories
+                                                            ?.find((c) => c.key === formData.categoryPath.categoryKey)
+                                                            ?.subcategories?.map((sub) => ({
+                                                                value: sub.key,
+                                                                label: sub.displayName,
+                                                            })) || []
+                                                    }
+                                                    placeholder="انتخاب زیردسته..."
+                                                />
+                                            </div>
+
+                                            {/* Price Model selection within Step 1 */}
+                                            {formData.categoryPath.subcategoryKey && subcatConfig?.allowedPriceModels && (
+                                                <div>
+                                                    {subcatConfig.allowedPriceModels.length > 1 ? (
+                                                        <div>
+                                                            <label className="block text-xs font-bold text-brand mb-2">
+                                                                مدل قیمت‌گذاری <span className="text-red-500">*</span>
+                                                            </label>
+                                                            <div className="flex flex-wrap gap-2.5">
+                                                                {subcatConfig.allowedPriceModels.map((pm) => {
+                                                                    const isSelected =
+                                                                        (priceModelKey || activePriceModel?.key) === pm.key;
+                                                                    return (
+                                                                        <button
+                                                                            key={pm.key}
+                                                                            type="button"
+                                                                            onClick={() => {
+                                                                                setPriceModelKey(pm.key);
+                                                                                setRawPricing({});
+                                                                                setPricingErrors({});
+                                                                            }}
+                                                                            className={cn(
+                                                                                "px-4 py-2.5 rounded-xl border text-xs font-bold transition-all flex items-center gap-2",
+                                                                                isSelected
+                                                                                    ? "border-primary bg-primary text-white shadow-xs"
+                                                                                    : "border-gray-200 bg-white text-text-light hover:border-primary/40 hover:text-brand"
+                                                                            )}
+                                                                        >
+                                                                            {isSelected && <Check className="w-3.5 h-3.5" />}
+                                                                            <span>{pm.displayName}</span>
+                                                                        </button>
+                                                                    );
+                                                                })}
+                                                            </div>
+                                                        </div>
+                                                    ) : subcatConfig.allowedPriceModels.length === 1 ? (
+                                                        <div className="p-3.5 bg-primary/5 border border-primary/20 rounded-2xl flex items-center justify-between">
+                                                            <span className="text-xs text-text-light font-medium">مدل قیمت‌گذاری:</span>
+                                                            <span className="text-xs font-black text-primary flex items-center gap-1.5">
+                                                                <Check className="w-4 h-4" />
+                                                                {subcatConfig.allowedPriceModels[0].displayName}
+                                                            </span>
+                                                        </div>
+                                                    ) : null}
+                                                </div>
+                                            )}
                                         </div>
                                     )}
                                 </div>
@@ -492,23 +543,33 @@ export default function CreateTemporaryRentScene() {
                                     </div>
                                 </div>
 
-                                {/* Dynamic Price Model for Temporary Rental */}
-                                {subcatConfig?.allowedPriceModels && subcatConfig.allowedPriceModels.length > 0 && (
-                                    <DynamicPriceModelSelector
-                                        priceModels={subcatConfig.allowedPriceModels as any}
-                                        selectedKey={priceModelKey}
-                                        onSelect={(m) => {
-                                            setPriceModelKey(m.key);
-                                            setPricingErrors({});
-                                        }}
-                                    />
+                                {/* Locked Active Price Model Display */}
+                                {activePriceModel && (
+                                    <div className="flex items-center justify-between p-4 bg-gray-50/80 border border-gray-200/80 rounded-2xl">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                                                <Wallet className="w-5 h-5" />
+                                            </div>
+                                            <div>
+                                                <span className="text-[11px] text-text-light font-medium block">
+                                                    مدل محاسبه قیمت:
+                                                </span>
+                                                <span className="text-sm font-black text-brand">
+                                                    {activePriceModel.displayName}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <span className="text-[11px] text-text-light bg-white border border-gray-200 px-3 py-1 rounded-xl">
+                                            تعیین‌شده در مرحله دسته‌بندی
+                                        </span>
+                                    </div>
                                 )}
 
                                 {/* Dynamic Pricing Fields */}
                                 {activePriceModel && (
                                     <div className="p-5 bg-gray-50/60 border border-gray-200/80 rounded-2xl">
                                         <DynamicPricingFields
-                                            priceModel={activePriceModel as any}
+                                            priceModel={activePriceModel}
                                             values={rawPricing}
                                             onChange={(k, v) => {
                                                 setRawPricing((prev) => ({ ...prev, [k]: v }));
@@ -535,7 +596,7 @@ export default function CreateTemporaryRentScene() {
                                             امکانات و ظرفیت اقامتگاه
                                         </h3>
                                         <DynamicAttributeRenderer
-                                            definitions={subcatConfig.attributeDefinitions as any}
+                                            definitions={subcatConfig.attributeDefinitions}
                                             values={formData.attributes || {}}
                                             onChange={(k, v) => {
                                                 setFormData((prev) => ({
@@ -652,7 +713,7 @@ export default function CreateTemporaryRentScene() {
                                     <div className="flex justify-between pb-2 border-b border-gray-200/50">
                                         <span className="text-text-light">اجاره هر شب:</span>
                                         <span className="font-bold text-emerald-700">
-                                            {formatPrice(rawPricing.nightlyPrice || formData.nightlyPrice)} تومان
+                                            {formatPrice(rawPricing.nightlyPrice ? Number(rawPricing.nightlyPrice) : formData.nightlyPrice)} تومان
                                         </span>
                                     </div>
                                     <div className="border-t border-gray-200/60 pt-3">

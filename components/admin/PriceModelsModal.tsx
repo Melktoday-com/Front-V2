@@ -1,7 +1,8 @@
 'use client';
 
 import { adminService } from "@/services/admin.service";
-import { PricingFieldDefinition } from "@/types/api/ads.types";
+import { PriceModel, PricingField, PricingFieldDefinition } from "@/types/api/ads.types";
+import { CreateAdminPriceModelRequest, UpdateAdminPriceModelRequest } from "@/types/api/admin.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
     Check,
@@ -78,7 +79,7 @@ export default function PriceModelsModal({
 
     const saveMutation = useMutation({
         mutationFn: (data: PriceModelFormData) => {
-            const payload: any = {
+            const createPayload: CreateAdminPriceModelRequest = {
                 key: data.key.trim().toLowerCase(),
                 name: data.name.trim(),
                 displayName: data.displayName.trim() || data.name.trim(),
@@ -89,13 +90,21 @@ export default function PriceModelsModal({
             };
 
             if (data.id) {
+                const updatePayload: UpdateAdminPriceModelRequest = {
+                    name: createPayload.name,
+                    displayName: createPayload.displayName,
+                    description: createPayload.description,
+                    displayOrder: createPayload.displayOrder,
+                    isActive: createPayload.isActive,
+                    pricingFields: createPayload.pricingFields,
+                };
                 return isTemp
-                    ? adminService.updateTemporaryRentPriceModel(data.id, payload)
-                    : adminService.updatePriceModel(data.id, payload);
+                    ? adminService.updateTemporaryRentPriceModel(data.id, updatePayload)
+                    : adminService.updatePriceModel(data.id, updatePayload);
             } else {
                 return isTemp
-                    ? adminService.createTemporaryRentPriceModel(payload)
-                    : adminService.createPriceModel(payload);
+                    ? adminService.createTemporaryRentPriceModel(createPayload)
+                    : adminService.createPriceModel(createPayload);
             }
         },
         onSuccess: () => {
@@ -104,8 +113,9 @@ export default function PriceModelsModal({
             setIsFormModalOpen(false);
             setFormData(initialPriceModelFormData);
         },
-        onError: (err: any) => {
-            const msg = err?.response?.data?.message || "خطا در ذخیره مدل قیمت‌گذاری";
+        onError: (err: unknown) => {
+            const errorObj = err as { response?: { data?: { message?: string } } };
+            const msg = errorObj?.response?.data?.message || "خطا در ذخیره مدل قیمت‌گذاری";
             toast.error(typeof msg === 'string' ? msg : JSON.stringify(msg));
         }
     });
@@ -120,7 +130,7 @@ export default function PriceModelsModal({
         setIsFormModalOpen(true);
     };
 
-    const handleOpenEdit = (pm: any) => {
+    const handleOpenEdit = (pm: PriceModel) => {
         setFormData({
             id: pm.id,
             key: pm.key,
@@ -214,7 +224,7 @@ export default function PriceModelsModal({
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {priceModels.map((pm: any) => (
+                            {priceModels.map((pm: PriceModel) => (
                                 <div
                                     key={pm.id}
                                     className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:border-blue-200 transition-all flex flex-col justify-between"
@@ -254,7 +264,7 @@ export default function PriceModelsModal({
                                         <div className="mt-4 pt-3 border-t border-slate-100">
                                             <span className="text-xs font-bold text-slate-700 block mb-2">فیلدهای مالی مشخص‌شده:</span>
                                             <div className="flex flex-wrap gap-1.5">
-                                                {pm.pricingFields?.map((f: any) => (
+                                                {pm.pricingFields?.map((f: PricingField) => (
                                                     <div
                                                         key={f.key}
                                                         className="text-xs bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 flex items-center gap-1.5"

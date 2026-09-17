@@ -3,8 +3,10 @@ import { PaginatedResponse } from "@/types/api/ads.types";
 import {
     CreateTemporaryRentDraftRequest,
     TemporaryRentAd,
+    TemporaryRentCategory,
     TemporaryRentContactInfo,
-    TemporaryRentMutationResponse
+    TemporaryRentMutationResponse,
+    TemporaryRentSubcategoryConfigResponse,
 } from "@/types/api/temporary-rent.types";
 
 export interface TemporaryRentAdSummary {
@@ -58,13 +60,13 @@ export const temporaryRentService = {
         return response.data;
     },
 
-    async listCategories(): Promise<any[]> {
-        const response = await apiClient.get<{ categories: any[] }>("/temporary-rent/categories");
+    async listCategories(): Promise<TemporaryRentCategory[]> {
+        const response = await apiClient.get<{ categories: TemporaryRentCategory[] }>("/temporary-rent/categories");
         return response.data.categories;
     },
 
-    async getSubcategoryConfig(subcategoryId: string, categoryKey?: string): Promise<any> {
-        const response = await apiClient.get<any>(`/temporary-rent/categories/subcategories/${subcategoryId}/config`, {
+    async getSubcategoryConfig(subcategoryId: string, categoryKey?: string): Promise<TemporaryRentSubcategoryConfigResponse> {
+        const response = await apiClient.get<TemporaryRentSubcategoryConfigResponse>(`/temporary-rent/subcategories/${subcategoryId}/config`, {
             params: categoryKey ? { categoryKey } : undefined,
         });
         return response.data;

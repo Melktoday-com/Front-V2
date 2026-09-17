@@ -28,7 +28,7 @@ export interface TemporaryRentAd {
     longitude: number;
     address?: string;
     availabilityWindow: TemporaryRentAvailabilityWindow;
-    attributes: Record<string, any>;
+    attributes: Record<string, JsonValue>;
     createdAt: string;
     updatedAt: string;
     owner?: {
@@ -48,8 +48,10 @@ export interface CreateTemporaryRentDraftRequest {
     availabilityWindow: TemporaryRentAvailabilityWindow;
     latitude: number;
     longitude: number;
-    attributes?: Record<string, any>;
+    attributes?: Record<string, JsonValue>;
     mediaIds?: string[];
+    priceModelKey?: string;
+    pricing?: Record<string, number | string | boolean>;
 }
 
 export interface PublishTemporaryRentRequest {

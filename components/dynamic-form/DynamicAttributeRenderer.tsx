@@ -2,12 +2,15 @@
 
 import React from "react";
 import { AttributeDefinition } from "@/types/api/ads.types";
+import { JsonValue } from "@/types/common";
 import { Select } from "@/components/ui/Select";
+
+export type AttributeValue = number | string | boolean | string[];
 
 interface DynamicAttributeRendererProps {
     definitions: AttributeDefinition[];
-    values: Record<string, any>;
-    onChange: (key: string, value: any) => void;
+    values: Record<string, AttributeValue | JsonValue | undefined>;
+    onChange: (key: string, value: AttributeValue) => void;
     errors?: Record<string, string>;
 }
 
@@ -67,7 +70,7 @@ export const DynamicAttributeRenderer: React.FC<DynamicAttributeRendererProps> =
                                         type="number"
                                         min={attr.constraints?.min}
                                         max={attr.constraints?.max}
-                                        value={val ?? ""}
+                                        value={typeof val === "number" || typeof val === "string" ? val : ""}
                                         placeholder={`مثال: ${attr.constraints?.min ?? 0}`}
                                         onChange={(e) => {
                                             const v = e.target.value;
@@ -104,7 +107,7 @@ export const DynamicAttributeRenderer: React.FC<DynamicAttributeRendererProps> =
                                     type="text"
                                     minLength={attr.constraints?.minLength}
                                     maxLength={attr.constraints?.maxLength}
-                                    value={val ?? ""}
+                                    value={typeof val === "number" || typeof val === "string" ? val : ""}
                                     placeholder={attr.label}
                                     onChange={(e) => onChange(attr.key, e.target.value)}
                                     className={`w-full p-3 text-sm bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-primary outline-hidden transition-all ${

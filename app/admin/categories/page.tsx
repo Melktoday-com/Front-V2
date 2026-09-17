@@ -5,6 +5,12 @@ import SubcategoryConfigModal from "@/components/admin/SubcategoryConfigModal";
 import { adminService } from "@/services/admin.service";
 import { adsService } from "@/services/ads.service";
 import { CategoryListItem, Subcategory } from "@/types/api/ads.types";
+import {
+    CreateAdminCategoryRequest,
+    UpdateAdminCategoryRequest,
+    CreateAdminSubcategoryRequest,
+    UpdateAdminSubcategoryRequest,
+} from "@/types/api/admin.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
     Archive,
@@ -80,28 +86,30 @@ export default function AdminCategoriesPage() {
 
     // Category Mutations
     const createCategoryMutation = useMutation({
-        mutationFn: (data: any) => adminService.createCategory(data),
+        mutationFn: (data: CreateAdminCategoryRequest) => adminService.createCategory(data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["admin", "categories"] });
             toast.success("دسته‌بندی جدید با موفقیت ایجاد شد");
             setIsCreateCategoryModalOpen(false);
         },
-        onError: (err: any) => {
-            const msg = err?.response?.data?.message || "خطا در ایجاد دسته‌بندی";
+        onError: (err: unknown) => {
+            const errorObj = err as { response?: { data?: { message?: string } } };
+            const msg = errorObj?.response?.data?.message || "خطا در ایجاد دسته‌بندی";
             toast.error(typeof msg === 'string' ? msg : JSON.stringify(msg));
         }
     });
 
     const updateCategoryMutation = useMutation({
-        mutationFn: (data: { id: string; payload: any }) => adminService.updateCategory(data.id, data.payload),
+        mutationFn: (data: { id: string; payload: UpdateAdminCategoryRequest }) => adminService.updateCategory(data.id, data.payload),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["admin", "categories"] });
             toast.success("دسته‌بندی با موفقیت بروزرسانی شد");
             setIsEditCategoryModalOpen(false);
             setSelectedCategory(null);
         },
-        onError: (err: any) => {
-            const msg = err?.response?.data?.message || "خطا در بروزرسانی دسته‌بندی";
+        onError: (err: unknown) => {
+            const errorObj = err as { response?: { data?: { message?: string } } };
+            const msg = errorObj?.response?.data?.message || "خطا در بروزرسانی دسته‌بندی";
             toast.error(typeof msg === 'string' ? msg : JSON.stringify(msg));
         }
     });
@@ -117,21 +125,22 @@ export default function AdminCategoriesPage() {
 
     // Subcategory Mutations
     const createSubcategoryMutation = useMutation({
-        mutationFn: (data: { categoryId: string; payload: any }) =>
+        mutationFn: (data: { categoryId: string; payload: CreateAdminSubcategoryRequest }) =>
             adminService.addSubcategory(data.categoryId, data.payload),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["admin", "categories"] });
             toast.success("زیردسته جدید با موفقیت اضافه شد");
             setIsCreateSubcategoryModalOpen(false);
         },
-        onError: (err: any) => {
-            const msg = err?.response?.data?.message || "خطا در اضافه کردن زیردسته";
+        onError: (err: unknown) => {
+            const errorObj = err as { response?: { data?: { message?: string } } };
+            const msg = errorObj?.response?.data?.message || "خطا در اضافه کردن زیردسته";
             toast.error(typeof msg === 'string' ? msg : JSON.stringify(msg));
         }
     });
 
     const updateSubcategoryMutation = useMutation({
-        mutationFn: (data: { subcategoryId: string; payload: any }) =>
+        mutationFn: (data: { subcategoryId: string; payload: UpdateAdminSubcategoryRequest }) =>
             adminService.updateSubcategory(data.subcategoryId, data.payload),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["admin", "categories"] });
@@ -139,8 +148,9 @@ export default function AdminCategoriesPage() {
             setIsEditSubcategoryModalOpen(false);
             setSelectedSubcategory(null);
         },
-        onError: (err: any) => {
-            const msg = err?.response?.data?.message || "خطا در بروزرسانی زیردسته";
+        onError: (err: unknown) => {
+            const errorObj = err as { response?: { data?: { message?: string } } };
+            const msg = errorObj?.response?.data?.message || "خطا در بروزرسانی زیردسته";
             toast.error(typeof msg === 'string' ? msg : JSON.stringify(msg));
         }
     });

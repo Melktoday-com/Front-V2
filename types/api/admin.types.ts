@@ -166,3 +166,115 @@ export interface AdminReport {
     note?: string;
     createdAt: string;
 }
+
+// ─────────────────────────────────────────────────────────────────
+// Category & PriceModel Administration Types
+// ─────────────────────────────────────────────────────────────────
+
+export interface CreateAdminCategoryRequest {
+    key: string;
+    displayName: string;
+    description?: string;
+    icon?: string;
+    banner?: string;
+    displayOrder?: number;
+}
+
+export interface UpdateAdminCategoryRequest {
+    displayName?: string;
+    description?: string;
+    icon?: string;
+    banner?: string;
+    displayOrder?: number;
+    isActive?: boolean;
+}
+
+export interface CreateAdminSubcategoryRequest {
+    key: string;
+    displayName: string;
+    description?: string;
+    icon?: string;
+    banner?: string;
+    displayOrder?: number;
+    allowedPriceModelIds?: string[];
+}
+
+export interface UpdateAdminSubcategoryRequest {
+    displayName?: string;
+    description?: string;
+    icon?: string;
+    banner?: string;
+    displayOrder?: number;
+    isActive?: boolean;
+}
+
+export interface CreateAdminPriceModelRequest {
+    key: string;
+    name: string;
+    displayName: string;
+    description?: string;
+    currency?: string;
+    displayOrder?: number;
+    isActive?: boolean;
+    pricingFields: Array<{
+        key: string;
+        label: string;
+        fieldType: 'NUMBER' | 'BOOLEAN' | 'STRING';
+        required: boolean;
+        placeholder?: string;
+        unit?: string;
+        helpText?: string;
+        defaultValue?: number | string | boolean;
+    }>;
+}
+
+export interface UpdateAdminPriceModelRequest {
+    name?: string;
+    displayName?: string;
+    description?: string;
+    currency?: string;
+    displayOrder?: number;
+    isActive?: boolean;
+    pricingFields?: Array<{
+        key: string;
+        label: string;
+        fieldType: 'NUMBER' | 'BOOLEAN' | 'STRING';
+        required: boolean;
+        placeholder?: string;
+        unit?: string;
+        helpText?: string;
+        defaultValue?: number | string | boolean;
+    }>;
+}
+
+export interface CreateAdminAttributeRequest {
+    key: string;
+    label: string;
+    description?: string;
+    type: 'STRING' | 'NUMBER' | 'BOOLEAN' | 'SELECT';
+    required?: boolean;
+    displayOrder?: number;
+    options?: Array<{ key: string; label: string; displayOrder?: number }>;
+    constraints?: {
+        min?: number;
+        max?: number;
+        minLength?: number;
+        maxLength?: number;
+    };
+}
+
+export interface UpdateAdminAttributeRequest {
+    label?: string;
+    description?: string;
+    type?: 'STRING' | 'NUMBER' | 'BOOLEAN' | 'SELECT';
+    required?: boolean;
+    displayOrder?: number;
+    isActive?: boolean;
+    options?: Array<{ key: string; label: string; displayOrder?: number }>;
+    constraints?: {
+        min?: number;
+        max?: number;
+        minLength?: number;
+        maxLength?: number;
+    };
+}

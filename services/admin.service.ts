@@ -4,14 +4,30 @@ import {
     ApproveListingRequest,
     BanUserRequest,
     BroadcastNotificationRequest,
+    CreateAdminAttributeRequest,
+    CreateAdminCategoryRequest,
+    CreateAdminPriceModelRequest,
+    CreateAdminSubcategoryRequest,
     CreateGeoZoneRequest,
     GeoZone,
     GiftCreditRequest,
     ModerationHistory,
     RejectListingRequest,
     SuspendUserRequest,
-    UpdateGeoZoneRequest
+    UpdateAdminAttributeRequest,
+    UpdateAdminCategoryRequest,
+    UpdateAdminPriceModelRequest,
+    UpdateAdminSubcategoryRequest,
+    UpdateGeoZoneRequest,
+    UpdatePlanLimitsRequest,
 } from "@/types/api/admin.types";
+import { AttributeDefinition, CategoryListItem, PriceModel, Subcategory } from "@/types/api/ads.types";
+import {
+    TemporaryRentAttributeDefinition,
+    TemporaryRentCategory,
+    TemporaryRentPriceModel,
+    TemporaryRentSubcategory
+} from "@/types/api/temporary-rent.types";
 
 /**
  * Admin Service - Handles administrative operations
@@ -137,85 +153,85 @@ export const adminService = {
     },
 
     // Config
-    updatePlanLimits: async (data: { plan: string; limits: any }) => {
+    updatePlanLimits: async (data: UpdatePlanLimitsRequest) => {
         const response = await api.put("/admin/config/plan-limits", data);
         return response.data;
     },
 
     // Categories & Subcategories Management
-    createCategory: async (data: { key: string; displayName: string; description?: string; icon?: string; banner?: string; displayOrder?: number }) => {
+    createCategory: async (data: CreateAdminCategoryRequest): Promise<CategoryListItem> => {
         const response = await api.post("/ads/categories", data);
         return response.data;
     },
 
-    updateCategory: async (categoryId: string, data: { displayName?: string; description?: string; icon?: string; banner?: string; displayOrder?: number; isActive?: boolean }) => {
+    updateCategory: async (categoryId: string, data: UpdateAdminCategoryRequest): Promise<CategoryListItem> => {
         const response = await api.patch(`/ads/categories/${categoryId}`, data);
         return response.data;
     },
 
-    archiveCategory: async (categoryId: string) => {
+    archiveCategory: async (categoryId: string): Promise<{ success: boolean }> => {
         const response = await api.delete(`/ads/categories/${categoryId}`);
         return response.data;
     },
 
-    addSubcategory: async (categoryId: string, data: { key: string; displayName: string; description?: string; icon?: string; banner?: string; displayOrder?: number; allowedPriceModelIds?: string[] }) => {
+    addSubcategory: async (categoryId: string, data: CreateAdminSubcategoryRequest): Promise<Subcategory> => {
         const response = await api.post(`/ads/categories/${categoryId}/subcategories`, data);
         return response.data;
     },
 
-    updateSubcategory: async (subcategoryId: string, data: { displayName?: string; description?: string; icon?: string; banner?: string; displayOrder?: number; isActive?: boolean }) => {
+    updateSubcategory: async (subcategoryId: string, data: UpdateAdminSubcategoryRequest): Promise<Subcategory> => {
         const response = await api.patch(`/ads/subcategories/${subcategoryId}`, data);
         return response.data;
     },
 
-    archiveSubcategory: async (subcategoryId: string) => {
+    archiveSubcategory: async (subcategoryId: string): Promise<{ success: boolean }> => {
         const response = await api.delete(`/ads/subcategories/${subcategoryId}`);
         return response.data;
     },
 
     // Price Models Management
-    listPriceModels: async (params?: { onlyActive?: boolean }) => {
+    listPriceModels: async (params?: { onlyActive?: boolean }): Promise<PriceModel[]> => {
         const response = await api.get("/ads/admin/price-models", { params });
         return response.data;
     },
 
-    createPriceModel: async (data: any) => {
+    createPriceModel: async (data: CreateAdminPriceModelRequest): Promise<PriceModel> => {
         const response = await api.post("/ads/admin/price-models", data);
         return response.data;
     },
 
-    updatePriceModel: async (priceModelId: string, data: any) => {
+    updatePriceModel: async (priceModelId: string, data: UpdateAdminPriceModelRequest): Promise<PriceModel> => {
         const response = await api.patch(`/ads/admin/price-models/${priceModelId}`, data);
         return response.data;
     },
 
-    getSubcategoryPriceModels: async (subcategoryId: string) => {
+    getSubcategoryPriceModels: async (subcategoryId: string): Promise<PriceModel[]> => {
         const response = await api.get(`/ads/subcategories/${subcategoryId}/price-models`);
         return response.data;
     },
 
-    assignPriceModelsToSubcategory: async (subcategoryId: string, priceModelIds: string[]) => {
+    assignPriceModelsToSubcategory: async (subcategoryId: string, priceModelIds: string[]): Promise<PriceModel[]> => {
         const response = await api.put(`/ads/subcategories/${subcategoryId}/price-models`, { priceModelIds });
         return response.data;
     },
 
     // Dynamic Attributes Management
-    getSubcategoryAttributes: async (subcategoryId: string) => {
+    getSubcategoryAttributes: async (subcategoryId: string): Promise<AttributeDefinition[]> => {
         const response = await api.get(`/ads/subcategories/${subcategoryId}/attributes`);
         return response.data;
     },
 
-    createSubcategoryAttribute: async (subcategoryId: string, data: any) => {
+    createSubcategoryAttribute: async (subcategoryId: string, data: CreateAdminAttributeRequest): Promise<AttributeDefinition> => {
         const response = await api.post(`/ads/subcategories/${subcategoryId}/attributes`, data);
         return response.data;
     },
 
-    updateSubcategoryAttribute: async (subcategoryId: string, attributeId: string, data: any) => {
+    updateSubcategoryAttribute: async (subcategoryId: string, attributeId: string, data: UpdateAdminAttributeRequest): Promise<AttributeDefinition> => {
         const response = await api.patch(`/ads/subcategories/${subcategoryId}/attributes/${attributeId}`, data);
         return response.data;
     },
 
-    deleteSubcategoryAttribute: async (subcategoryId: string, attributeId: string) => {
+    deleteSubcategoryAttribute: async (subcategoryId: string, attributeId: string): Promise<{ success: boolean }> => {
         const response = await api.delete(`/ads/subcategories/${subcategoryId}/attributes/${attributeId}`);
         return response.data;
     },
@@ -223,82 +239,82 @@ export const adminService = {
     // ─────────────────────────────────────────────────────────────────
     // Temporary Rental Admin Operations
     // ─────────────────────────────────────────────────────────────────
-    listTemporaryRentCategories: async (params?: { includeArchived?: boolean }) => {
+    listTemporaryRentCategories: async (params?: { includeArchived?: boolean }): Promise<TemporaryRentCategory[]> => {
         const response = await api.get("/temporary-rent/categories", { params });
-        return response.data;
+        return response.data.categories || response.data;
     },
 
-    createTemporaryRentCategory: async (data: any) => {
+    createTemporaryRentCategory: async (data: CreateAdminCategoryRequest): Promise<TemporaryRentCategory> => {
         const response = await api.post("/temporary-rent/admin/categories", data);
         return response.data;
     },
 
-    updateTemporaryRentCategory: async (categoryId: string, data: any) => {
+    updateTemporaryRentCategory: async (categoryId: string, data: UpdateAdminCategoryRequest): Promise<TemporaryRentCategory> => {
         const response = await api.patch(`/temporary-rent/admin/categories/${categoryId}`, data);
         return response.data;
     },
 
-    archiveTemporaryRentCategory: async (categoryId: string) => {
+    archiveTemporaryRentCategory: async (categoryId: string): Promise<{ success: boolean }> => {
         const response = await api.delete(`/temporary-rent/admin/categories/${categoryId}`);
         return response.data;
     },
 
-    addTemporaryRentSubcategory: async (categoryId: string, data: any) => {
+    addTemporaryRentSubcategory: async (categoryId: string, data: CreateAdminSubcategoryRequest): Promise<TemporaryRentSubcategory> => {
         const response = await api.post(`/temporary-rent/admin/categories/${categoryId}/subcategories`, data);
         return response.data;
     },
 
-    updateTemporaryRentSubcategory: async (subcategoryId: string, data: any) => {
+    updateTemporaryRentSubcategory: async (subcategoryId: string, data: UpdateAdminSubcategoryRequest): Promise<TemporaryRentSubcategory> => {
         const response = await api.patch(`/temporary-rent/admin/subcategories/${subcategoryId}`, data);
         return response.data;
     },
 
-    archiveTemporaryRentSubcategory: async (subcategoryId: string) => {
+    archiveTemporaryRentSubcategory: async (subcategoryId: string): Promise<{ success: boolean }> => {
         const response = await api.delete(`/temporary-rent/admin/subcategories/${subcategoryId}`);
         return response.data;
     },
 
-    listTemporaryRentPriceModels: async () => {
+    listTemporaryRentPriceModels: async (): Promise<TemporaryRentPriceModel[]> => {
         const response = await api.get("/temporary-rent/admin/price-models");
         return response.data;
     },
 
-    createTemporaryRentPriceModel: async (data: any) => {
+    createTemporaryRentPriceModel: async (data: CreateAdminPriceModelRequest): Promise<TemporaryRentPriceModel> => {
         const response = await api.post("/temporary-rent/admin/price-models", data);
         return response.data;
     },
 
-    updateTemporaryRentPriceModel: async (priceModelId: string, data: any) => {
+    updateTemporaryRentPriceModel: async (priceModelId: string, data: UpdateAdminPriceModelRequest): Promise<TemporaryRentPriceModel> => {
         const response = await api.patch(`/temporary-rent/admin/price-models/${priceModelId}`, data);
         return response.data;
     },
 
-    getTemporaryRentSubcategoryPriceModels: async (subcategoryId: string) => {
+    getTemporaryRentSubcategoryPriceModels: async (subcategoryId: string): Promise<TemporaryRentPriceModel[]> => {
         const response = await api.get(`/temporary-rent/admin/subcategories/${subcategoryId}/price-models`);
         return response.data;
     },
 
-    assignTemporaryRentPriceModels: async (subcategoryId: string, priceModelIds: string[]) => {
+    assignTemporaryRentPriceModels: async (subcategoryId: string, priceModelIds: string[]): Promise<TemporaryRentPriceModel[]> => {
         const response = await api.put(`/temporary-rent/admin/subcategories/${subcategoryId}/price-models`, { priceModelIds });
         return response.data;
     },
 
-    getTemporaryRentAttributes: async (subcategoryId: string) => {
+    getTemporaryRentAttributes: async (subcategoryId: string): Promise<TemporaryRentAttributeDefinition[]> => {
         const response = await api.get(`/temporary-rent/admin/subcategories/${subcategoryId}/attributes`);
         return response.data;
     },
 
-    createTemporaryRentAttribute: async (subcategoryId: string, data: any) => {
+    createTemporaryRentAttribute: async (subcategoryId: string, data: CreateAdminAttributeRequest): Promise<TemporaryRentAttributeDefinition> => {
         const response = await api.post(`/temporary-rent/admin/subcategories/${subcategoryId}/attributes`, data);
         return response.data;
     },
 
-    updateTemporaryRentAttribute: async (subcategoryId: string, attributeId: string, data: any) => {
+    updateTemporaryRentAttribute: async (subcategoryId: string, attributeId: string, data: UpdateAdminAttributeRequest): Promise<TemporaryRentAttributeDefinition> => {
         const response = await api.patch(`/temporary-rent/admin/subcategories/${subcategoryId}/attributes/${attributeId}`, data);
         return response.data;
     },
 
-    deleteTemporaryRentAttribute: async (subcategoryId: string, attributeId: string) => {
+    deleteTemporaryRentAttribute: async (subcategoryId: string, attributeId: string): Promise<{ success: boolean }> => {
         const response = await api.delete(`/temporary-rent/admin/subcategories/${subcategoryId}/attributes/${attributeId}`);
         return response.data;
     },

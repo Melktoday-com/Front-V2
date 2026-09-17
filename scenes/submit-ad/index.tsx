@@ -3,7 +3,6 @@
 import { useCity } from "@/components/providers/CityProvider";
 import { CitySelector } from "@/components/CitySelector";
 import { Select } from "@/components/ui/Select";
-import { DynamicPriceModelSelector } from "@/components/dynamic-form/DynamicPriceModelSelector";
 import { DynamicPricingFields } from "@/components/dynamic-form/DynamicPricingFields";
 import { DynamicAttributeRenderer } from "@/components/dynamic-form/DynamicAttributeRenderer";
 import { useAd, useCategories } from "@/hooks/useAds";
@@ -11,7 +10,7 @@ import { useGeoHierarchy } from "@/hooks/useGeoHierarchy";
 import { useUploadMedia } from "@/hooks/useMedia";
 import { cn, formatPrice, toPersianDigits } from "@/lib/utils";
 import { adsService } from "@/services/ads.service";
-import { CreateAdDraftRequest, PriceModel, SubcategoryConfigResponse } from "@/types/api/ads.types";
+import { CategoryPath, CreateAdDraftRequest, PriceModel, SubcategoryConfigResponse } from "@/types/api/ads.types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
     Calendar,
@@ -21,6 +20,7 @@ import {
     Image as ImageIcon,
     Info,
     Loader2,
+    LucideIcon,
     MapPin,
     Send,
     Sparkles,
@@ -40,7 +40,7 @@ const DynamicMapPicker = dynamic(() => import("@/components/ui/MapPicker"), { ss
 
 type Step = "CATEGORY" | "BASIC_INFO" | "DETAILS" | "LOCATION" | "MEDIA" | "REVIEW";
 
-const STEPS_CONFIG: { id: Step; label: string; icon: any }[] = [
+const STEPS_CONFIG: { id: Step; label: string; icon: LucideIcon }[] = [
     { id: "CATEGORY", icon: Tag, label: "دسته‌بندی" },
     { id: "BASIC_INFO", icon: Check, label: "اطلاعات پایه" },
     { id: "DETAILS", icon: Wallet, label: "قیمت و مشخصات" },
@@ -118,7 +118,9 @@ export default function SubmitAdScene() {
             setFormData((prev) => ({
                 ...prev,
                 categoryPath: {
-                    ...(prev.categoryPath as any),
+                    categoryKey: prev.categoryPath?.categoryKey || "",
+                    subcategoryKey: prev.categoryPath?.subcategoryKey || "",
+                    attributeSchemaVersion: prev.categoryPath?.attributeSchemaVersion || 1,
                     businessModelKey: activePriceModel.key,
                 },
             }));
@@ -219,8 +221,9 @@ export default function SubmitAdScene() {
             }
             router.push("/profile/ads");
         },
-        onError: (err: any) => {
-            const msg = err?.response?.data?.message || "خطا در ذخیره‌سازی آگهی";
+        onError: (err: unknown) => {
+            const errorObj = err as { response?: { data?: { message?: string } } };
+            const msg = errorObj?.response?.data?.message || "خطا در ذخیره‌سازی آگهی";
             toast.error(msg);
         },
     });
@@ -236,7 +239,7 @@ export default function SubmitAdScene() {
         if (activePriceModel) {
             for (const field of activePriceModel.pricingFields) {
                 const val = formData.rawPricing?.[field.key];
-                if (field.required && (val === undefined || val === null || isNaN(val) || (val as unknown) === "")) {
+                if (field.required && (val === undefined || val === null || isNaN(Number(val)) || String(val).trim() === "")) {
                     pErrors[field.key] = `فیلد ${field.label} الزامی است`;
                     isValid = false;
                 }
@@ -274,6 +277,17 @@ export default function SubmitAdScene() {
             if (!formData.categoryPath?.categoryKey || !formData.categoryPath?.subcategoryKey) {
                 toast.error("لطفاً دسته‌بندی و زیردسته ملک را انتخاب فرمایید");
                 return;
+            }
+            if (!formData.categoryPath?.businessModelKey && activePriceModel) {
+                setFormData((prev) => ({
+                    ...prev,
+                    categoryPath: {
+                        categoryKey: prev.categoryPath?.categoryKey || "",
+                        subcategoryKey: prev.categoryPath?.subcategoryKey || "",
+                        attributeSchemaVersion: prev.categoryPath?.attributeSchemaVersion || 1,
+                        businessModelKey: activePriceModel.key,
+                    },
+                }));
             }
         }
 
@@ -523,32 +537,90 @@ export default function SubmitAdScene() {
                                     </div>
 
                                     {formData.categoryPath?.categoryKey && (
-                                        <div>
-                                            <Select
-                                                label="زیردسته ملک *"
-                                                value={formData.categoryPath?.subcategoryKey || ""}
-                                                onChange={(val) => {
-                                                    setFormData((prev) => ({
-                                                        ...prev,
-                                                        categoryPath: {
-                                                            ...(prev.categoryPath as any),
-                                                            subcategoryKey: val,
-                                                            businessModelKey: "",
-                                                        },
-                                                        rawPricing: {},
-                                                        attributes: {},
-                                                    }));
-                                                }}
-                                                options={
-                                                    categories
-                                                        ?.find((c) => c.key === formData.categoryPath?.categoryKey)
-                                                        ?.subcategories?.map((sub) => ({
-                                                            value: sub.key,
-                                                            label: sub.displayName,
-                                                        })) || []
-                                                }
-                                                placeholder="انتخاب زیردسته..."
-                                            />
+                                        <div className="space-y-4">
+                                            <div>
+                                                <Select
+                                                    label="زیردسته ملک *"
+                                                    value={formData.categoryPath?.subcategoryKey || ""}
+                                                    onChange={(val) => {
+                                                        setFormData((prev) => ({
+                                                            ...prev,
+                                                            categoryPath: {
+                                                                categoryKey: prev.categoryPath?.categoryKey || "",
+                                                                subcategoryKey: val,
+                                                                businessModelKey: "",
+                                                                attributeSchemaVersion: 1,
+                                                            },
+                                                            rawPricing: {},
+                                                            attributes: {},
+                                                        }));
+                                                    }}
+                                                    options={
+                                                        categories
+                                                            ?.find((c) => c.key === formData.categoryPath?.categoryKey)
+                                                            ?.subcategories?.map((sub) => ({
+                                                                value: sub.key,
+                                                                label: sub.displayName,
+                                                            })) || []
+                                                    }
+                                                    placeholder="انتخاب زیردسته..."
+                                                />
+                                            </div>
+
+                                            {/* Transaction Type Selection within Step 1 */}
+                                            {formData.categoryPath?.subcategoryKey && subcatConfig?.allowedPriceModels && (
+                                                <div>
+                                                    {subcatConfig.allowedPriceModels.length > 1 ? (
+                                                        <div>
+                                                            <label className="block text-xs font-bold text-brand mb-2">
+                                                                نوع معامله <span className="text-red-500">*</span>
+                                                            </label>
+                                                            <div className="flex flex-wrap gap-2.5">
+                                                                {subcatConfig.allowedPriceModels.map((pm) => {
+                                                                    const isSelected =
+                                                                        (formData.categoryPath?.businessModelKey || activePriceModel?.key) === pm.key;
+                                                                    return (
+                                                                        <button
+                                                                            key={pm.key}
+                                                                            type="button"
+                                                                            onClick={() => {
+                                                                                setFormData((prev) => ({
+                                                                                    ...prev,
+                                                                                    categoryPath: {
+                                                                                        categoryKey: prev.categoryPath?.categoryKey || "",
+                                                                                        subcategoryKey: prev.categoryPath?.subcategoryKey || "",
+                                                                                        attributeSchemaVersion: prev.categoryPath?.attributeSchemaVersion || 1,
+                                                                                        businessModelKey: pm.key,
+                                                                                    },
+                                                                                    rawPricing: {},
+                                                                                }));
+                                                                                setPricingErrors({});
+                                                                            }}
+                                                                            className={cn(
+                                                                                "px-4 py-2.5 rounded-xl border text-xs font-bold transition-all flex items-center gap-2",
+                                                                                isSelected
+                                                                                    ? "border-primary bg-primary text-white shadow-xs"
+                                                                                    : "border-gray-200 bg-white text-text-light hover:border-primary/40 hover:text-brand"
+                                                                            )}
+                                                                        >
+                                                                            {isSelected && <Check className="w-3.5 h-3.5" />}
+                                                                            <span>{pm.displayName}</span>
+                                                                        </button>
+                                                                    );
+                                                                })}
+                                                            </div>
+                                                        </div>
+                                                    ) : subcatConfig.allowedPriceModels.length === 1 ? (
+                                                        <div className="p-3.5 bg-primary/5 border border-primary/20 rounded-2xl flex items-center justify-between">
+                                                            <span className="text-xs text-text-light font-medium">نوع معامله تعیین‌شده:</span>
+                                                            <span className="text-xs font-black text-primary flex items-center gap-1.5">
+                                                                <Check className="w-4 h-4" />
+                                                                {subcatConfig.allowedPriceModels[0].displayName}
+                                                            </span>
+                                                        </div>
+                                                    ) : null}
+                                                </div>
+                                            )}
                                         </div>
                                     )}
                                 </div>
@@ -601,22 +673,26 @@ export default function SubmitAdScene() {
                                     )}
                                 </div>
 
-                                {/* Dynamic Price Model Selector */}
-                                {subcatConfig?.allowedPriceModels && subcatConfig.allowedPriceModels.length > 0 && (
-                                    <DynamicPriceModelSelector
-                                        priceModels={subcatConfig.allowedPriceModels}
-                                        selectedKey={formData.categoryPath?.businessModelKey}
-                                        onSelect={(model) => {
-                                            setFormData((prev) => ({
-                                                ...prev,
-                                                categoryPath: {
-                                                    ...(prev.categoryPath as any),
-                                                    businessModelKey: model.key,
-                                                },
-                                            }));
-                                            setPricingErrors({});
-                                        }}
-                                    />
+                                {/* Locked Active Price Model Display */}
+                                {activePriceModel && (
+                                    <div className="flex items-center justify-between p-4 bg-gray-50/80 border border-gray-200/80 rounded-2xl">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                                                <Wallet className="w-5 h-5" />
+                                            </div>
+                                            <div>
+                                                <span className="text-[11px] text-text-light font-medium block">
+                                                    نوع معامله:
+                                                </span>
+                                                <span className="text-sm font-black text-brand">
+                                                    {activePriceModel.displayName}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <span className="text-[11px] text-text-light bg-white border border-gray-200 px-3 py-1 rounded-xl">
+                                            تعیین‌شده در مرحله دسته‌بندی
+                                        </span>
+                                    </div>
                                 )}
 
                                 {/* Dynamic Pricing Fields based on selected PriceModel */}
@@ -704,7 +780,7 @@ export default function SubmitAdScene() {
                                     آگهی‌های دارای تصویر واقعی تا ۵ برابر بیشتر بازدید دریافت می‌کنند.
                                 </p>
                                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                                    {(formData.mediaIds as any[])?.map((id: string) => (
+                                    {formData.mediaIds?.map((id: string) => (
                                         <div
                                             key={id}
                                             className="relative aspect-square rounded-2xl overflow-hidden border border-gray-200 group shadow-xs"

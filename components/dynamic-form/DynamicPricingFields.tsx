@@ -4,10 +4,12 @@ import React from "react";
 import { PriceModel } from "@/types/api/ads.types";
 import { formatPrice, toPersianDigits } from "@/lib/utils";
 
+export type PricingValue = number | string | boolean;
+
 interface DynamicPricingFieldsProps {
     priceModel: PriceModel;
-    values: Record<string, any>;
-    onChange: (key: string, value: any) => void;
+    values: Record<string, PricingValue>;
+    onChange: (key: string, value: PricingValue) => void;
     errors?: Record<string, string>;
 }
 
@@ -117,7 +119,7 @@ export const DynamicPricingFields: React.FC<DynamicPricingFieldsProps> = ({
                                 <input
                                     type={field.fieldType === "NUMBER" ? "number" : "text"}
                                     min={field.fieldType === "NUMBER" ? 0 : undefined}
-                                    value={rawVal ?? ""}
+                                    value={typeof rawVal === "boolean" ? "" : (rawVal ?? "")}
                                     placeholder={field.placeholder || (field.fieldType === "NUMBER" ? "مبلغ به عدد..." : "")}
                                     onChange={(e) => {
                                         const v = e.target.value;

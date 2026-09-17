@@ -4,6 +4,12 @@ import PriceModelsModal from "@/components/admin/PriceModelsModal";
 import SubcategoryConfigModal from "@/components/admin/SubcategoryConfigModal";
 import { adminService } from "@/services/admin.service";
 import { TemporaryRentCategory, TemporaryRentSubcategory } from "@/types/api/temporary-rent.types";
+import {
+    CreateAdminCategoryRequest,
+    UpdateAdminCategoryRequest,
+    CreateAdminSubcategoryRequest,
+    UpdateAdminSubcategoryRequest,
+} from "@/types/api/admin.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
     Archive,
@@ -70,7 +76,7 @@ export default function AdminTemporaryRentCategoriesPage() {
 
     const categories: TemporaryRentCategory[] = Array.isArray(categoriesResponse)
         ? categoriesResponse
-        : categoriesResponse?.categories || [];
+        : [];
 
     const toggleExpand = (categoryId: string) => {
         setExpandedCategories(prev =>
@@ -82,28 +88,30 @@ export default function AdminTemporaryRentCategoriesPage() {
 
     // Category Mutations
     const createCategoryMutation = useMutation({
-        mutationFn: (data: any) => adminService.createTemporaryRentCategory(data),
+        mutationFn: (data: CreateAdminCategoryRequest) => adminService.createTemporaryRentCategory(data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["admin", "temporary-rent", "categories"] });
             toast.success("دسته‌بندی اقامتگاه با موفقیت ایجاد شد");
             setIsCreateCategoryModalOpen(false);
         },
-        onError: (err: any) => {
-            const msg = err?.response?.data?.message || "خطا در ایجاد دسته‌بندی";
+        onError: (err: unknown) => {
+            const errorObj = err as { response?: { data?: { message?: string } } };
+            const msg = errorObj?.response?.data?.message || "خطا در ایجاد دسته‌بندی";
             toast.error(typeof msg === 'string' ? msg : JSON.stringify(msg));
         }
     });
 
     const updateCategoryMutation = useMutation({
-        mutationFn: (data: { id: string; payload: any }) => adminService.updateTemporaryRentCategory(data.id, data.payload),
+        mutationFn: (data: { id: string; payload: UpdateAdminCategoryRequest }) => adminService.updateTemporaryRentCategory(data.id, data.payload),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["admin", "temporary-rent", "categories"] });
             toast.success("دسته‌بندی با موفقیت بروزرسانی شد");
             setIsEditCategoryModalOpen(false);
             setSelectedCategory(null);
         },
-        onError: (err: any) => {
-            const msg = err?.response?.data?.message || "خطا در بروزرسانی دسته‌بندی";
+        onError: (err: unknown) => {
+            const errorObj = err as { response?: { data?: { message?: string } } };
+            const msg = errorObj?.response?.data?.message || "خطا در بروزرسانی دسته‌بندی";
             toast.error(typeof msg === 'string' ? msg : JSON.stringify(msg));
         }
     });
@@ -119,21 +127,22 @@ export default function AdminTemporaryRentCategoriesPage() {
 
     // Subcategory Mutations
     const createSubcategoryMutation = useMutation({
-        mutationFn: (data: { categoryId: string; payload: any }) =>
+        mutationFn: (data: { categoryId: string; payload: CreateAdminSubcategoryRequest }) =>
             adminService.addTemporaryRentSubcategory(data.categoryId, data.payload),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["admin", "temporary-rent", "categories"] });
             toast.success("زیردسته اقامتگاه با موفقیت ایجاد شد");
             setIsCreateSubcategoryModalOpen(false);
         },
-        onError: (err: any) => {
-            const msg = err?.response?.data?.message || "خطا در ایجاد زیردسته";
+        onError: (err: unknown) => {
+            const errorObj = err as { response?: { data?: { message?: string } } };
+            const msg = errorObj?.response?.data?.message || "خطا در ایجاد زیردسته";
             toast.error(typeof msg === 'string' ? msg : JSON.stringify(msg));
         }
     });
 
     const updateSubcategoryMutation = useMutation({
-        mutationFn: (data: { subcategoryId: string; payload: any }) =>
+        mutationFn: (data: { subcategoryId: string; payload: UpdateAdminSubcategoryRequest }) =>
             adminService.updateTemporaryRentSubcategory(data.subcategoryId, data.payload),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["admin", "temporary-rent", "categories"] });
@@ -141,8 +150,9 @@ export default function AdminTemporaryRentCategoriesPage() {
             setIsEditSubcategoryModalOpen(false);
             setSelectedSubcategory(null);
         },
-        onError: (err: any) => {
-            const msg = err?.response?.data?.message || "خطا در بروزرسانی زیردسته";
+        onError: (err: unknown) => {
+            const errorObj = err as { response?: { data?: { message?: string } } };
+            const msg = errorObj?.response?.data?.message || "خطا در بروزرسانی زیردسته";
             toast.error(typeof msg === 'string' ? msg : JSON.stringify(msg));
         }
     });

@@ -59,7 +59,8 @@ export interface CreateAdDraftRequest {
     categoryPath: CategoryPath;
     title: string;
     description: string;
-    rawPricing: Record<string, number>;
+    rawPricing: Record<string, number | string | boolean>;
+    pricing?: Record<string, number | string | boolean>;
     attributes: JsonObject;
     latitude: number;
     longitude: number;
@@ -69,7 +70,7 @@ export interface CreateAdDraftRequest {
 export interface EditAdRequest {
     title?: string;
     description?: string;
-    rawPricing?: Record<string, number>;
+    rawPricing?: Record<string, number | string | boolean>;
     attributes?: JsonObject;
 }
 
@@ -96,7 +97,7 @@ export interface PricingFieldDefinition {
     placeholder?: string;
     unit?: string;
     helpText?: string;
-    defaultValue?: any;
+    defaultValue?: number | string | boolean;
 }
 
 export interface PriceModel {
@@ -112,11 +113,15 @@ export interface PriceModel {
     pricingFields: PricingFieldDefinition[];
 }
 
+export type PricingField = PricingFieldDefinition;
+
 export interface AttributeOptionItem {
     key: string;
     label: string;
     displayOrder?: number;
 }
+
+export type AttributeOption = AttributeOptionItem;
 
 export type DynamicAttributeType = 'STRING' | 'NUMBER' | 'BOOLEAN' | 'SELECT';
 

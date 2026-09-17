@@ -1,7 +1,8 @@
 'use client';
 
 import { adminService } from "@/services/admin.service";
-import { DynamicAttributeType } from "@/types/api/ads.types";
+import { AttributeDefinition, AttributeOption, DynamicAttributeType, PriceModel, PricingField } from "@/types/api/ads.types";
+import { CreateAdminAttributeRequest, UpdateAdminAttributeRequest } from "@/types/api/admin.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
     AlertCircle,
@@ -105,7 +106,7 @@ export default function SubcategoryConfigModal({
     // Sync selected price model IDs when fetched
     useEffect(() => {
         if (subcategoryPriceModels && Array.isArray(subcategoryPriceModels)) {
-            setSelectedPriceModelIds(subcategoryPriceModels.map((pm: any) => pm.id));
+            setSelectedPriceModelIds(subcategoryPriceModels.map((pm: PriceModel) => pm.id));
         }
     }, [subcategoryPriceModels]);
 
@@ -134,40 +135,44 @@ export default function SubcategoryConfigModal({
     // Mutation: Create / Update attribute
     const saveAttributeMutation = useMutation({
         mutationFn: async (data: AttributeFormData) => {
-            const payload: any = {
-                label: data.label,
-                description: data.description || undefined,
-                type: data.type,
-                required: data.required,
-                displayOrder: Number(data.displayOrder) || 1,
-            };
-
-            if (data.type === 'SELECT') {
-                payload.options = data.options;
-            } else {
-                payload.options = null;
-            }
-
-            if (data.type === 'NUMBER') {
-                const constraints: any = {};
-                if (data.constraints.min !== undefined && data.constraints.min !== null) constraints.min = Number(data.constraints.min);
-                if (data.constraints.max !== undefined && data.constraints.max !== null) constraints.max = Number(data.constraints.max);
-                payload.constraints = constraints;
-            } else {
-                payload.constraints = null;
-            }
+            const constraints: { min?: number; max?: number } | undefined = data.type === 'NUMBER' ? {
+                min: data.constraints.min !== undefined && data.constraints.min !== null && !isNaN(Number(data.constraints.min))
+                    ? Number(data.constraints.min)
+                    : undefined,
+                max: data.constraints.max !== undefined && data.constraints.max !== null && !isNaN(Number(data.constraints.max))
+                    ? Number(data.constraints.max)
+                    : undefined,
+            } : undefined;
 
             if (data.id) {
                 // Update
+                const updatePayload: UpdateAdminAttributeRequest = {
+                    label: data.label,
+                    description: data.description || undefined,
+                    type: data.type,
+                    required: data.required,
+                    displayOrder: Number(data.displayOrder) || 1,
+                    options: data.type === 'SELECT' ? data.options : undefined,
+                    constraints,
+                };
                 return isTemp
-                    ? adminService.updateTemporaryRentAttribute(subcategoryId, data.id, payload)
-                    : adminService.updateSubcategoryAttribute(subcategoryId, data.id, payload);
+                    ? adminService.updateTemporaryRentAttribute(subcategoryId, data.id, updatePayload)
+                    : adminService.updateSubcategoryAttribute(subcategoryId, data.id, updatePayload);
             } else {
                 // Create
-                payload.key = data.key.trim();
+                const createPayload: CreateAdminAttributeRequest = {
+                    key: data.key.trim(),
+                    label: data.label,
+                    description: data.description || undefined,
+                    type: data.type,
+                    required: data.required,
+                    displayOrder: Number(data.displayOrder) || 1,
+                    options: data.type === 'SELECT' ? data.options : undefined,
+                    constraints,
+                };
                 return isTemp
-                    ? adminService.createTemporaryRentAttribute(subcategoryId, payload)
-                    : adminService.createSubcategoryAttribute(subcategoryId, payload);
+                    ? adminService.createTemporaryRentAttribute(subcategoryId, createPayload)
+                    : adminService.createSubcategoryAttribute(subcategoryId, createPayload);
             }
         },
         onSuccess: () => {
@@ -176,8 +181,9 @@ export default function SubcategoryConfigModal({
             setIsAttributeModalOpen(false);
             setAttributeFormData(initialAttributeFormData);
         },
-        onError: (err: any) => {
-            const msg = err?.response?.data?.message || "خطا در ذخیره ویژگی";
+        onError: (err: unknown) => {
+            const errorObj = err as { response?: { data?: { message?: string } } };
+            const msg = errorObj?.response?.data?.message || "خطا در ذخیره ویژگی";
             toast.error(typeof msg === 'string' ? msg : JSON.stringify(msg));
         }
     });
@@ -212,7 +218,7 @@ export default function SubcategoryConfigModal({
         setIsAttributeModalOpen(true);
     };
 
-    const handleOpenEditAttribute = (attr: any) => {
+    const handleOpenEditAttribute = (attr: AttributeDefinition) => {
         setAttributeFormData({
             id: attr.id,
             key: attr.key,
@@ -355,7 +361,7 @@ export default function SubcategoryConfigModal({
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {allPriceModels.map((pm: any) => {
+                                    {allPriceModels.map((pm: PriceModel) => {
                                         const isChecked = selectedPriceModelIds.includes(pm.id);
                                         return (
                                             <div
@@ -400,7 +406,7 @@ export default function SubcategoryConfigModal({
                                                 {pm.pricingFields && Array.isArray(pm.pricingFields) && pm.pricingFields.length > 0 && (
                                                     <div className="mt-3 pt-3 border-t border-slate-100 flex flex-wrap gap-1.5">
                                                         <span className="text-[10px] text-slate-400 ml-1">فیلدها:</span>
-                                                        {pm.pricingFields.map((f: any) => (
+                                                        {pm.pricingFields.map((f: PricingField) => (
                                                             <span
                                                                 key={f.key}
                                                                 className={`text-[10px] px-2 py-0.5 rounded-md font-medium ${
@@ -470,7 +476,7 @@ export default function SubcategoryConfigModal({
                                 </div>
                             ) : (
                                 <div className="space-y-3">
-                                    {attributes.map((attr: any) => (
+                                    {attributes.map((attr: AttributeDefinition) => (
                                         <div
                                             key={attr.id}
                                             className="bg-white p-4 rounded-2xl border border-slate-200 hover:border-blue-200 transition-all shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4"
@@ -483,7 +489,7 @@ export default function SubcategoryConfigModal({
                                                     <div className="flex items-center gap-2 flex-wrap">
                                                         <span className="font-bold text-slate-900 text-sm">{attr.label}</span>
                                                         <span className="text-xs font-mono text-slate-400 bg-slate-100 px-2 py-0.5 rounded">
-                                                            {attr.key}
+                                                             {attr.key}
                                                         </span>
                                                         {getTypeBadge(attr.type)}
                                                         {attr.required ? (
@@ -504,15 +510,15 @@ export default function SubcategoryConfigModal({
                                                     {/* Constraints preview for NUMBER */}
                                                     {attr.type === 'NUMBER' && attr.constraints && (
                                                         <div className="mt-2 text-[11px] text-slate-500 flex items-center gap-2">
-                                                            {attr.constraints.min !== undefined && <span>حداقل: {attr.constraints.min}</span>}
-                                                            {attr.constraints.max !== undefined && <span>حداکثر: {attr.constraints.max}</span>}
+                                                             {attr.constraints.min !== undefined && <span>حداقل: {attr.constraints.min}</span>}
+                                                             {attr.constraints.max !== undefined && <span>حداکثر: {attr.constraints.max}</span>}
                                                         </div>
                                                     )}
 
                                                     {/* Options preview for SELECT */}
                                                     {attr.type === 'SELECT' && Array.isArray(attr.options) && attr.options.length > 0 && (
                                                         <div className="mt-2 flex flex-wrap gap-1.5">
-                                                            {attr.options.map((opt: any) => (
+                                                            {attr.options.map((opt: AttributeOption) => (
                                                                 <span
                                                                     key={opt.key}
                                                                     className="text-[11px] bg-slate-100 text-slate-700 px-2 py-0.5 rounded-md font-medium"

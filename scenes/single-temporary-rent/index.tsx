@@ -241,11 +241,11 @@ export default function ResidenceDetailScene() {
                         </div>
                         <div className="flex items-center gap-2 bg-gray-50 px-4 py-2.5 rounded-full border border-gray-100 text-text-light">
                             <Bed className="w-4 h-4 text-primary" />
-                            <span>{toPersianDigits(residence.attributes?.rooms || 1)} اتاق خواب</span>
+                            <span>{toPersianDigits(residence.attributes?.rooms ? String(residence.attributes.rooms) : 1)} اتاق خواب</span>
                         </div>
                         <div className="flex items-center gap-2 bg-gray-50 px-4 py-2.5 rounded-full border border-gray-100 text-text-light">
                             <Bath className="w-4 h-4 text-primary" />
-                            <span>{toPersianDigits(residence.attributes?.bathrooms || 1)} سرویس بهداشتی</span>
+                            <span>{toPersianDigits(residence.attributes?.bathrooms ? String(residence.attributes.bathrooms) : 1)} سرویس بهداشتی</span>
                         </div>
                     </div>
 
