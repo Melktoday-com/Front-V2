@@ -6,20 +6,26 @@ import { useAuth, useLogout } from "@/hooks/useAuth";
 import { useMeProfile, useUser } from "@/hooks/useUser";
 import { useWallet } from "@/hooks/useWallet";
 import { cn, formatCurrency } from "@/lib/utils";
+import { userService } from "@/services/user.service";
 import { RoleName } from "@/types/access";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
     Building2,
+    CheckCircle2,
     ChevronLeft,
     CreditCard,
     LayoutList,
+    Loader2,
     LogOut,
     MessageSquare,
     Plus,
     ShieldCheck,
-    User
+    User,
+    X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export default function ProfileScene() {
     const { user, activeRole } = useAuth();
@@ -28,9 +34,37 @@ export default function ProfileScene() {
 
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
+    const [isKycModalOpen, setIsKycModalOpen] = useState(false);
+    const [nationalCode, setNationalCode] = useState("");
+    const [birthDate, setBirthDate] = useState("");
+
+    const queryClient = useQueryClient();
 
     const { data: profile } = useMeProfile();
     const { updateProfile, isUpdating } = useUser(user?.userId);
+
+    const kycMutation = useMutation({
+        mutationFn: () =>
+            userService.verifyKyc(user!.userId, {
+                nationalCode,
+                birthDate,
+                firstName,
+                lastName,
+            }),
+        onSuccess: (res) => {
+            if (res.status === "verified") {
+                toast.success("احراز هویت شما با موفقیت تایید شد.");
+                queryClient.invalidateQueries({ queryKey: ["user"] });
+                queryClient.invalidateQueries({ queryKey: ["me"] });
+            } else {
+                toast.error(res.reason || "اطلاعات با سامانه ثبت احوال همخوانی ندارد.");
+            }
+            setIsKycModalOpen(false);
+        },
+        onError: () => {
+            toast.error("خطا در ارسال استعلام احراز هویت");
+        },
+    });
 
     useEffect(() => {
         if (profile) {
@@ -245,7 +279,16 @@ export default function ProfileScene() {
                         <ChevronLeft className="w-4 h-4 text-secondary" />
                     </button>
 
-                    <button className="w-full flex items-center justify-between p-5 bg-soft-bg rounded-2xl border border-soft-border hover:bg-soft-border/50 transition-colors">
+                    <button
+                        onClick={() => {
+                            if (profile?.kycStatus === "verified") {
+                                toast.info("هویت شما قبلاً با موفقیت تایید شده است.");
+                            } else {
+                                setIsKycModalOpen(true);
+                            }
+                        }}
+                        className="w-full flex items-center justify-between p-5 bg-soft-bg rounded-2xl border border-soft-border hover:bg-soft-border/50 transition-colors"
+                    >
                         <div className="flex items-center gap-3">
                             <ShieldCheck className="w-5 h-5 text-primary" />
                             <span className="text-brand font-bold text-sm">
@@ -279,6 +322,82 @@ export default function ProfileScene() {
                     </button>
                 </section>
             </div>
+
+            {/* KYC Verification Modal */}
+            {isKycModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in">
+                    <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-5 border border-gray-100">
+                        <div className="flex justify-between items-center border-b border-gray-100 pb-3">
+                            <h3 className="font-black text-brand text-base flex items-center gap-2">
+                                <ShieldCheck className="w-5 h-5 text-primary" />
+                                <span>احراز هویت هوشمند (سامانه شاهکار)</span>
+                            </h3>
+                            <button
+                                onClick={() => setIsKycModalOpen(false)}
+                                className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-text-light hover:bg-gray-200"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+
+                        <p className="text-xs text-text-light leading-relaxed">
+                            جهت افزایش اعتبار حساب کاربری و امکان ثبت نامحدود آگهی، کد ملی و تاریخ تولد خود را وارد نمایید.
+                        </p>
+
+                        <div className="space-y-4 text-xs">
+                            <div>
+                                <label className="block font-bold text-brand mb-1.5">کد ملی ۱۰ رقمی</label>
+                                <input
+                                    type="text"
+                                    maxLength={10}
+                                    placeholder="مثلاً: ۰۰۱۲۳۴۵۶۷۸"
+                                    dir="ltr"
+                                    value={nationalCode}
+                                    onChange={(e) => setNationalCode(e.target.value.replace(/\D/g, ""))}
+                                    className="w-full p-3.5 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-primary outline-hidden text-center text-base tracking-widest font-black"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block font-bold text-brand mb-1.5">تاریخ تولد (فرمت: YYYYMMDD یا سال/ماه/روز)</label>
+                                <input
+                                    type="text"
+                                    placeholder="مثلاً: 13700101"
+                                    dir="ltr"
+                                    value={birthDate}
+                                    onChange={(e) => setBirthDate(e.target.value)}
+                                    className="w-full p-3.5 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-primary outline-hidden text-center text-base tracking-wider font-bold"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex gap-2 pt-2">
+                            <button
+                                type="button"
+                                onClick={() => setIsKycModalOpen(false)}
+                                className="flex-1 py-3 rounded-xl border border-gray-200 font-bold text-xs text-text-light hover:bg-gray-50"
+                            >
+                                انصراف
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => kycMutation.mutate()}
+                                disabled={kycMutation.isPending || nationalCode.length !== 10 || !birthDate}
+                                className="flex-1 py-3 rounded-xl bg-primary text-white font-black text-xs hover:bg-primary/90 shadow-md shadow-primary/20 disabled:opacity-50 transition-all flex items-center justify-center gap-1.5"
+                            >
+                                {kycMutation.isPending ? (
+                                    <>
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                        <span>استعلام شاهکار...</span>
+                                    </>
+                                ) : (
+                                    <span>استعلام و تایید هویت</span>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
