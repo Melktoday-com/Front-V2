@@ -41,8 +41,12 @@ export function useLogout() {
         deleteCookie("access_token");
         deleteCookie("refresh_token");
 
-        // Invalidate auth session to update all components
-        queryClient.invalidateQueries({ queryKey: ["auth-session"] });
+        // Immediately update auth-session cache so all components know the user is logged out
+        queryClient.setQueryData(["auth-session"], null);
+
+        // Cancel all active queries and clear query cache to avoid refetching user data
+        queryClient.cancelQueries();
+        queryClient.clear();
 
         router.push("/auth");
     }, [router, queryClient]);

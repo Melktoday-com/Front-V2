@@ -77,7 +77,10 @@ apiClient.interceptors.response.use(
         }
         const originalRequest = error.config as RetryableConfigRequest;
 
-        if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
+        // Never attempt refresh or auto-redirect for auth endpoints (e.g., /auth/otp, /auth/verify, /auth/refresh)
+        const isAuthEndpoint = originalRequest?.url?.includes("/auth/");
+
+        if (error.response?.status === 401 && originalRequest && !originalRequest._retry && !isAuthEndpoint) {
             if (isRefreshing) {
                 return new Promise<string | null>(function (resolve, reject) {
                     failedQueue.push({ resolve, reject });
@@ -125,7 +128,8 @@ apiClient.interceptors.response.use(
                     processQueue(error, null);
                     deleteCookie("access_token");
                     deleteCookie("refresh_token");
-                    if (typeof window !== "undefined") {
+                    // Only redirect if not already on /auth
+                    if (typeof window !== "undefined" && !window.location.pathname.startsWith("/auth")) {
                         window.location.href = "/auth";
                     }
                     return Promise.reject(refreshError);
@@ -134,9 +138,10 @@ apiClient.interceptors.response.use(
                 }
             } else {
                 deleteCookie("access_token");
-                if (typeof window !== "undefined") {
-                    window.location.href = "/auth";
-                }
+                processQueue(error, null);
+                // When there is no refresh token, user is unauthenticated.
+                // Do NOT force window.location.href = "/auth" here because public pages and background queries must not trigger page reloads.
+                return Promise.reject(error);
             }
         }
 

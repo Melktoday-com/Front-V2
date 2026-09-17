@@ -31,7 +31,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export default function ProfileScene() {
-    const { user, activeRole } = useAuth();
+    const { user, activeRole, isLoggedIn, isLoading: isAuthLoading } = useAuth();
     const { logout } = useLogout();
     const router = useRouter();
 
@@ -88,6 +88,28 @@ export default function ProfileScene() {
         agent: "مشاور املاک",
         landlord: "میزبان",
     };
+
+    if (!isAuthLoading && !isLoggedIn) {
+        return (
+            <div className="max-w-md mx-auto px-4 py-20 text-center space-y-6">
+                <div className="w-20 h-20 rounded-full bg-soft-bg mx-auto flex items-center justify-center text-secondary">
+                    <User className="w-10 h-10 opacity-40" />
+                </div>
+                <div className="space-y-2">
+                    <h2 className="text-xl font-black text-brand">ورود به حساب کاربری</h2>
+                    <p className="text-sm text-secondary font-medium">
+                        برای مشاهده پروفایل و مدیریت حساب خود، ابتدا وارد شوید.
+                    </p>
+                </div>
+                <Button
+                    onClick={() => router.push("/auth?redirect=/profile")}
+                    className="w-full h-12 rounded-2xl font-bold"
+                >
+                    ورود به حساب
+                </Button>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-white pb-24 lg:pb-10">

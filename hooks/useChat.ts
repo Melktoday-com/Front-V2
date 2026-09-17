@@ -3,24 +3,32 @@
 import { chatService } from "@/services/chat.service";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+import { useAuth } from "./useAuth";
 
 export const useConversations = () => {
+    const { isLoggedIn } = useAuth();
+
     return useQuery({
         queryKey: ["conversations"],
         queryFn: () => chatService.listConversations(),
-        refetchInterval: 3000,
+        enabled: isLoggedIn,
+        refetchInterval: isLoggedIn ? 5000 : false,
     });
 };
 
 export const useConversation = (id?: string) => {
+    const { isLoggedIn } = useAuth();
+
     return useQuery({
         queryKey: ["conversation", id],
         queryFn: () => chatService.listConversations().then(list => list.find(c => c.id === id)),
-        enabled: !!id,
+        enabled: isLoggedIn && !!id,
     });
 };
 
 export const useMessages = (conversationId?: string) => {
+    const { isLoggedIn } = useAuth();
+
     return useInfiniteQuery({
         queryKey: ["messages", conversationId],
         queryFn: ({ pageParam }) =>
@@ -30,7 +38,7 @@ export const useMessages = (conversationId?: string) => {
             if (!lastPage || lastPage.length < 20) return undefined;
             return lastPage[lastPage.length - 1].id;
         },
-        enabled: !!conversationId,
+        enabled: isLoggedIn && !!conversationId,
     });
 };
 

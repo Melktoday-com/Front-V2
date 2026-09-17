@@ -42,6 +42,7 @@ export function Sidebar() {
 
     if (pathname.includes("/profile/chat")) return null;
     if (pathname.startsWith("/admin")) return null;
+    if (pathname.startsWith("/auth")) return null;
 
     const isItemActive = (href: string) => {
         if (href === "/") return pathname === "/";
@@ -195,6 +196,7 @@ export function MobileNav() {
 
     if (pathname.includes("/profile/chat")) return null;
     if (pathname.startsWith("/admin")) return null;
+    if (pathname.startsWith("/auth")) return null;
 
     const isHome = pathname === "/";
     const isExplore =

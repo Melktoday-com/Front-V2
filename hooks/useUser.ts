@@ -4,6 +4,7 @@ import { userService } from "@/services/user.service";
 import { UpdateUserProfileRequest, VerifyKycRequest } from "@/types/api/user.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useAuth } from "./useAuth";
 
 export function useUserProfile(userId?: string) {
     return useQuery({
@@ -17,9 +18,12 @@ export function useUserProfile(userId?: string) {
 }
 
 export function useMeProfile() {
+    const { isLoggedIn } = useAuth();
+
     return useQuery({
         queryKey: ["user", "me"],
         queryFn: () => userService.getMe(),
+        enabled: isLoggedIn,
     });
 }
 
