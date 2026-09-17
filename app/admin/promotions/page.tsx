@@ -62,7 +62,7 @@ export default function AdminPromotionsPage() {
                         {isLoading ? (
                             <tr><td colSpan={6} className="p-10 text-center">در حال بارگزاری...</td></tr>
                         ) : !data || data.items.length === 0 ? (
-                            <tr><td colSpan={6} className="p-10 text-center text-gray-400">هیچ درخواستPending یافت نشد</td></tr>
+                            <tr><td colSpan={6} className="p-10 text-center text-gray-400">هیچ درخواست در انتظاری یافت نشد</td></tr>
                         ) : data.items.map((promo: PromotionSummary) => (
                             <tr key={promo.promotionId} className="hover:bg-gray-50 transition-colors text-sm">
                                 <td className="px-6 py-4 font-mono text-gray-600">

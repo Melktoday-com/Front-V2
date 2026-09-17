@@ -4,14 +4,24 @@ import { adminService } from "@/services/admin.service";
 import { AdjustWalletRequest } from "@/types/api/admin.types";
 import { useMutation } from "@tanstack/react-query";
 import { ArrowDownCircle, ArrowUpCircle, Gift, Info, Wallet } from "lucide-react";
-import React, { useState } from "react";
+import { useSearchParams } from "next/navigation";
+import React, { Suspense, useEffect, useState } from "react";
 import { toast } from "sonner";
 
-export default function AdminWalletPage() {
-    const [userId, setUserId] = useState("");
+function AdminWalletContent() {
+    const searchParams = useSearchParams();
+    const queryUserId = searchParams.get("userId") || "";
+
+    const [userId, setUserId] = useState(queryUserId);
     const [amount, setAmount] = useState("");
     const [type, setType] = useState<"CREDIT" | "DEBIT">("CREDIT");
     const [note, setNote] = useState("");
+
+    useEffect(() => {
+        if (queryUserId) {
+            setUserId(queryUserId);
+        }
+    }, [queryUserId]);
 
     const adjustMutation = useMutation({
         mutationFn: (data: AdjustWalletRequest) => adminService.adjustWallet(data),
@@ -150,5 +160,13 @@ export default function AdminWalletPage() {
                 </form>
             </div>
         </div>
+    );
+}
+
+export default function AdminWalletPage() {
+    return (
+        <Suspense fallback={<div className="p-8 text-center text-gray-400">در حال بارگذاری...</div>}>
+            <AdminWalletContent />
+        </Suspense>
     );
 }

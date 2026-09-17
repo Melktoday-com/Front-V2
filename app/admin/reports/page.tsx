@@ -104,7 +104,17 @@ export default function AdminReportsPage() {
                                                 </button>
                                             </>
                                         )}
-                                        <button className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                                        <button
+                                            onClick={() => {
+                                                if (report.targetType === ReportTargetType.LISTING) {
+                                                    window.open(`/ads/${report.targetId}`, '_blank');
+                                                } else {
+                                                    window.open('/admin/users', '_blank');
+                                                }
+                                            }}
+                                            title="مشاهده مورد گزارش شده"
+                                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                        >
                                             <ExternalLink size={18} />
                                         </button>
                                     </div>

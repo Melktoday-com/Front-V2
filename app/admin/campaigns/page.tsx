@@ -53,7 +53,7 @@ export default function AdminCampaignsPage() {
                             <th className="px-6 py-4 font-semibold">شناسه اسپانسر</th>
                             <th className="px-6 py-4 font-semibold">وضعیت</th>
                             <th className="px-6 py-4 font-semibold">تاریخ ایجاد</th>
-                            <th className="px-6 py-4 font-semibold text-center">عملیat</th>
+                            <th className="px-6 py-4 font-semibold text-center">عملیات</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">

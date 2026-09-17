@@ -67,7 +67,7 @@ export default function FavoritesPage() {
     }
 
     return (
-        <div className="max-w-4xl mx-auto px-4 py-8">
+        <div className="max-w-4xl mx-auto px-4 py-8 pb-32">
             <header className="mb-8">
                 <h1 className="text-2xl font-black text-brand mb-2">علاقه‌مندی‌ها و تعاملات</h1>
                 <p className="text-sm text-gray-500">لیست ترکیبی از آگهی‌های ذخیره شده و اعلان‌هایی که با آن‌ها تعامل داشته‌اید.</p>
@@ -80,7 +80,7 @@ export default function FavoritesPage() {
                             <PropertyCard
                                 adId={item.referenceId}
                                 title={item.title}
-                                image={item.imageUrl || '/images/placeholder.jpg'}
+                                image={item.imageUrl || '/assets/images/property-placeholder.png'}
                                 price={item.details?.price?.toString() || '0'}
                                 category={item.details?.category || 'آگهی'}
                                 location={item.subtitle || 'نامشخص'}

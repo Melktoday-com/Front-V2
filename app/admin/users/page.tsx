@@ -15,9 +15,11 @@ import {
     Loader2
 } from "lucide-react";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 export default function AdminUsersPage() {
+    const router = useRouter();
     const queryClient = useQueryClient();
     const [page, setPage] = useState(1);
     const { data, isLoading } = useAdminUsers({ page, limit: 10 });
@@ -138,7 +140,8 @@ export default function AdminUsersPage() {
                                 <td className="px-6 py-4">
                                     <div className="flex justify-center gap-2">
                                         <button
-                                            title="کیف پول"
+                                            onClick={() => router.push(`/admin/wallet?userId=${user.id}`)}
+                                            title="شارژ یا کسر کیف پول"
                                             className="p-1.5 text-gray-600 hover:bg-gray-100 rounded-md"
                                         >
                                             <WalletIcon size={16} />

@@ -5,7 +5,7 @@ import { adminService } from "@/services/admin.service";
 import { AdSummary } from "@/types/api/ads.types";
 import { AdStatus } from "@/types/api/enums";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { AlertCircle, Check, Clock, Eye, X } from "lucide-react";
+import { AlertCircle, Building2, Check, Clock, Eye, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -113,8 +113,16 @@ export default function AdminAdsPage() {
                             <tr key={ad.adId} className="hover:bg-gray-50 transition-colors">
                                 <td className="px-6 py-4">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden shrink-0">
-                                            {/* Media preview would go here */}
+                                        <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden shrink-0 flex items-center justify-center">
+                                            {ad.mediaIds && ad.mediaIds.length > 0 ? (
+                                                <img
+                                                    src={`${process.env.NEXT_PUBLIC_API_URL}/media/${ad.mediaIds[0]}`}
+                                                    alt={ad.title}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            ) : (
+                                                <Building2 className="w-6 h-6 text-gray-300" />
+                                            )}
                                         </div>
                                         <div>
                                             <p className="font-medium text-gray-800">{ad.title}</p>
@@ -144,7 +152,8 @@ export default function AdminAdsPage() {
                                 <td className="px-6 py-4">
                                     <div className="flex justify-center gap-2">
                                         <button
-                                            title="مشاهده جزئیات"
+                                            onClick={() => window.open(`/ads/${ad.adId}`, '_blank')}
+                                            title="مشاهده جزئیات آگهی"
                                             className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                                         >
                                             <Eye size={18} />
