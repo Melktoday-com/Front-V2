@@ -3,13 +3,16 @@
 import { RoleGuard } from "@/components/RoleGuard";
 import { Button } from "@/components/ui/Button";
 import { useAuth, useLogout } from "@/hooks/useAuth";
+import { useConversations } from "@/hooks/useChat";
+import { useUnreadNotificationsCount } from "@/hooks/useNotifications";
 import { useMeProfile, useUser } from "@/hooks/useUser";
 import { useWallet } from "@/hooks/useWallet";
-import { cn, formatCurrency } from "@/lib/utils";
+import { cn, formatCurrency, toPersianDigits } from "@/lib/utils";
 import { userService } from "@/services/user.service";
 import { RoleName } from "@/types/access";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
+    Bell,
     Building2,
     CheckCircle2,
     ChevronLeft,
@@ -74,6 +77,9 @@ export default function ProfileScene() {
     }, [profile]);
 
     const { balance, isLoadingBalance } = useWallet();
+    const { data: conversations } = useConversations();
+    const { data: unreadNotificationsCount = 0 } = useUnreadNotificationsCount();
+    const unreadChatCount = conversations?.reduce((sum, c) => sum + (c.unreadCount || 0), 0) ?? 0;
 
     const roleLabels: Record<string, string> = {
         user: "کاربر معمولی",
@@ -276,7 +282,34 @@ export default function ProfileScene() {
                                 پیام‌های من
                             </span>
                         </div>
-                        <ChevronLeft className="w-4 h-4 text-secondary" />
+                        <div className="flex items-center gap-2">
+                            {unreadChatCount > 0 && (
+                                <span className="px-2 py-0.5 rounded-full text-xs font-black bg-primary/10 text-primary">
+                                    {toPersianDigits(unreadChatCount)}
+                                </span>
+                            )}
+                            <ChevronLeft className="w-4 h-4 text-secondary" />
+                        </div>
+                    </button>
+
+                    <button
+                        onClick={() => router.push("/notifications")}
+                        className="w-full flex items-center justify-between p-5 bg-soft-bg rounded-2xl border border-soft-border hover:bg-soft-border/50 transition-colors"
+                    >
+                        <div className="flex items-center gap-3">
+                            <Bell className="w-5 h-5 text-primary" />
+                            <span className="text-brand font-bold text-sm">
+                                اعلان‌های من
+                            </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            {unreadNotificationsCount > 0 && (
+                                <span className="px-2 py-0.5 rounded-full text-xs font-black bg-red-500 text-white animate-pulse">
+                                    {toPersianDigits(unreadNotificationsCount)}
+                                </span>
+                            )}
+                            <ChevronLeft className="w-4 h-4 text-secondary" />
+                        </div>
                     </button>
 
                     <button

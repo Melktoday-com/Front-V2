@@ -2,14 +2,18 @@
 
 import { RoleGuard } from "@/components/RoleGuard";
 import { useAuth } from "@/hooks/useAuth";
-import { cn } from "@/lib/utils";
+import { useConversations } from "@/hooks/useChat";
+import { useUnreadNotificationsCount } from "@/hooks/useNotifications";
+import { cn, toPersianDigits } from "@/lib/utils";
 import { RoleName } from "@/types/access";
 import {
+    Bell,
     Building2,
     Heart,
     Home,
     LogIn,
     MapPin,
+    MessageSquare,
     Plus,
     PlusCircle,
     Search,
@@ -31,6 +35,10 @@ const navItems = [
 export function Sidebar() {
     const pathname = usePathname();
     const { isLoggedIn } = useAuth();
+    const { data: conversations } = useConversations();
+    const { data: unreadNotificationsCount = 0 } = useUnreadNotificationsCount();
+
+    const unreadChatCount = conversations?.reduce((sum, c) => sum + (c.unreadCount || 0), 0) ?? 0;
 
     if (pathname.includes("/profile/chat")) return null;
     if (pathname.startsWith("/admin")) return null;
@@ -81,6 +89,69 @@ export function Sidebar() {
                         </Link>
                     );
                 })}
+
+                {isLoggedIn && (
+                    <>
+                        <Link
+                            href="/profile/chat"
+                            className={cn(
+                                "flex items-center justify-between px-4 py-3 rounded-2xl transition-all duration-200 group",
+                                pathname.startsWith("/profile/chat")
+                                    ? "bg-primary text-white shadow-lg shadow-brand/20 font-black"
+                                    : "text-secondary hover:bg-soft-bg font-bold"
+                            )}
+                        >
+                            <div className="flex items-center gap-3">
+                                <MessageSquare
+                                    className={cn(
+                                        "w-5 h-5",
+                                        pathname.startsWith("/profile/chat")
+                                            ? "text-white"
+                                            : "text-secondary group-hover:text-brand"
+                                    )}
+                                />
+                                <span className="text-sm">پیام‌ها</span>
+                            </div>
+                            {unreadChatCount > 0 && (
+                                <span className={cn(
+                                    "px-2 py-0.5 rounded-full text-xs font-black",
+                                    pathname.startsWith("/profile/chat")
+                                        ? "bg-white text-primary"
+                                        : "bg-primary/15 text-primary"
+                                )}>
+                                    {toPersianDigits(unreadChatCount)}
+                                </span>
+                            )}
+                        </Link>
+
+                        <Link
+                            href="/notifications"
+                            className={cn(
+                                "flex items-center justify-between px-4 py-3 rounded-2xl transition-all duration-200 group",
+                                pathname.startsWith("/notifications")
+                                    ? "bg-primary text-white shadow-lg shadow-brand/20 font-black"
+                                    : "text-secondary hover:bg-soft-bg font-bold"
+                            )}
+                        >
+                            <div className="flex items-center gap-3">
+                                <Bell
+                                    className={cn(
+                                        "w-5 h-5",
+                                        pathname.startsWith("/notifications")
+                                            ? "text-white"
+                                            : "text-secondary group-hover:text-brand"
+                                    )}
+                                />
+                                <span className="text-sm">اعلان‌ها</span>
+                            </div>
+                            {unreadNotificationsCount > 0 && (
+                                <span className="px-2 py-0.5 rounded-full text-xs font-black bg-red-500 text-white animate-pulse">
+                                    {toPersianDigits(unreadNotificationsCount)}
+                                </span>
+                            )}
+                        </Link>
+                    </>
+                )}
 
                 <RoleGuard roles={[RoleName.Admin, RoleName.SuperAdmin]}>
                     <Link

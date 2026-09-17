@@ -3,8 +3,11 @@
 import { useCity } from "@/components/providers/CityProvider";
 import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/hooks/useAuth";
+import { useConversations } from "@/hooks/useChat";
+import { useUnreadNotificationsCount } from "@/hooks/useNotifications";
 import { useSearchSuggestions } from "@/hooks/useSearch";
-import { Bell, ChevronDown, Loader2, MapPin, Search, User, X } from "lucide-react";
+import { toPersianDigits } from "@/lib/utils";
+import { Bell, ChevronDown, Loader2, MapPin, MessageSquare, Search, User, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -21,6 +24,11 @@ export function SearchHeader({ isInitialOpen }: SearchHeaderProps) {
     const [searchQuery, setSearchQuery] = useState("");
     const [isSearching, setIsSearching] = useState(false);
     const [isSelectorOpen, setIsSelectorOpen] = useState(false);
+
+    const { data: conversations } = useConversations();
+    const { data: unreadNotificationsCount = 0 } = useUnreadNotificationsCount();
+
+    const unreadChatCount = conversations?.reduce((sum, c) => sum + (c.unreadCount || 0), 0) ?? 0;
 
     // Effect to open modal if selectedCity is empty and isInitialOpen is true
     useEffect(() => {
@@ -57,19 +65,58 @@ export function SearchHeader({ isInitialOpen }: SearchHeaderProps) {
                     </div>
                 </button>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-3">
                     {isLoggedIn && (
-                        <button className="p-2.5 bg-white rounded-full border border-soft-border text-brand hover:text-primary hover:border-primary/30 transition-all relative shadow-sm hover:shadow-md">
-                            <Bell className="w-5 h-5" />
-                            <span className="absolute top-2.5 left-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white animate-pulse" />
-                        </button>
+                        <>
+                            {/* Chat Icon */}
+                            <Link
+                                href="/profile/chat"
+                                aria-label="پیام‌ها و گفت‌وگوها"
+                                title="پیام‌ها و گفت‌وگوها"
+                                className="p-2.5 bg-white rounded-full border border-soft-border text-brand hover:text-primary hover:border-primary/30 transition-all relative shadow-sm hover:shadow-md flex items-center justify-center"
+                            >
+                                <MessageSquare className="w-5 h-5" />
+                                {unreadChatCount > 0 && (
+                                    <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-primary text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-white shadow-sm">
+                                        {toPersianDigits(unreadChatCount > 99 ? "99+" : unreadChatCount)}
+                                    </span>
+                                )}
+                            </Link>
+
+                            {/* Notifications Icon */}
+                            <Link
+                                href="/notifications"
+                                aria-label="اعلان‌های سیستم"
+                                title="اعلان‌های سیستم"
+                                className="p-2.5 bg-white rounded-full border border-soft-border text-brand hover:text-primary hover:border-primary/30 transition-all relative shadow-sm hover:shadow-md flex items-center justify-center"
+                            >
+                                <Bell className="w-5 h-5" />
+                                {unreadNotificationsCount > 0 && (
+                                    <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-white shadow-sm animate-pulse">
+                                        {toPersianDigits(unreadNotificationsCount > 99 ? "99+" : unreadNotificationsCount)}
+                                    </span>
+                                )}
+                            </Link>
+
+                            {/* Profile Icon */}
+                            <Link
+                                href="/profile"
+                                aria-label="حساب کاربری"
+                                title="حساب کاربری"
+                                className="p-2.5 bg-white rounded-full border border-soft-border text-brand hover:text-primary hover:border-primary/30 transition-all relative shadow-sm hover:shadow-md flex items-center justify-center"
+                            >
+                                <User className="w-5 h-5" />
+                            </Link>
+                        </>
                     )}
-                    {!isLoggedIn && <Link href={"/auth"}>
-                        <Button variant="outline" className="h-11 px-5 rounded-full flex items-center gap-2 border-soft-border bg-white shadow-sm hover:shadow-md hover:border-primary/30 transition-all">
-                            <User className="w-4 h-4 text-primary" />
-                            <span className="font-black text-sm">{"ورود / ثبت‌نام"}</span>
-                        </Button>
-                    </Link>}
+                    {!isLoggedIn && (
+                        <Link href={"/auth"}>
+                            <Button variant="outline" className="h-11 px-5 rounded-full flex items-center gap-2 border-soft-border bg-white shadow-sm hover:shadow-md hover:border-primary/30 transition-all">
+                                <User className="w-4 h-4 text-primary" />
+                                <span className="font-black text-sm">{"ورود / ثبت‌نام"}</span>
+                            </Button>
+                        </Link>
+                    )}
                 </div>
             </div>
 
