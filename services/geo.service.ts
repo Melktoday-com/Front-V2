@@ -1,5 +1,13 @@
 import apiClient from "@/lib/api/client";
-import { GeoHierarchyResponse, GetGeoHierarchyParams, ListZonesParams, ListZonesResponse } from "@/types/api/geo.types";
+import {
+    GeoHierarchyResponse,
+    GetGeoHierarchyParams,
+    ListZonesParams,
+    ListZonesResponse,
+    PaginatedCitiesResponse,
+    PaginatedProvincesResponse,
+    UpdateZoneStatusResponse
+} from "@/types/api/geo.types";
 
 export const geoService = {
     async listZones(params?: ListZonesParams | string): Promise<ListZonesResponse> {
@@ -15,18 +23,18 @@ export const geoService = {
         return response.data;
     },
 
-    async listProvinces(params?: { page?: number; limit?: number; status?: string; search?: string }): Promise<any> {
-        const response = await apiClient.get("/geo/provinces", { params });
+    async listProvinces(params?: { page?: number; limit?: number; status?: string; search?: string }): Promise<PaginatedProvincesResponse> {
+        const response = await apiClient.get<PaginatedProvincesResponse>("/geo/provinces", { params });
         return response.data;
     },
 
-    async listCities(params?: { page?: number; limit?: number; provinceId?: number; status?: string; search?: string }): Promise<any> {
-        const response = await apiClient.get("/geo/cities", { params });
+    async listCities(params?: { page?: number; limit?: number; provinceId?: number; status?: string; search?: string }): Promise<PaginatedCitiesResponse> {
+        const response = await apiClient.get<PaginatedCitiesResponse>("/geo/cities", { params });
         return response.data;
     },
 
-    async updateZoneStatus(id: string, status: string): Promise<any> {
-        const response = await apiClient.put(`/geo/admin/zones/${id}/status`, { status });
+    async updateZoneStatus(id: string, status: string): Promise<UpdateZoneStatusResponse> {
+        const response = await apiClient.put<UpdateZoneStatusResponse>(`/geo/admin/zones/${id}/status`, { status });
         return response.data;
     },
 };

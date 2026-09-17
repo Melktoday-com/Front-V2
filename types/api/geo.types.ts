@@ -93,3 +93,63 @@ export interface GeoHierarchyResponse {
     limit?: number;
     totalPages?: number;
 }
+
+export interface ProvinceItem {
+    id: string;
+    name: string;
+    nameEn?: string;
+    capitalName?: string;
+    capitalNameEn?: string;
+    geoProvinceId?: number;
+    osmId?: number | string;
+    osmType?: string;
+    osmUrl?: string;
+    type?: string;
+    status?: string;
+}
+
+export interface PaginatedProvincesResponse {
+    items: ProvinceItem[];
+    zones?: ProvinceItem[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages?: number;
+}
+
+export interface CityItem {
+    id: string;
+    name: string;
+    nameEn?: string;
+    geoCityId?: number;
+    geoProvinceId?: number;
+    type?: string;
+    status?: string;
+    isCapital?: boolean;
+    isCountySeat?: boolean;
+    role?: string;
+    rank?: number;
+    osmId?: number | string;
+    osmType?: string;
+    osmUrl?: string;
+    wikidataId?: string;
+    geonamesId?: string;
+    centerPoint?: {
+        latitude: number;
+        longitude: number;
+    };
+}
+
+export interface PaginatedCitiesResponse {
+    items: CityItem[];
+    cities?: CityItem[];
+    zones?: CityItem[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages?: number;
+}
+
+export interface UpdateZoneStatusResponse {
+    success: boolean;
+}
