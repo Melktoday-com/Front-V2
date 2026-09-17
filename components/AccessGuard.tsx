@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/hooks/useAuth";
 import { Permission, RoleName } from "@/types/access";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import React, { useEffect } from "react";
 
 interface AccessGuardProps {
@@ -32,14 +32,16 @@ export const AccessGuard: React.FC<AccessGuardProps> = ({
 }) => {
     const { isLoggedIn, activeRole, hasPermission, isLoading } = useAuth();
     const router = useRouter();
+    const pathname = usePathname();
 
     useEffect(() => {
         // Wait for auth to finish loading
         if (isLoading) return;
 
-        // If not logged in, go to auth page
+        // If not logged in, go to auth page with return redirect
         if (!isLoggedIn) {
-            router.push("/auth");
+            const redirectUrl = pathname ? `/auth?redirect=${encodeURIComponent(pathname)}` : "/auth";
+            router.push(redirectUrl);
             return;
         }
 

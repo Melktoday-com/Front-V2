@@ -5,17 +5,21 @@ import { authImage1, authImage2, authImage3, authImage4 } from "@/assets/auth";
 import { useRequestOtp, useVerifyOtp } from "@/hooks/useAuth";
 import { normalizeApiError } from "@/lib/api/error-handler";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
 import { toast } from "sonner";
 
-export default function Auth() {
+function AuthContent() {
+  const searchParams = useSearchParams();
+  const redirectTarget = searchParams.get("redirect") || "/";
+
   const [step, setStep] = useState<"phone" | "otp">("phone");
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
   const [timer, setTimer] = useState(59);
 
   const requestOtpMutation = useRequestOtp();
-  const verifyOtpMutation = useVerifyOtp();
+  const verifyOtpMutation = useVerifyOtp(redirectTarget);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -178,6 +182,14 @@ export default function Auth() {
         )}
       </div>
     </main>
+  );
+}
+
+export default function Auth() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-white flex items-center justify-center font-bold text-brand">در حال بارگذاری...</div>}>
+      <AuthContent />
+    </Suspense>
   );
 }
 

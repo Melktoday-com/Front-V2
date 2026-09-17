@@ -135,22 +135,30 @@ export default function WalletScene() {
                     </span>
                 </div>
 
-                {isLoadingTransactions ? (
-                    <div className="space-y-3">
-                        {[1, 2, 3].map((i) => (
-                            <div key={i} className="h-18 bg-gray-100 rounded-2xl animate-pulse" />
-                        ))}
-                    </div>
-                ) : !transactionsData?.items || transactionsData.items.length === 0 ? (
-                    <div className="py-16 text-center bg-gray-50 rounded-3xl border border-dashed border-gray-200">
-                        <Wallet className="w-10 h-10 text-gray-300 mx-auto mb-2" />
-                        <p className="text-xs font-bold text-text-light">هنوز تراکنشی در حساب شما ثبت نشده است.</p>
-                    </div>
-                ) : (
-                    <div className="space-y-3">
-                        {transactionsData.items.map((tx) => {
-                            const isDeposit = tx.type === TransactionType.CREDIT;
-                            const isSuccess = tx.status === TransactionStatus.COMPLETED;
+                {(() => {
+                    const txList = transactionsData?.transactions || transactionsData?.items || [];
+                    if (isLoadingTransactions) {
+                        return (
+                            <div className="space-y-3">
+                                {[1, 2, 3].map((i) => (
+                                    <div key={i} className="h-18 bg-gray-100 rounded-2xl animate-pulse" />
+                                ))}
+                            </div>
+                        );
+                    }
+                    if (txList.length === 0) {
+                        return (
+                            <div className="py-16 text-center bg-gray-50 rounded-3xl border border-dashed border-gray-200">
+                                <Wallet className="w-10 h-10 text-gray-300 mx-auto mb-2" />
+                                <p className="text-xs font-bold text-text-light">هنوز تراکنشی در حساب شما ثبت نشده است.</p>
+                            </div>
+                        );
+                    }
+                    return (
+                        <div className="space-y-3">
+                            {txList.map((tx) => {
+                                const isDeposit = tx.type === TransactionType.CREDIT;
+                                const isSuccess = tx.status === TransactionStatus.COMPLETED;
 
                             return (
                                 <div
@@ -204,7 +212,8 @@ export default function WalletScene() {
                             );
                         })}
                     </div>
-                )}
+                );
+            })()}
             </div>
 
             {/* Charge Modal */}

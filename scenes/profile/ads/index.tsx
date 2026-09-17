@@ -3,7 +3,7 @@
 import { useMyAds } from "@/hooks/useAds";
 import { adsService } from "@/services/ads.service";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { ChevronRight, Clock, MoreVertical, Send } from "lucide-react";
+import { Archive, ChevronRight, Clock, Eye, Send, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
@@ -28,6 +28,28 @@ export default function MyAdsScene() {
         },
         onError: () => {
             toast.error("خطا در ارسال آگهی");
+        }
+    });
+
+    const archiveMutation = useMutation({
+        mutationFn: (adId: string) => adsService.archive(adId),
+        onSuccess: () => {
+            toast.success("آگهی با موفقیت آرشیو شد");
+            queryClient.invalidateQueries({ queryKey: ["my-ads"] });
+        },
+        onError: () => {
+            toast.error("خطا در آرشیو آگهی");
+        }
+    });
+
+    const deleteMutation = useMutation({
+        mutationFn: (adId: string) => adsService.delete(adId),
+        onSuccess: () => {
+            toast.success("آگهی با موفقیت حذف شد");
+            queryClient.invalidateQueries({ queryKey: ["my-ads"] });
+        },
+        onError: () => {
+            toast.error("خطا در حذف آگهی");
         }
     });
 
@@ -105,9 +127,43 @@ export default function MyAdsScene() {
                             </div>
                         </div>
 
-                        <button className="self-start p-2 text-secondary">
-                            <MoreVertical className="w-5 h-5" />
-                        </button>
+                        <div className="flex items-center gap-1 self-start shrink-0">
+                            {ad.status === 'PUBLISHED' && (
+                                <button
+                                    onClick={() => {
+                                        if (window.confirm("آیا از آرشیو کردن این آگهی اطمینان دارید؟")) {
+                                            archiveMutation.mutate(ad.adId);
+                                        }
+                                    }}
+                                    disabled={archiveMutation.isPending}
+                                    title="آرشیو کردن آگهی"
+                                    className="p-2 text-secondary hover:text-amber-600 hover:bg-amber-50 rounded-xl transition-colors"
+                                >
+                                    <Archive className="w-4 h-4" />
+                                </button>
+                            )}
+                            <button
+                                onClick={() => window.open(`/ads/${ad.adId}`, '_blank')}
+                                title="مشاهده آگهی"
+                                className="p-2 text-secondary hover:text-primary hover:bg-primary/5 rounded-xl transition-colors"
+                            >
+                                <Eye className="w-4 h-4" />
+                            </button>
+                            {(ad.status === 'DRAFT' || ad.status === 'ARCHIVED' || ad.status === 'REJECTED') && (
+                                <button
+                                    onClick={() => {
+                                        if (window.confirm("آیا از حذف دائمی این آگهی اطمینان دارید؟")) {
+                                            deleteMutation.mutate(ad.adId);
+                                        }
+                                    }}
+                                    disabled={deleteMutation.isPending}
+                                    title="حذف آگهی"
+                                    className="p-2 text-secondary hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors"
+                                >
+                                    <Trash2 className="w-4 h-4" />
+                                </button>
+                            )}
+                        </div>
                     </div>
                 ))}
             </div>

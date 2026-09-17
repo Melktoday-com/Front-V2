@@ -444,7 +444,7 @@ export default function ResidenceDetailScene() {
                                     id={item.id}
                                     title={item.title}
                                     nightlyPrice={item.pricing.nightlyPrice}
-                                    location={item.cityName || residence.cityName || "مشهد"}
+                                    location={item.cityName || residence.cityName || item.cityId || "ایران"}
                                     mediaIds={item.mediaIds}
                                     maxGuests={item.maxGuests}
                                 />

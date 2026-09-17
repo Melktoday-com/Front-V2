@@ -33,8 +33,8 @@ export const useFavorites = () => {
                 toast.success('آگهی به علاقه‌مندی‌ها اضافه شد');
             } else {
                 toast.success('آگهی از علاقه‌مندی‌ها حذف شد');
+                setFavorites((prev) => prev.filter((f) => f.referenceId !== adId && f.id !== adId));
             }
-            // Optionally re-fetch favorites if we are on the favorites page
             return isFavorited;
         } catch (error) {
             console.error('Failed to toggle favorite:', error);

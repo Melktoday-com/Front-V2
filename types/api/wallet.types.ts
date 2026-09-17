@@ -36,8 +36,10 @@ export interface WalletTransaction {
 }
 
 export interface PaginatedTransactionsResponse {
-    items: WalletTransaction[];
+    transactions?: WalletTransaction[];
+    items?: WalletTransaction[];
     total: number;
     page: number;
     limit: number;
+    totalPages?: number;
 }

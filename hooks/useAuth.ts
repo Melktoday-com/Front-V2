@@ -13,7 +13,7 @@ export function useRequestOtp() {
     });
 }
 
-export function useVerifyOtp() {
+export function useVerifyOtp(redirectTarget?: string) {
     const router = useRouter();
     const queryClient = useQueryClient();
 
@@ -27,8 +27,8 @@ export function useVerifyOtp() {
             // Invalidate auth session to update all components
             queryClient.invalidateQueries({ queryKey: ["auth-session"] });
 
-            // Redirect to home or profile
-            router.push("/");
+            // Redirect to target or home
+            router.push(redirectTarget || "/");
         },
     });
 }
