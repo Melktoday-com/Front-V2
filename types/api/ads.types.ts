@@ -88,14 +88,96 @@ export interface AdContactInfo {
     email?: string;
 }
 
+export interface PricingFieldDefinition {
+    key: string;
+    label: string;
+    fieldType: 'NUMBER' | 'BOOLEAN' | 'STRING';
+    required: boolean;
+    placeholder?: string;
+    unit?: string;
+    helpText?: string;
+    defaultValue?: any;
+}
+
+export interface PriceModel {
+    id: string;
+    key: string;
+    name: string;
+    displayName: string;
+    description?: string;
+    currency?: string;
+    displayOrder?: number;
+    isActive: boolean;
+    isDefault?: boolean;
+    pricingFields: PricingFieldDefinition[];
+}
+
+export interface AttributeOptionItem {
+    key: string;
+    label: string;
+    displayOrder?: number;
+}
+
+export type DynamicAttributeType = 'STRING' | 'NUMBER' | 'BOOLEAN' | 'SELECT';
+
+export interface AttributeDefinition {
+    id: string;
+    subcategoryId: string;
+    key: string;
+    label: string;
+    description?: string;
+    type: DynamicAttributeType;
+    required: boolean;
+    displayOrder: number;
+    isActive: boolean;
+    options?: AttributeOptionItem[] | null;
+    constraints?: {
+        min?: number;
+        max?: number;
+        minLength?: number;
+        maxLength?: number;
+    };
+}
+
+export interface Subcategory {
+    id: string;
+    key: string;
+    displayName: string;
+    description?: string;
+    icon?: string;
+    banner?: string;
+    displayOrder?: number;
+    isActive?: boolean;
+    isArchived?: boolean;
+}
+
 export interface CategoryListItem {
     id: string;
     key: string;
     displayName: string;
+    description?: string;
     icon?: string;
+    banner?: string;
     slug?: string;
-    subcategories: Array<{
+    displayOrder?: number;
+    isActive?: boolean;
+    isArchived?: boolean;
+    subcategories: Subcategory[];
+}
+
+export interface SubcategoryConfigResponse {
+    subcategory: {
+        id: string;
         key: string;
         displayName: string;
-    }>;
+        description?: string;
+        icon?: string;
+        banner?: string;
+        displayOrder?: number;
+        categoryId: string;
+        categoryKey: string;
+        categoryDisplayName: string;
+    };
+    allowedPriceModels: PriceModel[];
+    attributeDefinitions: AttributeDefinition[];
 }

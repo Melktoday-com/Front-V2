@@ -3,29 +3,36 @@
 import { useCity } from "@/components/providers/CityProvider";
 import { CitySelector } from "@/components/CitySelector";
 import { Select } from "@/components/ui/Select";
+import { DynamicPriceModelSelector } from "@/components/dynamic-form/DynamicPriceModelSelector";
+import { DynamicPricingFields } from "@/components/dynamic-form/DynamicPricingFields";
+import { DynamicAttributeRenderer } from "@/components/dynamic-form/DynamicAttributeRenderer";
 import { useAd, useCategories } from "@/hooks/useAds";
 import { useGeoHierarchy } from "@/hooks/useGeoHierarchy";
 import { useUploadMedia } from "@/hooks/useMedia";
 import { cn, formatPrice, toPersianDigits } from "@/lib/utils";
 import { adsService } from "@/services/ads.service";
-import { CreateAdDraftRequest } from "@/types/api/ads.types";
-import { useMutation } from "@tanstack/react-query";
+import { CreateAdDraftRequest, PriceModel, SubcategoryConfigResponse } from "@/types/api/ads.types";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import {
+    Calendar,
     Check,
     ChevronLeft,
     ChevronRight,
     Image as ImageIcon,
+    Info,
     Loader2,
     MapPin,
     Send,
+    Sparkles,
     Tag,
     Upload,
     Wallet,
     X,
 } from "lucide-react";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 // Leaflet is client-side only
@@ -52,19 +59,19 @@ export default function SubmitAdScene() {
     const [submitForApproval, setSubmitForApproval] = useState(false);
     const [isCitySelectorOpen, setIsCitySelectorOpen] = useState(false);
     const [cityName, setCityName] = useState(selectedCity?.name || "");
+    const [pricingErrors, setPricingErrors] = useState<Record<string, string>>({});
+    const [attributeErrors, setAttributeErrors] = useState<Record<string, string>>({});
 
     const [formData, setFormData] = useState<Partial<CreateAdDraftRequest>>({
         cityId: selectedCity?.id || undefined,
-        attributes: {
-            area: 0,
-            rooms: 0,
-            floor: 0,
+        categoryPath: {
+            categoryKey: "",
+            subcategoryKey: "",
+            businessModelKey: "",
+            attributeSchemaVersion: 1,
         },
-        rawPricing: {
-            total_price: 0,
-            rent_price: 0,
-            deposit_price: 0,
-        },
+        attributes: {},
+        rawPricing: {},
         latitude: selectedCity?.centerPoint?.latitude ?? 35.6892,
         longitude: selectedCity?.centerPoint?.longitude ?? 51.389,
         mediaIds: [] as string[],
@@ -76,6 +83,47 @@ export default function SubmitAdScene() {
 
     // Fetch ad if editing
     const { data: existingAd, isLoading: isLoadingExisting } = useAd(editAdId || "");
+
+    // Fetch dynamic subcategory config when subcategoryKey is selected
+    const selectedSubcategoryKey = formData.categoryPath?.subcategoryKey;
+    const selectedCategoryKey = formData.categoryPath?.categoryKey;
+
+    const { data: subcatConfig, isLoading: isLoadingConfig } = useQuery<SubcategoryConfigResponse>({
+        queryKey: ["subcategory-config", selectedSubcategoryKey, selectedCategoryKey],
+        queryFn: () => adsService.getSubcategoryConfig(selectedSubcategoryKey!, selectedCategoryKey),
+        enabled: Boolean(selectedSubcategoryKey),
+        staleTime: 1000 * 60 * 5,
+    });
+
+    // Active price model resolution
+    const activePriceModel = useMemo<PriceModel | undefined>(() => {
+        if (!subcatConfig?.allowedPriceModels?.length) return undefined;
+        const currentKey = formData.categoryPath?.businessModelKey;
+        if (currentKey) {
+            const found = subcatConfig.allowedPriceModels.find(
+                (m) => m.key === currentKey || m.id === currentKey
+            );
+            if (found) return found;
+        }
+        // Default to default model or first allowed
+        return (
+            subcatConfig.allowedPriceModels.find((m) => m.isDefault) ||
+            subcatConfig.allowedPriceModels[0]
+        );
+    }, [subcatConfig, formData.categoryPath?.businessModelKey]);
+
+    // Automatically set businessModelKey when subcatConfig loads and no key is set yet
+    useEffect(() => {
+        if (activePriceModel && (!formData.categoryPath?.businessModelKey || formData.categoryPath.businessModelKey !== activePriceModel.key)) {
+            setFormData((prev) => ({
+                ...prev,
+                categoryPath: {
+                    ...(prev.categoryPath as any),
+                    businessModelKey: activePriceModel.key,
+                },
+            }));
+        }
+    }, [activePriceModel]);
 
     // Pre-fill form in edit mode
     useEffect(() => {
@@ -136,7 +184,23 @@ export default function SubmitAdScene() {
                 });
             } else {
                 // Create draft
-                const created = await adsService.createDraft(formData as CreateAdDraftRequest);
+                const payload: CreateAdDraftRequest = {
+                    cityId: formData.cityId!,
+                    categoryPath: {
+                        categoryKey: formData.categoryPath!.categoryKey,
+                        subcategoryKey: formData.categoryPath!.subcategoryKey,
+                        businessModelKey: formData.categoryPath!.businessModelKey,
+                        attributeSchemaVersion: formData.categoryPath!.attributeSchemaVersion || 1,
+                    },
+                    title: formData.title!,
+                    description: formData.description!,
+                    rawPricing: (formData.rawPricing as Record<string, number>) || {},
+                    attributes: formData.attributes || {},
+                    latitude: formData.latitude || 35.6892,
+                    longitude: formData.longitude || 51.389,
+                    mediaIds: formData.mediaIds || [],
+                };
+                const created = await adsService.createDraft(payload);
                 adId = created.adId;
             }
 
@@ -149,28 +213,81 @@ export default function SubmitAdScene() {
         },
         onSuccess: ({ shouldPublish }) => {
             if (shouldPublish) {
-                toast.success("آگهی با موفقیت ثبت و جهت تایید به ادمین ارسال شد");
+                toast.success("آگهی با موفقیت ثبت و جهت بررسی و انتشار به ادمین ارسال شد");
             } else {
                 toast.success("آگهی با موفقیت به عنوان پیش‌نویس ذخیره شد");
             }
             router.push("/profile/ads");
         },
-        onError: () => {
-            toast.error("خطا در ذخیره‌سازی آگهی");
+        onError: (err: any) => {
+            const msg = err?.response?.data?.message || "خطا در ذخیره‌سازی آگهی";
+            toast.error(msg);
         },
     });
 
     const currentStepIndex = STEPS_CONFIG.findIndex((s) => s.id === step);
 
-    const handleNext = () => {
-        // Validation
-        if (step === "CATEGORY" && (!formData.cityId || !formData.categoryPath?.categoryKey)) {
-            toast.error("لطفاً شهر و دسته‌بندی ملک را مشخص کنید");
-            return;
+    const validateDetailsStep = (): boolean => {
+        let isValid = true;
+        const pErrors: Record<string, string> = {};
+        const aErrors: Record<string, string> = {};
+
+        // Validate required pricing fields
+        if (activePriceModel) {
+            for (const field of activePriceModel.pricingFields) {
+                const val = formData.rawPricing?.[field.key];
+                if (field.required && (val === undefined || val === null || isNaN(val) || (val as unknown) === "")) {
+                    pErrors[field.key] = `فیلد ${field.label} الزامی است`;
+                    isValid = false;
+                }
+            }
         }
-        if (step === "BASIC_INFO" && (!formData.title || !formData.description)) {
-            toast.error("لطفاً عنوان و توضیحات کامل آگهی را وارد کنید");
-            return;
+
+        // Validate required attributes
+        if (subcatConfig?.attributeDefinitions) {
+            for (const attr of subcatConfig.attributeDefinitions) {
+                const val = formData.attributes?.[attr.key];
+                if (attr.required && (val === undefined || val === null || val === "")) {
+                    aErrors[attr.key] = `تکمیل مشخصه ${attr.label} الزامی است`;
+                    isValid = false;
+                }
+            }
+        }
+
+        setPricingErrors(pErrors);
+        setAttributeErrors(aErrors);
+
+        if (!isValid) {
+            toast.error("لطفاً فیلدهای الزامی مشخص شده را تکمیل فرمایید");
+        }
+
+        return isValid;
+    };
+
+    const handleNext = () => {
+        // Validation per step
+        if (step === "CATEGORY") {
+            if (!formData.cityId) {
+                toast.error("لطفاً شهر ملک را مشخص فرمایید");
+                return;
+            }
+            if (!formData.categoryPath?.categoryKey || !formData.categoryPath?.subcategoryKey) {
+                toast.error("لطفاً دسته‌بندی و زیردسته ملک را انتخاب فرمایید");
+                return;
+            }
+        }
+
+        if (step === "BASIC_INFO") {
+            if (!formData.title?.trim() || !formData.description?.trim()) {
+                toast.error("لطفاً عنوان و توضیحات کامل آگهی را وارد کنید");
+                return;
+            }
+        }
+
+        if (step === "DETAILS") {
+            if (!validateDetailsStep()) {
+                return;
+            }
         }
 
         if (currentStepIndex === STEPS_CONFIG.length - 1) {
@@ -210,6 +327,12 @@ export default function SubmitAdScene() {
         }));
     };
 
+    const currentSubcategory = useMemo(() => {
+        if (!categories || !formData.categoryPath?.categoryKey) return null;
+        const cat = categories.find((c) => c.key === formData.categoryPath?.categoryKey);
+        return cat?.subcategories?.find((s) => s.key === formData.categoryPath?.subcategoryKey);
+    }, [categories, formData.categoryPath?.categoryKey, formData.categoryPath?.subcategoryKey]);
+
     if (editAdId && isLoadingExisting) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3">
@@ -222,13 +345,23 @@ export default function SubmitAdScene() {
     return (
         <div className="min-h-screen bg-gray-50/50 py-8 px-4 sm:px-6 lg:px-8 pb-32">
             <div className="max-w-3xl mx-auto">
-                <header className="mb-6">
-                    <h1 className="text-2xl font-black text-brand">
-                        {editAdId ? "ویرایش آگهی" : "ثبت رایگان آگهی ملک"}
-                    </h1>
-                    <p className="text-xs text-text-light mt-1">
-                        اطلاعات ملک خود را با دقت تکمیل کنید تا در سریع‌ترین زمان متقاضیان با شما تماس بگیرند.
-                    </p>
+                <header className="mb-6 flex items-start justify-between">
+                    <div>
+                        <h1 className="text-2xl font-black text-brand">
+                            {editAdId ? "ویرایش آگهی ملک" : "ثبت آگهی ملک"}
+                        </h1>
+                        <p className="text-xs text-text-light mt-1">
+                            اطلاعات ملک خود را تکمیل نمایید تا در سریع‌ترین زمان متقاضیان واقعی با شما تماس بگیرند.
+                        </p>
+                    </div>
+                    {/* Separate Temporary Rental link */}
+                    <Link
+                        href="/profile/temporary-rent/create"
+                        className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 rounded-xl text-xs font-bold transition-all"
+                    >
+                        <Calendar className="w-4 h-4 text-amber-600" />
+                        <span>ثبت اقامتگاه / اجاره روزانه</span>
+                    </Link>
                 </header>
 
                 {/* Mobile Compact Step Indicator */}
@@ -297,10 +430,29 @@ export default function SubmitAdScene() {
                         {/* 1. CATEGORY */}
                         {step === "CATEGORY" && (
                             <div className="space-y-6">
-                                <h2 className="text-lg font-black text-brand">انتخاب شهر و دسته‌بندی</h2>
+                                <div className="flex items-center justify-between">
+                                    <h2 className="text-lg font-black text-brand">انتخاب شهر و دسته‌بندی ملک</h2>
+                                </div>
+
+                                {/* Temporary rental notice */}
+                                <div className="p-3.5 bg-amber-50/70 border border-amber-200/80 rounded-2xl flex items-center justify-between gap-3">
+                                    <div className="flex items-center gap-2.5 text-xs text-amber-900 font-medium">
+                                        <Sparkles className="w-4 h-4 text-amber-600 shrink-0" />
+                                        <span>برای اجاره روزانه ویلا، سوئیت یا بوم‌گردی به بخش اقامتگاه بروید:</span>
+                                    </div>
+                                    <Link
+                                        href="/profile/temporary-rent/create"
+                                        className="text-xs font-black text-amber-700 hover:text-amber-900 underline shrink-0"
+                                    >
+                                        ثبت اقامتگاه روزانه
+                                    </Link>
+                                </div>
+
                                 <div className="grid grid-cols-1 gap-5">
                                     <div>
-                                        <label className="block text-xs font-bold text-brand mb-2">شهر ملک</label>
+                                        <label className="block text-xs font-bold text-brand mb-2">
+                                            شهر ملک <span className="text-red-500">*</span>
+                                        </label>
                                         <button
                                             type="button"
                                             onClick={() => setIsCitySelectorOpen(true)}
@@ -327,83 +479,66 @@ export default function SubmitAdScene() {
                                     </div>
 
                                     <div>
-                                        <label className="block text-xs font-bold text-brand mb-2">نوع معامله</label>
-                                        <div className="flex flex-wrap gap-3">
-                                            {[
-                                                { key: "buy_sell", label: "فروش" },
-                                                { key: "rent_mortgage", label: "رهن و اجاره" },
-                                                { key: "daily_rent", label: "اجاره روزانه" },
-                                            ].map((bm) => (
-                                                <button
-                                                    type="button"
-                                                    key={bm.key}
-                                                    onClick={() =>
-                                                        setFormData({
-                                                            ...formData,
-                                                            categoryPath: {
-                                                                ...(formData.categoryPath || ({} as any)),
-                                                                businessModelKey: bm.key,
-                                                            },
-                                                        })
-                                                    }
-                                                    className={cn(
-                                                        "px-5 py-2.5 rounded-xl border text-xs font-bold transition-all",
-                                                        formData.categoryPath?.businessModelKey === bm.key
-                                                            ? "bg-brand text-white border-brand shadow-xs"
-                                                            : "bg-gray-50 text-text-light border-gray-200 hover:bg-gray-100"
-                                                    )}
-                                                >
-                                                    {bm.label}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-xs font-bold text-brand mb-2">دسته‌بندی اصلی</label>
+                                        <label className="block text-xs font-bold text-brand mb-2">
+                                            دسته‌بندی اصلی <span className="text-red-500">*</span>
+                                        </label>
                                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                                            {categories?.map((cat) => (
-                                                <button
-                                                    type="button"
-                                                    key={cat.id || cat.key}
-                                                    onClick={() =>
-                                                        setFormData({
-                                                            ...formData,
-                                                            categoryPath: {
-                                                                ...(formData.categoryPath || ({} as any)),
-                                                                categoryKey: cat.key,
-                                                                attributeSchemaVersion: 1,
-                                                                subcategoryKey: cat.subcategories?.[0]?.key || "",
-                                                            },
-                                                        })
-                                                    }
-                                                    className={cn(
-                                                        "p-4 border rounded-2xl text-right transition-all",
-                                                        formData.categoryPath?.categoryKey === cat.key
-                                                            ? "border-primary bg-primary/10 text-brand font-bold shadow-xs"
-                                                            : "border-gray-200 hover:border-primary/40 text-text-light"
-                                                    )}
-                                                >
-                                                    <span className="block text-sm">{cat.displayName}</span>
-                                                </button>
-                                            ))}
+                                            {categories?.map((cat) => {
+                                                const isSelected = formData.categoryPath?.categoryKey === cat.key;
+                                                return (
+                                                    <button
+                                                        type="button"
+                                                        key={cat.id || cat.key}
+                                                        onClick={() => {
+                                                            const firstSub = cat.subcategories?.[0];
+                                                            setFormData((prev) => ({
+                                                                ...prev,
+                                                                categoryPath: {
+                                                                    categoryKey: cat.key,
+                                                                    subcategoryKey: firstSub?.key || "",
+                                                                    businessModelKey: "",
+                                                                    attributeSchemaVersion: 1,
+                                                                },
+                                                                rawPricing: {},
+                                                                attributes: {},
+                                                            }));
+                                                        }}
+                                                        className={cn(
+                                                            "p-4 border rounded-2xl text-right transition-all flex flex-col justify-between min-h-[70px]",
+                                                            isSelected
+                                                                ? "border-primary bg-primary/10 text-brand font-bold shadow-xs"
+                                                                : "border-gray-200 hover:border-primary/40 text-text-light bg-white"
+                                                        )}
+                                                    >
+                                                        <span className="block text-sm font-black">{cat.displayName}</span>
+                                                        {cat.description && (
+                                                            <span className="block text-[11px] text-text-light mt-1 line-clamp-1">
+                                                                {cat.description}
+                                                            </span>
+                                                        )}
+                                                    </button>
+                                                );
+                                            })}
                                         </div>
                                     </div>
 
                                     {formData.categoryPath?.categoryKey && (
                                         <div>
                                             <Select
-                                                label="زیردسته ملک"
+                                                label="زیردسته ملک *"
                                                 value={formData.categoryPath?.subcategoryKey || ""}
-                                                onChange={(val) =>
-                                                    setFormData({
-                                                        ...formData,
+                                                onChange={(val) => {
+                                                    setFormData((prev) => ({
+                                                        ...prev,
                                                         categoryPath: {
-                                                            ...(formData.categoryPath || ({} as any)),
+                                                            ...(prev.categoryPath as any),
                                                             subcategoryKey: val,
+                                                            businessModelKey: "",
                                                         },
-                                                    })
-                                                }
+                                                        rawPricing: {},
+                                                        attributes: {},
+                                                    }));
+                                                }}
                                                 options={
                                                     categories
                                                         ?.find((c) => c.key === formData.categoryPath?.categoryKey)
@@ -427,24 +562,24 @@ export default function SubmitAdScene() {
                                 <div className="space-y-4">
                                     <div>
                                         <label className="block text-xs font-bold text-brand mb-2">
-                                            عنوان جذاب برای آگهی
+                                            عنوان آگهی <span className="text-red-500">*</span>
                                         </label>
                                         <input
                                             type="text"
                                             className="w-full p-3 border border-gray-200 rounded-xl bg-gray-50 text-sm focus:bg-white focus:ring-2 focus:ring-primary outline-hidden"
-                                            placeholder="مثلاً: آپارتمان ۱۱۰ متری دو خوابه نوساز، نورگیر عالی"
+                                            placeholder="مثلاً: آپارتمان ۱۱۰ متری دو خوابه فول امکانات در ونک"
                                             value={formData.title || ""}
                                             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                                         />
                                     </div>
                                     <div>
                                         <label className="block text-xs font-bold text-brand mb-2">
-                                            توضیحات تکمیلی
+                                            توضیحات تکمیلی <span className="text-red-500">*</span>
                                         </label>
                                         <textarea
                                             rows={6}
                                             className="w-full p-3 border border-gray-200 rounded-xl bg-gray-50 text-sm focus:bg-white focus:ring-2 focus:ring-primary outline-hidden leading-relaxed"
-                                            placeholder="امکانات، مشخصات محله، شرایط بازدید و جزئیات دقیق ملک را شرح دهید..."
+                                            placeholder="امکانات، موقعیت دسترسی، شرایط بازدید و ویژگی‌های شاخص ملک را شرح دهید..."
                                             value={formData.description || ""}
                                             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                         />
@@ -453,119 +588,93 @@ export default function SubmitAdScene() {
                             </div>
                         )}
 
-                        {/* 3. DETAILS */}
+                        {/* 3. DETAILS (DYNAMIC PRICE MODEL & DYNAMIC ATTRIBUTES) */}
                         {step === "DETAILS" && (
-                            <div className="space-y-6">
-                                <h2 className="text-lg font-black text-brand">قیمت و مشخصات فنی</h2>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                    {formData.categoryPath?.businessModelKey === "buy_sell" && (
-                                        <div className="col-span-1 md:col-span-2">
-                                            <label className="block text-xs font-bold text-brand mb-2">
-                                                قیمت کل (تومان)
-                                            </label>
-                                            <input
-                                                type="number"
-                                                className="w-full p-3 border border-gray-200 rounded-xl bg-gray-50 text-sm focus:bg-white focus:ring-2 focus:ring-primary outline-hidden"
-                                                value={formData.rawPricing?.total_price || ""}
-                                                placeholder="مثال: ۵۵۰۰۰۰۰۰۰۰"
-                                                onChange={(e) =>
-                                                    setFormData({
-                                                        ...formData,
-                                                        rawPricing: {
-                                                            ...formData.rawPricing,
-                                                            total_price: Number(e.target.value),
-                                                        },
-                                                    })
-                                                }
-                                            />
+                            <div className="space-y-8">
+                                <div className="flex items-center justify-between">
+                                    <h2 className="text-lg font-black text-brand">شرایط معامله و مشخصات ملک</h2>
+                                    {isLoadingConfig && (
+                                        <div className="flex items-center gap-1.5 text-xs text-primary font-bold">
+                                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                            <span>در حال بارگذاری فرم تخصصی...</span>
                                         </div>
                                     )}
-
-                                    {formData.categoryPath?.businessModelKey === "rent_mortgage" && (
-                                        <>
-                                            <div>
-                                                <label className="block text-xs font-bold text-brand mb-2">
-                                                    ودیعه / رهن (تومان)
-                                                </label>
-                                                <input
-                                                    type="number"
-                                                    className="w-full p-3 border border-gray-200 rounded-xl bg-gray-50 text-sm focus:bg-white focus:ring-2 focus:ring-primary outline-hidden"
-                                                    value={formData.rawPricing?.deposit_price || ""}
-                                                    placeholder="مثال: ۳۰۰۰۰۰۰۰۰"
-                                                    onChange={(e) =>
-                                                        setFormData({
-                                                            ...formData,
-                                                            rawPricing: {
-                                                                ...formData.rawPricing,
-                                                                deposit_price: Number(e.target.value),
-                                                            },
-                                                        })
-                                                    }
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-xs font-bold text-brand mb-2">
-                                                    اجاره ماهیانه (تومان)
-                                                </label>
-                                                <input
-                                                    type="number"
-                                                    className="w-full p-3 border border-gray-200 rounded-xl bg-gray-50 text-sm focus:bg-white focus:ring-2 focus:ring-primary outline-hidden"
-                                                    value={formData.rawPricing?.rent_price || ""}
-                                                    placeholder="مثال: ۱۲۰۰۰۰۰۰"
-                                                    onChange={(e) =>
-                                                        setFormData({
-                                                            ...formData,
-                                                            rawPricing: {
-                                                                ...formData.rawPricing,
-                                                                rent_price: Number(e.target.value),
-                                                            },
-                                                        })
-                                                    }
-                                                />
-                                            </div>
-                                        </>
-                                    )}
-
-                                    <div>
-                                        <label className="block text-xs font-bold text-brand mb-2">
-                                            متراژ (مترمربع)
-                                        </label>
-                                        <input
-                                            type="number"
-                                            className="w-full p-3 border border-gray-200 rounded-xl bg-gray-50 text-sm focus:bg-white focus:ring-2 focus:ring-primary outline-hidden"
-                                            value={(formData.attributes as any)?.area || ""}
-                                            placeholder="مثال: ۹۵"
-                                            onChange={(e) =>
-                                                setFormData({
-                                                    ...formData,
-                                                    attributes: {
-                                                        ...formData.attributes,
-                                                        area: Number(e.target.value),
-                                                    },
-                                                })
-                                            }
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-xs font-bold text-brand mb-2">تعداد اتاق</label>
-                                        <input
-                                            type="number"
-                                            className="w-full p-3 border border-gray-200 rounded-xl bg-gray-50 text-sm focus:bg-white focus:ring-2 focus:ring-primary outline-hidden"
-                                            value={(formData.attributes as any)?.rooms || ""}
-                                            placeholder="مثال: ۲"
-                                            onChange={(e) =>
-                                                setFormData({
-                                                    ...formData,
-                                                    attributes: {
-                                                        ...formData.attributes,
-                                                        rooms: Number(e.target.value),
-                                                    },
-                                                })
-                                            }
-                                        />
-                                    </div>
                                 </div>
+
+                                {/* Dynamic Price Model Selector */}
+                                {subcatConfig?.allowedPriceModels && subcatConfig.allowedPriceModels.length > 0 && (
+                                    <DynamicPriceModelSelector
+                                        priceModels={subcatConfig.allowedPriceModels}
+                                        selectedKey={formData.categoryPath?.businessModelKey}
+                                        onSelect={(model) => {
+                                            setFormData((prev) => ({
+                                                ...prev,
+                                                categoryPath: {
+                                                    ...(prev.categoryPath as any),
+                                                    businessModelKey: model.key,
+                                                },
+                                            }));
+                                            setPricingErrors({});
+                                        }}
+                                    />
+                                )}
+
+                                {/* Dynamic Pricing Fields based on selected PriceModel */}
+                                {activePriceModel && (
+                                    <div className="p-5 bg-gray-50/60 border border-gray-200/80 rounded-2xl">
+                                        <DynamicPricingFields
+                                            priceModel={activePriceModel}
+                                            values={formData.rawPricing || {}}
+                                            onChange={(key, value) => {
+                                                setFormData((prev) => ({
+                                                    ...prev,
+                                                    rawPricing: {
+                                                        ...prev.rawPricing,
+                                                        [key]: value,
+                                                    },
+                                                }));
+                                                if (pricingErrors[key]) {
+                                                    setPricingErrors((prev) => {
+                                                        const copy = { ...prev };
+                                                        delete copy[key];
+                                                        return copy;
+                                                    });
+                                                }
+                                            }}
+                                            errors={pricingErrors}
+                                        />
+                                    </div>
+                                )}
+
+                                {/* Dynamic Attributes Renderer based on Subcategory Attribute Definitions */}
+                                {subcatConfig?.attributeDefinitions && subcatConfig.attributeDefinitions.length > 0 && (
+                                    <div className="pt-2">
+                                        <h3 className="text-sm font-bold text-brand mb-4 pb-2 border-b border-gray-100">
+                                            مشخصات فنی و امکانات {subcatConfig.subcategory?.displayName || "ملک"}
+                                        </h3>
+                                        <DynamicAttributeRenderer
+                                            definitions={subcatConfig.attributeDefinitions}
+                                            values={formData.attributes || {}}
+                                            onChange={(key, value) => {
+                                                setFormData((prev) => ({
+                                                    ...prev,
+                                                    attributes: {
+                                                        ...prev.attributes,
+                                                        [key]: value,
+                                                    },
+                                                }));
+                                                if (attributeErrors[key]) {
+                                                    setAttributeErrors((prev) => {
+                                                        const copy = { ...prev };
+                                                        delete copy[key];
+                                                        return copy;
+                                                    });
+                                                }
+                                            }}
+                                            errors={attributeErrors}
+                                        />
+                                    </div>
+                                )}
                             </div>
                         )}
 
@@ -592,7 +701,7 @@ export default function SubmitAdScene() {
                             <div className="space-y-6">
                                 <h2 className="text-lg font-black text-brand">تصاویر ملک</h2>
                                 <p className="text-xs text-text-light">
-                                    آگهی‌هایی که تصویر دارند تا ۵ برابر بیشتر بازدید دریافت می‌کنند.
+                                    آگهی‌های دارای تصویر واقعی تا ۵ برابر بیشتر بازدید دریافت می‌کنند.
                                 </p>
                                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                                     {(formData.mediaIds as any[])?.map((id: string) => (
@@ -639,37 +748,63 @@ export default function SubmitAdScene() {
                         {/* 6. REVIEW */}
                         {step === "REVIEW" && (
                             <div className="space-y-6">
-                                <h2 className="text-lg font-black text-brand">بازبینی اطلاعات آگهی</h2>
-                                <div className="bg-gray-50/80 rounded-2xl p-6 space-y-3 border border-gray-100 text-sm">
-                                    <div className="flex justify-between">
-                                        <span className="text-text-light">عنوان:</span>
-                                        <span className="font-bold text-brand">{formData.title}</span>
+                                <h2 className="text-lg font-black text-brand">بازبینی و تایید آگهی</h2>
+                                <div className="bg-gray-50/80 rounded-2xl p-6 space-y-4 border border-gray-100 text-sm">
+                                    <div className="flex justify-between pb-2 border-b border-gray-200/50">
+                                        <span className="text-text-light">عنوان آگهی:</span>
+                                        <span className="font-bold text-brand text-left">{formData.title}</span>
                                     </div>
-                                    <div className="flex justify-between">
+                                    <div className="flex justify-between pb-2 border-b border-gray-200/50">
+                                        <span className="text-text-light">شهر و منطقه:</span>
+                                        <span className="font-bold text-brand">{cityName}</span>
+                                    </div>
+                                    <div className="flex justify-between pb-2 border-b border-gray-200/50">
                                         <span className="text-text-light">دسته‌بندی:</span>
                                         <span className="font-bold text-brand">
-                                            {formData.categoryPath?.categoryKey} / {formData.categoryPath?.subcategoryKey}
+                                            {subcatConfig?.subcategory?.categoryDisplayName || formData.categoryPath?.categoryKey} / {subcatConfig?.subcategory?.displayName || formData.categoryPath?.subcategoryKey}
                                         </span>
                                     </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-text-light">نوع معامله:</span>
-                                        <span className="font-bold text-brand">
-                                            {formData.categoryPath?.businessModelKey === "buy_sell"
-                                                ? "فروش"
-                                                : "رهن و اجاره"}
+                                    <div className="flex justify-between pb-2 border-b border-gray-200/50">
+                                        <span className="text-text-light">مدل معامله:</span>
+                                        <span className="font-bold text-primary">
+                                            {activePriceModel?.displayName || formData.categoryPath?.businessModelKey}
                                         </span>
                                     </div>
+
+                                    {/* Pricing breakdown */}
+                                    {activePriceModel && (
+                                        <div className="py-2 space-y-2">
+                                            <p className="text-xs font-bold text-text-light">شرایط مالی:</p>
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                                {activePriceModel.pricingFields.map((f) => {
+                                                    const val = formData.rawPricing?.[f.key];
+                                                    if (val === undefined || val === null || (val as unknown) === "") return null;
+                                                    return (
+                                                        <div key={f.key} className="flex justify-between p-2.5 bg-white rounded-xl border border-gray-200/60 text-xs">
+                                                            <span className="text-text-light">{f.label}:</span>
+                                                            <span className="font-bold text-brand">
+                                                                {f.fieldType === "NUMBER" ? formatPrice(Number(val)) : String(val)} {f.unit || ""}
+                                                            </span>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    )}
+
                                     <div className="border-t border-gray-200/60 pt-3">
-                                        <p className="text-text-light text-xs mb-1">توضیحات:</p>
+                                        <p className="text-text-light text-xs mb-1">توضیحات آگهی:</p>
                                         <p className="text-xs text-text-main line-clamp-3 leading-relaxed">
                                             {formData.description}
                                         </p>
                                     </div>
                                 </div>
 
-                                <div className="p-4 rounded-2xl bg-amber-50 border border-amber-100 text-xs text-amber-800 leading-relaxed">
-                                    می‌توانید آگهی را ذخیره کنید و بعداً ویرایش نمایید، یا مستقیماً برای تایید و انتشار
-                                    به کارشناسان ارسال فرمایید.
+                                <div className="p-4 rounded-2xl bg-amber-50 border border-amber-100 text-xs text-amber-800 leading-relaxed flex items-start gap-2.5">
+                                    <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                                    <span>
+                                        می‌توانید آگهی را هم‌اکنون به صورت پیش‌نویس ذخیره کرده و بعداً ویرایش فرمایید، یا مستقیماً جهت بررسی و تایید کارشناسان ثبت نهایی کنید.
+                                    </span>
                                 </div>
                             </div>
                         )}

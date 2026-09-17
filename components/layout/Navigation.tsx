@@ -179,13 +179,6 @@ export function Sidebar() {
                     </Link>
                 )}
             </nav>
-
-            <div className="mt-auto p-4 bg-soft-bg rounded-3xl border border-soft-border">
-                <p className="text-xs text-secondary font-bold mb-2">نیاز به راهنمایی دارید؟</p>
-                <Link href="/profile/chat" className="text-[11px] text-primary font-black hover:underline">
-                    تماس با پشتیبانی آنلاین
-                </Link>
-            </div>
         </aside>
     );
 }

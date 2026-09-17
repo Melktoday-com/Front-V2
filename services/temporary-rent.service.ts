@@ -55,8 +55,22 @@ export const temporaryRentService = {
 
     async publish(id: string): Promise<TemporaryRentMutationResponse> {
         const response = await apiClient.post<TemporaryRentMutationResponse>(`/temporary-rent/${id}/publish`);
-        return response.data;    },
+        return response.data;
+    },
+
+    async listCategories(): Promise<any[]> {
+        const response = await apiClient.get<{ categories: any[] }>("/temporary-rent/categories");
+        return response.data.categories;
+    },
+
+    async getSubcategoryConfig(subcategoryId: string, categoryKey?: string): Promise<any> {
+        const response = await apiClient.get<any>(`/temporary-rent/categories/subcategories/${subcategoryId}/config`, {
+            params: categoryKey ? { categoryKey } : undefined,
+        });
+        return response.data;
+    },
 
     async delete(adId: string): Promise<void> {
-        await apiClient.delete(`/temporary-rent/${adId}`);    }
+        await apiClient.delete(`/temporary-rent/${adId}`);
+    }
 };

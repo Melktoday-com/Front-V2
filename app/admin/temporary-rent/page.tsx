@@ -3,17 +3,15 @@
 import PriceModelsModal from "@/components/admin/PriceModelsModal";
 import SubcategoryConfigModal from "@/components/admin/SubcategoryConfigModal";
 import { adminService } from "@/services/admin.service";
-import { adsService } from "@/services/ads.service";
-import { CategoryListItem, Subcategory } from "@/types/api/ads.types";
+import { TemporaryRentCategory, TemporaryRentSubcategory } from "@/types/api/temporary-rent.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
     Archive,
+    Calendar,
     ChevronDown,
     ChevronRight,
     Coins,
     Edit2,
-    ImageIcon,
-    Layers,
     Plus,
     PlusCircle,
     Search,
@@ -25,7 +23,7 @@ import {
 import React, { useState } from "react";
 import { toast } from "sonner";
 
-export default function AdminCategoriesPage() {
+export default function AdminTemporaryRentCategoriesPage() {
     const queryClient = useQueryClient();
     const [searchTerm, setSearchTerm] = useState("");
     const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
@@ -39,8 +37,8 @@ export default function AdminCategoriesPage() {
     const [isPriceModelsModalOpen, setIsPriceModelsModalOpen] = useState(false);
 
     // Selected objects
-    const [selectedCategory, setSelectedCategory] = useState<CategoryListItem | null>(null);
-    const [selectedSubcategory, setSelectedSubcategory] = useState<Subcategory | null>(null);
+    const [selectedCategory, setSelectedCategory] = useState<TemporaryRentCategory | null>(null);
+    const [selectedSubcategory, setSelectedSubcategory] = useState<TemporaryRentSubcategory | null>(null);
 
     // Category form state
     const [categoryForm, setCategoryForm] = useState({
@@ -65,10 +63,14 @@ export default function AdminCategoriesPage() {
     });
 
     // Fetch Categories
-    const { data: categories, isLoading } = useQuery({
-        queryKey: ["admin", "categories"],
-        queryFn: () => adsService.listCategories(),
+    const { data: categoriesResponse, isLoading } = useQuery({
+        queryKey: ["admin", "temporary-rent", "categories"],
+        queryFn: () => adminService.listTemporaryRentCategories({ includeArchived: false }),
     });
+
+    const categories: TemporaryRentCategory[] = Array.isArray(categoriesResponse)
+        ? categoriesResponse
+        : categoriesResponse?.categories || [];
 
     const toggleExpand = (categoryId: string) => {
         setExpandedCategories(prev =>
@@ -80,10 +82,10 @@ export default function AdminCategoriesPage() {
 
     // Category Mutations
     const createCategoryMutation = useMutation({
-        mutationFn: (data: any) => adminService.createCategory(data),
+        mutationFn: (data: any) => adminService.createTemporaryRentCategory(data),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["admin", "categories"] });
-            toast.success("دسته‌بندی جدید با موفقیت ایجاد شد");
+            queryClient.invalidateQueries({ queryKey: ["admin", "temporary-rent", "categories"] });
+            toast.success("دسته‌بندی اقامتگاه با موفقیت ایجاد شد");
             setIsCreateCategoryModalOpen(false);
         },
         onError: (err: any) => {
@@ -93,9 +95,9 @@ export default function AdminCategoriesPage() {
     });
 
     const updateCategoryMutation = useMutation({
-        mutationFn: (data: { id: string; payload: any }) => adminService.updateCategory(data.id, data.payload),
+        mutationFn: (data: { id: string; payload: any }) => adminService.updateTemporaryRentCategory(data.id, data.payload),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["admin", "categories"] });
+            queryClient.invalidateQueries({ queryKey: ["admin", "temporary-rent", "categories"] });
             toast.success("دسته‌بندی با موفقیت بروزرسانی شد");
             setIsEditCategoryModalOpen(false);
             setSelectedCategory(null);
@@ -107,9 +109,9 @@ export default function AdminCategoriesPage() {
     });
 
     const archiveCategoryMutation = useMutation({
-        mutationFn: (id: string) => adminService.archiveCategory(id),
+        mutationFn: (id: string) => adminService.archiveTemporaryRentCategory(id),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["admin", "categories"] });
+            queryClient.invalidateQueries({ queryKey: ["admin", "temporary-rent", "categories"] });
             toast.success("دسته‌بندی با موفقیت آرشیو شد");
         },
         onError: () => toast.error("خطا در آرشیو دسته‌بندی")
@@ -118,23 +120,23 @@ export default function AdminCategoriesPage() {
     // Subcategory Mutations
     const createSubcategoryMutation = useMutation({
         mutationFn: (data: { categoryId: string; payload: any }) =>
-            adminService.addSubcategory(data.categoryId, data.payload),
+            adminService.addTemporaryRentSubcategory(data.categoryId, data.payload),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["admin", "categories"] });
-            toast.success("زیردسته جدید با موفقیت اضافه شد");
+            queryClient.invalidateQueries({ queryKey: ["admin", "temporary-rent", "categories"] });
+            toast.success("زیردسته اقامتگاه با موفقیت ایجاد شد");
             setIsCreateSubcategoryModalOpen(false);
         },
         onError: (err: any) => {
-            const msg = err?.response?.data?.message || "خطا در اضافه کردن زیردسته";
+            const msg = err?.response?.data?.message || "خطا در ایجاد زیردسته";
             toast.error(typeof msg === 'string' ? msg : JSON.stringify(msg));
         }
     });
 
     const updateSubcategoryMutation = useMutation({
         mutationFn: (data: { subcategoryId: string; payload: any }) =>
-            adminService.updateSubcategory(data.subcategoryId, data.payload),
+            adminService.updateTemporaryRentSubcategory(data.subcategoryId, data.payload),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["admin", "categories"] });
+            queryClient.invalidateQueries({ queryKey: ["admin", "temporary-rent", "categories"] });
             toast.success("زیردسته با موفقیت بروزرسانی شد");
             setIsEditSubcategoryModalOpen(false);
             setSelectedSubcategory(null);
@@ -147,9 +149,9 @@ export default function AdminCategoriesPage() {
 
     const archiveSubcategoryMutation = useMutation({
         mutationFn: (subcategoryId: string) =>
-            adminService.archiveSubcategory(subcategoryId),
+            adminService.archiveTemporaryRentSubcategory(subcategoryId),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["admin", "categories"] });
+            queryClient.invalidateQueries({ queryKey: ["admin", "temporary-rent", "categories"] });
             toast.success("زیردسته با موفقیت آرشیو شد");
         },
         onError: () => toast.error("خطا در آرشیو زیردسته")
@@ -163,13 +165,13 @@ export default function AdminCategoriesPage() {
             description: "",
             icon: "",
             banner: "",
-            displayOrder: (categories?.length || 0) + 1,
+            displayOrder: (categories.length || 0) + 1,
             isActive: true,
         });
         setIsCreateCategoryModalOpen(true);
     };
 
-    const handleOpenEditCategory = (cat: CategoryListItem) => {
+    const handleOpenEditCategory = (cat: TemporaryRentCategory) => {
         setSelectedCategory(cat);
         setCategoryForm({
             key: cat.key,
@@ -183,7 +185,7 @@ export default function AdminCategoriesPage() {
         setIsEditCategoryModalOpen(true);
     };
 
-    const handleOpenCreateSubcategory = (cat: CategoryListItem) => {
+    const handleOpenCreateSubcategory = (cat: TemporaryRentCategory) => {
         setSelectedCategory(cat);
         setSubcategoryForm({
             key: "",
@@ -197,7 +199,7 @@ export default function AdminCategoriesPage() {
         setIsCreateSubcategoryModalOpen(true);
     };
 
-    const handleOpenEditSubcategory = (cat: CategoryListItem, sub: Subcategory) => {
+    const handleOpenEditSubcategory = (cat: TemporaryRentCategory, sub: TemporaryRentSubcategory) => {
         setSelectedCategory(cat);
         setSelectedSubcategory(sub);
         setSubcategoryForm({
@@ -212,14 +214,13 @@ export default function AdminCategoriesPage() {
         setIsEditSubcategoryModalOpen(true);
     };
 
-    const handleOpenSubcategoryConfig = (cat: CategoryListItem, sub: Subcategory) => {
+    const handleOpenSubcategoryConfig = (cat: TemporaryRentCategory, sub: TemporaryRentSubcategory) => {
         setSelectedCategory(cat);
         setSelectedSubcategory(sub);
         setIsSubcategoryConfigOpen(true);
     };
 
-    // Filter
-    const filteredCategories = categories?.filter(c =>
+    const filteredCategories = categories.filter(c =>
         c.displayName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         c.key.toLowerCase().includes(searchTerm.toLowerCase()) ||
         c.subcategories?.some(s => s.displayName.toLowerCase().includes(searchTerm.toLowerCase()) || s.key.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -231,11 +232,11 @@ export default function AdminCategoriesPage() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                 <div>
                     <h1 className="text-2xl font-black text-slate-900 flex items-center gap-2">
-                        <Layers className="w-7 h-7 text-blue-600" />
-                        مدیریت دسته‌بندی‌ها و زیردسته‌ها (املاک عادی)
+                        <Calendar className="w-7 h-7 text-emerald-600" />
+                        مدیریت دسته‌بندی‌های اجاره موقت و اقامتگاه
                     </h1>
                     <p className="text-slate-500 mt-1 text-xs">
-                        ساختار دسته‌بندی‌ها، مدل‌های قیمت‌گذاری مجاز و ویژگی‌های داینامیک هر زیردسته
+                        ساختار دسته‌بندی‌ها و اقامتگاه‌های روزانه، الگوهای قیمت‌گذاری و فیلدهای داینامیک
                     </p>
                 </div>
 
@@ -245,28 +246,28 @@ export default function AdminCategoriesPage() {
                         className="flex items-center gap-2 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 px-4 py-2.5 rounded-xl font-bold text-xs transition-all shadow-sm"
                     >
                         <Coins className="w-4 h-4 text-amber-600" />
-                        مدیریت الگوهای قیمت‌گذاری
+                        مدل‌های قیمت‌گذاری اقامتگاه
                     </button>
                     <button
                         onClick={handleOpenCreateCategory}
-                        className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-bold text-xs transition-all shadow-lg shadow-blue-200"
+                        className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl font-bold text-xs transition-all shadow-lg shadow-emerald-200"
                     >
                         <Plus className="w-4 h-4" />
-                        دسته‌بندی جدید
+                        دسته‌بندی اقامتگاه جدید
                     </button>
                 </div>
             </div>
 
-            {/* Filters */}
+            {/* Search */}
             <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-6 flex flex-wrap items-center gap-4">
                 <div className="relative flex-1 min-w-[300px]">
                     <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
                     <input
                         type="text"
-                        placeholder="جستجو در دسته‌بندی‌ها و زیردسته‌ها (نام یا کلید)..."
+                        placeholder="جستجو در دسته‌بندی‌ها و اقامتگاه‌ها..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pr-10 pl-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-xs"
+                        className="w-full pr-10 pl-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-xs"
                     />
                 </div>
             </div>
@@ -275,20 +276,19 @@ export default function AdminCategoriesPage() {
             <div className="space-y-4">
                 {isLoading ? (
                     <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-dashed border-slate-200">
-                        <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4" />
-                        <p className="text-slate-500 font-medium text-sm">در حال بارگذاری دسته‌بندی‌ها...</p>
+                        <div className="w-10 h-10 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mb-4" />
+                        <p className="text-slate-500 font-medium text-sm">در حال بارگذاری دسته‌بندی‌های اقامتگاه...</p>
                     </div>
-                ) : filteredCategories?.length === 0 ? (
+                ) : filteredCategories.length === 0 ? (
                     <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-slate-200">
-                        <p className="text-slate-400 text-sm">هیچ دسته‌بندی یافت نشد</p>
+                        <p className="text-slate-400 text-sm">هیچ دسته‌بندی اقامتگاهی یافت نشد</p>
                     </div>
                 ) : (
-                    filteredCategories?.map((category) => (
+                    filteredCategories.map((category) => (
                         <div
                             key={category.id}
-                            className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden transition-all hover:border-blue-200"
+                            className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden transition-all hover:border-emerald-200"
                         >
-                            {/* Category Row */}
                             <div className="p-4 flex items-center justify-between">
                                 <div className="flex items-center gap-4">
                                     <button
@@ -309,8 +309,8 @@ export default function AdminCategoriesPage() {
                                             className="w-10 h-10 rounded-xl object-cover bg-slate-100 p-1 border border-slate-200"
                                         />
                                     ) : (
-                                        <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
-                                            <Layers className="w-5 h-5" />
+                                        <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+                                            <Calendar className="w-5 h-5" />
                                         </div>
                                     )}
 
@@ -327,7 +327,7 @@ export default function AdminCategoriesPage() {
                                             )}
                                         </div>
                                         <div className="flex items-center gap-3 mt-1 text-xs text-slate-400">
-                                            <span>{category.subcategories?.length || 0} زیردسته</span>
+                                            <span>{category.subcategories?.length || 0} زیردسته اقامتگاهی</span>
                                             {category.description && (
                                                 <span className="border-r pr-3 border-slate-200 line-clamp-1">
                                                     {category.description}
@@ -340,14 +340,14 @@ export default function AdminCategoriesPage() {
                                 <div className="flex items-center gap-2">
                                     <button
                                         onClick={() => handleOpenCreateSubcategory(category)}
-                                        className="flex items-center gap-1.5 text-xs font-semibold bg-blue-50 text-blue-600 h-8 px-3 rounded-lg hover:bg-blue-100 transition-colors"
+                                        className="flex items-center gap-1.5 text-xs font-semibold bg-emerald-50 text-emerald-600 h-8 px-3 rounded-lg hover:bg-emerald-100 transition-colors"
                                     >
                                         <PlusCircle className="w-4 h-4" />
                                         افزودن زیردسته
                                     </button>
                                     <button
                                         onClick={() => handleOpenEditCategory(category)}
-                                        className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                                        className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all"
                                         title="ویرایش دسته‌بندی"
                                     >
                                         <Edit2 className="w-4 h-4" />
@@ -366,19 +366,19 @@ export default function AdminCategoriesPage() {
                                 </div>
                             </div>
 
-                            {/* Subcategories (Expanded) */}
+                            {/* Subcategories */}
                             {expandedCategories.includes(category.id) && (
                                 <div className="bg-slate-50/50 border-t border-slate-100 p-4">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                                         {category.subcategories?.length === 0 ? (
                                             <p className="text-xs text-slate-400 italic py-3 col-span-full text-center">
-                                                زیردسته‌ای برای این دسته‌بندی تعریف نشده است
+                                                زیردسته‌ای برای این اقامتگاه تعریف نشده است
                                             </p>
                                         ) : (
                                             category.subcategories.map((sub) => (
                                                 <div
                                                     key={sub.id || sub.key}
-                                                    className="bg-white p-3.5 rounded-xl border border-slate-200 hover:border-blue-200 transition-all shadow-sm flex items-center justify-between"
+                                                    className="bg-white p-3.5 rounded-xl border border-slate-200 hover:border-emerald-200 transition-all shadow-sm flex items-center justify-between"
                                                 >
                                                     <div className="flex items-center gap-2.5">
                                                         {sub.icon ? (
@@ -388,7 +388,7 @@ export default function AdminCategoriesPage() {
                                                                 className="w-8 h-8 rounded-lg object-cover bg-slate-50 border border-slate-200"
                                                             />
                                                         ) : (
-                                                            <div className="w-8 h-8 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center font-bold text-xs">
+                                                            <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-xs">
                                                                 <Tag className="w-4 h-4" />
                                                             </div>
                                                         )}
@@ -410,15 +410,15 @@ export default function AdminCategoriesPage() {
                                                     <div className="flex items-center gap-1">
                                                         <button
                                                             onClick={() => handleOpenSubcategoryConfig(category, sub)}
-                                                            className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
-                                                            title="مدیریت مدل‌های قیمت‌گذاری و ویژگی‌های داینامیک"
+                                                            className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all"
+                                                            title="تنظیم مدل‌های قیمت و ویژگی‌ها"
                                                         >
                                                             <Sliders className="w-4 h-4" />
                                                         </button>
                                                         <button
                                                             onClick={() => handleOpenEditSubcategory(category, sub)}
-                                                            className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
-                                                            title="ویرایش اطلاعات زیردسته"
+                                                            className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all"
+                                                            title="ویرایش اطلاعات"
                                                         >
                                                             <Edit2 className="w-4 h-4" />
                                                         </button>
@@ -429,7 +429,7 @@ export default function AdminCategoriesPage() {
                                                                 }
                                                             }}
                                                             className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
-                                                            title="آرشیو زیردسته"
+                                                            title="آرشیو"
                                                         >
                                                             <Archive className="w-4 h-4" />
                                                         </button>
@@ -450,7 +450,7 @@ export default function AdminCategoriesPage() {
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
                     <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl relative overflow-hidden">
                         <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-                            <h3 className="text-lg font-bold text-slate-900">ایجاد دسته‌بندی جدید</h3>
+                            <h3 className="text-lg font-bold text-slate-900">ایجاد دسته‌بندی اقامتگاه جدید</h3>
                             <button onClick={() => setIsCreateCategoryModalOpen(false)} className="text-slate-400 hover:text-slate-600 transition-colors">
                                 <X className="w-5 h-5" />
                             </button>
@@ -460,20 +460,20 @@ export default function AdminCategoriesPage() {
                                 <label className="block font-bold text-slate-700 mb-1">نام نمایشی (فارسی)</label>
                                 <input
                                     type="text"
-                                    placeholder="مثلاً: املاک مسکونی"
+                                    placeholder="مثلاً: ویلا و سوئیت"
                                     value={categoryForm.displayName}
                                     onChange={(e) => setCategoryForm({ ...categoryForm, displayName: e.target.value })}
-                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
                                 />
                             </div>
                             <div>
                                 <label className="block font-bold text-slate-700 mb-1">کلید فنی (Key - انگلیسی و بدون فاصله)</label>
                                 <input
                                     type="text"
-                                    placeholder="مثلاً: residential"
+                                    placeholder="مثلاً: villa_suite"
                                     value={categoryForm.key}
                                     onChange={(e) => setCategoryForm({ ...categoryForm, key: e.target.value })}
-                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 font-mono focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all uppercase"
+                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 font-mono focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all uppercase"
                                 />
                             </div>
                             <div>
@@ -483,7 +483,7 @@ export default function AdminCategoriesPage() {
                                     placeholder="توضیح اختیاری..."
                                     value={categoryForm.description}
                                     onChange={(e) => setCategoryForm({ ...categoryForm, description: e.target.value })}
-                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200"
                                 />
                             </div>
                             <div className="grid grid-cols-2 gap-3">
@@ -518,7 +518,7 @@ export default function AdminCategoriesPage() {
                                     displayOrder: categoryForm.displayOrder
                                 })}
                                 disabled={!categoryForm.key || !categoryForm.displayName || createCategoryMutation.isPending}
-                                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl transition-all disabled:opacity-50 text-xs"
+                                className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl transition-all disabled:opacity-50 text-xs"
                             >
                                 {createCategoryMutation.isPending ? "در حال ایجاد..." : "ایجاد دسته‌بندی"}
                             </button>
@@ -538,7 +538,7 @@ export default function AdminCategoriesPage() {
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
                     <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl relative overflow-hidden">
                         <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-                            <h3 className="text-lg font-bold text-slate-900">ویرایش دسته‌بندی</h3>
+                            <h3 className="text-lg font-bold text-slate-900">ویرایش دسته‌بندی اقامتگاه</h3>
                             <button onClick={() => setIsEditCategoryModalOpen(false)} className="text-slate-400 hover:text-slate-600 transition-colors">
                                 <X className="w-5 h-5" />
                             </button>
@@ -559,7 +559,7 @@ export default function AdminCategoriesPage() {
                                     type="text"
                                     value={categoryForm.displayName}
                                     onChange={(e) => setCategoryForm({ ...categoryForm, displayName: e.target.value })}
-                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
                                 />
                             </div>
                             <div>
@@ -568,7 +568,7 @@ export default function AdminCategoriesPage() {
                                     type="text"
                                     value={categoryForm.description}
                                     onChange={(e) => setCategoryForm({ ...categoryForm, description: e.target.value })}
-                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200"
                                 />
                             </div>
                             <div className="grid grid-cols-2 gap-3">
@@ -597,7 +597,7 @@ export default function AdminCategoriesPage() {
                                         type="checkbox"
                                         checked={categoryForm.isActive}
                                         onChange={(e) => setCategoryForm({ ...categoryForm, isActive: e.target.checked })}
-                                        className="w-4 h-4 text-blue-600 rounded border-slate-300"
+                                        className="w-4 h-4 text-emerald-600 rounded border-slate-300"
                                     />
                                     <span className="font-bold text-slate-700">دسته‌بندی فعال است</span>
                                 </label>
@@ -616,7 +616,7 @@ export default function AdminCategoriesPage() {
                                     }
                                 })}
                                 disabled={!categoryForm.displayName || updateCategoryMutation.isPending}
-                                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl transition-all disabled:opacity-50 text-xs"
+                                className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl transition-all disabled:opacity-50 text-xs"
                             >
                                 {updateCategoryMutation.isPending ? "در حال بروزرسانی..." : "بروزرسانی تغییرات"}
                             </button>
@@ -648,20 +648,20 @@ export default function AdminCategoriesPage() {
                                 <label className="block font-bold text-slate-700 mb-1">نام نمایشی (فارسی)</label>
                                 <input
                                     type="text"
-                                    placeholder="مثلاً: آپارتمان"
+                                    placeholder="مثلاً: کلبه جنگلی"
                                     value={subcategoryForm.displayName}
                                     onChange={(e) => setSubcategoryForm({ ...subcategoryForm, displayName: e.target.value })}
-                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
                                 />
                             </div>
                             <div>
                                 <label className="block font-bold text-slate-700 mb-1">کلید فنی زیردسته (Key - انگلیسی)</label>
                                 <input
                                     type="text"
-                                    placeholder="مثلاً: apartment"
+                                    placeholder="مثلاً: forest_cottage"
                                     value={subcategoryForm.key}
                                     onChange={(e) => setSubcategoryForm({ ...subcategoryForm, key: e.target.value })}
-                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 font-mono uppercase focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 font-mono uppercase focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
                                 />
                             </div>
                             <div>
@@ -709,7 +709,7 @@ export default function AdminCategoriesPage() {
                                     }
                                 })}
                                 disabled={!subcategoryForm.key || !subcategoryForm.displayName || createSubcategoryMutation.isPending}
-                                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl transition-all disabled:opacity-50 text-xs"
+                                className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl transition-all disabled:opacity-50 text-xs"
                             >
                                 {createSubcategoryMutation.isPending ? "در حال ایجاد..." : "اضافه کردن زیردسته"}
                             </button>
@@ -729,7 +729,7 @@ export default function AdminCategoriesPage() {
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
                     <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl relative overflow-hidden">
                         <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-                            <h3 className="text-lg font-bold text-slate-900">ویرایش زیردسته</h3>
+                            <h3 className="text-lg font-bold text-slate-900">ویرایش زیردسته اقامتگاه</h3>
                             <button onClick={() => setIsEditSubcategoryModalOpen(false)} className="text-slate-400 hover:text-slate-600 transition-colors">
                                 <X className="w-5 h-5" />
                             </button>
@@ -750,7 +750,7 @@ export default function AdminCategoriesPage() {
                                     type="text"
                                     value={subcategoryForm.displayName}
                                     onChange={(e) => setSubcategoryForm({ ...subcategoryForm, displayName: e.target.value })}
-                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
                                 />
                             </div>
                             <div>
@@ -788,7 +788,7 @@ export default function AdminCategoriesPage() {
                                         type="checkbox"
                                         checked={subcategoryForm.isActive}
                                         onChange={(e) => setSubcategoryForm({ ...subcategoryForm, isActive: e.target.checked })}
-                                        className="w-4 h-4 text-blue-600 rounded border-slate-300"
+                                        className="w-4 h-4 text-emerald-600 rounded border-slate-300"
                                     />
                                     <span className="font-bold text-slate-700">زیردسته فعال است</span>
                                 </label>
@@ -807,7 +807,7 @@ export default function AdminCategoriesPage() {
                                     }
                                 })}
                                 disabled={!subcategoryForm.displayName || updateSubcategoryMutation.isPending}
-                                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl transition-all disabled:opacity-50 text-xs"
+                                className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl transition-all disabled:opacity-50 text-xs"
                             >
                                 {updateSubcategoryMutation.isPending ? "در حال بروزرسانی..." : "بروزرسانی تغییرات"}
                             </button>
@@ -833,7 +833,7 @@ export default function AdminCategoriesPage() {
                     subcategoryId={selectedSubcategory.id}
                     subcategoryName={selectedSubcategory.displayName}
                     categoryName={selectedCategory.displayName}
-                    variant="normal"
+                    variant="temporary-rent"
                 />
             )}
 
@@ -842,7 +842,7 @@ export default function AdminCategoriesPage() {
                 <PriceModelsModal
                     isOpen={isPriceModelsModalOpen}
                     onClose={() => setIsPriceModelsModalOpen(false)}
-                    variant="normal"
+                    variant="temporary-rent"
                 />
             )}
         </div>

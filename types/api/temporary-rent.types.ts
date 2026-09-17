@@ -75,3 +75,85 @@ export interface TemporaryRentContactInfo {
     phoneNumber: string;
     ownerName?: string;
 }
+
+export interface TemporaryRentSubcategory {
+    id: string;
+    key: string;
+    displayName: string;
+    description?: string;
+    icon?: string;
+    banner?: string;
+    displayOrder?: number;
+    isActive?: boolean;
+    isArchived?: boolean;
+}
+
+export interface TemporaryRentCategory {
+    id: string;
+    key: string;
+    displayName: string;
+    description?: string;
+    icon?: string;
+    banner?: string;
+    displayOrder?: number;
+    isActive?: boolean;
+    isArchived?: boolean;
+    subcategories: TemporaryRentSubcategory[];
+}
+
+export interface TemporaryRentPriceModel {
+    id: string;
+    key: string;
+    name: string;
+    displayName: string;
+    description?: string;
+    currency?: string;
+    displayOrder?: number;
+    isActive: boolean;
+    isDefault?: boolean;
+    pricingFields: Array<{
+        key: string;
+        label: string;
+        fieldType: 'NUMBER' | 'BOOLEAN' | 'STRING';
+        required: boolean;
+        placeholder?: string;
+        unit?: string;
+        helpText?: string;
+    }>;
+}
+
+export interface TemporaryRentAttributeDefinition {
+    id: string;
+    subcategoryId: string;
+    key: string;
+    label: string;
+    description?: string;
+    type: 'STRING' | 'NUMBER' | 'BOOLEAN' | 'SELECT';
+    required: boolean;
+    displayOrder: number;
+    isActive: boolean;
+    options?: Array<{ key: string; label: string; displayOrder?: number }> | null;
+    constraints?: {
+        min?: number;
+        max?: number;
+        minLength?: number;
+        maxLength?: number;
+    };
+}
+
+export interface TemporaryRentSubcategoryConfigResponse {
+    subcategory: {
+        id: string;
+        key: string;
+        displayName: string;
+        description?: string;
+        icon?: string;
+        banner?: string;
+        displayOrder?: number;
+        categoryId: string;
+        categoryKey: string;
+        categoryDisplayName: string;
+    };
+    allowedPriceModels: TemporaryRentPriceModel[];
+    attributeDefinitions: TemporaryRentAttributeDefinition[];
+}

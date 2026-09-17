@@ -8,6 +8,7 @@ import {
     EditAdRequest,
     ListAdsQuery,
     PaginatedAdsResponse,
+    SubcategoryConfigResponse,
 } from "@/types/api/ads.types";
 
 export const adsService = {
@@ -31,6 +32,13 @@ export const adsService = {
     async listCategories(): Promise<CategoryListItem[]> {
         const response = await apiClient.get<{ categories: CategoryListItem[] }>("/ads/categories");
         return response.data.categories;
+    },
+
+    async getSubcategoryConfig(subcategoryId: string, categoryKey?: string): Promise<SubcategoryConfigResponse> {
+        const response = await apiClient.get<SubcategoryConfigResponse>(`/ads/subcategories/${subcategoryId}/config`, {
+            params: categoryKey ? { categoryKey } : undefined,
+        });
+        return response.data;
     },
 
     async createDraft(data: CreateAdDraftRequest): Promise<AdMutationResponse> {
