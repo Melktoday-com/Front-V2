@@ -1,4 +1,5 @@
 import { AdStatus, PromotionStatus, ReportStatus, ReportTargetType, UserStatus } from "./enums";
+import { PricingFieldDefinition } from "./ads.types";
 
 export interface ModerationHistory {
     id: string;
@@ -216,16 +217,7 @@ export interface CreateAdminPriceModelRequest {
     currency?: string;
     displayOrder?: number;
     isActive?: boolean;
-    pricingFields: Array<{
-        key: string;
-        label: string;
-        fieldType: 'NUMBER' | 'BOOLEAN' | 'STRING';
-        required: boolean;
-        placeholder?: string;
-        unit?: string;
-        helpText?: string;
-        defaultValue?: number | string | boolean;
-    }>;
+    pricingFields: PricingFieldDefinition[];
 }
 
 export interface UpdateAdminPriceModelRequest {
@@ -235,16 +227,7 @@ export interface UpdateAdminPriceModelRequest {
     currency?: string;
     displayOrder?: number;
     isActive?: boolean;
-    pricingFields?: Array<{
-        key: string;
-        label: string;
-        fieldType: 'NUMBER' | 'BOOLEAN' | 'STRING';
-        required: boolean;
-        placeholder?: string;
-        unit?: string;
-        helpText?: string;
-        defaultValue?: number | string | boolean;
-    }>;
+    pricingFields?: PricingFieldDefinition[];
 }
 
 export interface CreateAdminAttributeRequest {

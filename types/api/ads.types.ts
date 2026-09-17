@@ -92,12 +92,17 @@ export interface AdContactInfo {
 export interface PricingFieldDefinition {
     key: string;
     label: string;
-    fieldType: 'NUMBER' | 'BOOLEAN' | 'STRING';
+    fieldType: 'NUMBER' | 'BOOLEAN' | 'STRING' | 'TEXT' | 'SELECT';
     required: boolean;
     placeholder?: string;
     unit?: string;
     helpText?: string;
     defaultValue?: number | string | boolean;
+    constraints?: {
+        min?: number;
+        max?: number;
+        options?: Array<{ key: string; label: string }>;
+    };
 }
 
 export interface PriceModel {

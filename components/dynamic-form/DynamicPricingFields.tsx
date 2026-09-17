@@ -98,10 +98,14 @@ export const DynamicPricingFields: React.FC<DynamicPricingFieldsProps> = ({
                         );
                     }
 
+                    const isText = field.fieldType === "STRING" || field.fieldType === "TEXT";
+                    const isSelect = field.fieldType === "SELECT";
+                    const options = field.constraints?.options || [];
+
                     return (
                         <div
                             key={field.key}
-                            className={field.fieldType === "STRING" ? "col-span-1 md:col-span-2" : "col-span-1"}
+                            className={isText ? "col-span-1 md:col-span-2" : "col-span-1"}
                         >
                             <div className="flex items-center justify-between mb-1.5">
                                 <label className="text-xs font-bold text-brand">
@@ -116,19 +120,36 @@ export const DynamicPricingFields: React.FC<DynamicPricingFieldsProps> = ({
                             </div>
 
                             <div className="relative">
-                                <input
-                                    type={field.fieldType === "NUMBER" ? "number" : "text"}
-                                    min={field.fieldType === "NUMBER" ? 0 : undefined}
-                                    value={typeof rawVal === "boolean" ? "" : (rawVal ?? "")}
-                                    placeholder={field.placeholder || (field.fieldType === "NUMBER" ? "مبلغ به عدد..." : "")}
-                                    onChange={(e) => {
-                                        const v = e.target.value;
-                                        onChange(field.key, field.fieldType === "NUMBER" ? (v === "" ? "" : Number(v)) : v);
-                                    }}
-                                    className={`w-full p-3 text-sm bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-primary outline-hidden transition-all ${
-                                        errors[field.key] ? "border-red-500 bg-red-50/20" : "border-gray-200"
-                                    }`}
-                                />
+                                {isSelect ? (
+                                    <select
+                                        value={typeof rawVal === "boolean" ? "" : (rawVal ?? "")}
+                                        onChange={(e) => onChange(field.key, e.target.value)}
+                                        className={`w-full p-3 text-sm bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-primary outline-hidden transition-all ${
+                                            errors[field.key] ? "border-red-500 bg-red-50/20" : "border-gray-200"
+                                        }`}
+                                    >
+                                        <option value="">انتخاب کنید...</option>
+                                        {options.map((opt) => (
+                                            <option key={opt.key} value={opt.key}>
+                                                {opt.label}
+                                            </option>
+                                        ))}
+                                    </select>
+                                ) : (
+                                    <input
+                                        type={field.fieldType === "NUMBER" ? "number" : "text"}
+                                        min={field.fieldType === "NUMBER" ? 0 : undefined}
+                                        value={typeof rawVal === "boolean" ? "" : (rawVal ?? "")}
+                                        placeholder={field.placeholder || (field.fieldType === "NUMBER" ? "مبلغ به عدد..." : "")}
+                                        onChange={(e) => {
+                                            const v = e.target.value;
+                                            onChange(field.key, field.fieldType === "NUMBER" ? (v === "" ? "" : Number(v)) : v);
+                                        }}
+                                        className={`w-full p-3 text-sm bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-primary outline-hidden transition-all ${
+                                            errors[field.key] ? "border-red-500 bg-red-50/20" : "border-gray-200"
+                                        }`}
+                                    />
+                                )}
                             </div>
 
                             {/* Live Persian price word preview */}

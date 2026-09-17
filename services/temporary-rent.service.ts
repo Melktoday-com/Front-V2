@@ -61,8 +61,15 @@ export const temporaryRentService = {
     },
 
     async listCategories(): Promise<TemporaryRentCategory[]> {
-        const response = await apiClient.get<{ categories: TemporaryRentCategory[] }>("/temporary-rent/categories");
-        return response.data.categories;
+        const response = await apiClient.get<{ categories: TemporaryRentCategory[] } | TemporaryRentCategory[]>("/temporary-rent/categories");
+        const payload = response.data;
+        if (Array.isArray(payload)) {
+            return payload;
+        }
+        if (payload && Array.isArray((payload as { categories: TemporaryRentCategory[] }).categories)) {
+            return (payload as { categories: TemporaryRentCategory[] }).categories;
+        }
+        return [];
     },
 
     async getSubcategoryConfig(subcategoryId: string, categoryKey?: string): Promise<TemporaryRentSubcategoryConfigResponse> {
