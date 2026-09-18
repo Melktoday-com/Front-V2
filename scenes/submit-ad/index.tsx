@@ -1,19 +1,18 @@
 "use client";
 
-import { useCity } from "@/components/providers/CityProvider";
 import { CitySelector } from "@/components/CitySelector";
-import { Select } from "@/components/ui/Select";
-import { DynamicPricingFields } from "@/components/dynamic-form/DynamicPricingFields";
 import { DynamicAttributeRenderer } from "@/components/dynamic-form/DynamicAttributeRenderer";
+import { DynamicPricingFields } from "@/components/dynamic-form/DynamicPricingFields";
+import { useCity } from "@/components/providers/CityProvider";
+import { Select } from "@/components/ui/Select";
 import { useAd, useCategories } from "@/hooks/useAds";
 import { useGeoHierarchy } from "@/hooks/useGeoHierarchy";
 import { useUploadMedia } from "@/hooks/useMedia";
 import { cn, formatPrice, toPersianDigits } from "@/lib/utils";
 import { adsService } from "@/services/ads.service";
-import { CategoryPath, CreateAdDraftRequest, PriceModel, SubcategoryConfigResponse } from "@/types/api/ads.types";
+import { CreateAdDraftRequest, PriceModel, SubcategoryConfigResponse } from "@/types/api/ads.types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
-    Calendar,
     Check,
     ChevronLeft,
     ChevronRight,
@@ -27,7 +26,7 @@ import {
     Tag,
     Upload,
     Wallet,
-    X,
+    X
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
@@ -368,14 +367,6 @@ export default function SubmitAdScene() {
                             اطلاعات ملک خود را تکمیل نمایید تا در سریع‌ترین زمان متقاضیان واقعی با شما تماس بگیرند.
                         </p>
                     </div>
-                    {/* Separate Temporary Rental link */}
-                    <Link
-                        href="/profile/temporary-rent/create"
-                        className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 rounded-xl text-xs font-bold transition-all"
-                    >
-                        <Calendar className="w-4 h-4 text-amber-600" />
-                        <span>ثبت اقامتگاه / اجاره روزانه</span>
-                    </Link>
                 </header>
 
                 {/* Mobile Compact Step Indicator */}
@@ -409,8 +400,8 @@ export default function SubmitAdScene() {
                                                 isCurrent
                                                     ? "bg-primary text-white ring-4 ring-primary/20"
                                                     : isCompleted
-                                                    ? "bg-brand text-white"
-                                                    : "bg-gray-200 text-gray-500"
+                                                        ? "bg-brand text-white"
+                                                        : "bg-gray-200 text-gray-500"
                                             )}
                                         >
                                             <s.icon className="h-5 w-5" />
@@ -446,20 +437,6 @@ export default function SubmitAdScene() {
                             <div className="space-y-6">
                                 <div className="flex items-center justify-between">
                                     <h2 className="text-lg font-black text-brand">انتخاب شهر و دسته‌بندی ملک</h2>
-                                </div>
-
-                                {/* Temporary rental notice */}
-                                <div className="p-3.5 bg-amber-50/70 border border-amber-200/80 rounded-2xl flex items-center justify-between gap-3">
-                                    <div className="flex items-center gap-2.5 text-xs text-amber-900 font-medium">
-                                        <Sparkles className="w-4 h-4 text-amber-600 shrink-0" />
-                                        <span>برای اجاره روزانه ویلا، سوئیت یا بوم‌گردی به بخش اقامتگاه بروید:</span>
-                                    </div>
-                                    <Link
-                                        href="/profile/temporary-rent/create"
-                                        className="text-xs font-black text-amber-700 hover:text-amber-900 underline shrink-0"
-                                    >
-                                        ثبت اقامتگاه روزانه
-                                    </Link>
                                 </div>
 
                                 <div className="grid grid-cols-1 gap-5">
