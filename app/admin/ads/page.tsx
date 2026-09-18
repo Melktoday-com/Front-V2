@@ -1,189 +1,124 @@
 "use client";
 
-import { useAds } from "@/hooks/useAds";
-import { adminService } from "@/services/admin.service";
-import { AdSummary } from "@/types/api/ads.types";
-import { AdStatus } from "@/types/api/enums";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { AlertCircle, Building2, Check, Clock, Eye, X } from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
+import AdminAdsItemsTab from "@/components/admin/ads/AdminAdsItemsTab";
+import AdminCategoriesTab from "@/components/admin/ads/AdminCategoriesTab";
+import {
+    FileText,
+    FolderTree,
+    Plus,
+    RefreshCw,
+} from "lucide-react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import React, { Suspense } from "react";
 
-export default function AdminAdsPage() {
-    const queryClient = useQueryClient();
-    const [statusFilter, setStatusFilter] = useState<AdStatus>(AdStatus.PENDING_APPROVAL);
+type ActiveTab = "items" | "categories";
 
-    const { data, isLoading } = useAds({
-        status: statusFilter,
-        limit: 20
-    });
+function AdminAdsContent() {
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    const currentTab: ActiveTab =
+        searchParams.get("tab") === "categories" ? "categories" : "items";
 
-    const approveMutation = useMutation({
-        mutationFn: ({ id, note }: { id: string, note?: string }) =>
-            adminService.approveListing(id, { note }),
-        onSuccess: () => {
-            toast.success("آگهی با موفقیت تایید شد");
-            queryClient.invalidateQueries({ queryKey: ["ads"] });
-        },
-        onError: (error: unknown) => {
-            const message = error instanceof Error ? error.message : "خطا در تایید آگهی";
-            toast.error(message);
-        }
-    });
-
-    const rejectMutation = useMutation({
-        mutationFn: ({ id, reason, note }: { id: string, reason: string, note?: string }) =>
-            adminService.rejectListing(id, { reason, note }),
-        onSuccess: () => {
-            toast.success("آگهی رد شد");
-            queryClient.invalidateQueries({ queryKey: ["ads"] });
-        },
-        onError: (error: unknown) => {
-            const message = error instanceof Error ? error.message : "خطا در عملیات";
-            toast.error(message);
-        }
-    });
-
-    const handleApprove = (id: string) => {
-        if (confirm("آیا از تایید این آگهی اطمینان دارید؟")) {
-            approveMutation.mutate({ id });
-        }
-    };
-
-    const handleReject = (id: string) => {
-        const reason = prompt("علت رد آگهی را وارد کنید:");
-        if (reason) {
-            rejectMutation.mutate({ id, reason });
-        }
+    const handleTabChange = (tab: ActiveTab) => {
+        const params = new URLSearchParams(searchParams.toString());
+        params.set("tab", tab);
+        router.push(`/admin/ads?${params.toString()}`);
     };
 
     return (
-        <div className="space-y-6">
-            <div className="flex justify-between items-center">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-800">مدیریت آگهی‌ها</h1>
-                    <p className="text-gray-500">مشاهده و بررسی آگهی‌های ثبت شده در سیستم</p>
+        <div className="space-y-6" dir="rtl">
+            {/* Page Header */}
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs">
+                <div className="space-y-1">
+                    <div className="flex items-center gap-2.5">
+                        <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                            <FileText className="w-5 h-5" />
+                        </div>
+                        <div>
+                            <h1 className="text-xl font-black text-slate-900">
+                                مدیریت آگهی‌ها و دسته‌بندی‌ها
+                            </h1>
+                            <p className="text-xs font-medium text-slate-500">
+                                بررسی، تایید و رد آگهی‌های ملک، ساختار دسته‌بندی‌ها و تنظیم مدل‌های قیمتی
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
-                <div className="flex gap-2 bg-white p-1 rounded-lg border border-gray-200">
-                    <button
-                        onClick={() => setStatusFilter(AdStatus.PENDING_APPROVAL)}
-                        className={`px-4 py-2 text-sm rounded-md transition-all ${statusFilter === AdStatus.PENDING_APPROVAL ? "bg-blue-600 text-white shadow-sm" : "text-gray-600 hover:bg-gray-50"}`}
+                <div className="flex flex-wrap items-center gap-3">
+                    <Link
+                        href="/ads/submit"
+                        target="_blank"
+                        className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-black shadow-sm transition-colors"
                     >
-                        در انتظار تایید
-                    </button>
-                    <button
-                        onClick={() => setStatusFilter(AdStatus.PUBLISHED)}
-                        className={`px-4 py-2 text-sm rounded-md transition-all ${statusFilter === AdStatus.PUBLISHED ? "bg-blue-600 text-white shadow-sm" : "text-gray-600 hover:bg-gray-50"}`}
+                        <Plus className="w-4 h-4" />
+                        <span>ثبت آگهی جدید</span>
+                    </Link>
+
+                    <Link
+                        href="/ads"
+                        target="_blank"
+                        className="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors"
                     >
-                        منتشر شده
-                    </button>
-                    <button
-                        onClick={() => setStatusFilter(AdStatus.ARCHIVED)}
-                        className={`px-4 py-2 text-sm rounded-md transition-all ${statusFilter === AdStatus.ARCHIVED ? "bg-blue-600 text-white shadow-sm" : "text-gray-600 hover:bg-gray-50"}`}
-                    >
-                        آرشیو شده
-                    </button>
-                    <button
-                        onClick={() => setStatusFilter(AdStatus.REJECTED)}
-                        className={`px-4 py-2 text-sm rounded-md transition-all ${statusFilter === AdStatus.REJECTED ? "bg-blue-600 text-white shadow-sm" : "text-gray-600 hover:bg-gray-50"}`}
-                    >
-                        رد شده
-                    </button>
+                        <FileText className="w-4 h-4" />
+                        <span>مشاهده صفحه آگهی‌ها در سایت</span>
+                    </Link>
                 </div>
             </div>
 
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                <table className="w-full text-right">
-                    <thead className="bg-gray-50 text-gray-600 text-sm">
-                        <tr>
-                            <th className="px-6 py-4 font-semibold">عنوان آگهی</th>
-                            <th className="px-6 py-4 font-semibold">دسته‌بندی</th>
-                            <th className="px-6 py-4 font-semibold">تاریخ ثبت</th>
-                            <th className="px-6 py-4 font-semibold">وضعیت</th>
-                            <th className="px-6 py-4 font-semibold text-center">عملیات</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                        {isLoading ? (
-                            <tr><td colSpan={5} className="p-10 text-center text-gray-400">در حال بارگزاری...</td></tr>
-                        ) : !data || data.items.length === 0 ? (
-                            <tr><td colSpan={5} className="p-10 text-center text-gray-400">هیچ آگهی یافت نشد</td></tr>
-                        ) : data.items.map((ad: AdSummary) => (
-                            <tr key={ad.adId} className="hover:bg-gray-50 transition-colors">
-                                <td className="px-6 py-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden shrink-0 flex items-center justify-center">
-                                            {ad.mediaIds && ad.mediaIds.length > 0 ? (
-                                                <img
-                                                    src={`${process.env.NEXT_PUBLIC_API_URL}/media/${ad.mediaIds[0]}`}
-                                                    alt={ad.title}
-                                                    className="w-full h-full object-cover"
-                                                />
-                                            ) : (
-                                                <Building2 className="w-6 h-6 text-gray-300" />
-                                            )}
-                                        </div>
-                                        <div>
-                                            <p className="font-medium text-gray-800">{ad.title}</p>
-                                            <p className="text-xs text-gray-500">شناسه: {ad.adId.slice(0, 8)}...</p>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4 text-sm">
-                                    <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded">
-                                        {ad.categoryPath.categoryKey} / {ad.categoryPath.subcategoryKey}
-                                    </span>
-                                </td>
-                                <td className="px-6 py-4 text-sm text-gray-500">
-                                    {new Date(ad.createdAt).toLocaleDateString("fa-IR")}
-                                </td>
-                                <td className="px-6 py-4">
-                                    <div className="flex items-center gap-1.5">
-                                        {ad.status === AdStatus.PENDING_APPROVAL && <Clock size={14} className="text-amber-500" />}
-                                        {ad.status === AdStatus.PUBLISHED && <Check size={14} className="text-green-500" />}
-                                        {ad.status === AdStatus.REJECTED && <AlertCircle size={14} className="text-red-500" />}
-                                        <span className="text-xs font-medium">
-                                            {ad.status === AdStatus.PENDING_APPROVAL ? "در انتظار" : ad.status === AdStatus.PUBLISHED ? "منتشر شده" :
-                                                ad.status === AdStatus.REJECTED ? "رد شده" : ad.status}
-                                        </span>
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4">
-                                    <div className="flex justify-center gap-2">
-                                        <button
-                                            onClick={() => window.open(`/ads/${ad.adId}`, '_blank')}
-                                            title="مشاهده جزئیات آگهی"
-                                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                                        >
-                                            <Eye size={18} />
-                                        </button>
-                                        {ad.status === AdStatus.PENDING_APPROVAL && (
-                                            <>
-                                                <button
-                                                    onClick={() => handleApprove(ad.adId)}
-                                                    title="تایید"
-                                                    className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                                                >
-                                                    <Check size={18} />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleReject(ad.adId)}
-                                                    title="رد"
-                                                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                                >
-                                                    <X size={18} />
-                                                </button>
-                                            </>
-                                        )}
-                                    </div>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+            {/* Tabs Navigation */}
+            <div className="flex items-center gap-2 p-1.5 bg-slate-100/80 rounded-2xl border border-slate-200/80 w-fit max-w-full overflow-x-auto">
+                <button
+                    type="button"
+                    onClick={() => handleTabChange("items")}
+                    className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black transition-all ${
+                        currentTab === "items"
+                            ? "bg-white text-slate-900 shadow-sm ring-1 ring-slate-200"
+                            : "text-slate-600 hover:text-slate-900 hover:bg-white/50"
+                    }`}
+                >
+                    <FileText className="w-4 h-4 text-blue-600" />
+                    <span>آگهی‌های ثبت شده (آیتم‌ها)</span>
+                </button>
+
+                <button
+                    type="button"
+                    onClick={() => handleTabChange("categories")}
+                    className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black transition-all ${
+                        currentTab === "categories"
+                            ? "bg-white text-slate-900 shadow-sm ring-1 ring-slate-200"
+                            : "text-slate-600 hover:text-slate-900 hover:bg-white/50"
+                    }`}
+                >
+                    <FolderTree className="w-4 h-4 text-indigo-600" />
+                    <span>دسته‌بندی‌ها و ساختار ویژگی‌ها</span>
+                </button>
+            </div>
+
+            {/* Active Tab Content */}
+            <div className="transition-all duration-150">
+                {currentTab === "items" ? (
+                    <AdminAdsItemsTab />
+                ) : (
+                    <AdminCategoriesTab />
+                )}
             </div>
         </div>
     );
 }
 
+export default function AdminAdsPage() {
+    return (
+        <Suspense
+            fallback={
+                <div className="py-20 flex flex-col items-center justify-center gap-3 text-slate-400">
+                    <RefreshCw className="w-6 h-6 animate-spin text-blue-600" />
+                    <span className="text-xs font-bold">در حال بارگذاری بخش مدیریت آگهی‌ها...</span>
+                </div>
+            }
+        >
+            <AdminAdsContent />
+        </Suspense>
+    );
+}

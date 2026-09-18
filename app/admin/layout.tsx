@@ -25,13 +25,12 @@ import React from "react";
 
 const sidebarItems = [
     { name: "داشبورد", href: "/admin", icon: LayoutDashboard },
-    { name: "آگهی‌ها", href: "/admin/ads", icon: FileText },
+    { name: "آگهی‌ها و دسته‌بندی‌ها", href: "/admin/ads", icon: FileText },
     { name: "کاربران", href: "/admin/users", icon: Users },
     { name: "کیف پول", href: "/admin/wallet", icon: Wallet },
     { name: "ارتقا آگهی", href: "/admin/promotions", icon: Zap },
     { name: "کمپین‌ها", href: "/admin/campaigns", icon: BarChart3 },
     { name: "مناطق جغرافیایی", href: "/admin/geo", icon: Map },
-    { name: "دسته‌بندی‌ها", href: "/admin/categories", icon: Layers },
     { name: "اجاره موقت و روزانه", href: "/admin/temporary-rent", icon: Calendar },
     { name: "گزارش‌ها", href: "/admin/reports", icon: AlertTriangle },
     { name: "اطلاع‌رسانی", href: "/admin/notifications", icon: Bell },
