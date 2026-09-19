@@ -207,6 +207,7 @@ export interface UpdateAdminSubcategoryRequest {
     banner?: string;
     displayOrder?: number;
     isActive?: boolean;
+    allowedPriceModelIds?: string[];
 }
 
 export interface CreateAdminPriceModelRequest {

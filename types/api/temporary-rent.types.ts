@@ -88,6 +88,8 @@ export interface TemporaryRentSubcategory {
     displayOrder?: number;
     isActive?: boolean;
     isArchived?: boolean;
+    priceModels?: TemporaryRentPriceModel[];
+    allowedPriceModelIds?: string[];
 }
 
 export interface TemporaryRentCategory {

@@ -159,6 +159,8 @@ export interface Subcategory {
     displayOrder?: number;
     isActive?: boolean;
     isArchived?: boolean;
+    priceModels?: PriceModel[];
+    allowedPriceModelIds?: string[];
 }
 
 export interface CategoryListItem {

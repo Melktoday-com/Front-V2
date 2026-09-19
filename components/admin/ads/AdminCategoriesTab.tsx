@@ -13,17 +13,22 @@ import {
 } from "@/types/api/admin.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+    AlertCircle,
     Archive,
+    CheckSquare,
     ChevronDown,
     ChevronRight,
     Coins,
     Edit2,
     ImageIcon,
+    Info,
     Layers,
+    Loader2,
     Plus,
     PlusCircle,
     Search,
     Sliders,
+    Square,
     Tag,
     Trash2,
     X
@@ -70,10 +75,20 @@ export default function AdminCategoriesTab() {
         isActive: true,
     });
 
+    // Selected price models for create/edit subcategory modal
+    const [selectedPriceModelIds, setSelectedPriceModelIds] = useState<string[]>([]);
+    const [isLoadingSubPriceModels, setIsLoadingSubPriceModels] = useState(false);
+
     // Fetch Categories
     const { data: categories, isLoading } = useQuery({
         queryKey: ["admin", "categories"],
         queryFn: () => adsService.listCategories(),
+    });
+
+    // Fetch Available Price Models
+    const { data: availablePriceModels } = useQuery({
+        queryKey: ["admin", "ads", "price-models"],
+        queryFn: () => adminService.listPriceModels(),
     });
 
     const toggleExpand = (categoryId: string) => {
@@ -125,11 +140,21 @@ export default function AdminCategoriesTab() {
 
     // Subcategory Mutations
     const createSubcategoryMutation = useMutation({
-        mutationFn: (data: { categoryId: string; payload: CreateAdminSubcategoryRequest }) =>
-            adminService.addSubcategory(data.categoryId, data.payload),
+        mutationFn: async (data: { categoryId: string; payload: CreateAdminSubcategoryRequest }) => {
+            const sub = await adminService.addSubcategory(data.categoryId, data.payload);
+            if (data.payload.allowedPriceModelIds && data.payload.allowedPriceModelIds.length > 0) {
+                try {
+                    await adminService.assignPriceModelsToSubcategory(sub.id, data.payload.allowedPriceModelIds);
+                } catch (e) {
+                    console.error("Failed to assign price models:", e);
+                }
+            }
+            return sub;
+        },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["admin", "categories"] });
-            toast.success("زیردسته جدید با موفقیت اضافه شد");
+            queryClient.invalidateQueries({ queryKey: ["categories"] });
+            toast.success("زیردسته جدید با موفقیت اضافه و مدل‌های قیمت‌گذاری تخصیص داده شد");
             setIsCreateSubcategoryModalOpen(false);
         },
         onError: (err: unknown) => {
@@ -140,10 +165,20 @@ export default function AdminCategoriesTab() {
     });
 
     const updateSubcategoryMutation = useMutation({
-        mutationFn: (data: { subcategoryId: string; payload: UpdateAdminSubcategoryRequest }) =>
-            adminService.updateSubcategory(data.subcategoryId, data.payload),
+        mutationFn: async (data: { subcategoryId: string; payload: UpdateAdminSubcategoryRequest }) => {
+            const sub = await adminService.updateSubcategory(data.subcategoryId, data.payload);
+            if (data.payload.allowedPriceModelIds !== undefined) {
+                try {
+                    await adminService.assignPriceModelsToSubcategory(data.subcategoryId, data.payload.allowedPriceModelIds);
+                } catch (e) {
+                    console.error("Failed to update assigned price models:", e);
+                }
+            }
+            return sub;
+        },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["admin", "categories"] });
+            queryClient.invalidateQueries({ queryKey: ["categories"] });
             toast.success("زیردسته با موفقیت بروزرسانی شد");
             setIsEditSubcategoryModalOpen(false);
             setSelectedSubcategory(null);
@@ -204,10 +239,11 @@ export default function AdminCategoriesTab() {
             displayOrder: (cat.subcategories?.length || 0) + 1,
             isActive: true,
         });
+        setSelectedPriceModelIds([]);
         setIsCreateSubcategoryModalOpen(true);
     };
 
-    const handleOpenEditSubcategory = (cat: CategoryListItem, sub: Subcategory) => {
+    const handleOpenEditSubcategory = async (cat: CategoryListItem, sub: Subcategory) => {
         setSelectedCategory(cat);
         setSelectedSubcategory(sub);
         setSubcategoryForm({
@@ -220,6 +256,19 @@ export default function AdminCategoriesTab() {
             isActive: sub.isActive ?? true,
         });
         setIsEditSubcategoryModalOpen(true);
+        if (sub.priceModels && sub.priceModels.length > 0) {
+            setSelectedPriceModelIds(sub.priceModels.map(p => p.id));
+        } else {
+            setIsLoadingSubPriceModels(true);
+            try {
+                const pms = await adminService.getSubcategoryPriceModels(sub.id);
+                setSelectedPriceModelIds(pms.map(p => p.id));
+            } catch {
+                setSelectedPriceModelIds([]);
+            } finally {
+                setIsLoadingSubPriceModels(false);
+            }
+        }
     };
 
     const handleOpenSubcategoryConfig = (cat: CategoryListItem, sub: Subcategory) => {
@@ -402,7 +451,7 @@ export default function AdminCategoriesTab() {
                                                                 <Tag className="w-4 h-4" />
                                                             </div>
                                                         )}
-                                                        <div>
+                                                        <div className="flex-1 min-w-0">
                                                             <div className="flex items-center gap-1.5">
                                                                 <span className="text-xs font-bold text-slate-800">{sub.displayName}</span>
                                                                 <span className="text-[9px] font-mono text-slate-400 uppercase tracking-tighter">
@@ -414,6 +463,23 @@ export default function AdminCategoriesTab() {
                                                                     {sub.description}
                                                                 </p>
                                                             )}
+                                                            <div className="flex flex-wrap items-center gap-1 mt-1.5">
+                                                                {sub.priceModels && sub.priceModels.length > 0 ? (
+                                                                    sub.priceModels.map(pm => (
+                                                                        <span
+                                                                            key={pm.id}
+                                                                            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-medium"
+                                                                        >
+                                                                            <Coins className="w-3 h-3 text-amber-500" />
+                                                                            {pm.displayName}
+                                                                        </span>
+                                                                    ))
+                                                                ) : (
+                                                                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-rose-50 text-rose-600 border border-rose-200 text-[10px] font-medium">
+                                                                        ⚠️ بدون مدل قیمت‌گذاری
+                                                                    </span>
+                                                                )}
+                                                            </div>
                                                         </div>
                                                     </div>
 
@@ -698,12 +764,62 @@ export default function AdminCategoriesTab() {
                                 <div>
                                     <label className="block font-bold text-slate-700 mb-1">ترتیب نمایش</label>
                                     <input
-                                        type="number"
+                                         type="number"
                                         value={subcategoryForm.displayOrder}
                                         onChange={(e) => setSubcategoryForm({ ...subcategoryForm, displayOrder: Number(e.target.value) })}
                                         className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs"
                                     />
                                 </div>
+                            </div>
+                            <div>
+                                <label className="block font-bold text-slate-700 mb-1 flex items-center justify-between">
+                                    <span className="flex items-center gap-1.5">
+                                        <Coins className="w-3.5 h-3.5 text-amber-600" />
+                                        مدل‌های قیمت‌گذاری مجاز برای این زیردسته
+                                    </span>
+                                    <span className="text-[10px] text-slate-400 font-normal">
+                                        ({selectedPriceModelIds.length} مدل انتخاب شده)
+                                    </span>
+                                </label>
+                                <div className="border border-slate-200 rounded-xl p-2 bg-slate-50/50 max-h-36 overflow-y-auto space-y-1.5">
+                                    {!availablePriceModels || availablePriceModels.length === 0 ? (
+                                        <div className="text-center py-2 text-slate-400 text-[11px]">هیچ مدل قیمت‌گذاری یافت نشد.</div>
+                                    ) : (
+                                        availablePriceModels.map((pm) => {
+                                            const isSelected = selectedPriceModelIds.includes(pm.id);
+                                            return (
+                                                <label
+                                                    key={pm.id}
+                                                    className={`flex items-center justify-between p-2 rounded-lg cursor-pointer border text-xs transition-all ${
+                                                        isSelected
+                                                            ? "bg-amber-50/80 border-amber-300 text-amber-900 font-bold"
+                                                            : "bg-white border-slate-200 hover:border-slate-300 text-slate-600"
+                                                    }`}
+                                                >
+                                                    <div className="flex items-center gap-2">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={isSelected}
+                                                            onChange={(e) => {
+                                                                if (e.target.checked) {
+                                                                    setSelectedPriceModelIds([...selectedPriceModelIds, pm.id]);
+                                                                } else {
+                                                                    setSelectedPriceModelIds(selectedPriceModelIds.filter(id => id !== pm.id));
+                                                                }
+                                                            }}
+                                                            className="w-3.5 h-3.5 text-amber-600 rounded border-slate-300 focus:ring-amber-500"
+                                                        />
+                                                        <span>{pm.displayName}</span>
+                                                    </div>
+                                                    <span className="text-[10px] font-mono text-slate-400 uppercase">{pm.key}</span>
+                                                </label>
+                                            );
+                                        })
+                                    )}
+                                </div>
+                                <p className="text-[10px] text-slate-400 mt-1">
+                                    هنگام ثبت آگهی در این زیردسته، کاربر فقط می‌تواند از مدل‌های قیمت انتخاب‌شده استفاده کند.
+                                </p>
                             </div>
                         </div>
                         <div className="p-4 bg-slate-50 flex items-center gap-3">
@@ -715,7 +831,8 @@ export default function AdminCategoriesTab() {
                                         displayName: subcategoryForm.displayName.trim(),
                                         description: subcategoryForm.description || undefined,
                                         icon: subcategoryForm.icon || undefined,
-                                        displayOrder: subcategoryForm.displayOrder
+                                        displayOrder: subcategoryForm.displayOrder,
+                                        allowedPriceModelIds: selectedPriceModelIds,
                                     }
                                 })}
                                 disabled={!subcategoryForm.key || !subcategoryForm.displayName || createSubcategoryMutation.isPending}
@@ -803,6 +920,58 @@ export default function AdminCategoriesTab() {
                                     <span className="font-bold text-slate-700">زیردسته فعال است</span>
                                 </label>
                             </div>
+                            <div>
+                                <label className="block font-bold text-slate-700 mb-1 flex items-center justify-between">
+                                    <span className="flex items-center gap-1.5">
+                                        <Coins className="w-3.5 h-3.5 text-amber-600" />
+                                        مدل‌های قیمت‌گذاری مجاز برای این زیردسته
+                                    </span>
+                                    <span className="text-[10px] text-slate-400 font-normal">
+                                        ({selectedPriceModelIds.length} مدل انتخاب شده)
+                                    </span>
+                                </label>
+                                <div className="border border-slate-200 rounded-xl p-2 bg-slate-50/50 max-h-36 overflow-y-auto space-y-1.5">
+                                    {isLoadingSubPriceModels ? (
+                                        <div className="text-center py-3 text-slate-400 text-xs">در حال بارگذاری مدل‌ها...</div>
+                                    ) : !availablePriceModels || availablePriceModels.length === 0 ? (
+                                        <div className="text-center py-2 text-slate-400 text-[11px]">هیچ مدل قیمت‌گذاری یافت نشد.</div>
+                                    ) : (
+                                        availablePriceModels.map((pm) => {
+                                            const isSelected = selectedPriceModelIds.includes(pm.id);
+                                            return (
+                                                <label
+                                                    key={pm.id}
+                                                    className={`flex items-center justify-between p-2 rounded-lg cursor-pointer border text-xs transition-all ${
+                                                        isSelected
+                                                            ? "bg-amber-50/80 border-amber-300 text-amber-900 font-bold"
+                                                            : "bg-white border-slate-200 hover:border-slate-300 text-slate-600"
+                                                    }`}
+                                                >
+                                                    <div className="flex items-center gap-2">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={isSelected}
+                                                            onChange={(e) => {
+                                                                if (e.target.checked) {
+                                                                    setSelectedPriceModelIds([...selectedPriceModelIds, pm.id]);
+                                                                } else {
+                                                                    setSelectedPriceModelIds(selectedPriceModelIds.filter(id => id !== pm.id));
+                                                                }
+                                                            }}
+                                                            className="w-3.5 h-3.5 text-amber-600 rounded border-slate-300 focus:ring-amber-500"
+                                                        />
+                                                        <span>{pm.displayName}</span>
+                                                    </div>
+                                                    <span className="text-[10px] font-mono text-slate-400 uppercase">{pm.key}</span>
+                                                </label>
+                                            );
+                                        })
+                                    )}
+                                </div>
+                                <p className="text-[10px] text-slate-400 mt-1">
+                                    هنگام ثبت آگهی در این زیردسته، کاربر فقط می‌تواند از مدل‌های قیمت انتخاب‌شده استفاده کند.
+                                </p>
+                            </div>
                         </div>
                         <div className="p-4 bg-slate-50 flex items-center gap-3">
                             <button
@@ -814,6 +983,7 @@ export default function AdminCategoriesTab() {
                                         icon: subcategoryForm.icon || undefined,
                                         displayOrder: subcategoryForm.displayOrder,
                                         isActive: subcategoryForm.isActive,
+                                        allowedPriceModelIds: selectedPriceModelIds,
                                     }
                                 })}
                                 disabled={!subcategoryForm.displayName || updateSubcategoryMutation.isPending}

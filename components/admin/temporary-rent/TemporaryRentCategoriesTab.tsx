@@ -68,10 +68,20 @@ export default function TemporaryRentCategoriesTab() {
         isActive: true,
     });
 
+    // Selected price models for create/edit subcategory modal
+    const [selectedPriceModelIds, setSelectedPriceModelIds] = useState<string[]>([]);
+    const [isLoadingSubPriceModels, setIsLoadingSubPriceModels] = useState(false);
+
     // Fetch Categories
     const { data: categoriesResponse, isLoading } = useQuery({
         queryKey: ["admin", "temporary-rent", "categories"],
         queryFn: () => adminService.listTemporaryRentCategories({ includeArchived: false }),
+    });
+
+    // Fetch Available Price Models
+    const { data: availablePriceModels } = useQuery({
+        queryKey: ["admin", "temporary-rent", "price-models"],
+        queryFn: () => adminService.listTemporaryRentPriceModels(),
     });
 
     const categories: TemporaryRentCategory[] = Array.isArray(categoriesResponse)
@@ -127,11 +137,20 @@ export default function TemporaryRentCategoriesTab() {
 
     // Subcategory Mutations
     const createSubcategoryMutation = useMutation({
-        mutationFn: (data: { categoryId: string; payload: CreateAdminSubcategoryRequest }) =>
-            adminService.addTemporaryRentSubcategory(data.categoryId, data.payload),
+        mutationFn: async (data: { categoryId: string; payload: CreateAdminSubcategoryRequest }) => {
+            const sub = await adminService.addTemporaryRentSubcategory(data.categoryId, data.payload);
+            if (data.payload.allowedPriceModelIds && data.payload.allowedPriceModelIds.length > 0) {
+                try {
+                    await adminService.assignTemporaryRentPriceModels(sub.id, data.payload.allowedPriceModelIds);
+                } catch (e) {
+                    console.error("Failed to assign temporary rent price models:", e);
+                }
+            }
+            return sub;
+        },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["admin", "temporary-rent", "categories"] });
-            toast.success("زیردسته اقامتگاه با موفقیت ایجاد شد");
+            toast.success("زیردسته اقامتگاه با موفقیت ایجاد و مدل‌های قیمت‌گذاری تخصیص داده شد");
             setIsCreateSubcategoryModalOpen(false);
         },
         onError: (err: unknown) => {
@@ -142,8 +161,17 @@ export default function TemporaryRentCategoriesTab() {
     });
 
     const updateSubcategoryMutation = useMutation({
-        mutationFn: (data: { subcategoryId: string; payload: UpdateAdminSubcategoryRequest }) =>
-            adminService.updateTemporaryRentSubcategory(data.subcategoryId, data.payload),
+        mutationFn: async (data: { subcategoryId: string; payload: UpdateAdminSubcategoryRequest }) => {
+            const sub = await adminService.updateTemporaryRentSubcategory(data.subcategoryId, data.payload);
+            if (data.payload.allowedPriceModelIds !== undefined) {
+                try {
+                    await adminService.assignTemporaryRentPriceModels(data.subcategoryId, data.payload.allowedPriceModelIds);
+                } catch (e) {
+                    console.error("Failed to update assigned temporary rent price models:", e);
+                }
+            }
+            return sub;
+        },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["admin", "temporary-rent", "categories"] });
             toast.success("زیردسته با موفقیت بروزرسانی شد");
@@ -206,10 +234,11 @@ export default function TemporaryRentCategoriesTab() {
             displayOrder: (cat.subcategories?.length || 0) + 1,
             isActive: true,
         });
+        setSelectedPriceModelIds([]);
         setIsCreateSubcategoryModalOpen(true);
     };
 
-    const handleOpenEditSubcategory = (cat: TemporaryRentCategory, sub: TemporaryRentSubcategory) => {
+    const handleOpenEditSubcategory = async (cat: TemporaryRentCategory, sub: TemporaryRentSubcategory) => {
         setSelectedCategory(cat);
         setSelectedSubcategory(sub);
         setSubcategoryForm({
@@ -222,6 +251,19 @@ export default function TemporaryRentCategoriesTab() {
             isActive: sub.isActive ?? true,
         });
         setIsEditSubcategoryModalOpen(true);
+        if (sub.priceModels && sub.priceModels.length > 0) {
+            setSelectedPriceModelIds(sub.priceModels.map(p => p.id));
+        } else {
+            setIsLoadingSubPriceModels(true);
+            try {
+                const pms = await adminService.getTemporaryRentSubcategoryPriceModels(sub.id);
+                setSelectedPriceModelIds(pms.map(p => p.id));
+            } catch {
+                setSelectedPriceModelIds([]);
+            } finally {
+                setIsLoadingSubPriceModels(false);
+            }
+        }
     };
 
     const handleOpenSubcategoryConfig = (cat: TemporaryRentCategory, sub: TemporaryRentSubcategory) => {
@@ -402,7 +444,7 @@ export default function TemporaryRentCategoriesTab() {
                                                                 <Tag className="w-4 h-4" />
                                                             </div>
                                                         )}
-                                                        <div>
+                                                        <div className="flex-1 min-w-0">
                                                             <div className="flex items-center gap-1.5">
                                                                 <span className="text-xs font-bold text-slate-800">{sub.displayName}</span>
                                                                 <span className="text-[9px] font-mono text-slate-400 uppercase tracking-tighter">
@@ -414,6 +456,23 @@ export default function TemporaryRentCategoriesTab() {
                                                                     {sub.description}
                                                                 </p>
                                                             )}
+                                                            <div className="flex flex-wrap items-center gap-1 mt-1.5">
+                                                                {sub.priceModels && sub.priceModels.length > 0 ? (
+                                                                    sub.priceModels.map(pm => (
+                                                                        <span
+                                                                            key={pm.id}
+                                                                            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-medium"
+                                                                        >
+                                                                            <Coins className="w-3 h-3 text-amber-500" />
+                                                                            {pm.displayName}
+                                                                        </span>
+                                                                    ))
+                                                                ) : (
+                                                                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-rose-50 text-rose-600 border border-rose-200 text-[10px] font-medium">
+                                                                        ⚠️ بدون مدل قیمت‌گذاری
+                                                                    </span>
+                                                                )}
+                                                            </div>
                                                         </div>
                                                     </div>
 
@@ -705,6 +764,56 @@ export default function TemporaryRentCategoriesTab() {
                                     />
                                 </div>
                             </div>
+                            <div>
+                                <label className="block font-bold text-slate-700 mb-1 flex items-center justify-between">
+                                    <span className="flex items-center gap-1.5">
+                                        <Coins className="w-3.5 h-3.5 text-amber-600" />
+                                        مدل‌های قیمت‌گذاری مجاز برای این اقامتگاه
+                                    </span>
+                                    <span className="text-[10px] text-slate-400 font-normal">
+                                        ({selectedPriceModelIds.length} مدل انتخاب شده)
+                                    </span>
+                                </label>
+                                <div className="border border-slate-200 rounded-xl p-2 bg-slate-50/50 max-h-36 overflow-y-auto space-y-1.5">
+                                    {!availablePriceModels || availablePriceModels.length === 0 ? (
+                                        <div className="text-center py-2 text-slate-400 text-[11px]">هیچ مدل قیمت‌گذاری یافت نشد.</div>
+                                    ) : (
+                                        availablePriceModels.map((pm) => {
+                                            const isSelected = selectedPriceModelIds.includes(pm.id);
+                                            return (
+                                                <label
+                                                    key={pm.id}
+                                                    className={`flex items-center justify-between p-2 rounded-lg cursor-pointer border text-xs transition-all ${
+                                                        isSelected
+                                                            ? "bg-amber-50/80 border-amber-300 text-amber-900 font-bold"
+                                                            : "bg-white border-slate-200 hover:border-slate-300 text-slate-600"
+                                                    }`}
+                                                >
+                                                    <div className="flex items-center gap-2">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={isSelected}
+                                                            onChange={(e) => {
+                                                                if (e.target.checked) {
+                                                                    setSelectedPriceModelIds([...selectedPriceModelIds, pm.id]);
+                                                                } else {
+                                                                    setSelectedPriceModelIds(selectedPriceModelIds.filter(id => id !== pm.id));
+                                                                }
+                                                            }}
+                                                            className="w-3.5 h-3.5 text-emerald-600 rounded border-slate-300 focus:ring-emerald-500"
+                                                        />
+                                                        <span>{pm.displayName}</span>
+                                                    </div>
+                                                    <span className="text-[10px] font-mono text-slate-400 uppercase">{pm.key}</span>
+                                                </label>
+                                            );
+                                        })
+                                    )}
+                                </div>
+                                <p className="text-[10px] text-slate-400 mt-1">
+                                    هنگام ثبت اقامتگاه در این زیردسته، کاربر فقط می‌تواند از مدل‌های قیمت انتخاب‌شده استفاده کند.
+                                </p>
+                            </div>
                         </div>
                         <div className="p-4 bg-slate-50 flex items-center gap-3">
                             <button
@@ -715,7 +824,8 @@ export default function TemporaryRentCategoriesTab() {
                                         displayName: subcategoryForm.displayName.trim(),
                                         description: subcategoryForm.description || undefined,
                                         icon: subcategoryForm.icon || undefined,
-                                        displayOrder: subcategoryForm.displayOrder
+                                        displayOrder: subcategoryForm.displayOrder,
+                                        allowedPriceModelIds: selectedPriceModelIds,
                                     }
                                 })}
                                 disabled={!subcategoryForm.key || !subcategoryForm.displayName || createSubcategoryMutation.isPending}
@@ -803,6 +913,58 @@ export default function TemporaryRentCategoriesTab() {
                                     <span className="font-bold text-slate-700">زیردسته فعال است</span>
                                 </label>
                             </div>
+                            <div>
+                                <label className="block font-bold text-slate-700 mb-1 flex items-center justify-between">
+                                    <span className="flex items-center gap-1.5">
+                                        <Coins className="w-3.5 h-3.5 text-amber-600" />
+                                        مدل‌های قیمت‌گذاری مجاز برای این اقامتگاه
+                                    </span>
+                                    <span className="text-[10px] text-slate-400 font-normal">
+                                        ({selectedPriceModelIds.length} مدل انتخاب شده)
+                                    </span>
+                                </label>
+                                <div className="border border-slate-200 rounded-xl p-2 bg-slate-50/50 max-h-36 overflow-y-auto space-y-1.5">
+                                    {isLoadingSubPriceModels ? (
+                                        <div className="text-center py-3 text-slate-400 text-xs">در حال بارگذاری مدل‌ها...</div>
+                                    ) : !availablePriceModels || availablePriceModels.length === 0 ? (
+                                        <div className="text-center py-2 text-slate-400 text-[11px]">هیچ مدل قیمت‌گذاری یافت نشد.</div>
+                                    ) : (
+                                        availablePriceModels.map((pm) => {
+                                            const isSelected = selectedPriceModelIds.includes(pm.id);
+                                            return (
+                                                <label
+                                                    key={pm.id}
+                                                    className={`flex items-center justify-between p-2 rounded-lg cursor-pointer border text-xs transition-all ${
+                                                        isSelected
+                                                            ? "bg-amber-50/80 border-amber-300 text-amber-900 font-bold"
+                                                            : "bg-white border-slate-200 hover:border-slate-300 text-slate-600"
+                                                    }`}
+                                                >
+                                                    <div className="flex items-center gap-2">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={isSelected}
+                                                            onChange={(e) => {
+                                                                if (e.target.checked) {
+                                                                    setSelectedPriceModelIds([...selectedPriceModelIds, pm.id]);
+                                                                } else {
+                                                                    setSelectedPriceModelIds(selectedPriceModelIds.filter(id => id !== pm.id));
+                                                                }
+                                                            }}
+                                                            className="w-3.5 h-3.5 text-emerald-600 rounded border-slate-300 focus:ring-emerald-500"
+                                                        />
+                                                        <span>{pm.displayName}</span>
+                                                    </div>
+                                                    <span className="text-[10px] font-mono text-slate-400 uppercase">{pm.key}</span>
+                                                </label>
+                                            );
+                                        })
+                                    )}
+                                </div>
+                                <p className="text-[10px] text-slate-400 mt-1">
+                                    هنگام ثبت اقامتگاه در این زیردسته، کاربر فقط می‌تواند از مدل‌های قیمت انتخاب‌شده استفاده کند.
+                                </p>
+                            </div>
                         </div>
                         <div className="p-4 bg-slate-50 flex items-center gap-3">
                             <button
@@ -814,6 +976,7 @@ export default function TemporaryRentCategoriesTab() {
                                         icon: subcategoryForm.icon || undefined,
                                         displayOrder: subcategoryForm.displayOrder,
                                         isActive: subcategoryForm.isActive,
+                                        allowedPriceModelIds: selectedPriceModelIds,
                                     }
                                 })}
                                 disabled={!subcategoryForm.displayName || updateSubcategoryMutation.isPending}
