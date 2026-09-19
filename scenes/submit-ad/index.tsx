@@ -8,7 +8,7 @@ import { Select } from "@/components/ui/Select";
 import { useAd, useCategories } from "@/hooks/useAds";
 import { useGeoHierarchy } from "@/hooks/useGeoHierarchy";
 import { useUploadMedia } from "@/hooks/useMedia";
-import { cn, formatPrice, toPersianDigits } from "@/lib/utils";
+import { cn, formatPrice, toPersianDigits, getMediaUrl } from "@/lib/utils";
 import { adsService } from "@/services/ads.service";
 import { CreateAdDraftRequest, PriceModel, SubcategoryConfigResponse } from "@/types/api/ads.types";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -501,7 +501,16 @@ export default function SubmitAdScene() {
                                                                 : "border-gray-200 hover:border-primary/40 text-text-light bg-white"
                                                         )}
                                                     >
-                                                        <span className="block text-sm font-black">{cat.displayName}</span>
+                                                        <div className="flex items-center gap-2.5">
+                                                            {cat.icon && (
+                                                                <img
+                                                                    src={getMediaUrl(cat.icon)}
+                                                                    alt=""
+                                                                    className="w-7 h-7 object-contain rounded-lg p-0.5 bg-gray-50 border border-gray-100 shrink-0"
+                                                                />
+                                                            )}
+                                                            <span className="block text-sm font-black">{cat.displayName}</span>
+                                                        </div>
                                                         {cat.description && (
                                                             <span className="block text-[11px] text-text-light mt-1 line-clamp-1">
                                                                 {cat.description}
@@ -538,6 +547,13 @@ export default function SubmitAdScene() {
                                                             ?.subcategories?.map((sub) => ({
                                                                 value: sub.key,
                                                                 label: sub.displayName,
+                                                                icon: sub.icon ? (
+                                                                    <img
+                                                                        src={getMediaUrl(sub.icon)}
+                                                                        alt=""
+                                                                        className="w-4 h-4 object-contain rounded shrink-0"
+                                                                    />
+                                                                ) : undefined,
                                                             })) || []
                                                     }
                                                     placeholder="انتخاب زیردسته..."

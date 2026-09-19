@@ -22,3 +22,19 @@ export function formatPrice(amount: number | string | undefined | null, suffix =
     if (isNaN(num) || num === 0) return "توافقی";
     return `${new Intl.NumberFormat("fa-IR").format(num)}${suffix}`;
 }
+
+export function getMediaUrl(mediaIdOrUrl?: string | null): string {
+    if (!mediaIdOrUrl) return "";
+    if (
+        mediaIdOrUrl.startsWith("http://") ||
+        mediaIdOrUrl.startsWith("https://") ||
+        mediaIdOrUrl.startsWith("/") ||
+        mediaIdOrUrl.startsWith("data:")
+    ) {
+        return mediaIdOrUrl;
+    }
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "";
+    const cleanBase = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
+    return `${cleanBase}/media/${mediaIdOrUrl}`;
+}
+

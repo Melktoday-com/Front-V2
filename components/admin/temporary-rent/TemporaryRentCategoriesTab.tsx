@@ -28,6 +28,8 @@ import {
 } from "lucide-react";
 import React, { useState } from "react";
 import { toast } from "sonner";
+import MediaIconUpload from "@/components/admin/MediaIconUpload";
+import { getMediaUrl } from "@/lib/utils";
 
 export default function TemporaryRentCategoriesTab() {
     const queryClient = useQueryClient();
@@ -356,9 +358,9 @@ export default function TemporaryRentCategoriesTab() {
 
                                     {category.icon ? (
                                         <img
-                                            src={category.icon}
+                                            src={getMediaUrl(category.icon)}
                                             alt=""
-                                            className="w-10 h-10 rounded-xl object-cover bg-slate-100 p-1 border border-slate-200"
+                                            className="w-10 h-10 rounded-xl object-contain bg-slate-100 p-1 border border-slate-200"
                                         />
                                     ) : (
                                         <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
@@ -435,9 +437,9 @@ export default function TemporaryRentCategoriesTab() {
                                                     <div className="flex items-center gap-2.5">
                                                         {sub.icon ? (
                                                             <img
-                                                                src={sub.icon}
+                                                                src={getMediaUrl(sub.icon)}
                                                                 alt=""
-                                                                className="w-8 h-8 rounded-lg object-cover bg-slate-50 border border-slate-200"
+                                                                className="w-8 h-8 rounded-lg object-contain bg-slate-50 border border-slate-200"
                                                             />
                                                         ) : (
                                                             <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-xs">
@@ -555,26 +557,19 @@ export default function TemporaryRentCategoriesTab() {
                                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200"
                                 />
                             </div>
-                            <div className="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label className="block font-bold text-slate-700 mb-1">آیکون (URL)</label>
-                                    <input
-                                        type="text"
-                                        placeholder="https://..."
-                                        value={categoryForm.icon}
-                                        onChange={(e) => setCategoryForm({ ...categoryForm, icon: e.target.value })}
-                                        className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block font-bold text-slate-700 mb-1">ترتیب نمایش</label>
-                                    <input
-                                        type="number"
-                                        value={categoryForm.displayOrder}
-                                        onChange={(e) => setCategoryForm({ ...categoryForm, displayOrder: Number(e.target.value) })}
-                                        className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs"
-                                    />
-                                </div>
+                            <MediaIconUpload
+                                value={categoryForm.icon}
+                                onChange={(iconId) => setCategoryForm({ ...categoryForm, icon: iconId })}
+                                label="آیکون دسته‌بندی اقامتگاه"
+                            />
+                            <div>
+                                <label className="block font-bold text-slate-700 mb-1">ترتیب نمایش</label>
+                                <input
+                                    type="number"
+                                    value={categoryForm.displayOrder}
+                                    onChange={(e) => setCategoryForm({ ...categoryForm, displayOrder: Number(e.target.value) })}
+                                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs"
+                                />
                             </div>
                         </div>
                         <div className="p-4 bg-slate-50 flex items-center gap-3">
@@ -640,25 +635,19 @@ export default function TemporaryRentCategoriesTab() {
                                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200"
                                 />
                             </div>
-                            <div className="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label className="block font-bold text-slate-700 mb-1">آیکون (URL)</label>
-                                    <input
-                                        type="text"
-                                        value={categoryForm.icon}
-                                        onChange={(e) => setCategoryForm({ ...categoryForm, icon: e.target.value })}
-                                        className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block font-bold text-slate-700 mb-1">ترتیب نمایش</label>
-                                    <input
-                                        type="number"
-                                        value={categoryForm.displayOrder}
-                                        onChange={(e) => setCategoryForm({ ...categoryForm, displayOrder: Number(e.target.value) })}
-                                        className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs"
-                                    />
-                                </div>
+                            <MediaIconUpload
+                                value={categoryForm.icon}
+                                onChange={(iconId) => setCategoryForm({ ...categoryForm, icon: iconId })}
+                                label="آیکون دسته‌بندی اقامتگاه"
+                            />
+                            <div>
+                                <label className="block font-bold text-slate-700 mb-1">ترتیب نمایش</label>
+                                <input
+                                    type="number"
+                                    value={categoryForm.displayOrder}
+                                    onChange={(e) => setCategoryForm({ ...categoryForm, displayOrder: Number(e.target.value) })}
+                                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs"
+                                />
                             </div>
                             <div className="pt-2">
                                 <label className="flex items-center gap-2 cursor-pointer">
@@ -743,26 +732,19 @@ export default function TemporaryRentCategoriesTab() {
                                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200"
                                 />
                             </div>
-                            <div className="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label className="block font-bold text-slate-700 mb-1">آیکون (URL)</label>
-                                    <input
-                                        type="text"
-                                        placeholder="https://..."
-                                        value={subcategoryForm.icon}
-                                        onChange={(e) => setSubcategoryForm({ ...subcategoryForm, icon: e.target.value })}
-                                        className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block font-bold text-slate-700 mb-1">ترتیب نمایش</label>
-                                    <input
-                                        type="number"
-                                        value={subcategoryForm.displayOrder}
-                                        onChange={(e) => setSubcategoryForm({ ...subcategoryForm, displayOrder: Number(e.target.value) })}
-                                        className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs"
-                                    />
-                                </div>
+                            <MediaIconUpload
+                                value={subcategoryForm.icon}
+                                onChange={(iconId) => setSubcategoryForm({ ...subcategoryForm, icon: iconId })}
+                                label="آیکون زیردسته اقامتگاه"
+                            />
+                            <div>
+                                <label className="block font-bold text-slate-700 mb-1">ترتیب نمایش</label>
+                                <input
+                                    type="number"
+                                    value={subcategoryForm.displayOrder}
+                                    onChange={(e) => setSubcategoryForm({ ...subcategoryForm, displayOrder: Number(e.target.value) })}
+                                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs"
+                                />
                             </div>
                             <div>
                                 <label className="block font-bold text-slate-700 mb-1 flex items-center justify-between">
@@ -882,25 +864,19 @@ export default function TemporaryRentCategoriesTab() {
                                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200"
                                 />
                             </div>
-                            <div className="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label className="block font-bold text-slate-700 mb-1">آیکون (URL)</label>
-                                    <input
-                                        type="text"
-                                        value={subcategoryForm.icon}
-                                        onChange={(e) => setSubcategoryForm({ ...subcategoryForm, icon: e.target.value })}
-                                        className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block font-bold text-slate-700 mb-1">ترتیب نمایش</label>
-                                    <input
-                                        type="number"
-                                        value={subcategoryForm.displayOrder}
-                                        onChange={(e) => setSubcategoryForm({ ...subcategoryForm, displayOrder: Number(e.target.value) })}
-                                        className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs"
-                                    />
-                                </div>
+                            <MediaIconUpload
+                                value={subcategoryForm.icon}
+                                onChange={(iconId) => setSubcategoryForm({ ...subcategoryForm, icon: iconId })}
+                                label="آیکون زیردسته اقامتگاه"
+                            />
+                            <div>
+                                <label className="block font-bold text-slate-700 mb-1">ترتیب نمایش</label>
+                                <input
+                                    type="number"
+                                    value={subcategoryForm.displayOrder}
+                                    onChange={(e) => setSubcategoryForm({ ...subcategoryForm, displayOrder: Number(e.target.value) })}
+                                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs"
+                                />
                             </div>
                             <div className="pt-2">
                                 <label className="flex items-center gap-2 cursor-pointer">

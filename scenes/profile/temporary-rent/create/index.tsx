@@ -34,7 +34,7 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { cn, formatPrice, toPersianDigits } from "@/lib/utils";
+import { cn, formatPrice, toPersianDigits, getMediaUrl } from "@/lib/utils";
 
 // Leaflet is client-side only
 const DynamicMapPicker = dynamic(() => import("@/components/ui/MapPicker"), { ssr: false });
@@ -411,7 +411,16 @@ export default function CreateTemporaryRentScene() {
                                                                 : "border-gray-200 hover:border-primary/40 text-text-light bg-white"
                                                         )}
                                                     >
-                                                        <span className="block text-sm font-black">{cat.displayName}</span>
+                                                        <div className="flex items-center gap-2.5">
+                                                            {cat.icon && (
+                                                                <img
+                                                                    src={getMediaUrl(cat.icon)}
+                                                                    alt=""
+                                                                    className="w-7 h-7 object-contain rounded-lg p-0.5 bg-gray-50 border border-gray-100 shrink-0"
+                                                                />
+                                                            )}
+                                                            <span className="block text-sm font-black">{cat.displayName}</span>
+                                                        </div>
                                                         {cat.description && (
                                                             <span className="block text-[11px] text-text-light mt-1 line-clamp-1">
                                                                 {cat.description}
@@ -445,6 +454,13 @@ export default function CreateTemporaryRentScene() {
                                                             ?.subcategories?.map((sub) => ({
                                                                 value: sub.key,
                                                                 label: sub.displayName,
+                                                                icon: sub.icon ? (
+                                                                    <img
+                                                                        src={getMediaUrl(sub.icon)}
+                                                                        alt=""
+                                                                        className="w-4 h-4 object-contain rounded shrink-0"
+                                                                    />
+                                                                ) : undefined,
                                                             })) || []
                                                     }
                                                     placeholder="انتخاب زیردسته..."

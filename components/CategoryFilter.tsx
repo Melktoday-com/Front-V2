@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@/lib/utils";
+import { cn, getMediaUrl } from "@/lib/utils";
 import { CategoryListItem } from "@/types/api/ads.types";
 import Image from "next/image";
 import { Slider } from "./ui/Slider";
@@ -31,6 +31,10 @@ const CategoryFilter = ({
     );
   }
 
+  if (!categories || categories.length === 0) {
+    return null;
+  }
+
   return (
     <Slider className="pb-2">
       {categories.map((category) => {
@@ -52,12 +56,12 @@ const CategoryFilter = ({
             >
               {category.icon ? (
                 <Image
-                  src={category.icon}
+                  src={getMediaUrl(category.icon)}
                   alt={category.displayName}
                   width={28}
                   height={28}
                   className={cn(
-                    "transition-transform group-hover:scale-110",
+                    "transition-transform group-hover:scale-110 object-contain",
                     isSelected ? "brightness-0 invert" : ""
                   )}
                 />
