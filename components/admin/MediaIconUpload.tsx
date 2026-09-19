@@ -39,16 +39,18 @@ export default function MediaIconUpload({
         }
 
         // Validate image type
-        if (!file.type.startsWith('image/')) {
+        const isImage = file.type.startsWith('image/') || /\.(svg|png|jpg|jpeg|webp|gif)$/i.test(file.name);
+        if (!isImage) {
             toast.error('لطفاً یک فایل تصویری (SVG, PNG, JPG, WebP) انتخاب کنید');
             return;
         }
 
         try {
             const result = await uploadMedia(file);
-            if (result && result.mediaId) {
-                onChange(result.mediaId);
-                setCustomUrl(result.mediaId);
+            const uploadedId = result?.mediaId || (result as any)?.id;
+            if (uploadedId) {
+                onChange(uploadedId);
+                setCustomUrl(uploadedId);
                 toast.success('آیکون با موفقیت آپلود شد');
             } else {
                 toast.error('خطا در دریافت شناسه فایل آپلود شده');

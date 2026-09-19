@@ -2,25 +2,47 @@ import { mediaService } from "@/services/media.service";
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 
-export function useUploadMedia() {
+function getMimeTypeFromFile(file: File): string {
+    if (file.type) return file.type;
+    const ext = file.name.split(".").pop()?.toLowerCase();
+    switch (ext) {
+        case "svg":
+            return "image/svg+xml";
+        case "png":
+            return "image/png";
+        case "jpg":
+        case "jpeg":
+            return "image/jpeg";
+        case "webp":
+            return "image/webp";
+        case "gif":
+            return "image/gif";
+        default:
+            return "application/octet-stream";
+    }
+}
+
+export function useUploadMedia(options?: { visibility?: "PUBLIC" | "PRIVATE" }) {
     const [progress, setProgress] = useState(0);
 
     const mutation = useMutation({
         mutationFn: async (file: File) => {
+            const mimeType = getMimeTypeFromFile(file);
+
             // 1. Request upload URL
-            const { mediaId, uploadUrl } = await mediaService.requestUploadUrl({
+            const uploadInfo = await mediaService.requestUploadUrl({
                 mediaType: "IMAGE",
                 fileName: file.name,
-                mimeType: file.type,
+                mimeType,
                 sizeBytes: file.size,
-                visibility: "PUBLIC"
+                visibility: options?.visibility || "PUBLIC",
             });
 
             // 2. Upload to S3
-            await mediaService.uploadToS3(uploadUrl, file);
+            await mediaService.uploadToS3(uploadInfo.uploadUrl, file, uploadInfo.headers);
 
             // 3. Confirm upload
-            return await mediaService.confirmUpload(mediaId);
+            return await mediaService.confirmUpload(uploadInfo.mediaId);
         }
     });
 

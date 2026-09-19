@@ -13,11 +13,12 @@ export const mediaService = {
         return response.data;
     },
 
-    async uploadToS3(url: string, file: File): Promise<void> {
+    async uploadToS3(url: string, file: File, headers?: Record<string, string>): Promise<void> {
         // Use raw axios for S3 upload to avoid interceptors that might be configured on apiClient
+        const contentType = headers?.["Content-Type"] || file.type || "application/octet-stream";
         await axios.put(url, file, {
             headers: {
-                "Content-Type": file.type,
+                "Content-Type": contentType,
             },
         });
     },
