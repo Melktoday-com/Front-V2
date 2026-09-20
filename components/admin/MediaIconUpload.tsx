@@ -47,7 +47,8 @@ export default function MediaIconUpload({
 
         try {
             const result = await uploadMedia(file);
-            const uploadedId = result?.mediaId || (result as any)?.id;
+            // Backend returns both `mediaId` and `id` — prefer `mediaId`
+            const uploadedId = result?.mediaId ?? result?.id;
             if (uploadedId) {
                 onChange(uploadedId);
                 setCustomUrl(uploadedId);
