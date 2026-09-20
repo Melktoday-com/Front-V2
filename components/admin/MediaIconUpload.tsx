@@ -1,17 +1,16 @@
 'use client';
 
-import React, { useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import { useUploadMedia } from '@/hooks/useMedia';
 import { getMediaUrl } from '@/lib/utils';
-import { Loader2, ImagePlus, Trash2, RefreshCw, Link as LinkIcon, Check } from 'lucide-react';
+import { Loader2, ImagePlus, Trash2, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface MediaIconUploadProps {
     value?: string;
-    onChange: (mediaIdOrUrl: string) => void;
+    onChange: (mediaId: string) => void;
     label?: string;
     helperText?: string;
-    placeholder?: string;
     disabled?: boolean;
 }
 
@@ -24,21 +23,18 @@ export default function MediaIconUpload({
 }: MediaIconUploadProps) {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const { mutateAsync: uploadMedia, isPending: isUploading } = useUploadMedia();
-    const [showUrlInput, setShowUrlInput] = useState(false);
-    const [customUrl, setCustomUrl] = useState(value || '');
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
         if (!files || files.length === 0) return;
 
         const file = files[0];
-        // Validate file size (<= 5MB)
+
         if (file.size > 5 * 1024 * 1024) {
             toast.error('حجم فایل نباید بیشتر از ۵ مگابایت باشد');
             return;
         }
 
-        // Validate image type
         const isImage = file.type.startsWith('image/') || /\.(svg|png|jpg|jpeg|webp|gif)$/i.test(file.name);
         if (!isImage) {
             toast.error('لطفاً یک فایل تصویری (SVG, PNG, JPG, WebP) انتخاب کنید');
@@ -47,11 +43,9 @@ export default function MediaIconUpload({
 
         try {
             const result = await uploadMedia(file);
-            // Backend returns both `mediaId` and `id` — prefer `mediaId`
             const uploadedId = result?.mediaId ?? result?.id;
             if (uploadedId) {
                 onChange(uploadedId);
-                setCustomUrl(uploadedId);
                 toast.success('آیکون با موفقیت آپلود شد');
             } else {
                 toast.error('خطا در دریافت شناسه فایل آپلود شده');
@@ -60,7 +54,6 @@ export default function MediaIconUpload({
             console.error('Failed to upload icon:', err);
             toast.error('خطا در آپلود آیکون، لطفاً مجدداً تلاش کنید');
         } finally {
-            // Reset input so re-selecting same file triggers onChange
             if (fileInputRef.current) {
                 fileInputRef.current.value = '';
             }
@@ -70,35 +63,16 @@ export default function MediaIconUpload({
     const handleRemove = (e: React.MouseEvent) => {
         e.stopPropagation();
         onChange('');
-        setCustomUrl('');
         if (fileInputRef.current) {
             fileInputRef.current.value = '';
         }
-    };
-
-    const handleApplyCustomUrl = () => {
-        onChange(customUrl.trim());
-        setShowUrlInput(false);
-        toast.success('آدرس آیکون اعمال شد');
     };
 
     const fullImageUrl = value ? getMediaUrl(value) : '';
 
     return (
         <div className="space-y-1.5 text-xs">
-            <div className="flex items-center justify-between">
-                <label className="block font-bold text-slate-700">
-                    {label}
-                </label>
-                <button
-                    type="button"
-                    onClick={() => setShowUrlInput(!showUrlInput)}
-                    className="text-[10px] text-blue-600 hover:text-blue-700 hover:underline flex items-center gap-1 font-medium"
-                >
-                    <LinkIcon className="w-3 h-3" />
-                    {showUrlInput ? 'انصراف از آدرس دستی' : 'یا درج آدرس مستقیم (URL)'}
-                </button>
-            </div>
+            <label className="block font-bold text-slate-700">{label}</label>
 
             {/* Hidden file input */}
             <input
@@ -110,29 +84,7 @@ export default function MediaIconUpload({
                 disabled={disabled || isUploading}
             />
 
-            {/* Custom URL Input Mode */}
-            {showUrlInput ? (
-                <div className="flex items-center gap-2 p-2 bg-slate-50 border border-slate-200 rounded-xl">
-                    <input
-                        type="text"
-                        placeholder="https://... یا شناسه مدیا"
-                        value={customUrl}
-                        onChange={(e) => setCustomUrl(e.target.value)}
-                        className="flex-1 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-mono text-left focus:outline-none focus:ring-1 focus:ring-blue-500"
-                        dir="ltr"
-                    />
-                    <button
-                        type="button"
-                        onClick={handleApplyCustomUrl}
-                        className="p-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-                        title="اعمال"
-                    >
-                        <Check className="w-4 h-4" />
-                    </button>
-                </div>
-            ) : null}
-
-            {/* Main Upload / Preview Area */}
+            {/* Preview or Upload Area */}
             {value ? (
                 <div className="flex items-center justify-between p-2.5 bg-slate-50/80 border border-slate-200 rounded-2xl hover:border-slate-300 transition-all">
                     <div className="flex items-center gap-3 min-w-0">
@@ -143,7 +95,6 @@ export default function MediaIconUpload({
                                 alt="پیش‌نمایش آیکون"
                                 className="w-full h-full object-contain"
                                 onError={(e) => {
-                                    // Fallback if image fails to load
                                     (e.target as HTMLImageElement).style.display = 'none';
                                 }}
                             />
@@ -195,7 +146,7 @@ export default function MediaIconUpload({
                     {isUploading ? (
                         <div className="flex flex-col items-center gap-2 text-blue-600">
                             <Loader2 className="w-6 h-6 animate-spin" />
-                            <span className="text-xs font-bold">در حال آپلود و ذخیره آیکون در سرویس فایل...</span>
+                            <span className="text-xs font-bold">در حال آپلود...</span>
                         </div>
                     ) : (
                         <div className="flex flex-col items-center gap-1.5 text-center">
