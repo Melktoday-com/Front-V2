@@ -102,7 +102,6 @@ export default function AdminLayout({
 
                     <div className="mt-10 p-4 bg-soft-bg rounded-3xl border border-soft-border">
                         <p className="text-xs text-secondary font-bold mb-2">مدیریت سیستم</p>
-                        <p className="text-[10px] text-secondary/60 leading-relaxed font-medium">دسترسی شما به عنوان مدیر محدود به رعایت قوانین پلتفرم است.</p>
                     </div>
                 </aside>
 
