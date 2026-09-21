@@ -36,6 +36,10 @@ import {
 import React, { useState } from "react";
 import { toast } from "sonner";
 import MediaIconUpload from "@/components/admin/MediaIconUpload";
+import SubcategoryAttributesEditor, {
+    InlineAttributeItem,
+    formatInlineAttributesToPayload,
+} from "@/components/admin/SubcategoryAttributesEditor";
 import { getMediaUrl } from "@/lib/utils";
 
 export default function AdminCategoriesTab() {
@@ -80,6 +84,9 @@ export default function AdminCategoriesTab() {
     // Selected price models for create/edit subcategory modal
     const [selectedPriceModelIds, setSelectedPriceModelIds] = useState<string[]>([]);
     const [isLoadingSubPriceModels, setIsLoadingSubPriceModels] = useState(false);
+
+    // Dynamic attributes for subcategory creation
+    const [subcategoryAttributes, setSubcategoryAttributes] = useState<InlineAttributeItem[]>([]);
 
     // Fetch Categories
     const { data: categories, isLoading } = useQuery({
@@ -242,6 +249,7 @@ export default function AdminCategoriesTab() {
             isActive: true,
         });
         setSelectedPriceModelIds([]);
+        setSubcategoryAttributes([]);
         setIsCreateSubcategoryModalOpen(true);
     };
 
@@ -699,8 +707,8 @@ export default function AdminCategoriesTab() {
             {/* Create Subcategory Modal */}
             {isCreateSubcategoryModalOpen && selectedCategory && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl relative overflow-hidden">
-                        <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+                    <div className="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] shadow-2xl relative overflow-hidden flex flex-col">
+                        <div className="p-6 border-b border-slate-100 flex items-center justify-between shrink-0">
                             <h3 className="text-lg font-bold text-slate-900">
                                 افزودن زیردسته به {selectedCategory.displayName}
                             </h3>
@@ -708,26 +716,28 @@ export default function AdminCategoriesTab() {
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
-                        <div className="p-6 space-y-3.5 text-xs">
-                            <div>
-                                <label className="block font-bold text-slate-700 mb-1">نام نمایشی (فارسی)</label>
-                                <input
-                                    type="text"
-                                    placeholder="مثلاً: آپارتمان"
-                                    value={subcategoryForm.displayName}
-                                    onChange={(e) => setSubcategoryForm({ ...subcategoryForm, displayName: e.target.value })}
-                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-                                />
-                            </div>
-                            <div>
-                                <label className="block font-bold text-slate-700 mb-1">کلید فنی زیردسته (Key - انگلیسی)</label>
-                                <input
-                                    type="text"
-                                    placeholder="مثلاً: apartment"
-                                    value={subcategoryForm.key}
-                                    onChange={(e) => setSubcategoryForm({ ...subcategoryForm, key: e.target.value })}
-                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 font-mono uppercase focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-                                />
+                        <div className="p-6 space-y-4 text-xs overflow-y-auto flex-1">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                                <div>
+                                    <label className="block font-bold text-slate-700 mb-1">نام نمایشی (فارسی)</label>
+                                    <input
+                                        type="text"
+                                        placeholder="مثلاً: آپارتمان"
+                                        value={subcategoryForm.displayName}
+                                        onChange={(e) => setSubcategoryForm({ ...subcategoryForm, displayName: e.target.value })}
+                                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block font-bold text-slate-700 mb-1">کلید فنی زیردسته (Key - انگلیسی)</label>
+                                    <input
+                                        type="text"
+                                        placeholder="مثلاً: apartment"
+                                        value={subcategoryForm.key}
+                                        onChange={(e) => setSubcategoryForm({ ...subcategoryForm, key: e.target.value })}
+                                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 font-mono uppercase focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                    />
+                                </div>
                             </div>
                             <div>
                                 <label className="block font-bold text-slate-700 mb-1">توضیحات</label>
@@ -803,8 +813,17 @@ export default function AdminCategoriesTab() {
                                     هنگام ثبت آگهی در این زیردسته، کاربر فقط می‌تواند از مدل‌های قیمت انتخاب‌شده استفاده کند.
                                 </p>
                             </div>
+
+                            {/* Dynamic Key-Value Attributes */}
+                            <div className="pt-2 border-t border-slate-100">
+                                <SubcategoryAttributesEditor
+                                    attributes={subcategoryAttributes}
+                                    onChange={setSubcategoryAttributes}
+                                    themeColor="blue"
+                                />
+                            </div>
                         </div>
-                        <div className="p-4 bg-slate-50 flex items-center gap-3">
+                        <div className="p-4 bg-slate-50 flex items-center gap-3 shrink-0 border-t border-slate-100">
                             <button
                                 onClick={() => createSubcategoryMutation.mutate({
                                     categoryId: selectedCategory.id,
@@ -815,6 +834,7 @@ export default function AdminCategoriesTab() {
                                         icon: subcategoryForm.icon || undefined,
                                         displayOrder: subcategoryForm.displayOrder,
                                         allowedPriceModelIds: selectedPriceModelIds,
+                                        attributes: formatInlineAttributesToPayload(subcategoryAttributes),
                                     }
                                 })}
                                 disabled={!subcategoryForm.key || !subcategoryForm.displayName || createSubcategoryMutation.isPending}

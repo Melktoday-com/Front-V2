@@ -198,6 +198,7 @@ export interface CreateAdminSubcategoryRequest {
     banner?: string;
     displayOrder?: number;
     allowedPriceModelIds?: string[];
+    attributes?: CreateAdminAttributeRequest[];
 }
 
 export interface UpdateAdminSubcategoryRequest {
@@ -208,6 +209,7 @@ export interface UpdateAdminSubcategoryRequest {
     displayOrder?: number;
     isActive?: boolean;
     allowedPriceModelIds?: string[];
+    attributes?: CreateAdminAttributeRequest[];
 }
 
 export interface CreateAdminPriceModelRequest {
