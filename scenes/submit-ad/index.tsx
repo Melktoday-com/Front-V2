@@ -33,6 +33,9 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { AdminOwnershipSelector, AdminOwnershipData } from "@/components/admin/AdminOwnershipSelector";
+import { adminService } from "@/services/admin.service";
+import { AdminCreateAdRequest } from "@/types/api/admin.types";
 
 // Leaflet is client-side only
 const DynamicMapPicker = dynamic(() => import("@/components/ui/MapPicker"), { ssr: false });
@@ -48,11 +51,22 @@ const STEPS_CONFIG: { id: Step; label: string; icon: LucideIcon }[] = [
     { id: "REVIEW", icon: Send, label: "بازبینی و ثبت" },
 ];
 
-export default function SubmitAdScene() {
+interface SubmitAdSceneProps {
+    adminMode?: boolean;
+}
+
+export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps) {
     const router = useRouter();
     const searchParams = useSearchParams();
     const editAdId = searchParams.get("edit");
     const { selectedCity } = useCity();
+
+    const [adminOwnership, setAdminOwnership] = useState<AdminOwnershipData>({
+        isPlatform: true,
+        phoneNumber: "",
+        firstName: "",
+        lastName: "",
+    });
 
     const [step, setStep] = useState<Step>("CATEGORY");
     const [submitForApproval, setSubmitForApproval] = useState(false);
@@ -173,6 +187,32 @@ export default function SubmitAdScene() {
 
     const submitMutation = useMutation({
         mutationFn: async ({ shouldPublish }: { shouldPublish: boolean }) => {
+            if (adminMode) {
+                const payload: AdminCreateAdRequest = {
+                    isPlatform: adminOwnership.isPlatform,
+                    phoneNumber: adminOwnership.isPlatform ? undefined : adminOwnership.phoneNumber.trim(),
+                    firstName: adminOwnership.isPlatform ? undefined : adminOwnership.firstName.trim(),
+                    lastName: adminOwnership.isPlatform ? undefined : adminOwnership.lastName.trim(),
+                    targetOwnerId: adminOwnership.targetOwnerId,
+                    cityId: formData.cityId!,
+                    categoryPath: {
+                        categoryKey: formData.categoryPath!.categoryKey,
+                        subcategoryKey: formData.categoryPath!.subcategoryKey,
+                        businessModelKey: formData.categoryPath!.businessModelKey,
+                        attributeSchemaVersion: formData.categoryPath!.attributeSchemaVersion || 1,
+                    },
+                    title: formData.title!,
+                    description: formData.description!,
+                    rawPricing: (formData.rawPricing as Record<string, number>) || {},
+                    attributes: formData.attributes || {},
+                    latitude: formData.latitude || 35.6892,
+                    longitude: formData.longitude || 51.389,
+                    mediaIds: formData.mediaIds || [],
+                };
+                const created = await adminService.createAd(payload);
+                return { adId: created?.id || "", shouldPublish: true };
+            }
+
             let adId = editAdId;
 
             if (editAdId) {
@@ -213,6 +253,11 @@ export default function SubmitAdScene() {
             return { adId, shouldPublish };
         },
         onSuccess: ({ shouldPublish }) => {
+            if (adminMode) {
+                toast.success("آگهی با موفقیت توسط ادمین ثبت گردید");
+                router.push("/admin/ads");
+                return;
+            }
             if (shouldPublish) {
                 toast.success("آگهی با موفقیت ثبت و جهت بررسی و انتشار به ادمین ارسال شد");
             } else {
@@ -269,6 +314,18 @@ export default function SubmitAdScene() {
     const handleNext = () => {
         // Validation per step
         if (step === "CATEGORY") {
+            if (adminMode && !adminOwnership.isPlatform) {
+                if (!adminOwnership.phoneNumber?.trim()) {
+                    toast.error("لطفاً شماره تماس مالک آگهی را وارد فرمایید");
+                    return;
+                }
+                if (adminOwnership.isUserFound === false) {
+                    if (!adminOwnership.firstName?.trim() || !adminOwnership.lastName?.trim()) {
+                        toast.error("لطفاً نام و نام خانوادگی مالک جدید را جهت ایجاد حساب کاربری وارد فرمایید");
+                        return;
+                    }
+                }
+            }
             if (!formData.cityId) {
                 toast.error("لطفاً شهر ملک را مشخص فرمایید");
                 return;
@@ -361,10 +418,16 @@ export default function SubmitAdScene() {
                 <header className="mb-6 flex items-start justify-between">
                     <div>
                         <h1 className="text-2xl font-black text-brand">
-                            {editAdId ? "ویرایش آگهی ملک" : "ثبت آگهی ملک"}
+                            {adminMode
+                                ? "ثبت آگهی ملک (پنل مدیریت)"
+                                : editAdId
+                                    ? "ویرایش آگهی ملک"
+                                    : "ثبت آگهی ملک"}
                         </h1>
                         <p className="text-xs text-text-light mt-1">
-                            اطلاعات ملک خود را تکمیل نمایید تا در سریع‌ترین زمان متقاضیان واقعی با شما تماس بگیرند.
+                            {adminMode
+                                ? "ثبت مستقیم آگهی به عنوان آگهی سازمانی یا از طرف کاربر با امکان ثبت‌نام هوشمند مالک"
+                                : "اطلاعات ملک خود را تکمیل نمایید تا در سریع‌ترین زمان متقاضیان واقعی با شما تماس بگیرند."}
                         </p>
                     </div>
                 </header>
@@ -435,6 +498,14 @@ export default function SubmitAdScene() {
                         {/* 1. CATEGORY */}
                         {step === "CATEGORY" && (
                             <div className="space-y-6">
+                                {adminMode && (
+                                    <AdminOwnershipSelector
+                                        value={adminOwnership}
+                                        onChange={setAdminOwnership}
+                                        themeColor="blue"
+                                    />
+                                )}
+
                                 <div className="flex items-center justify-between">
                                     <h2 className="text-lg font-black text-brand">انتخاب شهر و دسته‌بندی ملک</h2>
                                 </div>
@@ -819,6 +890,16 @@ export default function SubmitAdScene() {
                             <div className="space-y-6">
                                 <h2 className="text-lg font-black text-brand">بازبینی و تایید آگهی</h2>
                                 <div className="bg-gray-50/80 rounded-2xl p-6 space-y-4 border border-gray-100 text-sm">
+                                    {adminMode && (
+                                        <div className="flex justify-between pb-2 border-b border-gray-200/50">
+                                            <span className="text-text-light">نوع مالکیت آگهی:</span>
+                                            <span className="font-bold text-brand">
+                                                {adminOwnership.isPlatform
+                                                    ? "سازمانی (متعلق به سامانه)"
+                                                    : `به نام کاربر: ${adminOwnership.foundUserName || `${adminOwnership.firstName} ${adminOwnership.lastName}`} (${adminOwnership.phoneNumber})`}
+                                            </span>
+                                        </div>
+                                    )}
                                     <div className="flex justify-between pb-2 border-b border-gray-200/50">
                                         <span className="text-text-light">عنوان آگهی:</span>
                                         <span className="font-bold text-brand text-left">{formData.title}</span>
@@ -872,7 +953,9 @@ export default function SubmitAdScene() {
                                 <div className="p-4 rounded-2xl bg-amber-50 border border-amber-100 text-xs text-amber-800 leading-relaxed flex items-start gap-2.5">
                                     <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                                     <span>
-                                        می‌توانید آگهی را هم‌اکنون به صورت پیش‌نویس ذخیره کرده و بعداً ویرایش فرمایید، یا مستقیماً جهت بررسی و تایید کارشناسان ثبت نهایی کنید.
+                                        {adminMode
+                                            ? "با کلیک روی ثبت نهایی، آگهی به صورت مستقیم در وضعیت فعال در سامانه ثبت و منتشر می‌شود."
+                                            : "می‌توانید آگهی را هم‌اکنون به صورت پیش‌نویس ذخیره کرده و بعداً ویرایش فرمایید، یا مستقیماً جهت بررسی و تایید کارشناسان ثبت نهایی کنید."}
                                     </span>
                                 </div>
                             </div>
@@ -892,31 +975,43 @@ export default function SubmitAdScene() {
                         </button>
 
                         {step === "REVIEW" ? (
-                            <div className="flex items-center gap-2">
+                            adminMode ? (
                                 <button
                                     type="button"
-                                    onClick={() => {
-                                        setSubmitForApproval(false);
-                                        submitMutation.mutate({ shouldPublish: false });
-                                    }}
+                                    onClick={() => submitMutation.mutate({ shouldPublish: true })}
                                     disabled={submitMutation.isPending}
-                                    className="px-4 py-2.5 rounded-xl border border-gray-200 text-text-main font-bold text-xs hover:bg-gray-50 transition-colors"
-                                >
-                                    ذخیره پیش‌نویس
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        setSubmitForApproval(true);
-                                        submitMutation.mutate({ shouldPublish: true });
-                                    }}
-                                    disabled={submitMutation.isPending}
-                                    className="px-6 py-2.5 rounded-xl bg-primary text-white font-black text-xs hover:bg-primary/90 shadow-md shadow-primary/20 flex items-center gap-1.5 transition-all"
+                                    className="px-6 py-2.5 rounded-xl bg-blue-600 text-white font-black text-xs hover:bg-blue-700 shadow-md shadow-blue-500/20 flex items-center gap-1.5 transition-all"
                                 >
                                     {submitMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-                                    <span>ارسال برای تایید و انتشار</span>
+                                    <span>ثبت نهایی آگهی در پنل مدیریت</span>
                                 </button>
-                            </div>
+                            ) : (
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setSubmitForApproval(false);
+                                            submitMutation.mutate({ shouldPublish: false });
+                                        }}
+                                        disabled={submitMutation.isPending}
+                                        className="px-4 py-2.5 rounded-xl border border-gray-200 text-text-main font-bold text-xs hover:bg-gray-50 transition-colors"
+                                    >
+                                        ذخیره پیش‌نویس
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setSubmitForApproval(true);
+                                            submitMutation.mutate({ shouldPublish: true });
+                                        }}
+                                        disabled={submitMutation.isPending}
+                                        className="px-6 py-2.5 rounded-xl bg-primary text-white font-black text-xs hover:bg-primary/90 shadow-md shadow-primary/20 flex items-center gap-1.5 transition-all"
+                                    >
+                                        {submitMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+                                        <span>ارسال برای تایید و انتشار</span>
+                                    </button>
+                                </div>
+                            )
                         ) : (
                             <button
                                 type="button"

@@ -49,8 +49,7 @@ function AdminTemporaryRentContent() {
 
                 <div className="flex flex-wrap items-center gap-3">
                     <Link
-                        href="/temporary-rent/create"
-                        target="_blank"
+                        href="/admin/temporary-rent/create"
                         className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black shadow-sm transition-colors"
                     >
                         <Plus className="w-4 h-4" />

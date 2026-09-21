@@ -35,6 +35,9 @@ import { useRouter } from "next/navigation";
 import React, { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { cn, formatPrice, toPersianDigits, getMediaUrl } from "@/lib/utils";
+import { AdminOwnershipSelector, AdminOwnershipData } from "@/components/admin/AdminOwnershipSelector";
+import { adminService } from "@/services/admin.service";
+import { AdminCreateTemporaryRentRequest } from "@/types/api/admin.types";
 
 // Leaflet is client-side only
 const DynamicMapPicker = dynamic(() => import("@/components/ui/MapPicker"), { ssr: false });
@@ -49,13 +52,25 @@ const STEPS_CONFIG: { id: Step; label: string; icon: LucideIcon }[] = [
     { id: "REVIEW", icon: Check, label: "بازبینی و ثبت" },
 ];
 
-export default function CreateTemporaryRentScene() {
+interface CreateTemporaryRentSceneProps {
+    adminMode?: boolean;
+}
+
+export default function CreateTemporaryRentScene({ adminMode = false }: CreateTemporaryRentSceneProps) {
     const router = useRouter();
     const [step, setStep] = useState<Step>("CATEGORY");
     const [isCitySelectorOpen, setIsCitySelectorOpen] = useState(false);
     const [cityName, setCityName] = useState("");
     const [pricingErrors, setPricingErrors] = useState<Record<string, string>>({});
     const [attributeErrors, setAttributeErrors] = useState<Record<string, string>>({});
+    const [isSubmittingAdmin, setIsSubmittingAdmin] = useState(false);
+
+    const [adminOwnership, setAdminOwnership] = useState<AdminOwnershipData>({
+        isPlatform: true,
+        phoneNumber: "",
+        firstName: "",
+        lastName: "",
+    });
 
     const [formData, setFormData] = useState<CreateTemporaryRentDraftRequest>({
         cityId: "",
@@ -214,6 +229,18 @@ export default function CreateTemporaryRentScene() {
 
     const handleNext = () => {
         if (step === "CATEGORY") {
+            if (adminMode && !adminOwnership.isPlatform) {
+                if (!adminOwnership.phoneNumber?.trim()) {
+                    toast.error("لطفاً شماره تماس مالک اقامتگاه را وارد فرمایید");
+                    return;
+                }
+                if (adminOwnership.isUserFound === false) {
+                    if (!adminOwnership.firstName?.trim() || !adminOwnership.lastName?.trim()) {
+                        toast.error("لطفاً نام و نام خانوادگی مالک جدید را جهت ایجاد حساب کاربری وارد فرمایید");
+                        return;
+                    }
+                }
+            }
             if (!formData.cityId) {
                 toast.error("لطفاً شهر اقامتگاه را انتخاب نمایید");
                 return;
@@ -250,6 +277,42 @@ export default function CreateTemporaryRentScene() {
                 ? Number(formData.attributes.max_guests)
                 : formData.maxGuests || 2;
 
+            if (adminMode) {
+                setIsSubmittingAdmin(true);
+                const payload: AdminCreateTemporaryRentRequest = {
+                    isPlatform: adminOwnership.isPlatform,
+                    phoneNumber: adminOwnership.isPlatform ? undefined : adminOwnership.phoneNumber.trim(),
+                    firstName: adminOwnership.isPlatform ? undefined : adminOwnership.firstName.trim(),
+                    lastName: adminOwnership.isPlatform ? undefined : adminOwnership.lastName.trim(),
+                    targetOwnerId: adminOwnership.targetOwnerId,
+                    cityId: formData.cityId,
+                    categoryPath: {
+                        categoryKey: formData.categoryPath.categoryKey,
+                        subcategoryKey: formData.categoryPath.subcategoryKey,
+                        attributeSchemaVersion: formData.categoryPath.attributeSchemaVersion || 1,
+                    },
+                    title: formData.title,
+                    description: formData.description,
+                    nightlyPrice: resolvedNightlyPrice,
+                    maxGuests: resolvedMaxGuests,
+                    availabilityWindow: {
+                        availableFrom: formData.availabilityWindow?.availableFrom || new Date().toISOString(),
+                        availableTo: formData.availabilityWindow?.availableTo || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+                    },
+                    latitude: formData.latitude,
+                    longitude: formData.longitude,
+                    mediaIds: formData.mediaIds || [],
+                    attributes: {
+                        ...formData.attributes,
+                        ...rawPricing,
+                    },
+                };
+                await adminService.createTemporaryRent(payload);
+                toast.success("اقامتگاه با موفقیت توسط ادمین ثبت گردید");
+                router.push("/admin/temporary-rent");
+                return;
+            }
+
             const payload: CreateTemporaryRentDraftRequest = {
                 ...formData,
                 nightlyPrice: resolvedNightlyPrice,
@@ -269,6 +332,8 @@ export default function CreateTemporaryRentScene() {
             const errorObj = err as { response?: { data?: { message?: string } } };
             const msg = errorObj?.response?.data?.message || "خطا در ثبت اقامتگاه";
             toast.error(msg);
+        } finally {
+            setIsSubmittingAdmin(false);
         }
     };
 
@@ -277,9 +342,13 @@ export default function CreateTemporaryRentScene() {
             <div className="max-w-3xl mx-auto">
                 <header className="mb-6 flex items-center justify-between">
                     <div>
-                        <h1 className="text-2xl font-black text-brand">ثبت اقامتگاه جدید (اجاره موقت و روزانه)</h1>
+                        <h1 className="text-2xl font-black text-brand">
+                            {adminMode ? "ثبت اقامتگاه جدید (پنل مدیریت)" : "ثبت اقامتگاه جدید (اجاره موقت و روزانه)"}
+                        </h1>
                         <p className="text-xs text-text-light mt-1">
-                            مشخصات ویلا، سوئیت یا اقامتگاه بوم‌گردی خود را برای میهمانان سراسر کشور ثبت نمایید.
+                            {adminMode
+                                ? "ثبت مستقیم اقامتگاه به صورت سازمانی یا به نیابت از میزبانان با قابلیت ایجاد خودکار کاربر"
+                                : "مشخصات ویلا، سوئیت یا اقامتگاه بوم‌گردی خود را برای میهمانان سراسر کشور ثبت نمایید."}
                         </p>
                     </div>
                 </header>
@@ -315,8 +384,8 @@ export default function CreateTemporaryRentScene() {
                                                 isCurrent
                                                     ? "bg-primary text-white ring-4 ring-primary/20"
                                                     : isCompleted
-                                                    ? "bg-brand text-white"
-                                                    : "bg-gray-200 text-gray-500"
+                                                        ? "bg-brand text-white"
+                                                        : "bg-gray-200 text-gray-500"
                                             )}
                                         >
                                             <s.icon className="h-5 w-5" />
@@ -350,6 +419,13 @@ export default function CreateTemporaryRentScene() {
                         {/* 1. CATEGORY & CITY */}
                         {step === "CATEGORY" && (
                             <div className="space-y-6">
+                                {adminMode && (
+                                    <AdminOwnershipSelector
+                                        value={adminOwnership}
+                                        onChange={setAdminOwnership}
+                                        themeColor="emerald"
+                                    />
+                                )}
                                 <h2 className="text-lg font-black text-brand">شهر و نوع اقامتگاه</h2>
 
                                 <div className="grid grid-cols-1 gap-5">
@@ -706,6 +782,16 @@ export default function CreateTemporaryRentScene() {
                             <div className="space-y-6">
                                 <h2 className="text-lg font-black text-brand">بازبینی و ثبت نهایی اقامتگاه</h2>
                                 <div className="bg-gray-50/80 rounded-2xl p-6 space-y-4 border border-gray-100 text-sm">
+                                    {adminMode && (
+                                        <div className="flex justify-between pb-2 border-b border-gray-200/50">
+                                            <span className="text-text-light">نوع مالکیت:</span>
+                                            <span className="font-bold text-brand">
+                                                {adminOwnership.isPlatform
+                                                    ? "سازمانی (متعلق به سامانه)"
+                                                    : `به نام میزبان: ${adminOwnership.foundUserName || `${adminOwnership.firstName} ${adminOwnership.lastName}`} (${adminOwnership.phoneNumber})`}
+                                            </span>
+                                        </div>
+                                    )}
                                     <div className="flex justify-between pb-2 border-b border-gray-200/50">
                                         <span className="text-text-light">عنوان اقامتگاه:</span>
                                         <span className="font-bold text-brand">{formData.title}</span>
@@ -759,11 +845,16 @@ export default function CreateTemporaryRentScene() {
                             <button
                                 type="button"
                                 onClick={handleSubmit}
-                                disabled={createDraftMutation.isPending}
-                                className="px-7 py-2.5 rounded-xl bg-primary text-white font-black text-xs hover:bg-primary/90 shadow-md shadow-primary/20 flex items-center gap-1.5 transition-all"
+                                disabled={createDraftMutation.isPending || isSubmittingAdmin}
+                                className={cn(
+                                    "px-7 py-2.5 rounded-xl text-white font-black text-xs shadow-md flex items-center gap-1.5 transition-all",
+                                    adminMode
+                                        ? "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/20"
+                                        : "bg-primary hover:bg-primary/90 shadow-primary/20"
+                                )}
                             >
-                                {createDraftMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-                                <span>ثبت اقامتگاه</span>
+                                {(createDraftMutation.isPending || isSubmittingAdmin) && <Loader2 className="h-4 w-4 animate-spin" />}
+                                <span>{adminMode ? "ثبت نهایی اقامتگاه در پنل مدیریت" : "ثبت اقامتگاه"}</span>
                             </button>
                         ) : (
                             <button

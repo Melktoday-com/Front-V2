@@ -48,8 +48,7 @@ function AdminAdsContent() {
 
                 <div className="flex flex-wrap items-center gap-3">
                     <Link
-                        href="/ads/submit"
-                        target="_blank"
+                        href="/admin/ads/create"
                         className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-black shadow-sm transition-colors"
                     >
                         <Plus className="w-4 h-4" />

@@ -264,3 +264,64 @@ export interface UpdateAdminAttributeRequest {
         maxLength?: number;
     };
 }
+
+export interface UserLookupResponse {
+    found: boolean;
+    user?: {
+        userId: string;
+        mobile: string;
+        firstName?: string;
+        lastName?: string;
+        displayName?: string;
+        status?: string;
+    };
+}
+
+export interface AdminCreateAdRequest {
+    isPlatform?: boolean;
+    phoneNumber?: string;
+    firstName?: string;
+    lastName?: string;
+    targetOwnerId?: string;
+    cityId: string;
+    categoryPath: {
+        categoryKey: string;
+        subcategoryKey: string;
+        businessModelKey?: string;
+        attributeSchemaVersion?: number;
+    };
+    title: string;
+    description: string;
+    rawPricing?: Record<string, number>;
+    attributes?: Record<string, unknown>;
+    latitude: number;
+    longitude: number;
+    mediaIds?: string[];
+}
+
+export interface AdminCreateTemporaryRentRequest {
+    isPlatform?: boolean;
+    phoneNumber?: string;
+    firstName?: string;
+    lastName?: string;
+    targetOwnerId?: string;
+    cityId: string;
+    categoryPath: {
+        categoryKey: string;
+        subcategoryKey: string;
+        attributeSchemaVersion?: number;
+    };
+    title: string;
+    description: string;
+    nightlyPrice: number;
+    maxGuests: number;
+    availabilityWindow: {
+        availableFrom: string;
+        availableTo: string;
+    };
+    latitude: number;
+    longitude: number;
+    attributes?: Record<string, unknown>;
+    mediaIds?: string[];
+}
+

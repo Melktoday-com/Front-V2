@@ -4,6 +4,8 @@ import {
     ApproveListingRequest,
     BanUserRequest,
     BroadcastNotificationRequest,
+    AdminCreateAdRequest,
+    AdminCreateTemporaryRentRequest,
     CreateAdminAttributeRequest,
     CreateAdminCategoryRequest,
     CreateAdminPriceModelRequest,
@@ -20,6 +22,7 @@ import {
     UpdateAdminSubcategoryRequest,
     UpdateGeoZoneRequest,
     UpdatePlanLimitsRequest,
+    UserLookupResponse,
 } from "@/types/api/admin.types";
 import { AttributeDefinition, CategoryListItem, PriceModel, Subcategory } from "@/types/api/ads.types";
 import {
@@ -57,6 +60,13 @@ export const adminService = {
 
     listUsers: async (params: { page?: number; limit?: number }) => {
         const response = await api.get("/admin/users", { params });
+        return response.data;
+    },
+
+    lookupUserByPhone: async (phoneNumber: string): Promise<UserLookupResponse> => {
+        const response = await api.get<UserLookupResponse>("/admin/users/lookup", {
+            params: { phoneNumber },
+        });
         return response.data;
     },
 
@@ -316,6 +326,17 @@ export const adminService = {
 
     deleteTemporaryRentAttribute: async (subcategoryId: string, attributeId: string): Promise<{ success: boolean }> => {
         const response = await api.delete(`/temporary-rent/admin/subcategories/${subcategoryId}/attributes/${attributeId}`);
+        return response.data;
+    },
+
+    // Admin Listing Creation
+    createAd: async (data: AdminCreateAdRequest) => {
+        const response = await api.post("/ads/admin/create", data);
+        return response.data;
+    },
+
+    createTemporaryRent: async (data: AdminCreateTemporaryRentRequest) => {
+        const response = await api.post("/temporary-rent/admin/create", data);
         return response.data;
     },
 };
