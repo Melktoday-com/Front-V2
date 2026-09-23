@@ -38,6 +38,7 @@ import { cn, formatPrice, toPersianDigits, getMediaUrl } from "@/lib/utils";
 import { AdminOwnershipSelector, AdminOwnershipData } from "@/components/admin/AdminOwnershipSelector";
 import { adminService } from "@/services/admin.service";
 import { AdminCreateTemporaryRentRequest } from "@/types/api/admin.types";
+import { useGeoHierarchy } from "@/hooks/useGeoHierarchy";
 
 // Leaflet is client-side only
 const DynamicMapPicker = dynamic(() => import("@/components/ui/MapPicker"), { ssr: false });
@@ -92,6 +93,28 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
         mediaIds: [],
         attributes: {},
     });
+
+    const { data: geoHierarchy } = useGeoHierarchy();
+
+    const cityCoordinates = useMemo<[number, number]>(() => {
+        if (formData.cityId && geoHierarchy) {
+            for (const province of geoHierarchy) {
+                const found = province.cities.find((c) => c.id === formData.cityId);
+                if (found?.centerPoint?.latitude && found?.centerPoint?.longitude) {
+                    return [found.centerPoint.latitude, found.centerPoint.longitude];
+                }
+            }
+        }
+        if (cityName && geoHierarchy) {
+            for (const province of geoHierarchy) {
+                const found = province.cities.find((c) => c.name === cityName);
+                if (found?.centerPoint?.latitude && found?.centerPoint?.longitude) {
+                    return [found.centerPoint.latitude, found.centerPoint.longitude];
+                }
+            }
+        }
+        return [formData.latitude || 35.6892, formData.longitude || 51.3890];
+    }, [formData.cityId, cityName, geoHierarchy, formData.latitude, formData.longitude]);
 
     const [rawPricing, setRawPricing] = useState<Record<string, number | string | boolean>>({});
     const [priceModelKey, setPriceModelKey] = useState<string>("DAILY_RENT_STANDARD");
@@ -713,13 +736,19 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
                         {/* 3. LOCATION */}
                         {step === "LOCATION" && (
                             <div className="space-y-4">
-                                <h2 className="text-lg font-black text-brand">تعیین موقعیت روی نقشه</h2>
-                                <p className="text-xs text-text-light">
-                                    موقعیت اقامتگاه را روی نقشه مشخص فرمایید تا در جستجوی نقشه به درستی نمایش داده شود.
-                                </p>
-                                <div className="rounded-2xl overflow-hidden border border-gray-200 h-80">
+                                <div>
+                                    <h2 className="text-lg font-black text-brand">تعیین موقعیت روی نقشه</h2>
+                                    <p className="text-xs text-text-light mt-1">
+                                        نقشه به صورت خودکار روی شهر انتخابی شما ({cityName || "شهر انتخاب‌شده"}) تنظیم شده است. با کلیک روی نقشه، جابجایی نشانگر یا استفاده از دکمه «موقعیت فعلی من»، محل دقیق اقامتگاه را مشخص نمایید.
+                                    </p>
+                                </div>
+                                <div>
                                     <DynamicMapPicker
-                                        initialCenter={[formData.latitude || 35.6892, formData.longitude || 51.389]}
+                                        cityCenter={cityCoordinates}
+                                        cityName={cityName}
+                                        initialCenter={cityCoordinates}
+                                        value={[formData.latitude, formData.longitude]}
+                                        zoom={13}
                                         onChange={(lat, lng) =>
                                             setFormData((prev) => ({ ...prev, latitude: lat, longitude: lng }))
                                         }
@@ -879,8 +908,8 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
                     setFormData((prev) => ({
                         ...prev,
                         cityId: city.id,
-                        latitude: city.centerPoint?.latitude ?? prev.latitude,
-                        longitude: city.centerPoint?.longitude ?? prev.longitude,
+                        latitude: city.centerPoint?.latitude ?? prev.latitude ?? 35.6892,
+                        longitude: city.centerPoint?.longitude ?? prev.longitude ?? 51.3890,
                     }));
                     setCityName(city.name);
                 }}

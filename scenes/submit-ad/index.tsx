@@ -75,6 +75,10 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
     const [pricingErrors, setPricingErrors] = useState<Record<string, string>>({});
     const [attributeErrors, setAttributeErrors] = useState<Record<string, string>>({});
 
+    const initialCoords = (selectedCity?.centerPoint?.latitude && selectedCity?.centerPoint?.longitude)
+        ? { latitude: selectedCity.centerPoint.latitude, longitude: selectedCity.centerPoint.longitude }
+        : { latitude: 35.6892, longitude: 51.3890 };
+
     const [formData, setFormData] = useState<Partial<CreateAdDraftRequest>>({
         cityId: selectedCity?.id || undefined,
         categoryPath: {
@@ -85,8 +89,8 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
         },
         attributes: {},
         rawPricing: {},
-        latitude: selectedCity?.centerPoint?.latitude ?? 35.6892,
-        longitude: selectedCity?.centerPoint?.longitude ?? 51.389,
+        latitude: initialCoords.latitude,
+        longitude: initialCoords.longitude,
         mediaIds: [] as string[],
     });
 
@@ -164,7 +168,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                 ...prev,
                 cityId: selectedCity.id,
                 latitude: selectedCity.centerPoint?.latitude ?? prev.latitude ?? 35.6892,
-                longitude: selectedCity.centerPoint?.longitude ?? prev.longitude ?? 51.389,
+                longitude: selectedCity.centerPoint?.longitude ?? prev.longitude ?? 51.3890,
             }));
             if (!cityName) {
                 setCityName(selectedCity.name);
@@ -172,18 +176,58 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
         }
     }, [editAdId, selectedCity, formData.cityId, cityName]);
 
-    // Resolve city name from geoHierarchy if we have cityId but no cityName (e.g. in edit mode)
+    // Resolve city name and coordinates dynamically from geoHierarchy API
     useEffect(() => {
-        if (formData.cityId && !cityName && geoHierarchy) {
+        if (formData.cityId && geoHierarchy) {
             for (const province of geoHierarchy) {
                 const found = province.cities.find((c) => c.id === formData.cityId);
                 if (found) {
-                    setCityName(found.name);
+                    if (!cityName) {
+                        setCityName(found.name);
+                    }
+                    if (
+                        found.centerPoint?.latitude &&
+                        found.centerPoint?.longitude &&
+                        (!formData.latitude ||
+                            (formData.latitude === 35.6892 &&
+                                formData.longitude === 51.3890 &&
+                                found.name !== "تهران"))
+                    ) {
+                        setFormData((prev) => ({
+                            ...prev,
+                            latitude: found.centerPoint!.latitude,
+                            longitude: found.centerPoint!.longitude,
+                        }));
+                    }
                     break;
                 }
             }
         }
-    }, [formData.cityId, cityName, geoHierarchy]);
+    }, [formData.cityId, cityName, geoHierarchy, formData.latitude, formData.longitude]);
+
+    // Dynamically retrieve city center coordinates from geoHierarchy API response
+    const cityCoordinates = useMemo<[number, number]>(() => {
+        if (formData.cityId && geoHierarchy) {
+            for (const province of geoHierarchy) {
+                const found = province.cities.find((c) => c.id === formData.cityId);
+                if (found?.centerPoint?.latitude && found?.centerPoint?.longitude) {
+                    return [found.centerPoint.latitude, found.centerPoint.longitude];
+                }
+            }
+        }
+        if (cityName && geoHierarchy) {
+            for (const province of geoHierarchy) {
+                const found = province.cities.find((c) => c.name === cityName);
+                if (found?.centerPoint?.latitude && found?.centerPoint?.longitude) {
+                    return [found.centerPoint.latitude, found.centerPoint.longitude];
+                }
+            }
+        }
+        if (selectedCity?.centerPoint?.latitude && selectedCity?.centerPoint?.longitude) {
+            return [selectedCity.centerPoint.latitude, selectedCity.centerPoint.longitude];
+        }
+        return [35.6892, 51.3890];
+    }, [formData.cityId, geoHierarchy, cityName, selectedCity]);
 
     const submitMutation = useMutation({
         mutationFn: async ({ shouldPublish }: { shouldPublish: boolean }) => {
@@ -821,15 +865,25 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                         {/* 4. LOCATION */}
                         {step === "LOCATION" && (
                             <div className="space-y-4">
-                                <h2 className="text-lg font-black text-brand">تعیین موقعیت روی نقشه</h2>
-                                <p className="text-xs text-text-light">
-                                    با کلیک یا جابجایی نشانگر روی نقشه، موقعیت تقریبی ملک را مشخص نمایید.
-                                </p>
-                                <div className="rounded-2xl overflow-hidden border border-gray-200 h-80">
+                                <div>
+                                    <h2 className="text-lg font-black text-brand">تعیین موقعیت روی نقشه</h2>
+                                    <p className="text-xs text-text-light mt-1">
+                                        نقشه به صورت خودکار روی شهر انتخابی شما ({cityName || "شهر انتخاب‌شده"}) تنظیم شده است. با کلیک روی نقشه، جابجایی نشانگر یا استفاده از دکمه «موقعیت فعلی من»، محل دقیق ملک را مشخص نمایید.
+                                    </p>
+                                </div>
+                                <div>
                                     <DynamicMapPicker
-                                        initialCenter={[formData.latitude || 35.6892, formData.longitude || 51.389]}
+                                        cityCenter={cityCoordinates}
+                                        cityName={cityName}
+                                        initialCenter={cityCoordinates}
+                                        value={
+                                            formData.latitude && formData.longitude
+                                                ? [formData.latitude, formData.longitude]
+                                                : cityCoordinates
+                                        }
+                                        zoom={13}
                                         onChange={(lat, lng) =>
-                                            setFormData({ ...formData, latitude: lat, longitude: lng })
+                                            setFormData((prev) => ({ ...prev, latitude: lat, longitude: lng }))
                                         }
                                     />
                                 </div>
@@ -1035,8 +1089,8 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                     setFormData((prev) => ({
                         ...prev,
                         cityId: city.id,
-                        latitude: city.centerPoint?.latitude ?? prev.latitude,
-                        longitude: city.centerPoint?.longitude ?? prev.longitude,
+                        latitude: city.centerPoint?.latitude ?? prev.latitude ?? 35.6892,
+                        longitude: city.centerPoint?.longitude ?? prev.longitude ?? 51.3890,
                     }));
                     setCityName(city.name);
                 }}
