@@ -9,6 +9,7 @@ import { useAd, useCategories } from "@/hooks/useAds";
 import { useGeoHierarchy } from "@/hooks/useGeoHierarchy";
 import { useUploadMedia } from "@/hooks/useMedia";
 import { cn, formatPrice, toPersianDigits, getMediaUrl } from "@/lib/utils";
+import { normalizeApiError } from "@/lib/api/error-handler";
 import { adsService } from "@/services/ads.service";
 import { CreateAdDraftRequest, PriceModel, SubcategoryConfigResponse } from "@/types/api/ads.types";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -74,6 +75,8 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
     const [cityName, setCityName] = useState(selectedCity?.name || "");
     const [pricingErrors, setPricingErrors] = useState<Record<string, string>>({});
     const [attributeErrors, setAttributeErrors] = useState<Record<string, string>>({});
+    const [titleError, setTitleError] = useState<string>("");
+    const [descriptionError, setDescriptionError] = useState<string>("");
 
     const initialCoords = (selectedCity?.centerPoint?.latitude && selectedCity?.centerPoint?.longitude)
         ? { latitude: selectedCity.centerPoint.latitude, longitude: selectedCity.centerPoint.longitude }
@@ -178,32 +181,64 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
 
     // Resolve city name and coordinates dynamically from geoHierarchy API
     useEffect(() => {
-        if (formData.cityId && geoHierarchy) {
+        if (!geoHierarchy || geoHierarchy.length === 0) return;
+
+        if (formData.cityId) {
+            let matchedCity: { id: string; name: string; centerPoint?: { latitude: number; longitude: number } } | null = null;
             for (const province of geoHierarchy) {
                 const found = province.cities.find((c) => c.id === formData.cityId);
                 if (found) {
-                    if (!cityName) {
-                        setCityName(found.name);
-                    }
-                    if (
-                        found.centerPoint?.latitude &&
-                        found.centerPoint?.longitude &&
-                        (!formData.latitude ||
-                            (formData.latitude === 35.6892 &&
-                                formData.longitude === 51.3890 &&
-                                found.name !== "تهران"))
-                    ) {
-                        setFormData((prev) => ({
-                            ...prev,
-                            latitude: found.centerPoint!.latitude,
-                            longitude: found.centerPoint!.longitude,
-                        }));
-                    }
+                    matchedCity = found;
                     break;
                 }
             }
+
+            if (matchedCity) {
+                if (!cityName) {
+                    setCityName(matchedCity.name);
+                }
+                if (
+                    matchedCity.centerPoint?.latitude &&
+                    matchedCity.centerPoint?.longitude &&
+                    (!formData.latitude ||
+                        (formData.latitude === 35.6892 &&
+                            formData.longitude === 51.3890 &&
+                            matchedCity.name !== "تهران"))
+                ) {
+                    setFormData((prev) => ({
+                        ...prev,
+                        latitude: matchedCity!.centerPoint!.latitude,
+                        longitude: matchedCity!.centerPoint!.longitude,
+                    }));
+                }
+            } else {
+                // formData.cityId is NOT in geoHierarchy (stale localStorage or invalid ID)
+                // Attempt to heal by matching cityName or selectedCity.name
+                const targetName = cityName || selectedCity?.name || "تهران";
+                let fallbackCity: { id: string; name: string; centerPoint?: { latitude: number; longitude: number } } | null = null;
+                for (const province of geoHierarchy) {
+                    const found = province.cities.find((c) => c.name === targetName);
+                    if (found) {
+                        fallbackCity = found;
+                        break;
+                    }
+                }
+
+                if (fallbackCity) {
+                    setFormData((prev) => ({
+                        ...prev,
+                        cityId: fallbackCity!.id,
+                        latitude: fallbackCity!.centerPoint?.latitude ?? prev.latitude ?? 35.6892,
+                        longitude: fallbackCity!.centerPoint?.longitude ?? prev.longitude ?? 51.3890,
+                    }));
+                    setCityName(fallbackCity.name);
+                } else {
+                    setFormData((prev) => ({ ...prev, cityId: undefined }));
+                    setCityName("");
+                }
+            }
         }
-    }, [formData.cityId, cityName, geoHierarchy, formData.latitude, formData.longitude]);
+    }, [formData.cityId, cityName, geoHierarchy, formData.latitude, formData.longitude, selectedCity?.name]);
 
     // Dynamically retrieve city center coordinates from geoHierarchy API response
     const cityCoordinates = useMemo<[number, number]>(() => {
@@ -310,8 +345,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
             router.push("/profile/ads");
         },
         onError: (err: unknown) => {
-            const errorObj = err as { response?: { data?: { message?: string } } };
-            const msg = errorObj?.response?.data?.message || "خطا در ذخیره‌سازی آگهی";
+            const msg = normalizeApiError(err, "خطا در ذخیره‌سازی آگهی");
             toast.error(msg);
         },
     });
@@ -359,8 +393,13 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
         // Validation per step
         if (step === "CATEGORY") {
             if (adminMode && !adminOwnership.isPlatform) {
-                if (!adminOwnership.phoneNumber?.trim()) {
+                const phone = adminOwnership.phoneNumber?.trim() || "";
+                if (!phone) {
                     toast.error("لطفاً شماره تماس مالک آگهی را وارد فرمایید");
+                    return;
+                }
+                if (!/^09\d{9}$/.test(phone)) {
+                    toast.error("شماره تماس مالک باید با ۰۹ شروع شده و ۱۱ رقم باشد");
                     return;
                 }
                 if (adminOwnership.isUserFound === false) {
@@ -370,12 +409,28 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                     }
                 }
             }
+
             if (!formData.cityId) {
                 toast.error("لطفاً شهر ملک را مشخص فرمایید");
+                setIsCitySelectorOpen(true);
                 return;
             }
-            if (!formData.categoryPath?.categoryKey || !formData.categoryPath?.subcategoryKey) {
-                toast.error("لطفاً دسته‌بندی و زیردسته ملک را انتخاب فرمایید");
+
+            if (geoHierarchy && geoHierarchy.length > 0) {
+                const isCityValid = geoHierarchy.some((p) => p.cities.some((c) => c.id === formData.cityId));
+                if (!isCityValid) {
+                    toast.error("شهر انتخاب شده در سامانه معتبر نیست. لطفاً مجدداً شهر را انتخاب فرمایید");
+                    setIsCitySelectorOpen(true);
+                    return;
+                }
+            }
+
+            if (!formData.categoryPath?.categoryKey) {
+                toast.error("لطفاً دسته‌بندی اصلی ملک را انتخاب فرمایید");
+                return;
+            }
+            if (!formData.categoryPath?.subcategoryKey) {
+                toast.error("لطفاً زیردسته ملک را انتخاب فرمایید");
                 return;
             }
             if (!formData.categoryPath?.businessModelKey && activePriceModel) {
@@ -388,18 +443,63 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                         businessModelKey: activePriceModel.key,
                     },
                 }));
+            } else if (!formData.categoryPath?.businessModelKey && !activePriceModel) {
+                toast.error("لطفاً نوع معامله ملک را انتخاب فرمایید");
+                return;
             }
         }
 
         if (step === "BASIC_INFO") {
-            if (!formData.title?.trim() || !formData.description?.trim()) {
-                toast.error("لطفاً عنوان و توضیحات کامل آگهی را وارد کنید");
+            let hasBasicError = false;
+            const trimmedTitle = formData.title?.trim() || "";
+            const trimmedDesc = formData.description?.trim() || "";
+
+            if (!trimmedTitle) {
+                setTitleError("عنوان آگهی الزامی است");
+                hasBasicError = true;
+            } else if (trimmedTitle.length < 5) {
+                setTitleError("عنوان آگهی باید حداقل ۵ کاراکتر باشد");
+                hasBasicError = true;
+            } else if (trimmedTitle.length > 120) {
+                setTitleError("عنوان آگهی حداکثر می‌تواند ۱۲۰ کاراکتر باشد");
+                hasBasicError = true;
+            } else {
+                setTitleError("");
+            }
+
+            if (!trimmedDesc) {
+                setDescriptionError("توضیحات آگهی الزامی است");
+                hasBasicError = true;
+            } else if (trimmedDesc.length < 20) {
+                setDescriptionError(`توضیحات آگهی باید حداقل ۲۰ کاراکتر باشد (تعداد فعلی: ${toPersianDigits(trimmedDesc.length)} کاراکتر)`);
+                hasBasicError = true;
+            } else if (trimmedDesc.length > 4000) {
+                setDescriptionError("توضیحات آگهی حداکثر می‌تواند ۴۰۰۰ کاراکتر باشد");
+                hasBasicError = true;
+            } else {
+                setDescriptionError("");
+            }
+
+            if (hasBasicError) {
+                toast.error("لطفاً خطاهای مشخص شده در عنوان و توضیحات را برطرف فرمایید");
                 return;
             }
         }
 
         if (step === "DETAILS") {
             if (!validateDetailsStep()) {
+                return;
+            }
+        }
+
+        if (step === "LOCATION") {
+            if (
+                formData.latitude === undefined ||
+                formData.longitude === undefined ||
+                isNaN(Number(formData.latitude)) ||
+                isNaN(Number(formData.longitude))
+            ) {
+                toast.error("تعیین موقعیت مکانی ملک روی نقشه الزامی است");
                 return;
             }
         }
@@ -739,30 +839,68 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                         {step === "BASIC_INFO" && (
                             <div className="space-y-6">
                                 <h2 className="text-lg font-black text-brand">عنوان و توضیحات آگهی</h2>
-                                <div className="space-y-4">
+                                <div className="space-y-5">
                                     <div>
-                                        <label className="block text-xs font-bold text-brand mb-2">
-                                            عنوان آگهی <span className="text-red-500">*</span>
-                                        </label>
+                                        <div className="flex items-center justify-between mb-2">
+                                            <label className="block text-xs font-bold text-brand">
+                                                عنوان آگهی <span className="text-red-500">*</span>
+                                            </label>
+                                            <span className="text-[11px] text-text-light font-medium">
+                                                {toPersianDigits(formData.title?.length || 0)} / ۱۲۰ کاراکتر (حداقل ۵)
+                                            </span>
+                                        </div>
                                         <input
                                             type="text"
-                                            className="w-full p-3 border border-gray-200 rounded-xl bg-gray-50 text-sm focus:bg-white focus:ring-2 focus:ring-primary outline-hidden"
+                                            className={cn(
+                                                "w-full p-3.5 border rounded-xl text-sm focus:bg-white focus:ring-2 outline-hidden transition-all",
+                                                titleError
+                                                    ? "border-red-500 bg-red-50/40 focus:ring-red-400 text-red-900"
+                                                    : "border-gray-200 bg-gray-50 focus:ring-primary focus:border-primary"
+                                            )}
                                             placeholder="مثلاً: آپارتمان ۱۱۰ متری دو خوابه فول امکانات در ونک"
                                             value={formData.title || ""}
-                                            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                            onChange={(e) => {
+                                                setFormData({ ...formData, title: e.target.value });
+                                                if (titleError) setTitleError("");
+                                            }}
                                         />
+                                        {titleError && (
+                                            <p className="text-xs text-red-500 font-bold mt-1.5 flex items-center gap-1">
+                                                <span>⚠️</span>
+                                                <span>{titleError}</span>
+                                            </p>
+                                        )}
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-bold text-brand mb-2">
-                                            توضیحات تکمیلی <span className="text-red-500">*</span>
-                                        </label>
+                                        <div className="flex items-center justify-between mb-2">
+                                            <label className="block text-xs font-bold text-brand">
+                                                توضیحات تکمیلی <span className="text-red-500">*</span>
+                                            </label>
+                                            <span className="text-[11px] text-text-light font-medium">
+                                                {toPersianDigits(formData.description?.length || 0)} / ۴۰۰۰ کاراکتر (حداقل ۲۰)
+                                            </span>
+                                        </div>
                                         <textarea
                                             rows={6}
-                                            className="w-full p-3 border border-gray-200 rounded-xl bg-gray-50 text-sm focus:bg-white focus:ring-2 focus:ring-primary outline-hidden leading-relaxed"
-                                            placeholder="امکانات، موقعیت دسترسی، شرایط بازدید و ویژگی‌های شاخص ملک را شرح دهید..."
+                                            className={cn(
+                                                "w-full p-3.5 border rounded-xl text-sm focus:bg-white focus:ring-2 outline-hidden leading-relaxed transition-all",
+                                                descriptionError
+                                                    ? "border-red-500 bg-red-50/40 focus:ring-red-400 text-red-900"
+                                                    : "border-gray-200 bg-gray-50 focus:ring-primary focus:border-primary"
+                                            )}
+                                            placeholder="امکانات، موقعیت دسترسی، شرایط بازدید و ویژگی‌های شاخص ملک را شرح دهید (حداقل ۲۰ کاراکتر)..."
                                             value={formData.description || ""}
-                                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                            onChange={(e) => {
+                                                setFormData({ ...formData, description: e.target.value });
+                                                if (descriptionError) setDescriptionError("");
+                                            }}
                                         />
+                                        {descriptionError && (
+                                            <p className="text-xs text-red-500 font-bold mt-1.5 flex items-center gap-1">
+                                                <span>⚠️</span>
+                                                <span>{descriptionError}</span>
+                                            </p>
+                                        )}
                                     </div>
                                 </div>
                             </div>

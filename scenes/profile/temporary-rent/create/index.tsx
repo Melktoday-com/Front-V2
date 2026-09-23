@@ -13,6 +13,7 @@ import {
     TemporaryRentCategory,
     TemporaryRentSubcategoryConfigResponse,
 } from "@/types/api/temporary-rent.types";
+import { normalizeApiError } from "@/lib/api/error-handler";
 import { useQuery } from "@tanstack/react-query";
 import {
     Calendar,
@@ -352,8 +353,7 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
             toast.success("اقامتگاه با موفقیت به عنوان پیش‌نویس ثبت شد");
             router.push("/profile/temporary-rent");
         } catch (err: unknown) {
-            const errorObj = err as { response?: { data?: { message?: string } } };
-            const msg = errorObj?.response?.data?.message || "خطا در ثبت اقامتگاه";
+            const msg = normalizeApiError(err, "خطا در ثبت اقامتگاه");
             toast.error(msg);
         } finally {
             setIsSubmittingAdmin(false);
