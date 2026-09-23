@@ -325,3 +325,42 @@ export interface AdminCreateTemporaryRentRequest {
     mediaIds?: string[];
 }
 
+// ── Admin Archive Types ──────────────────────────────────────────────────────
+
+export interface ArchivedCategoryItem {
+    id: string;
+    name: string;
+    slug: string;
+    deletedAt: string;
+    subcategoriesCount?: number;
+}
+
+export interface ArchivedSubcategoryItem {
+    id: string;
+    categoryId: string;
+    categoryName?: string;
+    name: string;
+    key: string;
+    deletedAt: string;
+}
+
+export interface ListArchivedCategoriesResponse {
+    categories: ArchivedCategoryItem[];
+    subcategories: ArchivedSubcategoryItem[];
+}
+
+// ── Admin Real Estate Management Types ───────────────────────────────────────
+
+export interface ReviewAgentApplicationRequest {
+    status: 'APPROVED' | 'REJECTED';
+    adminNote?: string;
+}
+
+export interface AdminAgenciesListResponse {
+    items: any[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+}
+

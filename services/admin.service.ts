@@ -23,6 +23,9 @@ import {
     UpdateGeoZoneRequest,
     UpdatePlanLimitsRequest,
     UserLookupResponse,
+    ListArchivedCategoriesResponse,
+    ReviewAgentApplicationRequest,
+    AdminAgenciesListResponse,
 } from "@/types/api/admin.types";
 import { AttributeDefinition, CategoryListItem, PriceModel, Subcategory } from "@/types/api/ads.types";
 import {
@@ -339,4 +342,83 @@ export const adminService = {
         const response = await api.post("/temporary-rent/admin/create", data);
         return response.data;
     },
+
+    // ── Archive Management ───────────────────────────────────────────────────
+    listArchivedCategories: async (): Promise<ListArchivedCategoriesResponse> => {
+        const response = await api.get<ListArchivedCategoriesResponse>("/admin/archive/categories");
+        return response.data;
+    },
+
+    restoreCategory: async (categoryId: string): Promise<void> => {
+        await api.post(`/admin/archive/categories/${categoryId}/restore`);
+    },
+
+    forceDeleteCategory: async (categoryId: string): Promise<void> => {
+        await api.delete(`/admin/archive/categories/${categoryId}/force`);
+    },
+
+    restoreSubcategory: async (subcategoryId: string): Promise<void> => {
+        await api.post(`/admin/archive/subcategories/${subcategoryId}/restore`);
+    },
+
+    forceDeleteSubcategory: async (subcategoryId: string): Promise<void> => {
+        await api.delete(`/admin/archive/subcategories/${subcategoryId}/force`);
+    },
+
+    // ── Real Estate Applications & Agencies Management ──────────────────────
+    listAgencyApplications: async (params: {
+        status?: string;
+        agentType?: string;
+        page?: number;
+        limit?: number;
+    } = {}) => {
+        const response = await api.get("/admin/agency-applications", { params });
+        return response.data;
+    },
+
+    getAgencyApplication: async (applicationId: string) => {
+        const response = await api.get(`/admin/agency-applications/${applicationId}`);
+        return response.data;
+    },
+
+    reviewAgencyApplication: async (
+        applicationId: string,
+        data: ReviewAgentApplicationRequest,
+    ) => {
+        const response = await api.post(
+            `/admin/agency-applications/${applicationId}/review`,
+            data,
+        );
+        return response.data;
+    },
+
+    listAdminAgencies: async (params: {
+        agencyType?: string;
+        verificationStatus?: string;
+        isActive?: boolean;
+        cityId?: string;
+        search?: string;
+        page?: number;
+        limit?: number;
+    } = {}): Promise<AdminAgenciesListResponse> => {
+        const response = await api.get<AdminAgenciesListResponse>("/admin/agencies", { params });
+        return response.data;
+    },
+
+    setAgencyActiveStatus: async (agencyId: string, isActive: boolean) => {
+        const response = await api.patch(`/admin/agencies/${agencyId}/active-status`, { isActive });
+        return response.data;
+    },
+
+    setAgencyVerificationStatus: async (
+        agencyId: string,
+        verificationStatus: string,
+    ) => {
+        const response = await api.patch(
+            `/admin/agencies/${agencyId}/verification-status`,
+            { verificationStatus },
+        );
+        return response.data;
+    },
 };
+

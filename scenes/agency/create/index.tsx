@@ -53,6 +53,20 @@ export default function CreateAgencyScene() {
                     </div>
                     <h2 className="text-2xl font-black text-brand">اطلاعات آژانس خود را وارد کنید</h2>
                     <p className="text-secondary text-sm">با ایجاد پروفایل آژانس، اعتبار بیشتری نزد مشتریان کسب خواهید کرد.</p>
+
+                    <div className="p-4 bg-blue-50 border border-blue-200/80 rounded-2xl flex items-center justify-between gap-3 text-right">
+                        <div>
+                            <span className="text-xs font-black text-blue-900 block">ثبت‌نام رسمی مشاورین و دفاتر املاک (استعلام جیبیت)</span>
+                            <span className="text-[11px] text-blue-700">دارای نشان تأییدیه رسمی و احراز هویت اصناف یا شاهکار</span>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => router.push("/agency/apply")}
+                            className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shrink-0 transition-colors"
+                        >
+                            صفحه درخواست عضویت
+                        </button>
+                    </div>
                 </div>
 
                 <div className="space-y-6">

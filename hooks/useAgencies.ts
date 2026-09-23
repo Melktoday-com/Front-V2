@@ -91,19 +91,14 @@ export function useMyAgency() {
         queryKey: ["my-agency", user?.userId],
         queryFn: async () => {
             if (!user?.userId) return null;
-            // Since backend lacks direct "my agency" endpoint, we search in the list
-            // This is a temporary workaround based on available API
-            const result = await agencyService.listAgencies({ limit: 100 });
-            // We need to fetch details for each to get ownerUserId
-            // This is inefficient but necessary given the backend constraints
-            // BETTER: If the agency module is updated, this should be replaced
-            for (const summary of result.agencies) {
-                const details = await agencyService.getAgency(summary.id);
-                if (details.ownerUserId === user.userId) {
-                    return details;
+            try {
+                return await agencyService.getMyShowcase();
+            } catch (err: any) {
+                if (err?.response?.status === 404) {
+                    return null;
                 }
+                throw err;
             }
-            return null;
         },
         enabled: !!user?.userId,
     });

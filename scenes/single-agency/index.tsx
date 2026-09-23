@@ -5,16 +5,23 @@ import { ReviewsSection } from "@/components/ui/ReviewsSection";
 import { Select } from "@/components/ui/Select";
 import { ErrorState } from "@/components/ui/StatusStates";
 import { useAds } from "@/hooks/useAds";
-import { useAgency, useFollowAgency, useUnfollowAgency } from "@/hooks/useAgencies";
+import { useFollowAgency, useUnfollowAgency } from "@/hooks/useAgencies";
 import { useAuth } from "@/hooks/useAuth";
 import { useCreateConversation } from "@/hooks/useChat";
 import { cn, formatPrice, toPersianDigits } from "@/lib/utils";
 import { agencyService } from "@/services/agency.service";
-import { useMutation } from "@tanstack/react-query";
+import { AgencyPost } from "@/types/api/agency.types";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import {
+    Award,
+    BookOpen,
     Building,
+    Building2,
+    Calendar,
     Check,
     ChevronRight,
+    ExternalLink,
+    Eye,
     Globe,
     Grid,
     Heart,
@@ -24,6 +31,7 @@ import {
     MessageCircle,
     MessageSquare,
     Phone,
+    Send,
     Share2,
     Star,
     Verified,
@@ -36,26 +44,50 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 export default function SingleAgencyScene() {
-    const { id } = useParams() as { id: string };
+    const params = useParams();
+    const idOrSlug = (params.idOrSlug || params.id) as string;
     const router = useRouter();
-    const [activeTab, setActiveTab] = useState<"listings" | "reviews">("listings");
+
+    const [activeTab, setActiveTab] = useState<"listings" | "posts" | "about" | "reviews">("listings");
     const [viewMode, setViewMode] = useState<"grid" | "feed">("feed");
+
+    // Consultation modal states
     const [isConsultationModalOpen, setIsConsultationModalOpen] = useState(false);
     const [consultationSubject, setConsultationSubject] = useState("مشاوره عمومی ملک");
     const [consultationMessage, setConsultationMessage] = useState("");
-    const [contactMethod, setContactMethod] = useState<"phone" | "chat">("phone");
+    const [senderName, setSenderName] = useState("");
+    const [senderPhone, setSenderPhone] = useState("");
+
+    // Post reader modal
+    const [readingPost, setReadingPost] = useState<AgencyPost | null>(null);
 
     const { isLoggedIn } = useAuth();
+
+    // Fetch agency showcase data (supports UUID or slug)
     const {
         data: agency,
         isLoading: isLoadingAgency,
         error: agencyError,
         refetch: refetchAgency,
-    } = useAgency(id);
+    } = useQuery({
+        queryKey: ["agency-showcase", idOrSlug],
+        queryFn: () => agencyService.getPublicShowcase(idOrSlug),
+        enabled: !!idOrSlug,
+    });
 
+    const targetAgencyId = agency?.id || idOrSlug;
+
+    // Ads query
     const { data: adsResponse, isLoading: isLoadingAds } = useAds({
-        ownerId: id,
+        ownerId: targetAgencyId,
         limit: 30,
+    });
+
+    // Posts query
+    const { data: postsData, isLoading: isLoadingPosts } = useQuery({
+        queryKey: ["agency-public-posts", targetAgencyId],
+        queryFn: () => agencyService.getPublicPosts(targetAgencyId),
+        enabled: !!targetAgencyId,
     });
 
     const followMutation = useFollowAgency();
@@ -64,18 +96,21 @@ export default function SingleAgencyScene() {
 
     const consultationMutation = useMutation({
         mutationFn: () =>
-            agencyService.requestConsultation(id, {
+            agencyService.sendMessageToAgency(targetAgencyId, {
                 subject: consultationSubject,
                 message: consultationMessage,
-                preferredContactMethod: contactMethod,
+                senderName: senderName.trim() || undefined,
+                senderPhone: senderPhone.trim() || undefined,
             }),
         onSuccess: () => {
-            toast.success("درخواست مشاوره شما با موفقیت ثبت شد و به مشاورین آژانس ارجاع داده شد.");
+            toast.success("پیام شما با موفقیت به صفحه املاک ارسال شد.");
             setIsConsultationModalOpen(false);
             setConsultationMessage("");
+            setSenderName("");
+            setSenderPhone("");
         },
         onError: () => {
-            toast.error("خطا در ارسال درخواست مشاوره");
+            toast.error("خطا در ارسال پیام به صفحه املاک.");
         },
     });
 
@@ -85,9 +120,9 @@ export default function SingleAgencyScene() {
             return;
         }
         if (agency?.isFollowing) {
-            unfollowMutation.mutate(id);
+            unfollowMutation.mutate(targetAgencyId);
         } else {
-            followMutation.mutate(id);
+            followMutation.mutate(targetAgencyId);
         }
     };
 
@@ -99,144 +134,252 @@ export default function SingleAgencyScene() {
         chatMutation.mutate(
             {
                 subjectType: "AGENCY",
-                subjectId: id,
+                subjectId: targetAgencyId,
             },
             {
-                onSuccess: (res) => {
-                    const convId = (res as any)?.conversationId || (res as any)?.id;
-                    if (convId) {
-                        router.push(`/profile/chat?id=${convId}`);
-                    } else {
-                        router.push("/profile/chat");
-                    }
+                onSuccess: (conv: any) => {
+                    router.push(`/chat?id=${conv.id || conv.conversationId}`);
                 },
                 onError: () => {
-                    toast.error("خطا در ایجاد مکالمه با آژانس");
+                    toast.error("خطا در برقراری ارتباط چت");
                 },
             }
         );
     };
 
-    const handleShare = () => {
-        if (typeof navigator !== "undefined" && navigator.share) {
-            navigator.share({
-                title: agency?.name,
-                url: window.location.href,
-            }).catch(() => {});
-        } else if (typeof navigator !== "undefined" && navigator.clipboard) {
-            navigator.clipboard.writeText(window.location.href);
-            toast.success("لینک آژانس کپی شد");
-        }
-    };
-
     if (isLoadingAgency) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3">
-                <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-                <p className="text-text-light font-bold text-sm">در حال دریافت اطلاعات آژانس...</p>
+            <div className="max-w-4xl mx-auto px-4 py-8 space-y-6" dir="rtl">
+                <div className="h-44 bg-gray-100 rounded-3xl animate-pulse" />
+                <div className="flex gap-4">
+                    <div className="w-24 h-24 rounded-full bg-gray-200 animate-pulse -mt-12 mr-6" />
+                    <div className="space-y-2 flex-1 pt-2">
+                        <div className="h-6 bg-gray-200 rounded w-1/3 animate-pulse" />
+                        <div className="h-4 bg-gray-100 rounded w-1/2 animate-pulse" />
+                    </div>
+                </div>
             </div>
         );
     }
 
     if (agencyError || !agency) {
         return (
-            <div className="p-6 text-center py-20">
-                <ErrorState message="آژانس مورد نظر یافت نشد" onRetry={() => refetchAgency()} />
+            <div className="max-w-4xl mx-auto px-4 py-16" dir="rtl">
+                <ErrorState
+                    message="صفحه املاک یافت نشد یا غیرفعال شده است."
+                    onRetry={() => refetchAgency()}
+                />
             </div>
         );
     }
 
     const ads = adsResponse?.items || [];
-    const followerCount = agency.followerCount ?? 0;
+    const posts = postsData?.items || [];
+    const followerCount = (agency as any).followersCount ?? agency.followerCount ?? 0;
 
     return (
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 pb-28">
-            {/* Navigation Bar */}
-            <div className="flex items-center justify-between mb-6">
+        <div className="max-w-4xl mx-auto px-3 sm:px-6 py-6 pb-24" dir="rtl">
+            {/* Top Navigation */}
+            <div className="flex items-center justify-between mb-4">
                 <button
                     onClick={() => router.back()}
                     className="flex items-center gap-1 text-xs font-bold text-text-light hover:text-brand transition-colors"
                 >
-                    <ChevronRight className="w-5 h-5" />
+                    <ChevronRight className="w-4 h-4" />
                     <span>بازگشت</span>
                 </button>
-                <h1 className="text-sm font-black text-brand">پروفایل آژانس املاک</h1>
                 <button
-                    onClick={handleShare}
-                    className="w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-text-main transition-colors"
-                    title="اشتراک‌گذاری"
+                    onClick={() => {
+                        if (navigator.share) {
+                            navigator.share({
+                                title: agency.agencyName || agency.name,
+                                url: window.location.href,
+                            });
+                        } else {
+                            navigator.clipboard.writeText(window.location.href);
+                            toast.success("لینک صفحه کپی شد");
+                        }
+                    }}
+                    className="p-2 rounded-xl bg-gray-100 text-brand hover:bg-gray-200 transition-colors"
                 >
                     <Share2 className="w-4 h-4" />
                 </button>
             </div>
 
-            {/* Instagram Profile Header */}
-            <section className="bg-white rounded-3xl border border-gray-100 p-6 shadow-xs mb-6">
-                <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
-                    {/* Avatar with Circular Ring */}
-                    <div className="relative shrink-0">
-                        <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full p-1 ring-2 ring-primary/40 overflow-hidden bg-gray-50 relative">
-                            <Image
-                                src={agency.logoUrl || "/agency-placeholder.png"}
-                                alt={agency.name}
-                                fill
-                                priority
-                                className="object-cover rounded-full"
-                            />
-                        </div>
+            {/* Showcase Hero Section */}
+            <section className="bg-white rounded-3xl border border-gray-200/80 shadow-xs overflow-hidden mb-6">
+                {/* Cover Banner */}
+                <div className="h-36 sm:h-52 w-full bg-gradient-to-r from-slate-800 via-blue-900 to-indigo-900 relative">
+                    {(agency as any).coverUrl && (
+                        <img
+                            src={(agency as any).coverUrl}
+                            alt={agency.agencyName || agency.name}
+                            className="w-full h-full object-cover"
+                        />
+                    )}
+                    <div className="absolute top-4 left-4">
+                        <span className={`px-3 py-1 rounded-full text-xs font-black shadow-xs ${
+                            agency.agencyType === "AGENCY"
+                                ? "bg-purple-600 text-white"
+                                : "bg-blue-600 text-white"
+                        }`}>
+                            {agency.agencyType === "AGENCY" ? "دفتر املاک رسمی" : "مشاور املاک مستقل"}
+                        </span>
                     </div>
+                </div>
 
-                    {/* Agency Info & Stats */}
-                    <div className="flex-1 text-center sm:text-right">
-                        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-2">
-                            <h2 className="text-xl sm:text-2xl font-black text-brand">{agency.name}</h2>
-                            {agency.isVerified && (
-                                <span title="تایید شده">
-                                    <Verified className="w-5 h-5 text-primary fill-primary/15" />
-                                </span>
+                {/* Profile Info Header */}
+                <div className="px-5 sm:px-8 pb-6 pt-0 relative">
+                    <div className="flex flex-col sm:flex-row items-center sm:items-end justify-between -mt-14 sm:-mt-16 mb-4 gap-4">
+                        {/* Avatar / Logo */}
+                        <div className="relative">
+                            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl border-4 border-white shadow-md bg-white overflow-hidden flex items-center justify-center font-black text-2xl text-brand">
+                                {agency.logoUrl ? (
+                                    <img
+                                        src={agency.logoUrl}
+                                        alt={agency.agencyName || agency.name}
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    (agency.agencyName || agency.name || "A").slice(0, 1)
+                                )}
+                            </div>
+                            {agency.verificationStatus === "VERIFIED" && (
+                                <div className="absolute -bottom-1 -left-1 bg-blue-600 text-white p-1 rounded-full shadow-xs" title="تأیید هویت رسمی">
+                                    <Verified className="w-4 h-4 fill-blue-600 text-white" />
+                                </div>
                             )}
                         </div>
 
-                        {/* 3 Horizontal Instagram Counters */}
-                        <div className="flex items-center justify-center sm:justify-start gap-6 my-4 border-y border-gray-100 py-3 text-center">
-                            <div>
-                                <span className="text-base sm:text-lg font-black text-brand block">
-                                    {toPersianDigits(ads.length)}
-                                </span>
-                                <span className="text-xs text-text-light">آگهی‌ها</span>
+                        {/* Action buttons */}
+                        <div className="flex items-center gap-2 w-full sm:w-auto">
+                            <button
+                                onClick={handleFollow}
+                                disabled={followMutation.isPending || unfollowMutation.isPending}
+                                className={cn(
+                                    "flex-1 sm:flex-initial py-2.5 px-5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs",
+                                    agency.isFollowing
+                                        ? "bg-slate-100 text-slate-800 border border-slate-200"
+                                        : "bg-blue-600 text-white hover:bg-blue-700"
+                                )}
+                            >
+                                {agency.isFollowing ? (
+                                    <>
+                                        <Check className="w-3.5 h-3.5 text-blue-600" />
+                                        <span>دنبال می‌کنید</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Heart className="w-3.5 h-3.5" />
+                                        <span>دنبال کردن</span>
+                                    </>
+                                )}
+                            </button>
+
+                            <button
+                                onClick={() => setIsConsultationModalOpen(true)}
+                                className="flex-1 sm:flex-initial py-2.5 px-5 rounded-xl bg-slate-900 text-white font-bold text-xs flex items-center justify-center gap-1.5 hover:bg-slate-800 transition-all shadow-xs"
+                            >
+                                <MessageSquare className="w-3.5 h-3.5 text-blue-400" />
+                                <span>ارسال پیام و مشاوره</span>
+                            </button>
+
+                            <button
+                                onClick={handleChat}
+                                disabled={chatMutation.isPending}
+                                className="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-700 transition-colors"
+                                title="چت آنلاین"
+                            >
+                                <MessageCircle className="w-4 h-4" />
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Agency Title & Stats */}
+                    <div className="space-y-3 text-center sm:text-right">
+                        <div>
+                            <div className="flex items-center justify-center sm:justify-start gap-2">
+                                <h1 className="text-xl sm:text-2xl font-black text-slate-900">
+                                    {agency.agencyName || agency.name}
+                                </h1>
                             </div>
-                            <div className="w-px h-6 bg-gray-200" />
-                            <div>
-                                <span className="text-base sm:text-lg font-black text-brand block">
-                                    {toPersianDigits(followerCount)}
-                                </span>
-                                <span className="text-xs text-text-light">دنبال‌کننده</span>
-                            </div>
-                            <div className="w-px h-6 bg-gray-200" />
-                            <div>
-                                <span className="text-base sm:text-lg font-black text-brand block flex items-center justify-center gap-1">
-                                    <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-                                    {toPersianDigits(agency.rating?.toFixed(1) || "5.0")}
-                                </span>
-                                <span className="text-xs text-text-light">امتیاز</span>
-                            </div>
+                            {agency.slug && (
+                                <span className="text-xs text-slate-400 font-mono">@{agency.slug}</span>
+                            )}
                         </div>
 
-                        {/* Bio & Details */}
+                        {/* Bio */}
                         {agency.bio && (
-                            <p className="text-xs sm:text-sm text-text-main leading-relaxed mb-3 max-w-xl">
+                            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-2xl">
                                 {agency.bio}
                             </p>
                         )}
 
-                        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 text-xs text-text-light">
+                        {/* Counters Row */}
+                        <div className="flex items-center justify-center sm:justify-start gap-6 border-y border-slate-100 py-3 text-center">
+                            <div>
+                                <span className="text-base sm:text-lg font-black text-slate-900 block">
+                                    {toPersianDigits(ads.length)}
+                                </span>
+                                <span className="text-xs text-slate-400">آگهی‌های ملکی</span>
+                            </div>
+                            <div className="w-px h-6 bg-slate-200" />
+                            <div>
+                                <span className="text-base sm:text-lg font-black text-slate-900 block">
+                                    {toPersianDigits(posts.length)}
+                                </span>
+                                <span className="text-xs text-slate-400">پست‌ها و مقالات</span>
+                            </div>
+                            <div className="w-px h-6 bg-slate-200" />
+                            <div>
+                                <span className="text-base sm:text-lg font-black text-slate-900 block">
+                                    {toPersianDigits(followerCount)}
+                                </span>
+                                <span className="text-xs text-slate-400">دنبال‌کننده</span>
+                            </div>
+                            <div className="w-px h-6 bg-slate-200" />
+                            <div>
+                                <span className="text-base sm:text-lg font-black text-slate-900 block flex items-center justify-center gap-1">
+                                    <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                                    {toPersianDigits(agency.rating?.toFixed(1) || "۵.۰")}
+                                </span>
+                                <span className="text-xs text-slate-400">امتیاز</span>
+                            </div>
+                        </div>
+
+                        {/* Contact Badges */}
+                        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 pt-1 text-xs">
+                            {(agency as any).mobile && (
+                                <a
+                                    href={`tel:${(agency as any).mobile}`}
+                                    className="inline-flex items-center gap-1 text-slate-700 font-bold bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg transition-colors"
+                                >
+                                    <Phone className="w-3.5 h-3.5 text-blue-600" />
+                                    <span dir="ltr">{(agency as any).mobile}</span>
+                                </a>
+                            )}
                             {agency.phone && (
                                 <a
                                     href={`tel:${agency.phone}`}
-                                    className="flex items-center gap-1 text-brand font-bold hover:text-primary transition-colors"
+                                    className="inline-flex items-center gap-1 text-slate-700 font-bold bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg transition-colors"
                                 >
-                                    <Phone className="w-3.5 h-3.5 text-primary" />
-                                    <span dir="ltr">{toPersianDigits(agency.phone)}</span>
+                                    <Phone className="w-3.5 h-3.5 text-slate-500" />
+                                    <span dir="ltr">{agency.phone}</span>
+                                </a>
+                            )}
+                            {(agency as any).instagram && (
+                                <a
+                                    href={`https://instagram.com/${(agency as any).instagram}`}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="inline-flex items-center gap-1 text-pink-700 font-bold bg-pink-50 hover:bg-pink-100 px-3 py-1.5 rounded-lg transition-colors"
+                                >
+                                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <rect width="20" height="20" x="2" y="2" rx="5" ry="5"/>
+                                        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+                                        <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>
+                                    </svg>
+                                    <span>اینستاگرام</span>
                                 </a>
                             )}
                             {agency.website && (
@@ -244,167 +387,91 @@ export default function SingleAgencyScene() {
                                     href={agency.website.startsWith("http") ? agency.website : `https://${agency.website}`}
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="flex items-center gap-1 text-primary font-bold hover:underline"
+                                    className="inline-flex items-center gap-1 text-blue-700 font-bold bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors"
                                 >
                                     <Globe className="w-3.5 h-3.5" />
-                                    <span>وب‌سایت آژانس</span>
+                                    <span>وب‌سایت رسمی</span>
                                 </a>
                             )}
                         </div>
                     </div>
                 </div>
-
-                {/* Instagram Action Row */}
-                <div className="flex flex-wrap items-center gap-2.5 mt-6 pt-5 border-t border-gray-100">
-                    <button
-                        onClick={handleFollow}
-                        disabled={followMutation.isPending || unfollowMutation.isPending}
-                        className={cn(
-                            "flex-1 py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all active:scale-95",
-                            agency.isFollowing
-                                ? "bg-gray-100 text-brand border border-gray-200"
-                                : "bg-primary text-white shadow-md shadow-primary/20 hover:bg-primary/90"
-                        )}
-                    >
-                        {agency.isFollowing ? (
-                            <>
-                                <Check className="w-4 h-4 text-primary" />
-                                <span>دنبال می‌کنید</span>
-                            </>
-                        ) : (
-                            <>
-                                <Heart className="w-4 h-4" />
-                                <span>دنبال کردن</span>
-                            </>
-                        )}
-                    </button>
-
-                    <button
-                        onClick={() => setIsConsultationModalOpen(true)}
-                        className="flex-1 py-2.5 px-4 rounded-xl bg-brand text-white font-bold text-xs flex items-center justify-center gap-1.5 hover:bg-brand/90 transition-all active:scale-95 shadow-md shadow-brand/20"
-                    >
-                        <MessageSquare className="w-4 h-4 text-primary" />
-                        <span>درخواست مشاوره</span>
-                    </button>
-
-                    <button
-                        onClick={handleChat}
-                        disabled={chatMutation.isPending}
-                        className="w-10 h-10 rounded-xl bg-gray-50 border border-gray-200 flex items-center justify-center text-brand hover:bg-gray-100 transition-colors"
-                        title="ارسال پیام آنلاین"
-                    >
-                        <MessageCircle className="w-4 h-4" />
-                    </button>
-                </div>
             </section>
 
-            {/* Tabs & View Mode Selector */}
-            <div className="flex items-center justify-between border-b border-gray-200 mb-6">
-                <div className="flex gap-6">
+            {/* Showcase Tabs */}
+            <div className="flex items-center justify-between border-b border-slate-200 mb-6">
+                <div className="flex gap-4 sm:gap-8">
                     <button
                         onClick={() => setActiveTab("listings")}
                         className={cn(
                             "pb-3 font-bold text-xs sm:text-sm border-b-2 transition-colors",
                             activeTab === "listings"
-                                ? "border-brand text-brand font-black"
-                                : "border-transparent text-text-light hover:text-brand"
+                                ? "border-blue-600 text-blue-600 font-black"
+                                : "border-transparent text-slate-400 hover:text-slate-800"
                         )}
                     >
-                        آگهی‌های فعال ({toPersianDigits(ads.length)})
+                        آگهی‌های ملکی ({toPersianDigits(ads.length)})
                     </button>
+
+                    <button
+                        onClick={() => setActiveTab("posts")}
+                        className={cn(
+                            "pb-3 font-bold text-xs sm:text-sm border-b-2 transition-colors",
+                            activeTab === "posts"
+                                ? "border-blue-600 text-blue-600 font-black"
+                                : "border-transparent text-slate-400 hover:text-slate-800"
+                        )}
+                    >
+                        پست‌ها و مقالات ({toPersianDigits(posts.length)})
+                    </button>
+
+                    <button
+                        onClick={() => setActiveTab("about")}
+                        className={cn(
+                            "pb-3 font-bold text-xs sm:text-sm border-b-2 transition-colors",
+                            activeTab === "about"
+                                ? "border-blue-600 text-blue-600 font-black"
+                                : "border-transparent text-slate-400 hover:text-slate-800"
+                        )}
+                    >
+                        مشخصات و آدرس
+                    </button>
+
                     <button
                         onClick={() => setActiveTab("reviews")}
                         className={cn(
                             "pb-3 font-bold text-xs sm:text-sm border-b-2 transition-colors",
                             activeTab === "reviews"
-                                ? "border-brand text-brand font-black"
-                                : "border-transparent text-text-light hover:text-brand"
+                                ? "border-blue-600 text-blue-600 font-black"
+                                : "border-transparent text-slate-400 hover:text-slate-800"
                         )}
                     >
-                        نظرات و امتیازها
+                        نظرات کاربران
                     </button>
                 </div>
-
-                {activeTab === "listings" && (
-                    <div className="flex items-center gap-1 pb-2">
-                        <button
-                            onClick={() => setViewMode("feed")}
-                            className={cn(
-                                "p-1.5 rounded-lg transition-colors",
-                                viewMode === "feed" ? "bg-gray-200 text-brand" : "text-gray-400 hover:text-brand"
-                            )}
-                            title="نمایش لیستی"
-                        >
-                            <List className="w-4 h-4" />
-                        </button>
-                        <button
-                            onClick={() => setViewMode("grid")}
-                            className={cn(
-                                "p-1.5 rounded-lg transition-colors",
-                                viewMode === "grid" ? "bg-gray-200 text-brand" : "text-gray-400 hover:text-brand"
-                            )}
-                            title="نمایش مربعی اینستاگرام"
-                        >
-                            <Grid className="w-4 h-4" />
-                        </button>
-                    </div>
-                )}
             </div>
 
-            {/* Listings Tab */}
+            {/* TAB 1: LISTINGS */}
             {activeTab === "listings" && (
                 <div>
                     {isLoadingAds ? (
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                             {Array.from({ length: 6 }).map((_, i) => (
-                                <div key={i} className="aspect-[4/3] bg-gray-100 animate-pulse rounded-2xl" />
+                                <div key={i} className="aspect-[4/3] bg-slate-100 animate-pulse rounded-2xl" />
                             ))}
                         </div>
                     ) : ads.length === 0 ? (
-                        <div className="py-20 text-center bg-gray-50 rounded-3xl border border-dashed border-gray-200">
-                            <p className="text-text-light font-bold text-sm">در حال حاضر آگهی فعالی از این آژانس ثبت نشده است.</p>
-                        </div>
-                    ) : viewMode === "grid" ? (
-                        /* 3-Column Square Instagram Grid with Price Overlay */
-                        <div className="grid grid-cols-3 gap-1.5 sm:gap-3">
-                            {ads.map((ad) => {
-                                const priceVal = Object.values(ad.pricing)[0];
-                                const mediaUrl = ad.mediaIds?.[0]
-                                    ? `${process.env.NEXT_PUBLIC_API_URL}/media/${ad.mediaIds[0]}`
-                                    : "/property-placeholder.svg";
-
-                                return (
-                                    <Link
-                                        key={ad.adId}
-                                        href={`/ads/${ad.adId}`}
-                                        className="group relative aspect-square rounded-xl sm:rounded-2xl overflow-hidden bg-gray-100"
-                                    >
-                                        <Image
-                                            src={mediaUrl}
-                                            alt={ad.title}
-                                            fill
-                                            className="object-cover group-hover:scale-105 transition-transform duration-300"
-                                        />
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-2 sm:p-3 text-white">
-                                            <span className="text-[10px] sm:text-xs font-black truncate">{ad.title}</span>
-                                            <span className="text-[10px] sm:text-xs font-bold text-primary">
-                                                {formatPrice(priceVal)}
-                                            </span>
-                                        </div>
-                                    </Link>
-                                );
-                            })}
+                        <div className="py-20 text-center bg-white rounded-3xl border border-dashed border-slate-200">
+                            <p className="text-slate-400 font-bold text-sm">در حال حاضر آگهی فعالی از این صفحه ثبت نشده است.</p>
                         </div>
                     ) : (
-                        /* Standard Card Feed */
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {ads.map((ad) => (
+                            {ads.map((ad: any) => (
                                 <PropertyCard
-                                    key={ad.adId}
-                                    adId={ad.adId}
+                                    key={ad.adId || ad.id}
+                                    adId={ad.adId || ad.id}
                                     title={ad.title}
-                                    price={Object.values(ad.pricing)[0] ?? 0}
-                                    rating={4.8}
+                                    price={ad.pricing ? (Object.values(ad.pricing)[0] as number) : 0}
                                     location={ad.cityId}
                                     image={
                                         ad.mediaIds && ad.mediaIds.length > 0
@@ -419,103 +486,233 @@ export default function SingleAgencyScene() {
                 </div>
             )}
 
-            {/* Reviews Tab */}
-            {activeTab === "reviews" && (
-                <div className="bg-white rounded-3xl">
-                    <ReviewsSection targetId={id} targetType="agency" />
+            {/* TAB 2: POSTS */}
+            {activeTab === "posts" && (
+                <div>
+                    {isLoadingPosts ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {Array.from({ length: 4 }).map((_, i) => (
+                                <div key={i} className="h-44 bg-slate-100 animate-pulse rounded-3xl" />
+                            ))}
+                        </div>
+                    ) : posts.length === 0 ? (
+                        <div className="py-20 text-center bg-white rounded-3xl border border-dashed border-slate-200">
+                            <BookOpen className="w-12 h-12 text-slate-300 mx-auto mb-2" />
+                            <p className="text-slate-400 font-bold text-sm">هنوز پستی در این صفحه منتشر نشده است.</p>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {posts.map((post: AgencyPost) => (
+                                <div
+                                    key={post.id}
+                                    onClick={() => setReadingPost(post)}
+                                    className="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-xs hover:border-blue-400 transition-all cursor-pointer flex flex-col justify-between space-y-3 group"
+                                >
+                                    {post.mediaUrls && post.mediaUrls.length > 0 && (
+                                        <div className="h-40 w-full rounded-2xl overflow-hidden bg-slate-100">
+                                            <img
+                                                src={post.mediaUrls[0]}
+                                                alt={post.title}
+                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                            />
+                                        </div>
+                                    )}
+
+                                    <div className="space-y-1.5">
+                                        <h3 className="text-sm font-black text-slate-900 group-hover:text-blue-600 transition-colors">
+                                            {post.title}
+                                        </h3>
+                                        {post.summary && (
+                                            <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
+                                                {post.summary}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    <div className="flex items-center justify-between text-xs text-slate-400 pt-2 border-t border-slate-100">
+                                        <span>{new Date(post.createdAt).toLocaleDateString("fa-IR")}</span>
+                                        <span className="flex items-center gap-1">
+                                            <Eye className="w-3.5 h-3.5" />
+                                            <span>{post.viewCount || 0} بازدید</span>
+                                        </span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             )}
 
-            {/* Consultation Modal */}
+            {/* TAB 3: ABOUT */}
+            {activeTab === "about" && (
+                <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-xs space-y-6">
+                    <h3 className="text-base font-black text-slate-900">مشخصات صنفی و اطلاعات تماس</h3>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                        {(agency as any).guildCode && (
+                            <div className="p-4 bg-slate-50 rounded-2xl space-y-1">
+                                <span className="text-slate-400 font-bold block">شناسه صنفی اصناف:</span>
+                                <span className="font-mono font-bold text-slate-900 text-sm">{(agency as any).guildCode}</span>
+                            </div>
+                        )}
+                        {agency.licenseNumber && (
+                            <div className="p-4 bg-slate-50 rounded-2xl space-y-1">
+                                <span className="text-slate-400 font-bold block">شماره پروانه کسب:</span>
+                                <span className="font-mono font-bold text-slate-900 text-sm">{agency.licenseNumber}</span>
+                            </div>
+                        )}
+                        {(agency as any).workingHours && (
+                            <div className="p-4 bg-slate-50 rounded-2xl space-y-1 sm:col-span-2">
+                                <span className="text-slate-400 font-bold block">ساعات کاری:</span>
+                                <span className="font-bold text-slate-900">{(agency as any).workingHours}</span>
+                            </div>
+                        )}
+                        {(agency as any).address && (
+                            <div className="p-4 bg-slate-50 rounded-2xl space-y-1 sm:col-span-2">
+                                <span className="text-slate-400 font-bold block">آدرس رسمی:</span>
+                                <span className="font-medium text-slate-800 leading-relaxed">{(agency as any).address}</span>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* TAB 4: REVIEWS */}
+            {activeTab === "reviews" && (
+                <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs">
+                    <ReviewsSection targetId={targetAgencyId} targetType="agency" />
+                </div>
+            )}
+
+            {/* Send Message / Consultation Modal */}
             {isConsultationModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in">
-                    <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-5 border border-gray-100">
-                        <div className="flex justify-between items-center border-b border-gray-100 pb-3">
-                            <h3 className="font-black text-brand text-base">درخواست مشاوره تخصصی</h3>
+                <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+                    <div className="bg-white rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl border border-slate-100">
+                        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                            <div className="flex items-center gap-2">
+                                <MessageSquare className="w-5 h-5 text-blue-600" />
+                                <h3 className="text-base font-black text-slate-900">
+                                    ارسال پیام به {agency.agencyName || agency.name}
+                                </h3>
+                            </div>
                             <button
+                                type="button"
                                 onClick={() => setIsConsultationModalOpen(false)}
-                                className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-text-light hover:bg-gray-200"
+                                className="w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 flex items-center justify-center"
                             >
-                                <X className="w-4 h-4" />
+                                ✕
                             </button>
                         </div>
 
-                        <div className="space-y-4 text-xs">
-                            <div>
-                                <Select
-                                    label="موضوع مشاوره"
-                                    value={consultationSubject}
-                                    onChange={(val) => setConsultationSubject(val)}
-                                    options={[
-                                        { value: "مشاوره خرید ملک", label: "مشاوره خرید ملک" },
-                                        { value: "مشاوره رهن و اجاره", label: "مشاوره رهن و اجاره" },
-                                        { value: "کارشناسی قیمت ملک", label: "کارشناسی قیمت ملک" },
-                                        { value: "مشاوره سرمایه‌گذاری ملکی", label: "مشاوره سرمایه‌گذاری ملکی" },
-                                        { value: "مشاوره عمومی ملک", label: "سایر موارد" },
-                                    ]}
-                                    placeholder="موضوع مشاوره را انتخاب کنید..."
+                        <div className="space-y-3 text-xs">
+                            <div className="space-y-1">
+                                <label className="text-slate-700 font-bold">نام و نام خانوادگی شما</label>
+                                <input
+                                    type="text"
+                                    value={senderName}
+                                    onChange={(e) => setSenderName(e.target.value)}
+                                    placeholder="مثال: محمد رضایی"
+                                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl"
                                 />
                             </div>
 
-                            <div>
-                                <label className="block font-bold text-brand mb-1.5">روش ارتباطی ترجیحی</label>
-                                <div className="grid grid-cols-2 gap-2">
-                                    <button
-                                        type="button"
-                                        onClick={() => setContactMethod("phone")}
-                                        className={cn(
-                                            "py-2.5 px-3 rounded-xl border font-bold transition-all flex items-center justify-center gap-1.5",
-                                            contactMethod === "phone"
-                                                ? "bg-brand text-white border-brand"
-                                                : "bg-gray-50 border-gray-200 text-text-light"
-                                        )}
-                                    >
-                                        <Phone className="w-3.5 h-3.5" />
-                                        <span>تماس تلفنی</span>
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => setContactMethod("chat")}
-                                        className={cn(
-                                            "py-2.5 px-3 rounded-xl border font-bold transition-all flex items-center justify-center gap-1.5",
-                                            contactMethod === "chat"
-                                                ? "bg-brand text-white border-brand"
-                                                : "bg-gray-50 border-gray-200 text-text-light"
-                                        )}
-                                    >
-                                        <MessageCircle className="w-3.5 h-3.5" />
-                                        <span>چت آنلاین</span>
-                                    </button>
-                                </div>
+                            <div className="space-y-1">
+                                <label className="text-slate-700 font-bold">شماره تماس جهت هماهنگی</label>
+                                <input
+                                    type="text"
+                                    value={senderPhone}
+                                    onChange={(e) => setSenderPhone(e.target.value)}
+                                    placeholder="۰۹۱۲..."
+                                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-mono"
+                                />
                             </div>
 
-                            <div>
-                                <label className="block font-bold text-brand mb-1.5">توضیحات و نیازمندی شما</label>
+                            <div className="space-y-1">
+                                <label className="text-slate-700 font-bold">موضوع پیام یا درخواست</label>
+                                <input
+                                    type="text"
+                                    value={consultationSubject}
+                                    onChange={(e) => setConsultationSubject(e.target.value)}
+                                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl"
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <label className="text-slate-700 font-bold">متن پیام *</label>
                                 <textarea
                                     rows={4}
                                     value={consultationMessage}
                                     onChange={(e) => setConsultationMessage(e.target.value)}
-                                    placeholder="محدوده بودجه، متراژ و مشخصات مدنظرتان را بنویسید..."
-                                    className="w-full p-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-primary outline-hidden leading-relaxed"
+                                    placeholder="درخواست ملکی یا سوال خود را اینجا مطرح فرمایید..."
+                                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl"
                                 />
                             </div>
                         </div>
 
-                        <div className="flex gap-2 pt-2">
+                        <div className="flex gap-2 pt-2 border-t border-slate-100">
                             <button
                                 type="button"
                                 onClick={() => setIsConsultationModalOpen(false)}
-                                className="flex-1 py-3 rounded-xl border border-gray-200 font-bold text-xs text-text-light hover:bg-gray-50"
+                                className="flex-1 py-2.5 rounded-xl border border-slate-200 font-bold text-xs text-slate-600 hover:bg-slate-50"
                             >
                                 انصراف
                             </button>
                             <button
                                 type="button"
-                                onClick={() => consultationMutation.mutate()}
-                                disabled={consultationMutation.isPending || !consultationMessage.trim()}
-                                className="flex-1 py-3 rounded-xl bg-primary text-white font-black text-xs hover:bg-primary/90 shadow-md shadow-primary/20 disabled:opacity-50 transition-all"
+                                onClick={() => {
+                                    if (!consultationMessage.trim()) {
+                                        toast.error("متن پیام نمی‌تواند خالی باشد.");
+                                        return;
+                                    }
+                                    consultationMutation.mutate();
+                                }}
+                                disabled={consultationMutation.isPending}
+                                className="flex-1 py-2.5 rounded-xl bg-blue-600 text-white font-black text-xs hover:bg-blue-700 shadow-sm"
                             >
-                                {consultationMutation.isPending ? "در حال ارسال..." : "ارسال درخواست"}
+                                {consultationMutation.isPending ? "در حال ارسال..." : "ارسال مستقیم پیام"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Read Post Modal */}
+            {readingPost && (
+                <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+                    <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 space-y-4 shadow-2xl border border-slate-100 my-8">
+                        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                            <h3 className="text-base font-black text-slate-900">{readingPost.title}</h3>
+                            <button
+                                type="button"
+                                onClick={() => setReadingPost(null)}
+                                className="w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 flex items-center justify-center"
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        {readingPost.mediaUrls && readingPost.mediaUrls.length > 0 && (
+                            <div className="h-60 w-full rounded-2xl overflow-hidden bg-slate-100">
+                                <img src={readingPost.mediaUrls[0]} alt={readingPost.title} className="w-full h-full object-cover" />
+                            </div>
+                        )}
+
+                        <div className="text-xs text-slate-400 flex items-center gap-3">
+                            <span>منتشر شده در: {new Date(readingPost.createdAt).toLocaleDateString("fa-IR")}</span>
+                            <span>بازدید: {readingPost.viewCount || 0}</span>
+                        </div>
+
+                        <div className="text-xs sm:text-sm text-slate-700 leading-relaxed whitespace-pre-line py-2">
+                            {readingPost.content}
+                        </div>
+
+                        <div className="pt-3 border-t border-slate-100 flex justify-end">
+                            <button
+                                type="button"
+                                onClick={() => setReadingPost(null)}
+                                className="px-5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold"
+                            >
+                                بستن
                             </button>
                         </div>
                     </div>
