@@ -137,8 +137,8 @@ export default function SingleAgencyScene() {
                 subjectId: targetAgencyId,
             },
             {
-                onSuccess: (conv: any) => {
-                    router.push(`/chat?id=${conv.id || conv.conversationId}`);
+                onSuccess: (conv) => {
+                    router.push(`/chat?id=${conv.id}`);
                 },
                 onError: () => {
                     toast.error("خطا در برقراری ارتباط چت");
@@ -175,7 +175,7 @@ export default function SingleAgencyScene() {
 
     const ads = adsResponse?.items || [];
     const posts = postsData?.items || [];
-    const followerCount = (agency as any).followersCount ?? agency.followerCount ?? 0;
+    const followerCount = agency.followersCount ?? agency.followerCount ?? 0;
 
     return (
         <div className="max-w-4xl mx-auto px-3 sm:px-6 py-6 pb-24" dir="rtl">
@@ -210,9 +210,9 @@ export default function SingleAgencyScene() {
             <section className="bg-white rounded-3xl border border-gray-200/80 shadow-xs overflow-hidden mb-6">
                 {/* Cover Banner */}
                 <div className="h-36 sm:h-52 w-full bg-gradient-to-r from-slate-800 via-blue-900 to-indigo-900 relative">
-                    {(agency as any).coverUrl && (
+                    {agency.coverUrl && (
                         <img
-                            src={(agency as any).coverUrl}
+                            src={agency.coverUrl}
                             alt={agency.agencyName || agency.name}
                             className="w-full h-full object-cover"
                         />
@@ -349,13 +349,13 @@ export default function SingleAgencyScene() {
 
                         {/* Contact Badges */}
                         <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 pt-1 text-xs">
-                            {(agency as any).mobile && (
+                            {agency.mobile && (
                                 <a
-                                    href={`tel:${(agency as any).mobile}`}
+                                    href={`tel:${agency.mobile}`}
                                     className="inline-flex items-center gap-1 text-slate-700 font-bold bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg transition-colors"
                                 >
                                     <Phone className="w-3.5 h-3.5 text-blue-600" />
-                                    <span dir="ltr">{(agency as any).mobile}</span>
+                                    <span dir="ltr">{agency.mobile}</span>
                                 </a>
                             )}
                             {agency.phone && (
@@ -367,9 +367,9 @@ export default function SingleAgencyScene() {
                                     <span dir="ltr">{agency.phone}</span>
                                 </a>
                             )}
-                            {(agency as any).instagram && (
+                            {agency.instagram && (
                                 <a
-                                    href={`https://instagram.com/${(agency as any).instagram}`}
+                                    href={`https://instagram.com/${agency.instagram}`}
                                     target="_blank"
                                     rel="noreferrer"
                                     className="inline-flex items-center gap-1 text-pink-700 font-bold bg-pink-50 hover:bg-pink-100 px-3 py-1.5 rounded-lg transition-colors"
@@ -466,12 +466,12 @@ export default function SingleAgencyScene() {
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {ads.map((ad: any) => (
+                            {ads.map((ad) => (
                                 <PropertyCard
-                                    key={ad.adId || ad.id}
-                                    adId={ad.adId || ad.id}
+                                    key={ad.adId}
+                                    adId={ad.adId}
                                     title={ad.title}
-                                    price={ad.pricing ? (Object.values(ad.pricing)[0] as number) : 0}
+                                    price={ad.pricing ? (Object.values(ad.pricing)[0] ?? 0) : 0}
                                     location={ad.cityId}
                                     image={
                                         ad.mediaIds && ad.mediaIds.length > 0
@@ -549,10 +549,10 @@ export default function SingleAgencyScene() {
                     <h3 className="text-base font-black text-slate-900">مشخصات صنفی و اطلاعات تماس</h3>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-                        {(agency as any).guildCode && (
+                        {agency.guildCode && (
                             <div className="p-4 bg-slate-50 rounded-2xl space-y-1">
                                 <span className="text-slate-400 font-bold block">شناسه صنفی اصناف:</span>
-                                <span className="font-mono font-bold text-slate-900 text-sm">{(agency as any).guildCode}</span>
+                                <span className="font-mono font-bold text-slate-900 text-sm">{agency.guildCode}</span>
                             </div>
                         )}
                         {agency.licenseNumber && (
@@ -561,16 +561,16 @@ export default function SingleAgencyScene() {
                                 <span className="font-mono font-bold text-slate-900 text-sm">{agency.licenseNumber}</span>
                             </div>
                         )}
-                        {(agency as any).workingHours && (
+                        {agency.workingHours && (
                             <div className="p-4 bg-slate-50 rounded-2xl space-y-1 sm:col-span-2">
                                 <span className="text-slate-400 font-bold block">ساعات کاری:</span>
-                                <span className="font-bold text-slate-900">{(agency as any).workingHours}</span>
+                                <span className="font-bold text-slate-900">{agency.workingHours}</span>
                             </div>
                         )}
-                        {(agency as any).address && (
+                        {agency.address && (
                             <div className="p-4 bg-slate-50 rounded-2xl space-y-1 sm:col-span-2">
                                 <span className="text-slate-400 font-bold block">آدرس رسمی:</span>
-                                <span className="font-medium text-slate-800 leading-relaxed">{(agency as any).address}</span>
+                                <span className="font-medium text-slate-800 leading-relaxed">{agency.address}</span>
                             </div>
                         )}
                     </div>

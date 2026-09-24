@@ -1,3 +1,5 @@
+import { JsonObject } from "../common";
+
 export type AgentApplicationType = "AGENCY" | "CONSULTANT";
 export type AgentApplicationStatus = "PENDING" | "APPROVED" | "REJECTED";
 export type AgencyVerificationStatus = "UNVERIFIED" | "PENDING" | "VERIFIED" | "REJECTED";
@@ -125,7 +127,7 @@ export interface AgentApplicationResponse {
     adminNote?: string;
     reviewedBy?: string;
     reviewedAt?: string;
-    jibitVerificationData?: Record<string, any>;
+    jibitVerificationData?: JsonObject;
     createdAt: string;
     updatedAt: string;
 }

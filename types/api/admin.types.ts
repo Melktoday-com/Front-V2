@@ -1,5 +1,7 @@
 import { AdStatus, PromotionStatus, ReportStatus, ReportTargetType, UserStatus } from "./enums";
 import { PricingFieldDefinition } from "./ads.types";
+import { JsonObject } from "../common";
+import { AgencyFull } from "./agency.types";
 
 export interface ModerationHistory {
     id: string;
@@ -293,7 +295,7 @@ export interface AdminCreateAdRequest {
     title: string;
     description: string;
     rawPricing?: Record<string, number>;
-    attributes?: Record<string, unknown>;
+    attributes?: JsonObject;
     latitude: number;
     longitude: number;
     mediaIds?: string[];
@@ -321,7 +323,7 @@ export interface AdminCreateTemporaryRentRequest {
     };
     latitude: number;
     longitude: number;
-    attributes?: Record<string, unknown>;
+    attributes?: JsonObject;
     mediaIds?: string[];
 }
 
@@ -357,7 +359,7 @@ export interface ReviewAgentApplicationRequest {
 }
 
 export interface AdminAgenciesListResponse {
-    items: any[];
+    items: AgencyFull[];
     total: number;
     page: number;
     limit: number;

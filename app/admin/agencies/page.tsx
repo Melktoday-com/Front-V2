@@ -26,7 +26,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
-import { AgentApplicationResponse } from "@/types/api/agency.types";
+import { AgentApplicationResponse, AgencyFull } from "@/types/api/agency.types";
+import { normalizeApiError } from "@/lib/api/error-handler";
 
 export default function AdminAgenciesPage() {
     const queryClient = useQueryClient();
@@ -82,8 +83,8 @@ export default function AdminAgenciesPage() {
             queryClient.invalidateQueries({ queryKey: ["admin", "agency-applications"] });
             queryClient.invalidateQueries({ queryKey: ["admin", "agencies"] });
         },
-        onError: (err: any) => {
-            toast.error(err?.response?.data?.message || "خطا در ثبت بررسی درخواست.");
+        onError: (err: Error) => {
+            toast.error(normalizeApiError(err, "خطا در ثبت بررسی درخواست."));
         },
     });
 
@@ -95,8 +96,8 @@ export default function AdminAgenciesPage() {
             toast.success(vars.isActive ? "املاک فعال شد." : "املاک با موفقیت معلق (Suspend) گردید.");
             queryClient.invalidateQueries({ queryKey: ["admin", "agencies"] });
         },
-        onError: (err: any) => {
-            toast.error(err?.response?.data?.message || "خطا در تغییر وضعیت املاک.");
+        onError: (err: Error) => {
+            toast.error(normalizeApiError(err, "خطا در تغییر وضعیت املاک."));
         },
     });
 
@@ -395,7 +396,7 @@ export default function AdminAgenciesPage() {
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-100 text-slate-700">
-                                        {agencies.map((agency: any) => (
+                                        {agencies.map((agency: AgencyFull) => (
                                             <tr key={agency.id} className="hover:bg-slate-50/50 transition-colors">
                                                 <td className="py-4 px-6">
                                                     <div className="flex items-center gap-3">

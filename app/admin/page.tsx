@@ -5,7 +5,9 @@ import { useAds } from "@/hooks/useAds";
 import { cn, toPersianDigits } from "@/lib/utils";
 import { adminService } from "@/services/admin.service";
 import { walletService } from "@/services/wallet.service";
-import { AdStatus } from "@/types/api/enums";
+import { AdminUser } from "@/types/api/admin.types";
+import { WalletTransaction } from "@/types/api/wallet.types";
+import { AdStatus, TransactionStatus } from "@/types/api/enums";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
     AlertTriangle,
@@ -151,10 +153,10 @@ export default function AdminDashboard() {
     }, []);
 
     // Users metrics
-    const usersList = usersData?.items || [];
+    const usersList: AdminUser[] = usersData?.items || [];
     const totalUsers = usersData?.total ?? usersList.length;
     const newUsersToday = useMemo(() => {
-        return usersList.filter((u: any) => {
+        return usersList.filter((u: AdminUser) => {
             if (!u.createdAt) return false;
             return new Date(u.createdAt) >= today;
         }).length;
@@ -166,31 +168,24 @@ export default function AdminDashboard() {
     // Reports metrics
     const pendingReportsCount = Array.isArray(pendingReportsData)
         ? pendingReportsData.length
-        : (pendingReportsData as any)?.items?.length ?? 0;
+        : 0;
 
     // Promotions & Campaigns metrics
-    const pendingPromotionsCount = Array.isArray(pendingPromotionsData)
-        ? pendingPromotionsData.length
-        : (pendingPromotionsData as any)?.items?.length ?? 0;
+    const pendingPromotionsCount = pendingPromotionsData?.items?.length ?? 0;
 
-    const pendingCampaignsCount = Array.isArray(pendingCampaignsData)
-        ? pendingCampaignsData.length
-        : (pendingCampaignsData as any)?.items?.length ?? 0;
+    const pendingCampaignsCount = pendingCampaignsData?.items?.length ?? 0;
 
     // Today's Payments & Transactions metrics
-    const transactionsList = transactionsData?.transactions || transactionsData?.items || [];
+    const transactionsList: WalletTransaction[] = transactionsData?.transactions || transactionsData?.items || [];
     const { todayPaymentsAmount, todayPaymentsCount } = useMemo(() => {
-        const todayTx = transactionsList.filter((tx: any) => {
+        const todayTx = transactionsList.filter((tx: WalletTransaction) => {
             if (!tx.createdAt) return false;
             const isTodayTx = new Date(tx.createdAt) >= today;
-            const isSuccess =
-                tx.status === "COMPLETED" ||
-                tx.status === "completed" ||
-                String(tx.status).toUpperCase() === "COMPLETED";
+            const isSuccess = tx.status === TransactionStatus.COMPLETED;
             return isTodayTx && isSuccess;
         });
 
-        const total = todayTx.reduce((sum: number, tx: any) => sum + Number(tx.amount || 0), 0);
+        const total = todayTx.reduce((sum: number, tx: WalletTransaction) => sum + Number(tx.amount || 0), 0);
         return {
             todayPaymentsAmount: total,
             todayPaymentsCount: todayTx.length,

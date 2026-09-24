@@ -26,6 +26,10 @@ import {
     ListArchivedCategoriesResponse,
     ReviewAgentApplicationRequest,
     AdminAgenciesListResponse,
+    ListUsersResponse,
+    AdminReport,
+    ListPendingPromotionsResponse,
+    ListPendingCampaignsResponse,
 } from "@/types/api/admin.types";
 import { AttributeDefinition, CategoryListItem, PriceModel, Subcategory } from "@/types/api/ads.types";
 import {
@@ -61,8 +65,8 @@ export const adminService = {
         return response.data;
     },
 
-    listUsers: async (params: { page?: number; limit?: number }) => {
-        const response = await api.get("/admin/users", { params });
+    listUsers: async (params: { page?: number; limit?: number }): Promise<ListUsersResponse> => {
+        const response = await api.get<ListUsersResponse>("/admin/users", { params });
         return response.data;
     },
 
@@ -133,8 +137,8 @@ export const adminService = {
     },
 
     // Reports
-    listPendingReports: async () => {
-        const response = await api.get("/admin/reports/pending");
+    listPendingReports: async (): Promise<AdminReport[]> => {
+        const response = await api.get<AdminReport[]>("/admin/reports/pending");
         return response.data;
     },
 
@@ -144,8 +148,8 @@ export const adminService = {
     },
 
     // Promotions
-    listPendingPromotions: async (params: { page?: number; limit?: number } = {}) => {
-        const response = await api.get("/admin/promotions/pending", { params });
+    listPendingPromotions: async (params: { page?: number; limit?: number } = {}): Promise<ListPendingPromotionsResponse> => {
+        const response = await api.get<ListPendingPromotionsResponse>("/admin/promotions/pending", { params });
         return response.data;
     },
 
@@ -155,8 +159,8 @@ export const adminService = {
     },
 
     // Campaigns
-    listPendingCampaigns: async (params: { page?: number; limit?: number } = {}) => {
-        const response = await api.get("/admin/campaigns/pending", { params });
+    listPendingCampaigns: async (params: { page?: number; limit?: number } = {}): Promise<ListPendingCampaignsResponse> => {
+        const response = await api.get<ListPendingCampaignsResponse>("/admin/campaigns/pending", { params });
         return response.data;
     },
 

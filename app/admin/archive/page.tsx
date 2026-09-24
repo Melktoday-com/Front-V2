@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { ArchivedCategoryItem, ArchivedSubcategoryItem } from "@/types/api/admin.types";
+import { normalizeApiError } from "@/lib/api/error-handler";
 
 export default function AdminArchivePage() {
     const queryClient = useQueryClient();
@@ -38,8 +39,8 @@ export default function AdminArchivePage() {
             queryClient.invalidateQueries({ queryKey: ["admin", "archive"] });
             queryClient.invalidateQueries({ queryKey: ["admin", "categories"] });
         },
-        onError: (err: any) => {
-            toast.error(err?.response?.data?.message || "خطا در بازگردانی دسته‌بندی.");
+        onError: (err: Error) => {
+            toast.error(normalizeApiError(err, "خطا در بازگردانی دسته‌بندی."));
         },
     });
 
@@ -50,8 +51,8 @@ export default function AdminArchivePage() {
             setConfirmModal(null);
             queryClient.invalidateQueries({ queryKey: ["admin", "archive"] });
         },
-        onError: (err: any) => {
-            toast.error(err?.response?.data?.message || "خطا در حذف قطعی دسته‌بندی.");
+        onError: (err: Error) => {
+            toast.error(normalizeApiError(err, "خطا در حذف قطعی دسته‌بندی."));
         },
     });
 
@@ -62,8 +63,8 @@ export default function AdminArchivePage() {
             queryClient.invalidateQueries({ queryKey: ["admin", "archive"] });
             queryClient.invalidateQueries({ queryKey: ["admin", "categories"] });
         },
-        onError: (err: any) => {
-            toast.error(err?.response?.data?.message || "خطا در بازگردانی زیردسته‌بندی.");
+        onError: (err: Error) => {
+            toast.error(normalizeApiError(err, "خطا در بازگردانی زیردسته‌بندی."));
         },
     });
 
@@ -74,8 +75,8 @@ export default function AdminArchivePage() {
             setConfirmModal(null);
             queryClient.invalidateQueries({ queryKey: ["admin", "archive"] });
         },
-        onError: (err: any) => {
-            toast.error(err?.response?.data?.message || "خطا در حذف قطعی زیردسته‌بندی.");
+        onError: (err: Error) => {
+            toast.error(normalizeApiError(err, "خطا در حذف قطعی زیردسته‌بندی."));
         },
     });
 

@@ -5,6 +5,7 @@ import {
     AdMutationResponse,
     CategoryListItem,
     CreateAdDraftRequest,
+    CreateAdDraftResponse,
     EditAdRequest,
     ListAdsQuery,
     PaginatedAdsResponse,
@@ -41,8 +42,8 @@ export const adsService = {
         return response.data;
     },
 
-    async createDraft(data: CreateAdDraftRequest): Promise<AdMutationResponse> {
-        const response = await apiClient.post<AdMutationResponse>("/ads/drafts", data);
+    async createDraft(data: CreateAdDraftRequest): Promise<CreateAdDraftResponse> {
+        const response = await apiClient.post<CreateAdDraftResponse>("/ads/drafts", data);
         return response.data;
     },
 

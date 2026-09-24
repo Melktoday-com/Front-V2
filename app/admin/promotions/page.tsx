@@ -8,6 +8,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Check, X, Clock, ExternalLink } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { normalizeApiError } from "@/lib/api/error-handler";
 
 export default function AdminPromotionsPage() {
     const queryClient = useQueryClient();
@@ -21,8 +22,8 @@ export default function AdminPromotionsPage() {
             toast.success(variables.action === 'APPROVE' ? "ارتقا آگهی تایید شد" : "درخواست رد شد");
             queryClient.invalidateQueries({ queryKey: ["admin", "promotions"] });
         },
-        onError: (error: any) => {
-            toast.error(error?.response?.data?.message || "خطا در انجام عملیات");
+        onError: (error: Error) => {
+            toast.error(normalizeApiError(error, "خطا در انجام عملیات"));
         }
     });
 

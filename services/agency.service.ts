@@ -1,4 +1,5 @@
 import apiClient from "@/lib/api/client";
+import axios from "axios";
 import {
     AgencyConsultationMessage,
     AgencyFull,
@@ -64,8 +65,8 @@ export const agencyService = {
         try {
             const response = await apiClient.get<AgentApplicationResponse>("/agencies/my-application");
             return response.data;
-        } catch (error: any) {
-            if (error?.response?.status === 404) {
+        } catch (error) {
+            if (axios.isAxiosError(error) && error.response?.status === 404) {
                 return null;
             }
             throw error;

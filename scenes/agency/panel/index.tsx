@@ -4,7 +4,8 @@ import { useAgencyStats, useMyAgency } from "@/hooks/useAgencies";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import { agencyService } from "@/services/agency.service";
-import { AgencyConsultationMessage, AgencyPost } from "@/types/api/agency.types";
+import { AgencyConsultationMessage, AgencyPost, UpdateAgencyProfileRequest } from "@/types/api/agency.types";
+import { normalizeApiError } from "@/lib/api/error-handler";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
     AlertCircle,
@@ -75,31 +76,31 @@ export default function AgencyPanelScene() {
                 slug: agency.slug || "",
                 bio: agency.bio || "",
                 logoUrl: agency.logoUrl || "",
-                coverUrl: (agency as any).coverUrl || "",
+                coverUrl: agency.coverUrl || "",
                 licenseNumber: agency.licenseNumber || "",
-                guildCode: (agency as any).guildCode || "",
+                guildCode: agency.guildCode || "",
                 website: agency.website || "",
                 phone: agency.phone || "",
-                mobile: (agency as any).mobile || "",
-                whatsapp: (agency as any).whatsapp || "",
-                telegram: (agency as any).telegram || "",
-                instagram: (agency as any).instagram || "",
-                address: (agency as any).address || "",
-                postalCode: (agency as any).postalCode || "",
-                workingHours: (agency as any).workingHours || "",
+                mobile: agency.mobile || "",
+                whatsapp: agency.whatsapp || "",
+                telegram: agency.telegram || "",
+                instagram: agency.instagram || "",
+                address: agency.address || "",
+                postalCode: agency.postalCode || "",
+                workingHours: agency.workingHours || "",
             });
         }
     }, [agency]);
 
     // Update showcase mutation
     const updateShowcaseMutation = useMutation({
-        mutationFn: (data: any) => agencyService.updateMyShowcase(data),
+        mutationFn: (data: UpdateAgencyProfileRequest) => agencyService.updateMyShowcase(data),
         onSuccess: () => {
             toast.success("تنظیمات صفحه ویترین با موفقیت ذخیره شد.");
             queryClient.invalidateQueries({ queryKey: ["my-agency"] });
         },
-        onError: (err: any) => {
-            toast.error(err?.response?.data?.message || "خطا در بروزرسانی صفحه املاک.");
+        onError: (err: Error) => {
+            toast.error(normalizeApiError(err, "خطا در بروزرسانی صفحه املاک."));
         },
     });
 
@@ -122,8 +123,19 @@ export default function AgencyPanelScene() {
         isPublished: boolean;
     } | null>(null);
 
+    interface SavePostInput {
+        isEdit?: boolean;
+        postId?: string;
+        title: string;
+        slug?: string;
+        summary?: string;
+        content: string;
+        mediaUrls?: string;
+        isPublished: boolean;
+    }
+
     const savePostMutation = useMutation({
-        mutationFn: (data: any) => {
+        mutationFn: (data: SavePostInput) => {
             const payload = {
                 title: data.title,
                 slug: data.slug || undefined,
@@ -142,8 +154,8 @@ export default function AgencyPanelScene() {
             setPostModal(null);
             refetchPosts();
         },
-        onError: (err: any) => {
-            toast.error(err?.response?.data?.message || "خطا در ذخیره پست.");
+        onError: (err: Error) => {
+            toast.error(normalizeApiError(err, "خطا در ذخیره پست."));
         },
     });
 
@@ -153,8 +165,8 @@ export default function AgencyPanelScene() {
             toast.success("پست حذف شد.");
             refetchPosts();
         },
-        onError: (err: any) => {
-            toast.error(err?.response?.data?.message || "خطا در حذف پست.");
+        onError: (err: Error) => {
+            toast.error(normalizeApiError(err, "خطا در حذف پست."));
         },
     });
 
@@ -177,8 +189,8 @@ export default function AgencyPanelScene() {
             setReplyText("");
             refetchMessages();
         },
-        onError: (err: any) => {
-            toast.error(err?.response?.data?.message || "خطا در ارسال پاسخ.");
+        onError: (err: Error) => {
+            toast.error(normalizeApiError(err, "خطا در ارسال پاسخ."));
         },
     });
 
@@ -348,14 +360,14 @@ export default function AgencyPanelScene() {
                             <div className="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-xs space-y-1">
                                 <span className="text-slate-400 text-xs font-bold block">تعداد دنبال‌کنندگان</span>
                                 <div className="text-2xl font-black text-slate-900">
-                                    {(agency as any).followersCount || stats?.followerCount || 0}
+                                    {agency.followersCount || stats?.followerCount || 0}
                                 </div>
                             </div>
 
                             <div className="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-xs space-y-1">
                                 <span className="text-slate-400 text-xs font-bold block">درخواست‌های مشاوره</span>
                                 <div className="text-2xl font-black text-slate-900">
-                                    {(agency as any).consultationsCount || stats?.consultationCount || 0}
+                                    {agency.consultationsCount || stats?.consultationCount || 0}
                                 </div>
                             </div>
 

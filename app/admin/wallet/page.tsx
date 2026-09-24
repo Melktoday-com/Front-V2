@@ -7,6 +7,7 @@ import { ArrowDownCircle, ArrowUpCircle, Gift, Info, Wallet } from "lucide-react
 import { useSearchParams } from "next/navigation";
 import React, { Suspense, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { normalizeApiError } from "@/lib/api/error-handler";
 
 function AdminWalletContent() {
     const searchParams = useSearchParams();
@@ -30,9 +31,8 @@ function AdminWalletContent() {
             setAmount("");
             setNote("");
         },
-        onError: (error: unknown) => {
-            const message = error instanceof Error ? error.message : "خطا در انجام تراکنش";
-            toast.error(message);
+        onError: (error: Error) => {
+            toast.error(normalizeApiError(error, "خطا در انجام تراکنش"));
         }
     });
 

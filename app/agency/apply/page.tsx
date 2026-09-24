@@ -23,6 +23,8 @@ import { toast } from "sonner";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AgentApplicationType, ApplyAgentRequest } from "@/types/api/agency.types";
+import { CityItem } from "@/types/api/geo.types";
+import { normalizeApiError } from "@/lib/api/error-handler";
 
 export default function AgencyApplyPage() {
     const router = useRouter();
@@ -62,8 +64,8 @@ export default function AgencyApplyPage() {
             setIsReapplying(false);
             queryClient.invalidateQueries({ queryKey: ["agency", "my-application"] });
         },
-        onError: (err: any) => {
-            toast.error(err?.response?.data?.message || "خطا در ثبت درخواست. لطفاً اطلاعات ورودی را بررسی نمایید.");
+        onError: (err: Error) => {
+            toast.error(normalizeApiError(err, "خطا در ثبت درخواست. لطفاً اطلاعات ورودی را بررسی نمایید."));
         },
     });
 
@@ -382,7 +384,7 @@ export default function AgencyApplyPage() {
                                     required
                                 >
                                     <option value="">انتخاب شهر...</option>
-                                    {cities.map((city: any) => (
+                                    {cities.map((city: CityItem) => (
                                         <option key={city.id} value={city.id}>
                                             {city.name}
                                         </option>

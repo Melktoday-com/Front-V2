@@ -352,8 +352,8 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
             await createDraftMutation.mutateAsync(payload);
             toast.success("اقامتگاه با موفقیت به عنوان پیش‌نویس ثبت شد");
             router.push("/profile/temporary-rent");
-        } catch (err: unknown) {
-            const msg = normalizeApiError(err, "خطا در ثبت اقامتگاه");
+        } catch (err) {
+            const msg = normalizeApiError(err instanceof Error ? err : undefined, "خطا در ثبت اقامتگاه");
             toast.error(msg);
         } finally {
             setIsSubmittingAdmin(false);

@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { normalizeApiError } from "@/lib/api/error-handler";
 
 interface SubcategoryConfigModalProps {
     isOpen: boolean;
@@ -181,10 +182,8 @@ export default function SubcategoryConfigModal({
             setIsAttributeModalOpen(false);
             setAttributeFormData(initialAttributeFormData);
         },
-        onError: (err: unknown) => {
-            const errorObj = err as { response?: { data?: { message?: string } } };
-            const msg = errorObj?.response?.data?.message || "خطا در ذخیره ویژگی";
-            toast.error(typeof msg === 'string' ? msg : JSON.stringify(msg));
+        onError: (err: Error) => {
+            toast.error(normalizeApiError(err, "خطا در ذخیره ویژگی"));
         }
     });
 

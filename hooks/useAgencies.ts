@@ -1,6 +1,11 @@
 import { agencyService } from "@/services/agency.service";
-import { ListAgenciesResponse } from "@/types/api/agency.types";
+import {
+    ListAgenciesResponse,
+    RequestConsultationRequest,
+    UpdateAgencyProfileRequest,
+} from "@/types/api/agency.types";
 import { useMutation, useQuery, useQueryClient, UseQueryOptions } from "@tanstack/react-query";
+import axios from "axios";
 import { useAuth } from "./useAuth";
 
 interface AgencyListQuery {
@@ -60,7 +65,7 @@ export const useCreateAgency = () => {
 export const useUpdateAgency = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: ({ agencyId, data }: { agencyId: string; data: any }) =>
+        mutationFn: ({ agencyId, data }: { agencyId: string; data: UpdateAgencyProfileRequest }) =>
             agencyService.updateAgency(agencyId, data),
         onSuccess: (_, { agencyId }) => {
             queryClient.invalidateQueries({ queryKey: ["agency", agencyId] });
@@ -79,7 +84,7 @@ export const useAgencyStats = (agencyId: string) => {
 
 export const useRequestConsultation = () => {
     return useMutation({
-        mutationFn: ({ agencyId, data }: { agencyId: string; data: any }) =>
+        mutationFn: ({ agencyId, data }: { agencyId: string; data: RequestConsultationRequest }) =>
             agencyService.requestConsultation(agencyId, data),
     });
 };
@@ -93,8 +98,8 @@ export function useMyAgency() {
             if (!user?.userId) return null;
             try {
                 return await agencyService.getMyShowcase();
-            } catch (err: any) {
-                if (err?.response?.status === 404) {
+            } catch (err) {
+                if (axios.isAxiosError(err) && err.response?.status === 404) {
                     return null;
                 }
                 throw err;

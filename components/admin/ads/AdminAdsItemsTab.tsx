@@ -33,6 +33,7 @@ import Image from "next/image";
 import Link from "next/link";
 import React, { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { normalizeApiError } from "@/lib/api/error-handler";
 import AdminAdDetailModal from "./AdminAdDetailModal";
 import AdminAdRejectModal from "./AdminAdRejectModal";
 
@@ -114,9 +115,8 @@ export default function AdminAdsItemsTab() {
             setApproveConfirmTarget(null);
             refetch();
         },
-        onError: (err: unknown) => {
-            const msg = err instanceof Error ? err.message : "خطا در تایید آگهی";
-            toast.error(msg);
+        onError: (err: Error) => {
+            toast.error(normalizeApiError(err, "خطا در تایید آگهی"));
         },
     });
 
@@ -133,9 +133,8 @@ export default function AdminAdsItemsTab() {
             }
             refetch();
         },
-        onError: (err: unknown) => {
-            const msg = err instanceof Error ? err.message : "خطا در رد آگهی";
-            toast.error(msg);
+        onError: (err: Error) => {
+            toast.error(normalizeApiError(err, "خطا در رد آگهی"));
         },
     });
 

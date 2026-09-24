@@ -1,5 +1,12 @@
 export type ZoneType = 'PROVINCE' | 'COUNTY' | 'CITY' | 'DISTRICT' | 'RURAL_DISTRICT' | 'NEIGHBORHOOD' | 'CUSTOM';
 
+export interface GeoCenterPoint {
+    latitude: number;
+    longitude: number;
+    lat?: number;
+    lng?: number;
+}
+
 export interface ZoneSummary {
     id: string;
     name: string;
@@ -9,11 +16,8 @@ export interface ZoneSummary {
     geoCityId?: number | null;
     geoDistrictId?: number | null;
     geoRuralDistrictId?: number | null;
-    centerPoint?: {
-        latitude: number;
-        longitude: number;
-    };
-    parentZoneId: string | null;
+    centerPoint?: GeoCenterPoint;
+    parentZoneId?: string | null;
 }
 
 export interface ListZonesParams {
@@ -50,10 +54,7 @@ export interface CitySummary {
     osmUrl?: string;
     wikidataId?: string;
     geonamesId?: string;
-    centerPoint?: {
-        latitude: number;
-        longitude: number;
-    };
+    centerPoint?: GeoCenterPoint;
     boundingBox?: {
         minLatitude: number;
         minLongitude: number;
@@ -72,10 +73,7 @@ export interface ProvinceHierarchy {
     osmId?: number | string;
     osmType?: string;
     osmUrl?: string;
-    centerPoint?: {
-        latitude: number;
-        longitude: number;
-    };
+    centerPoint?: GeoCenterPoint;
     cities: CitySummary[];
 }
 
@@ -101,6 +99,10 @@ export interface ProvinceItem {
     capitalName?: string;
     capitalNameEn?: string;
     geoProvinceId?: number;
+    geoCityId?: number | null;
+    geoDistrictId?: number | null;
+    geoRuralDistrictId?: number | null;
+    parentZoneId?: string | null;
     osmId?: number | string;
     osmType?: string;
     osmUrl?: string;
@@ -123,6 +125,9 @@ export interface CityItem {
     nameEn?: string;
     geoCityId?: number;
     geoProvinceId?: number;
+    geoDistrictId?: number | null;
+    geoRuralDistrictId?: number | null;
+    parentZoneId?: string | null;
     type?: string;
     status?: string;
     isCapital?: boolean;
@@ -134,10 +139,7 @@ export interface CityItem {
     osmUrl?: string;
     wikidataId?: string;
     geonamesId?: string;
-    centerPoint?: {
-        latitude: number;
-        longitude: number;
-    };
+    centerPoint?: GeoCenterPoint;
 }
 
 export interface PaginatedCitiesResponse {

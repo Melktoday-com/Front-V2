@@ -1,6 +1,14 @@
 import apiClient from "@/lib/api/client";
+import { JsonValue } from "@/types/common";
 
 export type FavoriteItemType = 'AD' | 'NOTIFICATION';
+
+export interface FavoriteItemDetails {
+    price?: number | string;
+    category?: string;
+    actionUrl?: string;
+    [key: string]: JsonValue | undefined;
+}
 
 export interface FavoriteItem {
     id: string;
@@ -10,7 +18,7 @@ export interface FavoriteItem {
     imageUrl?: string;
     referenceId?: string;
     timestamp: string;
-    details?: Record<string, any>;
+    details?: FavoriteItemDetails;
 }
 
 export const favoritesService = {

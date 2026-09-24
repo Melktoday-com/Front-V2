@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { ProvinceItem, CityItem, ZoneSummary } from "@/types/api/geo.types";
 
 type ZoneCategory = "PROVINCE" | "CITY" | "DISTRICT" | "NEIGHBORHOOD";
 
@@ -163,7 +164,7 @@ export default function AdminGeoPage() {
     });
 
     const provincesMap = new Map<number | string, string>();
-    provincesData?.items?.forEach((p: any) => {
+    provincesData?.items?.forEach((p: ProvinceItem) => {
         if (p.geoProvinceId) {
             provincesMap.set(p.geoProvinceId, p.name);
             provincesMap.set(String(p.geoProvinceId), p.name);
@@ -172,7 +173,7 @@ export default function AdminGeoPage() {
     });
 
     const citiesMap = new Map<number | string, string>();
-    citiesData?.items?.forEach((c: any) => {
+    citiesData?.items?.forEach((c: CityItem) => {
         if (c.id) citiesMap.set(c.id, c.name);
         if (c.geoCityId) {
             citiesMap.set(c.geoCityId, c.name);
@@ -180,7 +181,7 @@ export default function AdminGeoPage() {
         }
     });
 
-    const toggleStatus = (zone: any) => {
+    const toggleStatus = (zone: { id: string; status?: string }) => {
         const nextStatus = zone.status === "PUBLISHED" ? "ARCHIVED" : "PUBLISHED";
         updateStatusMutation.mutate({ id: zone.id, status: nextStatus });
     };
@@ -211,7 +212,7 @@ export default function AdminGeoPage() {
         }
     };
 
-    const StatusBadge = ({ status }: { status: string }) => {
+    const StatusBadge = ({ status }: { status?: string }) => {
         switch (status) {
             case "PUBLISHED":
                 return (
@@ -315,8 +316,8 @@ export default function AdminGeoPage() {
                             onChange={(val) => { setProvinceId(val); setCityId(""); setPage(1); }}
                             options={[
                                 { value: "", label: "همه استان‌ها" },
-                                ...(provincesData?.items?.map((p: any) => ({
-                                    value: p.geoProvinceId || p.id,
+                                ...(provincesData?.items?.map((p: ProvinceItem) => ({
+                                    value: String(p.geoProvinceId || p.id),
                                     label: p.name,
                                 })) || [])
                             ]}
@@ -335,8 +336,8 @@ export default function AdminGeoPage() {
                             onChange={(val) => { setCityId(val); setPage(1); }}
                             options={[
                                 { value: "", label: "همه شهرها" },
-                                ...(citiesData?.items?.map((c: any) => ({
-                                    value: c.id || c.geoCityId,
+                                ...(citiesData?.items?.map((c: CityItem) => ({
+                                    value: c.id || String(c.geoCityId),
                                     label: c.name,
                                 })) || [])
                             ]}
@@ -401,7 +402,7 @@ export default function AdminGeoPage() {
                                 </td>
                             </tr>
                         ) : (
-                            items.map((zone: any) => (
+                            items.map((zone: ProvinceItem | CityItem | ZoneSummary) => (
                                 <tr key={zone.id} className="hover:bg-gray-50/50 transition-colors">
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-3">
@@ -413,12 +414,12 @@ export default function AdminGeoPage() {
                                     </td>
                                     {zoneType !== "PROVINCE" && (
                                         <td className="px-6 py-4 text-gray-600 font-medium">
-                                            {provincesMap.get(zone.geoProvinceId) || provincesMap.get(String(zone.geoProvinceId)) || "—"}
+                                            {zone.geoProvinceId != null ? (provincesMap.get(zone.geoProvinceId) || provincesMap.get(String(zone.geoProvinceId)) || "—") : "—"}
                                         </td>
                                     )}
                                     {(zoneType === "DISTRICT" || zoneType === "NEIGHBORHOOD") && (
                                         <td className="px-6 py-4 text-gray-600 font-medium">
-                                            {citiesMap.get(zone.geoCityId) || citiesMap.get(String(zone.geoCityId)) || citiesMap.get(zone.parentZoneId) || "—"}
+                                            {(zone.geoCityId != null ? (citiesMap.get(zone.geoCityId) || citiesMap.get(String(zone.geoCityId))) : null) || (zone.parentZoneId != null ? citiesMap.get(zone.parentZoneId) : null) || "—"}
                                         </td>
                                     )}
                                     <td className="px-6 py-4 font-mono text-sm text-gray-500 uppercase">
@@ -585,8 +586,8 @@ export default function AdminGeoPage() {
                                         value={newZoneParentId}
                                         onChange={(val) => setNewZoneParentId(val)}
                                         options={
-                                            provincesData?.items?.map((p: any) => ({
-                                                value: p.geoProvinceId,
+                                            provincesData?.items?.map((p: ProvinceItem) => ({
+                                                value: String(p.geoProvinceId || p.id),
                                                 label: p.name,
                                             })) || []
                                         }
@@ -605,8 +606,8 @@ export default function AdminGeoPage() {
                                             value={provinceId}
                                             onChange={(val) => setProvinceId(val)}
                                             options={
-                                                provincesData?.items?.map((p: any) => ({
-                                                    value: p.geoProvinceId,
+                                                provincesData?.items?.map((p: ProvinceItem) => ({
+                                                    value: String(p.geoProvinceId || p.id),
                                                     label: p.name,
                                                 })) || []
                                             }
@@ -622,8 +623,8 @@ export default function AdminGeoPage() {
                                             onChange={(val) => setNewZoneParentId(val)}
                                             disabled={!provinceId}
                                             options={
-                                                citiesData?.items?.map((c: any) => ({
-                                                    value: c.id || c.geoCityId,
+                                                citiesData?.items?.map((c: CityItem) => ({
+                                                    value: c.id || String(c.geoCityId),
                                                     label: c.name,
                                                 })) || []
                                             }

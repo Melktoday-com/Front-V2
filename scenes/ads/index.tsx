@@ -65,7 +65,7 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
     // Find the current city's coordinates
     const currentCityCoords = useMemo(() => {
         if (selectedCity.centerPoint) {
-            const cp = selectedCity.centerPoint as any;
+            const cp = selectedCity.centerPoint;
             return {
                 latitude: cp.latitude ?? cp.lat,
                 longitude: cp.longitude ?? cp.lng,
@@ -77,7 +77,7 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
         for (const province of hierarchy) {
             const city = province.cities.find((c) => c.id === effectiveCityId);
             if (city?.centerPoint) {
-                const cp = city.centerPoint as any;
+                const cp = city.centerPoint;
                 return {
                     latitude: cp.latitude ?? cp.lat,
                     longitude: cp.longitude ?? cp.lng,
@@ -92,19 +92,21 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
         if (!data?.items) return [];
         return data.items
             .filter(
-                (ad: AdSummary) =>
-                    ad.location &&
-                    (typeof ad.location.latitude === "number" ||
-                        typeof (ad.location as any).lat === "number") &&
-                    (typeof ad.location.longitude === "number" ||
-                        typeof (ad.location as any).lng === "number")
+                (ad): ad is AdSummary & { location: NonNullable<AdSummary['location']> } =>
+                    Boolean(
+                        ad.location &&
+                        (typeof ad.location.latitude === "number" ||
+                            typeof ad.location.lat === "number") &&
+                        (typeof ad.location.longitude === "number" ||
+                            typeof ad.location.lng === "number")
+                    )
             )
-            .map((ad: AdSummary) => ({
+            .map((ad) => ({
                 ...ad,
                 location: {
                     ...ad.location,
-                    latitude: ad.location.latitude ?? (ad.location as any).lat,
-                    longitude: ad.location.longitude ?? (ad.location as any).lng,
+                    latitude: (ad.location.latitude ?? ad.location.lat) as number,
+                    longitude: (ad.location.longitude ?? ad.location.lng) as number,
                 },
             }));
     }, [data?.items]);

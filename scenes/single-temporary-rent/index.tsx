@@ -88,7 +88,7 @@ export default function ResidenceDetailScene() {
             },
             {
                 onSuccess: (res) => {
-                    const convId = (res as any)?.conversationId || (res as any)?.id;
+                    const convId = res.id;
                     if (convId) {
                         router.push(`/profile/chat?id=${convId}`);
                     } else {

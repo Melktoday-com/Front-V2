@@ -34,6 +34,7 @@ import SubcategoryAttributesEditor, {
     formatInlineAttributesToPayload,
 } from "@/components/admin/SubcategoryAttributesEditor";
 import { getMediaUrl } from "@/lib/utils";
+import { normalizeApiError } from "@/lib/api/error-handler";
 
 export default function TemporaryRentCategoriesTab() {
     const queryClient = useQueryClient();
@@ -113,10 +114,8 @@ export default function TemporaryRentCategoriesTab() {
             toast.success("دسته‌بندی اقامتگاه با موفقیت ایجاد شد");
             setIsCreateCategoryModalOpen(false);
         },
-        onError: (err: unknown) => {
-            const errorObj = err as { response?: { data?: { message?: string } } };
-            const msg = errorObj?.response?.data?.message || "خطا در ایجاد دسته‌بندی";
-            toast.error(typeof msg === 'string' ? msg : JSON.stringify(msg));
+        onError: (err: Error) => {
+            toast.error(normalizeApiError(err, "خطا در ایجاد دسته‌بندی"));
         }
     });
 
@@ -128,10 +127,8 @@ export default function TemporaryRentCategoriesTab() {
             setIsEditCategoryModalOpen(false);
             setSelectedCategory(null);
         },
-        onError: (err: unknown) => {
-            const errorObj = err as { response?: { data?: { message?: string } } };
-            const msg = errorObj?.response?.data?.message || "خطا در بروزرسانی دسته‌بندی";
-            toast.error(typeof msg === 'string' ? msg : JSON.stringify(msg));
+        onError: (err: Error) => {
+            toast.error(normalizeApiError(err, "خطا در بروزرسانی دسته‌بندی"));
         }
     });
 
@@ -162,10 +159,8 @@ export default function TemporaryRentCategoriesTab() {
             toast.success("زیردسته اقامتگاه با موفقیت ایجاد و مدل‌های قیمت‌گذاری تخصیص داده شد");
             setIsCreateSubcategoryModalOpen(false);
         },
-        onError: (err: unknown) => {
-            const errorObj = err as { response?: { data?: { message?: string } } };
-            const msg = errorObj?.response?.data?.message || "خطا در ایجاد زیردسته";
-            toast.error(typeof msg === 'string' ? msg : JSON.stringify(msg));
+        onError: (err: Error) => {
+            toast.error(normalizeApiError(err, "خطا در ایجاد زیردسته"));
         }
     });
 
@@ -187,10 +182,8 @@ export default function TemporaryRentCategoriesTab() {
             setIsEditSubcategoryModalOpen(false);
             setSelectedSubcategory(null);
         },
-        onError: (err: unknown) => {
-            const errorObj = err as { response?: { data?: { message?: string } } };
-            const msg = errorObj?.response?.data?.message || "خطا در بروزرسانی زیردسته";
-            toast.error(typeof msg === 'string' ? msg : JSON.stringify(msg));
+        onError: (err: Error) => {
+            toast.error(normalizeApiError(err, "خطا در بروزرسانی زیردسته"));
         }
     });
 

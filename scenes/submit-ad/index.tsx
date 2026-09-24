@@ -344,7 +344,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
             }
             router.push("/profile/ads");
         },
-        onError: (err: unknown) => {
+        onError: (err: Error) => {
             const msg = normalizeApiError(err, "خطا در ذخیره‌سازی آگهی");
             toast.error(msg);
         },
@@ -1120,7 +1120,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                                 {activePriceModel.pricingFields.map((f) => {
                                                     const val = formData.rawPricing?.[f.key];
-                                                    if (val === undefined || val === null || (val as unknown) === "") return null;
+                                                    if (val === undefined || val === null || val === "") return null;
                                                     return (
                                                         <div key={f.key} className="flex justify-between p-2.5 bg-white rounded-xl border border-gray-200/60 text-xs">
                                                             <span className="text-text-light">{f.label}:</span>

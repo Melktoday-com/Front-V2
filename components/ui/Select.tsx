@@ -30,6 +30,7 @@ export interface SelectProps<T extends string | number = string> {
     searchable?: boolean;
     searchPlaceholder?: string;
     clearable?: boolean;
+    clearValue?: T;
     icon?: ReactNode;
     className?: string;
     triggerClassName?: string;
@@ -50,6 +51,7 @@ export function Select<T extends string | number = string>({
     searchable = false,
     searchPlaceholder = "جستجو...",
     clearable = false,
+    clearValue,
     icon,
     className,
     triggerClassName,
@@ -122,7 +124,14 @@ export function Select<T extends string | number = string>({
 
     const handleClear = (e: React.MouseEvent) => {
         e.stopPropagation();
-        onChange("" as unknown as T);
+        if (clearValue !== undefined) {
+            onChange(clearValue);
+        } else {
+            const fallbackOption = options.find((opt) => opt.value === "" || opt.value === 0);
+            if (fallbackOption) {
+                onChange(fallbackOption.value);
+            }
+        }
         setSearchQuery("");
     };
 

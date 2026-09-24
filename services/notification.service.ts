@@ -9,7 +9,7 @@ export const notificationService = {
      * Get paginated in-app notifications for the authenticated user
      */
     async list(params?: ListNotificationsParams): Promise<ListUserNotificationsResponse> {
-        const queryParams: Record<string, unknown> = {};
+        const queryParams: Record<string, string | number> = {};
         if (params?.onlyUnread !== undefined) {
             queryParams.onlyUnread = params.onlyUnread ? "true" : "false";
         }

@@ -67,12 +67,14 @@ export default function Map({ ads, center = [35.6892, 51.3890], zoom = 12, bound
     ) ? center : [35.6892, 51.3890];
 
     // If there are ads with locations, we might want to fit the bounds
-    const adsWithLocation = ads.filter(ad =>
-        ad.location &&
-        typeof ad.location.latitude === 'number' &&
-        !isNaN(ad.location.latitude) &&
-        typeof ad.location.longitude === 'number' &&
-        !isNaN(ad.location.longitude)
+    const adsWithLocation = ads.filter((ad): ad is typeof ad & { location: NonNullable<typeof ad.location> } =>
+        Boolean(
+            ad.location &&
+            typeof ad.location.latitude === 'number' &&
+            !isNaN(ad.location.latitude) &&
+            typeof ad.location.longitude === 'number' &&
+            !isNaN(ad.location.longitude)
+        )
     );
 
     return (

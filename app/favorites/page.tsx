@@ -2,10 +2,11 @@
 
 import { PropertyCard } from '@/components/ui/PropertyCard';
 import { useFavorites } from '@/hooks/useFavorites';
+import { FavoriteItem } from '@/services/favorites.service';
 import { Bell, Clock, Heart } from 'lucide-react';
 import { useEffect } from 'react';
 
-const NotificationItem = ({ item }: { item: any }) => (
+const NotificationItem = ({ item }: { item: FavoriteItem }) => (
     <div className="flex gap-4 p-4 bg-white rounded-xl border border-gray-100 shadow-sm relative overflow-hidden group">
         <div className="absolute top-0 right-0 w-1 h-full bg-blue-500 rounded-l-full" />
         <div className="shrink-0 w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center">

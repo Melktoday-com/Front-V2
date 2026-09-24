@@ -8,6 +8,8 @@ interface City {
     centerPoint?: {
         latitude: number;
         longitude: number;
+        lat?: number;
+        lng?: number;
     };
     boundingBox?: {
         minLatitude: number;

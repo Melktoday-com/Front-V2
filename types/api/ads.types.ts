@@ -7,6 +7,13 @@ export interface CategoryPath {
     attributeSchemaVersion: number;
 }
 
+export interface AdLocation {
+    latitude: number;
+    longitude: number;
+    lat?: number;
+    lng?: number;
+}
+
 export interface AdSummary {
     adId: string;
     ownerId: string;
@@ -18,10 +25,7 @@ export interface AdSummary {
     isFeatured: boolean;
     mediaIds?: string[];
     createdAt: string;
-    location: {
-        latitude: number;
-        longitude: number;
-    };
+    location?: AdLocation | null;
 }
 
 export interface ListAdsQuery {
@@ -48,9 +52,29 @@ export type PaginatedAdsResponse = PaginatedResponse<AdSummary>;
 
 import { JsonObject } from "../common";
 
+export interface AdAttributes extends JsonObject {
+    area?: number | string;
+    meterage?: number | string;
+    size?: number | string;
+    rooms?: number | string;
+    bedrooms?: number | string;
+    floor?: number | string;
+    totalFloors?: number | string;
+    buildYear?: number | string;
+    yearBuilt?: number | string;
+    hasElevator?: boolean;
+    elevator?: boolean;
+    hasParking?: boolean;
+    parking?: boolean;
+    hasStorage?: boolean;
+    storage?: boolean;
+    hasBalcony?: boolean;
+    balcony?: boolean;
+}
+
 export interface AdDetail extends AdSummary {
     description: string;
-    attributes: JsonObject;
+    attributes: AdAttributes;
     updatedAt: string;
 }
 
@@ -80,6 +104,12 @@ export interface AdMutationResponse {
     cityId: string;
     status: AdStatus;
     updatedAt: string;
+}
+
+export interface CreateAdDraftResponse extends AdMutationResponse {
+    categoryPath: CategoryPath;
+    pricing: Record<string, number>;
+    createdAt: string;
 }
 
 export interface AdContactInfo {

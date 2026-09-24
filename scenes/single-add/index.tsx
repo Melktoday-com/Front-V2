@@ -83,7 +83,7 @@ export default function SingleAdScene() {
             },
             {
                 onSuccess: (res) => {
-                    const convId = (res as any)?.conversationId || (res as any)?.id;
+                    const convId = res.id;
                     if (convId) {
                         router.push(`/profile/chat?id=${convId}`);
                     } else {
@@ -149,7 +149,7 @@ export default function SingleAdScene() {
     }
 
     // Attributes extraction
-    const attrs = (ad.attributes as Record<string, any>) || {};
+    const attrs = ad.attributes || {};
     const area = attrs.area || attrs.meterage || attrs.size;
     const rooms = attrs.rooms || attrs.bedrooms;
     const floor = attrs.floor;
@@ -160,8 +160,8 @@ export default function SingleAdScene() {
     const hasStorage = attrs.hasStorage ?? attrs.storage;
     const hasBalcony = attrs.hasBalcony ?? attrs.balcony;
 
-    const lat = ad.location?.latitude ?? (ad.location as any)?.lat;
-    const lng = ad.location?.longitude ?? (ad.location as any)?.lng;
+    const lat = ad.location?.latitude ?? ad.location?.lat;
+    const lng = ad.location?.longitude ?? ad.location?.lng;
     const hasCoords = typeof lat === "number" && typeof lng === "number";
 
     return (

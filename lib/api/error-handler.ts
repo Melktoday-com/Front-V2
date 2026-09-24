@@ -1,4 +1,5 @@
-import axios from "axios";
+import axios, { AxiosError } from "axios";
+import { JsonObject } from "@/types/common";
 
 /**
  * Structured API Error detail returned by Melktoday Backend V2
@@ -7,7 +8,7 @@ export interface ApiErrorDetail {
     readonly code: string;
     readonly message: string;
     readonly field?: string;
-    readonly meta?: Readonly<Record<string, unknown>>;
+    readonly meta?: Readonly<JsonObject>;
 }
 
 /**
@@ -32,12 +33,20 @@ export interface ApiErrorResponse {
     };
 }
 
+export type HandledApiError =
+    | AxiosError<ApiErrorResponse>
+    | Error
+    | ApiErrorResponse
+    | string
+    | null
+    | undefined;
+
 /**
  * Normalizes an API error into a clean Persian user-facing string.
  * Strictly consumes backend-provided messages without frontend translation maps.
  */
 export function normalizeApiError(
-    error: unknown,
+    error: HandledApiError,
     fallbackMessage = "خطا در برقراری ارتباط یا پردازش درخواست",
 ): string {
     if (!error) return fallbackMessage;
@@ -51,37 +60,35 @@ export function normalizeApiError(
             return "خطا در برقراری ارتباط با سرور. لطفاً اتصال اینترنت خود را بررسی نمایید.";
         }
 
-        const data = error.response.data;
+        const data: ApiErrorResponse | undefined = error.response.data;
 
         // Structured JSON API error contract
         if (data && typeof data === "object") {
-            const apiData = data as ApiErrorResponse;
-
             // 1. Nested backend error model: { error: { message, details } }
-            if (apiData.error && typeof apiData.error === "object") {
+            if (data.error && typeof data.error === "object") {
                 // First field-level validation message if present
-                if (apiData.error.details && apiData.error.details.length > 0) {
-                    const firstDetail = apiData.error.details[0];
+                if (data.error.details && data.error.details.length > 0) {
+                    const firstDetail = data.error.details[0];
                     if (firstDetail?.message) {
                         return firstDetail.message;
                     }
                 }
 
                 // General error message from backend catalog
-                if (apiData.error.message) {
-                    return apiData.error.message;
+                if (data.error.message) {
+                    return data.error.message;
                 }
-            } else if (typeof apiData.error === "string" && apiData.error) {
-                return apiData.error;
+            } else if (typeof data.error === "string" && data.error) {
+                return data.error;
             }
 
             // 2. Legacy / Standard message fields
-            if (apiData.message) {
-                if (Array.isArray(apiData.message) && apiData.message.length > 0) {
-                    return String(apiData.message[0]);
+            if (data.message) {
+                if (Array.isArray(data.message) && data.message.length > 0) {
+                    return String(data.message[0]);
                 }
-                if (typeof apiData.message === "string") {
-                    return apiData.message;
+                if (typeof data.message === "string") {
+                    return data.message;
                 }
             }
         }

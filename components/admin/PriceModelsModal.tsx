@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import React, { useState } from "react";
 import { toast } from "sonner";
+import { normalizeApiError } from "@/lib/api/error-handler";
 
 interface PriceModelsModalProps {
     isOpen: boolean;
@@ -113,10 +114,8 @@ export default function PriceModelsModal({
             setIsFormModalOpen(false);
             setFormData(initialPriceModelFormData);
         },
-        onError: (err: unknown) => {
-            const errorObj = err as { response?: { data?: { message?: string } } };
-            const msg = errorObj?.response?.data?.message || "خطا در ذخیره مدل قیمت‌گذاری";
-            toast.error(typeof msg === 'string' ? msg : JSON.stringify(msg));
+        onError: (err: Error) => {
+            toast.error(normalizeApiError(err, "خطا در ذخیره مدل قیمت‌گذاری"));
         }
     });
 

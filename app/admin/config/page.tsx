@@ -11,10 +11,12 @@ import {
     RefreshCcw,
     Info,
     Zap,
-    TrendingUp
+    TrendingUp,
+    LucideIcon
 } from "lucide-react";
 import { adminService } from "@/services/admin.service";
 import { PlanLimits } from "@/types/api/admin.types";
+import { normalizeApiError } from "@/lib/api/error-handler";
 
 const INITIAL_LIMITS: Record<string, PlanLimits> = {
     FREE: {
@@ -45,8 +47,8 @@ export default function AdminConfigPage() {
         onSuccess: () => {
             toast.success("تنظیمات با موفقیت ذخیره شد");
         },
-        onError: (error: any) => {
-            toast.error("خطا در ذخیره تنظیمات: " + (error.response?.data?.message || "خطای ناشناخته"));
+        onError: (error: Error) => {
+            toast.error("خطا در ذخیره تنظیمات: " + normalizeApiError(error));
         }
     });
 
@@ -189,7 +191,7 @@ function ToggleField({ label, description, checked, onChange, icon: Icon }: {
     description: string;
     checked: boolean;
     onChange: (val: boolean) => void;
-    icon: any;
+    icon: LucideIcon;
 }) {
     return (
         <div className="flex items-start gap-4 p-4 rounded-xl border border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => onChange(!checked)}>

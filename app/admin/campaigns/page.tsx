@@ -7,6 +7,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Check, X, Megaphone } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { normalizeApiError } from "@/lib/api/error-handler";
 
 export default function AdminCampaignsPage() {
     const queryClient = useQueryClient();
@@ -20,8 +21,8 @@ export default function AdminCampaignsPage() {
             toast.success(variables.action === 'APPROVE' ? "کمپین تایید و فعال شد" : "کمپین رد شد");
             queryClient.invalidateQueries({ queryKey: ["admin", "campaigns"] });
         },
-        onError: (error: any) => {
-            toast.error(error?.response?.data?.message || "خطا در بررسی کمپین");
+        onError: (error: Error) => {
+            toast.error(normalizeApiError(error, "خطا در بررسی کمپین"));
         }
     });
 

@@ -41,6 +41,7 @@ import SubcategoryAttributesEditor, {
     formatInlineAttributesToPayload,
 } from "@/components/admin/SubcategoryAttributesEditor";
 import { getMediaUrl } from "@/lib/utils";
+import { normalizeApiError } from "@/lib/api/error-handler";
 
 export default function AdminCategoriesTab() {
     const queryClient = useQueryClient();
@@ -116,10 +117,8 @@ export default function AdminCategoriesTab() {
             toast.success("دسته‌بندی جدید با موفقیت ایجاد شد");
             setIsCreateCategoryModalOpen(false);
         },
-        onError: (err: unknown) => {
-            const errorObj = err as { response?: { data?: { message?: string } } };
-            const msg = errorObj?.response?.data?.message || "خطا در ایجاد دسته‌بندی";
-            toast.error(typeof msg === 'string' ? msg : JSON.stringify(msg));
+        onError: (err: Error) => {
+            toast.error(normalizeApiError(err, "خطا در ایجاد دسته‌بندی"));
         }
     });
 
@@ -131,10 +130,8 @@ export default function AdminCategoriesTab() {
             setIsEditCategoryModalOpen(false);
             setSelectedCategory(null);
         },
-        onError: (err: unknown) => {
-            const errorObj = err as { response?: { data?: { message?: string } } };
-            const msg = errorObj?.response?.data?.message || "خطا در بروزرسانی دسته‌بندی";
-            toast.error(typeof msg === 'string' ? msg : JSON.stringify(msg));
+        onError: (err: Error) => {
+            toast.error(normalizeApiError(err, "خطا در بروزرسانی دسته‌بندی"));
         }
     });
 
@@ -166,10 +163,8 @@ export default function AdminCategoriesTab() {
             toast.success("زیردسته جدید با موفقیت اضافه و مدل‌های قیمت‌گذاری تخصیص داده شد");
             setIsCreateSubcategoryModalOpen(false);
         },
-        onError: (err: unknown) => {
-            const errorObj = err as { response?: { data?: { message?: string } } };
-            const msg = errorObj?.response?.data?.message || "خطا در اضافه کردن زیردسته";
-            toast.error(typeof msg === 'string' ? msg : JSON.stringify(msg));
+        onError: (err: Error) => {
+            toast.error(normalizeApiError(err, "خطا در اضافه کردن زیردسته"));
         }
     });
 
@@ -192,10 +187,8 @@ export default function AdminCategoriesTab() {
             setIsEditSubcategoryModalOpen(false);
             setSelectedSubcategory(null);
         },
-        onError: (err: unknown) => {
-            const errorObj = err as { response?: { data?: { message?: string } } };
-            const msg = errorObj?.response?.data?.message || "خطا در بروزرسانی زیردسته";
-            toast.error(typeof msg === 'string' ? msg : JSON.stringify(msg));
+        onError: (err: Error) => {
+            toast.error(normalizeApiError(err, "خطا در بروزرسانی زیردسته"));
         }
     });
 
