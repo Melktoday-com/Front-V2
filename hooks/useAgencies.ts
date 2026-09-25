@@ -118,3 +118,21 @@ export function useMyAgency() {
         enabled: !!user?.userId,
     });
 }
+
+export const useExplorePosts = (params: { page?: number; limit?: number; search?: string; agencyId?: string } = {}) => {
+    return useQuery({
+        queryKey: ["explore-posts", params],
+        queryFn: () => agencyService.getExplorePosts(params),
+    });
+};
+
+export const useLikePost = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (postId: string) => agencyService.likePost(postId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["explore-posts"] });
+            queryClient.invalidateQueries({ queryKey: ["agency-public-posts"] });
+        },
+    });
+};

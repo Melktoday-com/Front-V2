@@ -152,6 +152,13 @@ export interface AgencyPost {
     likeCount: number;
     createdAt: string;
     updatedAt: string;
+    agency?: {
+        id: string;
+        name: string;
+        slug?: string;
+        logoUrl?: string;
+        isVerified?: boolean;
+    } | null;
 }
 
 export interface CreateAgencyPostRequest {

@@ -9,6 +9,7 @@ import { RoleName } from "@/types/access";
 import {
     Bell,
     Building2,
+    Compass,
     Heart,
     Home,
     LogIn,
@@ -25,7 +26,7 @@ import { usePathname } from "next/navigation";
 
 const navItems = [
     { icon: Home, label: "خانه", href: "/" },
-    { icon: MapPin, label: "کاوش", href: "/explore" },
+    { icon: Compass, label: "کاوش", href: "/explore" },
     { icon: Search, label: "جستجو", href: "/ads" },
     { icon: Building2, label: "آژانس‌ها", href: "/agency" },
     { icon: Heart, label: "علاقه‌مندی‌ها", href: "/favorites" },

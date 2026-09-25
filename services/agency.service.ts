@@ -135,6 +135,20 @@ export const agencyService = {
         return response.data;
     },
 
+    async getExplorePosts(
+        params: { page?: number; limit?: number; search?: string; agencyId?: string } = {},
+    ): Promise<{ items: AgencyPost[]; total: number; page: number; limit: number; totalPages: number }> {
+        const response = await apiClient.get("/agencies/posts", {
+            params,
+        });
+        return response.data;
+    },
+
+    async likePost(postId: string): Promise<{ likeCount: number }> {
+        const response = await apiClient.post<{ likeCount: number }>(`/agencies/posts/${postId}/like`);
+        return response.data;
+    },
+
     // ── Consultation Requests / Direct Messages to Showcase ──────────────────
 
     async sendMessageToAgency(

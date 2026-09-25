@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { Home, LayoutGrid, MapPin, Search, User, X } from "lucide-react";
+import { Compass, Home, LayoutGrid, Search, User, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
@@ -12,7 +12,7 @@ export function ChatHeader() {
     const navItems = [
         { icon: Home, label: "خانه", href: "/" },
         { icon: Search, label: "آگهی‌ها", href: "/ads" },
-        { icon: MapPin, label: "کاوش", href: "/explore" },
+        { icon: Compass, label: "کاوش", href: "/explore" },
         { icon: User, label: "پروفایل", href: "/profile" },
     ];
 
