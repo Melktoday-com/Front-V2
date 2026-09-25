@@ -3,6 +3,7 @@
 import { MapPin, Star, Verified } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { toPersianDigits } from "@/lib/utils";
 
 interface AgencyCardProps {
     id: string;
@@ -10,7 +11,7 @@ interface AgencyCardProps {
     bio?: string;
     logoUrl?: string | null;
     isVerified: boolean;
-    rating: number;
+    rating?: number | null;
     location?: string;
 }
 
@@ -40,10 +41,14 @@ export function AgencyCard({ id, name, bio, logoUrl, isVerified, rating, locatio
                         </div>
 
                         <div className="flex items-center gap-2 text-secondary text-[10px] lg:text-xs font-bold">
-                            <div className="flex items-center gap-0.5 text-yellow-500">
-                                <Star className="w-2.5 h-2.5 fill-current" />
-                                <span>{rating || 0}</span>
-                            </div>
+                            {rating != null && !isNaN(Number(rating)) && Number(rating) > 0 ? (
+                                <div className="flex items-center gap-0.5 text-yellow-500">
+                                    <Star className="w-2.5 h-2.5 fill-current" />
+                                    <span>{toPersianDigits(Number(rating).toFixed(1))}</span>
+                                </div>
+                            ) : (
+                                <span className="text-text-light text-[10px]">بدون امتیاز</span>
+                            )}
                             {location && (
                                 <div className="flex items-center gap-1 group/loc">
                                     <MapPin className="w-2.5 h-2.5 text-text-light" />

@@ -17,7 +17,7 @@ export interface AgencySummary {
     logoUrl?: string | null;
     coverUrl?: string | null;
     isVerified: boolean;
-    rating: number;
+    rating?: number | null;
     followerCount?: number;
     isFollowing?: boolean;
     createdAt: string;

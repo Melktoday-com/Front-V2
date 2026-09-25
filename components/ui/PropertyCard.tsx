@@ -166,10 +166,10 @@ export function PropertyCard({
                             {unit && <span className="text-[10px] text-text-light">{unit}</span>}
                         </div>
 
-                        {rating !== undefined && rating > 0 && (
+                        {rating !== undefined && Number(rating) > 0 && (
                             <div className="flex items-center gap-0.5 shrink-0 text-brand text-[11px] font-bold">
                                 <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
-                                <span>{toPersianDigits(rating.toFixed(1))}</span>
+                                <span>{toPersianDigits(Number(rating).toFixed(1))}</span>
                             </div>
                         )}
                     </div>

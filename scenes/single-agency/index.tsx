@@ -340,8 +340,14 @@ export default function SingleAgencyScene() {
                             <div className="w-px h-6 bg-slate-200" />
                             <div>
                                 <span className="text-base sm:text-lg font-black text-slate-900 block flex items-center justify-center gap-1">
-                                    <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
-                                    {toPersianDigits(agency.rating?.toFixed(1) || "۵.۰")}
+                                    {agency.rating != null && !isNaN(Number(agency.rating)) && Number(agency.rating) > 0 ? (
+                                        <>
+                                            <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                                            {toPersianDigits(Number(agency.rating).toFixed(1))}
+                                        </>
+                                    ) : (
+                                        <span className="text-xs text-slate-400 font-medium">بدون امتیاز</span>
+                                    )}
                                 </span>
                                 <span className="text-xs text-slate-400">امتیاز</span>
                             </div>

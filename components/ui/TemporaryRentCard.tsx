@@ -145,7 +145,7 @@ export function TemporaryRentCard({
                         </div>
                         <div className="flex items-center gap-1 shrink-0 font-bold text-brand">
                             <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-                            <span>{toPersianDigits(rating.toFixed(1))}</span>
+                            <span>{toPersianDigits((Number(rating) || 0).toFixed(1))}</span>
                         </div>
                     </div>
 

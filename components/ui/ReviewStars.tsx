@@ -10,6 +10,7 @@ interface ReviewStarsProps {
 }
 
 export const ReviewStars = ({ rating, size = 12, className, showText = false, count }: ReviewStarsProps) => {
+    const numRating = Number(rating) || 0;
     return (
         <div className={cn("flex items-center gap-1", className)}>
             <div className="flex items-center gap-0.5">
@@ -18,7 +19,7 @@ export const ReviewStars = ({ rating, size = 12, className, showText = false, co
                         key={star}
                         size={size}
                         className={cn(
-                            star <= Math.round(rating)
+                            star <= Math.round(numRating)
                                 ? "fill-yellow-400 text-yellow-400"
                                 : "text-gray-300 fill-gray-100"
                         )}
@@ -27,7 +28,7 @@ export const ReviewStars = ({ rating, size = 12, className, showText = false, co
             </div>
             {showText && (
                 <span className="text-[10px] font-medium text-gray-500 mt-0.5">
-                    {rating > 0 ? rating.toFixed(1) : "بدون امتیاز"}
+                    {numRating > 0 ? numRating.toFixed(1) : "بدون امتیاز"}
                     {count !== undefined && count > 0 && ` (${count})`}
                 </span>
             )}

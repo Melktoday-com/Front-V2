@@ -2,7 +2,7 @@
 
 import { useAgencyStats, useMyAgency } from "@/hooks/useAgencies";
 import { useAuth } from "@/hooks/useAuth";
-import { cn } from "@/lib/utils";
+import { cn, toPersianDigits } from "@/lib/utils";
 import { agencyService } from "@/services/agency.service";
 import { AgencyConsultationMessage, AgencyPost, UpdateAgencyProfileRequest } from "@/types/api/agency.types";
 import { normalizeApiError } from "@/lib/api/error-handler";
@@ -374,8 +374,16 @@ export default function AgencyPanelScene() {
                             <div className="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-xs space-y-1">
                                 <span className="text-slate-400 text-xs font-bold block">امتیاز رضایت</span>
                                 <div className="flex items-center gap-1.5">
-                                    <Star className="w-5 h-5 text-amber-500 fill-amber-500" />
-                                    <span className="text-2xl font-black text-slate-900">{agency.rating || "۵.۰"}</span>
+                                    {agency.rating != null && !isNaN(Number(agency.rating)) && Number(agency.rating) > 0 ? (
+                                        <>
+                                            <Star className="w-5 h-5 text-amber-500 fill-amber-500" />
+                                            <span className="text-2xl font-black text-slate-900">
+                                                {toPersianDigits(Number(agency.rating).toFixed(1))}
+                                            </span>
+                                        </>
+                                    ) : (
+                                        <span className="text-base font-bold text-slate-400">بدون امتیاز</span>
+                                    )}
                                 </div>
                             </div>
 
