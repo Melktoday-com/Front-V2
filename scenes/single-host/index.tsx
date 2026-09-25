@@ -246,7 +246,7 @@ export default function SingleHostScene({ idOrSlug }: SingleHostSceneProps) {
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                {rentalsData?.items?.map((rental: any) => (
+                {rentalsData?.items?.map((rental) => (
                   <Link
                     key={rental.id}
                     href={`/temporary-rent/${rental.id}`}

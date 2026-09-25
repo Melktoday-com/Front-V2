@@ -343,7 +343,7 @@ export default function SinglePlatformScene() {
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                {adsData?.items?.map((ad: any) => (
+                {adsData?.items?.map((ad) => (
                   <Link
                     key={ad.id}
                     href={`/ads/${ad.id}`}

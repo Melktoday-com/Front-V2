@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { agencyService } from "@/services/agency.service";
+import { CitySelector } from "@/components/CitySelector";
 import { useCities } from "@/hooks/useGeo";
 import {
     Award,
@@ -33,6 +34,8 @@ export default function AgencyApplyPage() {
 
     const [isReapplying, setIsReapplying] = useState(false);
     const [agentType, setAgentType] = useState<AgentApplicationType>("CONSULTANT");
+    const [isCitySelectorOpen, setIsCitySelectorOpen] = useState(false);
+    const [selectedCityName, setSelectedCityName] = useState("");
 
     const [formData, setFormData] = useState({
         applicantName: "",
@@ -377,19 +380,21 @@ export default function AgencyApplyPage() {
 
                             <div className="space-y-1.5">
                                 <label className="text-xs font-bold text-slate-700">شهر محل فعالیت *</label>
-                                <select
-                                    value={formData.cityId}
-                                    onChange={(e) => setFormData({ ...formData, cityId: e.target.value })}
-                                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-                                    required
+                                <button
+                                    type="button"
+                                    onClick={() => setIsCitySelectorOpen(true)}
+                                    className="w-full flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs hover:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-right group"
                                 >
-                                    <option value="">انتخاب شهر...</option>
-                                    {cities.map((city: CityItem) => (
-                                        <option key={city.id} value={city.id}>
-                                            {city.name}
-                                        </option>
-                                    ))}
-                                </select>
+                                    <div className="flex items-center gap-2">
+                                        <MapPin className="w-4 h-4 text-blue-600 shrink-0" />
+                                        <span className={formData.cityId ? "font-bold text-slate-800" : "text-slate-400"}>
+                                            {selectedCityName || "انتخاب شهر محل فعالیت..."}
+                                        </span>
+                                    </div>
+                                    <span className="text-[11px] text-blue-600 font-medium group-hover:underline">
+                                        {formData.cityId ? "تغییر شهر" : "انتخاب"}
+                                    </span>
+                                </button>
                             </div>
 
                             <div className="space-y-1.5">
@@ -485,6 +490,17 @@ export default function AgencyApplyPage() {
                     </form>
                 )}
             </div>
+
+            <CitySelector
+                isOpen={isCitySelectorOpen}
+                onClose={() => setIsCitySelectorOpen(false)}
+                onSelect={(city) => {
+                    setFormData({ ...formData, cityId: city.id });
+                    setSelectedCityName(city.name);
+                    setIsCitySelectorOpen(false);
+                }}
+                currentCityId={formData.cityId}
+            />
         </div>
     );
 }

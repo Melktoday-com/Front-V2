@@ -1,19 +1,38 @@
 import apiClient from "@/lib/api/client";
-import { ShowcaseResponse, UnifiedPost } from "@/types/api/showcase.types";
+import axios from "axios";
+import {
+  AgencyAbout,
+  CreatePostRequest,
+  HostAbout,
+  HostApplicationRequest,
+  HostApplicationResponse,
+  PlatformAbout,
+  ShowcaseAbout,
+  ShowcaseListingItem,
+  ShowcaseListingsResponse,
+  ShowcaseResponse,
+  UnifiedPost,
+  UpdateHostProfileRequest,
+  UpdatePlatformProfileRequest,
+  UpdatePostRequest,
+} from "@/types/api/showcase.types";
 
 export interface PaginationParams {
   page?: number;
   limit?: number;
 }
 
+async function getShowcase(type: 'agency', idOrSlug: string): Promise<ShowcaseResponse<AgencyAbout>>;
+async function getShowcase(type: 'host', idOrSlug: string): Promise<ShowcaseResponse<HostAbout>>;
+async function getShowcase(type: 'platform', idOrSlug: string): Promise<ShowcaseResponse<PlatformAbout>>;
+async function getShowcase<TAbout = ShowcaseAbout>(type: 'agency' | 'host' | 'platform', idOrSlug: string): Promise<ShowcaseResponse<TAbout>>;
+async function getShowcase<TAbout = ShowcaseAbout>(type: 'agency' | 'host' | 'platform', idOrSlug: string): Promise<ShowcaseResponse<TAbout>> {
+  const response = await apiClient.get<ShowcaseResponse<TAbout>>(`/showcase/${type}/${idOrSlug}`);
+  return response.data;
+}
+
 export const showcaseService = {
-  /**
-   * Get composite showcase (header + about) for Agency, Host, or Platform
-   */
-  async getShowcase<TAbout = any>(type: 'agency' | 'host' | 'platform', idOrSlug: string): Promise<ShowcaseResponse<TAbout>> {
-    const response = await apiClient.get<ShowcaseResponse<TAbout>>(`/showcase/${type}/${idOrSlug}`);
-    return response.data;
-  },
+  getShowcase,
 
   /**
    * Get posts of a showcase publisher
@@ -32,15 +51,8 @@ export const showcaseService = {
   /**
    * Get domain listings of a showcase publisher
    */
-  async getShowcaseListings(type: string, idOrSlug: string, params: PaginationParams = {}) {
-    const response = await apiClient.get<{
-      listingsType: string;
-      items: any[];
-      total: number;
-      page: number;
-      limit: number;
-      totalPages: number;
-    }>(`/showcase/${type}/${idOrSlug}/listings`, { params });
+  async getShowcaseListings(type: string, idOrSlug: string, params: PaginationParams = {}): Promise<ShowcaseListingsResponse> {
+    const response = await apiClient.get<ShowcaseListingsResponse>(`/showcase/${type}/${idOrSlug}/listings`, { params });
     return response.data;
   },
 
@@ -79,16 +91,7 @@ export const showcaseService = {
   /**
    * Create post for any publisher
    */
-  async createPost(data: {
-    publisherType: 'AGENCY' | 'HOST' | 'PLATFORM';
-    publisherId: string;
-    title: string;
-    slug?: string;
-    summary?: string;
-    content: string;
-    category?: string;
-    mediaUrls?: string[];
-  }) {
+  async createPost(data: CreatePostRequest): Promise<UnifiedPost> {
     const response = await apiClient.post<UnifiedPost>('/posts', data);
     return response.data;
   },
@@ -96,7 +99,7 @@ export const showcaseService = {
   /**
    * Update post
    */
-  async updatePost(id: string, data: any) {
+  async updatePost(id: string, data: UpdatePostRequest): Promise<UnifiedPost> {
     const response = await apiClient.put<UnifiedPost>(`/posts/${id}`, data);
     return response.data;
   },
@@ -110,24 +113,31 @@ export const showcaseService = {
   },
 
   /**
-   * Host (Landlord) own profile management (Zero social media)
+   * Host (Landlord) application & own profile management (Zero social media)
    */
+  async applyForHost(data: HostApplicationRequest): Promise<HostApplicationResponse> {
+    const response = await apiClient.post<HostApplicationResponse>('/hosts/apply', data);
+    return response.data;
+  },
+
+  async getMyHostApplication(): Promise<HostApplicationResponse | null> {
+    try {
+      const response = await apiClient.get<HostApplicationResponse>('/hosts/my-application');
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.status === 404) {
+        return null;
+      }
+      throw error;
+    }
+  },
+
   async getMyHostProfile() {
     const response = await apiClient.get('/hosts/my-profile');
     return response.data;
   },
 
-  async updateMyHostProfile(data: {
-    hostName?: string;
-    slug?: string;
-    bio?: string;
-    cityId?: string;
-    avatarUrl?: string;
-    coverUrl?: string;
-    address?: string;
-    phone?: string;
-    mobile?: string;
-  }) {
+  async updateMyHostProfile(data: UpdateHostProfileRequest) {
     const response = await apiClient.put('/hosts/my-profile', data);
     return response.data;
   },
@@ -140,7 +150,7 @@ export const showcaseService = {
     return response.data;
   },
 
-  async updatePlatformProfile(data: any) {
+  async updatePlatformProfile(data: UpdatePlatformProfileRequest) {
     const response = await apiClient.put('/platform/admin/profile', data);
     return response.data;
   },
