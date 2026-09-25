@@ -4,16 +4,18 @@ export type AgentApplicationType = "AGENCY" | "CONSULTANT";
 export type AgentApplicationStatus = "PENDING" | "APPROVED" | "REJECTED";
 export type AgencyVerificationStatus = "UNVERIFIED" | "PENDING" | "VERIFIED" | "REJECTED";
 
+export interface AgencyContactResponse {
+    phone: string | null;
+    mobile: string | null;
+}
+
 export interface AgencySummary {
     id: string;
     cityId: string;
     name: string;
-    agencyName?: string;
     agencyType?: AgentApplicationType;
     slug?: string;
     bio?: string;
-    phone?: string | null;
-    mobile?: string | null;
     logoUrl?: string | null;
     coverUrl?: string | null;
     isVerified: boolean;
@@ -24,7 +26,10 @@ export interface AgencySummary {
 }
 
 export interface AgencyFull extends AgencySummary {
-    ownerUserId: string;
+    ownerUserId?: string;
+    agencyName?: string;
+    phone?: string | null;
+    mobile?: string | null;
     licenseNumber?: string;
     guildCode?: string;
     nationalCode?: string;

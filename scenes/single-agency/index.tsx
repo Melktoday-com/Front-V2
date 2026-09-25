@@ -5,7 +5,7 @@ import { ReviewsSection } from "@/components/ui/ReviewsSection";
 import { Select } from "@/components/ui/Select";
 import { ErrorState } from "@/components/ui/StatusStates";
 import { useAds } from "@/hooks/useAds";
-import { useFollowAgency, useUnfollowAgency } from "@/hooks/useAgencies";
+import { useAgencyContact, useFollowAgency, useUnfollowAgency } from "@/hooks/useAgencies";
 import { useAuth } from "@/hooks/useAuth";
 import { useCreateConversation } from "@/hooks/useChat";
 import { cn, formatPrice, toPersianDigits } from "@/lib/utils";
@@ -61,7 +61,8 @@ export default function SingleAgencyScene() {
     // Post reader modal
     const [readingPost, setReadingPost] = useState<AgencyPost | null>(null);
 
-    const { isLoggedIn } = useAuth();
+    const { isLoggedIn, user } = useAuth();
+    const [contactRequested, setContactRequested] = useState(false);
 
     // Fetch agency showcase data (supports UUID or slug)
     const {
@@ -76,6 +77,23 @@ export default function SingleAgencyScene() {
     });
 
     const targetAgencyId = agency?.id || idOrSlug;
+
+    // Contact query — triggered only after authenticated user interaction
+    const {
+        data: contactData,
+        isLoading: isLoadingContact,
+    } = useAgencyContact(targetAgencyId, {
+        enabled: contactRequested && isLoggedIn && !!targetAgencyId,
+    });
+
+    const handleRevealContact = () => {
+        if (!isLoggedIn) {
+            toast.error("برای مشاهده اطلاعات تماس، لطفاً وارد حساب کاربری خود شوید.");
+            router.push(`/auth?returnUrl=${encodeURIComponent(typeof window !== "undefined" ? window.location.pathname : "")}`);
+            return;
+        }
+        setContactRequested(true);
+    };
 
     // Ads query
     const { data: adsResponse, isLoading: isLoadingAds } = useAds({
@@ -253,28 +271,38 @@ export default function SingleAgencyScene() {
 
                         {/* Action buttons */}
                         <div className="flex items-center gap-2 w-full sm:w-auto">
-                            <button
-                                onClick={handleFollow}
-                                disabled={followMutation.isPending || unfollowMutation.isPending}
-                                className={cn(
-                                    "flex-1 sm:flex-initial py-2.5 px-5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs",
-                                    agency.isFollowing
-                                        ? "bg-slate-100 text-slate-800 border border-slate-200"
-                                        : "bg-blue-600 text-white hover:bg-blue-700"
-                                )}
-                            >
-                                {agency.isFollowing ? (
-                                    <>
-                                        <Check className="w-3.5 h-3.5 text-blue-600" />
-                                        <span>دنبال می‌کنید</span>
-                                    </>
-                                ) : (
-                                    <>
-                                        <Heart className="w-3.5 h-3.5" />
-                                        <span>دنبال کردن</span>
-                                    </>
-                                )}
-                            </button>
+                            {user?.userId && agency?.ownerUserId === user.userId ? (
+                                <Link
+                                    href="/agency/panel"
+                                    className="flex-1 sm:flex-initial py-2.5 px-5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs bg-slate-900 text-white hover:bg-slate-800"
+                                >
+                                    <Building2 className="w-3.5 h-3.5 text-blue-400" />
+                                    <span>مدیریت صفحه املاک</span>
+                                </Link>
+                            ) : (
+                                <button
+                                    onClick={handleFollow}
+                                    disabled={followMutation.isPending || unfollowMutation.isPending}
+                                    className={cn(
+                                        "flex-1 sm:flex-initial py-2.5 px-5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs",
+                                        agency.isFollowing
+                                            ? "bg-slate-100 text-slate-800 border border-slate-200"
+                                            : "bg-blue-600 text-white hover:bg-blue-700"
+                                    )}
+                                >
+                                    {agency.isFollowing ? (
+                                        <>
+                                            <Check className="w-3.5 h-3.5 text-blue-600" />
+                                            <span>دنبال می‌کنید</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Heart className="w-3.5 h-3.5" />
+                                            <span>دنبال کردن</span>
+                                        </>
+                                    )}
+                                </button>
+                            )}
 
                             <button
                                 onClick={() => setIsConsultationModalOpen(true)}
@@ -355,23 +383,46 @@ export default function SingleAgencyScene() {
 
                         {/* Contact Badges */}
                         <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 pt-1 text-xs">
-                            {agency.mobile && (
-                                <a
-                                    href={`tel:${agency.mobile}`}
-                                    className="inline-flex items-center gap-1 text-slate-700 font-bold bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg transition-colors"
+                            {contactData ? (
+                                <>
+                                    {contactData.mobile && (
+                                        <a
+                                            href={`tel:${contactData.mobile}`}
+                                            className="inline-flex items-center gap-1.5 text-slate-800 font-bold bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg transition-colors border border-slate-200/60"
+                                        >
+                                            <Phone className="w-3.5 h-3.5 text-blue-600" />
+                                            <span dir="ltr">{contactData.mobile}</span>
+                                        </a>
+                                    )}
+                                    {contactData.phone && (
+                                        <a
+                                            href={`tel:${contactData.phone}`}
+                                            className="inline-flex items-center gap-1.5 text-slate-800 font-bold bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg transition-colors border border-slate-200/60"
+                                        >
+                                            <Phone className="w-3.5 h-3.5 text-slate-500" />
+                                            <span dir="ltr">{contactData.phone}</span>
+                                        </a>
+                                    )}
+                                    {!contactData.mobile && !contactData.phone && (
+                                        <span className="inline-flex items-center gap-1 text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg font-medium">
+                                            شماره تماسی ثبت نشده است
+                                        </span>
+                                    )}
+                                </>
+                            ) : isLoadingContact ? (
+                                <div className="inline-flex items-center gap-2 text-slate-600 bg-slate-100 px-3.5 py-1.5 rounded-lg animate-pulse font-medium border border-slate-200/60">
+                                    <Phone className="w-3.5 h-3.5 text-blue-600 animate-spin" />
+                                    <span>در حال دریافت اطلاعات تماس...</span>
+                                </div>
+                            ) : (
+                                <button
+                                    type="button"
+                                    onClick={handleRevealContact}
+                                    className="inline-flex items-center gap-1.5 text-blue-700 font-bold bg-blue-50 hover:bg-blue-100 border border-blue-200 px-3.5 py-1.5 rounded-lg transition-all shadow-sm active:scale-95 cursor-pointer"
                                 >
                                     <Phone className="w-3.5 h-3.5 text-blue-600" />
-                                    <span dir="ltr">{agency.mobile}</span>
-                                </a>
-                            )}
-                            {agency.phone && (
-                                <a
-                                    href={`tel:${agency.phone}`}
-                                    className="inline-flex items-center gap-1 text-slate-700 font-bold bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg transition-colors"
-                                >
-                                    <Phone className="w-3.5 h-3.5 text-slate-500" />
-                                    <span dir="ltr">{agency.phone}</span>
-                                </a>
+                                    <span>مشاهده اطلاعات تماس</span>
+                                </button>
                             )}
                             {agency.instagram && (
                                 <a

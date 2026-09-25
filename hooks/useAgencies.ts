@@ -1,5 +1,6 @@
 import { agencyService } from "@/services/agency.service";
 import {
+    AgencyContactResponse,
     ListAgenciesResponse,
     RequestConsultationRequest,
     UpdateAgencyProfileRequest,
@@ -28,6 +29,15 @@ export const useAgency = (agencyId: string) => {
         queryKey: ["agency", agencyId],
         queryFn: () => agencyService.getAgency(agencyId),
         enabled: !!agencyId,
+    });
+};
+
+export const useAgencyContact = (agencyId: string, options?: { enabled?: boolean }) => {
+    return useQuery<AgencyContactResponse, Error>({
+        queryKey: ["agency-contact", agencyId],
+        queryFn: () => agencyService.getAgencyContact(agencyId),
+        enabled: options?.enabled ?? false,
+        staleTime: 5 * 60 * 1000,
     });
 };
 

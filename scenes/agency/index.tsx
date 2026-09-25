@@ -25,7 +25,7 @@ export default function AgencyScene() {
         limit: 12,
         search: search || undefined,
         cityId: effectiveCityId
-    }, { enabled: !!effectiveCityId });
+    });
 
     const { data: hierarchy } = useGeoHierarchy();
 

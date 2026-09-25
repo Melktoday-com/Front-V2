@@ -2,6 +2,7 @@ import apiClient from "@/lib/api/client";
 import axios from "axios";
 import {
     AgencyConsultationMessage,
+    AgencyContactResponse,
     AgencyFull,
     AgencyPost,
     AgencyStats,
@@ -29,6 +30,11 @@ export const agencyService = {
 
     async getAgency(agencyId: string): Promise<AgencyFull> {
         const response = await apiClient.get<AgencyFull>(`/agencies/${agencyId}`);
+        return response.data;
+    },
+
+    async getAgencyContact(agencyId: string): Promise<AgencyContactResponse> {
+        const response = await apiClient.get<AgencyContactResponse>(`/agencies/${agencyId}/contact`);
         return response.data;
     },
 
