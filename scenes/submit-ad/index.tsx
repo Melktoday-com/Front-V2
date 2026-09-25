@@ -289,7 +289,8 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                     mediaIds: formData.mediaIds || [],
                 };
                 const created = await adminService.createAd(payload);
-                return { adId: created?.id || "", shouldPublish: true };
+                // backend اکنون آگهی را مستقیماً به وضعیت PUBLISHED منتقل می‌کند
+                return { adId: created?.adId || "", shouldPublish: true };
             }
 
             let adId = editAdId;
