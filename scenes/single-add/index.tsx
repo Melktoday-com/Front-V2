@@ -28,6 +28,8 @@ import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { useCityLookup } from "@/hooks/useCityLookup";
+import { useCategoryLookup } from "@/hooks/useCategoryLookup";
 import { PropertyCard } from "@/components/ui/PropertyCard";
 
 const Map = dynamic(() => import("@/components/ui/Map"), {
@@ -50,6 +52,24 @@ export default function SingleAdScene() {
     const chatMutation = useCreateConversation();
     const { data: ad, isLoading, error } = useAd(id);
     const { data: contact } = useAdContact(id);
+
+    const { getCityName } = useCityLookup();
+    const { getSubcategoryName, getCategoryName, getCategoryPathLabel } = useCategoryLookup();
+
+    const cityName = ad?.cityName || getCityName(ad?.cityId);
+    const provinceName = ad?.provinceName;
+    const categoryDisplayName =
+        (ad?.categoryTitle && ad?.subcategoryTitle
+            ? `${ad.categoryTitle} / ${ad.subcategoryTitle}`
+            : ad?.categoryTitle || ad?.subcategoryTitle) ||
+        (ad?.categoryPath ? getCategoryPathLabel(ad.categoryPath.categoryKey, ad.categoryPath.subcategoryKey) : "");
+
+    const badgeCategoryName =
+        ad?.subcategoryTitle ||
+        ad?.categoryTitle ||
+        (ad?.categoryPath
+            ? getSubcategoryName(ad.categoryPath.subcategoryKey, ad.categoryPath.categoryKey) || getCategoryName(ad.categoryPath.categoryKey)
+            : "");
 
     // Nearby / similar ads in the same city
     const { data: similarAds } = useAds(
@@ -207,7 +227,7 @@ export default function SingleAdScene() {
                         className="object-cover transition-opacity duration-300"
                     />
                     <div className="absolute top-4 right-4 bg-brand/80 backdrop-blur-md text-white text-xs font-bold px-3 py-1 rounded-full">
-                        {ad.categoryPath.subcategoryKey || ad.categoryPath.categoryKey}
+                        {badgeCategoryName || ad.categoryPath.subcategoryKey || ad.categoryPath.categoryKey}
                     </div>
                 </div>
 
@@ -251,9 +271,15 @@ export default function SingleAdScene() {
                             {ad.title}
                         </h1>
 
-                        <div className="flex items-center gap-1.5 text-text-light text-sm mt-2">
+                        <div className="flex flex-wrap items-center gap-1.5 text-text-light text-sm mt-2">
                             <MapPin className="w-4 h-4 shrink-0 text-primary" />
-                            <span>شهر: {ad.cityId}</span>
+                            <span>{provinceName ? `${provinceName}، ${cityName}` : `شهر: ${cityName}`}</span>
+                            {categoryDisplayName && (
+                                <>
+                                    <span className="text-gray-300">•</span>
+                                    <span>دسته‌بندی: {categoryDisplayName}</span>
+                                </>
+                            )}
                             <span className="text-gray-300">•</span>
                             <span className="text-xs">
                                 ثبت: {new Date(ad.createdAt).toLocaleDateString("fa-IR")}
@@ -437,13 +463,17 @@ export default function SingleAdScene() {
                                     title={item.title}
                                     price={Object.values(item.pricing)[0] ?? 0}
                                     rating={4.7}
-                                    location={ad.cityId}
+                                    location={getCityName(item.cityId || ad.cityId)}
                                     image={
                                         item.mediaIds?.[0]
                                             ? `${process.env.NEXT_PUBLIC_API_URL}/media/${item.mediaIds[0]}`
                                             : "/property-placeholder.svg"
                                     }
-                                    category={item.categoryPath.subcategoryKey}
+                                    category={
+                                        getSubcategoryName(item.categoryPath?.subcategoryKey, item.categoryPath?.categoryKey) ||
+                                        getCategoryName(item.categoryPath?.categoryKey) ||
+                                        item.categoryPath?.subcategoryKey
+                                    }
                                 />
                             ))}
                     </div>

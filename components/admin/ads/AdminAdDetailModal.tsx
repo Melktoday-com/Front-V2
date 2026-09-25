@@ -1,6 +1,8 @@
 "use client";
 
 import { useAd } from "@/hooks/useAds";
+import { useCityLookup } from "@/hooks/useCityLookup";
+import { useCategoryLookup } from "@/hooks/useCategoryLookup";
 import { formatPrice, toPersianDigits } from "@/lib/utils";
 import { adsService } from "@/services/ads.service";
 import { AdContactInfo } from "@/types/api/ads.types";
@@ -69,6 +71,8 @@ export default function AdminAdDetailModal({
     const [isLoadingContact, setIsLoadingContact] = useState(false);
 
     const { data: ad, isLoading } = useAd(adId || "");
+    const { getCityName } = useCityLookup();
+    const { getCategoryPathLabel } = useCategoryLookup();
 
     if (!isOpen || !adId) return null;
 
@@ -239,9 +243,9 @@ export default function AdminAdDetailModal({
                                 <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-1">
                                     <span className="text-xs text-slate-400 font-bold block">دسته‌بندی</span>
                                     <span className="text-xs font-black text-slate-800 truncate block">
-                                        {ad.categoryPath?.categoryKey} / {ad.categoryPath?.subcategoryKey}
+                                        {getCategoryPathLabel(ad.categoryPath?.categoryKey, ad.categoryPath?.subcategoryKey)}
                                     </span>
-                                    <span className="text-[10px] text-slate-400 block truncate">
+                                    <span className="text-[10px] text-slate-400 block truncate" title={`کلید: ${ad.categoryPath?.categoryKey} / ${ad.categoryPath?.subcategoryKey}`}>
                                         مدل: {ad.categoryPath?.businessModelKey}
                                     </span>
                                 </div>
@@ -249,7 +253,7 @@ export default function AdminAdDetailModal({
                                 <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-1">
                                     <span className="text-xs text-slate-400 font-bold block">شهر و مختصات</span>
                                     <span className="text-xs font-black text-slate-800 truncate block">
-                                        شناسه شهر: {ad.cityId}
+                                        شهر: {getCityName(ad.cityId)}
                                     </span>
                                     <span className="text-[10px] text-slate-400 block font-mono">
                                         {ad.location?.latitude && ad.location?.longitude

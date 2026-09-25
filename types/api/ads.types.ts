@@ -5,6 +5,8 @@ export interface CategoryPath {
     subcategoryKey: string;
     businessModelKey: string;
     attributeSchemaVersion: number;
+    categoryTitle?: string;
+    subcategoryTitle?: string;
 }
 
 export interface AdLocation {
@@ -18,9 +20,14 @@ export interface AdSummary {
     adId: string;
     ownerId: string;
     cityId: string;
+    cityName?: string;
+    provinceId?: string;
+    provinceName?: string;
     status: AdStatus;
     title: string;
     categoryPath: CategoryPath;
+    categoryTitle?: string;
+    subcategoryTitle?: string;
     pricing: Record<string, number>;
     isFeatured: boolean;
     mediaIds?: string[];

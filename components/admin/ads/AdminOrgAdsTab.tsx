@@ -2,6 +2,7 @@
 
 import { useAds } from "@/hooks/useAds";
 import { useAuth } from "@/hooks/useAuth";
+import { useCategoryLookup } from "@/hooks/useCategoryLookup";
 import { formatPrice, toPersianDigits } from "@/lib/utils";
 import { adminService } from "@/services/admin.service";
 import { adsService } from "@/services/ads.service";
@@ -48,6 +49,7 @@ export default function AdminOrgAdsTab() {
     const queryClient = useQueryClient();
     const { user } = useAuth();
     const adminId = user?.userId || "";
+    const { getCategoryPathLabel } = useCategoryLookup();
 
     // Filters
     const [selectedStatus, setSelectedStatus] = useState<string>("ALL");
@@ -483,7 +485,7 @@ export default function AdminOrgAdsTab() {
                                             {/* Category */}
                                             <td className="px-5 py-4 text-slate-600">
                                                 <span className="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-lg text-[11px] font-bold">
-                                                    {ad.categoryPath?.categoryKey || "—"} / {ad.categoryPath?.subcategoryKey || "—"}
+                                                    {getCategoryPathLabel(ad.categoryPath?.categoryKey, ad.categoryPath?.subcategoryKey)}
                                                 </span>
                                             </td>
 

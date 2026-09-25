@@ -2,6 +2,7 @@
 
 import { useCities } from "@/hooks/useGeo";
 import { useAds, useCategories } from "@/hooks/useAds";
+import { useCategoryLookup } from "@/hooks/useCategoryLookup";
 import { formatPrice, toPersianDigits } from "@/lib/utils";
 import { adminService } from "@/services/admin.service";
 import { AdSummary } from "@/types/api/ads.types";
@@ -48,6 +49,7 @@ const STATUS_FILTERS = [
 
 export default function AdminAdsItemsTab() {
     const queryClient = useQueryClient();
+    const { getCategoryPathLabel } = useCategoryLookup();
 
     // Filters
     const [selectedStatus, setSelectedStatus] = useState<string>(AdStatus.PENDING_APPROVAL);
@@ -539,7 +541,7 @@ export default function AdminAdsItemsTab() {
                                             {/* Category */}
                                             <td className="px-5 py-4 text-slate-600">
                                                 <span className="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-lg text-[11px] font-bold">
-                                                    {ad.categoryPath?.categoryKey || "دسته‌بندی"} / {ad.categoryPath?.subcategoryKey || "زیردسته"}
+                                                    {getCategoryPathLabel(ad.categoryPath?.categoryKey, ad.categoryPath?.subcategoryKey)}
                                                 </span>
                                             </td>
 
