@@ -374,7 +374,7 @@ export default function SingleAgencyScene() {
                                             {toPersianDigits(Number(agency.rating).toFixed(1))}
                                         </>
                                     ) : (
-                                        <span className="text-xs text-slate-400 font-medium">بدون امتیاز</span>
+                                        <span />
                                     )}
                                 </span>
                                 <span className="text-xs text-slate-400">امتیاز</span>
