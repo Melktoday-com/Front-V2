@@ -2,9 +2,11 @@
 
 import AdminAdsItemsTab from "@/components/admin/ads/AdminAdsItemsTab";
 import AdminCategoriesTab from "@/components/admin/ads/AdminCategoriesTab";
+import AdminOrgAdsTab from "@/components/admin/ads/AdminOrgAdsTab";
 import {
     FileText,
     FolderTree,
+    Layers,
     Plus,
     RefreshCw,
 } from "lucide-react";
@@ -12,13 +14,17 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { Suspense } from "react";
 
-type ActiveTab = "items" | "categories";
+type ActiveTab = "items" | "categories" | "org-ads";
 
 function AdminAdsContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const currentTab: ActiveTab =
-        searchParams.get("tab") === "categories" ? "categories" : "items";
+        searchParams.get("tab") === "categories"
+            ? "categories"
+            : searchParams.get("tab") === "org-ads"
+            ? "org-ads"
+            : "items";
 
     const handleTabChange = (tab: ActiveTab) => {
         const params = new URLSearchParams(searchParams.toString());
@@ -83,6 +89,19 @@ function AdminAdsContent() {
 
                 <button
                     type="button"
+                    onClick={() => handleTabChange("org-ads")}
+                    className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black transition-all ${
+                        currentTab === "org-ads"
+                            ? "bg-white text-slate-900 shadow-sm ring-1 ring-slate-200"
+                            : "text-slate-600 hover:text-slate-900 hover:bg-white/50"
+                    }`}
+                >
+                    <Layers className="w-4 h-4 text-violet-600" />
+                    <span>آگهی‌های سازمانی</span>
+                </button>
+
+                <button
+                    type="button"
                     onClick={() => handleTabChange("categories")}
                     className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black transition-all ${
                         currentTab === "categories"
@@ -97,11 +116,9 @@ function AdminAdsContent() {
 
             {/* Active Tab Content */}
             <div className="transition-all duration-150">
-                {currentTab === "items" ? (
-                    <AdminAdsItemsTab />
-                ) : (
-                    <AdminCategoriesTab />
-                )}
+                {currentTab === "items" && <AdminAdsItemsTab />}
+                {currentTab === "org-ads" && <AdminOrgAdsTab />}
+                {currentTab === "categories" && <AdminCategoriesTab />}
             </div>
         </div>
     );
