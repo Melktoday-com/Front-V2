@@ -9,7 +9,7 @@ import { useAds, useCategories } from "@/hooks/useAds";
 import { useGeoHierarchy } from "@/hooks/useGeoHierarchy";
 import { cn, formatPrice } from "@/lib/utils";
 import { AdSummary } from "@/types/api/ads.types";
-import { Building, Filter, LayoutGrid, Map as MapIcon } from "lucide-react";
+import { LayoutGrid, Map as MapIcon } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
@@ -27,13 +27,6 @@ interface AdsSceneProps {
     initialViewMode?: "list" | "map";
 }
 
-const DEAL_TYPES = [
-    { key: "", label: "همه انواع معامله" },
-    { key: "buy_sell", label: "خرید و فروش" },
-    { key: "rent_mortgage", label: "رهن و اجاره" },
-    { key: "daily_rent", label: "اجاره روزانه" },
-];
-
 export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
     const searchParams = useSearchParams();
     const router = useRouter();
@@ -48,7 +41,6 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
 
     const [search, setSearch] = useState(urlSearch);
     const [selectedCategory, setSelectedCategory] = useState(urlCategory);
-    const [selectedDealType, setSelectedDealType] = useState(urlDealType);
 
     const { data, isLoading, refetch } = useAds({
         limit: 30,
@@ -56,7 +48,7 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
         search: search || undefined,
         cityId: effectiveCityId,
         categoryKey: selectedCategory || undefined,
-        businessModelKey: selectedDealType || undefined,
+        businessModelKey: urlDealType || undefined,
     }, { enabled: !!effectiveCityId });
 
     const { data: categoriesData, isLoading: isCategoriesLoading } = useCategories();
@@ -134,17 +126,6 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
         router.push(`${window.location.pathname}?${params.toString()}`);
     };
 
-    const handleDealTypeSelect = (dealKey: string) => {
-        setSelectedDealType(dealKey);
-        const params = new URLSearchParams(searchParams.toString());
-        if (dealKey) {
-            params.set("businessModelKey", dealKey);
-        } else {
-            params.delete("businessModelKey");
-        }
-        router.push(`${window.location.pathname}?${params.toString()}`);
-    };
-
     // Helper for Zillow-style pricing
     const getPricingDisplay = (ad: AdSummary) => {
         const pricing = ad.pricing;
@@ -191,31 +172,6 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
                     selectedCategoryKey={selectedCategory}
                     onSelectCategory={handleCategorySelect}
                 />
-
-                {/* Quick Deal Type Chips (Zillow style) */}
-                <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar text-xs">
-                    <span className="text-text-light font-medium flex items-center gap-1 shrink-0 ml-1">
-                        <Filter className="w-3.5 h-3.5" />
-                        نوع معامله:
-                    </span>
-                    {DEAL_TYPES.map((deal) => {
-                        const isSelected = selectedDealType === deal.key;
-                        return (
-                            <button
-                                key={deal.key}
-                                onClick={() => handleDealTypeSelect(deal.key)}
-                                className={cn(
-                                    "px-3 py-1.5 rounded-full font-bold transition-all shrink-0 whitespace-nowrap",
-                                    isSelected
-                                        ? "bg-brand text-white shadow-xs"
-                                        : "bg-gray-50 text-text-light hover:bg-gray-100 hover:text-brand"
-                                )}
-                            >
-                                {deal.label}
-                            </button>
-                        );
-                    })}
-                </div>
             </div>
 
             {/* Main Split View: Left Map, Right Cards (RTL) */}
