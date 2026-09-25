@@ -14,18 +14,13 @@ import {
     Eye,
     Grid,
     Heart,
-    Layers,
     List,
-    MessageSquare,
     Newspaper,
     PenTool,
-    Plus,
     Search,
     Share2,
-    Sparkles,
-    UserCheck,
     Verified,
-    X,
+    X
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -85,9 +80,9 @@ export default function ExploreScene() {
                 content: postContent.trim(),
                 mediaUrls: postMediaUrls
                     ? postMediaUrls
-                          .split(",")
-                          .map((u) => u.trim())
-                          .filter(Boolean)
+                        .split(",")
+                        .map((u) => u.trim())
+                        .filter(Boolean)
                     : [],
                 isPublished: true,
             }),
@@ -171,44 +166,6 @@ export default function ExploreScene() {
 
     return (
         <div className="min-w-0 max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6 sm:space-y-8" dir="rtl">
-            {/* ── HERO & BANNER ─────────────────────────────────────────── */}
-            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-brand to-slate-950 text-white p-6 sm:p-10 shadow-xl border border-slate-800">
-                <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
-                <div className="absolute bottom-0 left-0 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
-
-                <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                    <div className="space-y-3 max-w-2xl">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-xs text-xs font-semibold text-primary border border-white/10">
-                            <Sparkles className="w-3.5 h-3.5" />
-                            <span>کاوش و فید محتوای ملکی</span>
-                        </div>
-                        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white">
-                            محتوای تخصصی و تحلیل بازار مسکن
-                        </h1>
-                        <p className="text-sm sm:text-base text-slate-300 leading-relaxed">
-                            آخرین تحلیل‌ها، مقالات، ویدیوها و گزارش‌های تخصصی تولید شده توسط دفاتر املاک معتبر و مشاورین برتر ملک‌تودی
-                        </p>
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                        <button
-                            onClick={handleOpenCreateModal}
-                            className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-primary hover:bg-primary/90 text-white font-bold text-sm shadow-lg shadow-primary/25 transition-all transform active:scale-95 cursor-pointer"
-                        >
-                            <PenTool className="w-4 h-4" />
-                            <span>تولید محتوا / انتشار پست</span>
-                        </button>
-
-                        <Link
-                            href="/agency"
-                            className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl bg-white/10 hover:bg-white/15 text-white font-bold text-sm border border-white/15 backdrop-blur-xs transition-all text-center"
-                        >
-                            <Building2 className="w-4 h-4" />
-                            <span>فهرست آژانس‌ها</span>
-                        </Link>
-                    </div>
-                </div>
-            </div>
 
             {/* ── SEARCH & TOPIC FILTERS ────────────────────────────────── */}
             <div className="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200/80 shadow-xs space-y-4">
