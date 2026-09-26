@@ -356,6 +356,7 @@ export interface ListArchivedCategoriesResponse {
 export interface ReviewAgentApplicationRequest {
     status: 'APPROVED' | 'REJECTED';
     adminNote?: string;
+    rejectionReason?: string;
 }
 
 export interface AdminAgenciesListResponse {
@@ -364,5 +365,31 @@ export interface AdminAgenciesListResponse {
     page: number;
     limit: number;
     totalPages: number;
+}
+
+// ── Host Applications Management Types ───────────────────────────────────────
+
+export interface HostApplicationResponse {
+    id: string;
+    userId: string;
+    fullName: string;
+    nationalCode: string;
+    hostName: string;
+    cityId?: string;
+    mobileNumber: string;
+    phone?: string;
+    address?: string;
+    propertyCount: number;
+    description?: string;
+    status: 'PENDING' | 'APPROVED' | 'REJECTED';
+    kycStatus: 'NOT_CHECKED' | 'VERIFIED' | 'FAILED' | 'PENDING';
+    rejectionReason?: string;
+    reviewedAt?: string;
+    createdAt: string;
+}
+
+export interface ReviewHostApplicationRequest {
+    status: 'APPROVED' | 'REJECTED';
+    rejectionReason?: string;
 }
 

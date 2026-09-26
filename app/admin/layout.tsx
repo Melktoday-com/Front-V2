@@ -30,6 +30,7 @@ const sidebarItems = [
     { name: "داشبورد", href: "/admin", icon: LayoutDashboard },
     { name: "آگهی‌ها و دسته‌بندی‌ها", href: "/admin/ads", icon: FileText },
     { name: "مدیریت املاک و مشاوران", href: "/admin/agencies", icon: Building2 },
+    { name: "درخواست‌های میزبانی", href: "/admin/hosts", icon: Home },
     { name: "سطل زباله و آرشیو", href: "/admin/archive", icon: Archive },
     { name: "کاربران", href: "/admin/users", icon: Users },
     { name: "کیف پول", href: "/admin/wallet", icon: Wallet },

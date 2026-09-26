@@ -30,6 +30,8 @@ import {
     AdminReport,
     ListPendingPromotionsResponse,
     ListPendingCampaignsResponse,
+    HostApplicationResponse,
+    ReviewHostApplicationRequest,
 } from "@/types/api/admin.types";
 import { AttributeDefinition, CategoryListItem, PriceModel, Subcategory } from "@/types/api/ads.types";
 import {
@@ -410,7 +412,7 @@ export const adminService = {
     },
 
     setAgencyActiveStatus: async (agencyId: string, isActive: boolean) => {
-        const response = await api.patch(`/admin/agencies/${agencyId}/active-status`, { isActive });
+        const response = await api.patch(`/admin/agencies/${agencyId}/status`, { isActive });
         return response.data;
     },
 
@@ -419,10 +421,35 @@ export const adminService = {
         verificationStatus: string,
     ) => {
         const response = await api.patch(
-            `/admin/agencies/${agencyId}/verification-status`,
+            `/admin/agencies/${agencyId}/verification`,
             { verificationStatus },
         );
         return response.data;
+    },
+
+    // ── Host Applications (Landlord) Management ──────────────────────────────
+    listHostApplications: async (params?: {
+        status?: string;
+        search?: string;
+    }): Promise<HostApplicationResponse[]> => {
+        const response = await api.get("/admin/host-applications", { params });
+        return response.data?.data || response.data;
+    },
+
+    getHostApplication: async (id: string): Promise<HostApplicationResponse> => {
+        const response = await api.get(`/admin/host-applications/${id}`);
+        return response.data?.data || response.data;
+    },
+
+    reviewHostApplication: async (
+        id: string,
+        data: ReviewHostApplicationRequest,
+    ): Promise<HostApplicationResponse> => {
+        const response = await api.post(
+            `/admin/host-applications/${id}/review`,
+            data,
+        );
+        return response.data?.data || response.data;
     },
 };
 

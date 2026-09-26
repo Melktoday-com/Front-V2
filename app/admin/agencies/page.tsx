@@ -75,7 +75,7 @@ export default function AdminAgenciesPage() {
     // Review application mutation
     const reviewMutation = useMutation({
         mutationFn: ({ id, status, adminNote }: { id: string; status: "APPROVED" | "REJECTED"; adminNote?: string }) =>
-            adminService.reviewAgencyApplication(id, { status, adminNote }),
+            adminService.reviewAgencyApplication(id, { status, adminNote, rejectionReason: adminNote }),
         onSuccess: (_, vars) => {
             toast.success(vars.status === "APPROVED" ? "درخواست با موفقیت تأیید و عامل فعال گردید." : "درخواست رد شد.");
             setSelectedApp(null);
