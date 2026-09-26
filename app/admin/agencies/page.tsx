@@ -74,8 +74,8 @@ export default function AdminAgenciesPage() {
 
     // Review application mutation
     const reviewMutation = useMutation({
-        mutationFn: ({ id, status, adminNote }: { id: string; status: "APPROVED" | "REJECTED"; adminNote?: string }) =>
-            adminService.reviewAgencyApplication(id, { status, adminNote, rejectionReason: adminNote }),
+        mutationFn: ({ id, status, rejectionReason }: { id: string; status: "APPROVED" | "REJECTED"; rejectionReason?: string }) =>
+            adminService.reviewAgencyApplication(id, { status, rejectionReason }),
         onSuccess: (_, vars) => {
             toast.success(vars.status === "APPROVED" ? "درخواست با موفقیت تأیید و عامل فعال گردید." : "درخواست رد شد.");
             setSelectedApp(null);
@@ -575,7 +575,7 @@ export default function AdminAgenciesPage() {
                                 <div className="flex items-center gap-3">
                                     <button
                                         type="button"
-                                        onClick={() => reviewMutation.mutate({ id: selectedApp.id, status: "APPROVED", adminNote })}
+                                        onClick={() => reviewMutation.mutate({ id: selectedApp.id, status: "APPROVED" })}
                                         disabled={reviewMutation.isPending}
                                         className="flex-1 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black transition-colors shadow-sm"
                                     >
@@ -584,7 +584,7 @@ export default function AdminAgenciesPage() {
 
                                     <button
                                         type="button"
-                                        onClick={() => reviewMutation.mutate({ id: selectedApp.id, status: "REJECTED", adminNote })}
+                                        onClick={() => reviewMutation.mutate({ id: selectedApp.id, status: "REJECTED", rejectionReason: adminNote })}
                                         disabled={reviewMutation.isPending}
                                         className="flex-1 py-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-black transition-colors shadow-sm"
                                     >

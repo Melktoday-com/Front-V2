@@ -355,7 +355,6 @@ export interface ListArchivedCategoriesResponse {
 
 export interface ReviewAgentApplicationRequest {
     status: 'APPROVED' | 'REJECTED';
-    adminNote?: string;
     rejectionReason?: string;
 }
 
