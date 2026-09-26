@@ -82,11 +82,19 @@ export function CitySelector({ isOpen, onClose, onSelect, currentCityId }: CityS
         return data.pages.flatMap((page) => page.provinces || []);
     }, [data]);
 
+    const handleSelectCity = useCallback((city: {
+        id: string;
+        name: string;
+        centerPoint?: { latitude: number; longitude: number };
+    }) => {
+        onSelect(city);
+    }, [onSelect]);
+
     const handlePopularClick = async (targetName: string) => {
         // 1. Check preloaded popular cities
         const foundPreloaded = preloadedPopularCities?.find((c) => c.name === targetName);
         if (foundPreloaded) {
-            onSelect({
+            handleSelectCity({
                 id: foundPreloaded.id,
                 name: foundPreloaded.name,
                 centerPoint: foundPreloaded.centerPoint,
@@ -98,7 +106,7 @@ export function CitySelector({ isOpen, onClose, onSelect, currentCityId }: CityS
         // 2. Check loaded provinces
         const foundInProvinces = provinces.flatMap((p) => p.cities).find((c) => c.name === targetName);
         if (foundInProvinces) {
-            onSelect({
+            handleSelectCity({
                 id: foundInProvinces.id,
                 name: foundInProvinces.name,
                 centerPoint: foundInProvinces.centerPoint,
@@ -113,7 +121,7 @@ export function CitySelector({ isOpen, onClose, onSelect, currentCityId }: CityS
             const res = await geoService.getProvincesHierarchy({ search: targetName, limit: 1 });
             const city = res.provinces?.flatMap((p) => p.cities).find((c) => c.name === targetName);
             if (city) {
-                onSelect({
+                handleSelectCity({
                     id: city.id,
                     name: city.name,
                     centerPoint: city.centerPoint,
@@ -257,7 +265,7 @@ export function CitySelector({ isOpen, onClose, onSelect, currentCityId }: CityS
                                             <button
                                                 key={city.id}
                                                 onClick={() => {
-                                                    onSelect(city);
+                                                    handleSelectCity(city);
                                                     onClose();
                                                 }}
                                                 className={cn(

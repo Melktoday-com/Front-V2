@@ -58,28 +58,34 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
 
     // Find the current city's coordinates
     const currentCityCoords = useMemo(() => {
+        // 1. Look up in fresh hierarchy first if effectiveCityId or city name is present
+        if (hierarchy) {
+            const targetId = effectiveCityId || selectedCity.id;
+            const targetName = effectiveCityName !== "همه شهرها" ? effectiveCityName : selectedCity.name;
+
+            for (const province of hierarchy) {
+                const city = province.cities.find(
+                    (c) => (targetId && c.id === targetId) || (targetName && c.name === targetName)
+                );
+                if (city?.centerPoint) {
+                    return {
+                        latitude: city.centerPoint.latitude,
+                        longitude: city.centerPoint.longitude,
+                    };
+                }
+            }
+        }
+
+        // 2. Fallback to selectedCity.centerPoint
         if (selectedCity.centerPoint) {
-            const cp = selectedCity.centerPoint;
             return {
-                latitude: cp.latitude ?? cp.lat,
-                longitude: cp.longitude ?? cp.lng,
+                latitude: selectedCity.centerPoint.latitude,
+                longitude: selectedCity.centerPoint.longitude,
             };
         }
 
-        if (!hierarchy || !effectiveCityId) return null;
-
-        for (const province of hierarchy) {
-            const city = province.cities.find((c) => c.id === effectiveCityId);
-            if (city?.centerPoint) {
-                const cp = city.centerPoint;
-                return {
-                    latitude: cp.latitude ?? cp.lat,
-                    longitude: cp.longitude ?? cp.lng,
-                };
-            }
-        }
         return null;
-    }, [hierarchy, effectiveCityId, selectedCity.centerPoint]);
+    }, [hierarchy, effectiveCityId, effectiveCityName, selectedCity]);
 
     // Map coordinates for Leaflet
     const adsForMap = useMemo(() => {

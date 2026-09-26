@@ -3,8 +3,6 @@ export type ZoneType = 'PROVINCE' | 'COUNTY' | 'CITY' | 'DISTRICT' | 'RURAL_DIST
 export interface GeoCenterPoint {
     latitude: number;
     longitude: number;
-    lat?: number;
-    lng?: number;
 }
 
 export interface ZoneSummary {
