@@ -58,18 +58,19 @@ export default function SingleAdScene() {
 
     const cityName = ad?.cityName || getCityName(ad?.cityId);
     const provinceName = ad?.provinceName;
-    const categoryDisplayName =
-        (ad?.categoryTitle && ad?.subcategoryTitle
-            ? `${ad.categoryTitle} / ${ad.subcategoryTitle}`
-            : ad?.categoryTitle || ad?.subcategoryTitle) ||
-        (ad?.categoryPath ? getCategoryPathLabel(ad.categoryPath.categoryKey, ad.categoryPath.subcategoryKey) : "");
 
-    const badgeCategoryName =
-        ad?.subcategoryTitle ||
+    const rawCatKey = ad?.categoryPath?.categoryKey;
+    const rawSubKey = ad?.categoryPath?.subcategoryKey;
+
+    const categoryTitle =
         ad?.categoryTitle ||
-        (ad?.categoryPath
-            ? getSubcategoryName(ad.categoryPath.subcategoryKey, ad.categoryPath.categoryKey) || getCategoryName(ad.categoryPath.categoryKey)
-            : "");
+        ad?.categoryPath?.categoryTitle ||
+        getCategoryName(rawCatKey);
+
+    const subcategoryTitle =
+        ad?.subcategoryTitle ||
+        ad?.categoryPath?.subcategoryTitle ||
+        getSubcategoryName(rawSubKey, rawCatKey);
 
     // Nearby / similar ads in the same city
     const { data: similarAds } = useAds(
@@ -226,8 +227,17 @@ export default function SingleAdScene() {
                         priority
                         className="object-cover transition-opacity duration-300"
                     />
-                    <div className="absolute top-4 right-4 bg-brand/80 backdrop-blur-md text-white text-xs font-bold px-3 py-1 rounded-full">
-                        {badgeCategoryName || ad.categoryPath.subcategoryKey || ad.categoryPath.categoryKey}
+                    <div className="absolute top-4 right-4 flex items-center gap-1.5 z-10">
+                        {subcategoryTitle && (
+                            <span className="bg-brand/85 backdrop-blur-md text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">
+                                {subcategoryTitle}
+                            </span>
+                        )}
+                        {categoryTitle && categoryTitle !== subcategoryTitle && (
+                            <span className="bg-black/40 backdrop-blur-md text-white/90 text-xs font-medium px-2.5 py-1 rounded-full">
+                                {categoryTitle}
+                            </span>
+                        )}
                     </div>
                 </div>
 
@@ -274,10 +284,16 @@ export default function SingleAdScene() {
                         <div className="flex flex-wrap items-center gap-1.5 text-text-light text-sm mt-2">
                             <MapPin className="w-4 h-4 shrink-0 text-primary" />
                             <span>{provinceName ? `${provinceName}، ${cityName}` : `شهر: ${cityName}`}</span>
-                            {categoryDisplayName && (
+                            {categoryTitle && (
                                 <>
                                     <span className="text-gray-300">•</span>
-                                    <span>دسته‌بندی: {categoryDisplayName}</span>
+                                    <span>دسته: <strong className="font-bold text-text-main">{categoryTitle}</strong></span>
+                                </>
+                            )}
+                            {subcategoryTitle && (
+                                <>
+                                    <span className="text-gray-300">•</span>
+                                    <span>زیردسته: <strong className="font-bold text-text-main">{subcategoryTitle}</strong></span>
                                 </>
                             )}
                             <span className="text-gray-300">•</span>
@@ -286,6 +302,24 @@ export default function SingleAdScene() {
                             </span>
                         </div>
                     </div>
+
+                    {/* Category & Subcategory Pills */}
+                    {(categoryTitle || subcategoryTitle) && (
+                        <div className="flex flex-wrap items-center gap-2">
+                            {categoryTitle && (
+                                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 rounded-xl border border-gray-100 text-xs">
+                                    <span className="text-text-light">دسته اصلی:</span>
+                                    <span className="font-bold text-brand">{categoryTitle}</span>
+                                </div>
+                            )}
+                            {subcategoryTitle && (
+                                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary rounded-xl border border-primary/20 text-xs">
+                                    <span className="text-primary/70">زیردسته:</span>
+                                    <span className="font-bold">{subcategoryTitle}</span>
+                                </div>
+                            )}
+                        </div>
+                    )}
 
                     {/* Key Specs Row (Zillow style) */}
                     <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 bg-gray-50/70 p-4 rounded-2xl border border-gray-100">

@@ -115,7 +115,7 @@ export default function Map({ ads, center = [35.6892, 51.3890], zoom = 12, bound
                                             ? `${process.env.NEXT_PUBLIC_API_URL}/media/${ad.mediaIds[0]}`
                                             : "/assets/images/property-placeholder.png"
                                         }
-                                        category={ad.categoryPath.subcategoryKey}
+                                        category={ad.subcategoryTitle || ad.categoryPath.subcategoryTitle || ad.categoryPath.subcategoryKey}
                                     />
                                 </div>
                             </Popup>

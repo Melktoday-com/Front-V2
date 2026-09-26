@@ -6,6 +6,7 @@ import { useCity } from "@/components/providers/CityProvider";
 import { PropertyCard } from "@/components/ui/PropertyCard";
 import { EmptyState } from "@/components/ui/StatusStates";
 import { useAds, useCategories } from "@/hooks/useAds";
+import { useCategoryLookup } from "@/hooks/useCategoryLookup";
 import { useGeoHierarchy } from "@/hooks/useGeoHierarchy";
 import { cn, formatPrice } from "@/lib/utils";
 import { AdSummary } from "@/types/api/ads.types";
@@ -52,6 +53,7 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
     }, { enabled: !!effectiveCityId });
 
     const { data: categoriesData, isLoading: isCategoriesLoading } = useCategories();
+    const { getSubcategoryName, getCategoryName } = useCategoryLookup();
     const { data: hierarchy } = useGeoHierarchy();
 
     // Find the current city's coordinates
@@ -211,6 +213,17 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
                         ) : (
                             (data?.items || []).map((ad: AdSummary) => {
                                 const pricing = getPricingDisplay(ad);
+                                const catKey = ad.categoryPath?.categoryKey;
+                                const subKey = ad.categoryPath?.subcategoryKey;
+                                const subcategoryDisplay =
+                                    ad.subcategoryTitle ||
+                                    ad.categoryPath?.subcategoryTitle ||
+                                    getSubcategoryName(subKey, catKey) ||
+                                    ad.categoryTitle ||
+                                    ad.categoryPath?.categoryTitle ||
+                                    getCategoryName(catKey) ||
+                                    subKey;
+
                                 return (
                                     <PropertyCard
                                         key={ad.adId}
@@ -225,7 +238,7 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
                                                 ? `${process.env.NEXT_PUBLIC_API_URL}/media/${ad.mediaIds[0]}`
                                                 : "/property-placeholder.svg"
                                         }
-                                        category={ad.categoryPath.subcategoryKey}
+                                        category={subcategoryDisplay}
                                     />
                                 );
                             })

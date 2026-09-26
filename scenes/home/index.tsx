@@ -10,6 +10,7 @@ import { Slider } from "@/components/ui/Slider";
 import { EmptyState, ErrorState } from "@/components/ui/StatusStates";
 import { useAds, useCategories } from "@/hooks/useAds";
 import { useAgencies } from "@/hooks/useAgencies";
+import { useCategoryLookup } from "@/hooks/useCategoryLookup";
 import { useZones } from "@/hooks/useGeo";
 import { useTemporaryRentAds } from "@/hooks/useTemporaryRent";
 import { TemporaryRentAdSummary } from "@/services/temporary-rent.service";
@@ -20,6 +21,7 @@ import { useEffect, useMemo, useState } from "react";
 
 export const HomeScene = () => {
     const { selectedCity, setSelectedCity } = useCity();
+    const { getSubcategoryName, getCategoryName } = useCategoryLookup();
 
     const [isInitialModalOpen, setIsInitialModalOpen] = useState(false);
 
@@ -139,7 +141,14 @@ export const HomeScene = () => {
                                 rating={5.0}
                                 location={selectedCity.name}
                                 image={property.mediaIds?.[0] ? `${process.env.NEXT_PUBLIC_API_URL}/media/${property.mediaIds[0]}` : "/property-placeholder.svg"}
-                                category={property.categoryPath.subcategoryKey}
+                                category={
+                                    property.subcategoryTitle ||
+                                    property.categoryPath?.subcategoryTitle ||
+                                    getSubcategoryName(property.categoryPath?.subcategoryKey, property.categoryPath?.categoryKey) ||
+                                    property.categoryTitle ||
+                                    property.categoryPath?.categoryTitle ||
+                                    getCategoryName(property.categoryPath?.categoryKey)
+                                }
                                 className="w-[210px] lg:w-[250px]"
                             />
                         ))}
@@ -235,7 +244,14 @@ export const HomeScene = () => {
                                 rating={4.8}
                                 location={selectedCity.name}
                                 image={property.mediaIds?.[0] ? `${process.env.NEXT_PUBLIC_API_URL}/media/${property.mediaIds[0]}` : "/property-placeholder.svg"}
-                                category={property.categoryPath.subcategoryKey}
+                                category={
+                                    property.subcategoryTitle ||
+                                    property.categoryPath?.subcategoryTitle ||
+                                    getSubcategoryName(property.categoryPath?.subcategoryKey, property.categoryPath?.categoryKey) ||
+                                    property.categoryTitle ||
+                                    property.categoryPath?.categoryTitle ||
+                                    getCategoryName(property.categoryPath?.categoryKey)
+                                }
                                 className="w-[210px] lg:w-[250px]"
                             />
                         ))}

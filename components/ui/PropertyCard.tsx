@@ -1,5 +1,6 @@
 "use client";
 
+import { DEFAULT_CATEGORY_TRANSLATIONS } from "@/hooks/useCategoryLookup";
 import { cn, toPersianDigits } from "@/lib/utils";
 import { Heart, MapPin, Star } from "lucide-react";
 import Image from "next/image";
@@ -118,7 +119,7 @@ export function PropertyCard({
                 {/* Category Badge */}
                 {category && (
                     <div className="absolute bottom-2 right-2 bg-brand/80 backdrop-blur-md text-white text-[10px] font-bold px-2 py-0.5 rounded-lg shadow-xs">
-                        {category}
+                        {DEFAULT_CATEGORY_TRANSLATIONS[category] || category}
                     </div>
                 )}
             </div>

@@ -535,7 +535,7 @@ export default function SingleAgencyScene() {
                                             ? `${process.env.NEXT_PUBLIC_API_URL}/media/${ad.mediaIds[0]}`
                                             : "/property-placeholder.svg"
                                     }
-                                    category={ad.categoryPath?.subcategoryKey}
+                                    category={ad.subcategoryTitle || ad.categoryPath?.subcategoryTitle || ad.categoryPath?.subcategoryKey}
                                 />
                             ))}
                         </div>
