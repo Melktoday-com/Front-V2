@@ -355,6 +355,7 @@ export interface ListArchivedCategoriesResponse {
 
 export interface ReviewAgentApplicationRequest {
     status: 'APPROVED' | 'REJECTED';
+    adminNote?: string;
     rejectionReason?: string;
 }
 
@@ -383,12 +384,14 @@ export interface HostApplicationResponse {
     status: 'PENDING' | 'APPROVED' | 'REJECTED';
     kycStatus: 'NOT_CHECKED' | 'VERIFIED' | 'FAILED' | 'PENDING';
     rejectionReason?: string;
+    adminNote?: string;
     reviewedAt?: string;
     createdAt: string;
 }
 
 export interface ReviewHostApplicationRequest {
     status: 'APPROVED' | 'REJECTED';
+    adminNote?: string;
     rejectionReason?: string;
 }
 

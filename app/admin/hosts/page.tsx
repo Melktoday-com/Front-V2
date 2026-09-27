@@ -70,7 +70,12 @@ export default function AdminHostsPage() {
       id: string;
       status: "APPROVED" | "REJECTED";
       rejectionReason?: string;
-    }) => adminService.reviewHostApplication(id, { status, rejectionReason }),
+    }) =>
+      adminService.reviewHostApplication(id, {
+        status,
+        adminNote: rejectionReason,
+        rejectionReason,
+      }),
     onSuccess: (_, vars) => {
       toast.success(
         vars.status === "APPROVED"
