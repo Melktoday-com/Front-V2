@@ -49,3 +49,27 @@ export const useDeleteTemporaryRent = () => {
         },
     });
 };
+
+export const useApproveTemporaryRent = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ id, note }: { id: string; note?: string }) =>
+            temporaryRentService.approve(id, note),
+        onSuccess: (data) => {
+            queryClient.invalidateQueries({ queryKey: ["temporary-rent-ads"] });
+            queryClient.invalidateQueries({ queryKey: ["temporary-rent-ad", data.adId] });
+        },
+    });
+};
+
+export const useRejectTemporaryRent = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ id, reason, note }: { id: string; reason: string; note?: string }) =>
+            temporaryRentService.reject(id, reason, note),
+        onSuccess: (data) => {
+            queryClient.invalidateQueries({ queryKey: ["temporary-rent-ads"] });
+            queryClient.invalidateQueries({ queryKey: ["temporary-rent-ad", data.adId] });
+        },
+    });
+};

@@ -79,6 +79,28 @@ export const temporaryRentService = {
         return response.data;
     },
 
+    async submitForReview(id: string): Promise<TemporaryRentMutationResponse> {
+        const response = await apiClient.post<TemporaryRentMutationResponse>(`/temporary-rent/${id}/submit-for-review`);
+        return response.data;
+    },
+
+    async approve(id: string, note?: string): Promise<TemporaryRentMutationResponse> {
+        const response = await apiClient.post<TemporaryRentMutationResponse>(`/temporary-rent/${id}/approve`, { note });
+        return response.data;
+    },
+
+    async reject(id: string, reason: string, note?: string): Promise<TemporaryRentMutationResponse> {
+        const response = await apiClient.post<TemporaryRentMutationResponse>(`/temporary-rent/${id}/reject`, { reason, note });
+        return response.data;
+    },
+
+    async getPending(page = 1, limit = 10): Promise<PaginatedResponse<TemporaryRentAdSummary>> {
+        const response = await apiClient.get<PaginatedResponse<TemporaryRentAdSummary>>("/temporary-rent/admin/pending", {
+            params: { page, limit },
+        });
+        return response.data;
+    },
+
     async delete(adId: string): Promise<void> {
         await apiClient.delete(`/temporary-rent/${adId}`);
     }
