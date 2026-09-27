@@ -104,8 +104,10 @@ export default function AdminCategoriesTab() {
         isActive: true,
     });
 
-    // Selected price models for create/edit subcategory modal
+    // Selected price models for create subcategory modal
     const [selectedPriceModelIds, setSelectedPriceModelIds] = useState<string[]>([]);
+    // Selected price models for edit subcategory modal
+    const [editSelectedPriceModelIds, setEditSelectedPriceModelIds] = useState<string[]>([]);
     const [isLoadingSubPriceModels, setIsLoadingSubPriceModels] = useState(false);
 
     // Dynamic attributes for subcategory creation
@@ -282,14 +284,14 @@ export default function AdminCategoriesTab() {
         });
         setIsEditSubcategoryModalOpen(true);
         if (sub.priceModels && sub.priceModels.length > 0) {
-            setSelectedPriceModelIds(sub.priceModels.map(p => p.id));
+            setEditSelectedPriceModelIds(sub.priceModels.map(p => p.id));
         } else {
             setIsLoadingSubPriceModels(true);
             try {
                 const pms = await adminService.getSubcategoryPriceModels(sub.id);
-                setSelectedPriceModelIds(pms.map(p => p.id));
+                setEditSelectedPriceModelIds(pms.map(p => p.id));
             } catch {
-                setSelectedPriceModelIds([]);
+                setEditSelectedPriceModelIds([]);
             } finally {
                 setIsLoadingSubPriceModels(false);
             }
@@ -938,7 +940,7 @@ export default function AdminCategoriesTab() {
                                         مدل‌های قیمت‌گذاری مجاز برای این زیردسته
                                     </span>
                                     <span className="text-[10px] text-slate-400 font-normal">
-                                        ({selectedPriceModelIds.length} مدل انتخاب شده)
+                                        ({editSelectedPriceModelIds.length} مدل انتخاب شده)
                                     </span>
                                 </label>
                                 <div className="border border-slate-200 rounded-xl p-2 bg-slate-50/50 max-h-36 overflow-y-auto space-y-1.5">
@@ -948,7 +950,7 @@ export default function AdminCategoriesTab() {
                                         <div className="text-center py-2 text-slate-400 text-[11px]">هیچ مدل قیمت‌گذاری یافت نشد.</div>
                                     ) : (
                                         availablePriceModels.map((pm) => {
-                                            const isSelected = selectedPriceModelIds.includes(pm.id);
+                                            const isSelected = editSelectedPriceModelIds.includes(pm.id);
                                             return (
                                                 <label
                                                     key={pm.id}
@@ -964,9 +966,9 @@ export default function AdminCategoriesTab() {
                                                             checked={isSelected}
                                                             onChange={(e) => {
                                                                 if (e.target.checked) {
-                                                                    setSelectedPriceModelIds([...selectedPriceModelIds, pm.id]);
+                                                                    setEditSelectedPriceModelIds([...editSelectedPriceModelIds, pm.id]);
                                                                 } else {
-                                                                    setSelectedPriceModelIds(selectedPriceModelIds.filter(id => id !== pm.id));
+                                                                    setEditSelectedPriceModelIds(editSelectedPriceModelIds.filter(id => id !== pm.id));
                                                                 }
                                                             }}
                                                             className="w-3.5 h-3.5 text-amber-600 rounded border-slate-300 focus:ring-amber-500"
@@ -994,7 +996,7 @@ export default function AdminCategoriesTab() {
                                         icon: editSubcategoryForm.icon || undefined,
                                         displayOrder: editSubcategoryForm.displayOrder,
                                         isActive: editSubcategoryForm.isActive,
-                                        allowedPriceModelIds: selectedPriceModelIds,
+                                        allowedPriceModelIds: editSelectedPriceModelIds,
                                     }
                                 })}
                                 disabled={!editSubcategoryForm.displayName || updateSubcategoryMutation.isPending}

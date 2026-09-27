@@ -117,9 +117,10 @@ export default function TemporaryRentCategoriesTab() {
         queryFn: () => adminService.listTemporaryRentPriceModels(),
     });
 
-    const categories: TemporaryRentCategory[] = Array.isArray(categoriesResponse)
-        ? categoriesResponse
-        : [];
+    const rawCategories = categoriesResponse && typeof categoriesResponse === "object" && "categories" in categoriesResponse
+        ? (categoriesResponse as { categories: TemporaryRentCategory[] }).categories
+        : categoriesResponse;
+    const categories: TemporaryRentCategory[] = Array.isArray(rawCategories) ? rawCategories : [];
 
     const toggleExpand = (categoryId: string) => {
         setExpandedCategories(prev =>
