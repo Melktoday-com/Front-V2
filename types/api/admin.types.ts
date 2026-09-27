@@ -122,6 +122,7 @@ export interface GeoZone {
 export interface CreateGeoZoneRequest {
     name: string;
     zoneType: string;
+    type?: string;
     centerLatitude?: number;
     centerLongitude?: number;
     parentZoneId?: string;

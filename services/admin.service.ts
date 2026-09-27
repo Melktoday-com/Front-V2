@@ -114,22 +114,26 @@ export const adminService = {
 
     // Geo Zones
     listGeoZones: async (zoneType: string): Promise<GeoZone[]> => {
-        const response = await api.get(`/admin/geo/zones`, { params: { zoneType } });
+        const response = await api.get(`/geo/zones`, { params: { zoneType, type: zoneType } });
         return response.data;
     },
 
     createGeoZone: async (data: CreateGeoZoneRequest) => {
-        const response = await api.post("/admin/geo/zones", data);
+        const payload = {
+            ...data,
+            type: data.zoneType || data.type,
+        };
+        const response = await api.post("/geo/zones", payload);
         return response.data;
     },
 
     updateGeoZone: async (zoneId: string, data: UpdateGeoZoneRequest) => {
-        const response = await api.put(`/admin/geo/zones/${zoneId}`, data);
+        const response = await api.put(`/geo/zones/${zoneId}`, data);
         return response.data;
     },
 
     archiveGeoZone: async (zoneId: string) => {
-        const response = await api.delete(`/admin/geo/zones/${zoneId}`);
+        const response = await api.delete(`/geo/zones/${zoneId}`);
         return response.data;
     },
 
