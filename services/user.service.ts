@@ -21,6 +21,15 @@ export const userService = {
     },
 
     /**
+     * Update current authenticated user profile
+     * PUT /users/me/profile
+     */
+    updateMe: async (data: UpdateUserProfileRequest) => {
+        const response = await api.put("/users/me/profile", data);
+        return response.data;
+    },
+
+    /**
      * Get user profile by ID
      * GET /users/:userId
      */

@@ -32,11 +32,13 @@ export function useUser(userId?: string) {
 
     const updateProfileMutation = useMutation({
         mutationFn: (data: UpdateUserProfileRequest) => {
-            if (!userId) throw new Error("User ID is required");
-            return userService.updateProfile(userId, data);
+            if (userId) {
+                return userService.updateProfile(userId, data);
+            }
+            return userService.updateMe(data);
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["user", userId] });
+            queryClient.invalidateQueries({ queryKey: ["user"] });
             toast.success("پروفایل با موفقیت بروزرسانی شد");
         },
     });
