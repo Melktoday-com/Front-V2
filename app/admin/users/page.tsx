@@ -26,7 +26,7 @@ export default function AdminUsersPage() {
 
     const banMutation = useMutation({
         mutationFn: ({ userId, reason }: { userId: string, reason: string }) =>
-            adminService.banUser(userId, { reasonCode: "ADMIN_MANUAL", reasonDetail: reason }),
+            adminService.banUser(userId, { reasonCode: "MANUAL_REVIEW", reasonDetail: reason }),
         onSuccess: () => {
             toast.success("کاربر مسدود شد");
             queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
@@ -44,7 +44,7 @@ export default function AdminUsersPage() {
 
     const suspendMutation = useMutation({
         mutationFn: ({ userId, reason, duration }: { userId: string, reason: string, duration: number }) =>
-            adminService.suspendUser(userId, { reasonCode: "ADMIN_MANUAL", reasonDetail: reason, durationDays: duration }),
+            adminService.suspendUser(userId, { reasonCode: "MANUAL_REVIEW", reasonDetail: reason, durationDays: duration }),
         onSuccess: () => {
             toast.success("کاربر تعلیق شد");
             queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
