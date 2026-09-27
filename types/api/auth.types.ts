@@ -38,6 +38,9 @@ export interface SwitchActiveRoleResponse {
     sessionId: string;
     activeRoleId: string;
     roleName: string;
+    accessToken: string;
+    refreshToken: string;
+    expiresIn: number;
 }
 
 export interface RefreshTokenRequest {

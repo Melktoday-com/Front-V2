@@ -60,7 +60,12 @@ export function useSwitchRole() {
     return useMutation({
         mutationFn: authService.switchRole,
         onSuccess: (data) => {
-            // ... existing comments
+            if (data.accessToken) {
+                setCookie("access_token", data.accessToken, { maxAge: data.expiresIn });
+                if (data.refreshToken) {
+                    setCookie("refresh_token", data.refreshToken, { maxAge: 30 * 24 * 60 * 60 });
+                }
+            }
             queryClient.invalidateQueries({ queryKey: ["auth-session"] });
             queryClient.invalidateQueries({ queryKey: ["user"] });
         }
