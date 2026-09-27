@@ -6,6 +6,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Archive, ChevronRight, Clock, Eye, Send, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { getMediaUrl } from "@/lib/utils";
 
 const statusLabels: Record<string, { label: string; color: string }> = {
     DRAFT: { label: "پیش‌نویس", color: "bg-gray-100 text-gray-600" },
@@ -82,7 +83,7 @@ export default function MyAdsScene() {
                         <div className="w-24 h-24 rounded-2xl bg-gray-200 overflow-hidden flex-shrink-0">
                             {ad.mediaIds && ad.mediaIds.length > 0 ? (
                                 <img
-                                    src={`${process.env.NEXT_PUBLIC_API_URL}/media/${ad.mediaIds[0]}`}
+                                    src={getMediaUrl(ad.mediaIds[0])}
                                     className="w-full h-full object-cover"
                                     alt={ad.title}
                                 />

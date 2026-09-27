@@ -103,6 +103,7 @@ export interface EditAdRequest {
     description?: string;
     rawPricing?: Record<string, number | string | boolean>;
     attributes?: JsonObject;
+    mediaIds?: string[];
 }
 
 export interface AdMutationResponse {

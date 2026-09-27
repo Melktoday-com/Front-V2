@@ -302,6 +302,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                     description: formData.description,
                     rawPricing: formData.rawPricing,
                     attributes: formData.attributes,
+                    mediaIds: formData.mediaIds,
                 });
             } else {
                 // Create draft
@@ -327,7 +328,11 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
 
             // If user requested approval review, submit it
             if (shouldPublish && adId) {
-                await adsService.submitForReview(adId);
+                try {
+                    await adsService.submitForReview(adId);
+                } catch (e) {
+                    console.warn("Notice during submitForReview:", e);
+                }
             }
 
             return { adId, shouldPublish };

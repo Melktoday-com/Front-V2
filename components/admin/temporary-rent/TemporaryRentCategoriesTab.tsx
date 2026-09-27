@@ -53,7 +53,7 @@ export default function TemporaryRentCategoriesTab() {
     const [selectedCategory, setSelectedCategory] = useState<TemporaryRentCategory | null>(null);
     const [selectedSubcategory, setSelectedSubcategory] = useState<TemporaryRentSubcategory | null>(null);
 
-    // Category form state
+    // Category form state (Create)
     const [categoryForm, setCategoryForm] = useState({
         key: "",
         displayName: "",
@@ -64,8 +64,30 @@ export default function TemporaryRentCategoriesTab() {
         isActive: true,
     });
 
-    // Subcategory form state
+    // Category form state (Edit)
+    const [editCategoryForm, setEditCategoryForm] = useState({
+        key: "",
+        displayName: "",
+        description: "",
+        icon: "",
+        banner: "",
+        displayOrder: 1,
+        isActive: true,
+    });
+
+    // Subcategory form state (Create)
     const [subcategoryForm, setSubcategoryForm] = useState({
+        key: "",
+        displayName: "",
+        description: "",
+        icon: "",
+        banner: "",
+        displayOrder: 1,
+        isActive: true,
+    });
+
+    // Subcategory form state (Edit)
+    const [editSubcategoryForm, setEditSubcategoryForm] = useState({
         key: "",
         displayName: "",
         description: "",
@@ -77,6 +99,7 @@ export default function TemporaryRentCategoriesTab() {
 
     // Selected price models for create/edit subcategory modal
     const [selectedPriceModelIds, setSelectedPriceModelIds] = useState<string[]>([]);
+    const [editSelectedPriceModelIds, setEditSelectedPriceModelIds] = useState<string[]>([]);
     const [isLoadingSubPriceModels, setIsLoadingSubPriceModels] = useState(false);
 
     // Dynamic attributes for subcategory creation
@@ -213,7 +236,7 @@ export default function TemporaryRentCategoriesTab() {
 
     const handleOpenEditCategory = (cat: TemporaryRentCategory) => {
         setSelectedCategory(cat);
-        setCategoryForm({
+        setEditCategoryForm({
             key: cat.key,
             displayName: cat.displayName,
             description: cat.description || "",
@@ -244,7 +267,7 @@ export default function TemporaryRentCategoriesTab() {
     const handleOpenEditSubcategory = async (cat: TemporaryRentCategory, sub: TemporaryRentSubcategory) => {
         setSelectedCategory(cat);
         setSelectedSubcategory(sub);
-        setSubcategoryForm({
+        setEditSubcategoryForm({
             key: sub.key,
             displayName: sub.displayName,
             description: sub.description || "",
@@ -255,14 +278,14 @@ export default function TemporaryRentCategoriesTab() {
         });
         setIsEditSubcategoryModalOpen(true);
         if (sub.priceModels && sub.priceModels.length > 0) {
-            setSelectedPriceModelIds(sub.priceModels.map(p => p.id));
+            setEditSelectedPriceModelIds(sub.priceModels.map(p => p.id));
         } else {
             setIsLoadingSubPriceModels(true);
             try {
                 const pms = await adminService.getTemporaryRentSubcategoryPriceModels(sub.id);
-                setSelectedPriceModelIds(pms.map(p => p.id));
+                setEditSelectedPriceModelIds(pms.map(p => p.id));
             } catch {
-                setSelectedPriceModelIds([]);
+                setEditSelectedPriceModelIds([]);
             } finally {
                 setIsLoadingSubPriceModels(false);
             }
@@ -622,8 +645,8 @@ export default function TemporaryRentCategoriesTab() {
                                 <label className="block font-bold text-slate-700 mb-1">نام نمایشی (فارسی)</label>
                                 <input
                                     type="text"
-                                    value={categoryForm.displayName}
-                                    onChange={(e) => setCategoryForm({ ...categoryForm, displayName: e.target.value })}
+                                    value={editCategoryForm.displayName}
+                                    onChange={(e) => setEditCategoryForm({ ...editCategoryForm, displayName: e.target.value })}
                                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
                                 />
                             </div>
@@ -631,22 +654,22 @@ export default function TemporaryRentCategoriesTab() {
                                 <label className="block font-bold text-slate-700 mb-1">توضیحات</label>
                                 <input
                                     type="text"
-                                    value={categoryForm.description}
-                                    onChange={(e) => setCategoryForm({ ...categoryForm, description: e.target.value })}
+                                    value={editCategoryForm.description}
+                                    onChange={(e) => setEditCategoryForm({ ...editCategoryForm, description: e.target.value })}
                                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200"
                                 />
                             </div>
                             <MediaIconUpload
-                                value={categoryForm.icon}
-                                onChange={(iconId) => setCategoryForm({ ...categoryForm, icon: iconId })}
+                                value={editCategoryForm.icon}
+                                onChange={(iconId) => setEditCategoryForm({ ...editCategoryForm, icon: iconId })}
                                 label="آیکون دسته‌بندی اقامتگاه"
                             />
                             <div>
                                 <label className="block font-bold text-slate-700 mb-1">ترتیب نمایش</label>
                                 <input
                                     type="number"
-                                    value={categoryForm.displayOrder}
-                                    onChange={(e) => setCategoryForm({ ...categoryForm, displayOrder: Number(e.target.value) })}
+                                    value={editCategoryForm.displayOrder}
+                                    onChange={(e) => setEditCategoryForm({ ...editCategoryForm, displayOrder: Number(e.target.value) })}
                                     className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs"
                                 />
                             </div>
@@ -654,8 +677,8 @@ export default function TemporaryRentCategoriesTab() {
                                 <label className="flex items-center gap-2 cursor-pointer">
                                     <input
                                         type="checkbox"
-                                        checked={categoryForm.isActive}
-                                        onChange={(e) => setCategoryForm({ ...categoryForm, isActive: e.target.checked })}
+                                        checked={editCategoryForm.isActive}
+                                        onChange={(e) => setEditCategoryForm({ ...editCategoryForm, isActive: e.target.checked })}
                                         className="w-4 h-4 text-emerald-600 rounded border-slate-300"
                                     />
                                     <span className="font-bold text-slate-700">دسته‌بندی فعال است</span>
@@ -667,14 +690,14 @@ export default function TemporaryRentCategoriesTab() {
                                 onClick={() => updateCategoryMutation.mutate({
                                     id: selectedCategory.id,
                                     payload: {
-                                        displayName: categoryForm.displayName.trim(),
-                                        description: categoryForm.description || undefined,
-                                        icon: categoryForm.icon || undefined,
-                                        displayOrder: categoryForm.displayOrder,
-                                        isActive: categoryForm.isActive,
+                                        displayName: editCategoryForm.displayName.trim(),
+                                        description: editCategoryForm.description || undefined,
+                                        icon: editCategoryForm.icon || undefined,
+                                        displayOrder: editCategoryForm.displayOrder,
+                                        isActive: editCategoryForm.isActive,
                                     }
                                 })}
-                                disabled={!categoryForm.displayName || updateCategoryMutation.isPending}
+                                disabled={!editCategoryForm.displayName || updateCategoryMutation.isPending}
                                 className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl transition-all disabled:opacity-50 text-xs"
                             >
                                 {updateCategoryMutation.isPending ? "در حال بروزرسانی..." : "بروزرسانی تغییرات"}
@@ -863,8 +886,8 @@ export default function TemporaryRentCategoriesTab() {
                                 <label className="block font-bold text-slate-700 mb-1">نام نمایشی (فارسی)</label>
                                 <input
                                     type="text"
-                                    value={subcategoryForm.displayName}
-                                    onChange={(e) => setSubcategoryForm({ ...subcategoryForm, displayName: e.target.value })}
+                                    value={editSubcategoryForm.displayName}
+                                    onChange={(e) => setEditSubcategoryForm({ ...editSubcategoryForm, displayName: e.target.value })}
                                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
                                 />
                             </div>
@@ -872,22 +895,22 @@ export default function TemporaryRentCategoriesTab() {
                                 <label className="block font-bold text-slate-700 mb-1">توضیحات</label>
                                 <input
                                     type="text"
-                                    value={subcategoryForm.description}
-                                    onChange={(e) => setSubcategoryForm({ ...subcategoryForm, description: e.target.value })}
+                                    value={editSubcategoryForm.description}
+                                    onChange={(e) => setEditSubcategoryForm({ ...editSubcategoryForm, description: e.target.value })}
                                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200"
                                 />
                             </div>
                             <MediaIconUpload
-                                value={subcategoryForm.icon}
-                                onChange={(iconId) => setSubcategoryForm({ ...subcategoryForm, icon: iconId })}
+                                value={editSubcategoryForm.icon}
+                                onChange={(iconId) => setEditSubcategoryForm({ ...editSubcategoryForm, icon: iconId })}
                                 label="آیکون زیردسته اقامتگاه"
                             />
                             <div>
                                 <label className="block font-bold text-slate-700 mb-1">ترتیب نمایش</label>
                                 <input
                                     type="number"
-                                    value={subcategoryForm.displayOrder}
-                                    onChange={(e) => setSubcategoryForm({ ...subcategoryForm, displayOrder: Number(e.target.value) })}
+                                    value={editSubcategoryForm.displayOrder}
+                                    onChange={(e) => setEditSubcategoryForm({ ...editSubcategoryForm, displayOrder: Number(e.target.value) })}
                                     className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs"
                                 />
                             </div>
@@ -895,8 +918,8 @@ export default function TemporaryRentCategoriesTab() {
                                 <label className="flex items-center gap-2 cursor-pointer">
                                     <input
                                         type="checkbox"
-                                        checked={subcategoryForm.isActive}
-                                        onChange={(e) => setSubcategoryForm({ ...subcategoryForm, isActive: e.target.checked })}
+                                        checked={editSubcategoryForm.isActive}
+                                        onChange={(e) => setEditSubcategoryForm({ ...editSubcategoryForm, isActive: e.target.checked })}
                                         className="w-4 h-4 text-emerald-600 rounded border-slate-300"
                                     />
                                     <span className="font-bold text-slate-700">زیردسته فعال است</span>
@@ -909,7 +932,7 @@ export default function TemporaryRentCategoriesTab() {
                                         مدل‌های قیمت‌گذاری مجاز برای این اقامتگاه
                                     </span>
                                     <span className="text-[10px] text-slate-400 font-normal">
-                                        ({selectedPriceModelIds.length} مدل انتخاب شده)
+                                        ({editSelectedPriceModelIds.length} مدل انتخاب شده)
                                     </span>
                                 </label>
                                 <div className="border border-slate-200 rounded-xl p-2 bg-slate-50/50 max-h-36 overflow-y-auto space-y-1.5">
@@ -919,7 +942,7 @@ export default function TemporaryRentCategoriesTab() {
                                         <div className="text-center py-2 text-slate-400 text-[11px]">هیچ مدل قیمت‌گذاری یافت نشد.</div>
                                     ) : (
                                         availablePriceModels.map((pm) => {
-                                            const isSelected = selectedPriceModelIds.includes(pm.id);
+                                             const isSelected = editSelectedPriceModelIds.includes(pm.id);
                                             return (
                                                 <label
                                                     key={pm.id}
@@ -935,9 +958,9 @@ export default function TemporaryRentCategoriesTab() {
                                                             checked={isSelected}
                                                             onChange={(e) => {
                                                                 if (e.target.checked) {
-                                                                    setSelectedPriceModelIds([...selectedPriceModelIds, pm.id]);
+                                                                    setEditSelectedPriceModelIds([...editSelectedPriceModelIds, pm.id]);
                                                                 } else {
-                                                                    setSelectedPriceModelIds(selectedPriceModelIds.filter(id => id !== pm.id));
+                                                                    setEditSelectedPriceModelIds(editSelectedPriceModelIds.filter(id => id !== pm.id));
                                                                 }
                                                             }}
                                                             className="w-3.5 h-3.5 text-emerald-600 rounded border-slate-300 focus:ring-emerald-500"
@@ -960,15 +983,15 @@ export default function TemporaryRentCategoriesTab() {
                                 onClick={() => updateSubcategoryMutation.mutate({
                                     subcategoryId: selectedSubcategory.id,
                                     payload: {
-                                        displayName: subcategoryForm.displayName.trim(),
-                                        description: subcategoryForm.description || undefined,
-                                        icon: subcategoryForm.icon || undefined,
-                                        displayOrder: subcategoryForm.displayOrder,
-                                        isActive: subcategoryForm.isActive,
-                                        allowedPriceModelIds: selectedPriceModelIds,
+                                        displayName: editSubcategoryForm.displayName.trim(),
+                                        description: editSubcategoryForm.description || undefined,
+                                        icon: editSubcategoryForm.icon || undefined,
+                                        displayOrder: editSubcategoryForm.displayOrder,
+                                        isActive: editSubcategoryForm.isActive,
+                                        allowedPriceModelIds: editSelectedPriceModelIds,
                                     }
                                 })}
-                                disabled={!subcategoryForm.displayName || updateSubcategoryMutation.isPending}
+                                disabled={!editSubcategoryForm.displayName || updateSubcategoryMutation.isPending}
                                 className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl transition-all disabled:opacity-50 text-xs"
                             >
                                 {updateSubcategoryMutation.isPending ? "در حال بروزرسانی..." : "بروزرسانی تغییرات"}
