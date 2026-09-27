@@ -33,7 +33,7 @@ export default function AdminHostsPage() {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedApp, setSelectedApp] = useState<HostApplicationResponse | null>(null);
   const [rejectModalApp, setRejectModalApp] = useState<HostApplicationResponse | null>(null);
-  const [rejectionReason, setRejectionReason] = useState<string>("");
+  const [adminNote, setAdminNote] = useState<string>("");
 
   // Fetch host applications
   const { data: rawApps = [], isLoading, isFetching, refetch } = useQuery({
@@ -65,15 +65,17 @@ export default function AdminHostsPage() {
     mutationFn: ({
       id,
       status,
+      adminNote,
       rejectionReason,
     }: {
       id: string;
       status: "APPROVED" | "REJECTED";
+      adminNote?: string;
       rejectionReason?: string;
     }) =>
       adminService.reviewHostApplication(id, {
         status,
-        adminNote: rejectionReason,
+        adminNote,
         rejectionReason,
       }),
     onSuccess: (_, vars) => {
@@ -84,7 +86,7 @@ export default function AdminHostsPage() {
       );
       setSelectedApp(null);
       setRejectModalApp(null);
-      setRejectionReason("");
+      setAdminNote("");
       queryClient.invalidateQueries({ queryKey: ["admin", "host-applications"] });
     },
     onError: (err: Error) => {
@@ -101,14 +103,14 @@ export default function AdminHostsPage() {
   const handleRejectSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!rejectModalApp) return;
-    if (!rejectionReason.trim()) {
-      toast.error("لطفاً دلیل رد درخواست را وارد نمایید.");
+    if (!adminNote.trim()) {
+      toast.error("لطفاً دلیل یا یادداشت رد درخواست را وارد نمایید.");
       return;
     }
     reviewMutation.mutate({
       id: rejectModalApp.id,
       status: "REJECTED",
-      rejectionReason: rejectionReason.trim(),
+      adminNote: adminNote.trim(),
     });
   };
 
@@ -341,7 +343,7 @@ export default function AdminHostsPage() {
                     <button
                       onClick={() => {
                         setRejectModalApp(app);
-                        setRejectionReason("");
+                        setAdminNote("");
                       }}
                       disabled={reviewMutation.isPending}
                       className="inline-flex items-center justify-center gap-1 py-2 px-3 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl text-xs font-bold transition-colors"
@@ -486,9 +488,9 @@ export default function AdminHostsPage() {
             <textarea
               required
               rows={4}
-              value={rejectionReason}
-              onChange={(e) => setRejectionReason(e.target.value)}
-              placeholder="مثال: عدم تطابق کد ملی با مدارک ثبتی / نقص در مجوزهای گردشگری..."
+              value={adminNote}
+              onChange={(e) => setAdminNote(e.target.value)}
+              placeholder="مثال: تصویر کارت ملی ناخواناست / مدارک گردشگری نیاز به به‌روزرسانی دارد..."
               className="w-full p-3 bg-soft-bg border border-soft-border rounded-2xl text-xs text-brand outline-none focus:bg-white focus:border-rose-300 transition-all resize-none"
             />
 
