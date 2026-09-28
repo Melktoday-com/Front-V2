@@ -1,6 +1,6 @@
 "use client";
 
-import { useMyAds } from "@/hooks/useAds";
+import { useInfiniteMyAds, useMyAds } from "@/hooks/useAds";
 import { DEFAULT_CATEGORY_TRANSLATIONS } from "@/hooks/useCategoryLookup";
 import { cn, formatPrice, getMediaUrl, toPersianDigits } from "@/lib/utils";
 import { adsService } from "@/services/ads.service";
@@ -10,11 +10,14 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
     AlertCircle,
     Archive,
+    ArrowUp,
     Building2,
+    ChevronLeft,
     ChevronRight,
     Clock,
     ExternalLink,
     Eye,
+    Layers,
     Loader2,
     MapPin,
     Pencil,
@@ -25,7 +28,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 type FilterTab = "ALL" | AdStatus;
@@ -127,6 +130,40 @@ const getCategoryBadge = (ad: AdSummary): string => {
     }
     return "ملک";
 };
+
+function getPaginationItems(
+    currentStart: number,
+    currentEnd: number,
+    total: number
+): (number | "...")[] {
+    if (total <= 9) {
+        return Array.from({ length: total }, (_, i) => i + 1);
+    }
+
+    const items: (number | "...")[] = [];
+    items.push(1);
+
+    if (currentStart > 3) {
+        items.push("...");
+    }
+
+    const start = Math.max(2, currentStart);
+    const end = Math.min(total - 1, currentEnd);
+
+    for (let i = start; i <= end; i++) {
+        items.push(i);
+    }
+
+    if (currentEnd < total - 2) {
+        items.push("...");
+    }
+
+    if (total > 1) {
+        items.push(total);
+    }
+
+    return items.filter((item, index, self) => item === "..." || self.indexOf(item) === index);
+}
 
 interface MyAdCardProps {
     ad: AdSummary;
@@ -309,12 +346,54 @@ function MyAdCard({
 export default function MyAdsScene() {
     const router = useRouter();
     const queryClient = useQueryClient();
-    const { data: ads, isLoading } = useMyAds();
 
     const [activeFilter, setActiveFilter] = useState<FilterTab>("ALL");
+    const [startPage, setStartPage] = useState<number>(1);
     const [submittingId, setSubmittingId] = useState<string | null>(null);
     const [deleteTarget, setDeleteTarget] = useState<AdSummary | null>(null);
     const [archiveTarget, setArchiveTarget] = useState<AdSummary | null>(null);
+
+    const observerTargetRef = useRef<HTMLDivElement | null>(null);
+
+    // Summary counts for tabs
+    const { data: allAdsSummary } = useMyAds({ limit: 100 });
+
+    // Infinite Query with 7 pages limit per batch
+    const statusQuery = activeFilter === "ALL" ? undefined : activeFilter;
+    const {
+        data,
+        isLoading,
+        isFetchingNextPage,
+        hasNextPage,
+        fetchNextPage,
+    } = useInfiniteMyAds(
+        { status: statusQuery, limit: 12 },
+        { startPage, maxPages: 7 }
+    );
+
+    // Auto-scroll infinite scroll up to 7 pages
+    useEffect(() => {
+        const target = observerTargetRef.current;
+        if (!target) return;
+
+        const currentBatchPageCount = data?.pages.length ?? 0;
+        if (currentBatchPageCount >= 7) return;
+        if (!hasNextPage || isFetchingNextPage) return;
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting) {
+                    fetchNextPage();
+                }
+            },
+            { rootMargin: "300px" }
+        );
+
+        observer.observe(target);
+        return () => {
+            observer.disconnect();
+        };
+    }, [hasNextPage, isFetchingNextPage, fetchNextPage, data?.pages.length]);
 
     const submitMutation = useMutation({
         mutationFn: (adId: string) => adsService.submitForReview(adId),
@@ -324,6 +403,7 @@ export default function MyAdsScene() {
         onSuccess: () => {
             toast.success("آگهی با موفقیت برای بررسی ارسال شد");
             queryClient.invalidateQueries({ queryKey: ["my-ads"] });
+            queryClient.invalidateQueries({ queryKey: ["my-ads-infinite"] });
         },
         onError: () => {
             toast.error("خطا در ارسال آگهی برای بررسی");
@@ -338,6 +418,7 @@ export default function MyAdsScene() {
         onSuccess: () => {
             toast.success("آگهی با موفقیت بایگانی شد");
             queryClient.invalidateQueries({ queryKey: ["my-ads"] });
+            queryClient.invalidateQueries({ queryKey: ["my-ads-infinite"] });
             setArchiveTarget(null);
         },
         onError: () => {
@@ -350,6 +431,7 @@ export default function MyAdsScene() {
         onSuccess: () => {
             toast.success("آگهی با موفقیت حذف شد");
             queryClient.invalidateQueries({ queryKey: ["my-ads"] });
+            queryClient.invalidateQueries({ queryKey: ["my-ads-infinite"] });
             setDeleteTarget(null);
         },
         onError: () => {
@@ -371,14 +453,56 @@ export default function MyAdsScene() {
         toast.info(`آدرس آگهی: ${url}`);
     };
 
-    const allVisibleAds = useMemo(() => {
-        return ads?.items.filter((ad) => ad.status !== AdStatus.DELETED) || [];
-    }, [ads]);
+    const handleFilterChange = (tabKey: FilterTab) => {
+        setActiveFilter(tabKey);
+        setStartPage(1);
+    };
 
-    const filteredAds = useMemo(() => {
-        if (activeFilter === "ALL") return allVisibleAds;
-        return allVisibleAds.filter((ad) => ad.status === activeFilter);
-    }, [allVisibleAds, activeFilter]);
+    // Calculate tab badge counts
+    const allVisibleSummaryAds = useMemo(() => {
+        return allAdsSummary?.items.filter((ad) => ad.status !== AdStatus.DELETED) || [];
+    }, [allAdsSummary]);
+
+    // All loaded ads across pages in current batch
+    const allLoadedAds = useMemo(() => {
+        return data?.pages.flatMap((page) => page.items.filter((ad) => ad.status !== AdStatus.DELETED)) || [];
+    }, [data]);
+
+    // Pagination metrics
+    const totalCount = data?.pages[0]?.total ?? 0;
+    const limitPerPage = data?.pages[0]?.limit ?? 12;
+    const totalPages = Math.ceil(totalCount / limitPerPage);
+    const lastLoadedPage = data?.pages[data.pages.length - 1]?.page ?? startPage;
+    const isBatchFinished = (data?.pages.length ?? 0) >= 7 || !hasNextPage;
+
+    const handlePageSelect = (targetPage: number) => {
+        const isLoadedInCurrentBatch = data?.pages.some((p) => p.page === targetPage);
+        if (isLoadedInCurrentBatch) {
+            if (targetPage === startPage) {
+                document.getElementById("my-ads-top")?.scrollIntoView({ behavior: "smooth" });
+            } else {
+                const sectionElem = document.getElementById(`page-section-${targetPage}`);
+                if (sectionElem) {
+                    sectionElem.scrollIntoView({ behavior: "smooth", block: "start" });
+                }
+            }
+        } else {
+            setStartPage(targetPage);
+            document.getElementById("my-ads-top")?.scrollIntoView({ behavior: "smooth" });
+        }
+    };
+
+    const handleNextPage = () => {
+        if (lastLoadedPage < totalPages) {
+            handlePageSelect(lastLoadedPage + 1);
+        }
+    };
+
+    const handlePrevPage = () => {
+        if (startPage > 1) {
+            handlePageSelect(Math.max(1, startPage - 7));
+        }
+    };
 
     return (
         <div className="min-h-screen bg-gray-50/50 pb-28">
@@ -398,7 +522,7 @@ export default function MyAdsScene() {
                                 <h1 className="text-lg sm:text-xl font-black text-brand">آگهی‌های من</h1>
                                 {!isLoading && (
                                     <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-brand/5 text-brand">
-                                        {toPersianDigits(allVisibleAds.length)} آگهی
+                                        {toPersianDigits(totalCount)} آگهی
                                     </span>
                                 )}
                             </div>
@@ -418,20 +542,20 @@ export default function MyAdsScene() {
                 </div>
 
                 {/* Filter Tabs */}
-                {!isLoading && allVisibleAds.length > 0 && (
+                {allVisibleSummaryAds.length > 0 && (
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-3">
                         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
                             {FILTER_TABS.map((tab) => {
                                 const count =
                                     tab.key === "ALL"
-                                        ? allVisibleAds.length
-                                        : allVisibleAds.filter((ad) => ad.status === tab.key).length;
+                                        ? allVisibleSummaryAds.length
+                                        : allVisibleSummaryAds.filter((ad) => ad.status === tab.key).length;
                                 const isActive = activeFilter === tab.key;
 
                                 return (
                                     <button
                                         key={tab.key}
-                                        onClick={() => setActiveFilter(tab.key)}
+                                        onClick={() => handleFilterChange(tab.key)}
                                         className={cn(
                                             "px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5",
                                             isActive
@@ -456,10 +580,13 @@ export default function MyAdsScene() {
                 )}
             </header>
 
+            {/* Anchor for top of grid */}
+            <div id="my-ads-top" />
+
             {/* Main Content */}
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
                 {isLoading ? (
-                    /* Loading Skeleton matching PropertyCard grid */
+                    /* Initial Skeleton Grid */
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                         {Array.from({ length: 6 }).map((_, i) => (
                             <div
@@ -482,55 +609,175 @@ export default function MyAdsScene() {
                             </div>
                         ))}
                     </div>
-                ) : allVisibleAds.length === 0 ? (
-                    /* Completely Empty State */
-                    <div className="text-center py-20 bg-white rounded-3xl border border-gray-100 p-8 shadow-xs max-w-lg mx-auto">
-                        <div className="w-16 h-16 rounded-3xl bg-primary/10 text-primary flex items-center justify-center mx-auto mb-4">
-                            <Building2 className="w-8 h-8" />
+                ) : allLoadedAds.length === 0 ? (
+                    activeFilter === "ALL" ? (
+                        /* Completely Empty State */
+                        <div className="text-center py-20 bg-white rounded-3xl border border-gray-100 p-8 shadow-xs max-w-lg mx-auto">
+                            <div className="w-16 h-16 rounded-3xl bg-primary/10 text-primary flex items-center justify-center mx-auto mb-4">
+                                <Building2 className="w-8 h-8" />
+                            </div>
+                            <h2 className="text-brand font-black text-lg mb-2">شما هنوز هیچ آگهی‌ای ثبت نکرده‌اید</h2>
+                            <p className="text-secondary text-sm leading-relaxed mb-6">
+                                با ثبت ملک خود در ملک‌تودی، آگهی شما در معرض دید هزاران متقاضی خرید و اجاره قرار خواهد گرفت.
+                            </p>
+                            <button
+                                onClick={() => router.push("/ads/submit")}
+                                className="bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-xl font-bold text-sm shadow-xs transition-all active:scale-95 inline-flex items-center gap-2"
+                            >
+                                <Plus className="w-4 h-4" />
+                                <span>ثبت اولین آگهی</span>
+                            </button>
                         </div>
-                        <h2 className="text-brand font-black text-lg mb-2">شما هنوز هیچ آگهی‌ای ثبت نکرده‌اید</h2>
-                        <p className="text-secondary text-sm leading-relaxed mb-6">
-                            با ثبت ملک خود در ملک‌تودی، آگهی شما در معرض دید هزاران متقاضی خرید و اجاره قرار خواهد گرفت.
-                        </p>
-                        <button
-                            onClick={() => router.push("/ads/submit")}
-                            className="bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-xl font-bold text-sm shadow-xs transition-all active:scale-95 inline-flex items-center gap-2"
-                        >
-                            <Plus className="w-4 h-4" />
-                            <span>ثبت اولین آگهی</span>
-                        </button>
-                    </div>
-                ) : filteredAds.length === 0 ? (
-                    /* Empty Filter State */
-                    <div className="text-center py-16 bg-white rounded-3xl border border-dashed border-gray-200 p-8 max-w-md mx-auto">
-                        <AlertCircle className="w-12 h-12 text-secondary/40 mx-auto mb-3" />
-                        <h3 className="text-brand font-bold text-base mb-1">
-                            هیچ آگهی‌ای با وضعیت «{FILTER_TABS.find((t) => t.key === activeFilter)?.label}» یافت نشد
-                        </h3>
-                        <p className="text-secondary text-xs mb-5">
-                            می‌توانید فیلترهای دیگر را بررسی کنید یا همه آگهی‌های خود را مشاهده نمایید.
-                        </p>
-                        <button
-                            onClick={() => setActiveFilter("ALL")}
-                            className="bg-brand text-white px-5 py-2 rounded-xl font-bold text-xs hover:bg-brand/90 transition-colors"
-                        >
-                            مشاهده همه آگهی‌ها
-                        </button>
-                    </div>
+                    ) : (
+                        /* Empty Filter State */
+                        <div className="text-center py-16 bg-white rounded-3xl border border-dashed border-gray-200 p-8 max-w-md mx-auto">
+                            <AlertCircle className="w-12 h-12 text-secondary/40 mx-auto mb-3" />
+                            <h3 className="text-brand font-bold text-base mb-1">
+                                هیچ آگهی‌ای با وضعیت «{FILTER_TABS.find((t) => t.key === activeFilter)?.label}» یافت نشد
+                            </h3>
+                            <p className="text-secondary text-xs mb-5">
+                                می‌توانید فیلترهای دیگر را بررسی کنید یا همه آگهی‌های خود را مشاهده نمایید.
+                            </p>
+                            <button
+                                onClick={() => handleFilterChange("ALL")}
+                                className="bg-brand text-white px-5 py-2 rounded-xl font-bold text-xs hover:bg-brand/90 transition-colors"
+                            >
+                                مشاهده همه آگهی‌ها
+                            </button>
+                        </div>
+                    )
                 ) : (
-                    /* Responsive Card Grid */
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                        {filteredAds.map((ad) => (
-                            <MyAdCard
-                                key={ad.adId}
-                                ad={ad}
-                                isSubmitting={submittingId === ad.adId}
-                                onSubmitReview={(id) => submitMutation.mutate(id)}
-                                onArchive={(target) => setArchiveTarget(target)}
-                                onDelete={(target) => setDeleteTarget(target)}
-                                onShare={handleShare}
-                            />
-                        ))}
+                    /* Infinite Scroll Grid with Appended Sections up to Page 7 */
+                    <div id="my-ads-grid" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                        {data?.pages.map((page, pageIndex) => {
+                            const pageAds = page.items.filter((ad) => ad.status !== AdStatus.DELETED);
+                            if (pageAds.length === 0 && pageIndex > 0) return null;
+
+                            return (
+                                <div key={`page-${page.page}`} className="contents">
+                                    {/* Section Header for page 2 onwards */}
+                                    {pageIndex > 0 && (
+                                        <div
+                                            id={`page-section-${page.page}`}
+                                            className="col-span-full py-5 my-2 flex items-center gap-3 animate-in fade-in duration-300"
+                                        >
+                                            <div className="h-px bg-gray-200/80 flex-1" />
+                                            <div className="flex items-center gap-2 bg-white px-4 py-1.5 rounded-full border border-gray-200/80 shadow-2xs text-xs">
+                                                <Layers className="w-3.5 h-3.5 text-primary" />
+                                                <span className="text-secondary font-medium">بخش / صفحه</span>
+                                                <span className="text-brand font-black text-sm">{toPersianDigits(page.page)}</span>
+                                                <span className="text-gray-300">•</span>
+                                                <span className="text-secondary font-medium">{toPersianDigits(pageAds.length)} آگهی</span>
+                                            </div>
+                                            <div className="h-px bg-gray-200/80 flex-1" />
+                                        </div>
+                                    )}
+
+                                    {pageAds.map((ad) => (
+                                        <MyAdCard
+                                            key={ad.adId}
+                                            ad={ad}
+                                            isSubmitting={submittingId === ad.adId}
+                                            onSubmitReview={(id) => submitMutation.mutate(id)}
+                                            onArchive={(target) => setArchiveTarget(target)}
+                                            onDelete={(target) => setDeleteTarget(target)}
+                                            onShare={handleShare}
+                                        />
+                                    ))}
+                                </div>
+                            );
+                        })}
+
+                        {/* Sentinel for infinite scroll (auto-loads up to 7 pages) */}
+                        {hasNextPage && (data?.pages.length ?? 0) < 7 && (
+                            <div ref={observerTargetRef} className="col-span-full py-8 flex flex-col items-center justify-center gap-2">
+                                {isFetchingNextPage ? (
+                                    <div className="flex items-center gap-2 text-xs font-bold text-secondary bg-white px-5 py-2.5 rounded-xl shadow-xs border border-gray-100">
+                                        <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                                        <span>در حال بارگذاری بخش بعدی آگهی‌ها...</span>
+                                    </div>
+                                ) : (
+                                    <div className="h-6" />
+                                )}
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* Pagination Controls at the End */}
+                {!isLoading && allLoadedAds.length > 0 && totalPages > 1 && isBatchFinished && (
+                    <div className="mt-12 bg-white rounded-3xl p-5 sm:p-6 border border-gray-100 shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
+                        <div className="text-xs text-secondary font-medium text-center md:text-right">
+                            نمایش صفحه <span className="font-bold text-brand">{toPersianDigits(startPage)}</span> تا{" "}
+                            <span className="font-bold text-brand">{toPersianDigits(lastLoadedPage)}</span> از{" "}
+                            <span className="font-bold text-brand">{toPersianDigits(totalPages)}</span> (مجموع{" "}
+                            <span className="font-bold text-brand">{toPersianDigits(totalCount)}</span> آگهی)
+                        </div>
+
+                        {/* Page Numbers */}
+                        <div className="flex items-center gap-1.5 flex-wrap justify-center">
+                            <button
+                                type="button"
+                                onClick={handlePrevPage}
+                                disabled={startPage <= 1}
+                                className="px-3 py-2 bg-gray-50 hover:bg-gray-100 text-brand rounded-xl font-bold text-xs flex items-center gap-1 border border-gray-200/60 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                            >
+                                <ChevronRight className="w-4 h-4" />
+                                <span>صفحه قبل</span>
+                            </button>
+
+                            {getPaginationItems(startPage, lastLoadedPage, totalPages).map((item, idx) => {
+                                if (item === "...") {
+                                    return (
+                                        <span key={`ellipsis-${idx}`} className="px-2 text-secondary text-xs select-none">
+                                            ...
+                                        </span>
+                                    );
+                                }
+
+                                const isCurrentLoaded = data?.pages.some((p) => p.page === item);
+                                const isCurrentStart = item === startPage;
+
+                                return (
+                                    <button
+                                        key={`page-btn-${item}`}
+                                        type="button"
+                                        onClick={() => handlePageSelect(item)}
+                                        className={cn(
+                                            "min-w-9 h-9 px-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center",
+                                            isCurrentStart
+                                                ? "bg-brand text-white shadow-xs font-black"
+                                                : isCurrentLoaded
+                                                ? "bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20"
+                                                : "bg-gray-50 hover:bg-gray-100 text-secondary border border-gray-200/60"
+                                        )}
+                                        title={isCurrentLoaded ? `اسکرول به بخش صفحه ${item}` : `رفتن به صفحه ${item}`}
+                                    >
+                                        {toPersianDigits(item)}
+                                    </button>
+                                );
+                            })}
+
+                            <button
+                                type="button"
+                                onClick={handleNextPage}
+                                disabled={lastLoadedPage >= totalPages}
+                                className="px-3 py-2 bg-gray-50 hover:bg-gray-100 text-brand rounded-xl font-bold text-xs flex items-center gap-1 border border-gray-200/60 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                            >
+                                <span>صفحه بعد</span>
+                                <ChevronLeft className="w-4 h-4" />
+                            </button>
+                        </div>
+
+                        {/* Quick Scroll to Top */}
+                        <button
+                            type="button"
+                            onClick={() => document.getElementById("my-ads-top")?.scrollIntoView({ behavior: "smooth" })}
+                            className="hidden lg:flex items-center gap-1 text-xs font-bold text-secondary hover:text-brand transition-colors p-2 rounded-xl hover:bg-gray-50"
+                        >
+                            <ArrowUp className="w-3.5 h-3.5" />
+                            <span>بازگشت به بالا</span>
+                        </button>
                     </div>
                 )}
             </main>

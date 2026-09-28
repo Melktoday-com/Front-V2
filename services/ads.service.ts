@@ -66,7 +66,7 @@ export const adsService = {
         return response.data;
     },
 
-    async listMyAds(query: { page?: number; limit?: number } = {}): Promise<PaginatedAdsResponse> {
+    async listMyAds(query: { status?: string; page?: number; limit?: number; cityId?: string } = {}): Promise<PaginatedAdsResponse> {
         const response = await apiClient.get<PaginatedAdsResponse>("/ads/my", {
             params: query,
         });
