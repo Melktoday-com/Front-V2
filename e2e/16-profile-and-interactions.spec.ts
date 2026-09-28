@@ -111,7 +111,7 @@ test.describe('Flow 16: Profile, Favorites & Ad Submission UI Tests', () => {
       await expect(page).toHaveURL(/\/profile/);
 
       // Verify role badge displays "میزبان"
-      const roleBadge = page.locator('text=میزبان');
+      const roleBadge = page.getByText('میزبان', { exact: true });
       await expect(roleBadge).toBeVisible({ timeout: 15000 });
 
       // Navigate to /profile/temporary-rent
