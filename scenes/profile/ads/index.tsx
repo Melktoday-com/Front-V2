@@ -119,12 +119,14 @@ export default function MyAdsScene() {
                                         ارسال برای تایید
                                     </button>
                                 )}
-                                <button
-                                    onClick={() => router.push(`/ads/submit?edit=${ad.adId}`)}
-                                    className="bg-brand/5 text-brand px-3 py-1.5 rounded-xl text-xs font-black"
-                                >
-                                    ویرایش
-                                </button>
+                                {['DRAFT', 'PENDING_APPROVAL', 'REJECTED', 'PUBLISHED'].includes(ad.status) && (
+                                    <button
+                                        onClick={() => router.push(`/ads/submit?edit=${ad.adId}`)}
+                                        className="bg-brand/5 text-brand px-3 py-1.5 rounded-xl text-xs font-black"
+                                    >
+                                        ویرایش
+                                    </button>
+                                )}
                             </div>
                         </div>
 

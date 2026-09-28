@@ -155,24 +155,32 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
 
     // Pre-fill form in edit mode
     useEffect(() => {
-        if (existingAd && hydratedEditAdIdRef.current !== existingAd.adId) {
-            hydratedEditAdIdRef.current = existingAd.adId;
-            setFormData({
-                cityId: existingAd.cityId,
-                categoryPath: existingAd.categoryPath,
-                title: existingAd.title,
-                description: existingAd.description,
-                attributes: existingAd.attributes || {},
-                rawPricing: existingAd.pricing || {},
-                latitude: existingAd.location?.latitude ?? 35.6892,
-                longitude: existingAd.location?.longitude ?? 51.389,
-                mediaIds: existingAd.mediaIds || [],
-            });
-            if (existingAd.cityName) {
-                setCityName(existingAd.cityName);
+        if (existingAd) {
+            if (existingAd.status === 'DELETED' || existingAd.status === 'ARCHIVED') {
+                toast.error('این آگهی حذف یا بایگانی شده است و امکان ویرایش آن وجود ندارد.');
+                router.push('/profile/ads');
+                return;
+            }
+
+            if (hydratedEditAdIdRef.current !== existingAd.adId) {
+                hydratedEditAdIdRef.current = existingAd.adId;
+                setFormData({
+                    cityId: existingAd.cityId,
+                    categoryPath: existingAd.categoryPath,
+                    title: existingAd.title,
+                    description: existingAd.description,
+                    attributes: existingAd.attributes || {},
+                    rawPricing: existingAd.pricing || {},
+                    latitude: existingAd.location?.latitude ?? 35.6892,
+                    longitude: existingAd.location?.longitude ?? 51.389,
+                    mediaIds: existingAd.mediaIds || [],
+                });
+                if (existingAd.cityName) {
+                    setCityName(existingAd.cityName);
+                }
             }
         }
-    }, [existingAd]);
+    }, [existingAd, router]);
 
     // Ensure default city is set from selectedCity if not in edit mode and cityId is empty
     useEffect(() => {
