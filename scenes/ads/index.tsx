@@ -10,10 +10,13 @@ import { useCategoryLookup } from "@/hooks/useCategoryLookup";
 import { useGeoHierarchy } from "@/hooks/useGeoHierarchy";
 import { cn, formatPrice } from "@/lib/utils";
 import { AdSummary } from "@/types/api/ads.types";
-import { LayoutGrid, Map as MapIcon } from "lucide-react";
+import { LayoutGrid, Map as MapIcon, MapPin } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { geoService } from "@/services/geo.service";
+import { ZoneSummary } from "@/types/api/geo.types";
 
 const Map = dynamic(() => import("@/components/ui/Map"), {
     ssr: false,
@@ -24,6 +27,52 @@ const Map = dynamic(() => import("@/components/ui/Map"), {
     ),
 });
 
+// Helper to check if a point [lat, lng] is inside a polygon [[lat, lng], ...] using ray-casting algorithm
+function isPointInPolygon(lat: number, lng: number, polygon: [number, number][]): boolean {
+    let inside = false;
+    for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+        const xi = polygon[i][0];
+        const yi = polygon[i][1];
+        const xj = polygon[j][0];
+        const yj = polygon[j][1];
+
+        const intersect = ((yi > lng) !== (yj > lng)) &&
+            (lat < ((xj - xi) * (lng - yi)) / (yj - yi) + xi);
+        if (intersect) {
+            inside = !inside;
+        }
+    }
+    return inside;
+}
+
+function adMatchesZone(ad: AdSummary, zone: ZoneSummary): boolean {
+    const cleanZoneName = zone.name.replace(/^(بلوار|میدان|خیابان|شهرک)\s+/, "").trim();
+    if (ad.title.includes(zone.name) || (cleanZoneName.length > 2 && ad.title.includes(cleanZoneName))) {
+        return true;
+    }
+    if (ad.location && typeof ad.location.latitude === "number" && typeof ad.location.longitude === "number") {
+        const coords = zone.boundaries?.coordinates;
+        if (!coords || !Array.isArray(coords) || coords.length === 0) return false;
+
+        if (zone.boundaries?.type === "Polygon" && Array.isArray(coords[0])) {
+            const polygon: [number, number][] = (coords[0] as number[][]).map(([lng, lat]) => [lat, lng]);
+            if (isPointInPolygon(ad.location.latitude, ad.location.longitude, polygon)) {
+                return true;
+            }
+        } else if (zone.boundaries?.type === "MultiPolygon" && Array.isArray(coords[0])) {
+            for (const poly of coords as number[][][][]) {
+                if (Array.isArray(poly[0])) {
+                    const polygon: [number, number][] = poly[0].map(([lng, lat]) => [lat, lng]);
+                    if (isPointInPolygon(ad.location.latitude, ad.location.longitude, polygon)) {
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+    return false;
+}
+
 interface AdsSceneProps {
     initialViewMode?: "list" | "map";
 }
@@ -33,6 +82,7 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
     const router = useRouter();
     const { selectedCity, setSelectedCity } = useCity();
     const [viewMode, setViewMode] = useState<"list" | "map">(initialViewMode);
+    const [selectedZone, setSelectedZone] = useState<ZoneSummary | null>(null);
 
     const urlSearch = searchParams.get("search") || "";
     const effectiveCityId = searchParams.get("cityId") || selectedCity.id || undefined;
@@ -51,6 +101,18 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
         categoryKey: selectedCategory || undefined,
         businessModelKey: urlDealType || undefined,
     }, { enabled: !!effectiveCityId });
+
+    // Fetch neighborhoods for the active city
+    const { data: zonesData } = useQuery({
+        queryKey: ["geo-zones-city", effectiveCityId],
+        queryFn: async () => {
+            if (!effectiveCityId) return [];
+            const res = await geoService.listZones({ parentId: effectiveCityId, type: "NEIGHBORHOOD", limit: 50 });
+            return res.zones || [];
+        },
+        enabled: !!effectiveCityId,
+    });
+    const neighborhoods = useMemo(() => zonesData || [], [zonesData]);
 
     const { data: categoriesData, isLoading: isCategoriesLoading } = useCategories();
     const { getSubcategoryName, getCategoryName } = useCategoryLookup();
@@ -87,10 +149,16 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
         return null;
     }, [hierarchy, effectiveCityId, effectiveCityName, selectedCity]);
 
+    // Filter ads by selected neighborhood/zone if active
+    const displayedAds = useMemo(() => {
+        const items = data?.items || [];
+        if (!selectedZone) return items;
+        return items.filter((ad) => adMatchesZone(ad, selectedZone));
+    }, [data?.items, selectedZone]);
+
     // Map coordinates for Leaflet
     const adsForMap = useMemo(() => {
-        if (!data?.items) return [];
-        return data.items
+        return displayedAds
             .filter(
                 (ad): ad is AdSummary & { location: NonNullable<AdSummary['location']> } =>
                     Boolean(
@@ -109,7 +177,7 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
                     longitude: (ad.location.longitude ?? ad.location.lng) as number,
                 },
             }));
-    }, [data?.items]);
+    }, [displayedAds]);
 
     const handleCitySelect = (city: {
         id: string;
@@ -117,6 +185,7 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
         centerPoint?: { latitude: number; longitude: number };
     }) => {
         setSelectedCity(city);
+        setSelectedZone(null);
         const params = new URLSearchParams(searchParams.toString());
         params.set("cityId", city.id);
         params.set("cityName", city.name);
@@ -159,6 +228,22 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
         };
     };
 
+    // Calculate map center and zoom
+    const mapCenter: [number, number] = useMemo(() => {
+        if (selectedZone?.centerPoint && typeof selectedZone.centerPoint.latitude === "number" && typeof selectedZone.centerPoint.longitude === "number") {
+            return [selectedZone.centerPoint.latitude, selectedZone.centerPoint.longitude];
+        }
+        if (currentCityCoords && typeof currentCityCoords.latitude === "number" && typeof currentCityCoords.longitude === "number") {
+            return [currentCityCoords.latitude, currentCityCoords.longitude];
+        }
+        if (adsForMap.length > 0 && typeof adsForMap[0].location.latitude === "number" && typeof adsForMap[0].location.longitude === "number") {
+            return [adsForMap[0].location.latitude, adsForMap[0].location.longitude];
+        }
+        return [35.6892, 51.389];
+    }, [selectedZone, currentCityCoords, adsForMap]);
+
+    const mapZoom = selectedZone ? 14 : 12;
+
     return (
         <div className="h-screen bg-white flex flex-col overflow-hidden">
             {/* Header & Filter Section */}
@@ -180,6 +265,47 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
                     selectedCategoryKey={selectedCategory}
                     onSelectCategory={handleCategorySelect}
                 />
+
+                {/* Neighborhood Horizontal Pills Filter */}
+                {neighborhoods.length > 0 && (
+                    <div className="flex items-center gap-2 overflow-x-auto py-1 no-scrollbar border-t border-gray-50 pt-2.5">
+                        <div className="flex items-center gap-1.5 text-xs text-text-light font-medium shrink-0 pl-1">
+                            <MapPin className="w-3.5 h-3.5 text-primary" />
+                            <span>نواحی و محله‌ها:</span>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => setSelectedZone(null)}
+                            className={cn(
+                                "px-3 py-1 rounded-full text-xs font-medium transition-all shrink-0 border",
+                                selectedZone === null
+                                    ? "bg-primary text-white border-primary shadow-xs"
+                                    : "bg-soft-bg/80 text-secondary hover:bg-soft-bg border-transparent"
+                            )}
+                        >
+                            همه محله‌ها
+                        </button>
+                        {neighborhoods.map((zone) => {
+                            const isSelected = selectedZone?.id === zone.id;
+                            return (
+                                <button
+                                    key={zone.id}
+                                    type="button"
+                                    onClick={() => setSelectedZone(isSelected ? null : zone)}
+                                    className={cn(
+                                        "px-3 py-1 rounded-full text-xs font-medium transition-all shrink-0 border flex items-center gap-1.5",
+                                        isSelected
+                                            ? "bg-primary text-white border-primary shadow-xs"
+                                            : "bg-soft-bg/80 text-secondary hover:bg-soft-bg border-transparent"
+                                    )}
+                                >
+                                    <span>{zone.name}</span>
+                                    {isSelected && <span className="text-[10px] opacity-90 mr-0.5">✕</span>}
+                                </button>
+                            );
+                        })}
+                    </div>
+                )}
             </div>
 
             {/* Main Split View: Left Map, Right Cards (RTL) */}
@@ -193,11 +319,26 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
                 >
                     {/* Count summary */}
                     <div className="flex items-center justify-between mb-3 px-1 text-xs text-text-light font-medium">
-                        <span>
-                            {isLoading
-                                ? "در حال جستجو..."
-                                : `${data?.total ?? 0} آگهی یافت شد`}
-                        </span>
+                        <div className="flex items-center gap-2">
+                            <span>
+                                {isLoading
+                                    ? "در حال جستجو..."
+                                    : `${displayedAds.length} آگهی یافت شد`}
+                            </span>
+                            {selectedZone && (
+                                <span className="inline-flex items-center gap-1.5 bg-primary/10 text-primary px-2.5 py-0.5 rounded-full font-semibold">
+                                    <span>محله: {selectedZone.name}</span>
+                                    <button
+                                        type="button"
+                                        onClick={() => setSelectedZone(null)}
+                                        className="hover:opacity-75 text-primary font-bold text-xs"
+                                        title="حذف فیلتر محله"
+                                    >
+                                        ✕
+                                    </button>
+                                </span>
+                            )}
+                        </div>
                         <span>شهر: {effectiveCityName}</span>
                     </div>
 
@@ -209,15 +350,32 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
                                     className="h-72 bg-soft-bg animate-pulse rounded-2xl"
                                 />
                             ))
-                        ) : data?.items?.length === 0 ? (
+                        ) : displayedAds.length === 0 ? (
                             <div className="col-span-full py-16 text-center">
                                 <EmptyState
-                                    message="ملکی با این مشخصات پیدا نشد"
-                                    description="فیلترهای انتخابی یا عبارت جستجو را تغییر دهید تا نتایج بیشتری مشاهده کنید."
+                                    message={
+                                        selectedZone
+                                            ? `ملکی در محله «${selectedZone.name}» پیدا نشد`
+                                            : "ملکی با این مشخصات پیدا نشد"
+                                    }
+                                    description={
+                                        selectedZone
+                                            ? "می‌توانید فیلتر محله را حذف کرده تا تمام آگهی‌های شهر را مشاهده فرمایید."
+                                            : "فیلترهای انتخابی یا عبارت جستجو را تغییر دهید تا نتایج بیشتری مشاهده کنید."
+                                    }
                                 />
+                                {selectedZone && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setSelectedZone(null)}
+                                        className="mt-4 px-4 py-2 bg-primary text-white text-xs font-bold rounded-xl shadow-sm hover:bg-primary/90 transition-colors"
+                                    >
+                                        مشاهده همه آگهی‌های {effectiveCityName}
+                                    </button>
+                                )}
                             </div>
                         ) : (
-                            (data?.items || []).map((ad: AdSummary) => {
+                            displayedAds.map((ad: AdSummary) => {
                                 const pricing = getPricingDisplay(ad);
                                 const catKey = ad.categoryPath?.categoryKey;
                                 const subKey = ad.categoryPath?.subcategoryKey;
@@ -261,18 +419,11 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
                 >
                     <Map
                         ads={adsForMap}
-                        center={
-                            currentCityCoords &&
-                            typeof currentCityCoords.latitude === "number" &&
-                            typeof currentCityCoords.longitude === "number"
-                                ? [currentCityCoords.latitude, currentCityCoords.longitude]
-                                : adsForMap.length > 0 &&
-                                  typeof adsForMap[0].location.latitude === "number" &&
-                                  typeof adsForMap[0].location.longitude === "number"
-                                ? [adsForMap[0].location.latitude, adsForMap[0].location.longitude]
-                                : [35.6892, 51.389]
-                        }
-                        zoom={12}
+                        zones={neighborhoods}
+                        selectedZoneId={selectedZone?.id}
+                        onZoneSelect={(zone) => setSelectedZone((prev) => (prev?.id === zone.id ? null : zone))}
+                        center={mapCenter}
+                        zoom={mapZoom}
                     />
                 </div>
 

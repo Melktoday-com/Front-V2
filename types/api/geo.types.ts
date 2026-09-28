@@ -15,6 +15,10 @@ export interface ZoneSummary {
     geoDistrictId?: number | null;
     geoRuralDistrictId?: number | null;
     centerPoint?: GeoCenterPoint;
+    boundaries?: {
+        type: string;
+        coordinates: number[][][] | number[][][][];
+    } | null;
     parentZoneId?: string | null;
 }
 

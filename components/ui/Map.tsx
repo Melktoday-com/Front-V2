@@ -1,10 +1,11 @@
 "use client";
 
 import { AdSummary } from "@/types/api/ads.types";
+import { ZoneSummary } from "@/types/api/geo.types";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useEffect } from "react";
-import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
+import { MapContainer, Marker, Popup, TileLayer, Polygon, Tooltip, useMap } from "react-leaflet";
 import { PropertyCard } from "./PropertyCard";
 
 // Fix for default marker icons in Leaflet with Next.js
@@ -50,12 +51,15 @@ function MapViewHandler({ center, zoom, bounds }: { center: [number, number]; zo
 
 interface MapProps {
     ads: AdSummary[];
+    zones?: ZoneSummary[];
+    selectedZoneId?: string;
+    onZoneSelect?: (zone: ZoneSummary) => void;
     center?: [number, number];
     zoom?: number;
     bounds?: L.LatLngBoundsExpression;
 }
 
-export default function Map({ ads, center = [35.6892, 51.3890], zoom = 12, bounds }: MapProps) {
+export default function Map({ ads, zones, selectedZoneId, onZoneSelect, center = [35.6892, 51.3890], zoom = 12, bounds }: MapProps) {
     // Sanitize center - if it contains undefined/NaN or isn't a valid pair, use default
     const sanitizedCenter: [number, number] = (
         Array.isArray(center) &&
@@ -90,6 +94,52 @@ export default function Map({ ads, center = [35.6892, 51.3890], zoom = 12, bound
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
                 <MapViewHandler center={sanitizedCenter} zoom={zoom} bounds={bounds} />
+
+                {/* Render Zone / Neighborhood Polygons */}
+                {zones?.map((zone) => {
+                    const coords = zone.boundaries?.coordinates;
+                    if (!coords || !Array.isArray(coords) || coords.length === 0) return null;
+
+                    let latLngs: [number, number][] = [];
+                    if (zone.boundaries?.type === "Polygon" && Array.isArray(coords[0])) {
+                        latLngs = (coords[0] as number[][]).map(([lng, lat]) => [lat, lng]);
+                    } else if (zone.boundaries?.type === "MultiPolygon" && Array.isArray(coords[0]) && Array.isArray(coords[0][0])) {
+                        latLngs = (coords[0][0] as number[][]).map(([lng, lat]) => [lat, lng]);
+                    }
+
+                    if (latLngs.length < 3) return null;
+
+                    const isSelected = selectedZoneId === zone.id;
+
+                    return (
+                        <Polygon
+                            key={zone.id}
+                            positions={latLngs}
+                            pathOptions={{
+                                color: isSelected ? "#2563eb" : "#0284c7",
+                                fillColor: isSelected ? "#3b82f6" : "#38bdf8",
+                                fillOpacity: isSelected ? 0.35 : 0.12,
+                                weight: isSelected ? 3 : 1.5,
+                                dashArray: isSelected ? undefined : "4, 4",
+                            }}
+                            eventHandlers={{
+                                click: () => {
+                                    if (onZoneSelect) {
+                                        onZoneSelect(zone);
+                                    }
+                                },
+                            }}
+                        >
+                            <Tooltip
+                                sticky
+                                direction="center"
+                                className="font-bold text-xs bg-white/95 text-primary border border-primary/20 px-2.5 py-1 rounded-md shadow-md"
+                            >
+                                {zone.name}
+                            </Tooltip>
+                        </Polygon>
+                    );
+                })}
                 {adsWithLocation.map((ad) => {
                     const price = Object.values(ad.pricing)[0];
                     const priceLabel = price ?

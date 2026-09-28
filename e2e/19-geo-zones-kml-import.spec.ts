@@ -121,4 +121,69 @@ test.describe('Flow 19: Urban Divisions & KML Geo Zones E2E Tests (Tehran & Mash
 
     expect(telemetry.errors.length).toBe(0);
   });
+
+  test('User inspects neighborhood divisions on the map and filters ads by neighborhood (Tehran & Mashhad)', async ({
+    page,
+  }) => {
+    const telemetry = attachTelemetry(page);
+
+    // 1. Visit Explore / Ads scene for Mashhad
+    await page.goto('/ads?cityId=4c01ce1e-d916-484e-87d5-3fcc14227741&cityName=مشهد', { waitUntil: 'networkidle' });
+    await expect(page).toHaveURL(/\/ads/);
+
+    // 2. Verify Mashhad Neighborhood filter pills bar is rendered
+    const zonePillsContainer = page.locator('text=نواحی و محله‌ها:').first();
+    await expect(zonePillsContainer).toBeVisible({ timeout: 15000 });
+
+    const ahmadabadPill = page.locator('button:has-text("احمدآباد")').first();
+    await expect(ahmadabadPill).toBeVisible({ timeout: 10000 });
+
+    const sajjadPill = page.locator('button:has-text("بلوار سجاد")').first();
+    await expect(sajjadPill).toBeVisible({ timeout: 10000 });
+
+    // 3. Click Ahmadabad neighborhood pill to filter ads
+    await ahmadabadPill.click();
+    await page.waitForTimeout(600);
+
+    // 4. Verify Active Filter Tag for Ahmadabad is displayed
+    const activeFilterTag = page.locator('text=محله: احمدآباد').first();
+    await expect(activeFilterTag).toBeVisible({ timeout: 10000 });
+
+    // 5. Clear neighborhood filter by clicking "همه محله‌ها"
+    const allNeighborhoodsBtn = page.locator('button:has-text("همه محله‌ها")').first();
+    await expect(allNeighborhoodsBtn).toBeVisible({ timeout: 5000 });
+    await allNeighborhoodsBtn.click();
+    await page.waitForTimeout(600);
+    await expect(activeFilterTag).not.toBeVisible();
+
+    // 6. Switch to Tehran city
+    await page.goto('/ads?cityId=b35c1556-8a65-4809-a851-605ac632f3c1&cityName=تهران', { waitUntil: 'networkidle' });
+
+    // 7. Verify Tehran Neighborhood filter pills are rendered
+    const saadatAbadPill = page.locator('button:has-text("سعادت‌آباد")').first();
+    await expect(saadatAbadPill).toBeVisible({ timeout: 15000 });
+
+    const tajrishPill = page.locator('button:has-text("تجریش")').first();
+    await expect(tajrishPill).toBeVisible({ timeout: 10000 });
+
+    const niavaranPill = page.locator('button:has-text("نیاوران")').first();
+    await expect(niavaranPill).toBeVisible({ timeout: 10000 });
+
+    // 8. Click Saadat Abad neighborhood pill
+    await saadatAbadPill.click();
+    await page.waitForTimeout(600);
+
+    const tehranActiveTag = page.locator('text=محله: سعادت‌آباد').first();
+    await expect(tehranActiveTag).toBeVisible({ timeout: 10000 });
+
+    // 9. Verify Leaflet Map contains interactive boundary polygon paths
+    const leafletMap = page.locator('.leaflet-container').first();
+    await expect(leafletMap).toBeVisible({ timeout: 15000 });
+
+    const polygonPaths = page.locator('.leaflet-pane.leaflet-overlay-pane svg path.leaflet-interactive');
+    const polygonCount = await polygonPaths.count();
+    expect(polygonCount).toBeGreaterThan(0);
+
+    expect(telemetry.errors.length).toBe(0);
+  });
 });
