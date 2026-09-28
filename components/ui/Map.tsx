@@ -53,13 +53,14 @@ interface MapProps {
     ads: AdSummary[];
     zones?: ZoneSummary[];
     selectedZoneId?: string;
+    selectedZoneIds?: string[];
     onZoneSelect?: (zone: ZoneSummary) => void;
     center?: [number, number];
     zoom?: number;
     bounds?: L.LatLngBoundsExpression;
 }
 
-export default function Map({ ads, zones, selectedZoneId, onZoneSelect, center = [35.6892, 51.3890], zoom = 12, bounds }: MapProps) {
+export default function Map({ ads, zones, selectedZoneId, selectedZoneIds, onZoneSelect, center = [35.6892, 51.3890], zoom = 12, bounds }: MapProps) {
     // Sanitize center - if it contains undefined/NaN or isn't a valid pair, use default
     const sanitizedCenter: [number, number] = (
         Array.isArray(center) &&
@@ -109,7 +110,7 @@ export default function Map({ ads, zones, selectedZoneId, onZoneSelect, center =
 
                     if (latLngs.length < 3) return null;
 
-                    const isSelected = selectedZoneId === zone.id;
+                    const isSelected = selectedZoneId === zone.id || (Boolean(selectedZoneIds) && selectedZoneIds!.includes(zone.id));
 
                     return (
                         <Polygon

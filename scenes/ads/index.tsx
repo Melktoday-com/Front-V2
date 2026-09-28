@@ -401,7 +401,7 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
                     <Map
                         ads={adsForMap}
                         zones={neighborhoods}
-                        selectedZoneId={activeZoneForMap?.id}
+                        selectedZoneIds={selectedZoneIds}
                         onZoneSelect={(zone) => handleZoneToggle(zone)}
                         center={mapCenter}
                         zoom={mapZoom}
