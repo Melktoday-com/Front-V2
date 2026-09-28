@@ -142,6 +142,9 @@ export default function AdminGeoPage() {
             if (data.skippedCount > 0) {
                 toast.warning(`${data.skippedCount} مورد به دلیل خطا وارد نشدند`);
             }
+            if (data.importedCount === 0 && data.errors && data.errors.length > 0) {
+                toast.error(data.errors[0]);
+            }
             setIsCreateModalOpen(false);
             setKmlFile(null);
             setNewZoneParentId("");
