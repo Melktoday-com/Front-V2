@@ -268,7 +268,10 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
 
                 {/* Neighborhood Horizontal Pills Filter */}
                 {neighborhoods.length > 0 && (
-                    <div className="flex items-center gap-2 overflow-x-auto py-1 no-scrollbar border-t border-gray-50 pt-2.5">
+                    <div
+                        data-testid="neighborhood-pills"
+                        className="relative z-10 flex items-center gap-2 overflow-x-auto py-1 no-scrollbar border-t border-gray-50 pt-2.5"
+                    >
                         <div className="flex items-center gap-1.5 text-xs text-text-light font-medium shrink-0 pl-1">
                             <MapPin className="w-3.5 h-3.5 text-primary" />
                             <span>نواحی و محله‌ها:</span>
@@ -307,6 +310,7 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
                     </div>
                 )}
             </div>
+
 
             {/* Main Split View: Left Map, Right Cards (RTL) */}
             <div className="flex-1 relative flex flex-col lg:flex-row gap-4 p-4 lg:p-6 lg:pt-4 overflow-hidden">
