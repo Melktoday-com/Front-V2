@@ -24,6 +24,8 @@ import {
     UpdatePlanLimitsRequest,
     UserLookupResponse,
     ListArchivedCategoriesResponse,
+    ListGlobalArchiveResponse,
+    GlobalArchiveItem,
     ReviewAgentApplicationRequest,
     AdminAgenciesListResponse,
     ListUsersResponse,
@@ -32,6 +34,13 @@ import {
     ListPendingCampaignsResponse,
     HostApplicationResponse,
     ReviewHostApplicationRequest,
+    AdminListItem,
+    ListAdminsResponse,
+    CreateAdminRequest,
+    UpdateAdminPermissionsRequest,
+    PermissionDefinition,
+    MyPermissionsResponse,
+    AdminRevokeResponse,
 } from "@/types/api/admin.types";
 import { AttributeDefinition, CategoryListItem, PriceModel, Subcategory } from "@/types/api/ads.types";
 import {
@@ -353,7 +362,28 @@ export const adminService = {
         return response.data;
     },
 
-    // ── Archive Management ───────────────────────────────────────────────────
+    // ── Global Archive Management ────────────────────────────────────────────
+    listGlobalArchive: async (params?: {
+        type?: string;
+        search?: string;
+        page?: number;
+        limit?: number;
+    }): Promise<ListGlobalArchiveResponse> => {
+        const response = await api.get<ListGlobalArchiveResponse>("/admin/archive", { params });
+        return response.data;
+    },
+
+    restoreGlobalArchiveItem: async (type: string, id: string): Promise<{ success: boolean; message: string }> => {
+        const response = await api.post<{ success: boolean; message: string }>(`/admin/archive/${type}/${id}/restore`);
+        return response.data;
+    },
+
+    forceDeleteGlobalArchiveItem: async (type: string, id: string): Promise<{ success: boolean; message: string }> => {
+        const response = await api.delete<{ success: boolean; message: string }>(`/admin/archive/${type}/${id}/force`);
+        return response.data;
+    },
+
+    // ── Legacy Archive Management ─────────────────────────────────────────────
     listArchivedCategories: async (): Promise<ListArchivedCategoriesResponse> => {
         const response = await api.get<ListArchivedCategoriesResponse>("/admin/archive/categories");
         return response.data;
@@ -454,6 +484,49 @@ export const adminService = {
             data,
         );
         return response.data?.data || response.data;
+    },
+
+    // ── Super Admin & Granular Permissions Management ───────────────────────
+    listAdmins: async (): Promise<ListAdminsResponse> => {
+        const response = await api.get<ListAdminsResponse>("/admin/admins");
+        return response.data;
+    },
+
+    createAdmin: async (data: CreateAdminRequest): Promise<AdminListItem> => {
+        const response = await api.post<AdminListItem>("/admin/admins", data);
+        return response.data;
+    },
+
+    updateAdminPermissions: async (
+        userId: string,
+        data: UpdateAdminPermissionsRequest,
+    ): Promise<AdminListItem> => {
+        const response = await api.put<AdminListItem>(
+            `/admin/admins/${userId}/permissions`,
+            data,
+        );
+        return response.data;
+    },
+
+    revokeAdmin: async (
+        userId: string,
+        reason?: string,
+    ): Promise<AdminRevokeResponse> => {
+        const response = await api.delete<AdminRevokeResponse>(
+            `/admin/admins/${userId}`,
+            { data: { reason } },
+        );
+        return response.data;
+    },
+
+    getAvailablePermissions: async (): Promise<PermissionDefinition[]> => {
+        const response = await api.get<PermissionDefinition[]>("/admin/admins/permissions");
+        return response.data;
+    },
+
+    getMyPermissions: async (): Promise<MyPermissionsResponse> => {
+        const response = await api.get<MyPermissionsResponse>("/admin/me/permissions");
+        return response.data;
     },
 };
 

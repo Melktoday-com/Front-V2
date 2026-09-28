@@ -54,6 +54,26 @@ test.describe('Flow 16: Profile, Favorites & Ad Submission UI Tests', () => {
 
       expect(telemetry.errors.length).toBe(0);
     });
+
+    test('Standard user can access /profile/requests and view application history', async ({ page }) => {
+      const telemetry = attachTelemetry(page);
+
+      const res = await page.goto('/profile/requests', { waitUntil: 'networkidle' });
+      if (res?.status() === 404) {
+        return;
+      }
+      await expect(page).toHaveURL(/\/profile\/requests/);
+
+      // Verify heading
+      const heading = page.locator('h1').or(page.locator('text=درخواست‌های عضویت و میزبانی')).first();
+      await expect(heading).toBeVisible({ timeout: 15000 });
+
+      // Verify either request items or empty state
+      const content = page.locator('.space-y-4').or(page.locator('text=هیچ درخواستی')).first();
+      await expect(content).toBeVisible({ timeout: 10000 });
+
+      expect(telemetry.errors.length).toBe(0);
+    });
   });
 
   test.describe('Agent Profile Flow', () => {

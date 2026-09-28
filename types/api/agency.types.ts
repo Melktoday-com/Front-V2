@@ -129,6 +129,7 @@ export interface AgentApplicationResponse {
     address?: string;
     experienceYears?: number;
     description?: string;
+    rejectionReason?: string;
     adminNote?: string;
     reviewedBy?: string;
     reviewedAt?: string;

@@ -330,6 +330,45 @@ export interface AdminCreateTemporaryRentRequest {
 
 // ── Admin Archive Types ──────────────────────────────────────────────────────
 
+export type GlobalArchiveEntityType =
+    | 'AD'
+    | 'TEMPORARY_RENT_AD'
+    | 'CATEGORY'
+    | 'SUBCATEGORY'
+    | 'TEMPORARY_RENT_CATEGORY'
+    | 'TEMPORARY_RENT_SUBCATEGORY'
+    | 'POST'
+    | 'GEO_ZONE';
+
+export interface GlobalArchiveItem {
+    id: string;
+    type: GlobalArchiveEntityType;
+    title: string;
+    description?: string;
+    originalStatus?: string;
+    archivedAt: string;
+    archivedBy?: string;
+    metadata?: Record<string, string | number | boolean | null>;
+}
+
+export interface GlobalArchiveCounts {
+    all: number;
+    ads: number;
+    temporaryRentAds: number;
+    categories: number;
+    subcategories: number;
+    posts: number;
+    geoZones: number;
+}
+
+export interface ListGlobalArchiveResponse {
+    items: GlobalArchiveItem[];
+    total: number;
+    page: number;
+    limit: number;
+    counts: GlobalArchiveCounts;
+}
+
 export interface ArchivedCategoryItem {
     id: string;
     name: string;
@@ -394,5 +433,53 @@ export interface ReviewHostApplicationRequest {
     status: 'APPROVED' | 'REJECTED';
     adminNote?: string;
     rejectionReason?: string;
+}
+
+// ── Super Admin & Granular Permissions Management Types ───────────────────────
+
+export interface AdminListItem {
+    userId: string;
+    phoneNumber: string;
+    firstName?: string;
+    lastName?: string;
+    role: string;
+    status: string;
+    permissions: string[];
+    assignedAt: string;
+    assignedBy?: string;
+}
+
+export interface ListAdminsResponse {
+    items: AdminListItem[];
+    total: number;
+}
+
+export interface CreateAdminRequest {
+    phoneNumber: string;
+    firstName?: string;
+    lastName?: string;
+    permissions: string[];
+}
+
+export interface UpdateAdminPermissionsRequest {
+    permissions: string[];
+}
+
+export interface PermissionDefinition {
+    key: string;
+    label: string;
+    category: string;
+    description: string;
+}
+
+export interface MyPermissionsResponse {
+    role: string;
+    isSuperAdmin: boolean;
+    permissions: string[];
+}
+
+export interface AdminRevokeResponse {
+    success: boolean;
+    message: string;
 }
 

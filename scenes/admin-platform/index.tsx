@@ -21,7 +21,8 @@ import {
   Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
-import { toPersianDigits } from "@/lib/utils";
+import { toPersianDigits, getMediaUrl } from "@/lib/utils";
+import MediaIconUpload from "@/components/admin/MediaIconUpload";
 
 export default function AdminPlatformScene() {
   const { data: profile, isLoading } = usePlatformProfile();
@@ -338,14 +339,11 @@ export default function AdminPlatformScene() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-brand mb-1">آدرس تصویر کاور (اختیاری)</label>
-                <input
-                  type="url"
-                  placeholder="https://example.com/cover.jpg"
-                  dir="ltr"
+                <MediaIconUpload
                   value={postCoverUrl}
-                  onChange={(e) => setPostCoverUrl(e.target.value)}
-                  className="w-full p-3 border border-soft-border rounded-xl bg-white text-xs font-bold text-brand outline-none"
+                  onChange={(mediaId) => setPostCoverUrl(mediaId)}
+                  label="تصویر کاور پست"
+                  helperText="یک تصویر مناسب با نسبت ۱۶:۹ جهت نمایش به عنوان کاور پست بارگذاری کنید"
                 />
               </div>
             </div>
@@ -404,17 +402,26 @@ export default function AdminPlatformScene() {
                 key={post.id}
                 className="p-4 rounded-2xl border border-soft-border hover:bg-soft-bg flex items-center justify-between gap-4 transition-colors"
               >
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-md">
-                      {post.category || "اطلاعیه"}
-                    </span>
-                    <h4 className="font-black text-brand text-sm">{post.title}</h4>
-                  </div>
-                  <div className="text-[11px] text-secondary font-medium mt-1 flex items-center gap-4">
-                    <span>تاریخ: {new Date(post.createdAt).toLocaleDateString("fa-IR")}</span>
-                    <span>بازدید: {toPersianDigits(post.viewCount || 0)}</span>
-                    <span>لایک: {toPersianDigits(post.likeCount || 0)}</span>
+                <div className="flex items-center gap-3">
+                  {post.mediaUrls?.[0] && (
+                    <img
+                      src={getMediaUrl(post.mediaUrls[0])}
+                      alt={post.title}
+                      className="w-14 h-14 rounded-xl object-cover border border-soft-border flex-shrink-0"
+                    />
+                  )}
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-md">
+                        {post.category || "اطلاعیه"}
+                      </span>
+                      <h4 className="font-black text-brand text-sm">{post.title}</h4>
+                    </div>
+                    <div className="text-[11px] text-secondary font-medium mt-1 flex items-center gap-4">
+                      <span>تاریخ: {new Date(post.createdAt).toLocaleDateString("fa-IR")}</span>
+                      <span>بازدید: {toPersianDigits(post.viewCount || 0)}</span>
+                      <span>لایک: {toPersianDigits(post.likeCount || 0)}</span>
+                    </div>
                   </div>
                 </div>
               </div>

@@ -978,6 +978,20 @@ export default function TemporaryRentCategoriesTab() {
                                     هنگام ثبت اقامتگاه در این زیردسته، کاربر فقط می‌تواند از مدل‌های قیمت انتخاب‌شده استفاده کند.
                                 </p>
                             </div>
+
+                            <div className="pt-2 border-t border-slate-100">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setIsEditSubcategoryModalOpen(false);
+                                        setIsSubcategoryConfigOpen(true);
+                                    }}
+                                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-xl text-xs font-bold border border-emerald-200 transition-colors"
+                                >
+                                    <Sliders className="w-4 h-4 text-emerald-600" />
+                                    <span>مدیریت و پیکربندی ویژگی‌های داینامیک (Attributes)</span>
+                                </button>
+                            </div>
                         </div>
                         <div className="p-4 bg-slate-50 flex items-center gap-3">
                             <button

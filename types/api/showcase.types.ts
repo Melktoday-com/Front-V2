@@ -203,6 +203,7 @@ export interface HostApplicationResponse {
   status: HostApplicationStatus;
   kycStatus: 'NOT_CHECKED' | 'VERIFIED' | 'FAILED' | 'PENDING';
   rejectionReason?: string;
+  adminNote?: string;
   reviewedAt?: string;
   createdAt: string;
 }

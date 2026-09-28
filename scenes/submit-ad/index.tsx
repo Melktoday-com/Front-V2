@@ -32,7 +32,7 @@ import {
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { AdminOwnershipSelector, AdminOwnershipData } from "@/components/admin/AdminOwnershipSelector";
 import { adminService } from "@/services/admin.service";
@@ -118,10 +118,10 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
     // Active price model resolution
     const activePriceModel = useMemo<PriceModel | undefined>(() => {
         if (!subcatConfig?.allowedPriceModels?.length) return undefined;
-        const currentKey = formData.categoryPath?.businessModelKey;
+        const currentKey = formData.categoryPath?.businessModelKey?.trim().toLowerCase();
         if (currentKey) {
             const found = subcatConfig.allowedPriceModels.find(
-                (m) => m.key === currentKey || m.id === currentKey
+                (m) => m.key.toLowerCase() === currentKey || m.id.toLowerCase() === currentKey
             );
             if (found) return found;
         }
@@ -134,7 +134,11 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
 
     // Automatically set businessModelKey when subcatConfig loads and no key is set yet
     useEffect(() => {
-        if (activePriceModel && (!formData.categoryPath?.businessModelKey || formData.categoryPath.businessModelKey !== activePriceModel.key)) {
+        if (
+            activePriceModel &&
+            (!formData.categoryPath?.businessModelKey ||
+                formData.categoryPath.businessModelKey.toLowerCase() !== activePriceModel.key.toLowerCase())
+        ) {
             setFormData((prev) => ({
                 ...prev,
                 categoryPath: {
@@ -147,9 +151,12 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
         }
     }, [activePriceModel]);
 
+    const hydratedEditAdIdRef = useRef<string | null>(null);
+
     // Pre-fill form in edit mode
     useEffect(() => {
-        if (existingAd) {
+        if (existingAd && hydratedEditAdIdRef.current !== existingAd.adId) {
+            hydratedEditAdIdRef.current = existingAd.adId;
             setFormData({
                 cityId: existingAd.cityId,
                 categoryPath: existingAd.categoryPath,
@@ -161,6 +168,9 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                 longitude: existingAd.location?.longitude ?? 51.389,
                 mediaIds: existingAd.mediaIds || [],
             });
+            if (existingAd.cityName) {
+                setCityName(existingAd.cityName);
+            }
         }
     }, [existingAd]);
 
@@ -702,6 +712,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                                         type="button"
                                                         key={cat.id || cat.key}
                                                         onClick={() => {
+                                                            if (formData.categoryPath?.categoryKey === cat.key) return;
                                                             const firstSub = cat.subcategories?.[0];
                                                             setFormData((prev) => ({
                                                                 ...prev,
@@ -750,6 +761,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                                     label="زیردسته ملک *"
                                                     value={formData.categoryPath?.subcategoryKey || ""}
                                                     onChange={(val) => {
+                                                        if (formData.categoryPath?.subcategoryKey === val) return;
                                                         setFormData((prev) => ({
                                                             ...prev,
                                                             categoryPath: {

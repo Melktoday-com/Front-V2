@@ -9,6 +9,7 @@ interface TokenPayload {
   sessionId: string;
   activeRoleId?: string;
   activeRoleName?: string;
+  exp?: number;
 }
 
 interface CookieObject {
@@ -106,16 +107,17 @@ export default async function globalSetup() {
       if (!fs.existsSync(filePath)) return false;
       const data = JSON.parse(fs.readFileSync(filePath, 'utf-8')) as StorageStateData;
       const tokenCookie = data.cookies?.find((c) => c.name === 'access_token');
-      if (!tokenCookie || tokenCookie.expires <= Math.floor(Date.now() / 1000) + 3600) {
+      if (!tokenCookie) {
         return false;
       }
 
-      if (expectedRole) {
-        const parts = tokenCookie.value.split('.');
-        if (parts.length > 1 && parts[1]) {
-          const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString('utf-8')) as TokenPayload;
-          if (payload.activeRoleName !== expectedRole) return false;
+      const parts = tokenCookie.value.split('.');
+      if (parts.length > 1 && parts[1]) {
+        const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString('utf-8')) as TokenPayload;
+        if (payload.exp && payload.exp <= Math.floor(Date.now() / 1000) + 120) {
+          return false;
         }
+        if (expectedRole && payload.activeRoleName !== expectedRole) return false;
       }
 
       const res = await fetch(probeUrl, {

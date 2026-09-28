@@ -3,6 +3,7 @@
 import { AccessGuard } from "@/components/AccessGuard";
 import { cn } from "@/lib/utils";
 import { RoleName } from "@/types/access";
+import { useAdminPermissions } from "@/hooks/useAdminPermissions";
 import {
     AlertTriangle,
     ArrowRight,
@@ -14,34 +15,43 @@ import {
     FileText,
     Globe,
     Home,
-    Layers,
     LayoutDashboard,
     Map,
     Settings,
+    ShieldAlert,
+    ShieldCheck,
     Users,
     Wallet,
-    Zap
+    Zap,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React from "react";
 
-const sidebarItems = [
+interface SidebarItem {
+    name: string;
+    href: string;
+    icon: React.ComponentType<{ className?: string }>;
+    requiredPermissions?: string[];
+}
+
+const sidebarItems: SidebarItem[] = [
     { name: "داشبورد", href: "/admin", icon: LayoutDashboard },
-    { name: "آگهی‌ها و دسته‌بندی‌ها", href: "/admin/ads", icon: FileText },
-    { name: "مدیریت املاک و مشاوران", href: "/admin/agencies", icon: Building2 },
-    { name: "درخواست‌های میزبانی", href: "/admin/hosts", icon: Home },
-    { name: "سطل زباله و آرشیو", href: "/admin/archive", icon: Archive },
-    { name: "کاربران", href: "/admin/users", icon: Users },
-    { name: "کیف پول", href: "/admin/wallet", icon: Wallet },
-    { name: "ارتقا آگهی", href: "/admin/promotions", icon: Zap },
-    { name: "کمپین‌ها", href: "/admin/campaigns", icon: BarChart3 },
-    { name: "مناطق جغرافیایی", href: "/admin/geo", icon: Map },
-    { name: "اجاره موقت و روزانه", href: "/admin/temporary-rent", icon: Calendar },
-    { name: "صفحه رسمی پلتفرم", href: "/admin/platform", icon: Globe },
-    { name: "گزارش‌ها", href: "/admin/reports", icon: AlertTriangle },
-    { name: "اطلاع‌رسانی", href: "/admin/notifications", icon: Bell },
-    { name: "تنظیمات پلن‌ها", href: "/admin/config", icon: Settings },
+    { name: "مدیریت مدیران", href: "/admin/admins", icon: ShieldCheck, requiredPermissions: ["admins.manage"] },
+    { name: "آگهی‌ها و دسته‌بندی‌ها", href: "/admin/ads", icon: FileText, requiredPermissions: ["ads.view", "categories.manage"] },
+    { name: "مدیریت املاک و مشاوران", href: "/admin/agencies", icon: Building2, requiredPermissions: ["agencies.manage"] },
+    { name: "درخواست‌های میزبانی", href: "/admin/hosts", icon: Home, requiredPermissions: ["hosts.manage"] },
+    { name: "سطل زباله و آرشیو", href: "/admin/archive", icon: Archive, requiredPermissions: ["archive.manage"] },
+    { name: "کاربران", href: "/admin/users", icon: Users, requiredPermissions: ["users.view", "users.manage"] },
+    { name: "کیف پول", href: "/admin/wallet", icon: Wallet, requiredPermissions: ["wallet.manage"] },
+    { name: "ارتقا آگهی", href: "/admin/promotions", icon: Zap, requiredPermissions: ["promotions.manage"] },
+    { name: "کمپین‌ها", href: "/admin/campaigns", icon: BarChart3, requiredPermissions: ["promotions.manage"] },
+    { name: "مناطق جغرافیایی", href: "/admin/geo", icon: Map, requiredPermissions: ["geo.manage"] },
+    { name: "اجاره موقت و روزانه", href: "/admin/temporary-rent", icon: Calendar, requiredPermissions: ["temporary_rent.view"] },
+    { name: "صفحه رسمی پلتفرم", href: "/admin/platform", icon: Globe, requiredPermissions: ["posts.view", "posts.manage"] },
+    { name: "گزارش‌ها", href: "/admin/reports", icon: AlertTriangle, requiredPermissions: ["reports.manage"] },
+    { name: "اطلاع‌رسانی", href: "/admin/notifications", icon: Bell, requiredPermissions: ["users.manage"] },
+    { name: "تنظیمات پلن‌ها", href: "/admin/config", icon: Settings, requiredPermissions: ["config.manage"] },
 ];
 
 export default function AdminLayout({
@@ -50,6 +60,22 @@ export default function AdminLayout({
     children: React.ReactNode;
 }) {
     const pathname = usePathname();
+    const { isSuperAdmin, hasAnyPermission, isLoading } = useAdminPermissions();
+
+    const visibleSidebarItems = sidebarItems.filter((item) => {
+        if (!item.requiredPermissions || item.requiredPermissions.length === 0) return true;
+        if (isSuperAdmin) return true;
+        return hasAnyPermission(item.requiredPermissions);
+    });
+
+    const currentItem = sidebarItems.find(
+        (item) => item.href === pathname || (item.href !== "/admin" && pathname.startsWith(item.href))
+    );
+    const isBlocked =
+        !isLoading &&
+        currentItem?.requiredPermissions &&
+        !isSuperAdmin &&
+        !hasAnyPermission(currentItem.requiredPermissions);
 
     return (
         <AccessGuard roles={[RoleName.Admin, RoleName.SuperAdmin]}>
@@ -65,7 +91,7 @@ export default function AdminLayout({
 
                     <nav className="flex-1 space-y-2">
                         <div className="text-[10px] font-black text-secondary/50 uppercase mb-4 pr-4 tracking-widest">منوی مدیریت</div>
-                        {sidebarItems.map((item) => {
+                        {visibleSidebarItems.map((item) => {
                             const Icon = item.icon;
                             const isActive = pathname === item.href;
                             return (
@@ -124,9 +150,29 @@ export default function AdminLayout({
                             {/* Profile indicator could go here */}
                         </div>
                     </header>
-                    <div className="p-8">
-                        {children}
-                    </div>
+                    {isBlocked ? (
+                        <div className="p-8 md:p-16 flex items-center justify-center min-h-[60vh]">
+                            <div className="bg-white border border-red-200 rounded-3xl p-8 max-w-md w-full text-center shadow-sm space-y-4">
+                                <ShieldAlert className="w-16 h-16 text-red-500 mx-auto" />
+                                <h2 className="text-xl font-black text-slate-800">عدم دسترسی به این بخش</h2>
+                                <p className="text-sm text-secondary leading-relaxed">
+                                    حساب کاربری شما دسترسی لازم برای مشاهده یا مدیریت این بخش را ندارد. در صورت نیاز با مدیر ارشد هماهنگ نمایید.
+                                </p>
+                                <div className="pt-2">
+                                    <Link
+                                        href="/admin"
+                                        className="inline-flex items-center gap-2 px-6 py-2.5 bg-primary text-white rounded-xl text-xs font-bold shadow-lg shadow-brand/20 hover:bg-primary/90 transition"
+                                    >
+                                        <span>بازگشت به داشبورد</span>
+                                    </Link>
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="p-8">
+                            {children}
+                        </div>
+                    )}
                 </main>
             </div>
         </AccessGuard>

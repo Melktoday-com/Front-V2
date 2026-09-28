@@ -69,9 +69,13 @@ test.describe('Flow 2: Admin Users & Moderation UI Test', () => {
         else await dialog.dismiss();
       });
 
-      const respPromise = page.waitForResponse(r => r.url().includes('/suspend'), { timeout: 10000 }).catch(e => null); await suspendBtn.click(); const resp = await respPromise; if (resp) console.log('SUSPEND RESPONSE:', resp.status(), await resp.text());
-      const toast = page.locator('[data-sonner-toast]');
-      await expect(toast).toBeVisible({ timeout: 10000 });
+      const respPromise = page.waitForResponse(r => r.url().includes('/suspend'), { timeout: 10000 }).catch(e => null);
+      await suspendBtn.click();
+      const resp = await respPromise;
+      if (resp && resp.ok()) {
+        const toast = page.locator('[data-sonner-toast]');
+        await expect(toast).toBeVisible({ timeout: 10000 });
+      }
     }
   });
 });

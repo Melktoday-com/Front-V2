@@ -13,18 +13,29 @@ import {
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { Suspense } from "react";
+import { useAdminPermissions } from "@/hooks/useAdminPermissions";
 
 type ActiveTab = "items" | "categories" | "org-ads";
 
 function AdminAdsContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
+    const { isSuperAdmin, hasPermission } = useAdminPermissions();
+
+    const canViewAds = isSuperAdmin || hasPermission("ads.view");
+    const canCreateAd = isSuperAdmin || hasPermission("ads.create");
+    const canManageCategories = isSuperAdmin || hasPermission("categories.manage");
+
+    const defaultTab: ActiveTab = canViewAds ? "items" : canManageCategories ? "categories" : "items";
+
     const currentTab: ActiveTab =
-        searchParams.get("tab") === "categories"
+        searchParams.get("tab") === "categories" && canManageCategories
             ? "categories"
-            : searchParams.get("tab") === "org-ads"
+            : searchParams.get("tab") === "org-ads" && canViewAds
             ? "org-ads"
-            : "items";
+            : canViewAds
+            ? "items"
+            : defaultTab;
 
     const handleTabChange = (tab: ActiveTab) => {
         const params = new URLSearchParams(searchParams.toString());
@@ -53,13 +64,15 @@ function AdminAdsContent() {
                 </div>
 
                 <div className="flex flex-wrap items-center gap-3">
-                    <Link
-                        href="/admin/ads/create"
-                        className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-black shadow-sm transition-colors"
-                    >
-                        <Plus className="w-4 h-4" />
-                        <span>ثبت آگهی جدید</span>
-                    </Link>
+                    {canCreateAd && (
+                        <Link
+                            href="/admin/ads/create"
+                            className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-black shadow-sm transition-colors"
+                        >
+                            <Plus className="w-4 h-4" />
+                            <span>ثبت آگهی جدید</span>
+                        </Link>
+                    )}
 
                     <Link
                         href="/ads"
@@ -74,44 +87,50 @@ function AdminAdsContent() {
 
             {/* Tabs Navigation */}
             <div className="flex items-center gap-2 p-1.5 bg-slate-100/80 rounded-2xl border border-slate-200/80 w-fit max-w-full overflow-x-auto">
-                <button
-                    type="button"
-                    onClick={() => handleTabChange("items")}
-                    className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black transition-all ${
-                        currentTab === "items"
-                            ? "bg-white text-slate-900 shadow-sm ring-1 ring-slate-200"
-                            : "text-slate-600 hover:text-slate-900 hover:bg-white/50"
-                    }`}
-                >
-                    <FileText className="w-4 h-4 text-blue-600" />
-                    <span>آگهی‌های ثبت شده (آیتم‌ها)</span>
-                </button>
+                {canViewAds && (
+                    <button
+                        type="button"
+                        onClick={() => handleTabChange("items")}
+                        className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black transition-all ${
+                            currentTab === "items"
+                                ? "bg-white text-slate-900 shadow-sm ring-1 ring-slate-200"
+                                : "text-slate-600 hover:text-slate-900 hover:bg-white/50"
+                        }`}
+                    >
+                        <FileText className="w-4 h-4 text-blue-600" />
+                        <span>آگهی‌های ثبت شده (آیتم‌ها)</span>
+                    </button>
+                )}
 
-                <button
-                    type="button"
-                    onClick={() => handleTabChange("org-ads")}
-                    className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black transition-all ${
-                        currentTab === "org-ads"
-                            ? "bg-white text-slate-900 shadow-sm ring-1 ring-slate-200"
-                            : "text-slate-600 hover:text-slate-900 hover:bg-white/50"
-                    }`}
-                >
-                    <Layers className="w-4 h-4 text-violet-600" />
-                    <span>آگهی‌های سازمانی</span>
-                </button>
+                {canViewAds && (
+                    <button
+                        type="button"
+                        onClick={() => handleTabChange("org-ads")}
+                        className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black transition-all ${
+                            currentTab === "org-ads"
+                                ? "bg-white text-slate-900 shadow-sm ring-1 ring-slate-200"
+                                : "text-slate-600 hover:text-slate-900 hover:bg-white/50"
+                        }`}
+                    >
+                        <Layers className="w-4 h-4 text-violet-600" />
+                        <span>آگهی‌های سازمانی</span>
+                    </button>
+                )}
 
-                <button
-                    type="button"
-                    onClick={() => handleTabChange("categories")}
-                    className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black transition-all ${
-                        currentTab === "categories"
-                            ? "bg-white text-slate-900 shadow-sm ring-1 ring-slate-200"
-                            : "text-slate-600 hover:text-slate-900 hover:bg-white/50"
-                    }`}
-                >
-                    <FolderTree className="w-4 h-4 text-indigo-600" />
-                    <span>دسته‌بندی‌ها و ساختار ویژگی‌ها</span>
-                </button>
+                {canManageCategories && (
+                    <button
+                        type="button"
+                        onClick={() => handleTabChange("categories")}
+                        className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black transition-all ${
+                            currentTab === "categories"
+                                ? "bg-white text-slate-900 shadow-sm ring-1 ring-slate-200"
+                                : "text-slate-600 hover:text-slate-900 hover:bg-white/50"
+                        }`}
+                    >
+                        <FolderTree className="w-4 h-4 text-emerald-600" />
+                        <span>دسته‌بندی‌ها و مدل‌ها</span>
+                    </button>
+                )}
             </div>
 
             {/* Active Tab Content */}

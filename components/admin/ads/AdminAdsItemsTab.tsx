@@ -35,6 +35,7 @@ import Link from "next/link";
 import React, { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { normalizeApiError } from "@/lib/api/error-handler";
+import { useAdminPermissions } from "@/hooks/useAdminPermissions";
 import AdminAdDetailModal from "./AdminAdDetailModal";
 import AdminAdRejectModal from "./AdminAdRejectModal";
 
@@ -50,6 +51,8 @@ const STATUS_FILTERS = [
 export default function AdminAdsItemsTab() {
     const queryClient = useQueryClient();
     const { getCategoryPathLabel } = useCategoryLookup();
+    const { isSuperAdmin, hasPermission } = useAdminPermissions();
+    const canReview = isSuperAdmin || hasPermission("ads.review");
 
     // Filters
     const [selectedStatus, setSelectedStatus] = useState<string>(AdStatus.PENDING_APPROVAL);
@@ -594,7 +597,7 @@ export default function AdminAdsItemsTab() {
                                             <td className="px-5 py-4">
                                                 <div className="flex items-center justify-center gap-1.5">
                                                     {/* Quick Approve */}
-                                                    {ad.status === AdStatus.PENDING_APPROVAL && (
+                                                    {canReview && ad.status === AdStatus.PENDING_APPROVAL && (
                                                         <button
                                                             type="button"
                                                             onClick={() => setApproveConfirmTarget({ id: ad.adId, title: ad.title })}
@@ -606,7 +609,7 @@ export default function AdminAdsItemsTab() {
                                                     )}
 
                                                     {/* Quick Reject */}
-                                                    {ad.status !== AdStatus.REJECTED && (
+                                                    {canReview && ad.status !== AdStatus.REJECTED && (
                                                         <button
                                                             type="button"
                                                             onClick={() => setRejectTarget({ id: ad.adId, title: ad.title })}
