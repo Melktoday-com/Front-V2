@@ -31,6 +31,7 @@ export interface ListNotificationsParams {
 export interface ListUserNotificationsResponse {
     items: NotificationSummary[];
     total: number;
+    totalAll: number;
     unreadCount: number;
     page: number;
     limit: number;

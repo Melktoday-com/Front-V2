@@ -84,6 +84,7 @@ export default function NotificationsScene() {
 
     const items = notificationsData?.items || [];
     const total = notificationsData?.total || 0;
+    const totalAll = notificationsData?.totalAll || 0;
     const unreadCount = notificationsData?.unreadCount || 0;
     const totalPages = Math.ceil(total / limit) || 1;
 
@@ -127,7 +128,7 @@ export default function NotificationsScene() {
                     onlyUnread={onlyUnread}
                     onTabChange={handleTabChange}
                     unreadCount={unreadCount}
-                    totalCount={total}
+                    totalCount={totalAll}
                 />
             </div>
 
