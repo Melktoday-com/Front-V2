@@ -7,13 +7,14 @@ import { Archive, ChevronRight, Clock, Eye, Send, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { getMediaUrl } from "@/lib/utils";
+import { AdStatus } from "@/types/api/enums";
 
 const statusLabels: Record<string, { label: string; color: string }> = {
-    DRAFT: { label: "پیش‌نویس", color: "bg-gray-100 text-gray-600" },
-    PENDING_APPROVAL: { label: "در حال بررسی", color: "bg-amber-100 text-amber-600" },
-    PUBLISHED: { label: "منتشر شده", color: "bg-green-100 text-green-600" },
-    ARCHIVED: { label: "آرشیو شده", color: "bg-red-100 text-red-600" },
-    REJECTED: { label: "رد شده", color: "bg-red-100 text-red-600" },
+    [AdStatus.DRAFT]: { label: "پیش‌نویس", color: "bg-gray-100 text-gray-600" },
+    [AdStatus.PENDING_APPROVAL]: { label: "در حال بررسی", color: "bg-amber-100 text-amber-600" },
+    [AdStatus.PUBLISHED]: { label: "منتشر شده", color: "bg-green-100 text-green-600" },
+    [AdStatus.ARCHIVED]: { label: "آرشیو شده", color: "bg-red-100 text-red-600" },
+    [AdStatus.REJECTED]: { label: "رد شده", color: "bg-red-100 text-red-600" },
 };
 
 export default function MyAdsScene() {
@@ -56,6 +57,8 @@ export default function MyAdsScene() {
 
     if (isLoading) return <div className="p-10 text-center font-bold">در حال بارگذاری...</div>;
 
+    const visibleAds = ads?.items.filter((ad) => ad.status !== AdStatus.DELETED) || [];
+
     return (
         <div className="min-h-screen bg-white pb-24">
             <header className="p-6 border-b flex items-center gap-4">
@@ -66,7 +69,7 @@ export default function MyAdsScene() {
             </header>
 
             <div className="p-6 space-y-4">
-                {ads?.items.length === 0 && (
+                {visibleAds.length === 0 && (
                     <div className="text-center py-20">
                         <p className="text-gray-500 font-bold mb-4">شما هنوز آگهی‌ای ثبت نکرده‌اید</p>
                         <button
@@ -78,7 +81,7 @@ export default function MyAdsScene() {
                     </div>
                 )}
 
-                {ads?.items.map((ad) => (
+                {visibleAds.map((ad) => (
                     <div key={ad.adId} className="bg-soft-bg rounded-[25px] border border-soft-border overflow-hidden flex gap-4 p-4">
                         <div className="w-24 h-24 rounded-2xl bg-gray-200 overflow-hidden flex-shrink-0">
                             {ad.mediaIds && ad.mediaIds.length > 0 ? (
@@ -109,7 +112,7 @@ export default function MyAdsScene() {
                             </div>
 
                             <div className="flex items-center gap-2">
-                                {ad.status === 'DRAFT' && (
+                                {ad.status === AdStatus.DRAFT && (
                                     <button
                                         onClick={() => submitMutation.mutate(ad.adId)}
                                         disabled={submitMutation.isPending}
@@ -119,7 +122,7 @@ export default function MyAdsScene() {
                                         ارسال برای تایید
                                     </button>
                                 )}
-                                {['DRAFT', 'PENDING_APPROVAL', 'REJECTED', 'PUBLISHED'].includes(ad.status) && (
+                                {[AdStatus.DRAFT, AdStatus.PENDING_APPROVAL, AdStatus.REJECTED, AdStatus.PUBLISHED].includes(ad.status as AdStatus) && (
                                     <button
                                         onClick={() => router.push(`/ads/submit?edit=${ad.adId}`)}
                                         className="bg-brand/5 text-brand px-3 py-1.5 rounded-xl text-xs font-black"
@@ -131,7 +134,7 @@ export default function MyAdsScene() {
                         </div>
 
                         <div className="flex items-center gap-1 self-start shrink-0">
-                            {ad.status === 'PUBLISHED' && (
+                            {ad.status === AdStatus.PUBLISHED && (
                                 <button
                                     onClick={() => {
                                         if (window.confirm("آیا از آرشیو کردن این آگهی اطمینان دارید؟")) {
@@ -152,7 +155,7 @@ export default function MyAdsScene() {
                             >
                                 <Eye className="w-4 h-4" />
                             </button>
-                            {(ad.status === 'DRAFT' || ad.status === 'ARCHIVED' || ad.status === 'REJECTED') && (
+                            {[AdStatus.DRAFT, AdStatus.ARCHIVED, AdStatus.REJECTED].includes(ad.status as AdStatus) && (
                                 <button
                                     onClick={() => {
                                         if (window.confirm("آیا از حذف دائمی این آگهی اطمینان دارید؟")) {
@@ -161,7 +164,7 @@ export default function MyAdsScene() {
                                     }}
                                     disabled={deleteMutation.isPending}
                                     title="حذف آگهی"
-                                    className="p-2 text-secondary hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors"
+                                    className="p-2 text-secondary hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors"
                                 >
                                     <Trash2 className="w-4 h-4" />
                                 </button>

@@ -12,6 +12,7 @@ import { cn, formatPrice, toPersianDigits, getMediaUrl } from "@/lib/utils";
 import { normalizeApiError } from "@/lib/api/error-handler";
 import { adsService } from "@/services/ads.service";
 import { CreateAdDraftRequest, PriceModel, SubcategoryConfigResponse } from "@/types/api/ads.types";
+import { AdStatus } from "@/types/api/enums";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
     Check,
@@ -156,7 +157,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
     // Pre-fill form in edit mode
     useEffect(() => {
         if (existingAd) {
-            if (existingAd.status === 'DELETED' || existingAd.status === 'ARCHIVED') {
+            if (existingAd.status === AdStatus.DELETED || existingAd.status === AdStatus.ARCHIVED) {
                 toast.error('این آگهی حذف یا بایگانی شده است و امکان ویرایش آن وجود ندارد.');
                 router.push('/profile/ads');
                 return;
