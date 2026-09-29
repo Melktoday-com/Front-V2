@@ -11,6 +11,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
     AlertCircle,
     Archive,
+    ArchiveRestore,
     Building2,
     Calendar,
     Check,
@@ -140,6 +141,19 @@ export default function AdminAdsItemsTab() {
         },
         onError: (err: Error) => {
             toast.error(normalizeApiError(err, "خطا در رد آگهی"));
+        },
+    });
+
+    // Unarchive Mutation
+    const unarchiveMutation = useMutation({
+        mutationFn: (id: string) => adminService.unarchiveAd(id),
+        onSuccess: () => {
+            toast.success("آگهی با موفقیت از بایگانی خارج و منتشر شد");
+            queryClient.invalidateQueries({ queryKey: ["ads"] });
+            refetch();
+        },
+        onError: (err: Error) => {
+            toast.error(normalizeApiError(err, "خطا در خروج از بایگانی"));
         },
     });
 
@@ -608,8 +622,8 @@ export default function AdminAdsItemsTab() {
                                                         </button>
                                                     )}
 
-                                                    {/* Quick Reject */}
-                                                    {canReview && ad.status !== AdStatus.REJECTED && (
+                                                     {/* Quick Reject — not for ARCHIVED or REJECTED */}
+                                                    {canReview && ad.status !== AdStatus.REJECTED && ad.status !== AdStatus.ARCHIVED && (
                                                         <button
                                                             type="button"
                                                             onClick={() => setRejectTarget({ id: ad.adId, title: ad.title })}
@@ -617,6 +631,19 @@ export default function AdminAdsItemsTab() {
                                                             className="p-2 rounded-xl text-rose-500 hover:bg-rose-50 transition-colors"
                                                         >
                                                             <X className="w-4 h-4" />
+                                                        </button>
+                                                    )}
+
+                                                    {/* Unarchive — restore ARCHIVED → PUBLISHED */}
+                                                    {canReview && ad.status === AdStatus.ARCHIVED && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => unarchiveMutation.mutate(ad.adId)}
+                                                            disabled={unarchiveMutation.isPending}
+                                                            title="خروج از بایگانی و انتشار مجدد"
+                                                            className="p-2 rounded-xl text-violet-600 hover:bg-violet-50 transition-colors disabled:opacity-40"
+                                                        >
+                                                            <ArchiveRestore className="w-4 h-4" />
                                                         </button>
                                                     )}
 

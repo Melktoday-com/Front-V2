@@ -121,6 +121,11 @@ export const adminService = {
         return response.data;
     },
 
+    unarchiveAd: async (adId: string) => {
+        const response = await api.post(`/ads/${adId}/unarchive`);
+        return response.data;
+    },
+
     // Geo Zones
     listGeoZones: async (zoneType: string): Promise<GeoZone[]> => {
         const response = await api.get(`/geo/zones`, { params: { zoneType, type: zoneType } });
