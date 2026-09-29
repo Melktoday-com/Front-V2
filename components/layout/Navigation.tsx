@@ -4,15 +4,12 @@ import { RoleGuard } from "@/components/RoleGuard";
 import { useAuth } from "@/hooks/useAuth";
 import { useConversations } from "@/hooks/useChat";
 import { useUnreadNotificationsCount } from "@/hooks/useNotifications";
-import { useMyAgency } from "@/hooks/useAgencies";
-import { useHostProfile } from "@/hooks/useShowcase";
 import { cn, toPersianDigits } from "@/lib/utils";
 import { RoleName } from "@/types/access";
 import {
     Bell,
     Building2,
     Compass,
-    ExternalLink,
     Heart,
     Home,
     Hotel,
@@ -42,8 +39,6 @@ export function Sidebar() {
     const { isLoggedIn } = useAuth();
     const { data: conversations } = useConversations();
     const { data: unreadNotificationsCount = 0 } = useUnreadNotificationsCount();
-    const { data: myAgency } = useMyAgency();
-    const { data: hostProfile } = useHostProfile();
 
     const unreadChatCount = conversations?.reduce((sum, c) => sum + (c.unreadCount || 0), 0) ?? 0;
 
@@ -162,7 +157,7 @@ export function Sidebar() {
                 )}
 
                 <RoleGuard roles={[RoleName.Agent]}>
-                    <div className="pt-2 border-t border-slate-100 space-y-1">
+                    <div className="pt-2 border-t border-slate-100">
                         <Link
                             href="/agency/panel"
                             className={cn(
@@ -175,21 +170,11 @@ export function Sidebar() {
                             <Building2 className="w-5 h-5" />
                             <span className="text-sm">مدیریت آژانس من</span>
                         </Link>
-                        {myAgency && (
-                            <Link
-                                href={`/agency/showcase/${myAgency.slug || myAgency.id}`}
-                                target="_blank"
-                                className="flex items-center justify-between px-4 py-2 pr-11 text-xs text-secondary hover:text-primary transition-colors font-medium group"
-                            >
-                                <span>مشاهده ویترین عمومی</span>
-                                <ExternalLink className="w-3.5 h-3.5 opacity-60 group-hover:opacity-100" />
-                            </Link>
-                        )}
                     </div>
                 </RoleGuard>
 
                 <RoleGuard roles={[RoleName.Landlord]}>
-                    <div className="pt-2 border-t border-slate-100 space-y-1">
+                    <div className="pt-2 border-t border-slate-100">
                         <Link
                             href="/profile/temporary-rent"
                             className={cn(
@@ -202,16 +187,6 @@ export function Sidebar() {
                             <Hotel className="w-5 h-5" />
                             <span className="text-sm">پنل اقامتگاه‌ها (میزبان)</span>
                         </Link>
-                        {hostProfile && (
-                            <Link
-                                href={`/host/${hostProfile.slug || hostProfile.id || hostProfile.userId}`}
-                                target="_blank"
-                                className="flex items-center justify-between px-4 py-2 pr-11 text-xs text-secondary hover:text-primary transition-colors font-medium group"
-                            >
-                                <span>مشاهده صفحه میزبان</span>
-                                <ExternalLink className="w-3.5 h-3.5 opacity-60 group-hover:opacity-100" />
-                            </Link>
-                        )}
                     </div>
                 </RoleGuard>
 
