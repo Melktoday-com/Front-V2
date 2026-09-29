@@ -2,21 +2,20 @@
 
 import { RoleGuard } from "@/components/RoleGuard";
 import { Button } from "@/components/ui/Button";
+import { useMyAgency } from "@/hooks/useAgencies";
 import { useAuth, useLogout } from "@/hooks/useAuth";
 import { useConversations } from "@/hooks/useChat";
 import { useUnreadNotificationsCount } from "@/hooks/useNotifications";
+import { useHostProfile } from "@/hooks/useShowcase";
 import { useMeProfile, useUser } from "@/hooks/useUser";
 import { useWallet } from "@/hooks/useWallet";
 import { cn, formatCurrency, toPersianDigits } from "@/lib/utils";
 import { userService } from "@/services/user.service";
-import { useMyAgency } from "@/hooks/useAgencies";
-import { useHostProfile } from "@/hooks/useShowcase";
 import { RoleName } from "@/types/access";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
     Bell,
     Building2,
-    CheckCircle2,
     ChevronLeft,
     CreditCard,
     ExternalLink,
@@ -29,7 +28,7 @@ import {
     Plus,
     ShieldCheck,
     User,
-    X,
+    X
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -298,7 +297,118 @@ export default function ProfileScene() {
                     </Button>
                 </section>
 
+                {/* Account Actions */}
+                <section className="space-y-3">
 
+
+                    <button
+                        onClick={() => router.push("/profile/requests")}
+                        className="w-full flex items-center justify-between p-5 bg-soft-bg rounded-2xl border border-soft-border hover:bg-soft-border/50 transition-colors"
+                    >
+                        <div className="flex items-center gap-3">
+                            <FileText className="w-5 h-5 text-primary" />
+                            <span className="text-brand font-bold text-sm">
+                                درخواست‌های من (عضویت و میزبانی)
+                            </span>
+                        </div>
+                        <ChevronLeft className="w-4 h-4 text-secondary" />
+                    </button>
+
+                    <button
+                        onClick={() => router.push("/wallet")}
+                        className="w-full flex items-center justify-between p-5 bg-soft-bg rounded-2xl border border-soft-border hover:bg-soft-border/50 transition-colors"
+                    >
+                        <div className="flex items-center gap-3">
+                            <CreditCard className="w-5 h-5 text-primary" />
+                            <span className="text-brand font-bold text-sm">
+                                تاریخچه تراکنش‌ها
+                            </span>
+                        </div>
+                        <ChevronLeft className="w-4 h-4 text-secondary" />
+                    </button>
+
+                    <button
+                        onClick={() => router.push("/profile/chat")}
+                        className="w-full flex items-center justify-between p-5 bg-soft-bg rounded-2xl border border-soft-border hover:bg-soft-border/50 transition-colors"
+                    >
+                        <div className="flex items-center gap-3">
+                            <MessageSquare className="w-5 h-5 text-primary" />
+                            <span className="text-brand font-bold text-sm">
+                                پیام‌های من
+                            </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            {unreadChatCount > 0 && (
+                                <span className="px-2 py-0.5 rounded-full text-xs font-black bg-primary/10 text-primary">
+                                    {toPersianDigits(unreadChatCount)}
+                                </span>
+                            )}
+                            <ChevronLeft className="w-4 h-4 text-secondary" />
+                        </div>
+                    </button>
+
+                    <button
+                        onClick={() => router.push("/notifications")}
+                        className="w-full flex items-center justify-between p-5 bg-soft-bg rounded-2xl border border-soft-border hover:bg-soft-border/50 transition-colors"
+                    >
+                        <div className="flex items-center gap-3">
+                            <Bell className="w-5 h-5 text-primary" />
+                            <span className="text-brand font-bold text-sm">
+                                اعلان‌های من
+                            </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            {unreadNotificationsCount > 0 && (
+                                <span className="px-2 py-0.5 rounded-full text-xs font-black bg-red-500 text-white animate-pulse">
+                                    {toPersianDigits(unreadNotificationsCount)}
+                                </span>
+                            )}
+                            <ChevronLeft className="w-4 h-4 text-secondary" />
+                        </div>
+                    </button>
+
+                    <button
+                        onClick={() => {
+                            if (profile?.kycStatus === "verified") {
+                                toast.info("هویت شما قبلاً با موفقیت تایید شده است.");
+                            } else {
+                                setIsKycModalOpen(true);
+                            }
+                        }}
+                        className="w-full flex items-center justify-between p-5 bg-soft-bg rounded-2xl border border-soft-border hover:bg-soft-border/50 transition-colors"
+                    >
+                        <div className="flex items-center gap-3">
+                            <ShieldCheck className="w-5 h-5 text-primary" />
+                            <span className="text-brand font-bold text-sm">
+                                احراز هویت (KYC)
+                            </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className={cn(
+                                "text-[10px] px-2 py-1 rounded-full font-bold",
+                                profile?.kycStatus === 'verified' ? "bg-green-50 text-green-600" :
+                                    profile?.kycStatus === 'pending' || profile?.kycStatus === 'in_progress' ? "bg-orange-50 text-orange-600" :
+                                        "bg-red-50 text-red-500"
+                            )}>
+                                {profile?.kycStatus === 'verified' ? "تایید شده" :
+                                    profile?.kycStatus === 'pending' || profile?.kycStatus === 'in_progress' ? "در انتظار تایید" : "تایید نشده"}
+                            </span>
+                            <ChevronLeft className="w-4 h-4 text-secondary" />
+                        </div>
+                    </button>
+
+                    <button
+                        onClick={logout}
+                        className="w-full flex items-center justify-between p-5 bg-red-50 rounded-2xl border border-red-100 hover:bg-red-100 transition-colors"
+                    >
+                        <div className="flex items-center gap-3">
+                            <LogOut className="w-5 h-5 text-red-500" />
+                            <span className="text-red-500 font-bold text-sm">
+                                خروج از حساب
+                            </span>
+                        </div>
+                    </button>
+                </section>
             </div>
 
             {/* KYC Verification Modal */}
