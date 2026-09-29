@@ -34,8 +34,9 @@ test.describe('Flow 2: Admin Users & Moderation UI Test', () => {
 
     // Verify action buttons exist
     const hasSuspendBtn = await firstRow.locator('button[title="تعلیق موقت"]').isVisible();
+    const hasReinstateBtn = await firstRow.locator('button[title="لغو تعلیق"]').isVisible();
     const hasUnbanBtn = await firstRow.locator('button[title="رفع محدودیت"]').isVisible();
-    expect(hasSuspendBtn || hasUnbanBtn).toBe(true);
+    expect(hasSuspendBtn || hasReinstateBtn || hasUnbanBtn).toBe(true);
   });
 
   test('Admin can perform suspend and reinstate via dialogs', async ({ page }) => {
@@ -51,7 +52,7 @@ test.describe('Flow 2: Admin Users & Moderation UI Test', () => {
         await dialog.accept();
       });
       await restoreBtn.click();
-      const toast = page.locator('[data-sonner-toast]');
+      const toast = page.locator('[data-sonner-toast]').first();
       await expect(toast).toBeVisible({ timeout: 10000 });
       await page.waitForTimeout(1500);
     }
@@ -73,7 +74,7 @@ test.describe('Flow 2: Admin Users & Moderation UI Test', () => {
       await suspendBtn.click();
       const resp = await respPromise;
       if (resp && resp.ok()) {
-        const toast = page.locator('[data-sonner-toast]');
+        const toast = page.locator('[data-sonner-toast]').first();
         await expect(toast).toBeVisible({ timeout: 10000 });
       }
     }
