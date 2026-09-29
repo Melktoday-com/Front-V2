@@ -23,11 +23,13 @@ import {
 import { toast } from "sonner";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
 import { HostApplicationRequest } from "@/types/api/showcase.types";
 import { cn } from "@/lib/utils";
 
 export default function HostApplyPage() {
   const router = useRouter();
+  const { isLoggedIn } = useAuth();
   const queryClient = useQueryClient();
 
   const [isCitySelectorOpen, setIsCitySelectorOpen] = useState(false);
@@ -54,6 +56,7 @@ export default function HostApplyPage() {
   } = useQuery({
     queryKey: ["hosts", "my-application"],
     queryFn: () => showcaseService.getMyHostApplication(),
+    enabled: !!isLoggedIn,
   });
 
   const submitMutation = useMutation({

@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Permission, RoleName } from "@/types/access";
 import { usePathname, useRouter } from "next/navigation";
 import React, { useEffect } from "react";
+import { toast } from "sonner";
 
 interface AccessGuardProps {
     children: React.ReactNode;
@@ -40,6 +41,7 @@ export const AccessGuard: React.FC<AccessGuardProps> = ({
 
         // If not logged in, go to auth page with return redirect
         if (!isLoggedIn) {
+            toast.info("برای دسترسی به این بخش، لطفاً ابتدا وارد حساب کاربری خود شوید.");
             const redirectUrl = pathname ? `/auth?redirect=${encodeURIComponent(pathname)}` : "/auth";
             router.push(redirectUrl);
             return;

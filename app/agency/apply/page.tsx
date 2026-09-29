@@ -23,12 +23,14 @@ import {
 import { toast } from "sonner";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
 import { AgentApplicationType, ApplyAgentRequest } from "@/types/api/agency.types";
 import { CityItem } from "@/types/api/geo.types";
 import { normalizeApiError } from "@/lib/api/error-handler";
 
 export default function AgencyApplyPage() {
     const router = useRouter();
+    const { isLoggedIn } = useAuth();
     const queryClient = useQueryClient();
     const { data: citiesData } = useCities({ limit: 100 });
 
@@ -58,6 +60,7 @@ export default function AgencyApplyPage() {
     } = useQuery({
         queryKey: ["agency", "my-application"],
         queryFn: () => agencyService.getMyApplication(),
+        enabled: !!isLoggedIn,
     });
 
     const submitMutation = useMutation({
