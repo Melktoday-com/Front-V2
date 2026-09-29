@@ -5,6 +5,7 @@ import {
     AgencyContactResponse,
     AgencyFull,
     AgencyPost,
+    AgencyPostsListResponse,
     AgencyStats,
     AgentApplicationResponse,
     ApplyAgentRequest,
@@ -113,16 +114,16 @@ export const agencyService = {
         return response.data;
     },
 
-    async listMyPosts(): Promise<AgencyPost[]> {
-        const response = await apiClient.get<AgencyPost[]>("/agencies/my-showcase/posts");
+    async listMyPosts(): Promise<AgencyPostsListResponse> {
+        const response = await apiClient.get<AgencyPostsListResponse>("/agencies/my-showcase/posts");
         return response.data;
     },
 
     async getPublicPosts(
         idOrSlug: string,
         params: { page?: number; limit?: number } = {},
-    ): Promise<{ items: AgencyPost[]; total: number; page: number; limit: number; totalPages: number }> {
-        const response = await apiClient.get(`/agencies/showcase/${encodeURIComponent(idOrSlug)}/posts`, {
+    ): Promise<AgencyPostsListResponse> {
+        const response = await apiClient.get<AgencyPostsListResponse>(`/agencies/showcase/${encodeURIComponent(idOrSlug)}/posts`, {
             params,
         });
         return response.data;

@@ -163,6 +163,14 @@ export interface AgencyPost {
     } | null;
 }
 
+export interface AgencyPostsListResponse {
+    items: AgencyPost[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+}
+
 export interface CreateAgencyPostRequest {
     title: string;
     slug?: string;

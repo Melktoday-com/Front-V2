@@ -4,7 +4,7 @@ import { useAgencyStats, useMyAgency } from "@/hooks/useAgencies";
 import { useAuth } from "@/hooks/useAuth";
 import { cn, toPersianDigits } from "@/lib/utils";
 import { agencyService } from "@/services/agency.service";
-import { AgencyConsultationMessage, AgencyPost, UpdateAgencyProfileRequest } from "@/types/api/agency.types";
+import { AgencyConsultationMessage, AgencyPost, AgencyPostsListResponse, UpdateAgencyProfileRequest } from "@/types/api/agency.types";
 import { normalizeApiError } from "@/lib/api/error-handler";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -35,7 +35,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 type Tab = "overview" | "settings" | "posts" | "messages";
@@ -105,11 +105,15 @@ export default function AgencyPanelScene() {
     });
 
     // Posts query & mutations
-    const { data: posts = [], isLoading: isLoadingPosts, refetch: refetchPosts } = useQuery({
+    const { data: postsData, isLoading: isLoadingPosts, refetch: refetchPosts } = useQuery<AgencyPostsListResponse>({
         queryKey: ["agency-posts", agency?.id],
         queryFn: () => agencyService.listMyPosts(),
         enabled: !!agency?.id && activeTab === "posts",
     });
+
+    const posts: AgencyPost[] = useMemo(() => {
+        return postsData?.items ?? [];
+    }, [postsData]);
 
     const [postModal, setPostModal] = useState<{
         isOpen: boolean;
@@ -171,11 +175,15 @@ export default function AgencyPanelScene() {
     });
 
     // Messages query & reply mutation
-    const { data: messages = [], isLoading: isLoadingMessages, refetch: refetchMessages } = useQuery({
+    const { data: messagesData, isLoading: isLoadingMessages, refetch: refetchMessages } = useQuery<AgencyConsultationMessage[]>({
         queryKey: ["agency-messages", agency?.id],
         queryFn: () => agencyService.listMyMessages(),
         enabled: !!agency?.id && activeTab === "messages",
     });
+
+    const messages: AgencyConsultationMessage[] = useMemo(() => {
+        return Array.isArray(messagesData) ? messagesData : [];
+    }, [messagesData]);
 
     const [replyingMessage, setReplyingMessage] = useState<AgencyConsultationMessage | null>(null);
     const [replyText, setReplyText] = useState("");
