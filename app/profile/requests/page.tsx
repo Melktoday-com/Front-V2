@@ -422,7 +422,7 @@ export default function UserRequestsPage() {
                                 )}
                                 {hostApp.status === "APPROVED" && (
                                     <Link
-                                        href="/host"
+                                        href="/profile/temporary-rent"
                                         className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 transition shadow-sm"
                                     >
                                         <Home className="w-4 h-4" />
