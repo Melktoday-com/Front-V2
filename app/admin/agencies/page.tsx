@@ -248,7 +248,7 @@ export default function AdminAgenciesPage() {
                                         {applications.map((app) => (
                                             <tr key={app.id} className="hover:bg-slate-50/50 transition-colors">
                                                 <td className="py-4 px-6">
-                                                    <div className="font-bold text-slate-900">{app.applicantName}</div>
+                                                    <div className="font-bold text-slate-900">{app.fullName}</div>
                                                     {app.agencyName && (
                                                         <div className="text-[11px] text-blue-600 font-medium">{app.agencyName}</div>
                                                     )}
@@ -508,7 +508,7 @@ export default function AdminAgenciesPage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                             <div className="p-3 bg-slate-50 rounded-xl space-y-1">
                                 <span className="text-slate-400 font-bold block">نام متقاضی:</span>
-                                <span className="font-bold text-slate-900 text-sm">{selectedApp.applicantName}</span>
+                                <span className="font-bold text-slate-900 text-sm">{selectedApp.fullName}</span>
                             </div>
 
                             <div className="p-3 bg-slate-50 rounded-xl space-y-1">

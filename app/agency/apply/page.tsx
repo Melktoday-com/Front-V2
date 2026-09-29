@@ -40,7 +40,7 @@ export default function AgencyApplyPage() {
     const [selectedCityName, setSelectedCityName] = useState("");
 
     const [formData, setFormData] = useState({
-        applicantName: "",
+        fullName: "",
         nationalCode: "",
         agencyName: "",
         guildCode: "",
@@ -78,7 +78,7 @@ export default function AgencyApplyPage() {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!formData.applicantName.trim()) {
+        if (!formData.fullName.trim()) {
             toast.error("لطفاً نام و نام خانوادگی متقاضی را وارد کنید.");
             return;
         }
@@ -106,7 +106,7 @@ export default function AgencyApplyPage() {
 
         const payload: ApplyAgentRequest = {
             agentType,
-            applicantName: formData.applicantName.trim(),
+            fullName: formData.fullName.trim(),
             nationalCode: formData.nationalCode.trim(),
             cityId: formData.cityId,
             phone: formData.phone.trim() || undefined,
@@ -199,7 +199,7 @@ export default function AgencyApplyPage() {
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                             <div className="p-3 bg-slate-50 rounded-xl space-y-1">
                                 <span className="text-slate-400 font-bold block">نام متقاضی:</span>
-                                <span className="font-bold text-slate-900">{myApp.applicantName}</span>
+                                <span className="font-bold text-slate-900">{myApp.fullName}</span>
                             </div>
                             {myApp.agencyName && (
                                 <div className="p-3 bg-slate-50 rounded-xl space-y-1">
@@ -320,8 +320,8 @@ export default function AgencyApplyPage() {
                                 <label className="text-xs font-bold text-slate-700">نام و نام خانوادگی متقاضی *</label>
                                 <input
                                     type="text"
-                                    value={formData.applicantName}
-                                    onChange={(e) => setFormData({ ...formData, applicantName: e.target.value })}
+                                    value={formData.fullName}
+                                    onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                                     placeholder="مثال: علی احمدی"
                                     className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                                     required

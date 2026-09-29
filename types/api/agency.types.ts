@@ -106,7 +106,7 @@ export interface ApplyAgentRequest {
     guildCode?: string;
     licenseNumber?: string;
     agencyName?: string;
-    applicantName: string;
+    fullName: string;
     cityId: string;
     phone?: string;
     address?: string;
@@ -119,7 +119,7 @@ export interface AgentApplicationResponse {
     userId: string;
     agentType: AgentApplicationType;
     status: AgentApplicationStatus;
-    applicantName: string;
+    fullName: string;
     nationalCode: string;
     guildCode?: string;
     licenseNumber?: string;

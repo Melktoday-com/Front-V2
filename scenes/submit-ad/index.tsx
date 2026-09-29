@@ -301,7 +301,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                     },
                     title: formData.title!,
                     description: formData.description!,
-                    rawPricing: (formData.rawPricing as Record<string, number>) || {},
+                    rawPricing: (formData.rawPricing as Record<string, number | string | boolean>) || {},
                     attributes: formData.attributes || {},
                     latitude: formData.latitude || 35.6892,
                     longitude: formData.longitude || 51.389,
@@ -335,7 +335,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                     },
                     title: formData.title!,
                     description: formData.description!,
-                    rawPricing: (formData.rawPricing as Record<string, number>) || {},
+                    rawPricing: (formData.rawPricing as Record<string, number | string | boolean>) || {},
                     attributes: formData.attributes || {},
                     latitude: formData.latitude || 35.6892,
                     longitude: formData.longitude || 51.389,
@@ -386,9 +386,23 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
         if (activePriceModel) {
             for (const field of activePriceModel.pricingFields) {
                 const val = formData.rawPricing?.[field.key];
-                if (field.required && (val === undefined || val === null || isNaN(Number(val)) || String(val).trim() === "")) {
-                    pErrors[field.key] = `فیلد ${field.label} الزامی است`;
-                    isValid = false;
+                if (field.required) {
+                    if (val === undefined || val === null || String(val).trim() === "") {
+                        pErrors[field.key] = `فیلد ${field.label} الزامی است`;
+                        isValid = false;
+                    } else if (field.fieldType === "NUMBER") {
+                        const num = Number(val);
+                        if (isNaN(num) || num < 0) {
+                            pErrors[field.key] = `فیلد ${field.label} باید عدد معتبر باشد`;
+                            isValid = false;
+                        }
+                    }
+                } else if (val !== undefined && val !== null && String(val).trim() !== "" && field.fieldType === "NUMBER") {
+                    const num = Number(val);
+                    if (isNaN(num) || num < 0) {
+                        pErrors[field.key] = `فیلد ${field.label} باید عدد معتبر باشد`;
+                        isValid = false;
+                    }
                 }
             }
         }

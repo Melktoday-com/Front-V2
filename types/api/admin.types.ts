@@ -295,7 +295,7 @@ export interface AdminCreateAdRequest {
     };
     title: string;
     description: string;
-    rawPricing?: Record<string, number>;
+    rawPricing?: Record<string, number | string | boolean>;
     attributes?: JsonObject;
     latitude: number;
     longitude: number;

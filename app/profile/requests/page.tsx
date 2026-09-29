@@ -200,7 +200,7 @@ export default function UserRequestsPage() {
                                             </span>
                                         </div>
                                         <p className="text-xs text-secondary mt-0.5">
-                                            نام متقاضی: {agencyApp.applicantName}
+                                            نام متقاضی: {agencyApp.fullName}
                                             {agencyApp.agencyName && ` — ${agencyApp.agencyName}`}
                                         </p>
                                     </div>
@@ -277,6 +277,15 @@ export default function UserRequestsPage() {
 
                             {/* Action Buttons */}
                             <div className="flex items-center justify-end gap-3 pt-1">
+                                {agencyApp.status === "PENDING" && (
+                                    <Link
+                                        href="/agency/apply"
+                                        className="inline-flex items-center gap-2 px-5 py-2.5 bg-amber-500 text-white rounded-xl text-xs font-bold hover:bg-amber-600 transition shadow-sm"
+                                    >
+                                        <RotateCcw className="w-4 h-4" />
+                                        <span>ویرایش درخواست</span>
+                                    </Link>
+                                )}
                                 {agencyApp.status === "REJECTED" && (
                                     <Link
                                         href="/agency/apply"
@@ -393,6 +402,15 @@ export default function UserRequestsPage() {
 
                             {/* Action Buttons */}
                             <div className="flex items-center justify-end gap-3 pt-1">
+                                {hostApp.status === "PENDING" && (
+                                    <Link
+                                        href="/host/apply"
+                                        className="inline-flex items-center gap-2 px-5 py-2.5 bg-amber-500 text-white rounded-xl text-xs font-bold hover:bg-amber-600 transition shadow-sm"
+                                    >
+                                        <RotateCcw className="w-4 h-4" />
+                                        <span>ویرایش درخواست</span>
+                                    </Link>
+                                )}
                                 {hostApp.status === "REJECTED" && (
                                     <Link
                                         href="/host/apply"

@@ -69,7 +69,7 @@ export const agencyService = {
 
     async getMyApplication(): Promise<AgentApplicationResponse | null> {
         try {
-            const response = await apiClient.get<AgentApplicationResponse>("/agencies/my-application");
+            const response = await apiClient.get<AgentApplicationResponse>("/agencies/applications/my");
             return response.data;
         } catch (error) {
             if (axios.isAxiosError(error) && error.response?.status === 404) {
