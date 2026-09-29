@@ -10,6 +10,37 @@ export function useAds(query: ListAdsQuery = {}, options?: Partial<UseQueryOptio
     });
 }
 
+export function useInfiniteAds(
+    query: ListAdsQuery = {},
+    options: { startPage?: number; maxPages?: number; enabled?: boolean } = {}
+) {
+    const startPage = options.startPage ?? 1;
+    const maxPages = options.maxPages ?? 7;
+
+    return useInfiniteQuery({
+        queryKey: ["ads-infinite", query, startPage],
+        queryFn: async ({ pageParam = startPage }) => {
+            return await adsService.list({
+                ...query,
+                page: pageParam as number,
+                limit: query.limit ?? 20,
+            });
+        },
+        initialPageParam: startPage,
+        getNextPageParam: (lastPage, allPages) => {
+            if (allPages.length >= maxPages) {
+                return undefined;
+            }
+            const totalPages = Math.ceil(lastPage.total / lastPage.limit);
+            if (lastPage.page < totalPages) {
+                return lastPage.page + 1;
+            }
+            return undefined;
+        },
+        enabled: options.enabled ?? true,
+    });
+}
+
 export function useAd(adId: string) {
     return useQuery({
         queryKey: ["ads", adId],

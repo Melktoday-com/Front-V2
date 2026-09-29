@@ -38,3 +38,37 @@ export function getMediaUrl(mediaIdOrUrl?: string | null): string {
     return `${cleanBase}/media/${mediaIdOrUrl}`;
 }
 
+export function getPaginationItems(
+    currentStart: number,
+    currentEnd: number,
+    total: number
+): (number | "...")[] {
+    if (total <= 9) {
+        return Array.from({ length: total }, (_, i) => i + 1);
+    }
+
+    const items: (number | "...")[] = [];
+    items.push(1);
+
+    if (currentStart > 3) {
+        items.push("...");
+    }
+
+    const start = Math.max(2, currentStart);
+    const end = Math.min(total - 1, currentEnd);
+
+    for (let i = start; i <= end; i++) {
+        items.push(i);
+    }
+
+    if (currentEnd < total - 2) {
+        items.push("...");
+    }
+
+    if (total > 1) {
+        items.push(total);
+    }
+
+    return items.filter((item, index, self) => item === "..." || self.indexOf(item) === index);
+}
+

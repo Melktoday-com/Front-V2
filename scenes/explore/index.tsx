@@ -1,6 +1,8 @@
 "use client";
 
-import { useExplorePosts, useLikePost, useMyAgency } from "@/hooks/useAgencies";
+import { PageSectionDivider } from "@/components/ui/PageSectionDivider";
+import { PaginationControls } from "@/components/ui/PaginationControls";
+import { useInfiniteExplorePosts, useLikePost, useMyAgency } from "@/hooks/useAgencies";
 import { useAuth } from "@/hooks/useAuth";
 import { cn, toPersianDigits } from "@/lib/utils";
 import { agencyService } from "@/services/agency.service";
@@ -15,6 +17,7 @@ import {
     Grid,
     Heart,
     List,
+    Loader2,
     Newspaper,
     PenTool,
     Search,
@@ -25,7 +28,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 const TOPIC_TAGS = [
@@ -47,6 +50,9 @@ export default function ExploreScene() {
     const [activeSearch, setActiveSearch] = useState("");
     const [selectedTag, setSelectedTag] = useState("all");
     const [viewMode, setViewMode] = useState<"feed" | "grid">("feed");
+    const [startPage, setStartPage] = useState<number>(1);
+
+    const observerTargetRef = useRef<HTMLDivElement | null>(null);
 
     // Modal state for reading a full post
     const [readingPost, setReadingPost] = useState<AgencyPost | null>(null);
@@ -58,17 +64,46 @@ export default function ExploreScene() {
     const [postContent, setPostContent] = useState("");
     const [postMediaUrls, setPostMediaUrls] = useState("");
 
-    // Fetch published posts
+    // Fetch published posts with infinite scroll
     const {
         data: postsData,
         isLoading,
+        isFetchingNextPage,
+        hasNextPage,
+        fetchNextPage,
         isError,
         refetch,
-    } = useExplorePosts({
-        page: 1,
-        limit: 30,
-        search: activeSearch || undefined,
-    });
+    } = useInfiniteExplorePosts(
+        {
+            limit: 12,
+            search: activeSearch || undefined,
+        },
+        { startPage, maxPages: 7 }
+    );
+
+    // Auto-scroll infinite scroll up to 7 pages
+    useEffect(() => {
+        const target = observerTargetRef.current;
+        if (!target) return;
+
+        const currentBatchPageCount = postsData?.pages.length ?? 0;
+        if (currentBatchPageCount >= 7) return;
+        if (!hasNextPage || isFetchingNextPage) return;
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting) {
+                    fetchNextPage();
+                }
+            },
+            { rootMargin: "300px" }
+        );
+
+        observer.observe(target);
+        return () => {
+            observer.disconnect();
+        };
+    }, [hasNextPage, isFetchingNextPage, fetchNextPage, postsData?.pages.length]);
 
     const likeMutation = useLikePost();
 
@@ -94,6 +129,7 @@ export default function ExploreScene() {
             setPostContent("");
             setPostMediaUrls("");
             queryClient.invalidateQueries({ queryKey: ["explore-posts"] });
+            queryClient.invalidateQueries({ queryKey: ["explore-posts-infinite"] });
             refetch();
         },
         onError: () => {
@@ -104,6 +140,7 @@ export default function ExploreScene() {
     const handleSearchSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         setActiveSearch(searchQuery.trim());
+        setStartPage(1);
     };
 
     const handleLike = (e: React.MouseEvent, postId: string) => {
@@ -152,19 +189,67 @@ export default function ExploreScene() {
         setIsCreateModalOpen(true);
     };
 
-    const posts = postsData?.items || [];
-
-    // Filter by tag if selected and not 'all'
-    const filteredPosts = posts.filter((post) => {
-        if (selectedTag === "all") return true;
+    // Filter helper
+    const filterPostByTag = (post: AgencyPost, tag: string) => {
+        if (tag === "all") return true;
         const text = `${post.title} ${post.summary || ""} ${post.content}`.toLowerCase();
-        if (selectedTag === "market") return text.includes("بازار") || text.includes("قیمت") || text.includes("تحلیل");
-        if (selectedTag === "guide") return text.includes("راهنما") || text.includes("خرید") || text.includes("رهن");
-        if (selectedTag === "legal") return text.includes("حقوق") || text.includes("سند") || text.includes("قرارداد");
-        if (selectedTag === "investment") return text.includes("سرمایه") || text.includes("سود") || text.includes("سرمایه‌گذاری");
-        if (selectedTag === "news") return text.includes("خبر") || text.includes("قانون") || text.includes("جدید");
+        if (tag === "market") return text.includes("بازار") || text.includes("قیمت") || text.includes("تحلیل");
+        if (tag === "guide") return text.includes("راهنما") || text.includes("خرید") || text.includes("رهن");
+        if (tag === "legal") return text.includes("حقوق") || text.includes("سند") || text.includes("قرارداد");
+        if (tag === "investment") return text.includes("سرمایه") || text.includes("سود") || text.includes("سرمایه‌گذاری");
+        if (tag === "news") return text.includes("خبر") || text.includes("قانون") || text.includes("جدید");
         return true;
-    });
+    };
+
+    // Flatten all loaded posts across pages in current batch
+    const allLoadedPosts = useMemo(() => {
+        return postsData?.pages.flatMap((page) => page.items) || [];
+    }, [postsData]);
+
+    const filteredPosts = useMemo(() => {
+        return allLoadedPosts.filter((post) => filterPostByTag(post, selectedTag));
+    }, [allLoadedPosts, selectedTag]);
+
+    // Pagination metrics
+    const totalCount = postsData?.pages[0]?.total ?? 0;
+    const limitPerPage = postsData?.pages[0]?.limit ?? 12;
+    const totalPages = postsData?.pages[0]?.totalPages || Math.ceil(totalCount / limitPerPage);
+    const lastLoadedPage = postsData?.pages[postsData.pages.length - 1]?.page ?? startPage;
+    const isBatchFinished = (postsData?.pages.length ?? 0) >= 7 || !hasNextPage;
+    const loadedPages = useMemo(() => postsData?.pages.map((p) => p.page) || [], [postsData]);
+
+    const handlePageSelect = (targetPage: number) => {
+        const isLoadedInCurrentBatch = loadedPages.includes(targetPage);
+        if (isLoadedInCurrentBatch) {
+            if (targetPage === startPage) {
+                document.getElementById("explore-top")?.scrollIntoView({ behavior: "smooth" });
+            } else {
+                const sectionElem = document.getElementById(`explore-page-section-${targetPage}`);
+                if (sectionElem) {
+                    sectionElem.scrollIntoView({ behavior: "smooth", block: "start" });
+                }
+            }
+        } else {
+            setStartPage(targetPage);
+            document.getElementById("explore-top")?.scrollIntoView({ behavior: "smooth" });
+        }
+    };
+
+    const handleNextPage = () => {
+        if (lastLoadedPage < totalPages) {
+            handlePageSelect(lastLoadedPage + 1);
+        }
+    };
+
+    const handlePrevPage = () => {
+        if (startPage > 1) {
+            handlePageSelect(Math.max(1, startPage - 7));
+        }
+    };
+
+    const handleScrollToTop = () => {
+        document.getElementById("explore-top")?.scrollIntoView({ behavior: "smooth" });
+    };
 
     const formatDate = (dateString?: string) => {
         if (!dateString) return "";
@@ -250,6 +335,9 @@ export default function ExploreScene() {
                 </div>
             </div>
 
+            {/* Anchor for top of explore */}
+            <div id="explore-top" />
+
             {/* ── POSTS LIST ────────────────────────────────────────────── */}
             {isLoading ? (
                 <div
@@ -308,129 +396,181 @@ export default function ExploreScene() {
                     </button>
                 </div>
             ) : (
-                <div
-                    className={cn(
-                        viewMode === "grid"
-                            ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
-                            : "space-y-6 max-w-3xl mx-auto"
-                    )}
-                >
-                    {filteredPosts.map((post) => {
-                        const agency = post.agency;
-                        const agencySlugOrId = agency?.slug || agency?.id || post.agencyId;
-                        const coverImage = post.mediaUrls && post.mediaUrls.length > 0 ? post.mediaUrls[0] : null;
+                <div className="space-y-6">
+                    <div
+                        className={cn(
+                            viewMode === "grid"
+                                ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
+                                : "space-y-6 max-w-3xl mx-auto"
+                        )}
+                    >
+                        {postsData?.pages.map((page, pageIndex) => {
+                            const pagePosts = page.items.filter((post) => filterPostByTag(post, selectedTag));
+                            if (pagePosts.length === 0 && pageIndex > 0) return null;
 
-                        return (
-                            <article
-                                key={post.id}
-                                onClick={() => setReadingPost(post)}
-                                className="bg-white rounded-3xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-primary/40 transition-all duration-300 flex flex-col justify-between overflow-hidden cursor-pointer group"
-                            >
-                                {/* Post Author Header */}
-                                <div className="p-4 sm:p-5 flex items-center justify-between border-b border-slate-100">
-                                    <Link
-                                        href={`/agency/showcase/${encodeURIComponent(agencySlugOrId)}`}
-                                        onClick={(e) => e.stopPropagation()}
-                                        className="flex items-center gap-3 group/author"
-                                    >
-                                        <div className="relative w-10 h-10 rounded-full overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
-                                            {agency?.logoUrl ? (
-                                                <Image
-                                                    src={agency.logoUrl}
-                                                    alt={agency?.name || "لوگوی املاک"}
-                                                    fill
-                                                    className="object-cover"
-                                                />
-                                            ) : (
-                                                <div className="w-full h-full flex items-center justify-center bg-slate-50 text-slate-400">
-                                                    <Building2 className="w-5 h-5" />
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div>
-                                            <div className="flex items-center gap-1.5">
-                                                <span className="font-bold text-sm text-slate-800 group-hover/author:text-primary transition-colors">
-                                                    {agency?.name || "صفحه مشاور املاک"}
-                                                </span>
-                                                {agency?.isVerified && (
-                                                    <Verified className="w-4 h-4 text-primary fill-primary/10 shrink-0" />
-                                                )}
-                                            </div>
-                                            <p className="text-[11px] text-slate-400 flex items-center gap-1">
-                                                <Calendar className="w-3 h-3" />
-                                                <span>{formatDate(post.createdAt)}</span>
-                                            </p>
-                                        </div>
-                                    </Link>
-
-                                    <button
-                                        onClick={(e) => handleShare(e, post)}
-                                        className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
-                                        title="اشتراک‌گذاری"
-                                    >
-                                        <Share2 className="w-4 h-4" />
-                                    </button>
-                                </div>
-
-                                {/* Post Media Cover */}
-                                {coverImage ? (
-                                    <div className="relative aspect-video w-full overflow-hidden bg-slate-100">
-                                        <Image
-                                            src={coverImage}
-                                            alt={post.title}
-                                            fill
-                                            className="object-cover group-hover:scale-105 transition-transform duration-500"
+                            return (
+                                <div key={`explore-page-${page.page}`} className="contents">
+                                    {/* Section Header for page 2 onwards */}
+                                    {pageIndex > 0 && (
+                                        <PageSectionDivider
+                                            id={`explore-page-section-${page.page}`}
+                                            page={page.page}
+                                            count={pagePosts.length}
+                                            itemLabel="پست"
                                         />
-                                    </div>
-                                ) : (
-                                    <div className="h-28 bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200 flex items-center justify-center text-slate-300">
-                                        <Newspaper className="w-8 h-8" />
-                                    </div>
-                                )}
+                                    )}
 
-                                {/* Post Content Snippet */}
-                                <div className="p-4 sm:p-5 space-y-2 flex-1 flex flex-col justify-between">
-                                    <div className="space-y-2">
-                                        <h2 className="font-bold text-base sm:text-lg text-slate-900 group-hover:text-primary transition-colors line-clamp-2">
-                                            {post.title}
-                                        </h2>
-                                        <p className="text-xs sm:text-sm text-slate-600 line-clamp-3 leading-relaxed">
-                                            {post.summary || post.content}
-                                        </p>
-                                    </div>
+                                    {pagePosts.map((post) => {
+                                        const agency = post.agency;
+                                        const agencySlugOrId = agency?.slug || agency?.id || post.agencyId;
+                                        const coverImage = post.mediaUrls && post.mediaUrls.length > 0 ? post.mediaUrls[0] : null;
 
-                                    {/* Footer / Stats & CTA */}
-                                    <div className="pt-4 mt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-                                        <div className="flex items-center gap-3">
-                                            <button
-                                                onClick={(e) => handleLike(e, post.id)}
-                                                className={cn(
-                                                    "flex items-center gap-1 transition-colors",
-                                                    post.hasLiked ? "text-red-500 font-bold" : "text-slate-500 hover:text-red-500"
-                                                )}
-                                                aria-label={post.hasLiked ? "حذف پسند" : "پسندیدن"}
+                                        return (
+                                            <article
+                                                key={post.id}
+                                                onClick={() => setReadingPost(post)}
+                                                className="bg-white rounded-3xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-primary/40 transition-all duration-300 flex flex-col justify-between overflow-hidden cursor-pointer group"
                                             >
-                                                <Heart className={cn(
-                                                    "w-4 h-4 transition-colors",
-                                                    post.hasLiked ? "text-red-500 fill-red-500" : "text-slate-400"
-                                                )} />
-                                                <span>{toPersianDigits(post.likeCount || 0)}</span>
-                                            </button>
-                                            <div className="flex items-center gap-1">
-                                                <Eye className="w-4 h-4 text-slate-400" />
-                                                <span>{toPersianDigits(post.viewCount || 0)}</span>
-                                            </div>
-                                        </div>
+                                                {/* Post Author Header */}
+                                                <div className="p-4 sm:p-5 flex items-center justify-between border-b border-slate-100">
+                                                    <Link
+                                                        href={`/agency/showcase/${encodeURIComponent(agencySlugOrId)}`}
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        className="flex items-center gap-3 group/author"
+                                                    >
+                                                        <div className="relative w-10 h-10 rounded-full overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
+                                                            {agency?.logoUrl ? (
+                                                                <Image
+                                                                    src={agency.logoUrl}
+                                                                    alt={agency?.name || "لوگوی املاک"}
+                                                                    fill
+                                                                    className="object-cover"
+                                                                />
+                                                            ) : (
+                                                                <div className="w-full h-full flex items-center justify-center bg-slate-50 text-slate-400">
+                                                                    <Building2 className="w-5 h-5" />
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        <div>
+                                                            <div className="flex items-center gap-1.5">
+                                                                <span className="font-bold text-sm text-slate-800 group-hover/author:text-primary transition-colors">
+                                                                    {agency?.name || "صفحه مشاور املاک"}
+                                                                </span>
+                                                                {agency?.isVerified && (
+                                                                    <Verified className="w-4 h-4 text-primary fill-primary/10 shrink-0" />
+                                                                )}
+                                                            </div>
+                                                            <p className="text-[11px] text-slate-400 flex items-center gap-1">
+                                                                <Calendar className="w-3 h-3" />
+                                                                <span>{formatDate(post.createdAt)}</span>
+                                                            </p>
+                                                        </div>
+                                                    </Link>
 
-                                        <span className="font-bold text-primary group-hover:underline flex items-center gap-0.5">
-                                            <span>مطالعه کامل</span>
-                                            <ChevronLeft className="w-3.5 h-3.5" />
-                                        </span>
-                                    </div>
+                                                    <button
+                                                        onClick={(e) => handleShare(e, post)}
+                                                        className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+                                                        title="اشتراک‌گذاری"
+                                                    >
+                                                        <Share2 className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+
+                                                {/* Post Media Cover */}
+                                                {coverImage ? (
+                                                    <div className="relative aspect-video w-full overflow-hidden bg-slate-100">
+                                                        <Image
+                                                            src={coverImage}
+                                                            alt={post.title}
+                                                            fill
+                                                            className="object-cover group-hover:scale-105 transition-transform duration-500"
+                                                        />
+                                                    </div>
+                                                ) : (
+                                                    <div className="h-28 bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200 flex items-center justify-center text-slate-300">
+                                                        <Newspaper className="w-8 h-8" />
+                                                    </div>
+                                                )}
+
+                                                {/* Post Content Snippet */}
+                                                <div className="p-4 sm:p-5 space-y-2 flex-1 flex flex-col justify-between">
+                                                    <div className="space-y-2">
+                                                        <h2 className="font-bold text-base sm:text-lg text-slate-900 group-hover:text-primary transition-colors line-clamp-2">
+                                                            {post.title}
+                                                        </h2>
+                                                        <p className="text-xs sm:text-sm text-slate-600 line-clamp-3 leading-relaxed">
+                                                            {post.summary || post.content}
+                                                        </p>
+                                                    </div>
+
+                                                    {/* Footer / Stats & CTA */}
+                                                    <div className="pt-4 mt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+                                                        <div className="flex items-center gap-3">
+                                                            <button
+                                                                onClick={(e) => handleLike(e, post.id)}
+                                                                className={cn(
+                                                                    "flex items-center gap-1 transition-colors",
+                                                                    post.hasLiked ? "text-red-500 font-bold" : "text-slate-500 hover:text-red-500"
+                                                                )}
+                                                                aria-label={post.hasLiked ? "حذف پسند" : "پسندیدن"}
+                                                            >
+                                                                <Heart className={cn(
+                                                                    "w-4 h-4 transition-colors",
+                                                                    post.hasLiked ? "text-red-500 fill-red-500" : "text-slate-400"
+                                                                )} />
+                                                                <span>{toPersianDigits(post.likeCount || 0)}</span>
+                                                            </button>
+                                                            <div className="flex items-center gap-1">
+                                                                <Eye className="w-4 h-4 text-slate-400" />
+                                                                <span>{toPersianDigits(post.viewCount || 0)}</span>
+                                                            </div>
+                                                        </div>
+
+                                                        <span className="font-bold text-primary group-hover:underline flex items-center gap-0.5">
+                                                            <span>مطالعه کامل</span>
+                                                            <ChevronLeft className="w-3.5 h-3.5" />
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </article>
+                                        );
+                                    })}
                                 </div>
-                            </article>
-                        );
-                    })}
+                            );
+                        })}
+                    </div>
+
+                    {/* Sentinel for infinite scroll (auto-loads up to 7 pages) */}
+                    {hasNextPage && (postsData?.pages.length ?? 0) < 7 && (
+                        <div ref={observerTargetRef} className="py-8 flex flex-col items-center justify-center gap-2">
+                            {isFetchingNextPage ? (
+                                <div className="flex items-center gap-2 text-xs font-bold text-secondary bg-white px-5 py-2.5 rounded-xl shadow-xs border border-slate-200">
+                                    <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                                    <span>در حال بارگذاری بخش بعدی پست‌ها...</span>
+                                </div>
+                            ) : (
+                                <div className="h-6" />
+                            )}
+                        </div>
+                    )}
+
+                    {/* Pagination Controls at the End */}
+                    {!isLoading && allLoadedPosts.length > 0 && totalPages > 1 && isBatchFinished && (
+                        <PaginationControls
+                            startPage={startPage}
+                            lastLoadedPage={lastLoadedPage}
+                            totalPages={totalPages}
+                            totalCount={totalCount}
+                            itemLabel="پست"
+                            loadedPages={loadedPages}
+                            onPageSelect={handlePageSelect}
+                            onPrevPage={handlePrevPage}
+                            onNextPage={handleNextPage}
+                            onScrollToTop={handleScrollToTop}
+                            className="max-w-3xl mx-auto"
+                        />
+                    )}
                 </div>
             )}
 

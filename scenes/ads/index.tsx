@@ -4,21 +4,23 @@ import CategoryFilter from "@/components/CategoryFilter";
 import { PageHeader } from "@/components/PageHeader";
 import { useCity } from "@/components/providers/CityProvider";
 import { NeighborhoodDrawer } from "@/components/ui/NeighborhoodDrawer";
+import { PageSectionDivider } from "@/components/ui/PageSectionDivider";
+import { PaginationControls } from "@/components/ui/PaginationControls";
 import { PropertyCard } from "@/components/ui/PropertyCard";
 import { EmptyState } from "@/components/ui/StatusStates";
-import { useAds, useCategories } from "@/hooks/useAds";
+import { useCategories, useInfiniteAds } from "@/hooks/useAds";
 import { useCategoryLookup } from "@/hooks/useCategoryLookup";
 import { useFavorites, useToggleSaveAd } from "@/hooks/useFavorites";
 import { useGeoHierarchy } from "@/hooks/useGeoHierarchy";
-import { cn, formatPrice } from "@/lib/utils";
+import { cn, formatPrice, toPersianDigits } from "@/lib/utils";
 import { geoService } from "@/services/geo.service";
 import { AdSummary } from "@/types/api/ads.types";
 import { ZoneSummary } from "@/types/api/geo.types";
 import { useQuery } from "@tanstack/react-query";
-import { LayoutGrid, Map as MapIcon, MapPin, X } from "lucide-react";
+import { LayoutGrid, Loader2, Map as MapIcon, MapPin, X } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 const Map = dynamic(() => import("@/components/ui/Map"), {
     ssr: false,
@@ -89,20 +91,57 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
 
     const [search, setSearch] = useState(urlSearch);
     const [selectedCategory, setSelectedCategory] = useState(urlCategory);
+    const [startPage, setStartPage] = useState<number>(1);
+
+    const observerTargetRef = useRef<HTMLDivElement | null>(null);
+    const listContainerRef = useRef<HTMLDivElement | null>(null);
 
     // Saved ads state for heart button on each card
     const { isAdSaved } = useFavorites();
     const toggleSaveMutation = useToggleSaveAd();
 
-    const { data, isLoading } = useAds({
-        limit: 30,
-        status: "PUBLISHED",
-        isFeatured: urlIsFeatured || undefined,
-        search: search || undefined,
-        cityId: effectiveCityId,
-        categoryKey: selectedCategory || undefined,
-        businessModelKey: urlDealType || undefined,
-    }, { enabled: !!effectiveCityId });
+    const {
+        data,
+        isLoading,
+        isFetchingNextPage,
+        hasNextPage,
+        fetchNextPage,
+    } = useInfiniteAds(
+        {
+            limit: 20,
+            status: "PUBLISHED",
+            isFeatured: urlIsFeatured || undefined,
+            search: search || undefined,
+            cityId: effectiveCityId,
+            categoryKey: selectedCategory || undefined,
+            businessModelKey: urlDealType || undefined,
+        },
+        { startPage, maxPages: 7, enabled: !!effectiveCityId }
+    );
+
+    // Auto-scroll infinite scroll up to 7 pages
+    useEffect(() => {
+        const target = observerTargetRef.current;
+        if (!target) return;
+
+        const currentBatchPageCount = data?.pages.length ?? 0;
+        if (currentBatchPageCount >= 7) return;
+        if (!hasNextPage || isFetchingNextPage) return;
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting) {
+                    fetchNextPage();
+                }
+            },
+            { root: listContainerRef.current, rootMargin: "300px" }
+        );
+
+        observer.observe(target);
+        return () => {
+            observer.disconnect();
+        };
+    }, [hasNextPage, isFetchingNextPage, fetchNextPage, data?.pages.length]);
 
     // Fetch neighborhoods for the active city
     const { data: zonesData } = useQuery({
@@ -139,12 +178,57 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
         return null;
     }, [hierarchy, effectiveCityId, effectiveCityName, selectedCity]);
 
+    // All loaded ads across pages in current batch
+    const allLoadedAds = useMemo(() => {
+        return data?.pages.flatMap((page) => page.items) || [];
+    }, [data]);
+
     // Filter ads: OR logic across all selected zones
     const displayedAds = useMemo(() => {
-        const items = data?.items || [];
-        if (selectedZones.length === 0) return items;
-        return items.filter((ad) => selectedZones.some((zone) => adMatchesZone(ad, zone)));
-    }, [data?.items, selectedZones]);
+        if (selectedZones.length === 0) return allLoadedAds;
+        return allLoadedAds.filter((ad) => selectedZones.some((zone) => adMatchesZone(ad, zone)));
+    }, [allLoadedAds, selectedZones]);
+
+    // Pagination metrics
+    const totalCount = data?.pages[0]?.total ?? 0;
+    const limitPerPage = data?.pages[0]?.limit ?? 20;
+    const totalPages = Math.ceil(totalCount / limitPerPage);
+    const lastLoadedPage = data?.pages[data.pages.length - 1]?.page ?? startPage;
+    const isBatchFinished = (data?.pages.length ?? 0) >= 7 || !hasNextPage;
+    const loadedPages = useMemo(() => data?.pages.map((p) => p.page) || [], [data]);
+
+    const handlePageSelect = (targetPage: number) => {
+        const isLoadedInCurrentBatch = loadedPages.includes(targetPage);
+        if (isLoadedInCurrentBatch) {
+            if (targetPage === startPage) {
+                listContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+            } else {
+                const sectionElem = document.getElementById(`ads-page-section-${targetPage}`);
+                if (sectionElem) {
+                    sectionElem.scrollIntoView({ behavior: "smooth", block: "start" });
+                }
+            }
+        } else {
+            setStartPage(targetPage);
+            listContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+        }
+    };
+
+    const handleNextPage = () => {
+        if (lastLoadedPage < totalPages) {
+            handlePageSelect(lastLoadedPage + 1);
+        }
+    };
+
+    const handlePrevPage = () => {
+        if (startPage > 1) {
+            handlePageSelect(Math.max(1, startPage - 7));
+        }
+    };
+
+    const handleScrollToTop = () => {
+        listContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+    };
 
     const adsForMap = useMemo(() => {
         return displayedAds
@@ -173,6 +257,7 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
     }) => {
         setSelectedCity(city);
         setSelectedZones([]);
+        setStartPage(1);
         const params = new URLSearchParams(searchParams.toString());
         params.set("cityId", city.id);
         params.set("cityName", city.name);
@@ -181,6 +266,7 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
 
     const handleCategorySelect = (catKey: string) => {
         setSelectedCategory(catKey);
+        setStartPage(1);
         const params = new URLSearchParams(searchParams.toString());
         if (catKey) {
             params.set("categoryKey", catKey);
@@ -190,15 +276,22 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
         router.push(`${window.location.pathname}?${params.toString()}`);
     };
 
+    const handleSearchChange = (val: string) => {
+        setSearch(val);
+        setStartPage(1);
+    };
+
     const handleZoneToggle = (zone: ZoneSummary) => {
         setSelectedZones((prev) => {
             const exists = prev.some((z) => z.id === zone.id);
             return exists ? prev.filter((z) => z.id !== zone.id) : [...prev, zone];
         });
+        setStartPage(1);
     };
 
     const handleRemoveZone = (zoneId: string) => {
         setSelectedZones((prev) => prev.filter((z) => z.id !== zoneId));
+        setStartPage(1);
     };
 
     const getPricingDisplay = (ad: AdSummary) => {
@@ -242,7 +335,7 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
                     title="جستجوی املاک"
                     searchPlaceholder="نام منطقه، محله یا نوع ملک..."
                     searchValue={search}
-                    onSearchChange={setSearch}
+                    onSearchChange={handleSearchChange}
                     cityName={effectiveCityName}
                     cityId={effectiveCityId}
                     onCitySelect={handleCitySelect}
@@ -320,84 +413,153 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
             <div className="flex-1 relative flex flex-col lg:flex-row gap-4 p-4 lg:p-6 lg:pt-4 overflow-hidden">
                 {/* List Section */}
                 <div
+                    ref={listContainerRef}
+                    id="ads-list-container"
                     className={cn(
                         "flex-1 overflow-y-auto custom-scrollbar transition-all duration-300 px-1",
                         viewMode === "map" ? "hidden lg:block" : "block"
                     )}
                 >
+                    {/* Anchor for top of list */}
+                    <div id="ads-list-top" />
+
                     {/* Count summary */}
                     <div className="flex items-center justify-between mb-3 px-1 text-xs text-text-light font-medium">
                         <span>
-                            {isLoading ? "در حال جستجو..." : `${displayedAds.length} آگهی یافت شد`}
+                            {isLoading ? "در حال جستجو..." : `${toPersianDigits(displayedAds.length)} آگهی نمایش داده شده`}
                         </span>
                         <span>{effectiveCityName}</span>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-4 pb-32 lg:pb-6">
-                        {isLoading ? (
-                            Array.from({ length: 6 }).map((_, i) => (
+                    {isLoading ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-4 pb-12">
+                            {Array.from({ length: 6 }).map((_, i) => (
                                 <div key={i} className="h-72 bg-soft-bg animate-pulse rounded-2xl" />
-                            ))
-                        ) : displayedAds.length === 0 ? (
-                            <div className="col-span-full py-16 text-center">
-                                <EmptyState
-                                    message={
-                                        selectedZones.length > 0
-                                            ? "ملکی در محله‌های انتخابی پیدا نشد"
-                                            : "ملکی با این مشخصات پیدا نشد"
-                                    }
-                                    description={
-                                        selectedZones.length > 0
-                                            ? "می‌توانید فیلتر محله را حذف کرده تا تمام آگهی‌های شهر را مشاهده فرمایید."
-                                            : "فیلترهای انتخابی یا عبارت جستجو را تغییر دهید."
-                                    }
-                                />
-                                {selectedZones.length > 0 && (
-                                    <button
-                                        type="button"
-                                        onClick={() => setSelectedZones([])}
-                                        className="mt-4 px-4 py-2 bg-primary text-white text-xs font-bold rounded-xl shadow-sm hover:bg-primary/90 transition-colors"
-                                    >
-                                        مشاهده همه آگهی‌های {effectiveCityName}
-                                    </button>
-                                )}
-                            </div>
-                        ) : (
-                            displayedAds.map((ad: AdSummary) => {
-                                const pricing = getPricingDisplay(ad);
-                                const catKey = ad.categoryPath?.categoryKey;
-                                const subKey = ad.categoryPath?.subcategoryKey;
-                                const subcategoryDisplay =
-                                    ad.subcategoryTitle ||
-                                    ad.categoryPath?.subcategoryTitle ||
-                                    getSubcategoryName(subKey, catKey) ||
-                                    ad.categoryTitle ||
-                                    ad.categoryPath?.categoryTitle ||
-                                    getCategoryName(catKey) ||
-                                    subKey;
+                            ))}
+                        </div>
+                    ) : displayedAds.length === 0 ? (
+                        <div className="py-16 text-center">
+                            <EmptyState
+                                message={
+                                    selectedZones.length > 0
+                                        ? "ملکی در محله‌های انتخابی پیدا نشد"
+                                        : "ملکی با این مشخصات پیدا نشد"
+                                }
+                                description={
+                                    selectedZones.length > 0
+                                        ? "می‌توانید فیلتر محله را حذف کرده تا تمام آگهی‌های شهر را مشاهده فرمایید."
+                                        : "فیلترهای انتخابی یا عبارت جستجو را تغییر دهید."
+                                }
+                            />
+                            {selectedZones.length > 0 && (
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setSelectedZones([]);
+                                        setStartPage(1);
+                                    }}
+                                    className="mt-4 px-4 py-2 bg-primary text-white text-xs font-bold rounded-xl shadow-sm hover:bg-primary/90 transition-colors"
+                                >
+                                    مشاهده همه آگهی‌های {effectiveCityName}
+                                </button>
+                            )}
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-4 pb-6">
+                            {data?.pages.map((page, pageIndex) => {
+                                const pageAds =
+                                    selectedZones.length === 0
+                                        ? page.items
+                                        : page.items.filter((ad) =>
+                                              selectedZones.some((zone) => adMatchesZone(ad, zone))
+                                          );
+
+                                if (pageAds.length === 0 && pageIndex > 0) return null;
 
                                 return (
-                                    <PropertyCard
-                                        key={ad.adId}
-                                        adId={ad.adId}
-                                        title={ad.title}
-                                        price={pricing.price}
-                                        unit={pricing.unit}
-                                        rating={4.8}
-                                        location={effectiveCityName || ad.cityId}
-                                        image={
-                                            ad.mediaIds && ad.mediaIds.length > 0
-                                                ? `${process.env.NEXT_PUBLIC_API_URL}/media/${ad.mediaIds[0]}`
-                                                : "/property-placeholder.svg"
-                                        }
-                                        category={subcategoryDisplay}
-                                        isSaved={ad.isSaved ?? isAdSaved(ad.adId)}
-                                        onToggleSave={(id) => toggleSaveMutation.mutateAsync(id)}
-                                    />
+                                    <div key={`ads-page-${page.page}`} className="contents">
+                                        {/* Section Header for page 2 onwards */}
+                                        {pageIndex > 0 && (
+                                            <PageSectionDivider
+                                                id={`ads-page-section-${page.page}`}
+                                                page={page.page}
+                                                count={pageAds.length}
+                                                itemLabel="آگهی"
+                                            />
+                                        )}
+
+                                        {pageAds.map((ad: AdSummary) => {
+                                            const pricing = getPricingDisplay(ad);
+                                            const catKey = ad.categoryPath?.categoryKey;
+                                            const subKey = ad.categoryPath?.subcategoryKey;
+                                            const subcategoryDisplay =
+                                                ad.subcategoryTitle ||
+                                                ad.categoryPath?.subcategoryTitle ||
+                                                getSubcategoryName(subKey, catKey) ||
+                                                ad.categoryTitle ||
+                                                ad.categoryPath?.categoryTitle ||
+                                                getCategoryName(catKey) ||
+                                                subKey;
+
+                                            return (
+                                                <PropertyCard
+                                                    key={ad.adId}
+                                                    adId={ad.adId}
+                                                    title={ad.title}
+                                                    price={pricing.price}
+                                                    unit={pricing.unit}
+                                                    rating={4.8}
+                                                    location={effectiveCityName || ad.cityId}
+                                                    image={
+                                                        ad.mediaIds && ad.mediaIds.length > 0
+                                                            ? `${process.env.NEXT_PUBLIC_API_URL}/media/${ad.mediaIds[0]}`
+                                                            : "/property-placeholder.svg"
+                                                    }
+                                                    category={subcategoryDisplay}
+                                                    isSaved={ad.isSaved ?? isAdSaved(ad.adId)}
+                                                    onToggleSave={(id) => toggleSaveMutation.mutateAsync(id)}
+                                                />
+                                            );
+                                        })}
+                                    </div>
                                 );
-                            })
-                        )}
-                    </div>
+                            })}
+
+                            {/* Sentinel for infinite scroll (auto-loads up to 7 pages) */}
+                            {hasNextPage && (data?.pages.length ?? 0) < 7 && (
+                                <div
+                                    ref={observerTargetRef}
+                                    className="col-span-full py-8 flex flex-col items-center justify-center gap-2"
+                                >
+                                    {isFetchingNextPage ? (
+                                        <div className="flex items-center gap-2 text-xs font-bold text-secondary bg-white px-5 py-2.5 rounded-xl shadow-xs border border-gray-100">
+                                            <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                                            <span>در حال بارگذاری بخش بعدی آگهی‌ها...</span>
+                                        </div>
+                                    ) : (
+                                        <div className="h-6" />
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Pagination Controls at the End */}
+                    {!isLoading && allLoadedAds.length > 0 && totalPages > 1 && isBatchFinished && (
+                        <PaginationControls
+                            startPage={startPage}
+                            lastLoadedPage={lastLoadedPage}
+                            totalPages={totalPages}
+                            totalCount={totalCount}
+                            itemLabel="آگهی"
+                            loadedPages={loadedPages}
+                            onPageSelect={handlePageSelect}
+                            onPrevPage={handlePrevPage}
+                            onNextPage={handleNextPage}
+                            onScrollToTop={handleScrollToTop}
+                            className="mb-8"
+                        />
+                    )}
                 </div>
 
                 {/* Map Section */}

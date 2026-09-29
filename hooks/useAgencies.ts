@@ -5,7 +5,7 @@ import {
     RequestConsultationRequest,
     UpdateAgencyProfileRequest,
 } from "@/types/api/agency.types";
-import { useMutation, useQuery, useQueryClient, UseQueryOptions } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient, UseQueryOptions } from "@tanstack/react-query";
 import axios from "axios";
 import { useAuth } from "./useAuth";
 
@@ -21,6 +21,36 @@ export const useAgencies = (query: AgencyListQuery = {}, options?: Partial<UseQu
         queryKey: ["agencies", query],
         queryFn: () => agencyService.listAgencies(query),
         ...options
+    });
+};
+
+export const useInfiniteAgencies = (
+    query: { cityId?: string; search?: string; limit?: number } = {},
+    options: { startPage?: number; maxPages?: number } = {}
+) => {
+    const startPage = options.startPage ?? 1;
+    const maxPages = options.maxPages ?? 7;
+
+    return useInfiniteQuery({
+        queryKey: ["agencies-infinite", query, startPage],
+        queryFn: async ({ pageParam = startPage }) => {
+            return await agencyService.listAgencies({
+                ...query,
+                page: pageParam as number,
+                limit: query.limit ?? 15,
+            });
+        },
+        initialPageParam: startPage,
+        getNextPageParam: (lastPage, allPages) => {
+            if (allPages.length >= maxPages) {
+                return undefined;
+            }
+            const totalPages = Math.ceil((lastPage.total || 0) / (lastPage.limit || 15));
+            if (lastPage.page < totalPages) {
+                return lastPage.page + 1;
+            }
+            return undefined;
+        },
     });
 };
 
@@ -129,6 +159,36 @@ export const useExplorePosts = (params: { page?: number; limit?: number; search?
     return useQuery({
         queryKey: ["explore-posts", params],
         queryFn: () => agencyService.getExplorePosts(params),
+    });
+};
+
+export const useInfiniteExplorePosts = (
+    params: { limit?: number; search?: string; agencyId?: string } = {},
+    options: { startPage?: number; maxPages?: number } = {}
+) => {
+    const startPage = options.startPage ?? 1;
+    const maxPages = options.maxPages ?? 7;
+
+    return useInfiniteQuery({
+        queryKey: ["explore-posts-infinite", params, startPage],
+        queryFn: async ({ pageParam = startPage }) => {
+            return await agencyService.getExplorePosts({
+                ...params,
+                page: pageParam as number,
+                limit: params.limit ?? 12,
+            });
+        },
+        initialPageParam: startPage,
+        getNextPageParam: (lastPage, allPages) => {
+            if (allPages.length >= maxPages) {
+                return undefined;
+            }
+            const totalPages = lastPage.totalPages || Math.ceil((lastPage.total || 0) / (lastPage.limit || 12));
+            if (lastPage.page < totalPages) {
+                return lastPage.page + 1;
+            }
+            return undefined;
+        },
     });
 };
 
