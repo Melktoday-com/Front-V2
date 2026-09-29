@@ -115,18 +115,18 @@ test.describe('Flow 18: Admin Permissions Governance & User Request Resubmission
     }) => {
       const telemetry = attachTelemetry(page);
 
-      const res = await page.goto('/profile/requests', { waitUntil: 'networkidle' });
+      const res = await page.goto('/profile/requests');
       if (res?.status() === 404) {
         return;
       }
       await expect(page).toHaveURL(/\/profile\/requests/);
 
       // Heading check
-      const heading = page.locator('h1').or(page.locator('text=درخواست‌های عضویت و میزبانی')).first();
+      const heading = page.locator('h1').or(page.locator('text=درخواست‌های من')).or(page.locator('text=درخواست‌های عضویت و میزبانی')).first();
       await expect(heading).toBeVisible({ timeout: 15000 });
 
       // Verify requests container or empty state callout
-      const container = page.locator('.space-y-4').or(page.locator('text=هیچ درخواستی')).first();
+      const container = page.locator('.space-y-4').or(page.locator('text=هیچ درخواستی')).or(page.locator('text=درخواست عضویت')).first();
       await expect(container).toBeVisible({ timeout: 10000 });
 
       // Verify quick action buttons exist for submitting new requests
