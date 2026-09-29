@@ -134,9 +134,11 @@ export function useCreatePost() {
 }
 
 export function useHostProfile() {
+  const { user } = useAuth();
   return useQuery({
-    queryKey: SHOWCASE_KEYS.hostProfile(),
+    queryKey: [...SHOWCASE_KEYS.hostProfile(), user?.userId],
     queryFn: () => showcaseService.getMyHostProfile(),
+    enabled: !!user?.userId,
   });
 }
 

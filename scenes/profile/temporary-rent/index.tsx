@@ -2,7 +2,9 @@
 
 import { useAuth } from "@/hooks/useAuth";
 import { useTemporaryRentAds, usePublishTemporaryRent, useDeleteTemporaryRent } from "@/hooks/useTemporaryRent";
-import { ChevronRight, Plus, Rocket, Info, Calendar, Users, MapPin, Trash2 } from "lucide-react";
+import { useHostProfile } from "@/hooks/useShowcase";
+import { ChevronRight, Plus, Rocket, Info, Calendar, Users, MapPin, Trash2, ExternalLink } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { formatCurrency, cn } from "@/lib/utils";
@@ -19,6 +21,7 @@ const statusLabels: Record<string, { label: string; color: string; border: strin
 export default function TemporaryRentPanelScene() {
     const router = useRouter();
     const { user } = useAuth();
+    const { data: hostProfile } = useHostProfile();
     
     // Fetch user's own rentals using the newly added ownerId filter
     const { data: ads, isLoading, error } = useTemporaryRentAds(
@@ -65,14 +68,26 @@ export default function TemporaryRentPanelScene() {
                     </button>
                     <h1 className="text-xl lg:text-2xl font-black text-brand">پنل اجاره موقت</h1>
                 </div>
-                <Button 
-                    onClick={() => router.push('/profile/temporary-rent/new')}
-                    className="rounded-2xl gap-2 font-black"
-                    size="sm"
-                >
-                    <Plus className="w-5 h-5" />
-                    <span className="hidden sm:inline">ثبت اقامتگاه</span>
-                </Button>
+                <div className="flex items-center gap-3">
+                    {hostProfile && (
+                        <Link
+                            href={`/host/${hostProfile.slug || hostProfile.id || hostProfile.userId}`}
+                            target="_blank"
+                            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl text-xs font-bold transition-colors"
+                        >
+                            <ExternalLink className="w-4 h-4 text-slate-500" />
+                            <span className="hidden sm:inline">مشاهده صفحه عمومی میزبان</span>
+                        </Link>
+                    )}
+                    <Button 
+                        onClick={() => router.push('/profile/temporary-rent/new')}
+                        className="rounded-2xl gap-2 font-black"
+                        size="sm"
+                    >
+                        <Plus className="w-5 h-5" />
+                        <span className="hidden sm:inline">ثبت اقامتگاه</span>
+                    </Button>
+                </div>
             </header>
 
             <main className="p-6 lg:p-10 max-w-5xl mx-auto space-y-8">

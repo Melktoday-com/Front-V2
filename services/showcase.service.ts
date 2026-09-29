@@ -147,8 +147,15 @@ export const showcaseService = {
   },
 
   async getMyHostProfile() {
-    const response = await apiClient.get('/hosts/my-profile');
-    return response.data;
+    try {
+      const response = await apiClient.get('/hosts/my-profile');
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && (error.response?.status === 404 || error.response?.status === 403)) {
+        return null;
+      }
+      throw error;
+    }
   },
 
   async updateMyHostProfile(data: UpdateHostProfileRequest) {

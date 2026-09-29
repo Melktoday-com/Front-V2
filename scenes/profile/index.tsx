@@ -9,6 +9,8 @@ import { useMeProfile, useUser } from "@/hooks/useUser";
 import { useWallet } from "@/hooks/useWallet";
 import { cn, formatCurrency, toPersianDigits } from "@/lib/utils";
 import { userService } from "@/services/user.service";
+import { useMyAgency } from "@/hooks/useAgencies";
+import { useHostProfile } from "@/hooks/useShowcase";
 import { RoleName } from "@/types/access";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -17,7 +19,9 @@ import {
     CheckCircle2,
     ChevronLeft,
     CreditCard,
+    ExternalLink,
     FileText,
+    Hotel,
     LayoutList,
     Loader2,
     LogOut,
@@ -27,6 +31,7 @@ import {
     User,
     X,
 } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -45,6 +50,8 @@ export default function ProfileScene() {
     const queryClient = useQueryClient();
 
     const { data: profile } = useMeProfile();
+    const { data: myAgency } = useMyAgency();
+    const { data: hostProfile } = useHostProfile();
     const { updateProfile, isUpdating } = useUser(user?.userId);
 
     const kycMutation = useMutation({
@@ -182,19 +189,65 @@ export default function ProfileScene() {
                 {/* Dashboard Options based on Permissions */}
                 <section className="grid gap-4">
                     <RoleGuard roles={[RoleName.Agent]}>
-                        <Button
-                            variant="outline"
-                            className="w-full h-16 rounded-[25px] flex items-center justify-between px-6 border-brand/10 hover:bg-brand/5"
-                            onClick={() => router.push('/agency/panel')}
-                        >
-                            <div className="flex items-center gap-4">
-                                <div className="p-3 rounded-2xl bg-brand/5 text-brand">
-                                    <Building2 className="w-6 h-6" />
+                        <div className="space-y-2">
+                            <Button
+                                variant="outline"
+                                className="w-full h-16 rounded-[25px] flex items-center justify-between px-6 border-brand/10 hover:bg-brand/5"
+                                onClick={() => router.push('/agency/panel')}
+                            >
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 rounded-2xl bg-brand/5 text-brand">
+                                        <Building2 className="w-6 h-6" />
+                                    </div>
+                                    <span className="font-bold text-brand">مدیریت آژانس من</span>
                                 </div>
-                                <span className="font-bold text-brand">مدیریت آژانس من</span>
-                            </div>
-                            <ChevronLeft className="w-5 h-5 text-secondary" />
-                        </Button>
+                                <ChevronLeft className="w-5 h-5 text-secondary" />
+                            </Button>
+                            {myAgency && (
+                                <Link
+                                    href={`/agency/showcase/${myAgency.slug || myAgency.id}`}
+                                    target="_blank"
+                                    className="flex items-center justify-between px-6 py-3 rounded-2xl bg-slate-50 hover:bg-slate-100 text-xs font-bold text-slate-700 transition-colors border border-slate-200/80 group"
+                                >
+                                    <div className="flex items-center gap-2.5">
+                                        <ExternalLink className="w-4 h-4 text-blue-600" />
+                                        <span>مشاهده ویترین عمومی آژانس</span>
+                                    </div>
+                                    <span className="text-[11px] text-slate-400 font-medium group-hover:text-blue-600 transition-colors">نمایش صفحه عمومی &larr;</span>
+                                </Link>
+                            )}
+                        </div>
+                    </RoleGuard>
+
+                    <RoleGuard roles={[RoleName.Landlord]}>
+                        <div className="space-y-2">
+                            <Button
+                                variant="outline"
+                                className="w-full h-16 rounded-[25px] flex items-center justify-between px-6 border-soft-border hover:bg-soft-bg"
+                                onClick={() => router.push('/profile/temporary-rent')}
+                            >
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 rounded-2xl bg-soft-bg text-secondary">
+                                        <Hotel className="w-6 h-6" />
+                                    </div>
+                                    <span className="font-bold text-brand">پنل اقامتگاه‌ها (میزبان)</span>
+                                </div>
+                                <ChevronLeft className="w-5 h-5 text-secondary" />
+                            </Button>
+                            {hostProfile && (
+                                <Link
+                                    href={`/host/${hostProfile.slug || hostProfile.id || hostProfile.userId}`}
+                                    target="_blank"
+                                    className="flex items-center justify-between px-6 py-3 rounded-2xl bg-slate-50 hover:bg-slate-100 text-xs font-bold text-slate-700 transition-colors border border-slate-200/80 group"
+                                >
+                                    <div className="flex items-center gap-2.5">
+                                        <ExternalLink className="w-4 h-4 text-emerald-600" />
+                                        <span>مشاهده صفحه عمومی میزبان</span>
+                                    </div>
+                                    <span className="text-[11px] text-slate-400 font-medium group-hover:text-emerald-600 transition-colors">نمایش صفحه عمومی &larr;</span>
+                                </Link>
+                            )}
+                        </div>
                     </RoleGuard>
 
                     <RoleGuard roles={[RoleName.Admin, RoleName.SuperAdmin]}>
@@ -243,22 +296,6 @@ export default function ProfileScene() {
                         </div>
                         <ChevronLeft className="w-5 h-5 text-secondary" />
                     </Button>
-
-                    <RoleGuard roles={[RoleName.Landlord]}>
-                        <Button
-                            variant="outline"
-                            className="w-full h-16 rounded-[25px] flex items-center justify-between px-6 border-soft-border hover:bg-soft-bg"
-                            onClick={() => router.push('/profile/temporary-rent')}
-                        >
-                            <div className="flex items-center gap-4">
-                                <div className="p-3 rounded-2xl bg-soft-bg text-secondary">
-                                    <Plus className="w-6 h-6" />
-                                </div>
-                                <span className="font-bold text-brand">پنل اجاره موقت</span>
-                            </div>
-                            <ChevronLeft className="w-5 h-5 text-secondary" />
-                        </Button>
-                    </RoleGuard>
                 </section>
 
                 {/* Account Actions */}
