@@ -1,5 +1,6 @@
 import { favoritesService, FavoriteItemType } from '@/services/favorites.service';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useAuth } from './useAuth';
 
@@ -54,6 +55,7 @@ export const useFavorites = (type?: 'AD' | 'TEMPORARY_RENT' | 'ALL') => {
  */
 export const useToggleSaveAd = () => {
     const { isLoggedIn } = useAuth();
+    const router = useRouter();
     const queryClient = useQueryClient();
 
     return useMutation({
@@ -70,7 +72,10 @@ export const useToggleSaveAd = () => {
         },
         onError: (err: Error) => {
             if (err.message === 'not_logged_in') {
-                toast.error('لطفاً ابتدا وارد حساب کاربری خود شوید');
+                toast.info('برای نشان کردن آگهی، لطفاً ابتدا وارد حساب کاربری خود شوید.');
+                if (typeof window !== 'undefined') {
+                    router.push(`/auth?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`);
+                }
             } else {
                 toast.error('خطا در بروزرسانی ذخیره آگهی');
             }
@@ -83,6 +88,7 @@ export const useToggleSaveAd = () => {
  */
 export const useToggleSaveTemporaryRent = () => {
     const { isLoggedIn } = useAuth();
+    const router = useRouter();
     const queryClient = useQueryClient();
 
     return useMutation({
@@ -99,7 +105,10 @@ export const useToggleSaveTemporaryRent = () => {
         },
         onError: (err: Error) => {
             if (err.message === 'not_logged_in') {
-                toast.error('لطفاً ابتدا وارد حساب کاربری خود شوید');
+                toast.info('برای نشان کردن اقامتگاه، لطفاً ابتدا وارد حساب کاربری خود شوید.');
+                if (typeof window !== 'undefined') {
+                    router.push(`/auth?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`);
+                }
             } else {
                 toast.error('خطا در بروزرسانی ذخیره اقامتگاه');
             }

@@ -1,10 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { PropertyCard } from '@/components/ui/PropertyCard';
 import { TemporaryRentCard } from '@/components/ui/TemporaryRentCard';
 import { useFavorites, useToggleSaveAd, useToggleSaveTemporaryRent } from '@/hooks/useFavorites';
-import { Bookmark, Building2, Calendar, Heart } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { Bookmark, Building2, Calendar, Heart, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 type FilterTab = 'ALL' | 'AD' | 'TEMPORARY_RENT';
@@ -16,6 +18,8 @@ const TABS: { id: FilterTab; label: string; icon: typeof Building2 }[] = [
 ];
 
 export default function FavoritesPage() {
+    const { isLoggedIn, isLoading: isAuthLoading } = useAuth();
+    const router = useRouter();
     const [selectedTab, setSelectedTab] = useState<FilterTab>('ALL');
 
     const { favorites, isLoading } = useFavorites(selectedTab);
@@ -26,6 +30,38 @@ export default function FavoritesPage() {
         if (selectedTab === 'ALL') return true;
         return item.type === selectedTab;
     });
+
+    if (isAuthLoading) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
+                <div className="w-8 h-8 border-4 border-brand border-t-transparent rounded-full animate-spin" />
+                <p className="text-sm text-gray-500 font-medium">در حال بررسی ورود...</p>
+            </div>
+        );
+    }
+
+    if (!isLoggedIn) {
+        return (
+            <div className="max-w-md mx-auto px-4 py-20 text-center space-y-6">
+                <div className="w-20 h-20 rounded-full bg-soft-bg mx-auto flex items-center justify-center text-brand">
+                    <Bookmark className="w-10 h-10 opacity-70" />
+                </div>
+                <div className="space-y-2">
+                    <h2 className="text-2xl font-black text-brand">ورود به حساب کاربری</h2>
+                    <p className="text-sm text-gray-500 font-medium leading-relaxed">
+                        برای مشاهده آگهی‌ها و اقامتگاه‌های ذخیره‌شده، لطفاً ابتدا وارد حساب کاربری خود شوید.
+                    </p>
+                </div>
+                <button
+                    type="button"
+                    onClick={() => router.push("/auth?redirect=/favorites")}
+                    className="w-full h-12 rounded-2xl bg-brand text-white font-bold hover:bg-brand/90 transition-all shadow-md active:scale-98 cursor-pointer"
+                >
+                    ورود به حساب کاربری
+                </button>
+            </div>
+        );
+    }
 
     if (isLoading) {
         return (

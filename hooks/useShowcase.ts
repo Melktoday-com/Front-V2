@@ -1,5 +1,7 @@
 import { UseQueryResult, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
+import { useRouter } from "next/navigation";
+import { useAuth } from "./useAuth";
 import { showcaseService, PaginationParams } from "@/services/showcase.service";
 import {
   AgencyAbout,
@@ -87,13 +89,29 @@ export function useToggleFollow() {
 }
 
 export function useToggleLikePost() {
+  const { isLoggedIn } = useAuth();
+  const router = useRouter();
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (postId: string) => showcaseService.toggleLikePost(postId),
+    mutationFn: (postId: string) => {
+      if (!isLoggedIn) {
+        return Promise.reject(new Error('not_logged_in'));
+      }
+      return showcaseService.toggleLikePost(postId);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['posts'] });
       queryClient.invalidateQueries({ queryKey: ['showcase'] });
+    },
+    onError: (err: Error) => {
+      if (err.message === 'not_logged_in') {
+        toast.info("برای پسندیدن پست، لطفاً ابتدا وارد حساب کاربری خود شوید.");
+        const currentPath = typeof window !== "undefined" ? window.location.pathname + window.location.search : "/explore";
+        router.push(`/auth?redirect=${encodeURIComponent(currentPath)}`);
+      } else {
+        toast.error("خطا در ثبت پسندیدن پست");
+      }
     },
   });
 }

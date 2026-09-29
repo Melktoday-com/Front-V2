@@ -1,11 +1,14 @@
 "use client";
 
+import { useAuth } from "@/hooks/useAuth";
 import { DEFAULT_CATEGORY_TRANSLATIONS } from "@/hooks/useCategoryLookup";
 import { cn, toPersianDigits } from "@/lib/utils";
 import { Heart, MapPin, Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface PropertyCardProps {
     adId?: string;
@@ -81,9 +84,18 @@ export function PropertyCard({
         return `${toPersianDigits(priceStr)} ${currency}`;
     };
 
+    const { isLoggedIn } = useAuth();
+    const router = useRouter();
+
     const handleFavoriteClick = async (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
+        if (!isLoggedIn) {
+            toast.info("برای نشان کردن آگهی، لطفاً ابتدا وارد حساب کاربری خود شوید.");
+            const currentPath = typeof window !== "undefined" ? window.location.pathname + window.location.search : "/ads";
+            router.push(`/auth?redirect=${encodeURIComponent(currentPath)}`);
+            return;
+        }
         if (adId && effectiveToggle) {
             const nextState = !saved;
             setSaved(nextState);

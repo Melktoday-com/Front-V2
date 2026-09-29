@@ -11,7 +11,7 @@ import { toast } from "sonner";
 
 function AuthContent() {
   const searchParams = useSearchParams();
-  const redirectTarget = searchParams.get("redirect") || "/";
+  const redirectTarget = searchParams.get("redirect") || searchParams.get("returnUrl") || "/";
 
   const [step, setStep] = useState<"phone" | "otp">("phone");
   const [phone, setPhone] = useState("");

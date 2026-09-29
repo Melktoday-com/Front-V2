@@ -1,10 +1,13 @@
 "use client";
 
+import { useAuth } from "@/hooks/useAuth";
 import { cn, formatPrice, toPersianDigits } from "@/lib/utils";
 import { ChevronLeft, ChevronRight, Heart, MapPin, Star, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface TemporaryRentCardProps {
     id: string;
@@ -68,9 +71,18 @@ export function TemporaryRentCard({
         setCurrentImageIndex((prev) => (prev < images.length - 1 ? prev + 1 : 0));
     };
 
+    const { isLoggedIn } = useAuth();
+    const router = useRouter();
+
     const handleFavorite = async (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
+        if (!isLoggedIn) {
+            toast.info("برای نشان کردن اقامتگاه، لطفاً ابتدا وارد حساب کاربری خود شوید.");
+            const currentPath = typeof window !== "undefined" ? window.location.pathname + window.location.search : "/temporary-rent";
+            router.push(`/auth?redirect=${encodeURIComponent(currentPath)}`);
+            return;
+        }
         if (effectiveToggle) {
             const nextState = !saved;
             setSaved(nextState);
