@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { agencyService } from "@/services/agency.service";
+import { userService } from "@/services/user.service";
 import { CitySelector } from "@/components/CitySelector";
 import { useCities } from "@/hooks/useGeo";
 import {
@@ -40,7 +41,8 @@ export default function AgencyApplyPage() {
     const [selectedCityName, setSelectedCityName] = useState("");
 
     const [formData, setFormData] = useState({
-        fullName: "",
+        firstName: "",
+        lastName: "",
         nationalCode: "",
         agencyName: "",
         guildCode: "",
@@ -52,6 +54,18 @@ export default function AgencyApplyPage() {
         description: "",
     });
 
+    // Autofill firstName/lastName from user profile
+    useEffect(() => {
+        if (!isLoggedIn) return;
+        userService.getMe().then((profile) => {
+            setFormData((prev) => ({
+                ...prev,
+                firstName: profile.firstName || "",
+                lastName: profile.lastName || "",
+            }));
+        }).catch(() => {/* silently ignore */});
+    }, [isLoggedIn]);
+
     // Check existing application
     const {
         data: myApp,
@@ -61,6 +75,15 @@ export default function AgencyApplyPage() {
         queryKey: ["agency", "my-application"],
         queryFn: () => agencyService.getMyApplication(),
         enabled: !!isLoggedIn,
+    });
+
+    // Update user profile name silently on submit
+    const updateProfileMutation = useMutation({
+        mutationFn: (data: { firstName: string; lastName: string }) =>
+            userService.updateMe(data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["user"] });
+        },
     });
 
     const submitMutation = useMutation({
@@ -78,8 +101,13 @@ export default function AgencyApplyPage() {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!formData.fullName.trim()) {
-            toast.error("لطفاً نام و نام خانوادگی متقاضی را وارد کنید.");
+        if (!formData.firstName.trim()) {
+            toast.error("لطفاً نام متقاضی را وارد کنید.");
+            return;
+        }
+
+        if (!formData.lastName.trim()) {
+            toast.error("لطفاً نام خانوادگی متقاضی را وارد کنید.");
             return;
         }
 
@@ -104,9 +132,11 @@ export default function AgencyApplyPage() {
             }
         }
 
+        const fullName = `${formData.firstName.trim()} ${formData.lastName.trim()}`;
+
         const payload: ApplyAgentRequest = {
             agentType,
-            fullName: formData.fullName.trim(),
+            fullName,
             nationalCode: formData.nationalCode.trim(),
             cityId: formData.cityId,
             phone: formData.phone.trim() || undefined,
@@ -120,6 +150,12 @@ export default function AgencyApplyPage() {
             payload.guildCode = formData.guildCode.trim();
             payload.licenseNumber = formData.licenseNumber.trim() || undefined;
         }
+
+        // Silently sync name to user profile
+        updateProfileMutation.mutate({
+            firstName: formData.firstName.trim(),
+            lastName: formData.lastName.trim(),
+        });
 
         submitMutation.mutate(payload);
     };
@@ -317,12 +353,24 @@ export default function AgencyApplyPage() {
                         {/* Step 2: Form Inputs */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-1.5">
-                                <label className="text-xs font-bold text-slate-700">نام و نام خانوادگی متقاضی *</label>
+                                <label className="text-xs font-bold text-slate-700">نام *</label>
                                 <input
                                     type="text"
-                                    value={formData.fullName}
-                                    onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                                    placeholder="مثال: علی احمدی"
+                                    value={formData.firstName}
+                                    onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                                    placeholder="مثال: علی"
+                                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                                    required
+                                />
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold text-slate-700">نام خانوادگی *</label>
+                                <input
+                                    type="text"
+                                    value={formData.lastName}
+                                    onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                                    placeholder="مثال: احمدی"
                                     className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                                     required
                                 />
