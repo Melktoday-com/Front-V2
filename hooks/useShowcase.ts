@@ -103,6 +103,7 @@ export function useToggleLikePost() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['posts'] });
       queryClient.invalidateQueries({ queryKey: ['showcase'] });
+      queryClient.invalidateQueries({ queryKey: ['liked-posts'] });
     },
     onError: (err: Error) => {
       if (err.message === 'not_logged_in') {

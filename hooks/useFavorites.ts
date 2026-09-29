@@ -1,11 +1,16 @@
 import { favoritesService, FavoriteItemType } from '@/services/favorites.service';
+import { showcaseService } from '@/services/showcase.service';
+import { UnifiedPost } from '@/types/api/showcase.types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useAuth } from './useAuth';
+export { useToggleLikePost } from './useShowcase';
 
 /** Query key for the favorites list */
 export const FAVORITES_QUERY_KEY = ['favorites'];
+/** Query key for the liked posts list */
+export const LIKED_POSTS_QUERY_KEY = ['liked-posts'];
 
 /**
  * Hook to fetch the user's favorites (AD, TEMPORARY_RENT, or ALL).
@@ -122,3 +127,34 @@ export const useToggleSaveTemporaryRent = () => {
 export const useToggleFavorite = () => {
     return useToggleSaveAd();
 };
+
+/**
+ * Hook to fetch posts liked by current user.
+ */
+export const useLikedPosts = (params?: { page?: number; limit?: number; publisherType?: string }) => {
+    const { isLoggedIn } = useAuth();
+
+    const query = useQuery({
+        queryKey: [...LIKED_POSTS_QUERY_KEY, params || {}],
+        queryFn: () => showcaseService.getLikedPosts(params),
+        enabled: isLoggedIn,
+        staleTime: 30_000,
+    });
+
+    const posts: UnifiedPost[] = query.data?.items ?? [];
+    const likedPostIds = new Set(posts.map((p) => p.id));
+    const hasLiked = (postId: string) => likedPostIds.has(postId);
+
+    return {
+        posts,
+        total: query.data?.total ?? 0,
+        page: query.data?.page ?? 1,
+        limit: query.data?.limit ?? 12,
+        totalPages: query.data?.totalPages ?? 0,
+        isLoading: query.isLoading,
+        refetch: query.refetch,
+        likedPostIds,
+        hasLiked,
+    };
+};
+
