@@ -44,13 +44,13 @@ test.describe('Flow 2: Admin Users & Moderation UI Test', () => {
     await page.goto('/admin/users', { waitUntil: 'networkidle' });
     await expect(page.locator('table')).toBeVisible({ timeout: 15000 });
 
-    // Test reinstate if any user has restriction
-    const unbanBtn = page.locator('tbody tr button[title="رفع محدودیت"]').first();
-    if (await unbanBtn.isVisible()) {
+    // Test reinstate if any user has restriction (suspended or banned)
+    const restoreBtn = page.locator('tbody tr button[title="لغو تعلیق"], tbody tr button[title="رفع محدودیت"]').first();
+    if (await restoreBtn.isVisible()) {
       page.once('dialog', async (dialog) => {
         await dialog.accept();
       });
-      await unbanBtn.click();
+      await restoreBtn.click();
       const toast = page.locator('[data-sonner-toast]');
       await expect(toast).toBeVisible({ timeout: 10000 });
       await page.waitForTimeout(1500);
@@ -62,14 +62,14 @@ test.describe('Flow 2: Admin Users & Moderation UI Test', () => {
     if (suspendCount > 0) {
       const suspendBtn = suspendButtons.first();
       let count = 0;
-      page.on('dialog', async (dialog) => { console.log('DIALOG TYPE:', dialog.type(), 'MESSAGE:', dialog.message());
+      page.on('dialog', async (dialog) => {
         count++;
         if (count === 1) await dialog.accept('تست خودکار تعلیق');
         else if (count === 2) await dialog.accept('3');
         else await dialog.dismiss();
       });
 
-      const respPromise = page.waitForResponse(r => r.url().includes('/suspend'), { timeout: 10000 }).catch(e => null);
+      const respPromise = page.waitForResponse(r => r.url().includes('/suspend'), { timeout: 10000 }).catch(() => null);
       await suspendBtn.click();
       const resp = await respPromise;
       if (resp && resp.ok()) {

@@ -3,6 +3,7 @@ export enum UserStatus {
     INACTIVE = 'Inactive',
     BLOCKED = 'Blocked',
     DELETED = 'Deleted',
+    SUSPENDED = 'Suspended',
 }
 
 export enum KYCStatus {

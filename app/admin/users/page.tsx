@@ -127,11 +127,15 @@ export default function AdminUsersPage() {
                                     </div>
                                 </td>
                                 <td className="px-6 py-4">
-                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.status === UserStatus.ACTIVE ? "bg-green-100 text-green-800" :
+                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                        user.status === UserStatus.ACTIVE ? "bg-green-100 text-green-800" :
                                         user.status === UserStatus.BLOCKED ? "bg-red-100 text-red-800" :
-                                            "bg-amber-100 text-amber-800"
-                                        }`}>
-                                        {user.status === UserStatus.ACTIVE ? "فعال" : user.status === UserStatus.BLOCKED ? "مسدود" : "غیرفعال"}
+                                        user.status === UserStatus.SUSPENDED ? "bg-amber-100 text-amber-800" :
+                                        "bg-gray-100 text-gray-800"
+                                    }`}>
+                                        {user.status === UserStatus.ACTIVE ? "فعال" :
+                                         user.status === UserStatus.BLOCKED ? "مسدود" :
+                                         user.status === UserStatus.SUSPENDED ? "معلق" : "غیرفعال"}
                                     </span>
                                 </td>
                                 <td className="px-6 py-4 text-gray-500">
@@ -161,6 +165,23 @@ export default function AdminUsersPage() {
                                                     className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-md"
                                                 >
                                                     <Clock size={16} />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleBan(user.id)}
+                                                    title="مسدود کردن"
+                                                    className="p-1.5 text-red-600 hover:bg-red-50 rounded-md"
+                                                >
+                                                    <UserX size={16} />
+                                                </button>
+                                            </>
+                                        ) : user.status === UserStatus.SUSPENDED ? (
+                                            <>
+                                                <button
+                                                    onClick={() => handleReinstate(user.id)}
+                                                    title="لغو تعلیق"
+                                                    className="p-1.5 text-green-600 hover:bg-green-50 rounded-md"
+                                                >
+                                                    <ShieldCheck size={16} />
                                                 </button>
                                                 <button
                                                     onClick={() => handleBan(user.id)}
