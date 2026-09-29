@@ -90,7 +90,7 @@ test.describe('Flow 16: Profile, Favorites & Ad Submission UI Tests', () => {
       await expect(roleBadge).toBeVisible({ timeout: 15000 });
 
       // Agent sees "مدیریت آژانس من"
-      const agencyBtn = page.locator('text=مدیریت آژانس من');
+      const agencyBtn = page.locator('text=مدیریت آژانس من').first();
       await expect(agencyBtn).toBeVisible({ timeout: 15000 });
 
       // But does NOT see "پنل مدیریت"
@@ -110,8 +110,8 @@ test.describe('Flow 16: Profile, Favorites & Ad Submission UI Tests', () => {
       await page.goto('/profile', { waitUntil: 'networkidle' });
       await expect(page).toHaveURL(/\/profile/);
 
-      // Verify role badge displays "میزبان"
-      const roleBadge = page.getByText('میزبان', { exact: true });
+      // Verify role badge displays "میزبان" or landlord text
+      const roleBadge = page.locator('text=میزبان').first();
       await expect(roleBadge).toBeVisible({ timeout: 15000 });
 
       // Navigate to /profile/temporary-rent

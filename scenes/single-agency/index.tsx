@@ -156,7 +156,7 @@ export default function SingleAgencyScene() {
             },
             {
                 onSuccess: (conv) => {
-                    router.push(`/chat?id=${conv.id}`);
+                    router.push(`/profile/chat?id=${conv.id}`);
                 },
                 onError: () => {
                     toast.error("خطا در برقراری ارتباط چت");

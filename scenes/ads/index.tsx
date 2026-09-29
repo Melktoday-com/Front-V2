@@ -85,6 +85,7 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
     const effectiveCityName = searchParams.get("cityName") || selectedCity.name || "همه شهرها";
     const urlCategory = searchParams.get("categoryKey") || "";
     const urlDealType = searchParams.get("businessModelKey") || "";
+    const urlIsFeatured = searchParams.get("isFeatured") === "true";
 
     const [search, setSearch] = useState(urlSearch);
     const [selectedCategory, setSelectedCategory] = useState(urlCategory);
@@ -96,6 +97,7 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
     const { data, isLoading } = useAds({
         limit: 30,
         status: "PUBLISHED",
+        isFeatured: urlIsFeatured || undefined,
         search: search || undefined,
         cityId: effectiveCityId,
         categoryKey: selectedCategory || undefined,

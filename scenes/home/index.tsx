@@ -100,7 +100,7 @@ export const HomeScene = () => {
                             {regionsData.zones.map((zone) => (
                                 <Link
                                     key={zone.id}
-                                    href={`/explore?cityName=${selectedCity.name}&neighbourhoodName=${zone.name}`}
+                                    href={`/ads?cityId=${selectedCity.id}&cityName=${encodeURIComponent(selectedCity.name)}&search=${encodeURIComponent(zone.name)}`}
                                     className="px-4 py-2 rounded-full bg-soft-bg border border-soft-border hover:border-primary hover:text-primary transition-all whitespace-nowrap font-bold text-brand text-xs shadow-sm"
                                 >
                                     {zone.name}
@@ -124,7 +124,7 @@ export const HomeScene = () => {
                 <SectionHeader
                     title="املاک ویژه"
                     subtitle="منتخب آگهی‌های برتر"
-                    link="/explore?isFeatured=true"
+                    link={selectedCity.id ? `/ads?isFeatured=true&cityId=${selectedCity.id}&cityName=${encodeURIComponent(selectedCity.name)}` : "/ads?isFeatured=true"}
                 />
                 {isFeaturedLoading ? (
                     <div className="flex gap-4 overflow-hidden">
@@ -231,7 +231,7 @@ export const HomeScene = () => {
                 <SectionHeader
                     title="تازه ترین‌ها"
                     subtitle="جدیدترین آگهی‌های منطقه شما"
-                    link="/explore"
+                    link={selectedCity.id ? `/ads?cityId=${selectedCity.id}&cityName=${encodeURIComponent(selectedCity.name)}` : "/ads"}
                 />
                 {isRecentLoading ? (
                     <div className="flex gap-4 overflow-hidden">

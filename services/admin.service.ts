@@ -95,12 +95,20 @@ export const adminService = {
 
     // Wallet
     giftCredit: async (data: GiftCreditRequest) => {
-        const response = await api.post("/admin/wallet/gift-credit", data);
+        const payload = {
+            ...data,
+            amountRials: typeof data.amountRials === "string" ? parseInt(data.amountRials.replace(/[^\d]/g, ""), 10) : Number(data.amountRials),
+        };
+        const response = await api.post("/admin/wallet/gift-credit", payload);
         return response.data;
     },
 
     adjustWallet: async (data: AdjustWalletRequest) => {
-        const response = await api.post("/admin/wallet/adjust", data);
+        const payload = {
+            ...data,
+            amountRials: typeof data.amountRials === "string" ? parseInt(data.amountRials.replace(/[^\d]/g, ""), 10) : Number(data.amountRials),
+        };
+        const response = await api.post("/admin/wallet/adjust", payload);
         return response.data;
     },
 

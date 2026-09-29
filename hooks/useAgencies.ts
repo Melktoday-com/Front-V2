@@ -46,7 +46,10 @@ export const useFollowAgency = () => {
     return useMutation({
         mutationFn: (agencyId: string) => agencyService.followAgency(agencyId),
         onSuccess: (_, agencyId) => {
+            queryClient.invalidateQueries({ queryKey: ["agency-showcase"] });
             queryClient.invalidateQueries({ queryKey: ["agency", agencyId] });
+            queryClient.invalidateQueries({ queryKey: ["agency"] });
+            queryClient.invalidateQueries({ queryKey: ["agencies"] });
         },
     });
 };
@@ -56,7 +59,10 @@ export const useUnfollowAgency = () => {
     return useMutation({
         mutationFn: (agencyId: string) => agencyService.unfollowAgency(agencyId),
         onSuccess: (_, agencyId) => {
+            queryClient.invalidateQueries({ queryKey: ["agency-showcase"] });
             queryClient.invalidateQueries({ queryKey: ["agency", agencyId] });
+            queryClient.invalidateQueries({ queryKey: ["agency"] });
+            queryClient.invalidateQueries({ queryKey: ["agencies"] });
         },
     });
 };

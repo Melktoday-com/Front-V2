@@ -42,7 +42,7 @@ export function SearchHeader({ isInitialOpen }: SearchHeaderProps) {
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
         if (searchQuery.trim()) {
-            router.push(`/explore?search=${encodeURIComponent(searchQuery)}&cityId=${selectedCity.id}&cityName=${selectedCity.name}`);
+            router.push(`/ads?search=${encodeURIComponent(searchQuery)}&cityId=${selectedCity.id || ""}&cityName=${encodeURIComponent(selectedCity.name || "")}`);
         }
     };
 
@@ -182,7 +182,7 @@ export function SearchHeader({ isInitialOpen }: SearchHeaderProps) {
                                                 onClick={() => {
                                                     setSearchQuery(item.text);
                                                     setIsSearching(false);
-                                                    router.push(`/explore?search=${encodeURIComponent(item.text)}&cityId=${selectedCity.id}&cityName=${selectedCity.name}`);
+                                                    router.push(`/ads?search=${encodeURIComponent(item.text)}&cityId=${selectedCity.id || ""}&cityName=${encodeURIComponent(selectedCity.name || "")}`);
                                                 }}
                                                 className="w-full flex items-center gap-4 p-3 hover:bg-soft-bg rounded-[18px] transition-all text-right group"
                                             >

@@ -38,15 +38,16 @@ function AdminWalletContent() {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!userId || !amount) {
-            toast.error("شناسه کاربر و مبلغ الزامی هستند");
+        const cleanAmount = parseInt(amount.replace(/[^\d]/g, ""), 10);
+        if (!userId.trim() || isNaN(cleanAmount) || cleanAmount <= 0) {
+            toast.error("شناسه کاربر و مبلغ معتبر (بزرگتر از صفر) الزامی هستند");
             return;
         }
         adjustMutation.mutate({
-            targetUserId: userId,
+            targetUserId: userId.trim(),
             type,
-            amountRials: amount,
-            note
+            amountRials: cleanAmount,
+            note: note.trim() || undefined,
         });
     };
 
