@@ -132,7 +132,7 @@ export default function AgencyApplyPage() {
             }
         }
 
-        const fullName = `${formData.firstName.trim()} ${formData.lastName.trim()}`;
+        const fullName = `${formData.firstName} ${formData.lastName}`;
 
         const payload: ApplyAgentRequest = {
             agentType,
