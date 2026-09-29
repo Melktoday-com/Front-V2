@@ -4,7 +4,7 @@ import { cn, formatPrice, toPersianDigits } from "@/lib/utils";
 import { ChevronLeft, ChevronRight, Heart, MapPin, Star, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface TemporaryRentCardProps {
     id: string;
@@ -12,11 +12,15 @@ interface TemporaryRentCardProps {
     nightlyPrice: number;
     location: string;
     mediaIds?: string[];
+    imageUrl?: string;
     rating?: number;
     maxGuests?: number;
     rooms?: number;
+    isSaved?: boolean;
+    onToggleSave?: (id: string) => Promise<{ isSaved: boolean } | void> | void;
+    // Backward compatibility aliases
     isFavorited?: boolean;
-    onToggleFavorite?: (id: string) => Promise<void>;
+    onToggleFavorite?: (id: string) => Promise<{ isFavorited: boolean } | { isSaved: boolean } | void> | void;
     className?: string;
 }
 
@@ -26,20 +30,31 @@ export function TemporaryRentCard({
     nightlyPrice,
     location,
     mediaIds = [],
+    imageUrl,
     rating = 4.9,
     maxGuests,
     rooms,
+    isSaved,
+    onToggleSave,
     isFavorited = false,
     onToggleFavorite,
     className,
 }: TemporaryRentCardProps) {
-    const [currentImageIndex, setCurrentImageIndex] = useState(0);
-    const [isFav, setIsFav] = useState(isFavorited);
+    const effectiveIsSaved = isSaved !== undefined ? isSaved : isFavorited;
+    const effectiveToggle = onToggleSave || onToggleFavorite;
 
-    const images =
-        mediaIds && mediaIds.length > 0
-            ? mediaIds.map((mId) => `${process.env.NEXT_PUBLIC_API_URL}/media/${mId}`)
-            : ["/property-placeholder.svg"];
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const [saved, setSaved] = useState(effectiveIsSaved);
+
+    useEffect(() => {
+        setSaved(effectiveIsSaved);
+    }, [effectiveIsSaved]);
+
+    const images = imageUrl
+        ? [imageUrl]
+        : mediaIds && mediaIds.length > 0
+        ? mediaIds.map((mId) => `${process.env.NEXT_PUBLIC_API_URL}/media/${mId}`)
+        : ["/property-placeholder.svg"];
 
     const handlePrevImage = (e: React.MouseEvent) => {
         e.preventDefault();
@@ -56,12 +71,13 @@ export function TemporaryRentCard({
     const handleFavorite = async (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        if (onToggleFavorite) {
-            setIsFav(!isFav);
+        if (effectiveToggle) {
+            const nextState = !saved;
+            setSaved(nextState);
             try {
-                await onToggleFavorite(id);
+                await effectiveToggle(id);
             } catch {
-                setIsFav(isFav);
+                setSaved(!nextState);
             }
         }
     };
@@ -84,16 +100,16 @@ export function TemporaryRentCard({
                     className="object-cover transition-transform duration-500 group-hover:scale-105"
                 />
 
-                {/* Heart Button */}
+                {/* Save Heart Button */}
                 <button
                     onClick={handleFavorite}
-                    aria-label="افزودن به علاقه‌مندی‌ها"
+                    aria-label="ذخیره اقامتگاه"
                     className={cn(
                         "absolute top-2.5 left-2.5 w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-md shadow-sm z-10 transition-transform active:scale-90",
-                        isFav ? "bg-red-500 text-white" : "bg-white/80 hover:bg-white text-gray-700"
+                        saved ? "bg-red-500 text-white" : "bg-white/80 hover:bg-white text-gray-700"
                     )}
                 >
-                    <Heart className={cn("w-4 h-4", isFav ? "fill-white text-white" : "text-gray-700")} />
+                    <Heart className={cn("w-4 h-4", saved ? "fill-white text-white" : "text-gray-700")} />
                 </button>
 
                 {/* Carousel Chevrons (visible on hover) */}

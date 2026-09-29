@@ -108,7 +108,22 @@ export default function ExploreScene() {
 
     const handleLike = (e: React.MouseEvent, postId: string) => {
         e.stopPropagation();
-        likeMutation.mutate(postId);
+        if (!isLoggedIn) {
+            toast.info("برای پسندیدن پست، لطفاً ابتدا وارد حساب کاربری شوید.");
+            router.push("/auth?returnUrl=/explore");
+            return;
+        }
+        likeMutation.mutate(postId, {
+            onSuccess: (res: { hasLiked?: boolean; likeCount?: number }) => {
+                if (readingPost && readingPost.id === postId) {
+                    setReadingPost({
+                        ...readingPost,
+                        hasLiked: res.hasLiked ?? !readingPost.hasLiked,
+                        likeCount: res.likeCount ?? readingPost.likeCount,
+                    });
+                }
+            },
+        });
     };
 
     const handleShare = (e: React.MouseEvent, post: AgencyPost) => {
@@ -389,9 +404,16 @@ export default function ExploreScene() {
                                         <div className="flex items-center gap-3">
                                             <button
                                                 onClick={(e) => handleLike(e, post.id)}
-                                                className="flex items-center gap-1 hover:text-red-500 transition-colors"
+                                                className={cn(
+                                                    "flex items-center gap-1 transition-colors",
+                                                    post.hasLiked ? "text-red-500 font-bold" : "text-slate-500 hover:text-red-500"
+                                                )}
+                                                aria-label={post.hasLiked ? "حذف پسند" : "پسندیدن"}
                                             >
-                                                <Heart className="w-4 h-4 text-red-500 fill-red-500/15" />
+                                                <Heart className={cn(
+                                                    "w-4 h-4 transition-colors",
+                                                    post.hasLiked ? "text-red-500 fill-red-500" : "text-slate-400"
+                                                )} />
                                                 <span>{toPersianDigits(post.likeCount || 0)}</span>
                                             </button>
                                             <div className="flex items-center gap-1">
@@ -505,9 +527,15 @@ export default function ExploreScene() {
                             <div className="flex items-center gap-4">
                                 <button
                                     onClick={(e) => handleLike(e, readingPost.id)}
-                                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 font-bold transition-all"
+                                    className={cn(
+                                        "flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold transition-all active:scale-95",
+                                        readingPost.hasLiked
+                                            ? "bg-red-500 text-white shadow-xs"
+                                            : "bg-red-50 text-red-600 hover:bg-red-100"
+                                    )}
+                                    aria-label={readingPost.hasLiked ? "حذف پسند" : "پسندیدن"}
                                 >
-                                    <Heart className="w-4 h-4 fill-red-500" />
+                                    <Heart className={cn("w-4 h-4", readingPost.hasLiked ? "fill-white text-white" : "fill-red-500 text-red-500")} />
                                     <span>{toPersianDigits(readingPost.likeCount || 0)} پسند</span>
                                 </button>
                                 <span className="flex items-center gap-1 text-slate-400">

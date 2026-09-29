@@ -31,6 +31,7 @@ export interface TemporaryRentAd {
     attributes: Record<string, JsonValue>;
     createdAt: string;
     updatedAt: string;
+    isSaved?: boolean;
     owner?: {
         fullName?: string;
         avatarUrl?: string;

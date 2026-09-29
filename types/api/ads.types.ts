@@ -30,6 +30,7 @@ export interface AdSummary {
     subcategoryTitle?: string;
     pricing: Record<string, number>;
     isFeatured: boolean;
+    isSaved?: boolean;
     mediaIds?: string[];
     createdAt: string;
     location?: AdLocation | null;

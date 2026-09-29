@@ -5,7 +5,7 @@ import { cn, toPersianDigits } from "@/lib/utils";
 import { Heart, MapPin, Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface PropertyCardProps {
     adId?: string;
@@ -20,8 +20,11 @@ interface PropertyCardProps {
     variant?: "vertical" | "horizontal";
     className?: string;
     href?: string;
+    isSaved?: boolean;
+    onToggleSave?: (adId: string) => Promise<{ isSaved: boolean } | void> | void;
+    // Backward compatibility aliases
     isFavorited?: boolean;
-    onToggleFavorite?: (adId: string) => Promise<void>;
+    onToggleFavorite?: (adId: string) => Promise<{ isFavorited: boolean } | { isSaved: boolean } | void> | void;
     area?: number | string;
     rooms?: number | string;
 }
@@ -39,13 +42,22 @@ export function PropertyCard({
     variant = "vertical",
     className,
     href,
+    isSaved,
+    onToggleSave,
     isFavorited = false,
     onToggleFavorite,
     area,
     rooms,
 }: PropertyCardProps) {
+    const effectiveIsSaved = isSaved !== undefined ? isSaved : isFavorited;
+    const effectiveToggle = onToggleSave || onToggleFavorite;
+
     const [imgSrc, setImgSrc] = useState(image || "/property-placeholder.svg");
-    const [isFav, setIsFav] = useState(isFavorited);
+    const [saved, setSaved] = useState(effectiveIsSaved);
+
+    useEffect(() => {
+        setSaved(effectiveIsSaved);
+    }, [effectiveIsSaved]);
 
     // Format price: handle string with commas or raw numbers
     const formatDisplayPrice = () => {
@@ -72,12 +84,13 @@ export function PropertyCard({
     const handleFavoriteClick = async (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        if (adId && onToggleFavorite) {
-            setIsFav(!isFav);
+        if (adId && effectiveToggle) {
+            const nextState = !saved;
+            setSaved(nextState);
             try {
-                await onToggleFavorite(adId);
+                await effectiveToggle(adId);
             } catch {
-                setIsFav(isFav); // rollback on error
+                setSaved(!nextState); // rollback on error
             }
         }
     };
@@ -99,19 +112,19 @@ export function PropertyCard({
                     onError={() => setImgSrc("/property-placeholder.svg")}
                 />
 
-                {/* Favorite Heart Button - 32px touch target */}
+                {/* Save Heart Button - 32px touch target */}
                 {adId && (
                     <button
                         onClick={handleFavoriteClick}
-                        aria-label="افزودن به علاقه‌مندی‌ها"
+                        aria-label="ذخیره آگهی"
                         className={cn(
                             "absolute top-2 left-2 w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-md shadow-sm transition-all z-10 active:scale-90",
-                            isFav ? "bg-red-500 text-white" : "bg-white/80 hover:bg-white text-gray-700"
+                            saved ? "bg-red-500 text-white" : "bg-white/80 hover:bg-white text-gray-700"
                         )}
                     >
                         <Heart className={cn(
                             "w-4 h-4 transition-colors",
-                            isFav ? "fill-white text-white" : "text-gray-700 hover:text-red-500"
+                            saved ? "fill-white text-white" : "text-gray-700 hover:text-red-500"
                         )} />
                     </button>
                 )}

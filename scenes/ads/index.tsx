@@ -8,6 +8,7 @@ import { PropertyCard } from "@/components/ui/PropertyCard";
 import { EmptyState } from "@/components/ui/StatusStates";
 import { useAds, useCategories } from "@/hooks/useAds";
 import { useCategoryLookup } from "@/hooks/useCategoryLookup";
+import { useFavorites, useToggleSaveAd } from "@/hooks/useFavorites";
 import { useGeoHierarchy } from "@/hooks/useGeoHierarchy";
 import { cn, formatPrice } from "@/lib/utils";
 import { geoService } from "@/services/geo.service";
@@ -87,6 +88,10 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
 
     const [search, setSearch] = useState(urlSearch);
     const [selectedCategory, setSelectedCategory] = useState(urlCategory);
+
+    // Saved ads state for heart button on each card
+    const { isAdSaved } = useFavorites();
+    const toggleSaveMutation = useToggleSaveAd();
 
     const { data, isLoading } = useAds({
         limit: 30,
@@ -384,6 +389,8 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
                                                 : "/property-placeholder.svg"
                                         }
                                         category={subcategoryDisplay}
+                                        isSaved={ad.isSaved ?? isAdSaved(ad.adId)}
+                                        onToggleSave={(id) => toggleSaveMutation.mutateAsync(id)}
                                     />
                                 );
                             })

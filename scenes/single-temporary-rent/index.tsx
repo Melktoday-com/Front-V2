@@ -32,8 +32,9 @@ import {
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { useToggleSaveTemporaryRent } from "@/hooks/useFavorites";
 
 const Map = dynamic(() => import("@/components/ui/Map"), {
     ssr: false,
@@ -63,9 +64,32 @@ export default function ResidenceDetailScene() {
         { enabled: !!residence?.cityId }
     );
 
-    const [isFavorite, setIsFavorite] = useState(false);
+    const toggleSaveTempMutation = useToggleSaveTemporaryRent();
+    const [saved, setSaved] = useState(false);
     const [nights, setNights] = useState(1);
     const [activeImageIndex, setActiveImageIndex] = useState(0);
+
+    useEffect(() => {
+        if (residence?.isSaved !== undefined) {
+            setSaved(residence.isSaved);
+        }
+    }, [residence?.isSaved]);
+
+    const handleToggleSave = async () => {
+        if (!isLoggedIn) {
+            toast.error('لطفاً ابتدا وارد حساب کاربری خود شوید');
+            router.push(`/auth?returnUrl=/temporary-rent/${id}`);
+            return;
+        }
+        const nextState = !saved;
+        setSaved(nextState);
+        try {
+            await toggleSaveTempMutation.mutateAsync(id);
+            toast.success(nextState ? 'اقامتگاه در نشان‌شده‌ها ذخیره شد' : 'اقامتگاه از نشان‌شده‌ها حذف شد');
+        } catch {
+            setSaved(!nextState);
+        }
+    };
 
     const images = useMemo(() => {
         if (!residence?.mediaIds || residence.mediaIds.length === 0) {
@@ -157,14 +181,15 @@ export default function ResidenceDetailScene() {
                         <Share2 className="w-4 h-4" />
                     </button>
                     <button
-                        onClick={() => setIsFavorite(!isFavorite)}
+                        onClick={handleToggleSave}
                         className={cn(
-                            "w-10 h-10 rounded-full flex items-center justify-center transition-colors",
-                            isFavorite ? "bg-red-500 text-white" : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+                            "w-10 h-10 rounded-full flex items-center justify-center transition-colors active:scale-95",
+                            saved ? "bg-red-500 text-white" : "bg-gray-100 hover:bg-gray-200 text-gray-700"
                         )}
-                        title="افزودن به علاقه‌مندی‌ها"
+                        title={saved ? "حذف از نشان‌شده‌ها" : "نشان کردن اقامتگاه"}
+                        aria-label="نشان کردن اقامتگاه"
                     >
-                        <Heart className={cn("w-4 h-4", isFavorite && "fill-current")} />
+                        <Heart className={cn("w-4 h-4", saved && "fill-current")} />
                     </button>
                 </div>
             </div>

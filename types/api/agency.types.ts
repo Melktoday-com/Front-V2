@@ -151,6 +151,7 @@ export interface AgencyPost {
     isPublished: boolean;
     viewCount: number;
     likeCount: number;
+    hasLiked?: boolean;
     createdAt: string;
     updatedAt: string;
     agency?: {

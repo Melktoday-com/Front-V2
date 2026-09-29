@@ -22,6 +22,7 @@ export interface TemporaryRentAdSummary {
     mediaIds?: string[];
     createdAt: string;
     maxGuests?: number;
+    isSaved?: boolean;
 }
 
 export interface ListTemporaryRentQuery {

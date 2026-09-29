@@ -11,6 +11,7 @@ import { EmptyState, ErrorState } from "@/components/ui/StatusStates";
 import { useAds, useCategories } from "@/hooks/useAds";
 import { useAgencies } from "@/hooks/useAgencies";
 import { useCategoryLookup } from "@/hooks/useCategoryLookup";
+import { useFavorites, useToggleSaveAd, useToggleSaveTemporaryRent } from "@/hooks/useFavorites";
 import { useZones } from "@/hooks/useGeo";
 import { useTemporaryRentAds } from "@/hooks/useTemporaryRent";
 import { TemporaryRentAdSummary } from "@/services/temporary-rent.service";
@@ -22,6 +23,11 @@ import { useEffect, useMemo, useState } from "react";
 export const HomeScene = () => {
     const { selectedCity, setSelectedCity } = useCity();
     const { getSubcategoryName, getCategoryName } = useCategoryLookup();
+
+    // Saved state for heart buttons
+    const { isAdSaved, isTemporaryRentSaved } = useFavorites();
+    const toggleSaveAdMutation = useToggleSaveAd();
+    const toggleSaveTempMutation = useToggleSaveTemporaryRent();
 
     const [isInitialModalOpen, setIsInitialModalOpen] = useState(false);
 
@@ -150,6 +156,8 @@ export const HomeScene = () => {
                                     getCategoryName(property.categoryPath?.categoryKey)
                                 }
                                 className="w-[210px] lg:w-[250px]"
+                                isSaved={property.isSaved ?? isAdSaved(property.adId)}
+                                onToggleSave={(id) => toggleSaveAdMutation.mutateAsync(id)}
                             />
                         ))}
                     </Slider>
@@ -210,6 +218,8 @@ export const HomeScene = () => {
                                 image={property.mediaIds?.[0] ? `${process.env.NEXT_PUBLIC_API_URL}/media/${property.mediaIds[0]}` : "/property-placeholder.svg"}
                                 category="اجاره روزانه"
                                 className="w-[210px] lg:w-[250px]"
+                                isSaved={property.isSaved ?? isTemporaryRentSaved(property.id)}
+                                onToggleSave={(id) => toggleSaveTempMutation.mutateAsync(id)}
                             />
                         ))}
                     </Slider>
@@ -253,6 +263,8 @@ export const HomeScene = () => {
                                     getCategoryName(property.categoryPath?.categoryKey)
                                 }
                                 className="w-[210px] lg:w-[250px]"
+                                isSaved={property.isSaved ?? isAdSaved(property.adId)}
+                                onToggleSave={(id) => toggleSaveAdMutation.mutateAsync(id)}
                             />
                         ))}
                     </Slider>

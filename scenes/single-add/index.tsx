@@ -26,11 +26,12 @@ import {
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useCityLookup } from "@/hooks/useCityLookup";
 import { useCategoryLookup } from "@/hooks/useCategoryLookup";
 import { PropertyCard } from "@/components/ui/PropertyCard";
+import { useToggleSaveAd } from "@/hooks/useFavorites";
 
 const Map = dynamic(() => import("@/components/ui/Map"), {
     ssr: false,
@@ -44,14 +45,37 @@ const Map = dynamic(() => import("@/components/ui/Map"), {
 export default function SingleAdScene() {
     const { id } = useParams() as { id: string };
     const router = useRouter();
-    const [isFavorite, setIsFavorite] = useState(false);
+    const [saved, setSaved] = useState(false);
     const [activeImageIndex, setActiveImageIndex] = useState(0);
     const [showFullPhone, setShowFullPhone] = useState(false);
 
     const { isLoggedIn } = useAuth();
     const chatMutation = useCreateConversation();
+    const toggleSaveMutation = useToggleSaveAd();
     const { data: ad, isLoading, error } = useAd(id);
     const { data: contact } = useAdContact(id);
+
+    useEffect(() => {
+        if (ad?.isSaved !== undefined) {
+            setSaved(ad.isSaved);
+        }
+    }, [ad?.isSaved]);
+
+    const handleToggleSave = async () => {
+        if (!isLoggedIn) {
+            toast.error('لطفاً ابتدا وارد حساب کاربری خود شوید');
+            router.push(`/auth?returnUrl=/ads/${id}`);
+            return;
+        }
+        const nextState = !saved;
+        setSaved(nextState);
+        try {
+            await toggleSaveMutation.mutateAsync(id);
+            toast.success(nextState ? 'آگهی در نشان‌شده‌ها ذخیره شد' : 'آگهی از نشان‌شده‌ها حذف شد');
+        } catch {
+            setSaved(!nextState);
+        }
+    };
 
     const { getCityName } = useCityLookup();
     const { getSubcategoryName, getCategoryName, getCategoryPathLabel } = useCategoryLookup();
@@ -205,14 +229,15 @@ export default function SingleAdScene() {
                         <Share2 className="w-4 h-4" />
                     </button>
                     <button
-                        onClick={() => setIsFavorite(!isFavorite)}
+                        onClick={handleToggleSave}
                         className={cn(
-                            "w-10 h-10 rounded-full flex items-center justify-center transition-colors",
-                            isFavorite ? "bg-red-500 text-white" : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+                            "w-10 h-10 rounded-full flex items-center justify-center transition-colors active:scale-95",
+                            saved ? "bg-red-500 text-white" : "bg-gray-100 hover:bg-gray-200 text-gray-700"
                         )}
-                        title="افزودن به علاقه‌مندی‌ها"
+                        title={saved ? "حذف از نشان‌شده‌ها" : "نشان کردن آگهی"}
+                        aria-label="نشان کردن آگهی"
                     >
-                        <Heart className={cn("w-4 h-4", isFavorite && "fill-current")} />
+                        <Heart className={cn("w-4 h-4", saved && "fill-current")} />
                     </button>
                 </div>
             </div>

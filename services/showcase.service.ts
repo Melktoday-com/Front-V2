@@ -73,8 +73,22 @@ export const showcaseService = {
   /**
    * Toggle like on post (atomic & idempotent)
    */
-  async toggleLikePost(postId: string) {
-    const response = await apiClient.post<{ liked: boolean; likeCount: number }>(`/posts/${postId}/like`);
+  async toggleLikePost(postId: string): Promise<{ hasLiked: boolean; likeCount: number }> {
+    const response = await apiClient.post<{ hasLiked: boolean; likeCount: number }>(`/posts/${postId}/like`);
+    return response.data;
+  },
+
+  /**
+   * Get posts liked by the current user
+   */
+  async getLikedPosts(params: { page?: number; limit?: number; publisherType?: string } = {}) {
+    const response = await apiClient.get<{
+      items: UnifiedPost[];
+      total: number;
+      page: number;
+      limit: number;
+      totalPages: number;
+    }>('/posts/liked', { params });
     return response.data;
   },
 

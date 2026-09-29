@@ -1,52 +1,115 @@
-import { FavoriteItem, favoritesService } from '@/services/favorites.service';
-import { useCallback, useState } from 'react';
+import { favoritesService, FavoriteItemType } from '@/services/favorites.service';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useAuth } from './useAuth';
 
-export const useFavorites = () => {
-    const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
-    const [isLoading, setIsLoading] = useState(false);
-    const { user } = useAuth();
+/** Query key for the favorites list */
+export const FAVORITES_QUERY_KEY = ['favorites'];
 
-    const fetchFavorites = useCallback(async () => {
-        if (!user) return;
-        setIsLoading(true);
-        try {
-            const data = await favoritesService.getFavorites();
-            setFavorites(data);
-        } catch (error) {
-            console.error('Failed to fetch favorites:', error);
-            toast.error('خطا در دریافت علاقه‌مندی‌ها');
-        } finally {
-            setIsLoading(false);
-        }
-    }, [user]);
+/**
+ * Hook to fetch the user's favorites (AD, TEMPORARY_RENT, or ALL).
+ * Returns the list, Sets of saved IDs, and O(1) lookup helpers.
+ */
+export const useFavorites = (type?: 'AD' | 'TEMPORARY_RENT' | 'ALL') => {
+    const { isLoggedIn } = useAuth();
 
-    const toggleFavorite = async (adId: string) => {
-        if (!user) {
-            toast.error('لطفا ابتدا وارد حساب کاربری خود شوید');
-            return;
-        }
-        try {
-            const { isFavorited } = await favoritesService.toggleFavorite(adId);
-            if (isFavorited) {
-                toast.success('آگهی به علاقه‌مندی‌ها اضافه شد');
-            } else {
-                toast.success('آگهی از علاقه‌مندی‌ها حذف شد');
-                setFavorites((prev) => prev.filter((f) => f.referenceId !== adId && f.id !== adId));
-            }
-            return isFavorited;
-        } catch (error) {
-            console.error('Failed to toggle favorite:', error);
-            toast.error('خطا در بروزرسانی علاقه‌مندی‌ها');
-            throw error;
-        }
-    };
+    const { data: favorites = [], isLoading, refetch } = useQuery({
+        queryKey: [...FAVORITES_QUERY_KEY, type || 'ALL'],
+        queryFn: () => favoritesService.getFavorites(type),
+        enabled: isLoggedIn,
+        staleTime: 30_000,
+    });
+
+    const savedAdIds = new Set(
+        favorites
+            .filter((f) => f.type === 'AD')
+            .map((f) => f.referenceId ?? f.id),
+    );
+
+    const savedTemporaryRentIds = new Set(
+        favorites
+            .filter((f) => f.type === 'TEMPORARY_RENT')
+            .map((f) => f.referenceId ?? f.id),
+    );
+
+    const isAdSaved = (adId: string) => savedAdIds.has(adId);
+    const isTemporaryRentSaved = (id: string) => savedTemporaryRentIds.has(id);
 
     return {
         favorites,
         isLoading,
-        fetchFavorites,
-        toggleFavorite,
+        refetch,
+        savedAdIds,
+        savedTemporaryRentIds,
+        isAdSaved,
+        isTemporaryRentSaved,
+        // Backward-compatible aliases
+        wishlistedAdIds: savedAdIds,
+        isWishlisted: isAdSaved,
     };
+};
+
+/**
+ * Mutation hook to toggle Save on a property ad.
+ */
+export const useToggleSaveAd = () => {
+    const { isLoggedIn } = useAuth();
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (adId: string) => {
+            if (!isLoggedIn) {
+                return Promise.reject(new Error('not_logged_in'));
+            }
+            return favoritesService.toggleSaveAd(adId);
+        },
+        onSuccess: (_data, adId) => {
+            queryClient.invalidateQueries({ queryKey: FAVORITES_QUERY_KEY });
+            queryClient.invalidateQueries({ queryKey: ['ads'] });
+            queryClient.invalidateQueries({ queryKey: ['ad', adId] });
+        },
+        onError: (err: Error) => {
+            if (err.message === 'not_logged_in') {
+                toast.error('لطفاً ابتدا وارد حساب کاربری خود شوید');
+            } else {
+                toast.error('خطا در بروزرسانی ذخیره آگهی');
+            }
+        },
+    });
+};
+
+/**
+ * Mutation hook to toggle Save on a temporary rent ad.
+ */
+export const useToggleSaveTemporaryRent = () => {
+    const { isLoggedIn } = useAuth();
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (temporaryRentAdId: string) => {
+            if (!isLoggedIn) {
+                return Promise.reject(new Error('not_logged_in'));
+            }
+            return favoritesService.toggleSaveTemporaryRent(temporaryRentAdId);
+        },
+        onSuccess: (_data, temporaryRentAdId) => {
+            queryClient.invalidateQueries({ queryKey: FAVORITES_QUERY_KEY });
+            queryClient.invalidateQueries({ queryKey: ['temporary-rent-ads'] });
+            queryClient.invalidateQueries({ queryKey: ['temporary-rent-ad', temporaryRentAdId] });
+        },
+        onError: (err: Error) => {
+            if (err.message === 'not_logged_in') {
+                toast.error('لطفاً ابتدا وارد حساب کاربری خود شوید');
+            } else {
+                toast.error('خطا در بروزرسانی ذخیره اقامتگاه');
+            }
+        },
+    });
+};
+
+/**
+ * Backward-compatible mutation hook (alias to useToggleSaveAd).
+ */
+export const useToggleFavorite = () => {
+    return useToggleSaveAd();
 };
