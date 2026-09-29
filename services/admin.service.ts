@@ -276,7 +276,7 @@ export const adminService = {
     // ─────────────────────────────────────────────────────────────────
     // Temporary Rental Admin Operations
     // ─────────────────────────────────────────────────────────────────
-    listTemporaryRentCategories: async (params?: { includeArchived?: boolean }): Promise<TemporaryRentCategory[]> => {
+    listTemporaryRentCategories: async (params?: { includeArchived?: boolean; includeInactive?: boolean }): Promise<TemporaryRentCategory[]> => {
         const response = await api.get("/temporary-rent/categories", { params });
         return response.data.categories || response.data;
     },

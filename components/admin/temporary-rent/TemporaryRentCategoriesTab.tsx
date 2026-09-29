@@ -108,7 +108,7 @@ export default function TemporaryRentCategoriesTab() {
     // Fetch Categories
     const { data: categoriesResponse, isLoading } = useQuery({
         queryKey: ["admin", "temporary-rent", "categories"],
-        queryFn: () => adminService.listTemporaryRentCategories({ includeArchived: false }),
+        queryFn: () => adminService.listTemporaryRentCategories({ includeArchived: false, includeInactive: true }),
     });
 
     // Fetch Available Price Models

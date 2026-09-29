@@ -30,8 +30,8 @@ export const adsService = {
         return response.data;
     },
 
-    async listCategories(): Promise<CategoryListItem[]> {
-        const response = await apiClient.get<{ categories: CategoryListItem[] }>("/ads/categories");
+    async listCategories(params?: { includeArchived?: boolean; includeInactive?: boolean }): Promise<CategoryListItem[]> {
+        const response = await apiClient.get<{ categories: CategoryListItem[] }>("/ads/categories", { params });
         return response.data.categories;
     },
 

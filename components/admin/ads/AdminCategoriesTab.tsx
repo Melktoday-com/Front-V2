@@ -116,7 +116,7 @@ export default function AdminCategoriesTab() {
     // Fetch Categories
     const { data: categories, isLoading } = useQuery({
         queryKey: ["admin", "categories"],
-        queryFn: () => adsService.listCategories(),
+        queryFn: () => adsService.listCategories({ includeInactive: true }),
     });
 
     // Fetch Available Price Models

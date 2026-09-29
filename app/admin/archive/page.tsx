@@ -114,7 +114,15 @@ export default function AdminArchivePage() {
             setActionModal(null);
             queryClient.invalidateQueries({ queryKey: ["admin", "global-archive"] });
             queryClient.invalidateQueries({ queryKey: ["admin", "categories"] });
+            queryClient.invalidateQueries({ queryKey: ["categories"] });
+            queryClient.invalidateQueries({ queryKey: ["admin", "temporary-rent", "categories"] });
+            queryClient.invalidateQueries({ queryKey: ["temporary-rent-categories"] });
             queryClient.invalidateQueries({ queryKey: ["admin", "ads"] });
+            queryClient.invalidateQueries({ queryKey: ["ads"] });
+            queryClient.invalidateQueries({ queryKey: ["admin", "temporary-rent"] });
+            queryClient.invalidateQueries({ queryKey: ["admin", "posts"] });
+            queryClient.invalidateQueries({ queryKey: ["posts"] });
+            queryClient.invalidateQueries({ queryKey: ["admin", "geo"] });
         },
         onError: (err: Error) => {
             toast.error(normalizeApiError(err, "خطا در بازگردانی آیتم."));
