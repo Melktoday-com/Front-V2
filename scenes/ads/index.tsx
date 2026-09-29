@@ -25,7 +25,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 const Map = dynamic(() => import("@/components/ui/Map"), {
     ssr: false,
     loading: () => (
-        <div className="w-full h-full min-h-[400px] bg-soft-bg animate-pulse rounded-2xl flex items-center justify-center text-text-light font-bold text-sm">
+        <div className="w-full h-full min-h-100 bg-soft-bg animate-pulse rounded-2xl flex items-center justify-center text-text-light font-bold text-sm">
             در حال بارگذاری نقشه...
         </div>
     ),
