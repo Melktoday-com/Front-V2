@@ -5,7 +5,7 @@ import { ZoneSummary } from "@/types/api/geo.types";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useEffect } from "react";
-import { MapContainer, Marker, Popup, TileLayer, Polygon, Tooltip, useMap } from "react-leaflet";
+import { MapContainer, Marker, Polygon, Popup, TileLayer, Tooltip, useMap } from "react-leaflet";
 import { PropertyCard } from "./PropertyCard";
 
 // Fix for default marker icons in Leaflet with Next.js
@@ -164,7 +164,7 @@ export default function Map({ ads, zones, selectedZoneId, selectedZoneIds, onZon
                                         location={ad.cityId}
                                         image={ad.mediaIds && ad.mediaIds.length > 0
                                             ? `${process.env.NEXT_PUBLIC_API_URL}/media/${ad.mediaIds[0]}`
-                                            : "/assets/images/property-placeholder.png"
+                                            : "/assets/images/property-placeholder.svg"
                                         }
                                         category={ad.subcategoryTitle || ad.categoryPath.subcategoryTitle || ad.categoryPath.subcategoryKey}
                                     />

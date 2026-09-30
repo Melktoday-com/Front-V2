@@ -5,10 +5,9 @@ import { PaginationControls } from "@/components/ui/PaginationControls";
 import { useInfiniteExplorePosts, useLikePost, useMyAgency } from "@/hooks/useAgencies";
 import { useAuth } from "@/hooks/useAuth";
 import { cn, toPersianDigits, getMediaUrl } from "@/lib/utils";
-import { agencyService } from "@/services/agency.service";
-import MediaGalleryUpload from "@/components/MediaGalleryUpload";
+import { MarkdownRenderer } from "@/components/ui/MarkdownRenderer";
 import { AgencyPost } from "@/types/api/agency.types";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import {
     BookOpen,
     Building2,
@@ -21,6 +20,7 @@ import {
     Loader2,
     Newspaper,
     PenTool,
+    Plus,
     Search,
     Share2,
     Verified,
@@ -57,13 +57,6 @@ export default function ExploreScene() {
 
     // Modal state for reading a full post
     const [readingPost, setReadingPost] = useState<AgencyPost | null>(null);
-
-    // Modal state for quick content creation
-    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-    const [postTitle, setPostTitle] = useState("");
-    const [postSummary, setPostSummary] = useState("");
-    const [postContent, setPostContent] = useState("");
-    const [postMediaIds, setPostMediaIds] = useState<string[]>([]);
 
     // Fetch published posts with infinite scroll
     const {
@@ -108,31 +101,6 @@ export default function ExploreScene() {
 
     const likeMutation = useLikePost();
 
-    const createPostMutation = useMutation({
-        mutationFn: () =>
-            agencyService.createMyPost({
-                title: postTitle.trim(),
-                summary: postSummary.trim() || undefined,
-                content: postContent.trim(),
-                mediaUrls: postMediaIds.length > 0 ? postMediaIds : [],
-                isPublished: true,
-            }),
-        onSuccess: () => {
-            toast.success("پست با موفقیت منتشر شد.");
-            setIsCreateModalOpen(false);
-            setPostTitle("");
-            setPostSummary("");
-            setPostContent("");
-            setPostMediaIds([]);
-            queryClient.invalidateQueries({ queryKey: ["explore-posts"] });
-            queryClient.invalidateQueries({ queryKey: ["explore-posts-infinite"] });
-            refetch();
-        },
-        onError: () => {
-            toast.error("خطا در انتشار پست. لطفاً دوباره تلاش کنید.");
-        },
-    });
-
     const handleSearchSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         setActiveSearch(searchQuery.trim());
@@ -172,17 +140,7 @@ export default function ExploreScene() {
     };
 
     const handleOpenCreateModal = () => {
-        if (!isLoggedIn) {
-            toast.info("برای انتشار محتوا، لطفاً ابتدا وارد حساب کاربری خود شوید.");
-            router.push("/auth?returnUrl=/explore");
-            return;
-        }
-        if (!myAgency) {
-            toast.info("برای تولید محتوا، لطفاً ابتدا درخواست همکاری به عنوان مشاور املاک را ثبت کنید.");
-            router.push("/agency/apply");
-            return;
-        }
-        setIsCreateModalOpen(true);
+        router.push("/posts/create");
     };
 
     // Filter helper
@@ -283,32 +241,42 @@ export default function ExploreScene() {
                         </button>
                     </form>
 
-                    {/* View mode toggle */}
-                    <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-2xl self-end sm:self-center">
-                        <button
-                            onClick={() => setViewMode("feed")}
-                            className={cn(
-                                "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all",
-                                viewMode === "feed"
-                                    ? "bg-white text-brand shadow-xs"
-                                    : "text-slate-500 hover:text-slate-800"
-                            )}
+                    <div className="flex items-center gap-2 self-end sm:self-center">
+                        <Link
+                            href="/posts/create"
+                            className="flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-brand text-white text-xs font-bold hover:bg-brand/90 transition-all shrink-0 shadow-xs"
                         >
-                            <List className="w-3.5 h-3.5" />
-                            <span>فید</span>
-                        </button>
-                        <button
-                            onClick={() => setViewMode("grid")}
-                            className={cn(
-                                "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all",
-                                viewMode === "grid"
-                                    ? "bg-white text-brand shadow-xs"
-                                    : "text-slate-500 hover:text-slate-800"
-                            )}
-                        >
-                            <Grid className="w-3.5 h-3.5" />
-                            <span>شبکه</span>
-                        </button>
+                            <Plus className="w-4 h-4 text-primary" />
+                            <span>انتشار پست جدید</span>
+                        </Link>
+
+                        {/* View mode toggle */}
+                        <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-2xl">
+                            <button
+                                onClick={() => setViewMode("feed")}
+                                className={cn(
+                                    "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all",
+                                    viewMode === "feed"
+                                        ? "bg-white text-brand shadow-xs"
+                                        : "text-slate-500 hover:text-slate-800"
+                                )}
+                            >
+                                <List className="w-3.5 h-3.5" />
+                                <span>فید</span>
+                            </button>
+                            <button
+                                onClick={() => setViewMode("grid")}
+                                className={cn(
+                                    "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all",
+                                    viewMode === "grid"
+                                        ? "bg-white text-brand shadow-xs"
+                                        : "text-slate-500 hover:text-slate-800"
+                                )}
+                            >
+                                <Grid className="w-3.5 h-3.5" />
+                                <span>شبکه</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -654,8 +622,8 @@ export default function ExploreScene() {
                         )}
 
                         {/* Full Content */}
-                        <div className="text-slate-700 text-sm sm:text-base leading-loose whitespace-pre-line font-normal space-y-3">
-                            {readingPost.content}
+                        <div className="pt-2">
+                            <MarkdownRenderer content={readingPost.content} />
                         </div>
 
                         {/* Stats & Actions */}
@@ -688,112 +656,6 @@ export default function ExploreScene() {
                                 <span>اشتراک‌گذاری</span>
                             </button>
                         </div>
-                    </div>
-                </div>
-            )}
-
-            {/* ── MODAL: CREATE NEW POST ────────────────────────────────── */}
-            {isCreateModalOpen && (
-                <div
-                    className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto"
-                    onClick={() => setIsCreateModalOpen(false)}
-                >
-                    <div
-                        className="bg-white rounded-3xl max-w-xl w-full p-6 sm:p-8 space-y-5 shadow-2xl relative border border-slate-200 my-6"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <button
-                            onClick={() => setIsCreateModalOpen(false)}
-                            className="absolute top-5 left-5 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 transition-colors"
-                        >
-                            <X className="w-5 h-5" />
-                        </button>
-
-                        <div className="space-y-1">
-                            <div className="inline-flex items-center gap-1.5 text-primary text-xs font-bold">
-                                <PenTool className="w-3.5 h-3.5" />
-                                <span>تولید محتوا و انتشار پست</span>
-                            </div>
-                            <h3 className="text-xl font-black text-slate-900">
-                                انتشار پست در فید کاوش
-                            </h3>
-                            <p className="text-xs text-slate-400">
-                                این محتوا با نام دفتر املاک شما در صفحه کاوش و ویترین اختصاصی‌تان نمایش داده خواهد شد.
-                            </p>
-                        </div>
-
-                        <form
-                            onSubmit={(e) => {
-                                e.preventDefault();
-                                if (!postTitle.trim() || !postContent.trim()) {
-                                    toast.error("عنوان و متن کامل پست الزامی است.");
-                                    return;
-                                }
-                                createPostMutation.mutate();
-                            }}
-                            className="space-y-4"
-                        >
-                            <div className="space-y-1.5">
-                                <label className="text-xs font-bold text-slate-700">عنوان پست *</label>
-                                <input
-                                    type="text"
-                                    required
-                                    placeholder="مثال: ۵ نکته طلایی برای خرید خانه در سال جدید"
-                                    value={postTitle}
-                                    onChange={(e) => setPostTitle(e.target.value)}
-                                    className="w-full px-4 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-sm focus:bg-white focus:border-primary focus:outline-hidden"
-                                />
-                            </div>
-
-                            <div className="space-y-1.5">
-                                <label className="text-xs font-bold text-slate-700">خلاصه / چکیده (اختیاری)</label>
-                                <input
-                                    type="text"
-                                    placeholder="توضیح کوتاه یک خطی از محتوای مقاله..."
-                                    value={postSummary}
-                                    onChange={(e) => setPostSummary(e.target.value)}
-                                    className="w-full px-4 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-sm focus:bg-white focus:border-primary focus:outline-hidden"
-                                />
-                            </div>
-
-                            <div className="space-y-1.5">
-                                <MediaGalleryUpload
-                                    label="تصاویر پست (اختیاری)"
-                                    helperText="تصاویر مورد نظر برای مقاله یا تحلیل را انتخاب و بارگذاری کنید"
-                                    value={postMediaIds}
-                                    onChange={setPostMediaIds}
-                                />
-                            </div>
-
-                            <div className="space-y-1.5">
-                                <label className="text-xs font-bold text-slate-700">متن کامل محتوا *</label>
-                                <textarea
-                                    required
-                                    rows={6}
-                                    placeholder="متن کامل تحلیل، گزارش، راهنما یا خبر ملکی خود را بنویسید..."
-                                    value={postContent}
-                                    onChange={(e) => setPostContent(e.target.value)}
-                                    className="w-full px-4 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-sm focus:bg-white focus:border-primary focus:outline-hidden resize-none leading-relaxed"
-                                />
-                            </div>
-
-                            <div className="pt-2 flex items-center justify-end gap-3">
-                                <button
-                                    type="button"
-                                    onClick={() => setIsCreateModalOpen(false)}
-                                    className="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs transition-all"
-                                >
-                                    انصراف
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={createPostMutation.isPending}
-                                    className="px-6 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold text-xs transition-all shadow-md shadow-primary/20 disabled:opacity-50"
-                                >
-                                    {createPostMutation.isPending ? "در حال انتشار..." : "انتشار پست"}
-                                </button>
-                            </div>
-                        </form>
                     </div>
                 </div>
             )}

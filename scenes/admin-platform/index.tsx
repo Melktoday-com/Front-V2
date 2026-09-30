@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   usePlatformProfile,
   useUpdatePlatformProfile,
@@ -25,6 +26,7 @@ import { toPersianDigits, getMediaUrl } from "@/lib/utils";
 import MediaIconUpload from "@/components/admin/MediaIconUpload";
 
 export default function AdminPlatformScene() {
+  const router = useRouter();
   const { data: profile, isLoading } = usePlatformProfile();
   const updateProfileMutation = useUpdatePlatformProfile();
   const createPostMutation = useCreatePost();
@@ -285,11 +287,11 @@ export default function AdminPlatformScene() {
             پست‌ها و اطلاعیه‌های رسمی پلتفرم
           </h2>
           <Button
-            onClick={() => setIsCreatingPost(!isCreatingPost)}
+            onClick={() => router.push("/posts/create")}
             className="rounded-2xl gap-2 font-black text-xs"
           >
             <Plus className="w-4 h-4" />
-            انتشار پست جدید
+            ایجاد پست در استودیو محتوا
           </Button>
         </div>
 

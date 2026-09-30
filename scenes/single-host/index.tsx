@@ -32,6 +32,7 @@ import {
 import { formatCurrency, toPersianDigits, cn, getMediaUrl } from "@/lib/utils";
 import { toast } from "sonner";
 import { UnifiedPost } from "@/types/api/showcase.types";
+import { MarkdownRenderer } from "@/components/ui/MarkdownRenderer";
 
 interface SingleHostSceneProps {
   idOrSlug: string;
@@ -404,8 +405,8 @@ export default function SingleHostScene({ idOrSlug }: SingleHostSceneProps) {
                 <Image src={getMediaUrl(selectedPost.mediaUrls[0])} alt={selectedPost.title} fill className="object-cover" />
               </div>
             )}
-            <div className="text-sm text-brand/90 leading-relaxed font-medium whitespace-pre-line">
-              {selectedPost.content}
+            <div className="pt-2">
+              <MarkdownRenderer content={selectedPost.content} />
             </div>
           </div>
         </div>

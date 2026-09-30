@@ -600,23 +600,13 @@ export default function AgencyPanelScene() {
                                 </p>
                             </div>
 
-                            <button
-                                type="button"
-                                onClick={() => setPostModal({
-                                    isOpen: true,
-                                    isEdit: false,
-                                    title: "",
-                                    slug: "",
-                                    summary: "",
-                                    content: "",
-                                    mediaUrls: [],
-                                    isPublished: true,
-                                })}
+                            <Link
+                                href="/posts/create"
                                 className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-black transition-colors shadow-sm"
                             >
                                 <Plus className="w-4 h-4" />
-                                <span>ارسال پست جدید</span>
-                            </button>
+                                <span>ارسال پست جدید در استودیو محتوا</span>
+                            </Link>
                         </div>
 
                         {isLoadingPosts ? (

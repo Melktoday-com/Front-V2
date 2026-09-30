@@ -42,6 +42,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { MarkdownRenderer } from "@/components/ui/MarkdownRenderer";
 
 export default function SingleAgencyScene() {
     const params = useParams();
@@ -759,8 +760,8 @@ export default function SingleAgencyScene() {
                             <span>بازدید: {readingPost.viewCount || 0}</span>
                         </div>
 
-                        <div className="text-xs sm:text-sm text-slate-700 leading-relaxed whitespace-pre-line py-2">
-                            {readingPost.content}
+                        <div className="pt-2">
+                            <MarkdownRenderer content={readingPost.content} />
                         </div>
 
                         <div className="pt-3 border-t border-slate-100 flex justify-end">
