@@ -38,10 +38,21 @@ import {
     ListAdminsResponse,
     CreateAdminRequest,
     UpdateAdminPermissionsRequest,
+    AdminRevokeResponse,
     PermissionDefinition,
     MyPermissionsResponse,
-    AdminRevokeResponse,
+    FinancialSummary,
+    AdminTransactionItem,
+    AdminTransactionsQueryParams,
+    ListAdminTransactionsResponse,
+    AdminUserWalletItem,
+    AdminUserWalletsQueryParams,
+    ListAdminUserWalletsResponse,
+    UserWalletDetailResponse,
+    ToggleWalletFreezeRequest,
 } from "@/types/api/admin.types";
+
+
 import { AttributeDefinition, CategoryListItem, PriceModel, Subcategory } from "@/types/api/ads.types";
 import {
     TemporaryRentAttributeDefinition,
@@ -541,5 +552,32 @@ export const adminService = {
         const response = await api.get<MyPermissionsResponse>("/admin/me/permissions");
         return response.data;
     },
+
+    // ── Financial & Wallet Management ───────────────────────────────────────
+    getFinancialSummary: async (params?: { fromDate?: string; toDate?: string }): Promise<FinancialSummary> => {
+        const response = await api.get<FinancialSummary>("/admin/wallet/summary", { params });
+        return response.data;
+    },
+
+    listTransactions: async (params?: AdminTransactionsQueryParams): Promise<ListAdminTransactionsResponse> => {
+        const response = await api.get<ListAdminTransactionsResponse>("/admin/wallet/transactions", { params });
+        return response.data;
+    },
+
+    listUserWallets: async (params?: AdminUserWalletsQueryParams): Promise<ListAdminUserWalletsResponse> => {
+        const response = await api.get<ListAdminUserWalletsResponse>("/admin/wallet/users", { params });
+        return response.data;
+    },
+
+    getUserWalletDetail: async (userId: string): Promise<UserWalletDetailResponse> => {
+        const response = await api.get<UserWalletDetailResponse>(`/admin/wallet/users/${userId}`);
+        return response.data;
+    },
+
+    toggleWalletFreeze: async (userId: string, data: ToggleWalletFreezeRequest): Promise<{ success: boolean; isFrozen: boolean }> => {
+        const response = await api.post<{ success: boolean; isFrozen: boolean }>(`/admin/wallet/users/${userId}/freeze`, data);
+        return response.data;
+    },
 };
+
 

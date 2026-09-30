@@ -486,3 +486,145 @@ export interface AdminRevokeResponse {
     message: string;
 }
 
+// ── Financial & Wallet Management Types ─────────────────────────────────────
+
+export interface FinancialSummary {
+    totalWalletsCount: number;
+    totalSystemLiquidity: string;
+    totalFrozenAmount: string;
+    activeWalletsCount: number;
+    frozenWalletsCount: number;
+    totalCompletedTransactions: number;
+    totalCreditsAmount: string;
+    totalDebitsAmount: string;
+    totalGiftsAmount: string;
+    totalAdminAdjustmentsAmount: string;
+    totalFailedTransactions: number;
+    totalPendingTransactions: number;
+    todayCredits: string;
+    todayDebits: string;
+    todayTransactionsCount: number;
+}
+
+export interface AdminTransactionItem {
+    id: string;
+    walletId: string;
+    userId: string;
+    userMobile: string;
+    userFullName: string;
+    amount: string;
+    currency: string;
+    type: 'credit' | 'debit' | 'transfer' | 'refund' | string;
+    status: 'completed' | 'pending' | 'failed' | 'cancelled' | string;
+    idempotencyKey: string;
+    reason: string;
+    channel: 'ADMIN_MANUAL' | 'ADMIN_GIFT' | 'GATEWAY' | 'SYSTEM';
+    metadata?: Record<string, any> | null;
+    adminId?: string;
+    adminFullName?: string;
+    adminMobile?: string;
+    createdAt: string;
+}
+
+export interface AdminTransactionsQueryParams {
+    search?: string;
+    userId?: string;
+    adminId?: string;
+    type?: string;
+    status?: string;
+    channel?: string;
+    fromDate?: string;
+    toDate?: string;
+    minAmount?: number;
+    maxAmount?: number;
+    sort?: string;
+    page?: number;
+    limit?: number;
+}
+
+export interface ListAdminTransactionsResponse {
+    items: AdminTransactionItem[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+    filteredTotalCredit: string;
+    filteredTotalDebit: string;
+}
+
+export interface AdminUserWalletItem {
+    userId: string;
+    mobileNumber: string;
+    firstName?: string;
+    lastName?: string;
+    fullName: string;
+    userStatus: string;
+    kycStatus: string;
+    userCreatedAt: string;
+    walletId?: string;
+    balance: string;
+    frozenAmount: string;
+    isFrozen: boolean;
+    totalDeposited: string;
+    totalSpent: string;
+    transactionsCount: number;
+    lastTransactionAt?: string;
+}
+
+export interface AdminUserWalletsQueryParams {
+    search?: string;
+    hasBalanceOnly?: boolean;
+    isFrozen?: boolean;
+    minBalance?: number;
+    maxBalance?: number;
+    status?: string;
+    sort?: string;
+    page?: number;
+    limit?: number;
+}
+
+export interface ListAdminUserWalletsResponse {
+    items: AdminUserWalletItem[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+}
+
+export interface UserWalletDetailResponse {
+    user: {
+        id: string;
+        mobileNumber: string;
+        firstName?: string;
+        lastName?: string;
+        fullName: string;
+        status: string;
+        kycStatus: string;
+        createdAt: string;
+    };
+    wallet: {
+        id?: string;
+        balance: string;
+        frozenAmount: string;
+        currency: string;
+        isFrozen: boolean;
+        createdAt?: string;
+        updatedAt?: string;
+    };
+    stats: {
+        totalDeposited: string;
+        totalSpent: string;
+        totalGiftReceived: string;
+        totalManualAdjustments: string;
+        transactionsCount: number;
+        lastTransactionAt?: string;
+    };
+    recentTransactions: AdminTransactionItem[];
+}
+
+export interface ToggleWalletFreezeRequest {
+    freeze: boolean;
+    reason?: string;
+}
+
+
