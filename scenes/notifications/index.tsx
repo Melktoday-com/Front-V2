@@ -5,40 +5,66 @@ import { NotificationEmptyState } from "@/components/notifications/NotificationE
 import { NotificationFilterTabs } from "@/components/notifications/NotificationFilterTabs";
 import { NotificationSkeleton } from "@/components/notifications/NotificationSkeleton";
 import { useAuth } from "@/hooks/useAuth";
-import { useMarkNotificationAsRead, useNotifications } from "@/hooks/useNotifications";
+import {
+    useInfiniteNotifications,
+    useMarkAllNotificationsAsRead,
+    useMarkNotificationAsRead,
+} from "@/hooks/useNotifications";
 import { toPersianDigits } from "@/lib/utils";
 import {
     Bell,
-    ChevronLeft,
+    CheckCheck,
     ChevronRight,
+    Loader2,
     LogIn,
     RotateCw,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 export default function NotificationsScene() {
     const router = useRouter();
     const { isLoggedIn, isLoading: isAuthLoading } = useAuth();
-
     const [onlyUnread, setOnlyUnread] = useState(false);
-    const [page, setPage] = useState(1);
-    const limit = 15;
+    const sentinelRef = useRef<HTMLDivElement>(null);
 
     const {
-        data: notificationsData,
+        data,
         isLoading,
         isFetching,
+        isFetchingNextPage,
+        hasNextPage,
+        fetchNextPage,
         refetch,
-    } = useNotifications({
+    } = useInfiniteNotifications({
         onlyUnread,
-        page,
-        limit,
+        limit: 15,
     });
 
     const markAsReadMutation = useMarkNotificationAsRead();
+    const markAllAsReadMutation = useMarkAllNotificationsAsRead();
+
+    // Infinite Scroll Intersection Observer
+    useEffect(() => {
+        if (!sentinelRef.current || !hasNextPage || isFetchingNextPage) return;
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+                    fetchNextPage();
+                }
+            },
+            {
+                rootMargin: "250px",
+                threshold: 0.1,
+            }
+        );
+
+        observer.observe(sentinelRef.current);
+        return () => observer.disconnect();
+    }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
     const handleMarkRead = (id: string) => {
         markAsReadMutation.mutate(id, {
@@ -51,9 +77,24 @@ export default function NotificationsScene() {
         });
     };
 
+    const handleMarkAllAsRead = () => {
+        markAllAsReadMutation.mutate(undefined, {
+            onSuccess: (res) => {
+                const count = res?.markedCount ?? 0;
+                toast.success(
+                    count > 0
+                        ? `${toPersianDigits(count)} اعلان به عنوان خوانده‌شده علامت‌گذاری شدند`
+                        : "تمام اعلان‌ها خوانده‌شده هستند"
+                );
+            },
+            onError: () => {
+                toast.error("خطا در خواندن تمامی اعلان‌ها");
+            },
+        });
+    };
+
     const handleTabChange = (newOnlyUnread: boolean) => {
         setOnlyUnread(newOnlyUnread);
-        setPage(1);
     };
 
     // If user is not logged in
@@ -82,11 +123,11 @@ export default function NotificationsScene() {
         );
     }
 
-    const items = notificationsData?.items || [];
-    const total = notificationsData?.total || 0;
-    const totalAll = notificationsData?.totalAll || 0;
-    const unreadCount = notificationsData?.unreadCount || 0;
-    const totalPages = Math.ceil(total / limit) || 1;
+    const firstPage = data?.pages[0];
+    const items = data?.pages.flatMap((page) => page.items) || [];
+    const total = firstPage?.total || 0;
+    const totalAll = firstPage?.totalAll || 0;
+    const unreadCount = firstPage?.unreadCount || 0;
 
     return (
         <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6 pb-28 space-y-6">
@@ -110,16 +151,37 @@ export default function NotificationsScene() {
                     )}
                 </div>
 
-                <button
-                    type="button"
-                    onClick={() => refetch()}
-                    disabled={isFetching}
-                    title="بروزرسانی"
-                    aria-label="بروزرسانی لیست اعلان‌ها"
-                    className="p-2 text-secondary hover:text-brand bg-white rounded-xl border border-soft-border/70 hover:shadow-sm transition-all disabled:opacity-50"
-                >
-                    <RotateCw className={`w-4 h-4 ${isFetching ? "animate-spin text-primary" : ""}`} />
-                </button>
+                <div className="flex items-center gap-2">
+                    {/* Read All CTA button */}
+                    {unreadCount > 0 && (
+                        <button
+                            type="button"
+                            onClick={handleMarkAllAsRead}
+                            disabled={markAllAsReadMutation.isPending}
+                            title="علامت‌گذاری همه به عنوان خوانده‌شده"
+                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/80 rounded-xl hover:bg-emerald-100/70 active:scale-95 transition-all disabled:opacity-50"
+                        >
+                            {markAllAsReadMutation.isPending ? (
+                                <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-600" />
+                            ) : (
+                                <CheckCheck className="w-3.5 h-3.5 text-emerald-600" />
+                            )}
+                            <span className="hidden sm:inline">خواندن همه</span>
+                        </button>
+                    )}
+
+                    {/* Refresh button */}
+                    <button
+                        type="button"
+                        onClick={() => refetch()}
+                        disabled={isFetching}
+                        title="بروزرسانی"
+                        aria-label="بروزرسانی لیست اعلان‌ها"
+                        className="p-2 text-secondary hover:text-brand bg-white rounded-xl border border-soft-border/70 hover:shadow-sm transition-all disabled:opacity-50"
+                    >
+                        <RotateCw className={`w-4 h-4 ${isFetching ? "animate-spin text-primary" : ""}`} />
+                    </button>
+                </div>
             </div>
 
             {/* Filter Tabs */}
@@ -130,6 +192,18 @@ export default function NotificationsScene() {
                     unreadCount={unreadCount}
                     totalCount={totalAll}
                 />
+
+                {unreadCount > 0 && (
+                    <button
+                        type="button"
+                        onClick={handleMarkAllAsRead}
+                        disabled={markAllAsReadMutation.isPending}
+                        className="sm:hidden flex items-center gap-1 text-xs font-bold text-emerald-600 hover:text-emerald-700"
+                    >
+                        <CheckCheck className="w-3.5 h-3.5" />
+                        <span>خواندن همه ({toPersianDigits(unreadCount)})</span>
+                    </button>
+                )}
             </div>
 
             {/* Notifications Content */}
@@ -153,35 +227,28 @@ export default function NotificationsScene() {
                             }
                         />
                     ))}
-                </div>
-            )}
 
-            {/* Pagination */}
-            {totalPages > 1 && (
-                <div className="flex items-center justify-center gap-3 pt-4">
-                    <button
-                        type="button"
-                        onClick={() => setPage((p) => Math.max(1, p - 1))}
-                        disabled={page === 1 || isFetching}
-                        className="flex items-center gap-1 px-4 py-2 bg-white border border-soft-border/70 rounded-xl text-xs font-bold text-brand hover:bg-soft-bg disabled:opacity-40 transition-colors"
-                    >
-                        <ChevronRight className="w-4 h-4" />
-                        <span>قبلی</span>
-                    </button>
-
-                    <span className="text-xs font-black text-secondary">
-                        صفحه {toPersianDigits(page)} از {toPersianDigits(totalPages)}
-                    </span>
-
-                    <button
-                        type="button"
-                        onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                        disabled={page === totalPages || isFetching}
-                        className="flex items-center gap-1 px-4 py-2 bg-white border border-soft-border/70 rounded-xl text-xs font-bold text-brand hover:bg-soft-bg disabled:opacity-40 transition-colors"
-                    >
-                        <span>بعدی</span>
-                        <ChevronLeft className="w-4 h-4" />
-                    </button>
+                    {/* Infinite Scroll Sentinel & Loader */}
+                    <div ref={sentinelRef} className="pt-4 flex items-center justify-center">
+                        {isFetchingNextPage ? (
+                            <div className="flex items-center gap-2 py-4 text-xs font-bold text-secondary">
+                                <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                                <span>در حال بارگذاری اعلان‌های بیشتر...</span>
+                            </div>
+                        ) : hasNextPage ? (
+                            <button
+                                type="button"
+                                onClick={() => fetchNextPage()}
+                                className="px-4 py-2 text-xs font-bold text-secondary hover:text-brand bg-soft-bg hover:bg-soft-border/50 rounded-xl transition-colors"
+                            >
+                                بارگذاری موارد بیشتر
+                            </button>
+                        ) : items.length > 5 ? (
+                            <div className="text-center py-4 text-xs font-medium text-secondary/60">
+                                تمامی اعلان‌ها ({toPersianDigits(total)}) بارگذاری شدند
+                            </div>
+                        ) : null}
+                    </div>
                 </div>
             )}
         </div>

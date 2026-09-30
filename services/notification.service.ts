@@ -32,4 +32,14 @@ export const notificationService = {
     async markAsRead(id: string): Promise<void> {
         await apiClient.patch(`/notifications/${id}/read`);
     },
+
+    /**
+     * Mark all unread notifications for the user as read
+     */
+    async markAllAsRead(): Promise<{ success: boolean; markedCount: number }> {
+        const response = await apiClient.patch<{ success: boolean; markedCount: number }>(
+            "/notifications/read-all"
+        );
+        return response.data;
+    },
 };
