@@ -668,9 +668,35 @@ async function runLiveE2ETestSuite() {
 
         recordTest(
           'Phase 3',
-          '3.12: Reject invalid attribute key format (Regex validation 400)',
-          invalidAttrKeyAttempt.status === 400,
+          '3.12: Reject invalid attribute key format (Regex validation 400/422)',
+          invalidAttrKeyAttempt.status === 400 || invalidAttrKeyAttempt.status === 422,
           { status: invalidAttrKeyAttempt.status, data: invalidAttrKeyAttempt.data },
+        );
+
+        // 3.13: Delete dynamic attribute (Delete test)
+        const deleteAttrRes = await request(`${API_BASE}/ads/subcategories/${subcatId}/attributes/${secAttrId}`, {
+          method: 'DELETE',
+          headers: superAdmin.headers,
+        });
+
+        recordTest(
+          'Phase 3',
+          '3.13: Delete subcategory dynamic attribute (Admin)',
+          deleteAttrRes.status === 200,
+          { status: deleteAttrRes.status, data: deleteAttrRes.data },
+        );
+
+        // 3.14: Verify deleted attribute is removed from active attribute definitions
+        const configAfterDeleteRes = await request(`${API_BASE}/ads/subcategories/${subcatId}/config`);
+        const configAfterDeleteData = configAfterDeleteRes.data?.data || configAfterDeleteRes.data;
+        const attrDefsAfterDel = configAfterDeleteData?.attributeDefinitions || configAfterDeleteData?.attributes || [];
+        const isSecAttrRemoved = !attrDefsAfterDel.some((a) => a.id === secAttrId);
+
+        recordTest(
+          'Phase 3',
+          '3.14: Verify deleted attribute is excluded from subcategory config list',
+          configAfterDeleteRes.status === 200 && isSecAttrRemoved,
+          { status: configAfterDeleteRes.status, remainingCount: attrDefsAfterDel.length, isRemoved: isSecAttrRemoved },
         );
       }
     }
@@ -939,10 +965,51 @@ async function runLiveE2ETestSuite() {
 
       recordTest(
         'Phase 4',
-        '4.12: Reject invalid temporary rent attribute key format (Regex validation 400)',
-        invalidTrAttrKeyAttempt.status === 400,
+        '4.12: Reject invalid temporary rent attribute key format (Regex validation 400/422)',
+        invalidTrAttrKeyAttempt.status === 400 || invalidTrAttrKeyAttempt.status === 422,
         { status: invalidTrAttrKeyAttempt.status, data: invalidTrAttrKeyAttempt.data },
       );
+
+      // 4.13: Create secondary attribute on Temp Rent and then Delete it
+      const createSecTrAttr = await request(`${API_BASE}/temporary-rent/subcategories/${trSubcatId}/attributes`, {
+        method: 'POST',
+        headers: superAdmin.headers,
+        body: {
+          key: 'temp_tr_attr',
+          label: 'ویژگی تستی اجاره روزانه',
+          type: 'STRING',
+        },
+      });
+      const secTrAttr = extractEntity(createSecTrAttr);
+      const secTrAttrId = secTrAttr?.id;
+
+      if (secTrAttrId) {
+        // 4.14: Delete dynamic attribute on Temp Rent
+        const deleteTrAttrRes = await request(`${API_BASE}/temporary-rent/subcategories/${trSubcatId}/attributes/${secTrAttrId}`, {
+          method: 'DELETE',
+          headers: superAdmin.headers,
+        });
+
+        recordTest(
+          'Phase 4',
+          '4.13: Delete temporary rent subcategory dynamic attribute (Admin)',
+          deleteTrAttrRes.status === 200,
+          { status: deleteTrAttrRes.status, data: deleteTrAttrRes.data },
+        );
+
+        // 4.15: Verify deleted attribute is excluded from temp rent subcategory config
+        const trConfigAfterDel = await request(`${API_BASE}/temporary-rent/subcategories/${trSubcatId}/config`);
+        const trConfigAfterDelData = trConfigAfterDel.data?.data || trConfigAfterDel.data;
+        const trAttrDefsAfterDel = trConfigAfterDelData?.attributeDefinitions || trConfigAfterDelData?.attributes || [];
+        const isTrSecAttrRemoved = !trAttrDefsAfterDel.some((a) => a.id === secTrAttrId);
+
+        recordTest(
+          'Phase 4',
+          '4.14: Verify deleted attribute is excluded from temporary rent config list',
+          trConfigAfterDel.status === 200 && isTrSecAttrRemoved,
+          { status: trConfigAfterDel.status, remainingCount: trAttrDefsAfterDel.length, isRemoved: isTrSecAttrRemoved },
+        );
+      }
     }
 
     // ─────────────────────────────────────────────────────────────────

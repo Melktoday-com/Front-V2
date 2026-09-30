@@ -197,6 +197,9 @@ export default function SubcategoryConfigModal({
             : adminService.deleteSubcategoryAttribute(subcategoryId, attributeId),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [...queryKeyPrefix, "subcategory-attributes", subcategoryId] });
+            queryClient.invalidateQueries({ queryKey: ["subcategory-config"] });
+            queryClient.invalidateQueries({ queryKey: ["admin", "categories"] });
+            queryClient.invalidateQueries({ queryKey: ["categories"] });
             toast.success("ویژگی با موفقیت حذف شد");
         },
         onError: () => toast.error("خطا در حذف ویژگی")
@@ -465,7 +468,7 @@ export default function SubcategoryConfigModal({
                                     <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
                                     در حال بارگذاری ویژگی‌ها...
                                 </div>
-                            ) : !attributes || attributes.length === 0 ? (
+                            ) : !attributes || attributes.filter((a: AttributeDefinition) => a.isActive !== false).length === 0 ? (
                                 <div className="text-center py-16 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
                                     <p className="text-slate-400 text-sm mb-3">هنوز هیچ ویژگی داینامیکی برای این زیردسته تعریف نشده است.</p>
                                     <button
@@ -478,7 +481,7 @@ export default function SubcategoryConfigModal({
                                 </div>
                             ) : (
                                 <div className="space-y-3">
-                                    {attributes.map((attr: AttributeDefinition) => (
+                                    {attributes.filter((a: AttributeDefinition) => a.isActive !== false).map((attr: AttributeDefinition) => (
                                         <div
                                             key={attr.id}
                                             className="bg-white p-4 rounded-2xl border border-slate-200 hover:border-blue-200 transition-all shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4"
