@@ -185,6 +185,7 @@ export interface CreateAdminCategoryRequest {
 }
 
 export interface UpdateAdminCategoryRequest {
+    key?: string;
     displayName?: string;
     description?: string;
     icon?: string;
@@ -205,6 +206,7 @@ export interface CreateAdminSubcategoryRequest {
 }
 
 export interface UpdateAdminSubcategoryRequest {
+    key?: string;
     displayName?: string;
     description?: string;
     icon?: string;

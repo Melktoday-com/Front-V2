@@ -643,12 +643,12 @@ export default function AdminCategoriesTab() {
                         </div>
                         <div className="p-6 space-y-3.5 text-xs">
                             <div>
-                                <label className="block font-bold text-slate-700 mb-1">کلید فنی (غیرقابل تغییر)</label>
+                                <label className="block font-bold text-slate-700 mb-1">کلید فنی (Key - انگلیسی و بدون فاصله)</label>
                                 <input
                                     type="text"
-                                    value={selectedCategory.key}
-                                    disabled
-                                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-slate-50 font-mono text-slate-400 uppercase"
+                                    value={editCategoryForm.key}
+                                    onChange={(e) => setEditCategoryForm({ ...editCategoryForm, key: e.target.value })}
+                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 font-mono text-slate-700 uppercase focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                                 />
                             </div>
                             <div>
@@ -700,6 +700,7 @@ export default function AdminCategoriesTab() {
                                 onClick={() => updateCategoryMutation.mutate({
                                     id: selectedCategory.id,
                                     payload: {
+                                        key: editCategoryForm.key.trim().toLowerCase(),
                                         displayName: editCategoryForm.displayName.trim(),
                                         description: editCategoryForm.description || undefined,
                                         icon: editCategoryForm.icon || undefined,
@@ -707,7 +708,7 @@ export default function AdminCategoriesTab() {
                                         isActive: editCategoryForm.isActive,
                                     }
                                 })}
-                                disabled={!editCategoryForm.displayName || updateCategoryMutation.isPending}
+                                disabled={!editCategoryForm.key || !editCategoryForm.displayName || updateCategoryMutation.isPending}
                                 className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl transition-all disabled:opacity-50 text-xs"
                             >
                                 {updateCategoryMutation.isPending ? "در حال بروزرسانی..." : "بروزرسانی تغییرات"}
@@ -884,12 +885,12 @@ export default function AdminCategoriesTab() {
                         </div>
                         <div className="p-6 space-y-3.5 text-xs">
                             <div>
-                                <label className="block font-bold text-slate-700 mb-1">کلید فنی (غیرقابل تغییر)</label>
+                                <label className="block font-bold text-slate-700 mb-1">کلید فنی زیردسته (Key - انگلیسی و بدون فاصله)</label>
                                 <input
                                     type="text"
-                                    value={selectedSubcategory.key}
-                                    disabled
-                                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-slate-50 font-mono text-slate-400 uppercase"
+                                    value={editSubcategoryForm.key}
+                                    onChange={(e) => setEditSubcategoryForm({ ...editSubcategoryForm, key: e.target.value })}
+                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 font-mono text-slate-700 uppercase focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                                 />
                             </div>
                             <div>
@@ -1007,6 +1008,7 @@ export default function AdminCategoriesTab() {
                                 onClick={() => updateSubcategoryMutation.mutate({
                                     subcategoryId: selectedSubcategory.id,
                                     payload: {
+                                        key: editSubcategoryForm.key.trim().toLowerCase(),
                                         displayName: editSubcategoryForm.displayName.trim(),
                                         description: editSubcategoryForm.description || undefined,
                                         icon: editSubcategoryForm.icon || undefined,
@@ -1015,7 +1017,7 @@ export default function AdminCategoriesTab() {
                                         allowedPriceModelIds: editSelectedPriceModelIds,
                                     }
                                 })}
-                                disabled={!editSubcategoryForm.displayName || updateSubcategoryMutation.isPending}
+                                disabled={!editSubcategoryForm.key || !editSubcategoryForm.displayName || updateSubcategoryMutation.isPending}
                                 className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl transition-all disabled:opacity-50 text-xs"
                             >
                                 {updateSubcategoryMutation.isPending ? "در حال بروزرسانی..." : "بروزرسانی تغییرات"}
