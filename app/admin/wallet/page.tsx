@@ -145,13 +145,14 @@ function AdminWalletDashboard() {
     // ── Manual Operations State (Tab 3 & Modals) ──────────────────────────────
     const [operationType, setOperationType] = useState<"GIFT" | "CREDIT" | "DEBIT">("GIFT");
     const [targetUserId, setTargetUserId] = useState(queryUserId);
-    const [targetUserPhone, setTargetUserPhone] = useState("");
     const [targetUserSelected, setTargetUserSelected] = useState<{
         id: string;
         fullName: string;
         mobileNumber: string;
         balance?: string;
     } | null>(null);
+    const [userSearchTerm, setUserSearchTerm] = useState("");
+    const [isSearchDropdownOpen, setIsSearchDropdownOpen] = useState(false);
     const [manualAmount, setManualAmount] = useState("");
     const [manualNote, setManualNote] = useState("");
     const [confirmModalOpen, setConfirmModalOpen] = useState(false);
@@ -259,34 +260,35 @@ function AdminWalletDashboard() {
         enabled: canManageWallet && Boolean(detailDrawerUserId),
     });
 
-    // ── Lookup User for Manual Operation ─────────────────────────────────────
-    const handleSearchUserByPhone = async () => {
-        if (!targetUserPhone.trim()) {
-            toast.error("شماره تماس کاربر را وارد کنید");
-            return;
-        }
-        try {
-            const res = await adminService.lookupUserByPhone(targetUserPhone.trim());
-            if (res.found && res.user) {
-                const userObj = res.user as any;
-                const uid = userObj.id || userObj.userId;
-                const phone = userObj.mobileNumber || userObj.mobile || targetUserPhone.trim();
-                setTargetUserId(uid);
-                setTargetUserSelected({
-                    id: uid,
-                    fullName: [userObj.firstName, userObj.lastName].filter(Boolean).join(" ") || userObj.displayName || "کاربر بی نام",
-                    mobileNumber: phone,
-                });
-                toast.success(`کاربر ${userObj.firstName || ""} ${userObj.lastName || ""} شناسایی شد`);
-            } else {
-                toast.error("کاربری با این شماره تماس پیدا نشد");
-                setTargetUserSelected(null);
-            }
-        } catch (err) {
-            toast.error(normalizeApiError(err as any, "خطا در استعلام کاربر"));
-        }
-    };
+    // ── 5. Live User Autocomplete Search for Operations ───────────────────────
+    const {
+        data: searchedUsersData,
+        isLoading: isSearchingUsers,
+    } = useQuery({
+        queryKey: ["admin-wallet-users-autocomplete", userSearchTerm],
+        queryFn: () => adminService.listUserWallets({ search: userSearchTerm.trim(), limit: 8 }),
+        enabled: canManageWallet && userSearchTerm.trim().length >= 2,
+        staleTime: 5000,
+    });
 
+    // ── 6. Initial Lookup from URL Query ──────────────────────────────────────
+    useQuery({
+        queryKey: ["admin-user-initial-lookup", queryUserId],
+        queryFn: async () => {
+            const res = await adminService.getUserWalletDetail(queryUserId);
+            if (res && res.user) {
+                setTargetUserId(res.user.id);
+                setTargetUserSelected({
+                    id: res.user.id,
+                    fullName: res.user.fullName,
+                    mobileNumber: res.user.mobileNumber,
+                    balance: res.wallet.balance,
+                });
+            }
+            return res;
+        },
+        enabled: Boolean(queryUserId) && !targetUserSelected,
+    });
 
     // ── Mutations ─────────────────────────────────────────────────────────────
     const giftMutation = useMutation({
@@ -348,7 +350,7 @@ function AdminWalletDashboard() {
     const handleExecuteManualOperation = () => {
         const cleanAmount = parseInt(manualAmount.replace(/[^\d]/g, ""), 10);
         if (!targetUserId.trim() || isNaN(cleanAmount) || cleanAmount <= 0) {
-            toast.error("شناسه کاربر و مبلغ معتبر الزامی هستند");
+            toast.error("لطفاً کاربر و مبلغ معتبر را مشخص کنید");
             return;
         }
 
@@ -370,7 +372,6 @@ function AdminWalletDashboard() {
 
     const handleOpenQuickCharge = (user: AdminUserWalletItem, opType: "GIFT" | "CREDIT" | "DEBIT" = "CREDIT") => {
         setTargetUserId(user.userId);
-        setTargetUserPhone(user.mobileNumber);
         setTargetUserSelected({
             id: user.userId,
             fullName: user.fullName,
@@ -444,7 +445,7 @@ function AdminWalletDashboard() {
                         onClick={() => {
                             setTargetUserSelected(null);
                             setTargetUserId("");
-                            setTargetUserPhone("");
+                            setUserSearchTerm("");
                             setManualAmount("");
                             setManualNote("");
                             setOperationType("GIFT");
@@ -1316,66 +1317,174 @@ function AdminWalletDashboard() {
                                 </div>
                             </div>
 
-                            {/* 2. Target User Lookup */}
+                            {/* 2. Target User Selection (Live Autocomplete & Rich Card) */}
                             <div className="space-y-3 bg-slate-50 p-5 rounded-2xl border border-soft-border">
-                                <label className="text-xs font-black text-slate-700 flex items-center justify-between">
-                                    <span>انتخاب و استعلام کاربر</span>
+                                <div className="flex items-center justify-between">
+                                    <label className="text-xs font-black text-slate-700 flex items-center gap-1.5">
+                                        <User className="w-4 h-4 text-primary" />
+                                        <span>انتخاب کاربر طرف حساب</span>
+                                    </label>
                                     {targetUserSelected && (
-                                        <span className="text-emerald-700 flex items-center gap-1 text-[11px]">
+                                        <span className="text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full flex items-center gap-1 text-[11px] font-bold">
                                             <CheckCircle2 className="w-3.5 h-3.5" />
-                                            کاربر تایید شده
+                                            کاربر انتخاب شده
                                         </span>
                                     )}
-                                </label>
-
-                                <div className="flex gap-2">
-                                    <div className="relative flex-1">
-                                        <input
-                                            type="text"
-                                            value={targetUserPhone}
-                                            onChange={(e) => setTargetUserPhone(e.target.value)}
-                                            placeholder="شماره موبایل کاربر (مثلا: ۰۹۱۲۳۴۵۶۷۸۹)"
-                                            className="w-full pl-4 pr-10 py-3 bg-white border border-soft-border rounded-xl text-xs font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition"
-                                        />
-                                        <Phone className="w-4 h-4 text-slate-400 absolute right-3 top-3.5" />
-                                    </div>
-                                    <button
-                                        type="button"
-                                        onClick={handleSearchUserByPhone}
-                                        className="px-6 py-3 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 transition shadow-sm"
-                                    >
-                                        استعلام شماره
-                                    </button>
                                 </div>
 
                                 {targetUserSelected ? (
-                                    <div className="bg-white p-4 rounded-xl border border-emerald-200 flex items-center justify-between">
+                                    /* Selected User Card */
+                                    <div className="bg-white p-4 rounded-2xl border-2 border-emerald-400/80 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold">
-                                                <UserCheck className="w-5 h-5" />
+                                            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center font-black text-base shadow-sm shrink-0">
+                                                {targetUserSelected.fullName.charAt(0) || "ک"}
                                             </div>
                                             <div>
-                                                <h4 className="font-bold text-slate-900 text-xs">{targetUserSelected.fullName}</h4>
-                                                <p className="text-[11px] text-slate-500 font-mono mt-0.5">{targetUserSelected.mobileNumber}</p>
+                                                <div className="flex items-center gap-2">
+                                                    <h4 className="font-black text-slate-900 text-sm">{targetUserSelected.fullName}</h4>
+                                                </div>
+                                                <span className="text-xs text-slate-500 font-mono block mt-0.5" dir="ltr">
+                                                    {toPersianDigits(targetUserSelected.mobileNumber)}
+                                                </span>
                                             </div>
                                         </div>
-                                        {targetUserSelected.balance && (
-                                            <div className="text-left">
-                                                <span className="text-[10px] text-slate-400 block font-bold">موجودی فعلی</span>
-                                                <span className="text-xs font-black text-slate-800">{formatRials(targetUserSelected.balance)}</span>
-                                            </div>
-                                        )}
+
+                                        <div className="flex items-center gap-2 self-end sm:self-center">
+                                            {targetUserSelected.balance !== undefined && (
+                                                <div className="text-left bg-slate-50 px-3 py-1.5 rounded-xl border border-soft-border">
+                                                    <span className="text-[10px] text-slate-400 block font-bold">موجودی فعلی:</span>
+                                                    <span className="text-xs font-black text-emerald-700">{formatRials(targetUserSelected.balance)}</span>
+                                                </div>
+                                            )}
+
+                                            <button
+                                                type="button"
+                                                onClick={() => setDetailDrawerUserId(targetUserSelected.id)}
+                                                className="p-2 rounded-xl border border-soft-border hover:bg-slate-100 text-slate-600 transition"
+                                                title="مشاهده پرونده مالی و تراکنش‌ها"
+                                            >
+                                                <Eye className="w-4 h-4" />
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setTargetUserSelected(null);
+                                                    setTargetUserId("");
+                                                    setUserSearchTerm("");
+                                                    setIsSearchDropdownOpen(true);
+                                                }}
+                                                className="px-3 py-2 rounded-xl bg-slate-100 hover:bg-rose-50 hover:text-rose-600 text-slate-600 text-xs font-bold transition flex items-center gap-1"
+                                            >
+                                                <X className="w-3.5 h-3.5" />
+                                                <span>تغییر کاربر</span>
+                                            </button>
+                                        </div>
                                     </div>
                                 ) : (
-                                    <div className="space-y-1">
-                                        <span className="text-[11px] text-slate-400">یا شناسه مستقیم کاربر (UUID) را وارد کنید:</span>
-                                        <input
-                                            type="text"
-                                            value={targetUserId}
-                                            onChange={(e) => setTargetUserId(e.target.value)}
-                                            placeholder="مثلا: 123e4567-e89b-12d3-a456-426614174000"
-                                            className="w-full px-4 py-2.5 bg-white border border-soft-border rounded-xl text-xs font-mono text-slate-600 outline-none"
-                                        />
+                                    /* User Live Search & Autocomplete */
+                                    <div className="relative space-y-2">
+                                        <div className="relative">
+                                            <input
+                                                type="text"
+                                                value={userSearchTerm}
+                                                onChange={(e) => {
+                                                    setUserSearchTerm(e.target.value);
+                                                    setIsSearchDropdownOpen(true);
+                                                }}
+                                                onFocus={() => setIsSearchDropdownOpen(true)}
+                                                placeholder="جستجوی کاربر با نام یا شماره موبایل (مثلا: ۰۹۱۲ یا رضایی)..."
+                                                className="w-full pl-10 pr-10 py-3.5 bg-white border border-soft-border rounded-2xl text-xs font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition shadow-sm"
+                                            />
+                                            <Search className="w-4 h-4 text-slate-400 absolute right-3.5 top-4" />
+                                            {userSearchTerm && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setUserSearchTerm("");
+                                                        setIsSearchDropdownOpen(false);
+                                                    }}
+                                                    className="absolute left-3.5 top-3.5 p-1 text-slate-400 hover:text-slate-600 rounded-lg"
+                                                >
+                                                    <X className="w-4 h-4" />
+                                                </button>
+                                            )}
+                                        </div>
+
+                                        {/* Autocomplete Dropdown */}
+                                        {isSearchDropdownOpen && userSearchTerm.trim().length >= 2 && (
+                                            <div className="absolute z-30 top-full mt-1 right-0 left-0 bg-white border border-soft-border rounded-2xl shadow-xl overflow-hidden divide-y divide-soft-border max-h-72 overflow-y-auto animate-in fade-in zoom-in-95 duration-150">
+                                                {isSearchingUsers ? (
+                                                    <div className="p-4 text-center text-xs text-slate-500 flex items-center justify-center gap-2">
+                                                        <RefreshCw className="w-4 h-4 animate-spin text-primary" />
+                                                        <span>در حال جستجوی کاربران...</span>
+                                                    </div>
+                                                ) : !searchedUsersData?.items || searchedUsersData.items.length === 0 ? (
+                                                    <div className="p-6 text-center text-xs text-slate-500 space-y-1">
+                                                        <Users className="w-6 h-6 text-slate-300 mx-auto" />
+                                                        <p className="font-bold">کاربری با این مشخصات یافت نشد</p>
+                                                    </div>
+                                                ) : (
+                                                    searchedUsersData.items.map((u) => (
+                                                        <button
+                                                            key={u.userId}
+                                                            type="button"
+                                                            onClick={() => {
+                                                                setTargetUserId(u.userId);
+                                                                setTargetUserSelected({
+                                                                    id: u.userId,
+                                                                    fullName: u.fullName,
+                                                                    mobileNumber: u.mobileNumber,
+                                                                    balance: u.balance,
+                                                                });
+                                                                setUserSearchTerm("");
+                                                                setIsSearchDropdownOpen(false);
+                                                            }}
+                                                            className="w-full p-3.5 text-right hover:bg-primary/5 transition flex items-center justify-between group"
+                                                        >
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="w-9 h-9 rounded-xl bg-slate-100 group-hover:bg-primary/10 group-hover:text-primary transition flex items-center justify-center font-bold text-slate-700 text-xs">
+                                                                    {u.fullName.charAt(0)}
+                                                                </div>
+                                                                <div>
+                                                                    <div className="font-bold text-slate-900 text-xs flex items-center gap-1.5">
+                                                                        <span>{u.fullName}</span>
+                                                                        {u.kycStatus === "Verified" && (
+                                                                            <span className="px-1.5 py-0.2 rounded text-[8px] font-black bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                                                                تایید هویت
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
+                                                                    <span className="text-[11px] text-slate-500 font-mono block mt-0.5" dir="ltr">
+                                                                        {toPersianDigits(u.mobileNumber)}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="text-left">
+                                                                <span className="text-[10px] text-slate-400 block font-bold">موجودی:</span>
+                                                                <span className="text-xs font-black text-slate-800 group-hover:text-primary transition">
+                                                                    {formatRials(u.balance)}
+                                                                </span>
+                                                            </div>
+                                                        </button>
+                                                    ))
+                                                )}
+                                            </div>
+                                        )}
+
+                                        {/* Quick Helper / Shortcut to Users Tab */}
+                                        <div className="flex items-center justify-between pt-1 text-[11px] text-slate-500">
+                                            <span>کاربر مورد نظر را از کادر بالا جستجو و انتخاب نمایید.</span>
+                                            <button
+                                                type="button"
+                                                onClick={() => setActiveTab("users")}
+                                                className="text-primary hover:underline font-bold flex items-center gap-1"
+                                            >
+                                                <Users className="w-3.5 h-3.5" />
+                                                <span>انتخاب از فهرست حساب‌های کاربران</span>
+                                            </button>
+                                        </div>
                                     </div>
                                 )}
                             </div>
@@ -1614,8 +1723,41 @@ function AdminWalletDashboard() {
                             </div>
 
                             {/* User Info */}
-                            <div className="bg-blue-50/50 p-4 rounded-2xl border border-blue-100 space-y-2">
-                                <span className="text-xs font-bold text-blue-900 block">مشخصات کاربر طرف حساب</span>
+                            <div className="bg-blue-50/50 p-4 rounded-2xl border border-blue-100 space-y-3">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-xs font-bold text-blue-900 block">مشخصات کاربر طرف حساب</span>
+                                    <div className="flex items-center gap-1.5">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setDetailDrawerUserId(selectedTx.userId);
+                                                setSelectedTx(null);
+                                            }}
+                                            className="px-2.5 py-1 rounded-lg bg-white border border-blue-200 text-blue-800 hover:bg-blue-100 transition text-[10px] font-bold flex items-center gap-1"
+                                        >
+                                            <Eye className="w-3 h-3" />
+                                            <span>پرونده مالی</span>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setTargetUserId(selectedTx.userId);
+                                                setTargetUserSelected({
+                                                    id: selectedTx.userId,
+                                                    fullName: selectedTx.userFullName,
+                                                    mobileNumber: selectedTx.userMobile,
+                                                });
+                                                setOperationType("GIFT");
+                                                setSelectedTx(null);
+                                                setActiveTab("manual-operation");
+                                            }}
+                                            className="px-2.5 py-1 rounded-lg bg-primary text-white hover:bg-primary/90 transition text-[10px] font-bold flex items-center gap-1"
+                                        >
+                                            <Gift className="w-3 h-3" />
+                                            <span>شارژ / عملیات</span>
+                                        </button>
+                                    </div>
+                                </div>
                                 <div className="flex justify-between">
                                     <span className="text-slate-500">نام کاربر:</span>
                                     <span className="font-bold text-slate-900">{selectedTx.userFullName}</span>
@@ -1734,7 +1876,6 @@ function AdminWalletDashboard() {
                                         <button
                                             onClick={() => {
                                                 setTargetUserId(userDetailData.user.id);
-                                                setTargetUserPhone(userDetailData.user.mobileNumber);
                                                 setTargetUserSelected({
                                                     id: userDetailData.user.id,
                                                     fullName: userDetailData.user.fullName,
@@ -1754,7 +1895,6 @@ function AdminWalletDashboard() {
                                         <button
                                             onClick={() => {
                                                 setTargetUserId(userDetailData.user.id);
-                                                setTargetUserPhone(userDetailData.user.mobileNumber);
                                                 setTargetUserSelected({
                                                     id: userDetailData.user.id,
                                                     fullName: userDetailData.user.fullName,
@@ -1771,6 +1911,20 @@ function AdminWalletDashboard() {
                                             <span>تعدیل دستی موجودی</span>
                                         </button>
                                     </div>
+
+                                    {/* Filter in Ledger Button */}
+                                    <button
+                                        onClick={() => {
+                                            setTxSearch(userDetailData.user.mobileNumber || userDetailData.user.fullName);
+                                            setTxPage(1);
+                                            setDetailDrawerUserId(null);
+                                            setActiveTab("transactions");
+                                        }}
+                                        className="w-full py-2.5 rounded-xl border border-soft-border hover:bg-slate-50 text-slate-700 font-bold transition flex items-center justify-center gap-1.5 text-xs"
+                                    >
+                                        <FileText className="w-4 h-4 text-primary" />
+                                        <span>مشاهده تمام تراکنش‌های این کاربر در دفتر کل</span>
+                                    </button>
 
                                     {/* Recent User Transactions */}
                                     <div className="space-y-3">
