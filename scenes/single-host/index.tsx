@@ -29,7 +29,7 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { formatCurrency, toPersianDigits, cn } from "@/lib/utils";
+import { formatCurrency, toPersianDigits, cn, getMediaUrl } from "@/lib/utils";
 import { toast } from "sonner";
 import { UnifiedPost } from "@/types/api/showcase.types";
 
@@ -109,7 +109,7 @@ export default function SingleHostScene({ idOrSlug }: SingleHostSceneProps) {
       {/* Cover Banner */}
       <div className="relative h-48 sm:h-64 md:h-80 w-full bg-linear-to-l from-emerald-800 to-teal-900 overflow-hidden">
         {header.coverUrl ? (
-          <Image src={header.coverUrl} alt={header.title} fill className="object-cover" priority />
+          <Image src={getMediaUrl(header.coverUrl)} alt={header.title} fill className="object-cover" priority />
         ) : (
           <div className="absolute inset-0 bg-cover-pattern opacity-10" />
         )}
@@ -255,7 +255,7 @@ export default function SingleHostScene({ idOrSlug }: SingleHostSceneProps) {
                     <div className="relative h-48 w-full bg-soft-bg overflow-hidden">
                       {rental.mediaUrls?.[0] ? (
                         <Image
-                          src={rental.mediaUrls[0]}
+                          src={getMediaUrl(rental.mediaUrls[0])}
                           alt={rental.title}
                           fill
                           className="object-cover group-hover:scale-105 transition-transform duration-300"
@@ -313,7 +313,7 @@ export default function SingleHostScene({ idOrSlug }: SingleHostSceneProps) {
                   >
                     {post.mediaUrls?.[0] && (
                       <div className="relative h-44 w-full rounded-2xl overflow-hidden bg-soft-bg">
-                        <Image src={post.mediaUrls[0]} alt={post.title} fill className="object-cover group-hover:scale-105 transition-transform" />
+                        <Image src={getMediaUrl(post.mediaUrls[0])} alt={post.title} fill className="object-cover group-hover:scale-105 transition-transform" />
                       </div>
                     )}
                     <div className="space-y-2">
@@ -401,7 +401,7 @@ export default function SingleHostScene({ idOrSlug }: SingleHostSceneProps) {
             </div>
             {selectedPost.mediaUrls?.[0] && (
               <div className="relative h-64 w-full rounded-2xl overflow-hidden bg-soft-bg">
-                <Image src={selectedPost.mediaUrls[0]} alt={selectedPost.title} fill className="object-cover" />
+                <Image src={getMediaUrl(selectedPost.mediaUrls[0])} alt={selectedPost.title} fill className="object-cover" />
               </div>
             )}
             <div className="text-sm text-brand/90 leading-relaxed font-medium whitespace-pre-line">

@@ -8,7 +8,7 @@ import { useAds } from "@/hooks/useAds";
 import { useAgencyContact, useFollowAgency, useUnfollowAgency } from "@/hooks/useAgencies";
 import { useAuth } from "@/hooks/useAuth";
 import { useCreateConversation } from "@/hooks/useChat";
-import { cn, formatPrice, toPersianDigits } from "@/lib/utils";
+import { cn, formatPrice, toPersianDigits, getMediaUrl } from "@/lib/utils";
 import { agencyService } from "@/services/agency.service";
 import { AgencyPost } from "@/types/api/agency.types";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -230,7 +230,7 @@ export default function SingleAgencyScene() {
                 <div className="h-36 sm:h-52 w-full bg-gradient-to-r from-slate-800 via-blue-900 to-indigo-900 relative">
                     {agency.coverUrl && (
                         <img
-                            src={agency.coverUrl}
+                            src={getMediaUrl(agency.coverUrl)}
                             alt={agency.agencyName || agency.name}
                             className="w-full h-full object-cover"
                         />
@@ -254,7 +254,7 @@ export default function SingleAgencyScene() {
                             <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl border-4 border-white shadow-md bg-white overflow-hidden flex items-center justify-center font-black text-2xl text-brand">
                                 {agency.logoUrl ? (
                                     <img
-                                        src={agency.logoUrl}
+                                        src={getMediaUrl(agency.logoUrl)}
                                         alt={agency.agencyName || agency.name}
                                         className="w-full h-full object-cover"
                                     />
@@ -568,7 +568,7 @@ export default function SingleAgencyScene() {
                                     {post.mediaUrls && post.mediaUrls.length > 0 && (
                                         <div className="h-40 w-full rounded-2xl overflow-hidden bg-slate-100">
                                             <img
-                                                src={post.mediaUrls[0]}
+                                                src={getMediaUrl(post.mediaUrls[0])}
                                                 alt={post.title}
                                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                             />
@@ -750,7 +750,7 @@ export default function SingleAgencyScene() {
 
                         {readingPost.mediaUrls && readingPost.mediaUrls.length > 0 && (
                             <div className="h-60 w-full rounded-2xl overflow-hidden bg-slate-100">
-                                <img src={readingPost.mediaUrls[0]} alt={readingPost.title} className="w-full h-full object-cover" />
+                                <img src={getMediaUrl(readingPost.mediaUrls[0])} alt={readingPost.title} className="w-full h-full object-cover" />
                             </div>
                         )}
 

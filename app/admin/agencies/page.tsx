@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { adminService } from "@/services/admin.service";
 import {
@@ -25,9 +26,9 @@ import {
     MapPin,
 } from "lucide-react";
 import { toast } from "sonner";
-import Link from "next/link";
 import { AgentApplicationResponse, AgencyFull } from "@/types/api/agency.types";
 import { normalizeApiError } from "@/lib/api/error-handler";
+import { getMediaUrl } from "@/lib/utils";
 
 export default function AdminAgenciesPage() {
     const queryClient = useQueryClient();
@@ -406,7 +407,7 @@ export default function AdminAgenciesPage() {
                                                     <div className="flex items-center gap-3">
                                                         <div className="w-9 h-9 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-slate-600 shrink-0 overflow-hidden">
                                                             {agency.logoUrl ? (
-                                                                <img src={agency.logoUrl} alt={agency.agencyName} className="w-full h-full object-cover" />
+                                                                <img src={getMediaUrl(agency.logoUrl)} alt={agency.agencyName} className="w-full h-full object-cover" />
                                                             ) : (
                                                                 agency.agencyName?.slice(0, 1) || "A"
                                                             )}

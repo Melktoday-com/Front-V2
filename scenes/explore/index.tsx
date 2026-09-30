@@ -4,8 +4,9 @@ import { PageSectionDivider } from "@/components/ui/PageSectionDivider";
 import { PaginationControls } from "@/components/ui/PaginationControls";
 import { useInfiniteExplorePosts, useLikePost, useMyAgency } from "@/hooks/useAgencies";
 import { useAuth } from "@/hooks/useAuth";
-import { cn, toPersianDigits } from "@/lib/utils";
+import { cn, toPersianDigits, getMediaUrl } from "@/lib/utils";
 import { agencyService } from "@/services/agency.service";
+import MediaGalleryUpload from "@/components/MediaGalleryUpload";
 import { AgencyPost } from "@/types/api/agency.types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -62,7 +63,7 @@ export default function ExploreScene() {
     const [postTitle, setPostTitle] = useState("");
     const [postSummary, setPostSummary] = useState("");
     const [postContent, setPostContent] = useState("");
-    const [postMediaUrls, setPostMediaUrls] = useState("");
+    const [postMediaIds, setPostMediaIds] = useState<string[]>([]);
 
     // Fetch published posts with infinite scroll
     const {
@@ -113,12 +114,7 @@ export default function ExploreScene() {
                 title: postTitle.trim(),
                 summary: postSummary.trim() || undefined,
                 content: postContent.trim(),
-                mediaUrls: postMediaUrls
-                    ? postMediaUrls
-                        .split(",")
-                        .map((u) => u.trim())
-                        .filter(Boolean)
-                    : [],
+                mediaUrls: postMediaIds.length > 0 ? postMediaIds : [],
                 isPublished: true,
             }),
         onSuccess: () => {
@@ -127,7 +123,7 @@ export default function ExploreScene() {
             setPostTitle("");
             setPostSummary("");
             setPostContent("");
-            setPostMediaUrls("");
+            setPostMediaIds([]);
             queryClient.invalidateQueries({ queryKey: ["explore-posts"] });
             queryClient.invalidateQueries({ queryKey: ["explore-posts-infinite"] });
             refetch();
@@ -423,7 +419,7 @@ export default function ExploreScene() {
                                     {pagePosts.map((post) => {
                                         const agency = post.agency;
                                         const agencySlugOrId = agency?.slug || agency?.id || post.agencyId;
-                                        const coverImage = post.mediaUrls && post.mediaUrls.length > 0 ? post.mediaUrls[0] : null;
+                                        const coverImage = post.mediaUrls && post.mediaUrls.length > 0 ? getMediaUrl(post.mediaUrls[0]) : null;
 
                                         return (
                                             <article
@@ -441,7 +437,7 @@ export default function ExploreScene() {
                                                         <div className="relative w-10 h-10 rounded-full overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
                                                             {agency?.logoUrl ? (
                                                                 <Image
-                                                                    src={agency.logoUrl}
+                                                                    src={getMediaUrl(agency.logoUrl)}
                                                                     alt={agency?.name || "لوگوی املاک"}
                                                                     fill
                                                                     className="object-cover"
@@ -597,7 +593,7 @@ export default function ExploreScene() {
                                 <div className="relative w-12 h-12 rounded-full overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
                                     {readingPost.agency?.logoUrl ? (
                                         <Image
-                                            src={readingPost.agency.logoUrl}
+                                            src={getMediaUrl(readingPost.agency.logoUrl)}
                                             alt={readingPost.agency?.name || ""}
                                             fill
                                             className="object-cover"
@@ -647,7 +643,7 @@ export default function ExploreScene() {
                                 {readingPost.mediaUrls.map((url, i) => (
                                     <div key={i} className="relative aspect-video w-full rounded-2xl overflow-hidden bg-slate-100 border border-slate-200">
                                         <Image
-                                            src={url}
+                                            src={getMediaUrl(url)}
                                             alt={`تصویر ${i + 1}`}
                                             fill
                                             className="object-cover"
@@ -761,14 +757,11 @@ export default function ExploreScene() {
                             </div>
 
                             <div className="space-y-1.5">
-                                <label className="text-xs font-bold text-slate-700">آدرس تصویر شاخص (URL، اختیاری)</label>
-                                <input
-                                    type="text"
-                                    placeholder="https://example.com/image.jpg (در صورت وجود چند تصویر با کاما جدا کنید)"
-                                    value={postMediaUrls}
-                                    onChange={(e) => setPostMediaUrls(e.target.value)}
-                                    className="w-full px-4 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-sm focus:bg-white focus:border-primary focus:outline-hidden text-left"
-                                    dir="ltr"
+                                <MediaGalleryUpload
+                                    label="تصاویر پست (اختیاری)"
+                                    helperText="تصاویر مورد نظر برای مقاله یا تحلیل را انتخاب و بارگذاری کنید"
+                                    value={postMediaIds}
+                                    onChange={setPostMediaIds}
                                 />
                             </div>
 

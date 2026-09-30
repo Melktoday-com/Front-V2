@@ -25,7 +25,7 @@ import {
     Sparkles,
     X,
 } from 'lucide-react';
-import { cn, toPersianDigits } from '@/lib/utils';
+import { cn, toPersianDigits, getMediaUrl } from '@/lib/utils';
 import { toast } from 'sonner';
 
 type FilterTab = 'ALL' | 'AD' | 'TEMPORARY_RENT' | 'POST';
@@ -352,7 +352,7 @@ export default function FavoritesPage() {
                                 {readingPost.mediaUrls.map((url, i) => (
                                     <div key={i} className="relative aspect-video w-full rounded-2xl overflow-hidden bg-gray-100 border border-gray-200">
                                         <Image
-                                            src={url}
+                                            src={getMediaUrl(url)}
                                             alt={`تصویر ${i + 1}`}
                                             fill
                                             className="object-cover"

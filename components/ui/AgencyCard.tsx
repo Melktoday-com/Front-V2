@@ -3,7 +3,7 @@
 import { MapPin, Star, Verified } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { toPersianDigits } from "@/lib/utils";
+import { toPersianDigits, getMediaUrl } from "@/lib/utils";
 
 interface AgencyCardProps {
     id: string;
@@ -19,13 +19,15 @@ export function AgencyCard({ id, name, bio, logoUrl, isVerified, rating, locatio
     const slug = name.replace(/\s+/g, "-");
     const href = `/agency/${id}/${encodeURIComponent(slug)}`;
 
+    const resolvedLogoUrl = logoUrl ? getMediaUrl(logoUrl) : "/agency-placeholder.png";
+
     return (
         <Link href={href}>
             <div className="bg-white rounded-2xl p-4 border border-soft-border hover:shadow-lg transition-all duration-300 group h-full flex flex-col">
                 <div className="flex gap-3">
                     <div className="relative w-12 h-12 lg:w-14 lg:h-14 rounded-xl overflow-hidden bg-soft-bg shrink-0 border border-soft-border group-hover:border-primary/30 transition-colors">
                         <Image
-                            src={logoUrl || "/agency-placeholder.png"}
+                            src={resolvedLogoUrl}
                             alt={name}
                             fill
                             className="object-cover"

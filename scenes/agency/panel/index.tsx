@@ -2,8 +2,10 @@
 
 import { useAgencyStats, useMyAgency } from "@/hooks/useAgencies";
 import { useAuth } from "@/hooks/useAuth";
-import { cn, toPersianDigits } from "@/lib/utils";
+import { cn, toPersianDigits, getMediaUrl } from "@/lib/utils";
 import { agencyService } from "@/services/agency.service";
+import MediaIconUpload from "@/components/admin/MediaIconUpload";
+import MediaGalleryUpload from "@/components/MediaGalleryUpload";
 import { AgencyConsultationMessage, AgencyPost, AgencyPostsListResponse, UpdateAgencyProfileRequest } from "@/types/api/agency.types";
 import { normalizeApiError } from "@/lib/api/error-handler";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -123,7 +125,7 @@ export default function AgencyPanelScene() {
         slug: string;
         summary: string;
         content: string;
-        mediaUrls: string;
+        mediaUrls: string[];
         isPublished: boolean;
     } | null>(null);
 
@@ -134,7 +136,7 @@ export default function AgencyPanelScene() {
         slug?: string;
         summary?: string;
         content: string;
-        mediaUrls?: string;
+        mediaUrls?: string[];
         isPublished: boolean;
     }
 
@@ -145,7 +147,7 @@ export default function AgencyPanelScene() {
                 slug: data.slug || undefined,
                 summary: data.summary || undefined,
                 content: data.content,
-                mediaUrls: data.mediaUrls ? data.mediaUrls.split(",").map((s: string) => s.trim()).filter(Boolean) : [],
+                mediaUrls: data.mediaUrls && data.mediaUrls.length > 0 ? data.mediaUrls : [],
                 isPublished: data.isPublished,
             };
             if (data.isEdit && data.postId) {
@@ -475,24 +477,20 @@ export default function AgencyPanelScene() {
                             </div>
 
                             <div className="space-y-1.5">
-                                <label className="text-xs font-bold text-slate-700">آدرس تصویر لوگو (URL)</label>
-                                <input
-                                    type="text"
+                                <MediaIconUpload
+                                    label="تصویر لوگوی آژانس"
+                                    helperText="یک تصویر با کیفیت و مربعی برای نمایه و لوگوی آژانس بارگذاری کنید"
                                     value={settingsForm.logoUrl}
-                                    onChange={(e) => setSettingsForm({ ...settingsForm, logoUrl: e.target.value })}
-                                    placeholder="https://..."
-                                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono text-left focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                                    onChange={(mediaId) => setSettingsForm({ ...settingsForm, logoUrl: mediaId })}
                                 />
                             </div>
 
                             <div className="space-y-1.5">
-                                <label className="text-xs font-bold text-slate-700">آدرس تصویر کاور یا بنر بالا (URL)</label>
-                                <input
-                                    type="text"
+                                <MediaIconUpload
+                                    label="تصویر کاور یا بنر سربرگ"
+                                    helperText="یک تصویر افقی مناسب با نسبت ۱۶:۹ جهت نمایش در پس‌زمینه بالای صفحه ویترین بارگذاری کنید"
                                     value={settingsForm.coverUrl}
-                                    onChange={(e) => setSettingsForm({ ...settingsForm, coverUrl: e.target.value })}
-                                    placeholder="https://..."
-                                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono text-left focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                                    onChange={(mediaId) => setSettingsForm({ ...settingsForm, coverUrl: mediaId })}
                                 />
                             </div>
 
@@ -611,7 +609,7 @@ export default function AgencyPanelScene() {
                                     slug: "",
                                     summary: "",
                                     content: "",
-                                    mediaUrls: "",
+                                    mediaUrls: [],
                                     isPublished: true,
                                 })}
                                 className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-black transition-colors shadow-sm"
@@ -669,7 +667,7 @@ export default function AgencyPanelScene() {
                                                         slug: post.slug,
                                                         summary: post.summary || "",
                                                         content: post.content,
-                                                        mediaUrls: (post.mediaUrls || []).join(", "),
+                                                        mediaUrls: post.mediaUrls || [],
                                                         isPublished: post.isPublished,
                                                     })}
                                                     className="px-2.5 py-1 text-blue-600 hover:bg-blue-50 rounded-lg font-bold"
@@ -828,13 +826,11 @@ export default function AgencyPanelScene() {
                             </div>
 
                             <div className="space-y-1">
-                                <label className="text-xs font-bold text-slate-700">لینک تصاویر (با کاما جدا کنید)</label>
-                                <input
-                                    type="text"
+                                <MediaGalleryUpload
+                                    label="تصاویر پست"
+                                    helperText="تصاویر با کیفیت جهت نمایش در گالری یا کاور پست بارگذاری کنید"
                                     value={postModal.mediaUrls}
-                                    onChange={(e) => setPostModal({ ...postModal, mediaUrls: e.target.value })}
-                                    placeholder="https://... , https://..."
-                                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono text-left"
+                                    onChange={(mediaIds) => setPostModal({ ...postModal, mediaUrls: mediaIds })}
                                 />
                             </div>
 

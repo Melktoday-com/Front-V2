@@ -17,7 +17,7 @@ interface MediaIconUploadProps {
 export default function MediaIconUpload({
     value,
     onChange,
-    label = 'آیکون',
+    label = 'تصویر',
     helperText,
     disabled = false,
 }: MediaIconUploadProps) {
@@ -30,14 +30,14 @@ export default function MediaIconUpload({
 
         const file = files[0];
 
-        if (file.size > 5 * 1024 * 1024) {
-            toast.error('حجم فایل نباید بیشتر از ۵ مگابایت باشد');
+        if (file.size > 10 * 1024 * 1024) {
+            toast.error('حجم فایل نباید بیشتر از ۱۰ مگابایت باشد');
             return;
         }
 
         const isImage = file.type.startsWith('image/') || /\.(svg|png|jpg|jpeg|webp|gif)$/i.test(file.name);
         if (!isImage) {
-            toast.error('لطفاً یک فایل تصویری (SVG, PNG, JPG, WebP) انتخاب کنید');
+            toast.error('لطفاً یک فایل تصویری معتبر (SVG, PNG, JPG, WebP) انتخاب کنید');
             return;
         }
 
@@ -46,13 +46,13 @@ export default function MediaIconUpload({
             const uploadedId = result?.mediaId ?? result?.id;
             if (uploadedId) {
                 onChange(uploadedId);
-                toast.success('آیکون با موفقیت آپلود شد');
+                toast.success(`${label} با موفقیت آپلود شد`);
             } else {
                 toast.error('خطا در دریافت شناسه فایل آپلود شده');
             }
         } catch (err) {
-            console.error('Failed to upload icon:', err);
-            toast.error('خطا در آپلود آیکون، لطفاً مجدداً تلاش کنید');
+            console.error('Failed to upload media:', err);
+            toast.error(`خطا در آپلود ${label}، لطفاً مجدداً تلاش کنید`);
         } finally {
             if (fileInputRef.current) {
                 fileInputRef.current.value = '';

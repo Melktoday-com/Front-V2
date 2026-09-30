@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@/hooks/useAuth";
-import { cn, toPersianDigits } from "@/lib/utils";
+import { cn, toPersianDigits, getMediaUrl } from "@/lib/utils";
 import { Building2, Eye, Heart, Sparkles, User, Verified } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -62,7 +62,7 @@ export function LikedPostCard({
             : 'میزبان اقامتگاه'
     );
 
-    const displayImage = imageUrl || '/property-placeholder.svg';
+    const displayImage = imageUrl ? getMediaUrl(imageUrl) : '/property-placeholder.svg';
 
     const handleHeartClick = async (e: MouseEvent<HTMLButtonElement>) => {
         e.stopPropagation();
@@ -164,7 +164,7 @@ export function LikedPostCard({
                     <div className="w-7 h-7 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center overflow-hidden border border-white/40">
                         {publisherLogo ? (
                             <Image
-                                src={publisherLogo}
+                                src={getMediaUrl(publisherLogo)}
                                 alt={effectivePublisherName}
                                 width={28}
                                 height={28}

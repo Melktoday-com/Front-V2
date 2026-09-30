@@ -32,7 +32,7 @@ import {
   Video,
   X,
 } from "lucide-react";
-import { formatCurrency, toPersianDigits, cn } from "@/lib/utils";
+import { formatCurrency, toPersianDigits, cn, getMediaUrl } from "@/lib/utils";
 import { toast } from "sonner";
 import { UnifiedPost } from "@/types/api/showcase.types";
 
@@ -93,7 +93,7 @@ export default function SinglePlatformScene() {
       {/* Cover Banner */}
       <div className="relative h-48 sm:h-64 md:h-80 w-full bg-linear-to-l from-brand via-gray-900 to-primary overflow-hidden">
         {header?.coverUrl && (
-          <Image src={header.coverUrl} alt="MelkToday Official" fill className="object-cover" priority />
+          <Image src={getMediaUrl(header.coverUrl)} alt="MelkToday Official" fill className="object-cover" priority />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
 
@@ -123,7 +123,7 @@ export default function SinglePlatformScene() {
               {/* Logo */}
               <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-brand border-4 border-white shadow-md overflow-hidden shrink-0 flex items-center justify-center p-3">
                 {header?.avatarUrl ? (
-                  <Image src={header.avatarUrl} alt="Logo" fill className="object-contain p-2" />
+                  <Image src={getMediaUrl(header.avatarUrl)} alt="Logo" fill className="object-contain p-2" />
                 ) : (
                   <span className="text-xl sm:text-2xl font-black text-white tracking-tighter">
                     MELK<span className="text-primary">TODAY</span>
@@ -285,7 +285,7 @@ export default function SinglePlatformScene() {
                   >
                     {post.mediaUrls?.[0] && (
                       <div className="relative h-44 w-full rounded-2xl overflow-hidden bg-soft-bg">
-                        <Image src={post.mediaUrls[0]} alt={post.title} fill className="object-cover group-hover:scale-105 transition-transform" />
+                        <Image src={getMediaUrl(post.mediaUrls[0])} alt={post.title} fill className="object-cover group-hover:scale-105 transition-transform" />
                       </div>
                     )}
                     <div className="space-y-2">
@@ -351,7 +351,7 @@ export default function SinglePlatformScene() {
                   >
                     <div className="relative h-48 w-full bg-soft-bg overflow-hidden">
                       {ad.mediaUrls?.[0] ? (
-                        <Image src={ad.mediaUrls[0]} alt={ad.title} fill className="object-cover group-hover:scale-105 transition-transform" />
+                        <Image src={getMediaUrl(ad.mediaUrls[0])} alt={ad.title} fill className="object-cover group-hover:scale-105 transition-transform" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-secondary/40">
                           <Home className="w-8 h-8" />
@@ -439,7 +439,7 @@ export default function SinglePlatformScene() {
             </div>
             {selectedPost.mediaUrls?.[0] && (
               <div className="relative h-64 w-full rounded-2xl overflow-hidden bg-soft-bg">
-                <Image src={selectedPost.mediaUrls[0]} alt={selectedPost.title} fill className="object-cover" />
+                <Image src={getMediaUrl(selectedPost.mediaUrls[0])} alt={selectedPost.title} fill className="object-cover" />
               </div>
             )}
             <div className="text-sm text-brand/90 leading-relaxed font-medium whitespace-pre-line">
