@@ -1,6 +1,7 @@
 "use client";
 
 import { RoleGuard } from "@/components/RoleGuard";
+import { AccountStatusBanner } from "@/components/ui/AccountStatusBanner";
 import { Button } from "@/components/ui/Button";
 import { useMyAgency } from "@/hooks/useAgencies";
 import { useAuth, useLogout } from "@/hooks/useAuth";
@@ -8,13 +9,12 @@ import { useConversations } from "@/hooks/useChat";
 import { useUnreadNotificationsCount } from "@/hooks/useNotifications";
 import { useHostProfile } from "@/hooks/useShowcase";
 import { useMeProfile, useUser } from "@/hooks/useUser";
+import { useUserStatus } from "@/hooks/useUserStatus";
 import { useWallet } from "@/hooks/useWallet";
 import { cn, formatCurrency, toPersianDigits } from "@/lib/utils";
 import { userService } from "@/services/user.service";
 import { RoleName } from "@/types/access";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useUserStatus } from "@/hooks/useUserStatus";
-import { AccountStatusBanner } from "@/components/ui/AccountStatusBanner";
 import {
     Bell,
     Building2,
@@ -27,9 +27,6 @@ import {
     Loader2,
     LogOut,
     MessageSquare,
-    PenTool,
-    Plus,
-    ShieldAlert,
     ShieldCheck,
     Sparkles,
     User,
@@ -297,16 +294,6 @@ export default function ProfileScene() {
                                 </div>
                                 <ChevronLeft className="w-5 h-5 text-secondary" />
                             </Button>
-                            <Link
-                                href="/posts/create"
-                                className="flex items-center justify-between px-4 py-3 rounded-2xl bg-primary/10 hover:bg-primary/15 text-xs font-black text-primary transition-colors border border-primary/20 group"
-                            >
-                                <div className="flex items-center gap-2">
-                                    <PenTool className="w-4 h-4 text-primary" />
-                                    <span>استودیو انتشار محتوا و اطلاعیه‌های رسمی پلتفرم</span>
-                                </div>
-                                <span className="text-[11px] text-primary font-bold">&larr;</span>
-                            </Link>
                         </div>
                     </RoleGuard>
 
