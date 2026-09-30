@@ -128,6 +128,8 @@ export default function SubcategoryConfigModal({
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [...queryKeyPrefix, "subcategory-price-models", subcategoryId] });
             queryClient.invalidateQueries({ queryKey: ["admin", "categories"] });
+            queryClient.invalidateQueries({ queryKey: ["categories"] });
+            queryClient.invalidateQueries({ queryKey: ["subcategory-config"] });
             toast.success("مدل‌های قیمت‌گذاری مجاز با موفقیت ذخیره شدند");
         },
         onError: () => toast.error("خطا در ذخیره مدل‌های قیمت‌گذاری")

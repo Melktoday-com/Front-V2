@@ -184,6 +184,7 @@ export default function AdminCategoriesTab() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["admin", "categories"] });
             queryClient.invalidateQueries({ queryKey: ["categories"] });
+            queryClient.invalidateQueries({ queryKey: ["subcategory-config"] });
             toast.success("زیردسته جدید با موفقیت اضافه و مدل‌های قیمت‌گذاری تخصیص داده شد");
             setIsCreateSubcategoryModalOpen(false);
         },
@@ -207,6 +208,7 @@ export default function AdminCategoriesTab() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["admin", "categories"] });
             queryClient.invalidateQueries({ queryKey: ["categories"] });
+            queryClient.invalidateQueries({ queryKey: ["subcategory-config"] });
             toast.success("زیردسته با موفقیت بروزرسانی شد");
             setIsEditSubcategoryModalOpen(false);
             setSelectedSubcategory(null);
