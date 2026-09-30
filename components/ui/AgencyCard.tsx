@@ -1,9 +1,9 @@
 "use client";
 
+import { getMediaUrl, toPersianDigits } from "@/lib/utils";
 import { MapPin, Star, Verified } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { toPersianDigits, getMediaUrl } from "@/lib/utils";
 
 interface AgencyCardProps {
     id: string;
@@ -19,7 +19,7 @@ export function AgencyCard({ id, name, bio, logoUrl, isVerified, rating, locatio
     const slug = name.replace(/\s+/g, "-");
     const href = `/agency/${id}/${encodeURIComponent(slug)}`;
 
-    const resolvedLogoUrl = logoUrl ? getMediaUrl(logoUrl) : "/agency-placeholder.png";
+    const resolvedLogoUrl = logoUrl ? getMediaUrl(logoUrl) : "/property-placeholder.svg";
 
     return (
         <Link href={href}>

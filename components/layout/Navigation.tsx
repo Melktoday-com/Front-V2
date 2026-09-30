@@ -20,6 +20,7 @@ import {
     PlusCircle,
     Search,
     ShieldCheck,
+    Sparkles,
     User,
 } from "lucide-react";
 import Link from "next/link";
@@ -156,8 +157,25 @@ export function Sidebar() {
                     </>
                 )}
 
-                <RoleGuard roles={[RoleName.Agent]}>
+                <RoleGuard roles={[RoleName.Agent, RoleName.Landlord, RoleName.Admin, RoleName.SuperAdmin]}>
                     <div className="pt-2 border-t border-slate-100">
+                        <Link
+                            href="/posts/create"
+                            className={cn(
+                                "flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 group font-bold",
+                                pathname.startsWith("/posts/create")
+                                    ? "bg-purple-600 text-white shadow-lg shadow-purple-600/20 font-black"
+                                    : "text-purple-700 bg-purple-50/60 hover:bg-purple-100/80"
+                            )}
+                        >
+                            <Sparkles className="w-5 h-5 text-purple-600" />
+                            <span className="text-sm">استودیو انتشار محتوا</span>
+                        </Link>
+                    </div>
+                </RoleGuard>
+
+                <RoleGuard roles={[RoleName.Agent]}>
+                    <div className="pt-1">
                         <Link
                             href="/agency/panel"
                             className={cn(
@@ -174,7 +192,7 @@ export function Sidebar() {
                 </RoleGuard>
 
                 <RoleGuard roles={[RoleName.Landlord]}>
-                    <div className="pt-2 border-t border-slate-100">
+                    <div className="pt-1">
                         <Link
                             href="/profile/temporary-rent"
                             className={cn(
@@ -191,7 +209,7 @@ export function Sidebar() {
                 </RoleGuard>
 
                 <RoleGuard roles={[RoleName.Admin, RoleName.SuperAdmin]}>
-                    <div className="pt-2 border-t border-slate-100">
+                    <div className="pt-1">
                         <Link
                             href="/admin"
                             className={cn(

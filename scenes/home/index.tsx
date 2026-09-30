@@ -69,7 +69,7 @@ export const HomeScene = () => {
         return (agencyData?.agencies || []).map((agency: AgencySummary) => ({
             id: agency.id,
             name: agency.name,
-            image: agency.logoUrl || "/agency-placeholder.png",
+            image: agency.logoUrl || "/property-placeholder.svg",
             listingsCount: 0, // Backend currently doesn't provide this in list view
         }));
     }, [agencyData]);

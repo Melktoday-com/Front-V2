@@ -5,7 +5,7 @@ import { useUserStatus } from "@/hooks/useUserStatus";
 import { AccountStatusBanner } from "@/components/ui/AccountStatusBanner";
 import { useTemporaryRentAds, usePublishTemporaryRent, useDeleteTemporaryRent } from "@/hooks/useTemporaryRent";
 import { useHostProfile } from "@/hooks/useShowcase";
-import { ChevronRight, Plus, Rocket, Info, Calendar, Users, MapPin, Trash2, ExternalLink } from "lucide-react";
+import { ChevronRight, Plus, Rocket, Info, Calendar, Users, MapPin, Trash2, ExternalLink, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
@@ -73,9 +73,16 @@ export default function TemporaryRentPanelScene() {
                     <button onClick={() => router.back()} className="hover:bg-soft-bg p-2 rounded-xl transition-colors">
                         <ChevronRight className="w-6 h-6 text-brand" />
                     </button>
-                    <h1 className="text-xl lg:text-2xl font-black text-brand">پنل اجاره موقت</h1>
+                    <h1 className="text-xl lg:text-2xl font-black text-brand">پنل اقامتگاه‌ها و میزبانی</h1>
                 </div>
                 <div className="flex items-center gap-3">
+                    <Link
+                        href="/posts/create"
+                        className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 rounded-2xl text-xs font-black transition-colors"
+                    >
+                        <Sparkles className="w-4 h-4 text-purple-600" />
+                        <span className="hidden sm:inline">استودیو انتشار محتوا</span>
+                    </Link>
                     {hostProfile && (
                         <Link
                             href={`/host/${hostProfile.slug || hostProfile.id || hostProfile.userId}`}
@@ -83,7 +90,7 @@ export default function TemporaryRentPanelScene() {
                             className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl text-xs font-bold transition-colors"
                         >
                             <ExternalLink className="w-4 h-4 text-slate-500" />
-                            <span className="hidden sm:inline">مشاهده صفحه عمومی میزبان</span>
+                            <span className="hidden sm:inline">مشاهده ویترین عمومی</span>
                         </Link>
                     )}
                     <Button 
@@ -106,6 +113,28 @@ export default function TemporaryRentPanelScene() {
 
             <main className="p-6 lg:p-10 max-w-5xl mx-auto space-y-8">
                 {isRestricted && <AccountStatusBanner />}
+
+                {/* Host Content Studio Promo Banner */}
+                <div className="bg-gradient-to-r from-emerald-900/90 via-teal-950 to-slate-900 rounded-3xl p-6 sm:p-8 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-emerald-500/20 shadow-sm">
+                    <div className="space-y-1.5">
+                        <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-[11px] font-black">
+                            <Sparkles className="w-3.5 h-3.5" />
+                            <span>استودیو انتشار پست و تور اقامتگاه</span>
+                        </div>
+                        <h3 className="text-lg font-black">معرفی امکانات، راهنمای سفر و جاذبه‌های اقامتگاه</h3>
+                        <p className="text-slate-300 text-xs leading-relaxed max-w-xl">
+                            پست‌های تصویری چنداسلایدی یا مقالات معرفی اقامتگاه و جاذبه‌های گردشگری را برای مسافران منتشر کنید تا رزروهای بیشتری دریافت کنید.
+                        </p>
+                    </div>
+
+                    <Link
+                        href="/posts/create"
+                        className="px-6 py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl text-xs font-black transition-all shrink-0 inline-flex items-center gap-2 shadow-md shadow-emerald-500/20"
+                    >
+                        <Plus className="w-4 h-4" />
+                        <span>ایجاد پست در استودیو</span>
+                    </Link>
+                </div>
 
                 {/* Stats or Announcement */}
                 <div className="bg-primary/5 border border-primary/10 rounded-[30px] p-6 flex flex-col sm:flex-row items-center gap-6">

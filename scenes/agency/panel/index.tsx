@@ -5,7 +5,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { cn, toPersianDigits, getMediaUrl } from "@/lib/utils";
 import { agencyService } from "@/services/agency.service";
 import MediaIconUpload from "@/components/admin/MediaIconUpload";
-import MediaGalleryUpload from "@/components/MediaGalleryUpload";
 import { AgencyConsultationMessage, AgencyPost, AgencyPostsListResponse, UpdateAgencyProfileRequest } from "@/types/api/agency.types";
 import { normalizeApiError } from "@/lib/api/error-handler";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -32,6 +31,7 @@ import {
     Send,
     Settings,
     Share2,
+    Sparkles,
     Star,
     Trash2,
 } from "lucide-react";
@@ -117,58 +117,10 @@ export default function AgencyPanelScene() {
         return postsData?.items ?? [];
     }, [postsData]);
 
-    const [postModal, setPostModal] = useState<{
-        isOpen: boolean;
-        isEdit: boolean;
-        postId?: string;
-        title: string;
-        slug: string;
-        summary: string;
-        content: string;
-        mediaUrls: string[];
-        isPublished: boolean;
-    } | null>(null);
-
-    interface SavePostInput {
-        isEdit?: boolean;
-        postId?: string;
-        title: string;
-        slug?: string;
-        summary?: string;
-        content: string;
-        mediaUrls?: string[];
-        isPublished: boolean;
-    }
-
-    const savePostMutation = useMutation({
-        mutationFn: (data: SavePostInput) => {
-            const payload = {
-                title: data.title,
-                slug: data.slug || undefined,
-                summary: data.summary || undefined,
-                content: data.content,
-                mediaUrls: data.mediaUrls && data.mediaUrls.length > 0 ? data.mediaUrls : [],
-                isPublished: data.isPublished,
-            };
-            if (data.isEdit && data.postId) {
-                return agencyService.updateMyPost(data.postId, payload);
-            }
-            return agencyService.createMyPost(payload);
-        },
-        onSuccess: () => {
-            toast.success("پست با موفقیت ذخیره شد.");
-            setPostModal(null);
-            refetchPosts();
-        },
-        onError: (err: Error) => {
-            toast.error(normalizeApiError(err, "خطا در ذخیره پست."));
-        },
-    });
-
     const deletePostMutation = useMutation({
         mutationFn: (postId: string) => agencyService.deleteMyPost(postId),
         onSuccess: () => {
-            toast.success("پست حذف شد.");
+            toast.success("پست با موفقیت حذف شد.");
             refetchPosts();
         },
         onError: (err: Error) => {
@@ -424,6 +376,28 @@ export default function AgencyPanelScene() {
                                 <span>باز کردن ویترین</span>
                             </Link>
                         </div>
+
+                        {/* Content Creation Studio Banner */}
+                        <div className="bg-gradient-to-r from-purple-900/90 via-indigo-950 to-slate-900 rounded-3xl p-6 sm:p-8 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-purple-500/20 shadow-sm">
+                            <div className="space-y-1.5">
+                                <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-purple-500/20 border border-purple-400/30 text-purple-300 text-[11px] font-black">
+                                    <Sparkles className="w-3.5 h-3.5" />
+                                    <span>استودیو پیشرفته تولید محتوا</span>
+                                </div>
+                                <h3 className="text-lg font-black">انتشار پست‌های تصویری اسلایدی و مقالات تخصصی</h3>
+                                <p className="text-slate-300 text-xs leading-relaxed max-w-xl">
+                                    با انتشار تورهای ویدیویی/تصویری املاک یا تحلیل‌های جامع بازار مسکن، بازدید و اعتبار ویترین املاک خود را چند برابر کنید.
+                                </p>
+                            </div>
+
+                            <Link
+                                href="/posts/create"
+                                className="px-6 py-3.5 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-2xl text-xs font-black transition-all shrink-0 inline-flex items-center gap-2 shadow-md shadow-purple-500/20"
+                            >
+                                <Plus className="w-4 h-4" />
+                                <span>ایجاد پست در استودیو</span>
+                            </Link>
+                        </div>
                     </div>
                 )}
 
@@ -649,27 +623,14 @@ export default function AgencyPanelScene() {
                                             <div className="flex items-center gap-2">
                                                 <button
                                                     type="button"
-                                                    onClick={() => setPostModal({
-                                                        isOpen: true,
-                                                        isEdit: true,
-                                                        postId: post.id,
-                                                        title: post.title,
-                                                        slug: post.slug,
-                                                        summary: post.summary || "",
-                                                        content: post.content,
-                                                        mediaUrls: post.mediaUrls || [],
-                                                        isPublished: post.isPublished,
-                                                    })}
-                                                    className="px-2.5 py-1 text-blue-600 hover:bg-blue-50 rounded-lg font-bold"
-                                                >
-                                                    ویرایش
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => deletePostMutation.mutate(post.id)}
+                                                    onClick={() => {
+                                                        if (window.confirm("آیا از حذف این پست اطمینان دارید؟")) {
+                                                            deletePostMutation.mutate(post.id);
+                                                        }
+                                                    }}
                                                     className="px-2.5 py-1 text-rose-600 hover:bg-rose-50 rounded-lg font-bold"
                                                 >
-                                                    حذف
+                                                    حذف پست
                                                 </button>
                                             </div>
                                         </div>
@@ -756,114 +717,6 @@ export default function AgencyPanelScene() {
                     </div>
                 )}
             </div>
-
-            {/* Modal for Create/Edit Post */}
-            {postModal && (
-                <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-                    <div className="bg-white rounded-3xl max-w-xl w-full p-6 space-y-4 shadow-2xl border border-slate-100 my-8">
-                        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                            <h3 className="text-base font-black text-slate-900">
-                                {postModal.isEdit ? "ویرایش پست" : "ایجاد پست جدید در صفحه ویترین"}
-                            </h3>
-                            <button
-                                type="button"
-                                onClick={() => setPostModal(null)}
-                                className="w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 flex items-center justify-center"
-                            >
-                                ✕
-                            </button>
-                        </div>
-
-                        <div className="space-y-3">
-                            <div className="space-y-1">
-                                <label className="text-xs font-bold text-slate-700">عنوان پست *</label>
-                                <input
-                                    type="text"
-                                    value={postModal.title}
-                                    onChange={(e) => setPostModal({ ...postModal, title: e.target.value })}
-                                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-500/20"
-                                />
-                            </div>
-
-                            <div className="space-y-1">
-                                <label className="text-xs font-bold text-slate-700">اسلاگ (شناسه در آدرس - اختیاری)</label>
-                                <input
-                                    type="text"
-                                    value={postModal.slug}
-                                    onChange={(e) => setPostModal({ ...postModal, slug: e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, "-") })}
-                                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono text-left"
-                                />
-                            </div>
-
-                            <div className="space-y-1">
-                                <label className="text-xs font-bold text-slate-700">خلاصه کوتاه</label>
-                                <input
-                                    type="text"
-                                    value={postModal.summary}
-                                    onChange={(e) => setPostModal({ ...postModal, summary: e.target.value })}
-                                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs"
-                                />
-                            </div>
-
-                            <div className="space-y-1">
-                                <label className="text-xs font-bold text-slate-700">محتوای کامل پست *</label>
-                                <textarea
-                                    value={postModal.content}
-                                    onChange={(e) => setPostModal({ ...postModal, content: e.target.value })}
-                                    rows={5}
-                                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs"
-                                />
-                            </div>
-
-                            <div className="space-y-1">
-                                <MediaGalleryUpload
-                                    label="تصاویر پست"
-                                    helperText="تصاویر با کیفیت جهت نمایش در گالری یا کاور پست بارگذاری کنید"
-                                    value={postModal.mediaUrls}
-                                    onChange={(mediaIds) => setPostModal({ ...postModal, mediaUrls: mediaIds })}
-                                />
-                            </div>
-
-                            <div className="flex items-center gap-2 pt-2">
-                                <input
-                                    type="checkbox"
-                                    id="publishCheck"
-                                    checked={postModal.isPublished}
-                                    onChange={(e) => setPostModal({ ...postModal, isPublished: e.target.checked })}
-                                    className="w-4 h-4 rounded text-blue-600"
-                                />
-                                <label htmlFor="publishCheck" className="text-xs font-bold text-slate-700 cursor-pointer">
-                                    انتشار فوری در صفحه عمومی ویترین
-                                </label>
-                            </div>
-                        </div>
-
-                        <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
-                            <button
-                                type="button"
-                                onClick={() => setPostModal(null)}
-                                className="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50"
-                            >
-                                انصراف
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    if (!postModal.title.trim() || !postModal.content.trim()) {
-                                        toast.error("عنوان و متن پست الزامی هستند.");
-                                        return;
-                                    }
-                                    savePostMutation.mutate(postModal);
-                                }}
-                                disabled={savePostMutation.isPending}
-                                className="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-black"
-                            >
-                                {savePostMutation.isPending ? "در حال ذخیره..." : "ذخیره پست"}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
 
             {/* Modal for Replying to Messages */}
             {replyingMessage && (

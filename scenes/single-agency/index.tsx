@@ -31,8 +31,10 @@ import {
     MessageCircle,
     MessageSquare,
     Phone,
+    Plus,
     Send,
     Share2,
+    Sparkles,
     Star,
     Verified,
     X,
@@ -546,7 +548,28 @@ export default function SingleAgencyScene() {
 
             {/* TAB 2: POSTS */}
             {activeTab === "posts" && (
-                <div>
+                <div className="space-y-4">
+                    {user?.userId && agency?.ownerUserId === user.userId && (
+                        <div className="flex items-center justify-between p-4 bg-gradient-to-l from-purple-50 to-indigo-50 border border-purple-200/80 rounded-2xl shadow-xs">
+                            <div className="space-y-0.5">
+                                <h4 className="text-xs font-black text-purple-900 flex items-center gap-1.5">
+                                    <BookOpen className="w-4 h-4 text-purple-600" />
+                                    <span>استودیو تولید و انتشار محتوا</span>
+                                </h4>
+                                <p className="text-[11px] text-purple-700 font-medium">
+                                    پست‌های اسلایدی جدید یا مقالات تحلیلی را برای ویترین خود منتشر کنید.
+                                </p>
+                            </div>
+                            <Link
+                                href="/posts/create"
+                                className="inline-flex items-center gap-1.5 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-black transition-colors shrink-0 shadow-xs"
+                            >
+                                <Plus className="w-3.5 h-3.5" />
+                                <span>ایجاد پست جدید</span>
+                            </Link>
+                        </div>
+                    )}
+
                     {isLoadingPosts ? (
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             {Array.from({ length: 4 }).map((_, i) => (
@@ -554,9 +577,18 @@ export default function SingleAgencyScene() {
                             ))}
                         </div>
                     ) : posts.length === 0 ? (
-                        <div className="py-20 text-center bg-white rounded-3xl border border-dashed border-slate-200">
-                            <BookOpen className="w-12 h-12 text-slate-300 mx-auto mb-2" />
+                        <div className="py-20 text-center bg-white rounded-3xl border border-dashed border-slate-200 space-y-3">
+                            <BookOpen className="w-12 h-12 text-slate-300 mx-auto" />
                             <p className="text-slate-400 font-bold text-sm">هنوز پستی در این صفحه منتشر نشده است.</p>
+                            {user?.userId && agency?.ownerUserId === user.userId && (
+                                <Link
+                                    href="/posts/create"
+                                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-black transition-colors"
+                                >
+                                    <Plus className="w-4 h-4" />
+                                    <span>اولین پست خود را بسازید</span>
+                                </Link>
+                            )}
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

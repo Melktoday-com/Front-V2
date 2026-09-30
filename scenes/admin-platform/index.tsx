@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import {
   usePlatformProfile,
   useUpdatePlatformProfile,
-  useCreatePost,
   useShowcasePosts,
 } from "@/hooks/useShowcase";
 import { Button } from "@/components/ui/Button";
@@ -17,19 +16,15 @@ import {
   MapPin,
   Phone,
   Plus,
-  Send,
   Sparkles,
-  Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { toPersianDigits, getMediaUrl } from "@/lib/utils";
-import MediaIconUpload from "@/components/admin/MediaIconUpload";
 
 export default function AdminPlatformScene() {
   const router = useRouter();
   const { data: profile, isLoading } = usePlatformProfile();
   const updateProfileMutation = useUpdatePlatformProfile();
-  const createPostMutation = useCreatePost();
   const { data: postsData, refetch: refetchPosts } = useShowcasePosts("platform", "melktoday");
 
   // Profile Form state
@@ -43,15 +38,6 @@ export default function AdminPlatformScene() {
   const [instagram, setInstagram] = useState("");
   const [telegram, setTelegram] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
-
-  // New Post Form state
-  const [isCreatingPost, setIsCreatingPost] = useState(false);
-  const [postTitle, setPostTitle] = useState("");
-  const [postSlug, setPostSlug] = useState("");
-  const [postCategory, setPostCategory] = useState("اطلاعیه رسمی");
-  const [postSummary, setPostSummary] = useState("");
-  const [postContent, setPostContent] = useState("");
-  const [postCoverUrl, setPostCoverUrl] = useState("");
 
   useEffect(() => {
     if (profile) {
@@ -82,39 +68,6 @@ export default function AdminPlatformScene() {
       telegram,
       whatsapp,
     });
-  };
-
-  const handleCreatePost = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!postTitle.trim() || !postContent.trim()) {
-      toast.error("عنوان و متن کامل پست الزامی است");
-      return;
-    }
-
-    createPostMutation.mutate(
-      {
-        publisherType: "PLATFORM",
-        publisherId: "melktoday-official",
-        title: postTitle.trim(),
-        slug: postSlug.trim() || undefined,
-        category: postCategory,
-        summary: postSummary.trim() || undefined,
-        content: postContent.trim(),
-        mediaUrls: postCoverUrl.trim() ? [postCoverUrl.trim()] : [],
-        isPublished: true,
-      },
-      {
-        onSuccess: () => {
-          setIsCreatingPost(false);
-          setPostTitle("");
-          setPostSlug("");
-          setPostSummary("");
-          setPostContent("");
-          setPostCoverUrl("");
-          refetchPosts();
-        },
-      }
-    );
   };
 
   if (isLoading) {
@@ -282,115 +235,23 @@ export default function AdminPlatformScene() {
       {/* Posts Section */}
       <div className="bg-white rounded-3xl p-6 sm:p-8 border border-soft-border shadow-sm space-y-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-base font-black text-brand flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-primary" />
-            پست‌ها و اطلاعیه‌های رسمی پلتفرم
-          </h2>
+          <div>
+            <h2 className="text-base font-black text-brand flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-primary" />
+              پست‌ها و اطلاعیه‌های رسمی پلتفرم
+            </h2>
+            <p className="text-xs text-secondary mt-1">
+              مدیریت و انتشار مطالب رسمی، گزارش‌های تحلیلی و اخبار در استودیو پیشرفته
+            </p>
+          </div>
           <Button
             onClick={() => router.push("/posts/create")}
-            className="rounded-2xl gap-2 font-black text-xs"
+            className="rounded-2xl gap-2 font-black text-xs shadow-md shadow-primary/20"
           >
             <Plus className="w-4 h-4" />
             ایجاد پست در استودیو محتوا
           </Button>
         </div>
-
-        {/* Create Post Form */}
-        {isCreatingPost && (
-          <form
-            onSubmit={handleCreatePost}
-            className="p-6 rounded-2xl bg-soft-bg border border-soft-border space-y-4 animate-in fade-in"
-          >
-            <h3 className="text-sm font-black text-brand">افزودن مطلب رسمی به نام پلتفرم</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="sm:col-span-2">
-                <label className="block text-xs font-bold text-brand mb-1">عنوان پست</label>
-                <input
-                  type="text"
-                  placeholder="مثلاً: گزارش تحلیلی بازار مسکن تابستان ۱۴۰۵"
-                  value={postTitle}
-                  onChange={(e) => setPostTitle(e.target.value)}
-                  className="w-full p-3 border border-soft-border rounded-xl bg-white text-xs font-bold text-brand outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-brand mb-1">دسته‌بندی</label>
-                <select
-                  value={postCategory}
-                  onChange={(e) => setPostCategory(e.target.value)}
-                  className="w-full p-3 border border-soft-border rounded-xl bg-white text-xs font-bold text-brand outline-none"
-                >
-                  <option value="اطلاعیه رسمی">اطلاعیه رسمی</option>
-                  <option value="تحلیل بازار">تحلیل بازار</option>
-                  <option value="اخبار پلتفرم">اخبار پلتفرم</option>
-                  <option value="راهنمای حقوقی">راهنمای حقوقی</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-brand mb-1">نامک (Slug اختیاری - فقط حروف انگلیسی و خط تیره)</label>
-                <input
-                  type="text"
-                  placeholder="market-report-q2"
-                  dir="ltr"
-                  value={postSlug}
-                  onChange={(e) => setPostSlug(e.target.value)}
-                  className="w-full p-3 border border-soft-border rounded-xl bg-white text-xs font-bold text-brand outline-none"
-                />
-              </div>
-              <div>
-                <MediaIconUpload
-                  value={postCoverUrl}
-                  onChange={(mediaId) => setPostCoverUrl(mediaId)}
-                  label="تصویر کاور پست"
-                  helperText="یک تصویر مناسب با نسبت ۱۶:۹ جهت نمایش به عنوان کاور پست بارگذاری کنید"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-brand mb-1">خلاصه پست</label>
-              <input
-                type="text"
-                placeholder="خلاصه کوتاه جهت نمایش در پیش‌نمایش کارت‌ها..."
-                value={postSummary}
-                onChange={(e) => setPostSummary(e.target.value)}
-                className="w-full p-3 border border-soft-border rounded-xl bg-white text-xs font-medium text-brand outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-brand mb-1">متن کامل محتوا</label>
-              <textarea
-                rows={5}
-                placeholder="متن کامل خبر، اطلاعیه یا گزارش را در اینجا بنویسید..."
-                value={postContent}
-                onChange={(e) => setPostContent(e.target.value)}
-                className="w-full p-3 border border-soft-border rounded-xl bg-white text-xs font-medium text-brand outline-none leading-relaxed"
-              />
-            </div>
-
-            <div className="flex justify-end gap-3 pt-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setIsCreatingPost(false)}
-                className="rounded-xl font-bold text-xs"
-              >
-                انصراف
-              </Button>
-              <Button
-                type="submit"
-                disabled={createPostMutation.isPending}
-                className="rounded-xl font-black text-xs"
-              >
-                {createPostMutation.isPending ? "در حال انتشار..." : "انتشار رسمی"}
-              </Button>
-            </div>
-          </form>
-        )}
 
         {/* Existing Posts Table */}
         <div className="space-y-3">

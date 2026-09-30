@@ -17,6 +17,7 @@ import {
     Home,
     LayoutDashboard,
     Map,
+    PenTool,
     Settings,
     ShieldAlert,
     ShieldCheck,
@@ -37,6 +38,7 @@ interface SidebarItem {
 
 const sidebarItems: SidebarItem[] = [
     { name: "داشبورد", href: "/admin", icon: LayoutDashboard },
+    { name: "استودیو انتشار محتوا", href: "/posts/create", icon: PenTool, requiredPermissions: ["posts.view", "posts.manage"] },
     { name: "مدیریت مدیران", href: "/admin/admins", icon: ShieldCheck, requiredPermissions: ["admins.manage"] },
     { name: "آگهی‌ها و دسته‌بندی‌ها", href: "/admin/ads", icon: FileText, requiredPermissions: ["ads.view", "categories.manage"] },
     { name: "مدیریت املاک و مشاوران", href: "/admin/agencies", icon: Building2, requiredPermissions: ["agencies.manage"] },

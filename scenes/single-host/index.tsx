@@ -15,6 +15,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/Button";
 import {
   BadgeCheck,
+  BookOpen,
   Calendar,
   ChevronLeft,
   ChevronRight,
@@ -24,7 +25,9 @@ import {
   Info,
   MapPin,
   MessageSquare,
+  Plus,
   Share2,
+  Sparkles,
   Star,
   Users,
   X,
@@ -295,14 +298,44 @@ export default function SingleHostScene({ idOrSlug }: SingleHostSceneProps) {
 
         {activeTab === "posts" && (
           <div className="space-y-6">
+            {user?.userId && (header?.id === user.userId || idOrSlug === user.userId) && (
+              <div className="flex items-center justify-between p-4 sm:p-5 bg-gradient-to-l from-emerald-50 to-teal-50 border border-emerald-200/80 rounded-3xl shadow-xs">
+                <div className="space-y-0.5">
+                  <h4 className="text-xs sm:text-sm font-black text-emerald-900 flex items-center gap-1.5">
+                    <Sparkles className="w-4 h-4 text-emerald-600" />
+                    <span>استودیو انتشار محتوای اقامتگاه</span>
+                  </h4>
+                  <p className="text-[11px] text-emerald-700 font-medium">
+                    پست‌های اسلایدی جدید و مقالات معرفی جاذبه‌ها را در صفحه عمومی خود منتشر نمایید.
+                  </p>
+                </div>
+                <Link
+                  href="/posts/create"
+                  className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-xs font-black transition-colors shrink-0 shadow-xs"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>ایجاد پست جدید</span>
+                </Link>
+              </div>
+            )}
+
             {isLoadingPosts ? (
               <div className="text-center py-16 text-secondary text-sm font-bold animate-pulse">
                 در حال بارگذاری پست‌ها...
               </div>
             ) : postsData?.items?.length === 0 ? (
-              <div className="text-center py-16 bg-white rounded-3xl border border-soft-border space-y-2">
+              <div className="text-center py-16 bg-white rounded-3xl border border-soft-border space-y-3">
                 <Calendar className="w-10 h-10 text-secondary/30 mx-auto" />
                 <p className="text-sm font-bold text-brand">هنوز مطلبی منتشر نشده است</p>
+                {user?.userId && (header?.id === user.userId || idOrSlug === user.userId) && (
+                  <Link
+                    href="/posts/create"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black transition-colors"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>اولین پست اقامتگاه را ایجاد کنید</span>
+                  </Link>
+                )}
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
