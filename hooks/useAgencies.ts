@@ -155,53 +155,9 @@ export function useMyAgency() {
     });
 }
 
-export const useExplorePosts = (params: { page?: number; limit?: number; search?: string; category?: string } = {}) => {
-    return useQuery({
-        queryKey: ["explore-posts", params],
-        queryFn: () => agencyService.getExplorePosts(params),
-    });
-};
-
-export const useInfiniteExplorePosts = (
-    params: { limit?: number; search?: string; category?: string } = {},
-    options: { startPage?: number; maxPages?: number } = {}
-) => {
-    const startPage = options.startPage ?? 1;
-    const maxPages = options.maxPages ?? 7;
-
-    return useInfiniteQuery({
-        queryKey: ["explore-posts-infinite", params, startPage],
-        queryFn: async ({ pageParam = startPage }) => {
-            return await agencyService.getExplorePosts({
-                ...params,
-                page: pageParam as number,
-                limit: params.limit ?? 12,
-            });
-        },
-        initialPageParam: startPage,
-        getNextPageParam: (lastPage, allPages) => {
-            if (allPages.length >= maxPages) {
-                return undefined;
-            }
-            const totalPages = lastPage.totalPages || Math.ceil((lastPage.total || 0) / (lastPage.limit || 12));
-            if (lastPage.page < totalPages) {
-                return lastPage.page + 1;
-            }
-            return undefined;
-        },
-    });
-};
-
-export const useLikePost = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: (postId: string) => agencyService.likePost(postId),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["explore-posts"] });
-            queryClient.invalidateQueries({ queryKey: ["explore-posts-infinite"] });
-            queryClient.invalidateQueries({ queryKey: ["posts"] });
-            queryClient.invalidateQueries({ queryKey: ["liked-posts"] });
-            queryClient.invalidateQueries({ queryKey: ["agency-public-posts"] });
-        },
-    });
-};
+// ── Re-exports from dedicated usePosts for backward compatibility ─────────────
+export {
+    useExplorePosts,
+    useInfiniteExplorePosts,
+    useLikePost,
+} from "@/hooks/usePosts";

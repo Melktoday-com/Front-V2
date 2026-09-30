@@ -2,11 +2,12 @@
 
 import { PageSectionDivider } from "@/components/ui/PageSectionDivider";
 import { PaginationControls } from "@/components/ui/PaginationControls";
-import { useInfiniteExplorePosts, useLikePost, useMyAgency } from "@/hooks/useAgencies";
+import { useInfiniteExplorePosts, useLikePost } from "@/hooks/usePosts";
+import { useMyAgency } from "@/hooks/useAgencies";
 import { useAuth } from "@/hooks/useAuth";
 import { cn, toPersianDigits, getMediaUrl } from "@/lib/utils";
 import { MarkdownRenderer } from "@/components/ui/MarkdownRenderer";
-import { AgencyPost } from "@/types/api/agency.types";
+import { UnifiedPost } from "@/types/api/showcase.types";
 import { useQueryClient } from "@tanstack/react-query";
 import {
     BookOpen,
