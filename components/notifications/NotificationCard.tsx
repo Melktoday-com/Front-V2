@@ -11,12 +11,15 @@ import {
     ChevronLeft,
     Clock,
     FileCheck,
+    Heart,
     Loader2,
     MessageSquare,
     Rocket,
     ShieldAlert,
     ShieldCheck,
     Sparkles,
+    Star,
+    UserCheck,
     Wallet,
     XCircle,
 } from "lucide-react";
@@ -159,6 +162,30 @@ const TYPE_CONFIGS: Record<NotificationType, TypeConfig> = {
         badgeBg: "bg-emerald-50",
         badgeColor: "text-emerald-700",
     },
+    POST_LIKED: {
+        icon: Heart,
+        iconBg: "bg-rose-50",
+        iconColor: "text-rose-600",
+        badgeLabel: "پسندیدن پست",
+        badgeBg: "bg-rose-50",
+        badgeColor: "text-rose-700",
+    },
+    NEW_FOLLOWER: {
+        icon: UserCheck,
+        iconBg: "bg-indigo-50",
+        iconColor: "text-indigo-600",
+        badgeLabel: "دنبال‌کننده جدید",
+        badgeBg: "bg-indigo-50",
+        badgeColor: "text-indigo-700",
+    },
+    NEW_REVIEW: {
+        icon: Star,
+        iconBg: "bg-amber-50",
+        iconColor: "text-amber-600",
+        badgeLabel: "نظر و امتیاز جدید",
+        badgeBg: "bg-amber-50",
+        badgeColor: "text-amber-700",
+    },
 };
 
 const DEFAULT_CONFIG: TypeConfig = {
@@ -201,6 +228,15 @@ export function NotificationCard({
     } else if (notification.type === "ROLE_APPROVED" || notification.type === "ROLE_REJECTED") {
         targetLink = "/profile";
         targetLinkLabel = "مشاهده پروفایل";
+    } else if (notification.type === "POST_LIKED" && notification.referenceId) {
+        targetLink = `/posts/${notification.referenceId}`;
+        targetLinkLabel = "مشاهده پست";
+    } else if (notification.type === "NEW_FOLLOWER") {
+        targetLink = "/profile";
+        targetLinkLabel = "مشاهده پروفایل";
+    } else if (notification.type === "NEW_REVIEW") {
+        targetLink = "/profile";
+        targetLinkLabel = "مشاهده نظرات";
     }
 
     let timeAgo = "";

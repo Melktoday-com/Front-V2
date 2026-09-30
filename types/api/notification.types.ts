@@ -13,7 +13,10 @@ export type NotificationType =
     | 'USER_SUSPENDED'
     | 'USER_BANNED'
     | 'USER_REINSTATED'
-    | 'USER_UNBANNED';
+    | 'USER_UNBANNED'
+    | 'POST_LIKED'
+    | 'NEW_FOLLOWER'
+    | 'NEW_REVIEW';
 
 export interface NotificationSummary {
     id: string;
