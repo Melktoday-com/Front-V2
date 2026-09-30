@@ -64,7 +64,7 @@ export interface BroadcastNotificationHistoryItem {
     adminRole?: string;
     title: string;
     body: string;
-    audience: BroadcastAudience | string;
+    audience: BroadcastAudience;
     recipientCount: number;
     referenceId?: string;
     status: string;
