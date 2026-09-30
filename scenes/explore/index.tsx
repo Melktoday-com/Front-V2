@@ -1,742 +1,376 @@
 "use client";
 
-import { PageSectionDivider } from "@/components/ui/PageSectionDivider";
-import { PaginationControls } from "@/components/ui/PaginationControls";
-import { useInfiniteExplorePosts, useLikePost } from "@/hooks/usePosts";
-import { useMyAgency } from "@/hooks/useAgencies";
-import { useAuth } from "@/hooks/useAuth";
-import { cn, toPersianDigits, getMediaUrl } from "@/lib/utils";
-import { MarkdownRenderer } from "@/components/ui/MarkdownRenderer";
-import { UnifiedPost } from "@/types/api/post.types";
-import { useQueryClient } from "@tanstack/react-query";
-import {
-    BookOpen,
-    Building2,
-    Calendar,
-    ChevronLeft,
-    Eye,
-    Grid,
-    Heart,
-    Home,
-    List,
-    Loader2,
-    Newspaper,
-    PenTool,
-    Plus,
-    Search,
-    Share2,
-    Verified,
-    X
-} from "lucide-react";
-import Image from "next/image";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useInfiniteExplorePosts, useLikePost } from "@/hooks/usePosts";
+import { useAuth } from "@/hooks/useAuth";
+import { usePostViewObserver } from "@/hooks/usePostViewObserver";
+import { getMediaUrl, toPersianDigits, cn } from "@/lib/utils";
+import { UnifiedPost, PublisherType } from "@/types/api/post.types";
+import {
+  Search,
+  Plus,
+  Heart,
+  Eye,
+  Layers,
+  BookOpen,
+  Building2,
+  Hotel,
+  ShieldCheck,
+  Verified,
+  Filter,
+  Loader2,
+  Calendar,
+  Grid,
+  TrendingUp,
+  Flame,
+} from "lucide-react";
 import { toast } from "sonner";
 
 const TOPIC_TAGS = [
-    { id: "all", label: "همه موضوعات" },
-    { id: "market", label: "تحلیل بازار مسکن" },
-    { id: "guide", label: "راهنمای خرید و رهن" },
-    { id: "legal", label: "نکات حقوقی و قرارداد" },
-    { id: "investment", label: "فرصت‌های سرمایه‌گذاری" },
-    { id: "news", label: "اخبار ملکی" },
+  { id: "all", label: "همه موضوعات" },
+  { id: "market", label: "تحلیل بازار مسکن" },
+  { id: "guide", label: "راهنمای خرید و رهن" },
+  { id: "legal", label: "نکات حقوقی و قرارداد" },
+  { id: "investment", label: "فرصت‌های سرمایه‌گذاری" },
+  { id: "news", label: "اخبار و تحولات" },
+  { id: "host", label: "اقامتگاه و بومگردی" },
 ];
 
-export default function ExploreScene() {
-    const router = useRouter();
-    const queryClient = useQueryClient();
-    const { isLoggedIn } = useAuth();
-    const { data: myAgency } = useMyAgency();
+const PUBLISHER_FILTERS: { id: "ALL" | PublisherType; label: string }[] = [
+  { id: "ALL", label: "همه ناشران" },
+  { id: "AGENCY", label: "آژانس‌های املاک" },
+  { id: "HOST", label: "میزبان‌های اقامتگاه" },
+  { id: "PLATFORM", label: "پلتفرم رسمی" },
+];
 
-    const [searchQuery, setSearchQuery] = useState("");
-    const [activeSearch, setActiveSearch] = useState("");
-    const [selectedTag, setSelectedTag] = useState("all");
-    const [viewMode, setViewMode] = useState<"feed" | "grid">("feed");
-    const [startPage, setStartPage] = useState<number>(1);
+/**
+ * Individual Instagram-Style Explore Card with Viewport Observation
+ */
+function ExplorePostCard({
+  post,
+  onLike,
+}: {
+  post: UnifiedPost;
+  onLike: (e: React.MouseEvent, postId: string) => void;
+}) {
+  const observerRef = usePostViewObserver(post.id);
 
-    const observerTargetRef = useRef<HTMLDivElement | null>(null);
+  // Check format: multi-image, article, or single photo
+  const isMultiImage = (post.mediaUrls?.length || 0) > 1;
+  const isArticle = (post.content?.length || 0) > 400 || !!post.summary || post.category?.includes("مقاله");
 
-    // Modal state for reading a full post
-    const [readingPost, setReadingPost] = useState<any | null>(null);
+  // Determine cover image URL
+  const coverUrl = post.mediaUrls && post.mediaUrls[0] ? getMediaUrl(post.mediaUrls[0]) : "/property-placeholder.svg";
 
-    // Fetch published posts with infinite scroll
-    const {
-        data: postsData,
-        isLoading,
-        isFetchingNextPage,
-        hasNextPage,
-        fetchNextPage,
-        isError,
-        refetch,
-    } = useInfiniteExplorePosts(
-        {
-            limit: 12,
-            search: activeSearch || undefined,
-        },
-        { startPage, maxPages: 7 }
-    );
+  const publisherName =
+    post.publisherType === "PLATFORM"
+      ? "پلتفرم رسمی"
+      : post.publisher?.name || (post.publisherType === "HOST" ? "میزبان" : "آژانس املاک");
 
-    // Auto-scroll infinite scroll up to 7 pages
-    useEffect(() => {
-        const target = observerTargetRef.current;
-        if (!target) return;
+  return (
+    <div
+      ref={observerRef}
+      className="group relative aspect-square rounded-2xl overflow-hidden bg-slate-900 border border-slate-200/80 shadow-2xs hover:shadow-md transition-all duration-300"
+    >
+      <Link href={`/posts/${encodeURIComponent(post.slug || post.id)}`} className="block w-full h-full">
+        {/* Main Cover Image */}
+        <img
+          src={coverUrl}
+          alt={post.title}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 select-none"
+          loading="lazy"
+          onError={(e) => {
+            (e.target as HTMLImageElement).src = "/property-placeholder.svg";
+          }}
+        />
 
-        const currentBatchPageCount = postsData?.pages.length ?? 0;
-        if (currentBatchPageCount >= 7) return;
-        if (!hasNextPage || isFetchingNextPage) return;
-
-        const observer = new IntersectionObserver(
-            (entries) => {
-                if (entries[0].isIntersecting) {
-                    fetchNextPage();
-                }
-            },
-            { rootMargin: "300px" }
-        );
-
-        observer.observe(target);
-        return () => {
-            observer.disconnect();
-        };
-    }, [hasNextPage, isFetchingNextPage, fetchNextPage, postsData?.pages.length]);
-
-    const likeMutation = useLikePost();
-
-    const handleSearchSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        setActiveSearch(searchQuery.trim());
-        setStartPage(1);
-    };
-
-    const handleLike = (e: React.MouseEvent, postId: string) => {
-        e.stopPropagation();
-        if (!isLoggedIn) {
-            toast.info("برای پسندیدن پست، لطفاً ابتدا وارد حساب کاربری شوید.");
-            router.push("/auth?returnUrl=/explore");
-            return;
-        }
-        likeMutation.mutate(postId, {
-            onSuccess: (res: { hasLiked?: boolean; likeCount?: number }) => {
-                if (readingPost && readingPost.id === postId) {
-                    setReadingPost({
-                        ...readingPost,
-                        hasLiked: res.hasLiked ?? !readingPost.hasLiked,
-                        likeCount: res.likeCount ?? readingPost.likeCount,
-                    });
-                }
-            },
-        });
-    };
-
-    const getPublisherInfo = (post: any) => {
-        if (post?.publisherType === 'PLATFORM' || post?.publisherId === 'melktoday-official') {
-            return {
-                name: 'ملک‌تودی (پلتفرم رسمی)',
-                badge: 'پلتفرم رسمی',
-                link: '/platform',
-                logoUrl: null,
-                type: 'PLATFORM' as const,
-                isVerified: true,
-            };
-        }
-        if (post?.publisherType === 'HOST') {
-            return {
-                name: 'میزبان اقامتگاه',
-                badge: 'میزبان اقامتگاه',
-                link: '/temporary-rent',
-                logoUrl: null,
-                type: 'HOST' as const,
-                isVerified: false,
-            };
-        }
-        const agency = post?.agency || post?.publisher;
-        const agencySlugOrId = agency?.slug || agency?.id || post?.publisherId || post?.agencyId;
-        return {
-            name: agency?.name || 'آژانس املاک',
-            badge: 'آژانس املاک',
-            link: agencySlugOrId ? `/agency/showcase/${encodeURIComponent(agencySlugOrId)}` : '/agency',
-            logoUrl: agency?.logoUrl || null,
-            type: 'AGENCY' as const,
-            isVerified: agency?.isVerified ?? true,
-        };
-    };
-
-    const handleShare = (e: React.MouseEvent, post: any) => {
-        e.stopPropagation();
-        const pub = getPublisherInfo(post);
-        const url = `${window.location.origin}${pub.link}`;
-        if (navigator.clipboard) {
-            navigator.clipboard.writeText(url);
-            toast.success("لینک اشتراک‌گذاری کپی شد.");
-        } else {
-            toast.info(url);
-        }
-    };
-
-    const handleOpenCreateModal = () => {
-        router.push("/posts/create");
-    };
-
-    // Filter helper
-    const filterPostByTag = (post: any, tag: string) => {
-        if (tag === "all") return true;
-        const cat = (post.category || "").toLowerCase();
-        const text = `${post.title || ""} ${post.summary || ""} ${post.content || ""} ${cat}`.toLowerCase();
-        if (tag === "market") return cat.includes("تحلیل") || cat.includes("بازار") || text.includes("بازار") || text.includes("قیمت");
-        if (tag === "guide") return cat.includes("راهنما") || cat.includes("خرید") || text.includes("راهنما");
-        if (tag === "legal") return cat.includes("حقوق") || text.includes("حقوق") || text.includes("سند") || text.includes("قرارداد");
-        if (tag === "investment") return cat.includes("سرمایه") || text.includes("سرمایه") || text.includes("سود");
-        if (tag === "news") return cat.includes("پلتفرم") || cat.includes("اخبار") || text.includes("پلتفرم") || text.includes("خبر");
-        return true;
-    };
-
-    // Flatten all loaded posts across pages in current batch
-    const allLoadedPosts = useMemo(() => {
-        return postsData?.pages.flatMap((page) => page.items) || [];
-    }, [postsData]);
-
-    const filteredPosts = useMemo(() => {
-        return allLoadedPosts.filter((post) => filterPostByTag(post, selectedTag));
-    }, [allLoadedPosts, selectedTag]);
-
-    // Pagination metrics
-    const totalCount = postsData?.pages[0]?.total ?? 0;
-    const limitPerPage = postsData?.pages[0]?.limit ?? 12;
-    const totalPages = postsData?.pages[0]?.totalPages || Math.ceil(totalCount / limitPerPage);
-    const lastLoadedPage = postsData?.pages[postsData.pages.length - 1]?.page ?? startPage;
-    const isBatchFinished = (postsData?.pages.length ?? 0) >= 7 || !hasNextPage;
-    const loadedPages = useMemo(() => postsData?.pages.map((p) => p.page) || [], [postsData]);
-
-    const handlePageSelect = (targetPage: number) => {
-        const isLoadedInCurrentBatch = loadedPages.includes(targetPage);
-        if (isLoadedInCurrentBatch) {
-            if (targetPage === startPage) {
-                document.getElementById("explore-top")?.scrollIntoView({ behavior: "smooth" });
-            } else {
-                const sectionElem = document.getElementById(`explore-page-section-${targetPage}`);
-                if (sectionElem) {
-                    sectionElem.scrollIntoView({ behavior: "smooth", block: "start" });
-                }
-            }
-        } else {
-            setStartPage(targetPage);
-            document.getElementById("explore-top")?.scrollIntoView({ behavior: "smooth" });
-        }
-    };
-
-    const handleNextPage = () => {
-        if (lastLoadedPage < totalPages) {
-            handlePageSelect(lastLoadedPage + 1);
-        }
-    };
-
-    const handlePrevPage = () => {
-        if (startPage > 1) {
-            handlePageSelect(Math.max(1, startPage - 7));
-        }
-    };
-
-    const handleScrollToTop = () => {
-        document.getElementById("explore-top")?.scrollIntoView({ behavior: "smooth" });
-    };
-
-    const formatDate = (dateString?: string) => {
-        if (!dateString) return "";
-        try {
-            return new Date(dateString).toLocaleDateString("fa-IR", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-            });
-        } catch {
-            return "";
-        }
-    };
-
-    return (
-        <div className="min-w-0 max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6 sm:space-y-8" dir="rtl">
-
-            {/* ── SEARCH & TOPIC FILTERS ────────────────────────────────── */}
-            <div className="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200/80 shadow-xs space-y-4">
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-                    <form onSubmit={handleSearchSubmit} className="relative flex-1">
-                        <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                        <input
-                            type="text"
-                            placeholder="جستجو در مقالات، تحلیل‌ها و اخبار ملکی..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pr-11 pl-24 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-sm text-slate-800 focus:bg-white focus:border-primary focus:outline-hidden transition-all placeholder:text-slate-400"
-                        />
-                        <button
-                            type="submit"
-                            className="absolute left-2 top-1/2 -translate-y-1/2 px-4 py-1.5 rounded-xl bg-brand text-white text-xs font-bold hover:bg-brand/90 transition-all"
-                        >
-                            جستجو
-                        </button>
-                    </form>
-
-                    <div className="flex items-center gap-2 self-end sm:self-center">
-                        <Link
-                            href="/posts/create"
-                            className="flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-brand text-white text-xs font-bold hover:bg-brand/90 transition-all shrink-0 shadow-xs"
-                        >
-                            <Plus className="w-4 h-4 text-primary" />
-                            <span>انتشار پست جدید</span>
-                        </Link>
-
-                        {/* View mode toggle */}
-                        <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-2xl">
-                            <button
-                                onClick={() => setViewMode("feed")}
-                                className={cn(
-                                    "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all",
-                                    viewMode === "feed"
-                                        ? "bg-white text-brand shadow-xs"
-                                        : "text-slate-500 hover:text-slate-800"
-                                )}
-                            >
-                                <List className="w-3.5 h-3.5" />
-                                <span>فید</span>
-                            </button>
-                            <button
-                                onClick={() => setViewMode("grid")}
-                                className={cn(
-                                    "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all",
-                                    viewMode === "grid"
-                                        ? "bg-white text-brand shadow-xs"
-                                        : "text-slate-500 hover:text-slate-800"
-                                )}
-                            >
-                                <Grid className="w-3.5 h-3.5" />
-                                <span>شبکه</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Filter tags */}
-                <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-                    {TOPIC_TAGS.map((tag) => (
-                        <button
-                            key={tag.id}
-                            onClick={() => setSelectedTag(tag.id)}
-                            className={cn(
-                                "px-3.5 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap border",
-                                selectedTag === tag.id
-                                    ? "bg-primary text-white border-primary shadow-xs"
-                                    : "bg-slate-50 text-slate-600 border-slate-200 hover:border-slate-300"
-                            )}
-                        >
-                            {tag.label}
-                        </button>
-                    ))}
-                </div>
+        {/* Top Badges (Multi-image or Article Indicator) */}
+        <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 z-10 pointer-events-none">
+          {isMultiImage && (
+            <div className="p-1.5 rounded-lg bg-black/60 backdrop-blur-md text-white shadow-xs">
+              <Layers className="w-3.5 h-3.5" />
             </div>
-
-            {/* Anchor for top of explore */}
-            <div id="explore-top" />
-
-            {/* ── POSTS LIST ────────────────────────────────────────────── */}
-            {isLoading ? (
-                <div
-                    className={cn(
-                        viewMode === "grid"
-                            ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
-                            : "space-y-5 max-w-3xl mx-auto"
-                    )}
-                >
-                    {Array.from({ length: 6 }).map((_, i) => (
-                        <div key={i} className="bg-white p-5 rounded-3xl border border-slate-100 shadow-xs space-y-4 animate-pulse">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-slate-200" />
-                                <div className="space-y-1.5 flex-1">
-                                    <div className="w-24 h-3 bg-slate-200 rounded-md" />
-                                    <div className="w-16 h-2 bg-slate-100 rounded-md" />
-                                </div>
-                            </div>
-                            <div className="h-44 bg-slate-100 rounded-2xl" />
-                            <div className="space-y-2">
-                                <div className="w-3/4 h-4 bg-slate-200 rounded-md" />
-                                <div className="w-full h-3 bg-slate-100 rounded-md" />
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            ) : isError ? (
-                <div className="bg-white p-10 rounded-3xl border border-dashed border-red-200 text-center space-y-3">
-                    <p className="text-sm font-bold text-red-500">خطا در بارگذاری محتوا. لطفاً اتصال اینترنت خود را بررسی نمایید.</p>
-                    <button
-                        onClick={() => refetch()}
-                        className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 transition-all"
-                    >
-                        تلاش مجدد
-                    </button>
-                </div>
-            ) : filteredPosts.length === 0 ? (
-                <div className="bg-white p-12 sm:p-16 rounded-3xl border border-dashed border-slate-200 text-center space-y-4">
-                    <div className="w-16 h-16 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto">
-                        <BookOpen className="w-8 h-8" />
-                    </div>
-                    <div className="space-y-1">
-                        <h3 className="text-base sm:text-lg font-black text-slate-800">
-                            {activeSearch ? "پستی با این عبارت یافت نشد" : "هنوز پستی در این بخش منتشر نشده است"}
-                        </h3>
-                        <p className="text-xs sm:text-sm text-slate-400 max-w-md mx-auto">
-                            شما به عنوان مشاور املاک یا مدیر دفتر می‌توانید اولین پست تخصصی این بخش را تولید و منتشر فرمایید.
-                        </p>
-                    </div>
-                    <button
-                        onClick={handleOpenCreateModal}
-                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-brand text-white text-xs font-bold hover:bg-brand/90 transition-all"
-                    >
-                        <PenTool className="w-3.5 h-3.5" />
-                        <span>انتشار اولین پست</span>
-                    </button>
-                </div>
-            ) : (
-                <div className="space-y-6">
-                    <div
-                        className={cn(
-                            viewMode === "grid"
-                                ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
-                                : "space-y-6 max-w-3xl mx-auto"
-                        )}
-                    >
-                        {postsData?.pages.map((page, pageIndex) => {
-                            const pagePosts = page.items.filter((post) => filterPostByTag(post, selectedTag));
-                            if (pagePosts.length === 0 && pageIndex > 0) return null;
-
-                            return (
-                                <div key={`explore-page-${page.page}`} className="contents">
-                                    {/* Section Header for page 2 onwards */}
-                                    {pageIndex > 0 && (
-                                        <PageSectionDivider
-                                            id={`explore-page-section-${page.page}`}
-                                            page={page.page}
-                                            count={pagePosts.length}
-                                            itemLabel="پست"
-                                        />
-                                    )}
-
-                                    {pagePosts.map((post) => {
-                                        const pub = getPublisherInfo(post);
-                                        const coverImage = post.mediaUrls && post.mediaUrls.length > 0 ? getMediaUrl(post.mediaUrls[0]) : null;
-
-                                        return (
-                                            <article
-                                                key={post.id}
-                                                onClick={() => setReadingPost(post)}
-                                                className="bg-white rounded-3xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-primary/40 transition-all duration-300 flex flex-col justify-between overflow-hidden cursor-pointer group"
-                                            >
-                                                {/* Post Author Header */}
-                                                <div className="p-4 sm:p-5 flex items-center justify-between border-b border-slate-100">
-                                                    <Link
-                                                        href={pub.link}
-                                                        onClick={(e) => e.stopPropagation()}
-                                                        className="flex items-center gap-3 group/author"
-                                                    >
-                                                        <div className="relative w-10 h-10 rounded-full overflow-hidden bg-slate-100 border border-slate-200 shrink-0 flex items-center justify-center">
-                                                            {pub.logoUrl ? (
-                                                                <Image
-                                                                    src={getMediaUrl(pub.logoUrl)}
-                                                                    alt={pub.name}
-                                                                    fill
-                                                                    className="object-cover"
-                                                                />
-                                                            ) : pub.type === 'PLATFORM' ? (
-                                                                <div className="w-full h-full flex items-center justify-center bg-brand text-white font-black text-xs">
-                                                                    MT
-                                                                </div>
-                                                            ) : pub.type === 'HOST' ? (
-                                                                <div className="w-full h-full flex items-center justify-center bg-emerald-50 text-emerald-600">
-                                                                    <Home className="w-5 h-5" />
-                                                                </div>
-                                                            ) : (
-                                                                <div className="w-full h-full flex items-center justify-center bg-slate-50 text-slate-400">
-                                                                    <Building2 className="w-5 h-5" />
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                        <div>
-                                                            <div className="flex items-center gap-1.5">
-                                                                <span className="font-bold text-sm text-slate-800 group-hover/author:text-primary transition-colors">
-                                                                    {pub.name}
-                                                                </span>
-                                                                {pub.isVerified && (
-                                                                    <Verified className="w-4 h-4 text-primary fill-primary/10 shrink-0" />
-                                                                )}
-                                                                <span className={cn(
-                                                                    "text-[10px] px-2 py-0.5 rounded-full font-bold",
-                                                                    pub.type === 'PLATFORM' ? "bg-amber-100 text-amber-800" :
-                                                                    pub.type === 'HOST' ? "bg-emerald-100 text-emerald-800" :
-                                                                    "bg-blue-100 text-blue-800"
-                                                                )}>
-                                                                    {pub.badge}
-                                                                </span>
-                                                            </div>
-                                                            <p className="text-[11px] text-slate-400 flex items-center gap-1">
-                                                                <Calendar className="w-3 h-3" />
-                                                                <span>{formatDate(post.createdAt)}</span>
-                                                                {post.category && (
-                                                                    <>
-                                                                        <span>•</span>
-                                                                        <span className="text-primary font-medium">{post.category}</span>
-                                                                    </>
-                                                                )}
-                                                            </p>
-                                                        </div>
-                                                    </Link>
-
-                                                    <button
-                                                        onClick={(e) => handleShare(e, post)}
-                                                        className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
-                                                        title="اشتراک‌گذاری"
-                                                    >
-                                                        <Share2 className="w-4 h-4" />
-                                                    </button>
-                                                </div>
-
-                                                {/* Post Media Cover */}
-                                                {coverImage ? (
-                                                    <div className="relative aspect-video w-full overflow-hidden bg-slate-100">
-                                                        <Image
-                                                            src={coverImage}
-                                                            alt={post.title}
-                                                            fill
-                                                            className="object-cover group-hover:scale-105 transition-transform duration-500"
-                                                        />
-                                                    </div>
-                                                ) : (
-                                                    <div className="h-28 bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200 flex items-center justify-center text-slate-300">
-                                                        <Newspaper className="w-8 h-8" />
-                                                    </div>
-                                                )}
-
-                                                {/* Post Content Snippet */}
-                                                <div className="p-4 sm:p-5 space-y-2 flex-1 flex flex-col justify-between">
-                                                    <div className="space-y-2">
-                                                        <h2 className="font-bold text-base sm:text-lg text-slate-900 group-hover:text-primary transition-colors line-clamp-2">
-                                                            {post.title}
-                                                        </h2>
-                                                        <p className="text-xs sm:text-sm text-slate-600 line-clamp-3 leading-relaxed">
-                                                            {post.summary || post.content}
-                                                        </p>
-                                                    </div>
-
-                                                    {/* Footer / Stats & CTA */}
-                                                    <div className="pt-4 mt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-                                                        <div className="flex items-center gap-3">
-                                                            <button
-                                                                onClick={(e) => handleLike(e, post.id)}
-                                                                className={cn(
-                                                                    "flex items-center gap-1 transition-colors",
-                                                                    post.hasLiked ? "text-red-500 font-bold" : "text-slate-500 hover:text-red-500"
-                                                                )}
-                                                                aria-label={post.hasLiked ? "حذف پسند" : "پسندیدن"}
-                                                            >
-                                                                <Heart className={cn(
-                                                                    "w-4 h-4 transition-colors",
-                                                                    post.hasLiked ? "text-red-500 fill-red-500" : "text-slate-400"
-                                                                )} />
-                                                                <span>{toPersianDigits(post.likeCount || 0)}</span>
-                                                            </button>
-                                                            <div className="flex items-center gap-1">
-                                                                <Eye className="w-4 h-4 text-slate-400" />
-                                                                <span>{toPersianDigits(post.viewCount || 0)}</span>
-                                                            </div>
-                                                        </div>
-
-                                                        <span className="font-bold text-primary group-hover:underline flex items-center gap-0.5">
-                                                            <span>مطالعه کامل</span>
-                                                            <ChevronLeft className="w-3.5 h-3.5" />
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </article>
-                                        );
-                                    })}
-                                </div>
-                            );
-                        })}
-                    </div>
-
-                    {/* Sentinel for infinite scroll (auto-loads up to 7 pages) */}
-                    {hasNextPage && (postsData?.pages.length ?? 0) < 7 && (
-                        <div ref={observerTargetRef} className="py-8 flex flex-col items-center justify-center gap-2">
-                            {isFetchingNextPage ? (
-                                <div className="flex items-center gap-2 text-xs font-bold text-secondary bg-white px-5 py-2.5 rounded-xl shadow-xs border border-slate-200">
-                                    <Loader2 className="w-4 h-4 animate-spin text-primary" />
-                                    <span>در حال بارگذاری بخش بعدی پست‌ها...</span>
-                                </div>
-                            ) : (
-                                <div className="h-6" />
-                            )}
-                        </div>
-                    )}
-
-                    {/* Pagination Controls at the End */}
-                    {!isLoading && allLoadedPosts.length > 0 && totalPages > 1 && isBatchFinished && (
-                        <PaginationControls
-                            startPage={startPage}
-                            lastLoadedPage={lastLoadedPage}
-                            totalPages={totalPages}
-                            totalCount={totalCount}
-                            itemLabel="پست"
-                            loadedPages={loadedPages}
-                            onPageSelect={handlePageSelect}
-                            onPrevPage={handlePrevPage}
-                            onNextPage={handleNextPage}
-                            onScrollToTop={handleScrollToTop}
-                            className="max-w-3xl mx-auto"
-                        />
-                    )}
-                </div>
-            )}
-
-            {/* ── MODAL: READ FULL POST ─────────────────────────────────── */}
-            {readingPost && (
-                <div
-                    className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto"
-                    onClick={() => setReadingPost(null)}
-                >
-                    <div
-                        className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 space-y-6 shadow-2xl my-8 relative border border-slate-200"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <button
-                            onClick={() => setReadingPost(null)}
-                            className="absolute top-5 left-5 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 transition-colors"
-                        >
-                            <X className="w-5 h-5" />
-                        </button>
-
-                        {/* Publisher Header in Modal */}
-                        {(() => {
-                            const pub = getPublisherInfo(readingPost);
-                            return (
-                                <div className="flex items-center justify-between gap-4 pt-1">
-                                    <div className="flex items-center gap-3">
-                                        <div className="relative w-12 h-12 rounded-full overflow-hidden bg-slate-100 border border-slate-200 shrink-0 flex items-center justify-center">
-                                            {pub.logoUrl ? (
-                                                <Image
-                                                    src={getMediaUrl(pub.logoUrl)}
-                                                    alt={pub.name}
-                                                    fill
-                                                    className="object-cover"
-                                                />
-                                            ) : pub.type === 'PLATFORM' ? (
-                                                <div className="w-full h-full flex items-center justify-center bg-brand text-white font-black text-xs">
-                                                    MT
-                                                </div>
-                                            ) : pub.type === 'HOST' ? (
-                                                <div className="w-full h-full flex items-center justify-center bg-emerald-50 text-emerald-600">
-                                                    <Home className="w-6 h-6" />
-                                                </div>
-                                            ) : (
-                                                <div className="w-full h-full flex items-center justify-center bg-slate-100 text-slate-400">
-                                                    <Building2 className="w-6 h-6" />
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div>
-                                            <div className="flex items-center gap-1.5">
-                                                <h4 className="font-black text-slate-800 text-base">
-                                                    {pub.name}
-                                                </h4>
-                                                {pub.isVerified && (
-                                                    <Verified className="w-4 h-4 text-primary fill-primary/10" />
-                                                )}
-                                                <span className={cn(
-                                                    "text-[10px] px-2 py-0.5 rounded-full font-bold",
-                                                    pub.type === 'PLATFORM' ? "bg-amber-100 text-amber-800" :
-                                                    pub.type === 'HOST' ? "bg-emerald-100 text-emerald-800" :
-                                                    "bg-blue-100 text-blue-800"
-                                                )}>
-                                                    {pub.badge}
-                                                </span>
-                                            </div>
-                                            <p className="text-xs text-slate-400">{formatDate(readingPost.createdAt)}</p>
-                                        </div>
-                                    </div>
-
-                                    <Link
-                                        href={pub.link}
-                                        className="px-3.5 py-1.5 rounded-xl bg-slate-100 hover:bg-primary hover:text-white text-slate-700 text-xs font-bold transition-all"
-                                    >
-                                        {pub.type === 'PLATFORM' ? 'مشاهده ویترین پلتفرم' : pub.type === 'HOST' ? 'مشاهده اقامتگاه‌ها' : 'مشاهده صفحه املاک'}
-                                    </Link>
-                                </div>
-                            );
-                        })()}
-
-                        {/* Title */}
-                        <h2 className="text-xl sm:text-2xl font-black text-slate-900 leading-snug">
-                            {readingPost.title}
-                        </h2>
-
-                        {/* Summary callout */}
-                        {readingPost.summary && (
-                            <div className="p-4 rounded-2xl bg-blue-50/70 border border-blue-100 text-blue-900 text-xs sm:text-sm font-medium leading-relaxed">
-                                {readingPost.summary}
-                            </div>
-                        )}
-
-                        {/* Media gallery */}
-                        {readingPost.mediaUrls && readingPost.mediaUrls.length > 0 && (
-                            <div className="space-y-3">
-                                {readingPost.mediaUrls.map((url: string, i: number) => (
-                                    <div key={i} className="relative aspect-video w-full rounded-2xl overflow-hidden bg-slate-100 border border-slate-200">
-                                        <Image
-                                            src={getMediaUrl(url)}
-                                            alt={`تصویر ${i + 1}`}
-                                            fill
-                                            className="object-cover"
-                                        />
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-
-                        {/* Full Content */}
-                        <div className="pt-2">
-                            <MarkdownRenderer content={readingPost.content} />
-                        </div>
-
-                        {/* Stats & Actions */}
-                        <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-                            <div className="flex items-center gap-4">
-                                <button
-                                    onClick={(e) => handleLike(e, readingPost.id)}
-                                    className={cn(
-                                        "flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold transition-all active:scale-95",
-                                        readingPost.hasLiked
-                                            ? "bg-red-500 text-white shadow-xs"
-                                            : "bg-red-50 text-red-600 hover:bg-red-100"
-                                    )}
-                                    aria-label={readingPost.hasLiked ? "حذف پسند" : "پسندیدن"}
-                                >
-                                    <Heart className={cn("w-4 h-4", readingPost.hasLiked ? "fill-white text-white" : "fill-red-500 text-red-500")} />
-                                    <span>{toPersianDigits(readingPost.likeCount || 0)} پسند</span>
-                                </button>
-                                <span className="flex items-center gap-1 text-slate-400">
-                                    <Eye className="w-4 h-4" />
-                                    <span>{toPersianDigits(readingPost.viewCount || 0)} بازدید</span>
-                                </span>
-                            </div>
-
-                            <button
-                                onClick={(e) => handleShare(e, readingPost)}
-                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold transition-all"
-                            >
-                                <Share2 className="w-3.5 h-3.5" />
-                                <span>اشتراک‌گذاری</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+          )}
+          {isArticle && (
+            <div className="p-1.5 rounded-lg bg-black/60 backdrop-blur-md text-white shadow-xs">
+              <BookOpen className="w-3.5 h-3.5" />
+            </div>
+          )}
         </div>
+
+        {/* Top Right: Category Pill */}
+        {post.category && (
+          <div className="absolute top-2.5 right-2.5 z-10 pointer-events-none">
+            <span className="px-2 py-0.5 rounded-md bg-black/50 backdrop-blur-md text-white text-[10px] font-bold">
+              {post.category}
+            </span>
+          </div>
+        )}
+
+        {/* Hover / Touch Instagram Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-3.5 text-white z-20">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-200">
+              {post.publisherType === "PLATFORM" && <ShieldCheck className="w-3.5 h-3.5 text-primary" />}
+              {post.publisherType === "HOST" && <Hotel className="w-3.5 h-3.5 text-emerald-400" />}
+              {post.publisherType === "AGENCY" && <Building2 className="w-3.5 h-3.5 text-blue-400" />}
+              <span className="truncate max-w-[120px]">{publisherName}</span>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <p className="text-xs font-black line-clamp-2 leading-snug">
+              {post.title}
+            </p>
+
+            <div className="flex items-center justify-between pt-1 border-t border-white/20 text-[11px] font-bold">
+              {/* Like trigger button */}
+              <button
+                type="button"
+                onClick={(e) => onLike(e, post.id)}
+                className="flex items-center gap-1 hover:text-red-400 transition-colors"
+              >
+                <Heart
+                  className={cn(
+                    "w-3.5 h-3.5",
+                    post.hasLiked ? "text-red-500 fill-red-500" : ""
+                  )}
+                />
+                <span>{toPersianDigits(post.likeCount || 0)}</span>
+              </button>
+
+              {/* Views */}
+              <div className="flex items-center gap-1 text-slate-300">
+                <Eye className="w-3.5 h-3.5" />
+                <span>{toPersianDigits(post.viewCount || 0)}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Link>
+    </div>
+  );
+}
+
+export default function ExploreScene() {
+  const router = useRouter();
+  const { isLoggedIn } = useAuth();
+  const likeMutation = useLikePost();
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeSearch, setActiveSearch] = useState("");
+  const [selectedTag, setSelectedTag] = useState("all");
+  const [selectedPublisherType, setSelectedPublisherType] = useState<"ALL" | PublisherType>("ALL");
+
+  const observerTargetRef = useRef<HTMLDivElement | null>(null);
+
+  // Fetch explore posts with infinite query
+  const {
+    data: postsData,
+    isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+    isError,
+    refetch,
+  } = useInfiniteExplorePosts(
+    {
+      limit: 16,
+      search: activeSearch || undefined,
+    },
+    { startPage: 1, maxPages: 10 }
+  );
+
+  // Infinite Scroll Trigger
+  useEffect(() => {
+    const target = observerTargetRef.current;
+    if (!target) return;
+    if (!hasNextPage || isFetchingNextPage) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          fetchNextPage();
+        }
+      },
+      { rootMargin: "400px" }
     );
+
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setActiveSearch(searchQuery.trim());
+  };
+
+  const handleLike = (e: React.MouseEvent, postId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isLoggedIn) {
+      toast.info("برای پسندیدن پست، لطفاً ابتدا وارد شوید.");
+      router.push("/auth?returnUrl=/explore");
+      return;
+    }
+    likeMutation.mutate(postId);
+  };
+
+  // Flatten posts across pages
+  const allLoadedPosts = useMemo(() => {
+    return postsData?.pages.flatMap((page) => page.items) || [];
+  }, [postsData]);
+
+  // Filter posts by tag and publisher type
+  const filteredPosts = useMemo(() => {
+    return allLoadedPosts.filter((post) => {
+      // Publisher Filter
+      if (selectedPublisherType !== "ALL" && post.publisherType !== selectedPublisherType) {
+        return false;
+      }
+
+      // Tag Filter
+      if (selectedTag === "all") return true;
+      const cat = (post.category || "").toLowerCase();
+      const text = `${post.title || ""} ${post.summary || ""} ${post.content || ""} ${cat}`.toLowerCase();
+
+      if (selectedTag === "market") return cat.includes("تحلیل") || cat.includes("بازار") || text.includes("بازار") || text.includes("قیمت");
+      if (selectedTag === "guide") return cat.includes("راهنما") || cat.includes("خرید") || text.includes("راهنما");
+      if (selectedTag === "legal") return cat.includes("حقوق") || text.includes("حقوق") || text.includes("سند") || text.includes("قرارداد");
+      if (selectedTag === "investment") return cat.includes("سرمایه") || text.includes("سرمایه") || text.includes("سود");
+      if (selectedTag === "news") return cat.includes("پلتفرم") || cat.includes("اخبار") || text.includes("خبر");
+      if (selectedTag === "host") return post.publisherType === "HOST" || text.includes("اقامت") || text.includes("سوئیت") || text.includes("ویلا");
+      return true;
+    });
+  }, [allLoadedPosts, selectedTag, selectedPublisherType]);
+
+  return (
+    <div className="min-w-0 max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6" dir="rtl">
+
+      {/* ── TOP ACTION & SEARCH BAR ────────────────────────────────────── */}
+      <div className="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200 shadow-xs space-y-4">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          <form onSubmit={handleSearchSubmit} className="relative flex-1">
+            <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <input
+              type="text"
+              placeholder="جستجو در تصاویر، مقالات، تحلیل‌ها و اخبار ملکی..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pr-11 pl-24 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs sm:text-sm text-slate-800 focus:bg-white focus:border-primary focus:outline-hidden transition-all placeholder:text-slate-400"
+            />
+            <button
+              type="submit"
+              className="absolute left-2 top-1/2 -translate-y-1/2 px-4 py-1.5 rounded-xl bg-brand text-white text-xs font-bold hover:bg-brand/90 transition-all"
+            >
+              جستجو
+            </button>
+          </form>
+
+          <Link
+            href="/posts/create"
+            className="flex items-center justify-center gap-1.5 px-5 py-3 rounded-2xl bg-brand text-white text-xs font-bold hover:bg-brand/90 transition-all shrink-0 shadow-xs"
+          >
+            <Plus className="w-4 h-4 text-primary" />
+            <span>ایجاد پست جدید</span>
+          </Link>
+        </div>
+
+        {/* Publisher Types Tabs */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar border-t border-slate-100 pt-3">
+          {PUBLISHER_FILTERS.map((pub) => {
+            const isSelected = selectedPublisherType === pub.id;
+            return (
+              <button
+                key={pub.id}
+                type="button"
+                onClick={() => setSelectedPublisherType(pub.id)}
+                className={cn(
+                  "px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap",
+                  isSelected
+                    ? "bg-slate-900 text-white shadow-xs"
+                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                )}
+              >
+                {pub.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Topic Pills */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+          {TOPIC_TAGS.map((tag) => {
+            const isSelected = selectedTag === tag.id;
+            return (
+              <button
+                key={tag.id}
+                type="button"
+                onClick={() => setSelectedTag(tag.id)}
+                className={cn(
+                  "px-3 py-1.5 rounded-full text-[11px] font-bold transition-all whitespace-nowrap border",
+                  isSelected
+                    ? "bg-primary text-slate-950 border-primary"
+                    : "bg-white text-slate-500 border-slate-200 hover:border-slate-300"
+                )}
+              >
+                {tag.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── INSTAGRAM-STYLE EXPLORE GRID ───────────────────────────────── */}
+      {isLoading ? (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 sm:gap-4">
+          {Array.from({ length: 8 }).map((_, idx) => (
+            <div
+              key={idx}
+              className="aspect-square rounded-2xl bg-slate-100 animate-pulse border border-slate-200/60"
+            />
+          ))}
+        </div>
+      ) : isError ? (
+        <div className="bg-white p-8 rounded-3xl border border-slate-200 text-center space-y-4">
+          <p className="text-xs font-bold text-red-600">خطا در دریافت فید کاوش.</p>
+          <button
+            onClick={() => refetch()}
+            className="px-4 py-2 rounded-xl bg-brand text-white text-xs font-bold"
+          >
+            تلاش مجدد
+          </button>
+        </div>
+      ) : filteredPosts.length === 0 ? (
+        <div className="bg-white p-12 rounded-3xl border border-slate-200 text-center space-y-3">
+          <Grid className="w-10 h-10 text-slate-300 mx-auto" />
+          <p className="text-sm font-black text-brand">پستی با این مشخصات یافت نشد</p>
+          <p className="text-xs text-slate-400">می‌توانید فیلترها را تغییر داده یا اولین پست را شما منتشر کنید.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 sm:gap-4">
+          {filteredPosts.map((post) => (
+            <ExplorePostCard
+              key={post.id}
+              post={post}
+              onLike={handleLike}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Infinite scroll observer target */}
+      <div ref={observerTargetRef} className="h-10 flex items-center justify-center">
+        {isFetchingNextPage && (
+          <div className="flex items-center gap-2 text-xs text-slate-500 font-bold">
+            <Loader2 className="w-4 h-4 animate-spin text-primary" />
+            <span>در حال بارگذاری پست‌های بیشتر...</span>
+          </div>
+        )}
+      </div>
+
+    </div>
+  );
 }

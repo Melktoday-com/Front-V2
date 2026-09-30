@@ -10,7 +10,7 @@ import {
   Bookmark,
   ChevronLeft,
   ChevronRight,
-  Sparkles,
+  Layers,
   MapPin,
   Tag,
   Eye,
@@ -19,6 +19,7 @@ import {
   Hotel,
   ShieldCheck,
   Verified,
+  Image as ImageIcon,
 } from "lucide-react";
 import Image from "next/image";
 import { PublisherType } from "@/types/api/post.types";
@@ -106,9 +107,9 @@ export function InstagramPostEditor({
       {/* ── LEFT / MAIN: FORM INPUTS ─────────────────────────────────── */}
       <div className="lg:col-span-7 space-y-6">
         {/* Header Alert / Info */}
-        <div className="p-4 rounded-2xl bg-gradient-to-r from-pink-50 via-purple-50 to-indigo-50 border border-pink-100 flex items-start gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 text-white flex items-center justify-center shrink-0 shadow-xs">
-            <Sparkles className="w-5 h-5" />
+        <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-start gap-3">
+          <div className="w-9 h-9 rounded-xl bg-brand text-primary flex items-center justify-center shrink-0 shadow-xs">
+            <Layers className="w-5 h-5" />
           </div>
           <div>
             <h3 className="text-sm font-black text-slate-900">
@@ -272,7 +273,7 @@ export function InstagramPostEditor({
           {/* Mockup Post Header */}
           <div className="p-3.5 flex items-center justify-between border-b border-slate-100 bg-white">
             <div className="flex items-center gap-2.5">
-              <div className="relative w-9 h-9 rounded-full p-0.5 bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600">
+              <div className="relative w-9 h-9 rounded-full p-0.5 border border-primary bg-primary/10">
                 <div className="relative w-full h-full rounded-full overflow-hidden bg-white">
                   {publisher.avatarUrl ? (
                     <Image
@@ -378,7 +379,7 @@ export function InstagramPostEditor({
               </>
             ) : (
               <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 p-6 text-center space-y-2">
-                <Sparkles className="w-10 h-10 text-slate-500" />
+                <ImageIcon className="w-10 h-10 text-slate-500" />
                 <p className="text-xs font-bold text-slate-300">
                   هنوز عکسی آپلود نشده است
                 </p>

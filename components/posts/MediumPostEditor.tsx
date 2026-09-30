@@ -24,7 +24,7 @@ import {
   Eye,
   Edit3,
   Columns,
-  Sparkles,
+  Feather,
   Loader2,
   X,
   Clock,
