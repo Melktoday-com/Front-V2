@@ -143,7 +143,11 @@ export function NotificationCard({
     onMarkRead,
     isPendingMarkRead = false,
 }: NotificationCardProps) {
-    const config = TYPE_CONFIGS[notification.type] || DEFAULT_CONFIG;
+    const config =
+        TYPE_CONFIGS[notification.type] ||
+        ((notification.type as string) === "BROADCAST"
+            ? TYPE_CONFIGS.ADMIN_BROADCAST
+            : DEFAULT_CONFIG);
     const Icon = config.icon;
 
     // Build intelligent link navigation
