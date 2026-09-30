@@ -9,7 +9,11 @@ export type NotificationType =
     | 'ROLE_REJECTED'
     | 'ADMIN_BROADCAST'
     | 'CREDIT_RECEIVED'
-    | 'REPORT_RESOLVED';
+    | 'REPORT_RESOLVED'
+    | 'USER_SUSPENDED'
+    | 'USER_BANNED'
+    | 'USER_REINSTATED'
+    | 'USER_UNBANNED';
 
 export interface NotificationSummary {
     id: string;

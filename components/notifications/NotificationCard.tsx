@@ -127,6 +127,38 @@ const TYPE_CONFIGS: Record<NotificationType, TypeConfig> = {
         badgeBg: "bg-teal-50",
         badgeColor: "text-teal-700",
     },
+    USER_SUSPENDED: {
+        icon: ShieldAlert,
+        iconBg: "bg-amber-50",
+        iconColor: "text-amber-600",
+        badgeLabel: "تعلیق حساب",
+        badgeBg: "bg-amber-50",
+        badgeColor: "text-amber-700",
+    },
+    USER_BANNED: {
+        icon: XCircle,
+        iconBg: "bg-rose-50",
+        iconColor: "text-rose-600",
+        badgeLabel: "مسدودی حساب",
+        badgeBg: "bg-rose-50",
+        badgeColor: "text-rose-700",
+    },
+    USER_REINSTATED: {
+        icon: ShieldCheck,
+        iconBg: "bg-emerald-50",
+        iconColor: "text-emerald-600",
+        badgeLabel: "رفع تعلیق",
+        badgeBg: "bg-emerald-50",
+        badgeColor: "text-emerald-700",
+    },
+    USER_UNBANNED: {
+        icon: CheckCircle2,
+        iconBg: "bg-emerald-50",
+        iconColor: "text-emerald-600",
+        badgeLabel: "رفع مسدودی",
+        badgeBg: "bg-emerald-50",
+        badgeColor: "text-emerald-700",
+    },
 };
 
 const DEFAULT_CONFIG: TypeConfig = {
