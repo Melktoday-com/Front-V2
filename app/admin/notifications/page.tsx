@@ -42,10 +42,11 @@ import {
     BroadcastNotificationHistoryItem,
     AdminUser,
 } from "@/types/api/admin.types";
+import { BroadcastAudience } from "@/types/api/enums";
 import { normalizeApiError } from "@/lib/api/error-handler";
 import { toPersianDigits, getPaginationItems } from "@/lib/utils";
 
-type AudienceType = BroadcastNotificationRequest["audience"];
+type AudienceType = BroadcastAudience;
 
 const AUDIENCE_OPTIONS: {
     id: AudienceType;
@@ -56,7 +57,7 @@ const AUDIENCE_OPTIONS: {
     badgeText: string;
 }[] = [
     {
-        id: "ALL",
+        id: BroadcastAudience.ALL,
         label: "همه کاربران",
         icon: Users,
         description: "ارسال همگانی به تمام کاربران ثبت‌نام شده و فعال",
@@ -64,7 +65,7 @@ const AUDIENCE_OPTIONS: {
         badgeText: "text-blue-700",
     },
     {
-        id: "SINGLE_USER",
+        id: BroadcastAudience.SINGLE_USER,
         label: "کاربر اختصاصی",
         icon: User,
         description: "ارسال اختصاصی به یک کاربر خاص با جستجوی شماره همراه",
@@ -72,7 +73,7 @@ const AUDIENCE_OPTIONS: {
         badgeText: "text-rose-700",
     },
     {
-        id: "AGENTS",
+        id: BroadcastAudience.AGENTS,
         label: "مشاورین املاک",
         icon: Smartphone,
         description: "ارسال اختصاصی به دفاتر املاک و مشاوران تاییدشده",
@@ -80,7 +81,7 @@ const AUDIENCE_OPTIONS: {
         badgeText: "text-indigo-700",
     },
     {
-        id: "BUYERS",
+        id: BroadcastAudience.BUYERS,
         label: "خریداران",
         icon: ShoppingCart,
         description: "کاربران با جستجوها و فعالیت‌های خرید ملک",
@@ -88,7 +89,7 @@ const AUDIENCE_OPTIONS: {
         badgeText: "text-emerald-700",
     },
     {
-        id: "SELLERS",
+        id: BroadcastAudience.SELLERS,
         label: "فروشندگان",
         icon: Store,
         description: "کاربران ثبت‌کننده آگهی‌های فروش ملک",
@@ -96,7 +97,7 @@ const AUDIENCE_OPTIONS: {
         badgeText: "text-amber-700",
     },
     {
-        id: "TENANTS",
+        id: BroadcastAudience.TENANTS,
         label: "مستاجران",
         icon: KeyRound,
         description: "کاربران متقاضی رهن، اجاره و اقامت موقت",
@@ -104,7 +105,7 @@ const AUDIENCE_OPTIONS: {
         badgeText: "text-cyan-700",
     },
     {
-        id: "LANDLORDS",
+        id: BroadcastAudience.LANDLORDS,
         label: "مالکین و میزبانان",
         icon: Building2,
         description: "مالکان آگهی‌های اجاره سالانه و میزبانان اقامتگاه",
@@ -117,7 +118,7 @@ function getAudienceConfig(audience: string) {
     const found = AUDIENCE_OPTIONS.find((opt) => opt.id === audience);
     if (found) return found;
     return {
-        id: "ALL" as AudienceType,
+        id: BroadcastAudience.ALL,
         label: audience || "همه کاربران",
         icon: Users,
         description: "عمومی",
@@ -190,7 +191,7 @@ export default function AdminNotificationsPage() {
     // Send Form State
     const [title, setTitle] = useState("");
     const [body, setBody] = useState("");
-    const [audience, setAudience] = useState<AudienceType>("ALL");
+    const [audience, setAudience] = useState<AudienceType>(BroadcastAudience.ALL);
     const [targetUserSearch, setTargetUserSearch] = useState("");
     const [selectedTargetUser, setSelectedTargetUser] = useState<AdminUser | null>(null);
     const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
@@ -248,7 +249,7 @@ export default function AdminNotificationsPage() {
             }),
         enabled:
             canManageNotifications &&
-            audience === "SINGLE_USER" &&
+            audience === BroadcastAudience.SINGLE_USER &&
             targetUserSearch.trim().length >= 1,
     });
 
@@ -284,7 +285,7 @@ export default function AdminNotificationsPage() {
             toast.error("عنوان و متن اطلاعیه الزامی است");
             return;
         }
-        if (audience === "SINGLE_USER" && !selectedTargetUser) {
+        if (audience === BroadcastAudience.SINGLE_USER && !selectedTargetUser) {
             toast.error("لطفاً یک کاربر را برای ارسال اعلان اختصاصی انتخاب کنید");
             return;
         }
@@ -292,7 +293,7 @@ export default function AdminNotificationsPage() {
             title: title.trim(),
             body: body.trim(),
             audience,
-            userId: audience === "SINGLE_USER" ? selectedTargetUser?.id : undefined,
+            userId: audience === BroadcastAudience.SINGLE_USER ? selectedTargetUser?.id : undefined,
         });
     };
 
@@ -306,17 +307,7 @@ export default function AdminNotificationsPage() {
     const handleReuse = (item: BroadcastNotificationHistoryItem) => {
         setTitle(item.title);
         setBody(item.body);
-        if (
-            [
-                "ALL",
-                "BUYERS",
-                "SELLERS",
-                "AGENTS",
-                "TENANTS",
-                "LANDLORDS",
-                "SINGLE_USER",
-            ].includes(item.audience)
-        ) {
+        if (Object.values(BroadcastAudience).includes(item.audience as BroadcastAudience)) {
             setAudience(item.audience as AudienceType);
         }
         setIsDetailsModalOpen(false);
@@ -921,7 +912,7 @@ export default function AdminNotificationsPage() {
                                 </div>
 
                                 {/* Single User Target Selector */}
-                                {audience === "SINGLE_USER" && (
+                                {audience === BroadcastAudience.SINGLE_USER && (
                                     <div className="p-5 bg-rose-50/50 border border-rose-200/80 rounded-2xl space-y-4 animate-in fade-in duration-200">
                                         <div className="flex items-center justify-between">
                                             <label className="text-sm font-bold text-slate-800 flex items-center gap-2">

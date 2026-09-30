@@ -66,3 +66,13 @@ export enum TransactionType {
     TRANSFER = 'transfer',
     REFUND = 'refund',
 }
+
+export enum BroadcastAudience {
+    ALL = 'ALL',
+    BUYERS = 'BUYERS',
+    SELLERS = 'SELLERS',
+    AGENTS = 'AGENTS',
+    TENANTS = 'TENANTS',
+    LANDLORDS = 'LANDLORDS',
+    SINGLE_USER = 'SINGLE_USER',
+}

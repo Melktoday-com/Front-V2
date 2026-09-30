@@ -1,4 +1,4 @@
-import { AdStatus, PromotionStatus, ReportStatus, ReportTargetType, UserStatus } from "./enums";
+import { AdStatus, BroadcastAudience, PromotionStatus, ReportStatus, ReportTargetType, UserStatus } from "./enums";
 import { PricingFieldDefinition } from "./ads.types";
 import { JsonObject } from "../common";
 import { AgencyFull } from "./agency.types";
@@ -52,7 +52,7 @@ export interface AdjustWalletRequest {
 export interface BroadcastNotificationRequest {
     title: string;
     body: string;
-    audience: 'ALL' | 'BUYERS' | 'SELLERS' | 'AGENTS' | 'TENANTS' | 'LANDLORDS' | 'SINGLE_USER';
+    audience: BroadcastAudience;
     userId?: string;
 }
 
@@ -64,7 +64,7 @@ export interface BroadcastNotificationHistoryItem {
     adminRole?: string;
     title: string;
     body: string;
-    audience: 'ALL' | 'BUYERS' | 'SELLERS' | 'AGENTS' | 'TENANTS' | 'LANDLORDS' | 'SINGLE_USER' | string;
+    audience: BroadcastAudience | string;
     recipientCount: number;
     referenceId?: string;
     status: string;
