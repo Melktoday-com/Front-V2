@@ -33,11 +33,14 @@ import {
     ShoppingCart,
     KeyRound,
     Clock,
+    User,
+    Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
     BroadcastNotificationRequest,
     BroadcastNotificationHistoryItem,
+    AdminUser,
 } from "@/types/api/admin.types";
 import { normalizeApiError } from "@/lib/api/error-handler";
 import { toPersianDigits, getPaginationItems } from "@/lib/utils";
@@ -59,6 +62,14 @@ const AUDIENCE_OPTIONS: {
         description: "ارسال همگانی به تمام کاربران ثبت‌نام شده و فعال",
         badgeBg: "bg-blue-50 border-blue-200",
         badgeText: "text-blue-700",
+    },
+    {
+        id: "SINGLE_USER",
+        label: "کاربر اختصاصی",
+        icon: User,
+        description: "ارسال اختصاصی به یک کاربر خاص با جستجوی شماره همراه",
+        badgeBg: "bg-rose-50 border-rose-200",
+        badgeText: "text-rose-700",
     },
     {
         id: "AGENTS",
@@ -115,6 +126,20 @@ function getAudienceConfig(audience: string) {
     };
 }
 
+function getUserStatusBadge(status?: string) {
+    const s = status?.toLowerCase();
+    if (s === "active") {
+        return { label: "فعال", bg: "bg-emerald-50 border-emerald-200 text-emerald-700" };
+    }
+    if (s === "suspended") {
+        return { label: "تعلیق شده", bg: "bg-amber-50 border-amber-200 text-amber-700" };
+    }
+    if (s === "blocked") {
+        return { label: "مسدود / بن", bg: "bg-rose-50 border-rose-200 text-rose-700" };
+    }
+    return { label: status || "نامشخص", bg: "bg-slate-50 border-slate-200 text-slate-700" };
+}
+
 function formatPersianDate(dateString?: string | Date | null): string {
     if (!dateString) return "نامشخص";
     try {
@@ -166,6 +191,9 @@ export default function AdminNotificationsPage() {
     const [title, setTitle] = useState("");
     const [body, setBody] = useState("");
     const [audience, setAudience] = useState<AudienceType>("ALL");
+    const [targetUserSearch, setTargetUserSearch] = useState("");
+    const [selectedTargetUser, setSelectedTargetUser] = useState<AdminUser | null>(null);
+    const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
 
     // History Filters & Pagination State
     const [searchQuery, setSearchQuery] = useState("");
@@ -205,6 +233,25 @@ export default function AdminNotificationsPage() {
         placeholderData: (prev) => prev,
     });
 
+    // Search Users for Single User Notification Target
+    const {
+        data: usersData,
+        isLoading: isUsersLoading,
+        isFetching: isUsersFetching,
+    } = useQuery({
+        queryKey: ["admin-users-search", targetUserSearch],
+        queryFn: () =>
+            adminService.listUsers({
+                search: targetUserSearch.trim(),
+                page: 1,
+                limit: 8,
+            }),
+        enabled:
+            canManageNotifications &&
+            audience === "SINGLE_USER" &&
+            targetUserSearch.trim().length >= 1,
+    });
+
     // Send Mutation
     const broadcastMutation = useMutation({
         mutationFn: (data: BroadcastNotificationRequest) =>
@@ -216,6 +263,8 @@ export default function AdminNotificationsPage() {
             );
             setTitle("");
             setBody("");
+            setSelectedTargetUser(null);
+            setTargetUserSearch("");
             // Refetch history and go to history tab
             queryClient.invalidateQueries({ queryKey: ["admin-broadcast-history"] });
             setActiveTab("history");
@@ -235,10 +284,15 @@ export default function AdminNotificationsPage() {
             toast.error("عنوان و متن اطلاعیه الزامی است");
             return;
         }
+        if (audience === "SINGLE_USER" && !selectedTargetUser) {
+            toast.error("لطفاً یک کاربر را برای ارسال اعلان اختصاصی انتخاب کنید");
+            return;
+        }
         broadcastMutation.mutate({
             title: title.trim(),
             body: body.trim(),
             audience,
+            userId: audience === "SINGLE_USER" ? selectedTargetUser?.id : undefined,
         });
     };
 
@@ -260,6 +314,7 @@ export default function AdminNotificationsPage() {
                 "AGENTS",
                 "TENANTS",
                 "LANDLORDS",
+                "SINGLE_USER",
             ].includes(item.audience)
         ) {
             setAudience(item.audience as AudienceType);
@@ -453,6 +508,7 @@ export default function AdminNotificationsPage() {
                                     >
                                         <option value="ALL_TYPES">همه گروه‌های مخاطب</option>
                                         <option value="ALL">همه کاربران (عمومی)</option>
+                                        <option value="SINGLE_USER">کاربر اختصاصی</option>
                                         <option value="AGENTS">مشاورین املاک</option>
                                         <option value="BUYERS">خریداران</option>
                                         <option value="SELLERS">فروشندگان</option>
@@ -863,6 +919,150 @@ export default function AdminNotificationsPage() {
                                         })}
                                     </div>
                                 </div>
+
+                                {/* Single User Target Selector */}
+                                {audience === "SINGLE_USER" && (
+                                    <div className="p-5 bg-rose-50/50 border border-rose-200/80 rounded-2xl space-y-4 animate-in fade-in duration-200">
+                                        <div className="flex items-center justify-between">
+                                            <label className="text-sm font-bold text-slate-800 flex items-center gap-2">
+                                                <User size={16} className="text-rose-600" />
+                                                <span>جستجو و انتخاب کاربر هدف</span>
+                                            </label>
+                                            {selectedTargetUser && (
+                                                <span className="text-xs text-rose-700 font-bold bg-rose-100/80 px-2.5 py-0.5 rounded-full">
+                                                    کاربر انتخاب شد
+                                                </span>
+                                            )}
+                                        </div>
+
+                                        {selectedTargetUser ? (
+                                            /* Selected User Card */
+                                            <div className="bg-white border border-rose-200 rounded-2xl p-4 flex items-center justify-between shadow-sm">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-11 h-11 rounded-2xl bg-rose-100 text-rose-700 flex items-center justify-center font-black text-sm border border-rose-200">
+                                                        {selectedTargetUser.firstName?.charAt(0) || "ک"}
+                                                    </div>
+                                                    <div>
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="font-bold text-slate-900 text-sm">
+                                                                {selectedTargetUser.firstName || selectedTargetUser.lastName
+                                                                    ? `${selectedTargetUser.firstName || ""} ${selectedTargetUser.lastName || ""}`.trim()
+                                                                    : "کاربر بدون نام"}
+                                                            </span>
+                                                            {(() => {
+                                                                const badge = getUserStatusBadge(selectedTargetUser.status);
+                                                                return (
+                                                                    <span
+                                                                        className={`text-[10px] px-2 py-0.5 rounded-md font-bold border ${badge.bg}`}
+                                                                    >
+                                                                        {badge.label}
+                                                                    </span>
+                                                                );
+                                                            })()}
+                                                        </div>
+                                                        <div className="text-xs text-slate-500 font-medium flex items-center gap-1.5 mt-1">
+                                                            <Phone size={12} className="text-slate-400" />
+                                                            <span dir="ltr">
+                                                                {toPersianDigits(selectedTargetUser.mobileNumber)}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setSelectedTargetUser(null);
+                                                        setTargetUserSearch("");
+                                                    }}
+                                                    className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-100 transition"
+                                                    title="تغییر کاربر"
+                                                >
+                                                    <X size={18} />
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            /* Search Input and Dropdown */
+                                            <div className="relative">
+                                                <div className="relative">
+                                                    <Search
+                                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"
+                                                        size={18}
+                                                    />
+                                                    <input
+                                                        type="text"
+                                                        value={targetUserSearch}
+                                                        onChange={(e) => {
+                                                            setTargetUserSearch(e.target.value);
+                                                            setIsUserDropdownOpen(true);
+                                                        }}
+                                                        onFocus={() => setIsUserDropdownOpen(true)}
+                                                        placeholder="شماره موبایل کاربر (مثال: 0912...)، نام یا شناسه را جستجو کنید..."
+                                                        className="w-full pl-10 pr-11 py-3.5 rounded-2xl border border-slate-200 bg-white text-sm font-medium focus:ring-2 focus:ring-rose-500 outline-none transition-all"
+                                                    />
+                                                    {isUsersFetching && (
+                                                        <Loader2
+                                                            size={18}
+                                                            className="absolute left-4 top-1/2 -translate-y-1/2 text-rose-500 animate-spin"
+                                                        />
+                                                    )}
+                                                </div>
+
+                                                {/* Dropdown Results */}
+                                                {isUserDropdownOpen && targetUserSearch.trim().length >= 1 && (
+                                                    <div className="absolute z-20 top-full mt-2 w-full bg-white border border-slate-200 rounded-2xl shadow-xl max-h-60 overflow-y-auto divide-y divide-slate-100">
+                                                        {isUsersLoading ? (
+                                                            <div className="p-4 text-center text-xs text-slate-400 flex items-center justify-center gap-2">
+                                                                <Loader2 size={16} className="animate-spin text-rose-500" />
+                                                                <span>در حال جستجوی کاربران...</span>
+                                                            </div>
+                                                        ) : usersData?.items && usersData.items.length > 0 ? (
+                                                            usersData.items.map((user) => {
+                                                                const badge = getUserStatusBadge(user.status);
+                                                                return (
+                                                                    <button
+                                                                        key={user.id}
+                                                                        type="button"
+                                                                        onClick={() => {
+                                                                            setSelectedTargetUser(user);
+                                                                            setIsUserDropdownOpen(false);
+                                                                        }}
+                                                                        className="w-full p-3.5 flex items-center justify-between text-right hover:bg-rose-50/50 transition-colors"
+                                                                    >
+                                                                        <div className="flex items-center gap-3">
+                                                                            <div className="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center font-bold text-xs">
+                                                                                {user.firstName?.charAt(0) || "ک"}
+                                                                            </div>
+                                                                            <div>
+                                                                                <div className="font-bold text-xs text-slate-900">
+                                                                                    {user.firstName || user.lastName
+                                                                                        ? `${user.firstName || ""} ${user.lastName || ""}`.trim()
+                                                                                        : "کاربر بدون نام"}
+                                                                                </div>
+                                                                                <div className="text-[11px] text-slate-500 font-medium mt-0.5">
+                                                                                    {toPersianDigits(user.mobileNumber)}
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                        <span
+                                                                            className={`text-[10px] px-2 py-0.5 rounded-md font-bold border ${badge.bg}`}
+                                                                        >
+                                                                            {badge.label}
+                                                                        </span>
+                                                                    </button>
+                                                                );
+                                                            })
+                                                        ) : (
+                                                            <div className="p-4 text-center text-xs text-slate-400">
+                                                                کاربری با مشخصات وارد شده یافت نشد
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
 
                                 {/* Title Input */}
                                 <div className="space-y-2">

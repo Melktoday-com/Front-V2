@@ -89,7 +89,7 @@ export const adminService = {
         return response.data;
     },
 
-    listUsers: async (params: { page?: number; limit?: number }): Promise<ListUsersResponse> => {
+    listUsers: async (params: { page?: number; limit?: number; search?: string }): Promise<ListUsersResponse> => {
         const response = await api.get<ListUsersResponse>("/admin/users", { params });
         return response.data;
     },

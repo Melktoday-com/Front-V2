@@ -52,7 +52,8 @@ export interface AdjustWalletRequest {
 export interface BroadcastNotificationRequest {
     title: string;
     body: string;
-    audience: 'ALL' | 'BUYERS' | 'SELLERS' | 'AGENTS' | 'TENANTS' | 'LANDLORDS';
+    audience: 'ALL' | 'BUYERS' | 'SELLERS' | 'AGENTS' | 'TENANTS' | 'LANDLORDS' | 'SINGLE_USER';
+    userId?: string;
 }
 
 export interface BroadcastNotificationHistoryItem {
@@ -63,7 +64,7 @@ export interface BroadcastNotificationHistoryItem {
     adminRole?: string;
     title: string;
     body: string;
-    audience: 'ALL' | 'BUYERS' | 'SELLERS' | 'AGENTS' | 'TENANTS' | 'LANDLORDS' | string;
+    audience: 'ALL' | 'BUYERS' | 'SELLERS' | 'AGENTS' | 'TENANTS' | 'LANDLORDS' | 'SINGLE_USER' | string;
     recipientCount: number;
     referenceId?: string;
     status: string;
