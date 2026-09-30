@@ -19,7 +19,7 @@ export function useUserStatus() {
     const { data: profile, isLoading, refetch } = useMeProfile();
 
     const rawStatus = (profile?.status || (isLoggedIn ? "Active" : "")).toLowerCase();
-    const isSuspended = rawStatus === "suspended";
+    const isSuspended = rawStatus === "suspended" || rawStatus === "inactive";
     const isBanned = rawStatus === "blocked" || rawStatus === "banned";
     const isActive = rawStatus === "active";
     const isRestricted = isSuspended || isBanned;
