@@ -40,9 +40,10 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { toast } from "sonner";
+import { PublisherType } from "@/types/api/post.types";
 
 interface PublisherInfo {
-  type: "AGENCY" | "HOST" | "PLATFORM";
+  type: PublisherType;
   id: string;
   name: string;
   avatarUrl?: string;

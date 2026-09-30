@@ -21,9 +21,10 @@ import {
   Verified,
 } from "lucide-react";
 import Image from "next/image";
+import { PublisherType } from "@/types/api/post.types";
 
 interface PublisherInfo {
-  type: "AGENCY" | "HOST" | "PLATFORM";
+  type: PublisherType;
   id: string;
   name: string;
   avatarUrl?: string;

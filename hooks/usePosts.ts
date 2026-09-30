@@ -1,6 +1,13 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { postService, PostsListResponse, ToggleLikeResponse } from "@/services/post.service";
-import { CreatePostRequest, ExploreParams, UnifiedPost, UpdatePostRequest } from "@/types/api/showcase.types";
+import { postService } from "@/services/post.service";
+import {
+  CreatePostRequest,
+  ExploreParams,
+  PostsListResponse,
+  ToggleLikeResponse,
+  UnifiedPost,
+  UpdatePostRequest,
+} from "@/types/api/post.types";
 
 export const POSTS_QUERY_KEYS = {
   all: ['posts'] as const,

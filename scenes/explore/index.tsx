@@ -7,7 +7,7 @@ import { useMyAgency } from "@/hooks/useAgencies";
 import { useAuth } from "@/hooks/useAuth";
 import { cn, toPersianDigits, getMediaUrl } from "@/lib/utils";
 import { MarkdownRenderer } from "@/components/ui/MarkdownRenderer";
-import { UnifiedPost } from "@/types/api/showcase.types";
+import { UnifiedPost } from "@/types/api/post.types";
 import { useQueryClient } from "@tanstack/react-query";
 import {
     BookOpen,

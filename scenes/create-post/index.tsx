@@ -30,11 +30,12 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { PublisherType } from "@/types/api/post.types";
 
 type PostFormat = "instagram" | "medium";
 
 interface PublisherOption {
-  type: "AGENCY" | "HOST" | "PLATFORM";
+  type: PublisherType;
   id: string;
   name: string;
   avatarUrl?: string;

@@ -14,7 +14,7 @@ import {
     useToggleSaveTemporaryRent,
 } from '@/hooks/useFavorites';
 import { useAuth } from '@/hooks/useAuth';
-import { UnifiedPost } from '@/types/api/showcase.types';
+import { UnifiedPost } from '@/types/api/post.types';
 import {
     Bookmark,
     Building2,

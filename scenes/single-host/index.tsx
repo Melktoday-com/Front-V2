@@ -34,7 +34,7 @@ import {
 } from "lucide-react";
 import { formatCurrency, toPersianDigits, cn, getMediaUrl } from "@/lib/utils";
 import { toast } from "sonner";
-import { UnifiedPost } from "@/types/api/showcase.types";
+import { UnifiedPost } from "@/types/api/post.types";
 import { MarkdownRenderer } from "@/components/ui/MarkdownRenderer";
 
 interface SingleHostSceneProps {

@@ -2,22 +2,13 @@ import apiClient from "@/lib/api/client";
 import {
   CreatePostRequest,
   ExploreParams,
+  PostsListResponse,
+  ToggleLikeResponse,
   UnifiedPost,
   UpdatePostRequest,
-} from "@/types/api/showcase.types";
+} from "@/types/api/post.types";
 
-export interface PostsListResponse {
-  items: UnifiedPost[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
-}
-
-export interface ToggleLikeResponse {
-  hasLiked: boolean;
-  likeCount: number;
-}
+export type { PostsListResponse, ToggleLikeResponse };
 
 export const postService = {
   /**

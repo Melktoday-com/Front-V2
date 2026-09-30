@@ -1,6 +1,6 @@
 import { favoritesService, FavoriteItemType } from '@/services/favorites.service';
 import { showcaseService } from '@/services/showcase.service';
-import { UnifiedPost } from '@/types/api/showcase.types';
+import { UnifiedPost } from '@/types/api/post.types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
