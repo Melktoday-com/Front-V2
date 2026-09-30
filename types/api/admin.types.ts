@@ -255,6 +255,7 @@ export interface CreateAdminAttributeRequest {
 }
 
 export interface UpdateAdminAttributeRequest {
+    key?: string;
     label?: string;
     description?: string;
     type?: 'STRING' | 'NUMBER' | 'BOOLEAN' | 'SELECT';

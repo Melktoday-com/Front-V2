@@ -150,6 +150,7 @@ export default function SubcategoryConfigModal({
             if (data.id) {
                 // Update
                 const updatePayload: UpdateAdminAttributeRequest = {
+                    key: data.key.trim(),
                     label: data.label,
                     description: data.description || undefined,
                     type: data.type,
@@ -586,11 +587,15 @@ export default function SubcategoryConfigModal({
                                 <input
                                     type="text"
                                     placeholder="مثلاً: rooms یا floor یا has_parking"
-                                    disabled={!!attributeFormData.id}
                                     value={attributeFormData.key}
                                     onChange={(e) => setAttributeFormData({ ...attributeFormData, key: e.target.value })}
-                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all disabled:bg-slate-100 disabled:text-slate-400"
+                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                                 />
+                                {attributeFormData.id && (
+                                    <p className="text-[11px] text-amber-600 mt-1">
+                                        توجه: در صورت تغییر کلید فنی، این فیلد در آگهی‌های ثبت‌شده این زیردسته نیز به‌طور خودکار به‌روزرسانی می‌شود.
+                                    </p>
+                                )}
                             </div>
 
                             {/* Label */}
