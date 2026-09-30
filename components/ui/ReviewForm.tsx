@@ -1,6 +1,7 @@
 import { cn } from '@/lib/utils';
-import { Star } from 'lucide-react';
+import { Star, ShieldAlert } from 'lucide-react';
 import React, { useState } from 'react';
+import { useUserStatus } from '@/hooks/useUserStatus';
 
 interface ReviewFormProps {
     onSubmit: (rating: number, comment?: string) => Promise<void>;
@@ -8,17 +9,31 @@ interface ReviewFormProps {
 }
 
 export const ReviewForm = ({ onSubmit, isLoading }: ReviewFormProps) => {
+    const { isRestricted, isBanned, isSuspended } = useUserStatus();
     const [rating, setRating] = useState(0);
     const [hoverRating, setHoverRating] = useState(0);
     const [comment, setComment] = useState('');
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (rating === 0) return;
+        if (isRestricted || rating === 0) return;
         await onSubmit(rating, comment.trim() || undefined);
         setRating(0);
         setComment('');
     };
+
+    if (isRestricted) {
+        return (
+            <div className="bg-amber-50/70 border border-amber-200 rounded-2xl p-4 flex items-center gap-3 text-amber-900">
+                <ShieldAlert className="w-5 h-5 text-amber-600 shrink-0" />
+                <p className="text-xs font-bold leading-relaxed">
+                    امکان ثبت دیدگاه و امتیاز به دلیل وضعیت حساب کاربری (
+                    {isBanned ? "مسدود شده" : "تعلیق موقت"}
+                    ) غیرفعال است.
+                </p>
+            </div>
+        );
+    }
 
     return (
         <form onSubmit={handleSubmit} className="bg-soft-bg rounded-2xl p-5 border border-soft-border space-y-4">

@@ -40,6 +40,10 @@ import { AdminOwnershipSelector, AdminOwnershipData } from "@/components/admin/A
 import { adminService } from "@/services/admin.service";
 import { AdminCreateTemporaryRentRequest } from "@/types/api/admin.types";
 import { useGeoHierarchy } from "@/hooks/useGeoHierarchy";
+import { useUserStatus } from "@/hooks/useUserStatus";
+import { AccountStatusBanner } from "@/components/ui/AccountStatusBanner";
+import { ShieldAlert } from "lucide-react";
+import Link from "next/link";
 
 // Leaflet is client-side only
 const DynamicMapPicker = dynamic(() => import("@/components/ui/MapPicker"), { ssr: false });
@@ -60,6 +64,7 @@ interface CreateTemporaryRentSceneProps {
 
 export default function CreateTemporaryRentScene({ adminMode = false }: CreateTemporaryRentSceneProps) {
     const router = useRouter();
+    const { isRestricted, restrictionMessage } = useUserStatus();
     const [step, setStep] = useState<Step>("CATEGORY");
     const [isCitySelectorOpen, setIsCitySelectorOpen] = useState(false);
     const [cityName, setCityName] = useState("");
@@ -359,6 +364,41 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
             setIsSubmittingAdmin(false);
         }
     };
+
+    if (!adminMode && isRestricted) {
+        return (
+            <div className="min-h-[70vh] flex items-center justify-center p-4">
+                <div className="max-w-md w-full bg-white rounded-3xl p-6 sm:p-8 border border-soft-border shadow-md text-center space-y-5">
+                    <div className="w-16 h-16 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center mx-auto">
+                        <ShieldAlert className="w-8 h-8" />
+                    </div>
+                    <div className="space-y-2">
+                        <h2 className="text-xl font-black text-brand">دسترسی ثبت اقامتگاه مسدود است</h2>
+                        <p className="text-xs text-text-light leading-relaxed">
+                            {restrictionMessage || "حساب کاربری شما در وضعیت تعلیق یا مسدودی قرار دارد و امکان ثبت یا ویرایش اقامتگاه برای شما غیرفعال است."}
+                        </p>
+                    </div>
+
+                    <AccountStatusBanner showNotificationLink={true} />
+
+                    <div className="pt-2 flex flex-col sm:flex-row gap-2.5">
+                        <Link
+                            href="/profile"
+                            className="flex-1 py-3 px-4 rounded-xl bg-brand text-white text-xs font-bold hover:bg-brand/90 transition-colors flex items-center justify-center gap-1.5"
+                        >
+                            <span>مشاهده و ویرایش پروفایل</span>
+                        </Link>
+                        <Link
+                            href="/notifications"
+                            className="py-3 px-4 rounded-xl bg-soft-bg text-secondary text-xs font-bold hover:bg-soft-border transition-colors flex items-center justify-center gap-1.5"
+                        >
+                            <span>مشاهده اعلان‌ها</span>
+                        </Link>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gray-50/50 py-8 px-4 sm:px-6 lg:px-8 pb-32">

@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
 import { useCreateAgency } from "@/hooks/useAgencies";
 import { useCities } from "@/hooks/useGeo";
+import { useUserStatus } from "@/hooks/useUserStatus";
+import { AccountStatusBanner } from "@/components/ui/AccountStatusBanner";
 import { Building2, ChevronLeft, FileText, Globe, MapPin, Phone } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -11,6 +13,7 @@ import { toast } from "sonner";
 
 export default function CreateAgencyScene() {
     const router = useRouter();
+    const { isRestricted } = useUserStatus();
     const { mutate: createAgency, isPending } = useCreateAgency();
     const { data: citiesData } = useCities({ limit: 100 });
 
@@ -24,6 +27,11 @@ export default function CreateAgencyScene() {
     });
 
     const handleCreate = () => {
+        if (isRestricted) {
+            toast.error("حساب کاربری شما محدود شده است و امکان ایجاد پروفایل آژانس وجود ندارد.");
+            return;
+        }
+
         if (!formData.agencyName || !formData.bio || !formData.cityId) {
             toast.error("لطفاً تمامی فیلدهای اجباری (نام، بیوگرافی، شهر) را پر کنید");
             return;
@@ -47,6 +55,8 @@ export default function CreateAgencyScene() {
             </header>
 
             <div className="p-6 lg:p-10 max-w-2xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                {isRestricted && <AccountStatusBanner />}
+
                 <div className="text-center space-y-2 mb-10">
                     <div className="w-20 h-20 bg-brand/5 rounded-[30px] flex items-center justify-center mx-auto mb-4 border border-brand/5">
                         <Building2 className="w-10 h-10 text-brand" />

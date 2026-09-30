@@ -38,6 +38,9 @@ import { toast } from "sonner";
 import { AdminOwnershipSelector, AdminOwnershipData } from "@/components/admin/AdminOwnershipSelector";
 import { adminService } from "@/services/admin.service";
 import { AdminCreateAdRequest } from "@/types/api/admin.types";
+import { useUserStatus } from "@/hooks/useUserStatus";
+import { AccountStatusBanner } from "@/components/ui/AccountStatusBanner";
+import { ShieldAlert } from "lucide-react";
 
 // Leaflet is client-side only
 const DynamicMapPicker = dynamic(() => import("@/components/ui/MapPicker"), { ssr: false });
@@ -62,6 +65,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
     const searchParams = useSearchParams();
     const editAdId = searchParams.get("edit");
     const { selectedCity } = useCity();
+    const { isRestricted, restrictionTitle, restrictionMessage } = useUserStatus();
 
     const [adminOwnership, setAdminOwnership] = useState<AdminOwnershipData>({
         isPlatform: true,
@@ -585,6 +589,41 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
         const cat = categories.find((c) => c.key === formData.categoryPath?.categoryKey);
         return cat?.subcategories?.find((s) => s.key === formData.categoryPath?.subcategoryKey);
     }, [categories, formData.categoryPath?.categoryKey, formData.categoryPath?.subcategoryKey]);
+
+    if (!adminMode && isRestricted) {
+        return (
+            <div className="min-h-[70vh] flex items-center justify-center p-4">
+                <div className="max-w-md w-full bg-white rounded-3xl p-6 sm:p-8 border border-soft-border shadow-md text-center space-y-5">
+                    <div className="w-16 h-16 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center mx-auto">
+                        <ShieldAlert className="w-8 h-8" />
+                    </div>
+                    <div className="space-y-2">
+                        <h2 className="text-xl font-black text-brand">دسترسی ثبت آگهی مسدود است</h2>
+                        <p className="text-xs text-text-light leading-relaxed">
+                            {restrictionMessage || "حساب کاربری شما در وضعیت تعلیق یا مسدودی قرار دارد و امکان ثبت یا ویرایش آگهی برای شما غیرفعال است."}
+                        </p>
+                    </div>
+
+                    <AccountStatusBanner showNotificationLink={true} />
+
+                    <div className="pt-2 flex flex-col sm:flex-row gap-2.5">
+                        <Link
+                            href="/profile"
+                            className="flex-1 py-3 px-4 rounded-xl bg-brand text-white text-xs font-bold hover:bg-brand/90 transition-colors flex items-center justify-center gap-1.5"
+                        >
+                            <span>مشاهده و ویرایش پروفایل</span>
+                        </Link>
+                        <Link
+                            href="/notifications"
+                            className="py-3 px-4 rounded-xl bg-soft-bg text-secondary text-xs font-bold hover:bg-soft-border transition-colors flex items-center justify-center gap-1.5"
+                        >
+                            <span>مشاهده اعلان‌ها</span>
+                        </Link>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     if (editAdId && isLoadingExisting) {
         return (

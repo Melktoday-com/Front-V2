@@ -1,6 +1,8 @@
 "use client";
 
 import { useAuth } from "@/hooks/useAuth";
+import { useUserStatus } from "@/hooks/useUserStatus";
+import { AccountStatusBanner } from "@/components/ui/AccountStatusBanner";
 import { useTemporaryRentAds, usePublishTemporaryRent, useDeleteTemporaryRent } from "@/hooks/useTemporaryRent";
 import { useHostProfile } from "@/hooks/useShowcase";
 import { ChevronRight, Plus, Rocket, Info, Calendar, Users, MapPin, Trash2, ExternalLink } from "lucide-react";
@@ -21,6 +23,7 @@ const statusLabels: Record<string, { label: string; color: string; border: strin
 export default function TemporaryRentPanelScene() {
     const router = useRouter();
     const { user } = useAuth();
+    const { isRestricted } = useUserStatus();
     const { data: hostProfile } = useHostProfile();
     
     // Fetch user's own rentals using the newly added ownerId filter
@@ -33,6 +36,10 @@ export default function TemporaryRentPanelScene() {
     const deleteMutation = useDeleteTemporaryRent();
 
     const handlePublish = async (id: string) => {
+        if (isRestricted) {
+            toast.error("حساب کاربری شما محدود شده است و امکان انتشار آگهی وجود ندارد.");
+            return;
+        }
         try {
             await publishMutation.mutateAsync(id);
             toast.success("آگهی با موفقیت منتشر شد");
@@ -80,8 +87,15 @@ export default function TemporaryRentPanelScene() {
                         </Link>
                     )}
                     <Button 
-                        onClick={() => router.push('/profile/temporary-rent/new')}
-                        className="rounded-2xl gap-2 font-black"
+                        onClick={() => {
+                            if (isRestricted) {
+                                toast.error("حساب کاربری شما محدود شده است و امکان ثبت اقامتگاه وجود ندارد.");
+                                return;
+                            }
+                            router.push('/profile/temporary-rent/new');
+                        }}
+                        disabled={isRestricted}
+                        className={cn("rounded-2xl gap-2 font-black", isRestricted && "opacity-50 cursor-not-allowed")}
                         size="sm"
                     >
                         <Plus className="w-5 h-5" />
@@ -91,6 +105,8 @@ export default function TemporaryRentPanelScene() {
             </header>
 
             <main className="p-6 lg:p-10 max-w-5xl mx-auto space-y-8">
+                {isRestricted && <AccountStatusBanner />}
+
                 {/* Stats or Announcement */}
                 <div className="bg-primary/5 border border-primary/10 rounded-[30px] p-6 flex flex-col sm:flex-row items-center gap-6">
                     <div className="bg-primary/10 p-4 rounded-2xl text-primary">
@@ -113,8 +129,15 @@ export default function TemporaryRentPanelScene() {
                         <h3 className="text-brand font-black text-xl mb-2">هنوز اقامتگاهی ثبت نکرده‌اید</h3>
                         <p className="text-secondary font-bold mb-8">همین حالا اولین آگهی اجاره موقت خود را بسازید</p>
                         <Button 
-                            onClick={() => router.push('/profile/temporary-rent/new')}
-                            className="rounded-2xl px-8 h-12 font-black"
+                            onClick={() => {
+                                if (isRestricted) {
+                                    toast.error("حساب کاربری شما محدود شده است و امکان ثبت اقامتگاه وجود ندارد.");
+                                    return;
+                                }
+                                router.push('/profile/temporary-rent/new');
+                            }}
+                            disabled={isRestricted}
+                            className={cn("rounded-2xl px-8 h-12 font-black", isRestricted && "opacity-50 cursor-not-allowed")}
                         >
                             ثبت اولین اقامتگاه
                         </Button>

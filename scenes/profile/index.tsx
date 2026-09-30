@@ -13,6 +13,8 @@ import { cn, formatCurrency, toPersianDigits } from "@/lib/utils";
 import { userService } from "@/services/user.service";
 import { RoleName } from "@/types/access";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useUserStatus } from "@/hooks/useUserStatus";
+import { AccountStatusBanner } from "@/components/ui/AccountStatusBanner";
 import {
     Bell,
     Building2,
@@ -26,6 +28,7 @@ import {
     LogOut,
     MessageSquare,
     Plus,
+    ShieldAlert,
     ShieldCheck,
     User,
     X
@@ -76,6 +79,8 @@ export default function ProfileScene() {
         },
     });
 
+    const { isRestricted, isBanned, isSuspended, statusLabel } = useUserStatus();
+
     useEffect(() => {
         if (profile) {
             setFirstName(profile.firstName || "");
@@ -120,16 +125,9 @@ export default function ProfileScene() {
 
     return (
         <div className="min-h-screen bg-white pb-24 lg:pb-10">
-            <div className="p-6 lg:p-10 space-y-10 max-w-2xl mx-auto">
-                {/* <header className="flex justify-between items-center">
-                    <h1 className="text-brand text-2xl lg:text-3xl font-black">
-                        حساب کاربری
-                    </h1>
-                    <Button variant="ghost" onClick={logout} className="text-error flex items-center gap-2">
-                        <LogOut className="w-5 h-5" />
-                        <span className="font-bold">خروج</span>
-                    </Button>
-                </header> */}
+            <div className="p-6 lg:p-10 space-y-6 max-w-2xl mx-auto">
+                {/* Account Status Alert if Suspended or Banned */}
+                <AccountStatusBanner showNotificationLink={true} />
 
                 {/* Profile Info */}
                 <section className="bg-soft-bg rounded-[30px] p-6 space-y-6 border border-soft-border">
@@ -141,13 +139,22 @@ export default function ProfileScene() {
                             <div className="text-brand font-black text-lg">
                                 {firstName || "کاربر"} {lastName || "ملک تودی"}
                             </div>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 flex-wrap mt-1">
                                 <span className={cn(
                                     "px-2 py-0.5 rounded-lg text-[10px] font-black uppercase",
                                     activeRole === 'user' ? "bg-secondary/10 text-secondary" : "bg-primary/10 text-primary"
                                 )}>
                                     {roleLabels[activeRole || 'user']}
                                 </span>
+
+                                {isRestricted && (
+                                    <span className={cn(
+                                        "px-2 py-0.5 rounded-lg text-[10px] font-black",
+                                        isBanned ? "bg-rose-100 text-rose-700" : "bg-amber-100 text-amber-700"
+                                    )}>
+                                        وضعیت: {statusLabel}
+                                    </span>
+                                )}
                             </div>
                         </div>
                     </div>

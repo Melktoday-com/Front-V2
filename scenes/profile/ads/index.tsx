@@ -30,6 +30,8 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+import { useUserStatus } from "@/hooks/useUserStatus";
+import { AccountStatusBanner } from "@/components/ui/AccountStatusBanner";
 
 type FilterTab = "ALL" | AdStatus;
 
@@ -346,6 +348,7 @@ function MyAdCard({
 export default function MyAdsScene() {
     const router = useRouter();
     const queryClient = useQueryClient();
+    const { isRestricted } = useUserStatus();
 
     const [activeFilter, setActiveFilter] = useState<FilterTab>("ALL");
     const [startPage, setStartPage] = useState<number>(1);
@@ -534,7 +537,11 @@ export default function MyAdsScene() {
 
                     <button
                         onClick={() => router.push("/ads/submit")}
-                        className="bg-primary hover:bg-primary/90 text-white font-bold text-xs sm:text-sm px-4 py-2.5 rounded-xl shadow-xs transition-all active:scale-95 flex items-center gap-1.5 shrink-0"
+                        disabled={isRestricted}
+                        className={cn(
+                            "text-white font-bold text-xs sm:text-sm px-4 py-2.5 rounded-xl shadow-xs transition-all active:scale-95 flex items-center gap-1.5 shrink-0",
+                            isRestricted ? "bg-gray-400 cursor-not-allowed opacity-60" : "bg-primary hover:bg-primary/90"
+                        )}
                     >
                         <Plus className="w-4 h-4" />
                         <span>ثبت آگهی جدید</span>
@@ -585,6 +592,8 @@ export default function MyAdsScene() {
 
             {/* Main Content */}
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                {/* Account Status Alert if Suspended/Banned */}
+                <AccountStatusBanner className="mb-6" />
                 {isLoading ? (
                     /* Initial Skeleton Grid */
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">

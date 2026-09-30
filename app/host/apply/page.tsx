@@ -24,12 +24,15 @@ import { toast } from "sonner";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserStatus } from "@/hooks/useUserStatus";
+import { AccountStatusBanner } from "@/components/ui/AccountStatusBanner";
 import { HostApplicationRequest } from "@/types/api/showcase.types";
 import { cn } from "@/lib/utils";
 
 export default function HostApplyPage() {
   const router = useRouter();
   const { isLoggedIn } = useAuth();
+  const { isRestricted } = useUserStatus();
   const queryClient = useQueryClient();
 
   const [isCitySelectorOpen, setIsCitySelectorOpen] = useState(false);
@@ -75,6 +78,11 @@ export default function HostApplyPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (isRestricted) {
+      toast.error("حساب کاربری شما محدود شده است و امکان ثبت درخواست میزبانی وجود ندارد.");
+      return;
+    }
+
     if (!formData.fullName.trim()) {
       toast.error("لطفاً نام و نام خانوادگی را وارد کنید.");
       return;
@@ -117,6 +125,8 @@ export default function HostApplyPage() {
           </Link>
           <span className="text-xs font-medium text-slate-400">فرم رسمی درخواست میزبانی</span>
         </div>
+
+        {isRestricted && <AccountStatusBanner />}
 
         {/* Hero Section */}
         <div className="bg-gradient-to-br from-emerald-600 to-teal-800 text-white rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden">
