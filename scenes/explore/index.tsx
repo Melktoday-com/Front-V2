@@ -16,6 +16,7 @@ import {
     Eye,
     Grid,
     Heart,
+    Home,
     List,
     Loader2,
     Newspaper,
@@ -56,7 +57,7 @@ export default function ExploreScene() {
     const observerTargetRef = useRef<HTMLDivElement | null>(null);
 
     // Modal state for reading a full post
-    const [readingPost, setReadingPost] = useState<AgencyPost | null>(null);
+    const [readingPost, setReadingPost] = useState<any | null>(null);
 
     // Fetch published posts with infinite scroll
     const {
@@ -127,13 +128,46 @@ export default function ExploreScene() {
         });
     };
 
-    const handleShare = (e: React.MouseEvent, post: AgencyPost) => {
+    const getPublisherInfo = (post: any) => {
+        if (post?.publisherType === 'PLATFORM' || post?.publisherId === 'melktoday-official') {
+            return {
+                name: 'ملک‌تودی (پلتفرم رسمی)',
+                badge: 'پلتفرم رسمی',
+                link: '/platform',
+                logoUrl: null,
+                type: 'PLATFORM' as const,
+                isVerified: true,
+            };
+        }
+        if (post?.publisherType === 'HOST') {
+            return {
+                name: 'میزبان اقامتگاه',
+                badge: 'میزبان اقامتگاه',
+                link: '/temporary-rent',
+                logoUrl: null,
+                type: 'HOST' as const,
+                isVerified: false,
+            };
+        }
+        const agency = post?.agency || post?.publisher;
+        const agencySlugOrId = agency?.slug || agency?.id || post?.publisherId || post?.agencyId;
+        return {
+            name: agency?.name || 'آژانس املاک',
+            badge: 'آژانس املاک',
+            link: agencySlugOrId ? `/agency/showcase/${encodeURIComponent(agencySlugOrId)}` : '/agency',
+            logoUrl: agency?.logoUrl || null,
+            type: 'AGENCY' as const,
+            isVerified: agency?.isVerified ?? true,
+        };
+    };
+
+    const handleShare = (e: React.MouseEvent, post: any) => {
         e.stopPropagation();
-        const agencySlugOrId = post.agency?.slug || post.agency?.id || post.agencyId;
-        const url = `${window.location.origin}/agency/showcase/${encodeURIComponent(agencySlugOrId)}`;
+        const pub = getPublisherInfo(post);
+        const url = `${window.location.origin}${pub.link}`;
         if (navigator.clipboard) {
             navigator.clipboard.writeText(url);
-            toast.success("لینک پست کپی شد.");
+            toast.success("لینک اشتراک‌گذاری کپی شد.");
         } else {
             toast.info(url);
         }
@@ -144,14 +178,15 @@ export default function ExploreScene() {
     };
 
     // Filter helper
-    const filterPostByTag = (post: AgencyPost, tag: string) => {
+    const filterPostByTag = (post: any, tag: string) => {
         if (tag === "all") return true;
-        const text = `${post.title} ${post.summary || ""} ${post.content}`.toLowerCase();
-        if (tag === "market") return text.includes("بازار") || text.includes("قیمت") || text.includes("تحلیل");
-        if (tag === "guide") return text.includes("راهنما") || text.includes("خرید") || text.includes("رهن");
-        if (tag === "legal") return text.includes("حقوق") || text.includes("سند") || text.includes("قرارداد");
-        if (tag === "investment") return text.includes("سرمایه") || text.includes("سود") || text.includes("سرمایه‌گذاری");
-        if (tag === "news") return text.includes("خبر") || text.includes("قانون") || text.includes("جدید");
+        const cat = (post.category || "").toLowerCase();
+        const text = `${post.title || ""} ${post.summary || ""} ${post.content || ""} ${cat}`.toLowerCase();
+        if (tag === "market") return cat.includes("تحلیل") || cat.includes("بازار") || text.includes("بازار") || text.includes("قیمت");
+        if (tag === "guide") return cat.includes("راهنما") || cat.includes("خرید") || text.includes("راهنما");
+        if (tag === "legal") return cat.includes("حقوق") || text.includes("حقوق") || text.includes("سند") || text.includes("قرارداد");
+        if (tag === "investment") return cat.includes("سرمایه") || text.includes("سرمایه") || text.includes("سود");
+        if (tag === "news") return cat.includes("پلتفرم") || cat.includes("اخبار") || text.includes("پلتفرم") || text.includes("خبر");
         return true;
     };
 
@@ -385,8 +420,7 @@ export default function ExploreScene() {
                                     )}
 
                                     {pagePosts.map((post) => {
-                                        const agency = post.agency;
-                                        const agencySlugOrId = agency?.slug || agency?.id || post.agencyId;
+                                        const pub = getPublisherInfo(post);
                                         const coverImage = post.mediaUrls && post.mediaUrls.length > 0 ? getMediaUrl(post.mediaUrls[0]) : null;
 
                                         return (
@@ -398,18 +432,26 @@ export default function ExploreScene() {
                                                 {/* Post Author Header */}
                                                 <div className="p-4 sm:p-5 flex items-center justify-between border-b border-slate-100">
                                                     <Link
-                                                        href={`/agency/showcase/${encodeURIComponent(agencySlugOrId)}`}
+                                                        href={pub.link}
                                                         onClick={(e) => e.stopPropagation()}
                                                         className="flex items-center gap-3 group/author"
                                                     >
-                                                        <div className="relative w-10 h-10 rounded-full overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
-                                                            {agency?.logoUrl ? (
+                                                        <div className="relative w-10 h-10 rounded-full overflow-hidden bg-slate-100 border border-slate-200 shrink-0 flex items-center justify-center">
+                                                            {pub.logoUrl ? (
                                                                 <Image
-                                                                    src={getMediaUrl(agency.logoUrl)}
-                                                                    alt={agency?.name || "لوگوی املاک"}
+                                                                    src={getMediaUrl(pub.logoUrl)}
+                                                                    alt={pub.name}
                                                                     fill
                                                                     className="object-cover"
                                                                 />
+                                                            ) : pub.type === 'PLATFORM' ? (
+                                                                <div className="w-full h-full flex items-center justify-center bg-brand text-white font-black text-xs">
+                                                                    MT
+                                                                </div>
+                                                            ) : pub.type === 'HOST' ? (
+                                                                <div className="w-full h-full flex items-center justify-center bg-emerald-50 text-emerald-600">
+                                                                    <Home className="w-5 h-5" />
+                                                                </div>
                                                             ) : (
                                                                 <div className="w-full h-full flex items-center justify-center bg-slate-50 text-slate-400">
                                                                     <Building2 className="w-5 h-5" />
@@ -419,15 +461,29 @@ export default function ExploreScene() {
                                                         <div>
                                                             <div className="flex items-center gap-1.5">
                                                                 <span className="font-bold text-sm text-slate-800 group-hover/author:text-primary transition-colors">
-                                                                    {agency?.name || "صفحه مشاور املاک"}
+                                                                    {pub.name}
                                                                 </span>
-                                                                {agency?.isVerified && (
+                                                                {pub.isVerified && (
                                                                     <Verified className="w-4 h-4 text-primary fill-primary/10 shrink-0" />
                                                                 )}
+                                                                <span className={cn(
+                                                                    "text-[10px] px-2 py-0.5 rounded-full font-bold",
+                                                                    pub.type === 'PLATFORM' ? "bg-amber-100 text-amber-800" :
+                                                                    pub.type === 'HOST' ? "bg-emerald-100 text-emerald-800" :
+                                                                    "bg-blue-100 text-blue-800"
+                                                                )}>
+                                                                    {pub.badge}
+                                                                </span>
                                                             </div>
                                                             <p className="text-[11px] text-slate-400 flex items-center gap-1">
                                                                 <Calendar className="w-3 h-3" />
                                                                 <span>{formatDate(post.createdAt)}</span>
+                                                                {post.category && (
+                                                                    <>
+                                                                        <span>•</span>
+                                                                        <span className="text-primary font-medium">{post.category}</span>
+                                                                    </>
+                                                                )}
                                                             </p>
                                                         </div>
                                                     </Link>
@@ -555,43 +611,64 @@ export default function ExploreScene() {
                             <X className="w-5 h-5" />
                         </button>
 
-                        {/* Agency Author Header in Modal */}
-                        <div className="flex items-center justify-between gap-4 pt-1">
-                            <div className="flex items-center gap-3">
-                                <div className="relative w-12 h-12 rounded-full overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
-                                    {readingPost.agency?.logoUrl ? (
-                                        <Image
-                                            src={getMediaUrl(readingPost.agency.logoUrl)}
-                                            alt={readingPost.agency?.name || ""}
-                                            fill
-                                            className="object-cover"
-                                        />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center bg-slate-100 text-slate-400">
-                                            <Building2 className="w-6 h-6" />
+                        {/* Publisher Header in Modal */}
+                        {(() => {
+                            const pub = getPublisherInfo(readingPost);
+                            return (
+                                <div className="flex items-center justify-between gap-4 pt-1">
+                                    <div className="flex items-center gap-3">
+                                        <div className="relative w-12 h-12 rounded-full overflow-hidden bg-slate-100 border border-slate-200 shrink-0 flex items-center justify-center">
+                                            {pub.logoUrl ? (
+                                                <Image
+                                                    src={getMediaUrl(pub.logoUrl)}
+                                                    alt={pub.name}
+                                                    fill
+                                                    className="object-cover"
+                                                />
+                                            ) : pub.type === 'PLATFORM' ? (
+                                                <div className="w-full h-full flex items-center justify-center bg-brand text-white font-black text-xs">
+                                                    MT
+                                                </div>
+                                            ) : pub.type === 'HOST' ? (
+                                                <div className="w-full h-full flex items-center justify-center bg-emerald-50 text-emerald-600">
+                                                    <Home className="w-6 h-6" />
+                                                </div>
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center bg-slate-100 text-slate-400">
+                                                    <Building2 className="w-6 h-6" />
+                                                </div>
+                                            )}
                                         </div>
-                                    )}
-                                </div>
-                                <div>
-                                    <div className="flex items-center gap-1.5">
-                                        <h4 className="font-black text-slate-800 text-base">
-                                            {readingPost.agency?.name || "صفحه مشاور املاک"}
-                                        </h4>
-                                        {readingPost.agency?.isVerified && (
-                                            <Verified className="w-4 h-4 text-primary fill-primary/10" />
-                                        )}
+                                        <div>
+                                            <div className="flex items-center gap-1.5">
+                                                <h4 className="font-black text-slate-800 text-base">
+                                                    {pub.name}
+                                                </h4>
+                                                {pub.isVerified && (
+                                                    <Verified className="w-4 h-4 text-primary fill-primary/10" />
+                                                )}
+                                                <span className={cn(
+                                                    "text-[10px] px-2 py-0.5 rounded-full font-bold",
+                                                    pub.type === 'PLATFORM' ? "bg-amber-100 text-amber-800" :
+                                                    pub.type === 'HOST' ? "bg-emerald-100 text-emerald-800" :
+                                                    "bg-blue-100 text-blue-800"
+                                                )}>
+                                                    {pub.badge}
+                                                </span>
+                                            </div>
+                                            <p className="text-xs text-slate-400">{formatDate(readingPost.createdAt)}</p>
+                                        </div>
                                     </div>
-                                    <p className="text-xs text-slate-400">{formatDate(readingPost.createdAt)}</p>
-                                </div>
-                            </div>
 
-                            <Link
-                                href={`/agency/showcase/${encodeURIComponent(readingPost.agency?.slug || readingPost.agency?.id || readingPost.agencyId)}`}
-                                className="px-3.5 py-1.5 rounded-xl bg-slate-100 hover:bg-primary hover:text-white text-slate-700 text-xs font-bold transition-all"
-                            >
-                                مشاهده صفحه املاک
-                            </Link>
-                        </div>
+                                    <Link
+                                        href={pub.link}
+                                        className="px-3.5 py-1.5 rounded-xl bg-slate-100 hover:bg-primary hover:text-white text-slate-700 text-xs font-bold transition-all"
+                                    >
+                                        {pub.type === 'PLATFORM' ? 'مشاهده ویترین پلتفرم' : pub.type === 'HOST' ? 'مشاهده اقامتگاه‌ها' : 'مشاهده صفحه املاک'}
+                                    </Link>
+                                </div>
+                            );
+                        })()}
 
                         {/* Title */}
                         <h2 className="text-xl sm:text-2xl font-black text-slate-900 leading-snug">
@@ -608,7 +685,7 @@ export default function ExploreScene() {
                         {/* Media gallery */}
                         {readingPost.mediaUrls && readingPost.mediaUrls.length > 0 && (
                             <div className="space-y-3">
-                                {readingPost.mediaUrls.map((url, i) => (
+                                {readingPost.mediaUrls.map((url: string, i: number) => (
                                     <div key={i} className="relative aspect-video w-full rounded-2xl overflow-hidden bg-slate-100 border border-slate-200">
                                         <Image
                                             src={getMediaUrl(url)}

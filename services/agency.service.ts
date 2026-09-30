@@ -137,16 +137,16 @@ export const agencyService = {
     },
 
     async getExplorePosts(
-        params: { page?: number; limit?: number; search?: string; agencyId?: string } = {},
-    ): Promise<{ items: AgencyPost[]; total: number; page: number; limit: number; totalPages: number }> {
-        const response = await apiClient.get("/agencies/posts", {
+        params: { page?: number; limit?: number; search?: string; category?: string } = {},
+    ): Promise<{ items: any[]; total: number; page: number; limit: number; totalPages: number }> {
+        const response = await apiClient.get("/posts", {
             params,
         });
         return response.data;
     },
 
-    async likePost(postId: string): Promise<{ likeCount: number }> {
-        const response = await apiClient.post<{ likeCount: number }>(`/agencies/posts/${postId}/like`);
+    async likePost(postId: string): Promise<{ hasLiked: boolean; likeCount: number }> {
+        const response = await apiClient.post<{ hasLiked: boolean; likeCount: number }>(`/posts/${postId}/like`);
         return response.data;
     },
 

@@ -155,7 +155,7 @@ export function useMyAgency() {
     });
 }
 
-export const useExplorePosts = (params: { page?: number; limit?: number; search?: string; agencyId?: string } = {}) => {
+export const useExplorePosts = (params: { page?: number; limit?: number; search?: string; category?: string } = {}) => {
     return useQuery({
         queryKey: ["explore-posts", params],
         queryFn: () => agencyService.getExplorePosts(params),
@@ -163,7 +163,7 @@ export const useExplorePosts = (params: { page?: number; limit?: number; search?
 };
 
 export const useInfiniteExplorePosts = (
-    params: { limit?: number; search?: string; agencyId?: string } = {},
+    params: { limit?: number; search?: string; category?: string } = {},
     options: { startPage?: number; maxPages?: number } = {}
 ) => {
     const startPage = options.startPage ?? 1;
@@ -198,6 +198,9 @@ export const useLikePost = () => {
         mutationFn: (postId: string) => agencyService.likePost(postId),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["explore-posts"] });
+            queryClient.invalidateQueries({ queryKey: ["explore-posts-infinite"] });
+            queryClient.invalidateQueries({ queryKey: ["posts"] });
+            queryClient.invalidateQueries({ queryKey: ["liked-posts"] });
             queryClient.invalidateQueries({ queryKey: ["agency-public-posts"] });
         },
     });
