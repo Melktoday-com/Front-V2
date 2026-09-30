@@ -4,6 +4,8 @@ import {
     ApproveListingRequest,
     BanUserRequest,
     BroadcastNotificationRequest,
+    ListBroadcastNotificationsParams,
+    ListBroadcastNotificationsResponse,
     AdminCreateAdRequest,
     AdminCreateTemporaryRentRequest,
     CreateAdminAttributeRequest,
@@ -126,6 +128,16 @@ export const adminService = {
     // Notifications
     broadcastNotification: async (data: BroadcastNotificationRequest) => {
         const response = await api.post("/admin/notifications/broadcast", data);
+        return response.data;
+    },
+
+    getBroadcastNotifications: async (
+        params?: ListBroadcastNotificationsParams
+    ): Promise<ListBroadcastNotificationsResponse> => {
+        const response = await api.get<ListBroadcastNotificationsResponse>(
+            "/admin/notifications/broadcasts",
+            { params }
+        );
         return response.data;
     },
 

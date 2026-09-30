@@ -50,7 +50,7 @@ const sidebarItems: SidebarItem[] = [
     { name: "اجاره موقت و روزانه", href: "/admin/temporary-rent", icon: Calendar, requiredPermissions: ["temporary_rent.view"] },
     { name: "صفحه رسمی پلتفرم", href: "/admin/platform", icon: Globe, requiredPermissions: ["posts.view", "posts.manage"] },
     { name: "گزارش‌ها", href: "/admin/reports", icon: AlertTriangle, requiredPermissions: ["reports.manage"] },
-    { name: "اطلاع‌رسانی", href: "/admin/notifications", icon: Bell, requiredPermissions: ["users.manage"] },
+    { name: "اطلاع‌رسانی", href: "/admin/notifications", icon: Bell, requiredPermissions: ["notifications.manage", "users.manage"] },
     { name: "تنظیمات پلن‌ها", href: "/admin/config", icon: Settings, requiredPermissions: ["config.manage"] },
 ];
 

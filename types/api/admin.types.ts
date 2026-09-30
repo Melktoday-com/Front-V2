@@ -55,6 +55,37 @@ export interface BroadcastNotificationRequest {
     audience: 'ALL' | 'BUYERS' | 'SELLERS' | 'AGENTS' | 'TENANTS' | 'LANDLORDS';
 }
 
+export interface BroadcastNotificationHistoryItem {
+    id: string;
+    adminId: string;
+    adminName?: string;
+    adminPhone?: string;
+    adminRole?: string;
+    title: string;
+    body: string;
+    audience: 'ALL' | 'BUYERS' | 'SELLERS' | 'AGENTS' | 'TENANTS' | 'LANDLORDS' | string;
+    recipientCount: number;
+    referenceId?: string;
+    status: string;
+    createdAt: string;
+}
+
+export interface ListBroadcastNotificationsParams {
+    page?: number;
+    limit?: number;
+    search?: string;
+    audience?: string;
+    adminId?: string;
+}
+
+export interface ListBroadcastNotificationsResponse {
+    items: BroadcastNotificationHistoryItem[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+}
+
 export interface AdminActionResponse {
     success: boolean;
     message?: string;
