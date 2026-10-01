@@ -187,6 +187,8 @@ export const adminService = {
         content?: string;
         type: string;
         parentZoneId?: string;
+        geoProvinceId?: number;
+        geoCityId?: number;
         format?: string;
     }) => {
         const response = await api.post("/geo/zones/import", data);

@@ -134,8 +134,15 @@ export default function AdminGeoPage() {
     });
 
     const importKmlMutation = useMutation({
-        mutationFn: (data: { mediaId?: string; content?: string; type: string; parentZoneId?: string; format?: string }) =>
-            adminService.importGeoZonesKml(data),
+        mutationFn: (data: {
+            mediaId?: string;
+            content?: string;
+            type: string;
+            parentZoneId?: string;
+            geoProvinceId?: number;
+            geoCityId?: number;
+            format?: string;
+        }) => adminService.importGeoZonesKml(data),
         onSuccess: (data) => {
             queryClient.invalidateQueries({ queryKey: ["admin", "geo"] });
             if (data.importedCount > 0) {
@@ -214,6 +221,7 @@ export default function AdminGeoPage() {
                         mediaId: uploadedMedia.mediaId || uploadedMedia.id,
                         type: "NEIGHBORHOOD",
                         parentZoneId: newZoneParentId,
+                        geoProvinceId: provinceId ? parseInt(provinceId) : undefined,
                         format: "KML",
                     },
                     {
