@@ -151,12 +151,21 @@ test.describe('Flow 21: Production KML Upload & Geo Import E2E Verification', ()
       await expect(farhangItem).toBeVisible({ timeout: 10000 });
     }
 
-    // 15. Verify Leaflet map container
+    expect(importedCount).toBeGreaterThanOrEqual(147);
+
+    // 15. Verify Leaflet map container and polygon rendering on Explore/Ads page
+    await page.goto('/ads?cityId=4c01ce1e-d916-484e-87d5-3fcc14227741&cityName=مشهد', { waitUntil: 'networkidle' });
+    await expect(page).toHaveURL(/\/ads/);
+
     const leafletMap = page.locator('.leaflet-container').first();
     await expect(leafletMap).toBeVisible({ timeout: 15000 });
 
-    expect(importedCount).toBeGreaterThanOrEqual(147);
-    console.log(`[E2E] Success! Verified KML import and ${importedCount} zones for mashhad (2).kml`);
+    // Verify polygon SVG paths exist on the map
+    const polygonPaths = page.locator('.leaflet-pane.leaflet-overlay-pane svg path.leaflet-interactive');
+    const count = await polygonPaths.count();
+    expect(count).toBeGreaterThan(0);
+
+    console.log(`[E2E] Success! Verified KML import, ${importedCount} zones, and Leaflet polygons for mashhad (2).kml`);
     expect(telemetry.errors.length).toBe(0);
   });
 });
