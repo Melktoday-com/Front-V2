@@ -130,7 +130,7 @@ test.describe('Flow 21: Production KML Upload & Geo Import E2E Verification', ()
     const tableContainer = page.locator('table, .divide-y').first();
     await expect(tableContainer).toBeVisible({ timeout: 15000 });
 
-    // 14. Search for an imported Mashhad neighborhood (e.g. وکیل اباد or صدف or فرهنگ)
+    // 14. Search for imported Mashhad neighborhoods (e.g. وکیل اباد, صدف, فرهنگ)
     const searchInput = page.locator('input[placeholder*="جستجو"]').first();
     if (await searchInput.isVisible()) {
       await searchInput.fill('وکیل اباد');
@@ -138,18 +138,25 @@ test.describe('Flow 21: Production KML Upload & Geo Import E2E Verification', ()
       const wakilAbadItem = page.locator('text=وکیل اباد').first();
       await expect(wakilAbadItem).toBeVisible({ timeout: 10000 });
 
-      // Clear search and test another imported neighborhood
+      // Test second imported neighborhood
       await searchInput.fill('صدف');
       await page.waitForTimeout(800);
       const sadafItem = page.locator('text=صدف').first();
       await expect(sadafItem).toBeVisible({ timeout: 10000 });
+
+      // Test third imported neighborhood
+      await searchInput.fill('فرهنگ');
+      await page.waitForTimeout(800);
+      const farhangItem = page.locator('text=فرهنگ').first();
+      await expect(farhangItem).toBeVisible({ timeout: 10000 });
     }
 
     // 15. Verify Leaflet map container
     const leafletMap = page.locator('.leaflet-container').first();
     await expect(leafletMap).toBeVisible({ timeout: 15000 });
 
-    console.log(`[E2E] Success! Verified KML import and zones for mashhad (2).kml`);
+    expect(importedCount).toBeGreaterThanOrEqual(147);
+    console.log(`[E2E] Success! Verified KML import and ${importedCount} zones for mashhad (2).kml`);
     expect(telemetry.errors.length).toBe(0);
   });
 });
