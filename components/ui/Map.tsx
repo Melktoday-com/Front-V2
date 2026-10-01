@@ -101,27 +101,49 @@ export default function Map({ ads, zones, selectedZoneId, selectedZoneIds, onZon
                     const coords = zone.boundaries?.coordinates;
                     if (!coords || !Array.isArray(coords) || coords.length === 0) return null;
 
-                    let latLngs: [number, number][] = [];
-                    if (zone.boundaries?.type === "Polygon" && Array.isArray(coords[0])) {
-                        latLngs = (coords[0] as number[][]).map(([lng, lat]) => [lat, lng]);
-                    } else if (zone.boundaries?.type === "MultiPolygon" && Array.isArray(coords[0]) && Array.isArray(coords[0][0])) {
-                        latLngs = (coords[0][0] as number[][]).map(([lng, lat]) => [lat, lng]);
-                    }
+                    let positions: L.LatLngExpression[] | L.LatLngExpression[][] | L.LatLngExpression[][][] = [];
 
-                    if (latLngs.length < 3) return null;
+                    if (zone.boundaries?.type === "Polygon") {
+                        const rings = (coords as number[][][])
+                            .map((ring) =>
+                                ring
+                                    .filter((pt) => Array.isArray(pt) && pt.length >= 2 && !isNaN(pt[0]) && !isNaN(pt[1]))
+                                    .map(([lng, lat]) => [lat, lng] as [number, number])
+                            )
+                            .filter((ring) => ring.length >= 3);
+
+                        if (rings.length === 0) return null;
+                        positions = rings;
+                    } else if (zone.boundaries?.type === "MultiPolygon") {
+                        const polygons = (coords as number[][][][])
+                            .map((poly) =>
+                                poly
+                                    .map((ring) =>
+                                        ring
+                                            .filter((pt) => Array.isArray(pt) && pt.length >= 2 && !isNaN(pt[0]) && !isNaN(pt[1]))
+                                            .map(([lng, lat]) => [lat, lng] as [number, number])
+                                    )
+                                    .filter((ring) => ring.length >= 3)
+                            )
+                            .filter((poly) => poly.length > 0);
+
+                        if (polygons.length === 0) return null;
+                        positions = polygons;
+                    } else {
+                        return null;
+                    }
 
                     const isSelected = selectedZoneId === zone.id || (Boolean(selectedZoneIds) && selectedZoneIds!.includes(zone.id));
 
                     return (
                         <Polygon
                             key={zone.id}
-                            positions={latLngs}
+                            positions={positions}
                             pathOptions={{
-                                color: isSelected ? "#2563eb" : "#0284c7",
-                                fillColor: isSelected ? "#3b82f6" : "#38bdf8",
-                                fillOpacity: isSelected ? 0.35 : 0.12,
-                                weight: isSelected ? 3 : 1.5,
-                                dashArray: isSelected ? undefined : "4, 4",
+                                color: isSelected ? "#1D4ED8" : "#2563EB",
+                                fillColor: isSelected ? "#2563EB" : "#3B82F6",
+                                fillOpacity: isSelected ? 0.45 : 0.20,
+                                weight: isSelected ? 3.5 : 2,
                             }}
                             eventHandlers={{
                                 click: () => {

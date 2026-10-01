@@ -38,3 +38,21 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Leaflet focus & outline reset to prevent black bounding boxes on polygon click */
+.leaflet-container :focus,
+.leaflet-container :focus-visible,
+.leaflet-interactive:focus,
+.leaflet-interactive:focus-visible,
+path.leaflet-interactive:focus,
+path.leaflet-interactive:focus-visible,
+svg.leaflet-zoom-animated:focus,
+svg.leaflet-zoom-animated:focus-visible {
+  outline: none !important;
+}
+
+path.leaflet-interactive {
+  outline: none !important;
+  transition: stroke 0.15s ease, fill 0.15s ease, stroke-width 0.15s ease;
+}
+

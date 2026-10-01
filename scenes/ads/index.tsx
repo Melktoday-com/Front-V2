@@ -148,7 +148,7 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
         queryKey: ["geo-zones-city", effectiveCityId],
         queryFn: async () => {
             if (!effectiveCityId) return [];
-            const res = await geoService.listZones({ parentId: effectiveCityId, type: "NEIGHBORHOOD", limit: 50 });
+            const res = await geoService.listZones({ parentId: effectiveCityId, type: "NEIGHBORHOOD", limit: 500 });
             return res.zones || [];
         },
         enabled: !!effectiveCityId,
