@@ -182,7 +182,13 @@ export const adminService = {
         return response.data;
     },
 
-    importGeoZonesKml: async (data: { content: string; type: string; parentZoneId?: string }) => {
+    importGeoZonesKml: async (data: {
+        mediaId?: string;
+        content?: string;
+        type: string;
+        parentZoneId?: string;
+        format?: string;
+    }) => {
         const response = await api.post("/geo/zones/import", data);
         return response.data;
     },

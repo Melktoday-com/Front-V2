@@ -3,6 +3,7 @@
 import { Select } from "@/components/ui/Select";
 import { adminService } from "@/services/admin.service";
 import { geoService } from "@/services/geo.service";
+import { mediaService } from "@/services/media.service";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
     Archive,
@@ -36,6 +37,7 @@ export default function AdminGeoPage() {
     const [newZoneName, setNewZoneName] = useState("");
     const [newZoneParentId, setNewZoneParentId] = useState("");
     const [kmlFile, setKmlFile] = useState<File | null>(null);
+    const [isUploading, setIsUploading] = useState(false);
 
     const limit = 15;
 
@@ -132,7 +134,7 @@ export default function AdminGeoPage() {
     });
 
     const importKmlMutation = useMutation({
-        mutationFn: (data: { content: string; type: string; parentZoneId?: string }) =>
+        mutationFn: (data: { mediaId?: string; content?: string; type: string; parentZoneId?: string; format?: string }) =>
             adminService.importGeoZonesKml(data),
         onSuccess: (data) => {
             queryClient.invalidateQueries({ queryKey: ["admin", "geo"] });
@@ -148,9 +150,11 @@ export default function AdminGeoPage() {
             setIsCreateModalOpen(false);
             setKmlFile(null);
             setNewZoneParentId("");
+            setIsUploading(false);
         },
         onError: () => {
             toast.error("خطا در وارد کردن فایل KML");
+            setIsUploading(false);
         }
     });
 
@@ -198,12 +202,31 @@ export default function AdminGeoPage() {
                 return;
             }
 
-            const reader = new FileReader();
-            reader.onload = async (event) => {
-                const content = event.target?.result as string;
-                importKmlMutation.mutate({ content, type: "NEIGHBORHOOD", parentZoneId: newZoneParentId });
-            };
-            reader.readAsText(kmlFile);
+            try {
+                setIsUploading(true);
+                const uploadToastId = toast.loading("در حال آپلود فایل KML به فضای ذخیره‌سازی ابری...");
+                const uploadedMedia = await mediaService.upload(kmlFile, "PRIVATE", "DOCUMENT");
+                toast.dismiss(uploadToastId);
+
+                const parseToastId = toast.loading("در حال استخراج و پردازش پلیگان‌های نقشه...");
+                importKmlMutation.mutate(
+                    {
+                        mediaId: uploadedMedia.mediaId || uploadedMedia.id,
+                        type: "NEIGHBORHOOD",
+                        parentZoneId: newZoneParentId,
+                        format: "KML",
+                    },
+                    {
+                        onSettled: () => {
+                            toast.dismiss(parseToastId);
+                        },
+                    }
+                );
+            } catch (err) {
+                setIsUploading(false);
+                toast.dismiss();
+                toast.error("خطا در آپلود فایل KML به فضای ذخیره‌سازی");
+            }
         } else {
             if (!newZoneName) return;
 
@@ -562,7 +585,7 @@ export default function AdminGeoPage() {
                                     <div className="relative group">
                                         <input
                                             type="file"
-                                            accept=".kml"
+                                            accept=".kml,application/vnd.google-earth.kml+xml"
                                             required
                                             onChange={(e) => setKmlFile(e.target.files?.[0] || null)}
                                             className="hidden"
@@ -642,10 +665,16 @@ export default function AdminGeoPage() {
                             <div className="pt-4 flex gap-3">
                                 <button
                                     type="submit"
-                                    disabled={createZoneMutation.isPending || importKmlMutation.isPending}
+                                    disabled={createZoneMutation.isPending || importKmlMutation.isPending || isUploading}
                                     className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold transition-all disabled:opacity-50"
                                 >
-                                    {createZoneMutation.isPending || importKmlMutation.isPending ? "در حال ثبت..." : (zoneType === "NEIGHBORHOOD" ? "شروع درون‌ریزی" : "ثبت منطقه")}
+                                    {isUploading
+                                        ? "در حال آپلود فایل..."
+                                        : createZoneMutation.isPending || importKmlMutation.isPending
+                                            ? "در حال ثبت..."
+                                            : zoneType === "NEIGHBORHOOD"
+                                                ? "شروع درون‌ریزی"
+                                                : "ثبت منطقه"}
                                 </button>
                                 <button
                                     type="button"
