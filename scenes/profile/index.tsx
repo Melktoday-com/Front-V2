@@ -174,6 +174,7 @@ export default function ProfileScene() {
                                 </span>
                             </div>
                             <div className="relative">
+                                <Lock className="w-4 h-4 absolute right-4 top-1/2 -translate-y-1/2 text-secondary/60" />
                                 <input
                                     type="text"
                                     value={toPersianDigits(profile?.mobileNumber || "")}
@@ -182,7 +183,7 @@ export default function ProfileScene() {
                                     dir="ltr"
                                     className="w-full bg-slate-100/80 border border-soft-border rounded-2xl py-3 px-4 text-sm font-black text-brand cursor-not-allowed outline-none select-all"
                                 />
-                                <Lock className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-secondary/60" />
+
                             </div>
                             <p className="text-[11px] text-secondary font-medium pr-1">
                                 شماره همراه شناسه هویتی یکتای حساب شماست. در حال حاضر امکان ویرایش شماره تلفن در پلتفرم وجود ندارد.
