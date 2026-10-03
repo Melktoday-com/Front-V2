@@ -332,11 +332,6 @@ export function TicketFloatingWidget() {
                         <span className="text-sm font-black hidden sm:inline-block pr-0.5">
                             پشتیبانی و تیکت
                         </span>
-                        {/* Status notification dot if unread */}
-                        <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
-                            <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-primary" />
-                        </span>
                     </button>
                 </div>
             )}
