@@ -551,10 +551,14 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
                                                 getCategoryName(catKey) ||
                                                 subKey;
 
+                                            const effectiveId = ad.adId || (ad as any).id;
+
                                             return (
                                                 <PropertyCard
-                                                    key={ad.adId}
-                                                    adId={ad.adId}
+                                                    key={effectiveId}
+                                                    id={effectiveId}
+                                                    adId={effectiveId}
+                                                    href={`/ads/${effectiveId}`}
                                                     title={ad.title}
                                                     price={pricing.price}
                                                     unit={pricing.unit}
@@ -566,7 +570,7 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
                                                             : "/property-placeholder.svg"
                                                     }
                                                     category={subcategoryDisplay}
-                                                    isSaved={ad.isSaved ?? isAdSaved(ad.adId)}
+                                                    isSaved={ad.isSaved ?? isAdSaved(effectiveId)}
                                                     onToggleSave={(id) => toggleSaveMutation.mutateAsync(id)}
                                                 />
                                             );

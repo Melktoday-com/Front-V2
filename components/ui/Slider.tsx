@@ -54,6 +54,10 @@ export function Slider({
                 slidesPerView={slidesPerView}
                 spaceBetween={spaceBetween}
                 freeMode={freeMode}
+                preventClicks={false}
+                preventClicksPropagation={false}
+                touchStartPreventDefault={false}
+                threshold={5}
                 modules={[FreeMode, Navigation, Pagination]}
                 breakpoints={breakpoints}
                 className={cn("h-full", className)}

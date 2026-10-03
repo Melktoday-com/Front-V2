@@ -12,7 +12,6 @@ import { useAds, useCategories } from "@/hooks/useAds";
 import { useAgencies } from "@/hooks/useAgencies";
 import { useCategoryLookup } from "@/hooks/useCategoryLookup";
 import { useFavorites, useToggleSaveAd, useToggleSaveTemporaryRent } from "@/hooks/useFavorites";
-import { useZones } from "@/hooks/useGeo";
 import { useTemporaryRentAds } from "@/hooks/useTemporaryRent";
 import { TemporaryRentAdSummary } from "@/services/temporary-rent.service";
 import { AdSummary } from "@/types/api/ads.types";
@@ -62,8 +61,6 @@ export const HomeScene = () => {
         cityId: selectedCity.id || undefined,
     }, { enabled: !!selectedCity.id });
 
-    const { data: regionsData, isLoading: isRegionsLoading, error: regionsError, refetch: refetchRegions } = useZones(selectedCity.id);
-
     // Map Backend Agency response to Component expected shape
     const topAgencies = useMemo(() => {
         return (agencyData?.agencies || []).map((agency: AgencySummary) => ({
@@ -79,37 +76,6 @@ export const HomeScene = () => {
             <SearchHeader
                 isInitialOpen={isInitialModalOpen}
             />
-
-            {/* Browse by Regions */}
-            {regionsData?.zones && regionsData.zones.length > 0 && (
-                <section className="container mx-auto pr-4">
-                    <SectionHeader
-                        title={`جستجو در ${selectedCity.name}`}
-                        subtitle="مشاهده آگهی‌ها به تفکیک محله"
-                    />
-                    {isRegionsLoading ? (
-                        <div className="flex gap-4 overflow-hidden">
-                            {[1, 2, 3, 4, 5, 6].map(i => (
-                                <div key={i} className="min-w-37.5 h-10 bg-gray-100 animate-pulse rounded-full" />
-                            ))}
-                        </div>
-                    ) : regionsError ? (
-                        <ErrorState onRetry={refetchRegions} />
-                    ) : (
-                        <Slider>
-                            {regionsData.zones.map((zone) => (
-                                <Link
-                                    key={zone.id}
-                                    href={`/ads?cityId=${selectedCity.id}&cityName=${encodeURIComponent(selectedCity.name)}&search=${encodeURIComponent(zone.name)}`}
-                                    className="px-4 py-2 rounded-full bg-soft-bg border border-soft-border hover:border-primary hover:text-primary transition-all whitespace-nowrap font-bold text-brand text-xs shadow-sm"
-                                >
-                                    {zone.name}
-                                </Link>
-                            ))}
-                        </Slider>
-                    )}
-                </section>
-            )}
 
             {/* Categories */}
             <section className="container mx-auto pr-4">
@@ -138,28 +104,33 @@ export const HomeScene = () => {
                     <EmptyState message="در حال حاضر آگهی ویژه‌ای در این شهر ثبت نشده است" />
                 ) : (
                     <Slider>
-                        {featuredData?.items.map((property: AdSummary) => (
-                            <PropertyCard
-                                key={property.adId}
-                                adId={property.adId}
-                                title={property.title}
-                                price={Object.values(property.pricing)[0] ?? 0}
-                                rating={5.0}
-                                location={selectedCity.name}
-                                image={property.mediaIds?.[0] ? `${process.env.NEXT_PUBLIC_API_URL}/media/${property.mediaIds[0]}` : "/property-placeholder.svg"}
-                                category={
-                                    property.subcategoryTitle ||
-                                    property.categoryPath?.subcategoryTitle ||
-                                    getSubcategoryName(property.categoryPath?.subcategoryKey, property.categoryPath?.categoryKey) ||
-                                    property.categoryTitle ||
-                                    property.categoryPath?.categoryTitle ||
-                                    getCategoryName(property.categoryPath?.categoryKey)
-                                }
-                                className="w-[210px] lg:w-[250px]"
-                                isSaved={property.isSaved ?? isAdSaved(property.adId)}
-                                onToggleSave={(id) => toggleSaveAdMutation.mutateAsync(id)}
-                            />
-                        ))}
+                        {featuredData?.items.map((property: AdSummary) => {
+                            const effectiveId = property.adId || (property as any).id;
+                            return (
+                                <PropertyCard
+                                    key={effectiveId}
+                                    id={effectiveId}
+                                    adId={effectiveId}
+                                    href={`/ads/${effectiveId}`}
+                                    title={property.title}
+                                    price={Object.values(property.pricing)[0] ?? 0}
+                                    rating={5.0}
+                                    location={selectedCity.name}
+                                    image={property.mediaIds?.[0] ? `${process.env.NEXT_PUBLIC_API_URL}/media/${property.mediaIds[0]}` : "/property-placeholder.svg"}
+                                    category={
+                                        property.subcategoryTitle ||
+                                        property.categoryPath?.subcategoryTitle ||
+                                        getSubcategoryName(property.categoryPath?.subcategoryKey, property.categoryPath?.categoryKey) ||
+                                        property.categoryTitle ||
+                                        property.categoryPath?.categoryTitle ||
+                                        getCategoryName(property.categoryPath?.categoryKey)
+                                    }
+                                    className="w-[210px] lg:w-[250px]"
+                                    isSaved={property.isSaved ?? isAdSaved(effectiveId)}
+                                    onToggleSave={(id) => toggleSaveAdMutation.mutateAsync(id)}
+                                />
+                            );
+                        })}
                     </Slider>
                 )}
             </section>
@@ -180,7 +151,9 @@ export const HomeScene = () => {
                 ) : (
                     <Slider>
                         {topAgencies.map((agency: { id: string; name: string; image: string; listingsCount: number }) => (
-                            <AgentAvatar key={agency.id} name={agency.name} image={agency.image} />
+                            <Link key={agency.id} href={`/agency/${agency.id}`} className="block">
+                                <AgentAvatar name={agency.name} image={agency.image} />
+                            </Link>
                         ))}
                     </Slider>
                 )}
@@ -208,6 +181,7 @@ export const HomeScene = () => {
                         {tempRentData.items.map((property: TemporaryRentAdSummary) => (
                             <PropertyCard
                                 key={property.id}
+                                id={property.id}
                                 adId={property.id}
                                 href={`/temporary-rent/${property.id}`}
                                 title={property.title}
@@ -245,28 +219,33 @@ export const HomeScene = () => {
                     <EmptyState message="در حال حاضر آگهی جدیدی در این شهر ثبت نشده است" />
                 ) : (
                     <Slider>
-                        {recentData.items.map((property: AdSummary) => (
-                            <PropertyCard
-                                key={property.adId}
-                                adId={property.adId}
-                                title={property.title}
-                                price={Object.values(property.pricing)[0] ?? 0}
-                                rating={4.8}
-                                location={selectedCity.name}
-                                image={property.mediaIds?.[0] ? `${process.env.NEXT_PUBLIC_API_URL}/media/${property.mediaIds[0]}` : "/property-placeholder.svg"}
-                                category={
-                                    property.subcategoryTitle ||
-                                    property.categoryPath?.subcategoryTitle ||
-                                    getSubcategoryName(property.categoryPath?.subcategoryKey, property.categoryPath?.categoryKey) ||
-                                    property.categoryTitle ||
-                                    property.categoryPath?.categoryTitle ||
-                                    getCategoryName(property.categoryPath?.categoryKey)
-                                }
-                                className="w-[210px] lg:w-[250px]"
-                                isSaved={property.isSaved ?? isAdSaved(property.adId)}
-                                onToggleSave={(id) => toggleSaveAdMutation.mutateAsync(id)}
-                            />
-                        ))}
+                        {recentData.items.map((property: AdSummary) => {
+                            const effectiveId = property.adId || (property as any).id;
+                            return (
+                                <PropertyCard
+                                    key={effectiveId}
+                                    id={effectiveId}
+                                    adId={effectiveId}
+                                    href={`/ads/${effectiveId}`}
+                                    title={property.title}
+                                    price={Object.values(property.pricing)[0] ?? 0}
+                                    rating={4.8}
+                                    location={selectedCity.name}
+                                    image={property.mediaIds?.[0] ? `${process.env.NEXT_PUBLIC_API_URL}/media/${property.mediaIds[0]}` : "/property-placeholder.svg"}
+                                    category={
+                                        property.subcategoryTitle ||
+                                        property.categoryPath?.subcategoryTitle ||
+                                        getSubcategoryName(property.categoryPath?.subcategoryKey, property.categoryPath?.categoryKey) ||
+                                        property.categoryTitle ||
+                                        property.categoryPath?.categoryTitle ||
+                                        getCategoryName(property.categoryPath?.categoryKey)
+                                    }
+                                    className="w-[210px] lg:w-[250px]"
+                                    isSaved={property.isSaved ?? isAdSaved(effectiveId)}
+                                    onToggleSave={(id) => toggleSaveAdMutation.mutateAsync(id)}
+                                />
+                            );
+                        })}
                     </Slider>
                 )}
             </section>

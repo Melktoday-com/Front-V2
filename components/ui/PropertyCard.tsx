@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 interface PropertyCardProps {
+    id?: string;
     adId?: string;
     title: string;
     price: string | number;
@@ -33,6 +34,7 @@ interface PropertyCardProps {
 }
 
 export function PropertyCard({
+    id,
     adId,
     title,
     price,
@@ -52,6 +54,7 @@ export function PropertyCard({
     area,
     rooms,
 }: PropertyCardProps) {
+    const effectiveAdId = adId || id;
     const effectiveIsSaved = isSaved !== undefined ? isSaved : isFavorited;
     const effectiveToggle = onToggleSave || onToggleFavorite;
 
@@ -96,11 +99,11 @@ export function PropertyCard({
             router.push(`/auth?redirect=${encodeURIComponent(currentPath)}`);
             return;
         }
-        if (adId && effectiveToggle) {
+        if (effectiveAdId && effectiveToggle) {
             const nextState = !saved;
             setSaved(nextState);
             try {
-                await effectiveToggle(adId);
+                await effectiveToggle(effectiveAdId);
             } catch {
                 setSaved(!nextState); // rollback on error
             }
@@ -108,7 +111,7 @@ export function PropertyCard({
     };
 
     const cardContent = (
-        <div className={cn("group flex flex-col h-full bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-md transition-shadow", className)}>
+        <div className={cn("group flex flex-col h-full bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-md transition-shadow cursor-pointer", className)}>
             <div className={cn(
                 "relative shrink-0 overflow-hidden",
                 variant === "horizontal"
@@ -125,7 +128,7 @@ export function PropertyCard({
                 />
 
                 {/* Save Heart Button - 32px touch target */}
-                {adId && (
+                {effectiveAdId && (
                     <button
                         onClick={handleFavoriteClick}
                         aria-label="ذخیره آگهی"
@@ -224,14 +227,19 @@ export function PropertyCard({
         </div>
     );
 
-    if (href || adId) {
-        const slug = title
-            ? title.replace(/\s+/g, "-").replace(/\//g, "-")
-            : "property";
-        const finalHref = href || `/ads/${adId}/${slug}`;
+    const finalHref = href || (effectiveAdId ? `/ads/${effectiveAdId}` : undefined);
 
+    if (finalHref) {
         return (
-            <Link href={finalHref} className="block h-full">
+            <Link
+                href={finalHref}
+                className="block h-full cursor-pointer no-underline text-inherit"
+                onClick={(e) => {
+                    if ((e.target as HTMLElement).closest("button")) {
+                        e.preventDefault();
+                    }
+                }}
+            >
                 {cardContent}
             </Link>
         );
