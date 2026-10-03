@@ -1,8 +1,10 @@
 import { MobileNav, Sidebar } from "@/components/layout/Navigation";
 import { CityProvider } from "@/components/providers/CityProvider";
 import { QueryProvider } from "@/components/providers/QueryProvider";
+import { TicketFloatingWidget } from "@/components/ticketing/TicketFloatingWidget";
 import type { Metadata } from "next";
 import { Vazirmatn } from "next/font/google";
+import { Suspense } from "react";
 import { Toaster } from "sonner";
 import "./globals.css";
 
@@ -36,6 +38,9 @@ export default function RootLayout({
               </div>
             </main>
             <MobileNav />
+            <Suspense fallback={null}>
+              <TicketFloatingWidget />
+            </Suspense>
             <Toaster position="top-center" richColors />
           </CityProvider>
         </QueryProvider>

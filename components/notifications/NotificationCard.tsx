@@ -11,7 +11,9 @@ import {
     ChevronLeft,
     Clock,
     FileCheck,
+    Headphones,
     Heart,
+    LifeBuoy,
     Loader2,
     MessageSquare,
     Rocket,
@@ -186,6 +188,22 @@ const TYPE_CONFIGS: Record<NotificationType, TypeConfig> = {
         badgeBg: "bg-amber-50",
         badgeColor: "text-amber-700",
     },
+    TICKET_REPLY_RECEIVED: {
+        icon: Headphones,
+        iconBg: "bg-teal-50",
+        iconColor: "text-teal-600",
+        badgeLabel: "پاسخ پشتیبانی",
+        badgeBg: "bg-teal-50",
+        badgeColor: "text-teal-700",
+    },
+    TICKET_STATUS_CHANGED: {
+        icon: LifeBuoy,
+        iconBg: "bg-blue-50",
+        iconColor: "text-blue-600",
+        badgeLabel: "وضعیت تیکت",
+        badgeBg: "bg-blue-50",
+        badgeColor: "text-blue-700",
+    },
 };
 
 const DEFAULT_CONFIG: TypeConfig = {
@@ -237,6 +255,12 @@ export function NotificationCard({
     } else if (notification.type === "NEW_REVIEW") {
         targetLink = "/profile";
         targetLinkLabel = "مشاهده نظرات";
+    } else if (
+        (notification.type === "TICKET_REPLY_RECEIVED" || notification.type === "TICKET_STATUS_CHANGED") &&
+        notification.referenceId
+    ) {
+        targetLink = `/?ticketId=${notification.referenceId}`;
+        targetLinkLabel = "مشاهده تیکت";
     }
 
     let timeAgo = "";

@@ -16,7 +16,9 @@ export type NotificationType =
     | 'USER_UNBANNED'
     | 'POST_LIKED'
     | 'NEW_FOLLOWER'
-    | 'NEW_REVIEW';
+    | 'NEW_REVIEW'
+    | 'TICKET_REPLY_RECEIVED'
+    | 'TICKET_STATUS_CHANGED';
 
 export interface NotificationSummary {
     id: string;

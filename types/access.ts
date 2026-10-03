@@ -70,4 +70,7 @@ export type Permission =
     | 'manage_roles'
     | 'read_reports'
     | 'manage_system'
-    | 'manage_config';
+    | 'manage_config'
+    | 'tickets.view'
+    | 'tickets.reply'
+    | 'tickets.manage';
