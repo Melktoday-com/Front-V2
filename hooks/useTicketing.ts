@@ -14,7 +14,11 @@ import {
     UpdateTicketTopicPayload,
 } from "@/types/api/ticketing.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { getCookie } from "cookies-next";
 import { useAuth } from "./useAuth";
+
+const hasAuthToken = (): boolean =>
+    typeof window !== "undefined" ? Boolean(getCookie("access_token")) : false;
 
 // ── User Hooks ────────────────────────────────────────────────────────────────
 
@@ -24,7 +28,7 @@ export function useActiveTicketTopics() {
     return useQuery<TicketTopic[]>({
         queryKey: ["ticket-topics", "active"],
         queryFn: () => ticketingService.listActiveTopics(),
-        enabled: isLoggedIn,
+        enabled: isLoggedIn || hasAuthToken(),
         staleTime: 5 * 60 * 1000,
     });
 }
@@ -35,7 +39,7 @@ export function useMyTickets(params?: ListTicketsParams) {
     return useQuery<TicketListResponse>({
         queryKey: ["tickets", "my", params],
         queryFn: () => ticketingService.listMyTickets(params),
-        enabled: isLoggedIn,
+        enabled: isLoggedIn || hasAuthToken(),
         refetchInterval: 30 * 1000,
     });
 }
@@ -46,7 +50,7 @@ export function useTicket(ticketId?: string) {
     return useQuery<Ticket>({
         queryKey: ["tickets", "detail", ticketId],
         queryFn: () => ticketingService.getTicket(ticketId!),
-        enabled: Boolean(isLoggedIn && ticketId),
+        enabled: Boolean((isLoggedIn || hasAuthToken()) && ticketId),
     });
 }
 
@@ -56,7 +60,7 @@ export function useTicketMessages(ticketId?: string, params?: ListTicketsParams)
     return useQuery<TicketMessageListResponse>({
         queryKey: ["tickets", "messages", ticketId, params],
         queryFn: () => ticketingService.getTicketMessages(ticketId!, params),
-        enabled: Boolean(isLoggedIn && ticketId),
+        enabled: Boolean((isLoggedIn || hasAuthToken()) && ticketId),
         refetchInterval: 10 * 1000,
     });
 }

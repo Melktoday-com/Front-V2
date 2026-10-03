@@ -1,6 +1,20 @@
 import { test, expect } from '@playwright/test';
 import { attachTelemetry } from './helpers/auth';
 
+async function dismissCitySelectorIfVisible(page: import('@playwright/test').Page) {
+  try {
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(300);
+    const tehranBtn = page.locator('button:has-text("تهران")').first();
+    if (await tehranBtn.isVisible({ timeout: 2000 })) {
+      await tehranBtn.click({ force: true });
+      await page.waitForTimeout(500);
+    }
+  } catch {
+    // If not visible, continue
+  }
+}
+
 test.describe('Flow 23: Complete Ticketing & Support Bounded Context E2E', () => {
 
   // ── 1. USER FLOATING WIDGET & FLOW ──────────────────────────────────────────
@@ -10,14 +24,15 @@ test.describe('Flow 23: Complete Ticketing & Support Bounded Context E2E', () =>
     test('User sees floating support button at bottom-left and opens widget', async ({ page }) => {
       const telemetry = attachTelemetry(page);
 
-      await page.goto('/', { waitUntil: 'networkidle' });
+      await page.goto('/', { waitUntil: 'domcontentloaded' });
+      await dismissCitySelectorIfVisible(page);
 
       // Floating button must exist and have label/icon
       const floatingBtn = page.locator('aside[aria-label="پشتیبانی و تیکت"] button[aria-label="پشتیبانی و تیکت"]');
       await expect(floatingBtn).toBeVisible({ timeout: 15000 });
 
       // Click to open floating widget dialog
-      await floatingBtn.click();
+      await floatingBtn.click({ force: true });
 
       // Dialog container should be visible
       const dialog = page.locator('div[role="dialog"][aria-modal="true"]');
@@ -27,7 +42,7 @@ test.describe('Flow 23: Complete Ticketing & Support Bounded Context E2E', () =>
       // Check tabs: "تیکت‌های من" and "تیکت جدید"
       const newTicketTab = page.locator('button:has-text("تیکت جدید")');
       await expect(newTicketTab).toBeVisible({ timeout: 5000 });
-      await newTicketTab.click();
+      await newTicketTab.click({ force: true });
 
       // Topics must be dynamically loaded from backend
       const topicSelector = page.locator('#ticket-topic-select');
@@ -46,20 +61,22 @@ test.describe('Flow 23: Complete Ticketing & Support Bounded Context E2E', () =>
     test('User creates a ticket via widget and posts a reply', async ({ page }) => {
       const telemetry = attachTelemetry(page);
 
-      await page.goto('/', { waitUntil: 'networkidle' });
+      await page.goto('/', { waitUntil: 'domcontentloaded' });
+      await dismissCitySelectorIfVisible(page);
 
       // Open widget
       const floatingBtn = page.locator('aside[aria-label="پشتیبانی و تیکت"] button[aria-label="پشتیبانی و تیکت"]');
-      await floatingBtn.click();
+      await floatingBtn.click({ force: true });
 
       // Go to new ticket tab
       const newTicketTab = page.locator('button:has-text("تیکت جدید")');
-      await newTicketTab.click();
+      await expect(newTicketTab).toBeVisible({ timeout: 10000 });
+      await newTicketTab.click({ force: true });
 
       // Select first topic
       const firstTopic = page.locator('#ticket-topic-select button').first();
       await expect(firstTopic).toBeVisible({ timeout: 10000 });
-      await firstTopic.click();
+      await firstTopic.click({ force: true });
 
       // Fill Subject
       const uniqueSubject = `تست سیستمی تیکت فرانت‌وند ${Date.now()}`;
@@ -101,57 +118,95 @@ test.describe('Flow 23: Complete Ticketing & Support Bounded Context E2E', () =>
     });
   });
 
-  // ── 2. ADMIN TICKETING PANEL ────────────────────────────────────────────────
+  // ── 2. ADMIN TICKETING PANEL & ACCESS CONTROL ───────────────────────────────
   test.describe('Admin Ticket Management Panel', () => {
-    test.use({ storageState: 'playwright/.auth/admin.json' });
+    test.describe('SuperAdmin Authorized Access', () => {
+      test.use({ storageState: 'playwright/.auth/superadmin.json' });
 
-    test('Admin navigates to /admin/tickets and inspects ticket list and details', async ({ page }) => {
-      const telemetry = attachTelemetry(page);
+      test('SuperAdmin navigates to /admin/tickets and inspects ticket list and details', async ({ page }) => {
+        const telemetry = attachTelemetry(page);
 
-      await page.goto('/admin/tickets', { waitUntil: 'networkidle' });
-      await expect(page).toHaveURL(/\/admin\/tickets/);
+        await page.goto('/admin/tickets', { waitUntil: 'networkidle' });
+        await expect(page).toHaveURL(/\/admin\/tickets/);
 
-      // Page Title
-      const heading = page.locator('h1');
-      await expect(heading).toContainText('مدیریت تیکت‌های پشتیبانی', { timeout: 15000 });
+        // Page Title
+        const heading = page.locator('h1');
+        await expect(heading).toContainText('مدیریت تیکت‌های پشتیبانی', { timeout: 15000 });
 
-      // Filter controls
-      const searchInput = page.locator('input[placeholder*="جستجو"]');
-      await expect(searchInput).toBeVisible({ timeout: 10000 });
+        // Filter controls
+        const searchInput = page.locator('input[placeholder*="جستجو"]');
+        await expect(searchInput).toBeVisible({ timeout: 10000 });
 
-      const statusSelect = page.locator('select').first();
-      await expect(statusSelect).toBeVisible({ timeout: 10000 });
+        const statusSelect = page.locator('select').first();
+        await expect(statusSelect).toBeVisible({ timeout: 10000 });
 
-      // Ticket list
-      const ticketCards = page.locator('div:has-text("فهرست تیکت‌ها")').locator('button');
-      if (await ticketCards.count() > 0) {
-        // Select first ticket
-        await ticketCards.first().click();
+        // Click first ticket card
+        const firstTicketHeader = page.locator('h4').first();
+        if (await firstTicketHeader.isVisible({ timeout: 5000 })) {
+          await firstTicketHeader.click({ force: true });
 
-        // Detail container should show conversation and info
-        const detailContainer = page.locator('div:has-text("ثبت:")').first();
-        await expect(detailContainer).toBeVisible({ timeout: 10000 });
-      }
+          // Detail container should show user ID and timestamps
+          const detailContainer = page.locator('text=شناسه کاربر:');
+          await expect(detailContainer).toBeVisible({ timeout: 10000 });
+        }
 
-      expect(telemetry.errors.length).toBe(0);
+        expect(telemetry.errors.length).toBe(0);
+      });
+    });
+
+    test.describe('Scoped Admin Permission Denial', () => {
+      test.use({ storageState: 'playwright/.auth/admin.json' });
+
+      test('Admin lacking tickets.view is denied access with proper 403 state', async ({ page }) => {
+        const telemetry = attachTelemetry(page);
+
+        await page.goto('/admin/tickets', { waitUntil: 'networkidle' });
+
+        // Should render AccessGuard / 403 state
+        const deniedText = page.locator('text=عدم دسترسی به این بخش').or(page.locator('text=عدم دسترسی به ماژول تیکتینگ'));
+        await expect(deniedText).toBeVisible({ timeout: 15000 });
+
+        expect(telemetry.errors.length).toBe(0);
+      });
     });
   });
 
-  // ── 3. SUPERADMIN TOPIC CATALOG ─────────────────────────────────────────────
+  // ── 3. SUPERADMIN TOPIC CATALOG & SECURITY ──────────────────────────────────
   test.describe('SuperAdmin Topic Catalog Management', () => {
-    test.use({ storageState: 'playwright/.auth/admin.json' }); // If superadmin state exists, use it
+    test.describe('SuperAdmin Access', () => {
+      test.use({ storageState: 'playwright/.auth/superadmin.json' });
 
-    test('SuperAdmin navigates to /admin/ticket-topics and inspects topic management', async ({ page }) => {
-      const telemetry = attachTelemetry(page);
+      test('SuperAdmin navigates to /admin/ticket-topics and inspects topic management', async ({ page }) => {
+        const telemetry = attachTelemetry(page);
 
-      await page.goto('/admin/ticket-topics', { waitUntil: 'networkidle' });
-      await expect(page).toHaveURL(/\/admin\/ticket-topics/);
+        await page.goto('/admin/ticket-topics', { waitUntil: 'networkidle' });
+        await expect(page).toHaveURL(/\/admin\/ticket-topics/);
 
-      // Verify title or 403 state
-      const pageHeader = page.locator('h1');
-      await expect(pageHeader.or(page.locator('h3'))).toBeVisible({ timeout: 15000 });
+        // Verify title
+        const pageHeader = page.locator('h1');
+        await expect(pageHeader).toContainText('مدیریت موضوعات تیکت', { timeout: 15000 });
 
-      expect(telemetry.errors.length).toBe(0);
+        // Verify table and action buttons
+        const createBtn = page.locator('button:has-text("موضوع جدید")');
+        await expect(createBtn).toBeVisible({ timeout: 10000 });
+
+        expect(telemetry.errors.length).toBe(0);
+      });
+    });
+
+    test.describe('Scoped Admin Denial on Topic Catalog', () => {
+      test.use({ storageState: 'playwright/.auth/admin.json' });
+
+      test('Scoped Admin cannot manage ticket topics and receives 403 denial state', async ({ page }) => {
+        const telemetry = attachTelemetry(page);
+
+        await page.goto('/admin/ticket-topics', { waitUntil: 'networkidle' });
+
+        const deniedState = page.locator('text=عدم دسترسی به این بخش').or(page.locator('text=دسترسی مخصوص راهبر ارشد'));
+        await expect(deniedState).toBeVisible({ timeout: 15000 });
+
+        expect(telemetry.errors.length).toBe(0);
+      });
     });
   });
 

@@ -33,6 +33,8 @@ import {
     X,
 } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { getCookie } from "cookies-next";
 import React, { useEffect, useId, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -62,6 +64,7 @@ export function TicketFloatingWidget() {
     const isExcludedRoute = pathname.startsWith("/admin") || pathname.startsWith("/auth");
 
     const [isOpen, setIsOpen] = useState(false);
+    const [hasToken, setHasToken] = useState(false);
     const [activeTab, setActiveTab] = useState<ActiveTab>("history");
     const [selectedTopicId, setSelectedTopicId] = useState<string>("");
     const [subject, setSubject] = useState("");
@@ -70,6 +73,12 @@ export function TicketFloatingWidget() {
     const [replyBody, setReplyBody] = useState("");
     const [uiState, setUiState] = useState<WidgetState>("closed");
     const [formError, setFormError] = useState<string | null>(null);
+
+    useEffect(() => {
+        setHasToken(Boolean(getCookie("access_token")));
+    }, []);
+
+    const isAuthenticated = isLoggedIn || hasToken;
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const widgetDialogRef = useRef<HTMLDivElement>(null);
@@ -192,13 +201,13 @@ export function TicketFloatingWidget() {
     }
 
     const handleOpenWidget = () => {
-        if (!isLoggedIn) {
-            router.push(`/auth?redirect=${encodeURIComponent(pathname)}`);
+        const isAuthed = isLoggedIn || Boolean(getCookie("access_token"));
+        setIsOpen(true);
+        setUiState("opening");
+        if (!isAuthed) {
             return;
         }
 
-        setIsOpen(true);
-        setUiState("opening");
         if (selectedTicketId) {
             setActiveTab("conversation");
         } else if (myTicketsData?.tickets && myTicketsData.tickets.length > 0) {
@@ -383,8 +392,8 @@ export function TicketFloatingWidget() {
                         </div>
                     </div>
 
-                    {/* Navigation Tabs (if not inside conversation) */}
-                    {activeTab !== "conversation" && (
+                    {/* Navigation Tabs (if authenticated and not inside conversation) */}
+                    {isAuthenticated && activeTab !== "conversation" && (
                         <div className="flex items-center border-b border-soft-border bg-soft-bg/50 p-1.5 gap-1 shrink-0">
                             <button
                                 type="button"
@@ -422,6 +431,26 @@ export function TicketFloatingWidget() {
 
                     {/* Content Area */}
                     <div className="flex-1 overflow-y-auto p-4 bg-white flex flex-col">
+                        {!isAuthenticated ? (
+                            <div className="flex flex-col items-center justify-center py-12 px-4 text-center gap-4 flex-1">
+                                <div className="w-16 h-16 rounded-3xl bg-primary/10 text-primary flex items-center justify-center">
+                                    <Lock className="w-8 h-8" />
+                                </div>
+                                <div className="space-y-1">
+                                    <h4 className="text-base font-black text-brand">ورود به حساب کاربری</h4>
+                                    <p className="text-xs text-secondary max-w-xs leading-relaxed">
+                                        برای ثبت و پیگیری تیکت‌های پشتیبانی، لطفاً ابتدا وارد حساب کاربری خود شوید.
+                                    </p>
+                                </div>
+                                <Link
+                                    href={`/auth?redirect=${encodeURIComponent(pathname)}`}
+                                    className="w-full max-w-xs py-3 px-4 bg-brand text-white font-black text-sm rounded-2xl hover:bg-brand/90 transition-all text-center shadow-lg"
+                                >
+                                    ورود یا ثبت‌نام
+                                </Link>
+                            </div>
+                        ) : (
+                            <>
                         {/* ── TAB 1: User Ticket History ───────────────────────────── */}
                         {activeTab === "history" && (
                             <div className="space-y-3 flex-1">
@@ -773,6 +802,8 @@ export function TicketFloatingWidget() {
                                     </form>
                                 )}
                             </div>
+                        )}
+                            </>
                         )}
                     </div>
                 </div>
