@@ -37,6 +37,8 @@ import {
 import Link from "next/link";
 import { toast } from "sonner";
 import { PublisherType } from "@/types/api/post.types";
+import { ShowcaseResponse, HostAbout } from "@/types/api/showcase.types";
+import axios from "axios";
 
 type PostFormat = "instagram" | "medium";
 
@@ -112,8 +114,9 @@ export default function CreatePostScene() {
     }
 
     // 3. Host Profile / Landlord
-    const hostHeader = (hostProfile as any)?.header;
-    const hostId = hostHeader?.id || (hostProfile as any)?.id;
+    const hostProfileData = hostProfile as ShowcaseResponse<HostAbout> | null | undefined;
+    const hostHeader = hostProfileData?.header;
+    const hostId = hostHeader?.id;
     if (hostId) {
       options.push({
         type: "HOST",
@@ -331,11 +334,13 @@ export default function CreatePostScene() {
         );
         router.push(`/posts/${created.slug || created.id}`);
       }
-    } catch (err: any) {
+    } catch (err) {
       const errorMsg =
-        err?.response?.data?.message ||
-        err?.message ||
-        "خطایی در انتشار پست رخ داد.";
+        axios.isAxiosError(err) && (err.response?.data as { message?: string } | undefined)?.message
+          ? (err.response?.data as { message: string }).message
+          : err instanceof Error
+          ? err.message
+          : "خطایی در انتشار پست رخ داد.";
       toast.error(errorMsg);
     }
   };

@@ -1,4 +1,5 @@
 import apiClient from "@/lib/api/client";
+import { PostsListResponse } from "@/types/api/post.types";
 import axios from "axios";
 import {
     AgencyConsultationMessage,
@@ -138,8 +139,8 @@ export const agencyService = {
 
     async getExplorePosts(
         params: { page?: number; limit?: number; search?: string; category?: string } = {},
-    ): Promise<{ items: any[]; total: number; page: number; limit: number; totalPages: number }> {
-        const response = await apiClient.get("/posts", {
+    ): Promise<PostsListResponse> {
+        const response = await apiClient.get<PostsListResponse>("/posts", {
             params,
         });
         return response.data;

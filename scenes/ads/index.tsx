@@ -8,16 +8,19 @@ import { PageSectionDivider } from "@/components/ui/PageSectionDivider";
 import { PaginationControls } from "@/components/ui/PaginationControls";
 import { PropertyCard } from "@/components/ui/PropertyCard";
 import { EmptyState } from "@/components/ui/StatusStates";
-import { useCategories, useInfiniteAds } from "@/hooks/useAds";
+import { useCategories } from "@/hooks/useAds";
+import { useInfiniteSearchListings } from "@/hooks/useSearch";
 import { useCategoryLookup } from "@/hooks/useCategoryLookup";
 import { useFavorites, useToggleSaveAd } from "@/hooks/useFavorites";
 import { useGeoHierarchy } from "@/hooks/useGeoHierarchy";
-import { cn, formatPrice, toPersianDigits } from "@/lib/utils";
+import { cn, formatPrice, getMediaUrl, toPersianDigits } from "@/lib/utils";
 import { geoService } from "@/services/geo.service";
 import { AdSummary } from "@/types/api/ads.types";
+import { AdStatus } from "@/types/api/enums";
 import { ZoneSummary } from "@/types/api/geo.types";
+import { ListingSearchDocument, SearchSortOption } from "@/types/api/search.types";
 import { useQuery } from "@tanstack/react-query";
-import { LayoutGrid, Loader2, Map as MapIcon, MapPin, X } from "lucide-react";
+import { LayoutGrid, Loader2, Map as MapIcon, MapPin, SlidersHorizontal, X } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -70,6 +73,39 @@ function adMatchesZone(ad: AdSummary, zone: ZoneSummary): boolean {
     return false;
 }
 
+function searchDocToAdSummary(doc: ListingSearchDocument): AdSummary {
+    const primaryPrice = doc.pricing?.number?.price ?? doc.pricing?.number?.totalPrice ?? 0;
+    return {
+        adId: doc.id,
+        ownerId: doc.ownerId,
+        cityId: doc.geo?.cityId || "",
+        cityName: doc.geo?.cityName || undefined,
+        status: AdStatus.PUBLISHED,
+        title: doc.title,
+        categoryPath: {
+            categoryKey: doc.taxonomy.categoryId,
+            subcategoryKey: doc.taxonomy.subcategoryId || "",
+            businessModelKey: doc.taxonomy.businessModelId || "",
+            attributeSchemaVersion: 1,
+            categoryTitle: doc.taxonomy.categoryName,
+            subcategoryTitle: doc.taxonomy.subcategoryName,
+        },
+        categoryTitle: doc.taxonomy.categoryName,
+        subcategoryTitle: doc.taxonomy.subcategoryName,
+        pricing: doc.pricing?.number || (primaryPrice > 0 ? { price: primaryPrice } : {}),
+        isFeatured: doc.isFeatured,
+        mediaIds: doc.mediaIds || [],
+        createdAt: doc.createdAt,
+        location:
+            doc._geo && typeof doc._geo.lat === "number" && typeof doc._geo.lng === "number"
+                ? {
+                      latitude: doc._geo.lat,
+                      longitude: doc._geo.lng,
+                  }
+                : null,
+    };
+}
+
 interface AdsSceneProps {
     initialViewMode?: "list" | "map";
 }
@@ -91,6 +127,7 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
 
     const [search, setSearch] = useState(urlSearch);
     const [selectedCategory, setSelectedCategory] = useState(urlCategory);
+    const [sort, setSort] = useState<SearchSortOption>("relevance");
     const [startPage, setStartPage] = useState<number>(1);
 
     const observerTargetRef = useRef<HTMLDivElement | null>(null);
@@ -106,15 +143,15 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
         isFetchingNextPage,
         hasNextPage,
         fetchNextPage,
-    } = useInfiniteAds(
+    } = useInfiniteSearchListings(
         {
             limit: 20,
-            status: "PUBLISHED",
-            isFeatured: urlIsFeatured || undefined,
-            search: search || undefined,
+            query: search || undefined,
             cityId: effectiveCityId,
+            cityName: effectiveCityName !== "همه شهرها" ? effectiveCityName : undefined,
+            neighbourhoodName: selectedZones.length === 1 ? selectedZones[0].name : undefined,
             categoryKey: selectedCategory || undefined,
-            businessModelKey: urlDealType || undefined,
+            sort,
         },
         { startPage, maxPages: 7, enabled: !!effectiveCityId }
     );
@@ -180,13 +217,15 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
 
     // All loaded ads across pages in current batch
     const allLoadedAds = useMemo(() => {
-        return data?.pages.flatMap((page) => page.items) || [];
+        return data?.pages.flatMap((page) => page.hits.map(searchDocToAdSummary)) || [];
     }, [data]);
 
     // Filter ads: OR logic across all selected zones
     const displayedAds = useMemo(() => {
-        if (selectedZones.length === 0) return allLoadedAds;
-        return allLoadedAds.filter((ad) => selectedZones.some((zone) => adMatchesZone(ad, zone)));
+        if (selectedZones.length <= 1) return allLoadedAds;
+        return allLoadedAds.filter((ad) =>
+            selectedZones.some((zone) => adMatchesZone(ad, zone))
+        );
     }, [allLoadedAds, selectedZones]);
 
     // Pagination metrics
@@ -308,22 +347,14 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
         return { price: firstValue ?? "توافقی", unit: undefined };
     };
 
-    // Map center: single selected zone > city > first ad
+    // Map center: based on city coordinates or ads; decoupled from zone selection count to avoid disruptive viewport resets
     const mapCenter: [number, number] = useMemo(() => {
-        if (
-            selectedZones.length === 1 &&
-            selectedZones[0].centerPoint &&
-            typeof selectedZones[0].centerPoint.latitude === "number" &&
-            typeof selectedZones[0].centerPoint.longitude === "number"
-        ) {
-            return [selectedZones[0].centerPoint.latitude, selectedZones[0].centerPoint.longitude];
-        }
         if (currentCityCoords) return [currentCityCoords.latitude, currentCityCoords.longitude];
         if (adsForMap.length > 0) return [adsForMap[0].location.latitude, adsForMap[0].location.longitude];
         return [35.6892, 51.389];
-    }, [selectedZones, currentCityCoords, adsForMap]);
+    }, [currentCityCoords, adsForMap]);
 
-    const mapZoom = selectedZones.length === 1 ? 14 : 12;
+    const mapZoom = 12;
     const activeZoneForMap = selectedZones.length === 1 ? selectedZones[0] : null;
     const selectedZoneIds = useMemo(() => selectedZones.map((z) => z.id), [selectedZones]);
 
@@ -406,6 +437,24 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
                             )}
                         </button>
                     )}
+
+                    {/* Sort selector */}
+                    <div className="shrink-0 flex items-center gap-1.5 bg-soft-bg px-3 py-1.5 rounded-full border border-soft-border">
+                        <SlidersHorizontal className="w-3.5 h-3.5 text-secondary" />
+                        <select
+                            value={sort}
+                            onChange={(e) => {
+                                setSort(e.target.value as SearchSortOption);
+                                setStartPage(1);
+                            }}
+                            className="bg-transparent text-secondary text-xs font-bold outline-none cursor-pointer"
+                        >
+                            <option value="relevance">مرتبط‌ترین</option>
+                            <option value="newest">جدیدترین</option>
+                            <option value="price_asc">ارزان‌ترین</option>
+                            <option value="price_desc">گران‌ترین</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
@@ -467,10 +516,11 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
                     ) : (
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-4 pb-6">
                             {data?.pages.map((page, pageIndex) => {
+                                const pageSummaries = page.hits.map(searchDocToAdSummary);
                                 const pageAds =
-                                    selectedZones.length === 0
-                                        ? page.items
-                                        : page.items.filter((ad) =>
+                                    selectedZones.length <= 1
+                                        ? pageSummaries
+                                        : pageSummaries.filter((ad) =>
                                               selectedZones.some((zone) => adMatchesZone(ad, zone))
                                           );
 
@@ -509,10 +559,10 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
                                                     price={pricing.price}
                                                     unit={pricing.unit}
                                                     rating={4.8}
-                                                    location={effectiveCityName || ad.cityId}
+                                                    location={ad.cityName || effectiveCityName || ad.cityId}
                                                     image={
                                                         ad.mediaIds && ad.mediaIds.length > 0
-                                                            ? `${process.env.NEXT_PUBLIC_API_URL}/media/${ad.mediaIds[0]}`
+                                                            ? getMediaUrl(ad.mediaIds[0])
                                                             : "/property-placeholder.svg"
                                                     }
                                                     category={subcategoryDisplay}

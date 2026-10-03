@@ -2,8 +2,9 @@
 
 import React, { useState, useMemo, useRef, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useInfiniteExplorePosts, useLikePost } from "@/hooks/usePosts";
+import { useSearchPosts } from "@/hooks/useSearch";
 import { useAuth } from "@/hooks/useAuth";
 import { usePostViewObserver } from "@/hooks/usePostViewObserver";
 import { getMediaUrl, toPersianDigits, cn } from "@/lib/utils";
@@ -156,20 +157,22 @@ function ExplorePostCard({
 
 export default function ExploreScene() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { isLoggedIn } = useAuth();
   const likeMutation = useLikePost();
 
-  const [searchQuery, setSearchQuery] = useState("");
-  const [activeSearch, setActiveSearch] = useState("");
+  const urlSearch = searchParams.get("search") || "";
+  const [searchQuery, setSearchQuery] = useState(urlSearch);
+  const [activeSearch, setActiveSearch] = useState(urlSearch);
   const [selectedTag, setSelectedTag] = useState("all");
   const [selectedPublisherType, setSelectedPublisherType] = useState<"ALL" | PublisherType>("ALL");
 
   const observerTargetRef = useRef<HTMLDivElement | null>(null);
 
-  // Fetch explore posts with infinite query
+  // Fetch explore posts with infinite query when browsing
   const {
     data: postsData,
-    isLoading,
+    isLoading: isFeedLoading,
     isFetchingNextPage,
     hasNextPage,
     fetchNextPage,
@@ -178,16 +181,23 @@ export default function ExploreScene() {
   } = useInfiniteExplorePosts(
     {
       limit: 16,
-      search: activeSearch || undefined,
     },
     { startPage: 1, maxPages: 10 }
   );
+
+  // Search query via /search/posts when activeSearch is set
+  const { data: searchPostsData, isLoading: isSearchLoading } = useSearchPosts(
+    { query: activeSearch, limit: 24 },
+    !!activeSearch
+  );
+
+  const isLoading = activeSearch ? isSearchLoading : isFeedLoading;
 
   // Infinite Scroll Trigger
   useEffect(() => {
     const target = observerTargetRef.current;
     if (!target) return;
-    if (!hasNextPage || isFetchingNextPage) return;
+    if (!hasNextPage || isFetchingNextPage || !!activeSearch) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -200,7 +210,7 @@ export default function ExploreScene() {
 
     observer.observe(target);
     return () => observer.disconnect();
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage, activeSearch]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -218,10 +228,32 @@ export default function ExploreScene() {
     likeMutation.mutate(postId);
   };
 
-  // Flatten posts across pages
+  // Flatten posts across pages (or search hits)
   const allLoadedPosts = useMemo(() => {
+    if (activeSearch && searchPostsData) {
+      return searchPostsData.hits.map(
+        (doc): UnifiedPost => ({
+          id: doc.id,
+          authorUserId: doc.authorUserId,
+          publisherType: doc.ownerType,
+          publisherId: doc.ownerId,
+          title: doc.title,
+          slug: doc.slug || undefined,
+          summary: doc.summary || undefined,
+          content: doc.content,
+          category: doc.category || undefined,
+          mediaUrls: doc.mediaUrls || [],
+          isPublished: doc.isPublished,
+          isFeatured: doc.isFeatured,
+          viewCount: doc.viewCount,
+          likeCount: doc.likeCount,
+          createdAt: doc.createdAt,
+          updatedAt: doc.updatedAt,
+        })
+      );
+    }
     return postsData?.pages.flatMap((page) => page.items) || [];
-  }, [postsData]);
+  }, [activeSearch, searchPostsData, postsData]);
 
   // Filter posts by tag and publisher type
   const filteredPosts = useMemo(() => {

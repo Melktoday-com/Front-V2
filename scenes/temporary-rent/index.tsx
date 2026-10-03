@@ -4,11 +4,12 @@ import { PageHeader } from "@/components/PageHeader";
 import { useCity } from "@/components/providers/CityProvider";
 import { EmptyState, ErrorState } from "@/components/ui/StatusStates";
 import { TemporaryRentCard } from "@/components/ui/TemporaryRentCard";
-import { useTemporaryRentAds } from "@/hooks/useTemporaryRent";
+import { useDebounce } from "@/hooks/useDebounce";
+import { useSearchTemporaryRentals } from "@/hooks/useSearch";
 import { cn, toPersianDigits } from "@/lib/utils";
 import { Calendar, Users } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 export default function TemporaryRentScene() {
     const searchParams = useSearchParams();
@@ -22,11 +23,13 @@ export default function TemporaryRentScene() {
     const [search, setSearch] = useState(urlSearch);
     const [guestCount, setGuestCount] = useState<number | null>(null);
 
-    const { data, isLoading, error, refetch } = useTemporaryRentAds({
-        limit: 24,
-        status: "PUBLISHED",
+    const debouncedSearch = useDebounce(search, 250);
+
+    const { data, isLoading, error, refetch } = useSearchTemporaryRentals({
+        query: debouncedSearch || undefined,
         cityId: effectiveCityId,
-    }, { enabled: !!effectiveCityId });
+        limit: 24,
+    });
 
     const handleCitySelect = (city: { id: string; name: string }) => {
         setSelectedCity(city);
@@ -36,15 +39,15 @@ export default function TemporaryRentScene() {
         router.push(`${window.location.pathname}?${params.toString()}`);
     };
 
-    const filteredItems = (data?.items || []).filter((item) => {
-        if (guestCount && item.maxGuests && item.maxGuests < guestCount) {
-            return false;
-        }
-        if (search && !item.title.toLowerCase().includes(search.toLowerCase())) {
-            return false;
-        }
-        return true;
-    });
+    const hits = useMemo(() => data?.hits || [], [data]);
+
+    const filteredItems = useMemo(() => {
+        if (!guestCount) return hits;
+        return hits.filter((item) => {
+            const guests = item.attributes?.number?.max_guests || item.attributes?.number?.capacity;
+            return !guests || guests >= guestCount;
+        });
+    }, [hits, guestCount]);
 
     return (
         <div className="min-h-screen bg-white pb-32">
@@ -135,11 +138,11 @@ export default function TemporaryRentScene() {
                                 key={ad.id}
                                 id={ad.id}
                                 title={ad.title}
-                                nightlyPrice={ad.pricing.nightlyPrice}
-                                location={ad.cityName || effectiveCityName}
+                                nightlyPrice={ad.pricing?.number?.nightlyPrice || ad.pricing?.number?.price || 0}
+                                location={ad.geo?.cityName || effectiveCityName}
                                 mediaIds={ad.mediaIds}
                                 rating={4.9}
-                                maxGuests={ad.maxGuests}
+                                maxGuests={ad.attributes?.number?.max_guests || ad.attributes?.number?.capacity}
                             />
                         ))}
                     </div>

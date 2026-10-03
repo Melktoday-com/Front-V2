@@ -20,6 +20,21 @@ export const postService = {
   },
 
   /**
+   * Admin list all posts across all publishers and statuses (published & drafts)
+   * Requires posts.view permission
+   */
+  async listAdminPosts(params: {
+    page?: number;
+    limit?: number;
+    category?: string;
+    search?: string;
+    isPublished?: boolean;
+  } = {}): Promise<PostsListResponse> {
+    const response = await apiClient.get<PostsListResponse>('/posts/admin/all', { params });
+    return response.data;
+  },
+
+  /**
    * Get single post by UUID or slug with async view counting
    */
   async getPostByIdOrSlug(idOrSlug: string): Promise<UnifiedPost> {

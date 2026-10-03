@@ -4,7 +4,7 @@ import { AdSummary } from "@/types/api/ads.types";
 import { ZoneSummary } from "@/types/api/geo.types";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { MapContainer, Marker, Polygon, Popup, TileLayer, Tooltip, useMap } from "react-leaflet";
 import { PropertyCard } from "./PropertyCard";
 
@@ -34,14 +34,29 @@ const createPriceIcon = (price: string) => L.divIcon({
 
 function MapViewHandler({ center, zoom, bounds }: { center: [number, number]; zoom: number; bounds?: L.LatLngBoundsExpression }) {
     const map = useMap();
+    const prevCenterRef = useRef<[number, number] | null>(null);
+    const prevZoomRef = useRef<number | null>(null);
 
     useEffect(() => {
         if (bounds) {
             map.fitBounds(bounds, { padding: [50, 50], animate: true });
-        } else {
+            return;
+        }
+
+        const prevCenter = prevCenterRef.current;
+        const centerChanged =
+            !prevCenter ||
+            Math.abs(prevCenter[0] - center[0]) > 0.0005 ||
+            Math.abs(prevCenter[1] - center[1]) > 0.0005;
+
+        const zoomChanged = prevZoomRef.current !== null && prevZoomRef.current !== zoom;
+
+        if (centerChanged || zoomChanged) {
+            prevCenterRef.current = center;
+            prevZoomRef.current = zoom;
             map.flyTo(center, zoom, {
-                duration: 1.5,
-                easeLinearity: 0.25
+                duration: 1.0,
+                easeLinearity: 0.25,
             });
         }
     }, [center, zoom, bounds, map]);
@@ -140,10 +155,11 @@ export default function Map({ ads, zones, selectedZoneId, selectedZoneIds, onZon
                             key={zone.id}
                             positions={positions}
                             pathOptions={{
-                                color: isSelected ? "#1D4ED8" : "#2563EB",
-                                fillColor: isSelected ? "#2563EB" : "#3B82F6",
-                                fillOpacity: isSelected ? 0.45 : 0.20,
-                                weight: isSelected ? 3.5 : 2,
+                                color: isSelected ? "#2563EB" : "#94A3B8",
+                                fillColor: isSelected ? "#3B82F6" : "#CBD5E1",
+                                fillOpacity: isSelected ? 0.45 : 0.10,
+                                weight: isSelected ? 3.5 : 1.5,
+                                dashArray: isSelected ? undefined : "4, 4",
                             }}
                             eventHandlers={{
                                 click: () => {
@@ -151,12 +167,36 @@ export default function Map({ ads, zones, selectedZoneId, selectedZoneIds, onZon
                                         onZoneSelect(zone);
                                     }
                                 },
+                                mouseover: (e) => {
+                                    if (!isSelected) {
+                                        const layer = e.target;
+                                        layer.setStyle({
+                                            fillOpacity: 0.25,
+                                            weight: 2.5,
+                                            color: "#64748B",
+                                        });
+                                    }
+                                },
+                                mouseout: (e) => {
+                                    if (!isSelected) {
+                                        const layer = e.target;
+                                        layer.setStyle({
+                                            fillOpacity: 0.10,
+                                            weight: 1.5,
+                                            color: "#94A3B8",
+                                        });
+                                    }
+                                },
                             }}
                         >
                             <Tooltip
                                 sticky
                                 direction="center"
-                                className="font-bold text-xs bg-white/95 text-primary border border-primary/20 px-2.5 py-1 rounded-md shadow-md"
+                                className={
+                                    isSelected
+                                        ? "font-black text-xs bg-primary text-white border-none px-3 py-1.5 rounded-lg shadow-lg"
+                                        : "font-bold text-xs bg-white/95 text-slate-700 border border-slate-200 px-2.5 py-1 rounded-md shadow-md"
+                                }
                             >
                                 {zone.name}
                             </Tooltip>

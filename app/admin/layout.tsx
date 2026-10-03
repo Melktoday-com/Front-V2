@@ -33,11 +33,12 @@ interface SidebarItem {
     href: string;
     icon: React.ComponentType<{ className?: string }>;
     requiredPermissions?: string[];
+    superAdminOnly?: boolean;
 }
 
 const sidebarItems: SidebarItem[] = [
     { name: "داشبورد", href: "/admin", icon: LayoutDashboard },
-    { name: "مدیریت مدیران", href: "/admin/admins", icon: ShieldCheck, requiredPermissions: ["admins.manage"] },
+    { name: "مدیریت مدیران", href: "/admin/admins", icon: ShieldCheck, superAdminOnly: true },
     { name: "آگهی‌ها و دسته‌بندی‌ها", href: "/admin/ads", icon: FileText, requiredPermissions: ["ads.view", "categories.manage"] },
     { name: "مدیریت املاک و مشاوران", href: "/admin/agencies", icon: Building2, requiredPermissions: ["agencies.manage"] },
     { name: "درخواست‌های میزبانی", href: "/admin/hosts", icon: Home, requiredPermissions: ["hosts.manage"] },
@@ -63,6 +64,7 @@ export default function AdminLayout({
     const { isSuperAdmin, hasAnyPermission, isLoading } = useAdminPermissions();
 
     const visibleSidebarItems = sidebarItems.filter((item) => {
+        if (item.superAdminOnly) return isSuperAdmin;
         if (!item.requiredPermissions || item.requiredPermissions.length === 0) return true;
         if (isSuperAdmin) return true;
         return hasAnyPermission(item.requiredPermissions);
@@ -73,9 +75,10 @@ export default function AdminLayout({
     );
     const isBlocked =
         !isLoading &&
-        currentItem?.requiredPermissions &&
+        ((currentItem?.superAdminOnly && !isSuperAdmin) ||
+        (currentItem?.requiredPermissions &&
         !isSuperAdmin &&
-        !hasAnyPermission(currentItem.requiredPermissions);
+        !hasAnyPermission(currentItem.requiredPermissions)));
 
     return (
         <AccessGuard roles={[RoleName.Admin, RoleName.SuperAdmin]}>

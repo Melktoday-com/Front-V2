@@ -15,6 +15,28 @@ export const POSTS_QUERY_KEYS = {
   exploreInfinite: (params?: ExploreParams, startPage?: number) => ['posts', 'explore-infinite', params, startPage] as const,
   single: (idOrSlug: string) => ['posts', 'single', idOrSlug] as const,
   liked: (params?: { page?: number; limit?: number; publisherType?: string }) => ['posts', 'liked', params] as const,
+  admin: (params?: { page?: number; limit?: number; category?: string; search?: string; isPublished?: boolean }) =>
+    ['posts', 'admin', params] as const,
+};
+
+/**
+ * Hook to fetch paginated admin posts list (including drafts and across all authors)
+ */
+export const useAdminPosts = (
+  params: {
+    page?: number;
+    limit?: number;
+    category?: string;
+    search?: string;
+    isPublished?: boolean;
+  } = {},
+  options: { enabled?: boolean } = {}
+) => {
+  return useQuery({
+    queryKey: POSTS_QUERY_KEYS.admin(params),
+    queryFn: () => postService.listAdminPosts(params),
+    enabled: options.enabled ?? true,
+  });
 };
 
 /**

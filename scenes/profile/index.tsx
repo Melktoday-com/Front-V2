@@ -18,6 +18,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
     Bell,
     Building2,
+    CheckCircle2,
     ChevronLeft,
     CreditCard,
     ExternalLink,
@@ -25,8 +26,10 @@ import {
     Hotel,
     LayoutList,
     Loader2,
+    Lock,
     LogOut,
     MessageSquare,
+    Phone,
     ShieldCheck,
     Sparkles,
     User,
@@ -159,6 +162,33 @@ export default function ProfileScene() {
                     </div>
 
                     <div className="grid gap-4">
+                        <div className="space-y-2">
+                            <div className="flex items-center justify-between pr-2">
+                                <label className="text-brand text-sm font-bold flex items-center gap-1.5">
+                                    <Phone className="w-4 h-4 text-secondary" />
+                                    شماره موبایل
+                                </label>
+                                <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
+                                    <CheckCircle2 className="w-3.5 h-3.5" />
+                                    تایید شده با پیامک
+                                </span>
+                            </div>
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    value={toPersianDigits(profile?.mobileNumber || "")}
+                                    readOnly
+                                    disabled
+                                    dir="ltr"
+                                    className="w-full bg-slate-100/80 border border-soft-border rounded-2xl py-3 px-4 text-sm font-black text-brand cursor-not-allowed outline-none select-all"
+                                />
+                                <Lock className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-secondary/60" />
+                            </div>
+                            <p className="text-[11px] text-secondary font-medium pr-1">
+                                شماره همراه شناسه هویتی یکتای حساب شماست. در حال حاضر امکان ویرایش شماره تلفن در پلتفرم وجود ندارد.
+                            </p>
+                        </div>
+
                         <div className="space-y-2">
                             <label className="text-brand text-sm font-bold pr-2">نام</label>
                             <input

@@ -62,7 +62,7 @@ export default function AdminsManagementPage() {
     } = useQuery({
         queryKey: ["admin-admins-list"],
         queryFn: () => adminService.listAdmins(),
-        enabled: isSuperAdmin || hasPermission("admins.manage"),
+        enabled: isSuperAdmin,
     });
 
     // Fetch available permissions
@@ -194,14 +194,14 @@ export default function AdminsManagementPage() {
     };
 
     // Access check
-    if (!permissionsLoading && !isSuperAdmin && !hasPermission("admins.manage")) {
+    if (!permissionsLoading && !isSuperAdmin) {
         return (
             <div className="p-8 max-w-4xl mx-auto text-center" dir="rtl">
                 <div className="bg-red-50 border border-red-200 rounded-3xl p-8 shadow-sm">
                     <ShieldAlert className="w-16 h-16 text-red-500 mx-auto mb-4" />
                     <h2 className="text-xl font-black text-red-800 mb-2">عدم دسترسی به بخش مدیریت مدیران</h2>
                     <p className="text-sm text-red-600 leading-relaxed">
-                        این بخش منحصراً در اختیار «مدیر ارشد» (Super Admin) یا مدیران دارای دسترسی ویژه مدیریت مدیران می‌باشد.
+                        این بخش منحصراً در اختیار «مدیر ارشد» (Super Admin) پلتفرم است و سایر مدیران به مدیریت سطوح دسترسی مدیران دسترسی ندارند.
                     </p>
                 </div>
             </div>

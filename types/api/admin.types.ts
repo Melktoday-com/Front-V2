@@ -551,7 +551,7 @@ export interface AdminTransactionItem {
     idempotencyKey: string;
     reason: string;
     channel: 'ADMIN_MANUAL' | 'ADMIN_GIFT' | 'GATEWAY' | 'SYSTEM';
-    metadata?: Record<string, any> | null;
+    metadata?: Record<string, string | number | boolean | null> | null;
     adminId?: string;
     adminFullName?: string;
     adminMobile?: string;
