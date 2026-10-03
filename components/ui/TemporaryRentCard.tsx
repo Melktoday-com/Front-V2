@@ -1,7 +1,8 @@
 "use client";
 
 import { useAuth } from "@/hooks/useAuth";
-import { cn, formatPrice, toPersianDigits } from "@/lib/utils";
+import { cn, formatPrice, toPersianDigits, getMediaUrl } from "@/lib/utils";
+import type { MediaReference } from "@/types/api/media.types";
 import { ChevronLeft, ChevronRight, Heart, MapPin, Star, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -14,7 +15,7 @@ interface TemporaryRentCardProps {
     title: string;
     nightlyPrice: number;
     location: string;
-    mediaIds?: string[];
+    mediaIds?: (MediaReference | string)[];
     imageUrl?: string;
     rating?: number;
     maxGuests?: number;
@@ -56,7 +57,7 @@ export function TemporaryRentCard({
     const images = imageUrl
         ? [imageUrl]
         : mediaIds && mediaIds.length > 0
-        ? mediaIds.map((mId) => `${process.env.NEXT_PUBLIC_API_URL}/media/${mId}`)
+        ? mediaIds.map((mId) => getMediaUrl(mId))
         : ["/property-placeholder.svg"];
 
     const handlePrevImage = (e: React.MouseEvent) => {

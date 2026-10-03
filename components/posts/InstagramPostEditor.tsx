@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { PublisherType } from "@/types/api/post.types";
+import type { MediaReference } from "@/types/api/media.types";
 
 interface PublisherInfo {
   type: PublisherType;
@@ -40,8 +41,8 @@ interface InstagramPostEditorProps {
   setCaption: (v: string) => void;
   category: string;
   setCategory: (v: string) => void;
-  mediaUrls: string[];
-  setMediaUrls: (v: string[]) => void;
+  mediaUrls: (MediaReference | string)[];
+  setMediaUrls: (v: MediaReference[]) => void;
   locationTag?: string;
   setLocationTag?: (v: string) => void;
 }
@@ -135,15 +136,16 @@ export function InstagramPostEditor({
 
           <MediaGalleryUpload
             value={mediaUrls}
-            onChange={(urls) => {
-              setMediaUrls(urls);
-              if (activeSlide >= urls.length) {
-                setActiveSlide(Math.max(0, urls.length - 1));
+            onChange={(items) => {
+              setMediaUrls(items);
+              if (activeSlide >= items.length) {
+                setActiveSlide(Math.max(0, items.length - 1));
               }
             }}
             label=""
-            helperText="عکس‌های خود را با نسبت ۱:۱ یا ۴:۵ آپلود کنید. اولین عکس به عنوان کاور اصلی اسلایدر نمایش داده می‌شود."
+            helperText="عکس‌ها و ویدئوهای خود را آپلود کنید. اولین رسانه به عنوان کاور اصلی اسلایدر نمایش داده می‌شود."
             maxFiles={10}
+            allowVideos={true}
           />
         </div>
 
@@ -319,22 +321,47 @@ export function InstagramPostEditor({
           <div className="relative aspect-square w-full bg-slate-900 overflow-hidden group">
             {mediaUrls.length > 0 ? (
               <>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={getMediaUrl(mediaUrls[activeSlide] || mediaUrls[0])}
-                  alt={`اسلاید ${activeSlide + 1}`}
-                  className="w-full h-full object-cover select-none"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = "/property-placeholder.svg";
-                  }}
-                />
+                {(() => {
+                  const currentItem = mediaUrls[activeSlide] || mediaUrls[0];
+                  const currentUrl = getMediaUrl(currentItem);
+                  const isVideo =
+                    (typeof currentItem === "object" && currentItem?.type === "VIDEO") ||
+                    (typeof currentItem === "string" && /\.(mp4|mov|webm)$/i.test(currentItem));
 
-                {/* Slide index badge */}
-                {mediaUrls.length > 1 && (
-                  <div className="absolute top-3 left-3 px-2 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[10px] font-bold">
-                    {toPersianDigits(activeSlide + 1)} / {toPersianDigits(mediaUrls.length)}
-                  </div>
-                )}
+                  return (
+                    <>
+                      {isVideo ? (
+                        <video
+                          src={currentUrl}
+                          autoPlay
+                          loop
+                          muted
+                          playsInline
+                          className="w-full h-full object-cover select-none"
+                        />
+                      ) : (
+                        /* eslint-disable-next-line @next/next/no-img-element */
+                        <img
+                          src={currentUrl}
+                          alt={`اسلاید ${activeSlide + 1}`}
+                          className="w-full h-full object-cover select-none"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src =
+                              "/property-placeholder.svg";
+                          }}
+                        />
+                      )}
+
+                      {/* Slide index badge */}
+                      {mediaUrls.length > 1 && (
+                        <div className="absolute top-3 left-3 px-2 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[10px] font-bold z-10">
+                          {toPersianDigits(activeSlide + 1)} /{" "}
+                          {toPersianDigits(mediaUrls.length)}
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
 
                 {/* Left/Right Navigation arrows */}
                 {mediaUrls.length > 1 && (

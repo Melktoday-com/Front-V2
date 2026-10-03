@@ -533,11 +533,7 @@ export default function SingleAgencyScene() {
                                     title={ad.title}
                                     price={ad.pricing ? (Object.values(ad.pricing)[0] ?? 0) : 0}
                                     location={ad.cityId}
-                                    image={
-                                        ad.mediaIds && ad.mediaIds.length > 0
-                                            ? `${process.env.NEXT_PUBLIC_API_URL}/media/${ad.mediaIds[0]}`
-                                            : "/property-placeholder.svg"
-                                    }
+                                    image={getMediaUrl(ad.mediaIds?.[0])}
                                     category={ad.subcategoryTitle || ad.categoryPath?.subcategoryTitle || ad.categoryPath?.subcategoryKey}
                                 />
                             ))}

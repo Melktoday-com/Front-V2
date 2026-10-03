@@ -1,6 +1,13 @@
+export type ExistingMediaType = "IMAGE" | "VIDEO" | "DOCUMENT";
+
+export interface MediaReference {
+    id: string;
+    type: ExistingMediaType;
+}
+
 /** Request payload for generating a pre-signed S3 upload URL */
 export interface RequestUploadUrlRequest {
-    mediaType: "IMAGE" | "VIDEO" | "DOCUMENT";
+    mediaType: ExistingMediaType;
     fileName: string;
     mimeType: string;
     sizeBytes: number;

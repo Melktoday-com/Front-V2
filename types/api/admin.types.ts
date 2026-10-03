@@ -2,6 +2,7 @@ import { AdStatus, BroadcastAudience, PromotionStatus, ReportStatus, ReportTarge
 import { PricingFieldDefinition } from "./ads.types";
 import { JsonObject } from "../common";
 import { AgencyFull } from "./agency.types";
+import type { MediaReference } from "./media.types";
 
 export interface ModerationHistory {
     id: string;
@@ -334,7 +335,7 @@ export interface AdminCreateAdRequest {
     attributes?: JsonObject;
     latitude: number;
     longitude: number;
-    mediaIds?: string[];
+    mediaIds?: (MediaReference | string)[];
 }
 
 export interface AdminCreateTemporaryRentRequest {
@@ -360,7 +361,7 @@ export interface AdminCreateTemporaryRentRequest {
     latitude: number;
     longitude: number;
     attributes?: JsonObject;
-    mediaIds?: string[];
+    mediaIds?: (MediaReference | string)[];
 }
 
 // ── Admin Archive Types ──────────────────────────────────────────────────────

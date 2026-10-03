@@ -1,7 +1,7 @@
 "use client";
 
 import { useTemporaryRentAdDetail } from "@/hooks/useTemporaryRent";
-import { formatPrice, toPersianDigits } from "@/lib/utils";
+import { formatPrice, toPersianDigits, getMediaUrl } from "@/lib/utils";
 import { temporaryRentService } from "@/services/temporary-rent.service";
 import {
     Calendar,
@@ -14,6 +14,7 @@ import {
     Loader2,
     MapPin,
     Phone,
+    Play,
     ShieldAlert,
     Trash2,
     User,
@@ -22,7 +23,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 interface TemporaryRentItemDetailModalProps {
@@ -78,7 +79,20 @@ export default function TemporaryRentItemDetailModal({
         }
     };
 
-    const mediaList = ad?.mediaIds || [];
+    const mediaItems = useMemo(() => {
+        return (ad?.mediaIds || []).map((m, idx) => {
+            const id = typeof m === "string" ? m : (m.id || `media-${idx}`);
+            const type = typeof m === "object" && m !== null && "type" in m ? m.type : undefined;
+            const isVideo = type === "VIDEO";
+            return {
+                id,
+                url: getMediaUrl(m),
+                isVideo,
+            };
+        });
+    }, [ad?.mediaIds]);
+
+    const activeMedia = mediaItems[activeImageIndex] || mediaItems[0];
     const statusInfo = statusConfig[ad?.status || ""] || {
         label: ad?.status || "نامشخص",
         bg: "bg-slate-100",
@@ -147,22 +161,31 @@ export default function TemporaryRentItemDetailModal({
                     ) : (
                         <>
                             {/* Images Gallery */}
-                            {mediaList.length > 0 ? (
+                            {mediaItems.length > 0 ? (
                                 <div className="space-y-3">
                                     <div className="relative w-full h-64 sm:h-80 rounded-2xl overflow-hidden bg-slate-100 border border-slate-200">
-                                        <Image
-                                            src={`${process.env.NEXT_PUBLIC_API_URL}/media/${mediaList[activeImageIndex]}`}
-                                            alt={ad.title}
-                                            fill
-                                            unoptimized
-                                            className="object-cover"
-                                        />
+                                        {activeMedia.isVideo ? (
+                                            <video
+                                                src={activeMedia.url}
+                                                controls
+                                                playsInline
+                                                className="w-full h-full object-cover"
+                                            />
+                                        ) : (
+                                            <Image
+                                                src={activeMedia.url}
+                                                alt={ad.title}
+                                                fill
+                                                unoptimized
+                                                className="object-cover"
+                                            />
+                                        )}
                                     </div>
-                                    {mediaList.length > 1 && (
+                                    {mediaItems.length > 1 && (
                                         <div className="flex items-center gap-2 overflow-x-auto pb-2">
-                                            {mediaList.map((mId, index) => (
+                                            {mediaItems.map((media, index) => (
                                                 <button
-                                                    key={mId}
+                                                    key={media.id || index}
                                                     type="button"
                                                     onClick={() => setActiveImageIndex(index)}
                                                     className={`relative w-16 h-16 rounded-xl overflow-hidden shrink-0 border-2 transition-all ${
@@ -171,13 +194,19 @@ export default function TemporaryRentItemDetailModal({
                                                             : "border-transparent opacity-60 hover:opacity-100"
                                                     }`}
                                                 >
-                                                    <Image
-                                                        src={`${process.env.NEXT_PUBLIC_API_URL}/media/${mId}`}
-                                                        alt=""
-                                                        fill
-                                                        unoptimized
-                                                        className="object-cover"
-                                                    />
+                                                    {media.isVideo ? (
+                                                        <div className="relative w-full h-full bg-slate-900 flex items-center justify-center">
+                                                            <Play className="w-4 h-4 text-white fill-white" />
+                                                        </div>
+                                                    ) : (
+                                                        <Image
+                                                            src={media.url}
+                                                            alt=""
+                                                            fill
+                                                            unoptimized
+                                                            className="object-cover"
+                                                        />
+                                                    )}
                                                 </button>
                                             ))}
                                         </div>

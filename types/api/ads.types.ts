@@ -1,4 +1,5 @@
 import { AdStatus } from "./enums";
+import type { MediaReference } from "./media.types";
 
 export interface CategoryPath {
     categoryKey: string;
@@ -31,7 +32,7 @@ export interface AdSummary {
     pricing: Record<string, number>;
     isFeatured: boolean;
     isSaved?: boolean;
-    mediaIds?: string[];
+    mediaIds?: (MediaReference | string)[];
     createdAt: string;
     location?: AdLocation | null;
 }
@@ -96,7 +97,7 @@ export interface CreateAdDraftRequest {
     attributes: JsonObject;
     latitude: number;
     longitude: number;
-    mediaIds?: string[];
+    mediaIds?: (MediaReference | string)[];
 }
 
 export interface EditAdRequest {
@@ -104,7 +105,7 @@ export interface EditAdRequest {
     description?: string;
     rawPricing?: Record<string, number | string | boolean>;
     attributes?: JsonObject;
-    mediaIds?: string[];
+    mediaIds?: (MediaReference | string)[];
 }
 
 export interface AdMutationResponse {

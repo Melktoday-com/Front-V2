@@ -7,6 +7,7 @@ import "leaflet/dist/leaflet.css";
 import { useEffect, useRef } from "react";
 import { MapContainer, Marker, Polygon, Popup, TileLayer, Tooltip, useMap } from "react-leaflet";
 import { PropertyCard } from "./PropertyCard";
+import { getMediaUrl } from "@/lib/utils";
 
 // Fix for default marker icons in Leaflet with Next.js
 const DefaultIcon = L.icon({
@@ -224,10 +225,7 @@ export default function Map({ ads, zones, selectedZoneId, selectedZoneIds, onZon
                                         price={price?.toLocaleString() || "0"}
                                         rating={4.5}
                                         location={ad.cityId}
-                                        image={ad.mediaIds && ad.mediaIds.length > 0
-                                            ? `${process.env.NEXT_PUBLIC_API_URL}/media/${ad.mediaIds[0]}`
-                                            : "/assets/images/property-placeholder.svg"
-                                        }
+                                        image={getMediaUrl(ad.mediaIds?.[0])}
                                         category={ad.subcategoryTitle || ad.categoryPath.subcategoryTitle || ad.categoryPath.subcategoryKey}
                                     />
                                 </div>

@@ -6,7 +6,7 @@ import {
     usePublishTemporaryRent,
     useTemporaryRentAds,
 } from "@/hooks/useTemporaryRent";
-import { formatPrice, toPersianDigits } from "@/lib/utils";
+import { formatPrice, toPersianDigits, getMediaUrl } from "@/lib/utils";
 import { TemporaryRentAdSummary } from "@/services/temporary-rent.service";
 import {
     AlertCircle,
@@ -414,8 +414,8 @@ export default function TemporaryRentItemsTab() {
                                 </tr>
                             ) : (
                                 filteredItems.map((item: TemporaryRentAdSummary) => {
-                                    const mediaId = item.mediaIds?.[0];
-                                    const hasMedia = !!mediaId;
+                                    const mediaUrl = getMediaUrl(item.mediaIds?.[0]);
+                                    const hasMedia = !!item.mediaIds?.[0] && mediaUrl !== "/property-placeholder.svg";
 
                                     return (
                                         <tr
@@ -428,7 +428,7 @@ export default function TemporaryRentItemsTab() {
                                                     <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0 flex items-center justify-center">
                                                         {hasMedia ? (
                                                             <Image
-                                                                src={`${process.env.NEXT_PUBLIC_API_URL}/media/${mediaId}`}
+                                                                src={mediaUrl}
                                                                 alt={item.title}
                                                                 fill
                                                                 unoptimized

@@ -7,11 +7,12 @@ import { useCity } from "@/components/providers/CityProvider";
 import { Select } from "@/components/ui/Select";
 import { useAd, useCategories } from "@/hooks/useAds";
 import { useGeoHierarchy } from "@/hooks/useGeoHierarchy";
-import { useUploadMedia } from "@/hooks/useMedia";
 import { cn, formatPrice, toPersianDigits, getMediaUrl } from "@/lib/utils";
 import { normalizeApiError } from "@/lib/api/error-handler";
 import { adsService } from "@/services/ads.service";
 import { CreateAdDraftRequest, PriceModel, SubcategoryConfigResponse } from "@/types/api/ads.types";
+import type { MediaReference } from "@/types/api/media.types";
+import MediaGalleryUpload from "@/components/MediaGalleryUpload";
 import { AdStatus } from "@/types/api/enums";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
@@ -99,12 +100,11 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
         rawPricing: {},
         latitude: initialCoords.latitude,
         longitude: initialCoords.longitude,
-        mediaIds: [] as string[],
+        mediaIds: [] as (MediaReference | string)[],
     });
 
     const { data: categories } = useCategories();
     const { data: geoHierarchy } = useGeoHierarchy();
-    const { mutateAsync: uploadMedia, isPending: isUploading } = useUploadMedia();
 
     // Fetch ad if editing
     const { data: existingAd, isLoading: isLoadingExisting } = useAd(editAdId || "");
@@ -558,30 +558,6 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
         if (currentStepIndex > 0) {
             setStep(STEPS_CONFIG[currentStepIndex - 1].id);
         }
-    };
-
-    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const files = e.target.files;
-        if (!files || files.length === 0) return;
-
-        for (let i = 0; i < files.length; i++) {
-            try {
-                const result = await uploadMedia(files[i]);
-                setFormData((prev) => ({
-                    ...prev,
-                    mediaIds: [...(prev.mediaIds || []), result.mediaId],
-                }));
-            } catch {
-                toast.error("خطا در آپلود تصویر");
-            }
-        }
-    };
-
-    const removeMedia = (id: string) => {
-        setFormData((prev) => ({
-            ...prev,
-            mediaIds: (prev.mediaIds || []).filter((m: string) => m !== id),
-        }));
     };
 
     const currentSubcategory = useMemo(() => {
@@ -1111,49 +1087,19 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                         {/* 5. MEDIA */}
                         {step === "MEDIA" && (
                             <div className="space-y-6">
-                                <h2 className="text-lg font-black text-brand">تصاویر ملک</h2>
-                                <p className="text-xs text-text-light">
-                                    آگهی‌های دارای تصویر واقعی تا ۵ برابر بیشتر بازدید دریافت می‌کنند.
-                                </p>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                                    {formData.mediaIds?.map((id: string) => (
-                                        <div
-                                            key={id}
-                                            className="relative aspect-square rounded-2xl overflow-hidden border border-gray-200 group shadow-xs"
-                                        >
-                                            <img
-                                                src={`${process.env.NEXT_PUBLIC_API_URL}/media/${id}`}
-                                                className="w-full h-full object-cover"
-                                                alt="تصویر آگهی"
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={() => removeMedia(id)}
-                                                className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full shadow-md transition-opacity"
-                                            >
-                                                <X className="h-3.5 w-3.5" />
-                                            </button>
-                                        </div>
-                                    ))}
-                                    <label className="aspect-square rounded-2xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-all">
-                                        {isUploading ? (
-                                            <Loader2 className="h-8 w-8 text-primary animate-spin" />
-                                        ) : (
-                                            <>
-                                                <Upload className="h-7 w-7 text-gray-400 mb-1" />
-                                                <span className="text-xs text-text-light font-bold">افزودن تصویر</span>
-                                            </>
-                                        )}
-                                        <input
-                                            type="file"
-                                            multiple
-                                            accept="image/*"
-                                            className="hidden"
-                                            onChange={handleFileChange}
-                                            disabled={isUploading}
-                                        />
-                                    </label>
-                                </div>
+                                <MediaGalleryUpload
+                                    value={formData.mediaIds}
+                                    onChange={(media) =>
+                                        setFormData((prev) => ({
+                                            ...prev,
+                                            mediaIds: media,
+                                        }))
+                                    }
+                                    label="تصاویر و ویدئوهای ملک"
+                                    helperText="آگهی‌های دارای تصویر و ویدئوی واقعی تا ۵ برابر بیشتر بازدید دریافت می‌کنند."
+                                    maxFiles={15}
+                                    allowVideos={true}
+                                />
                             </div>
                         )}
 

@@ -4,6 +4,8 @@
  * Strict TypeScript: Zero any/unknown/Record<string, any>.
  */
 
+import { MediaReference } from './media.types';
+
 export enum SearchIndex {
   LISTINGS = 'listings',
   TEMPORARY_RENTALS = 'temporary_rentals',
@@ -76,7 +78,7 @@ export interface ListingSearchDocument {
   _geo?: SearchGeoCoordinates;
   attributes: SearchDynamicAttributes;
   pricing: SearchDynamicPricing;
-  mediaIds: string[];
+  mediaIds: MediaReference[];
   publishedAt: string;
   createdAt: string;
   updatedAt: string;
@@ -97,7 +99,7 @@ export interface TemporaryRentalSearchDocument {
   _geo?: SearchGeoCoordinates;
   attributes: SearchDynamicAttributes;
   pricing: SearchDynamicPricing;
-  mediaIds: string[];
+  mediaIds: MediaReference[];
   publishedAt: string;
   createdAt: string;
   updatedAt: string;
@@ -149,6 +151,7 @@ export interface PostSearchDocument {
   content: string;
   category: string | null;
   mediaUrls: string[];
+  mediaIds: MediaReference[];
   isFeatured: boolean;
   isPublished: boolean;
   isArchived: boolean;

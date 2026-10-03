@@ -1,4 +1,5 @@
 import { JsonValue } from "../common";
+import type { MediaReference } from "./media.types";
 
 export interface TemporaryRentCategoryPath {
     categoryKey: string;
@@ -23,7 +24,7 @@ export interface TemporaryRentAd {
     };
     maxGuests: number;
     guestCapacity?: number;
-    mediaIds: string[];
+    mediaIds: (MediaReference | string)[];
     latitude: number;
     longitude: number;
     address?: string;
@@ -50,7 +51,7 @@ export interface CreateTemporaryRentDraftRequest {
     latitude: number;
     longitude: number;
     attributes?: Record<string, JsonValue>;
-    mediaIds?: string[];
+    mediaIds?: (MediaReference | string)[];
     priceModelKey?: string;
     pricing?: Record<string, number | string | boolean>;
 }

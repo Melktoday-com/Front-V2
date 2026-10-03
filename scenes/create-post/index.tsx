@@ -7,6 +7,7 @@ import { useMyAgency } from "@/hooks/useAgencies";
 import { useHostProfile } from "@/hooks/useShowcase";
 import { useCreatePost } from "@/hooks/usePosts";
 import { RoleName } from "@/types/access";
+import type { MediaReference } from "@/types/api/media.types";
 import { InstagramPostEditor } from "@/components/posts/InstagramPostEditor";
 import { MediumPostEditor } from "@/components/posts/MediumPostEditor";
 import { Button } from "@/components/ui/Button";
@@ -71,7 +72,7 @@ export default function CreatePostScene() {
   const [igTitle, setIgTitle] = useState("");
   const [igCaption, setIgCaption] = useState("");
   const [igCategory, setIgCategory] = useState("معرفی ملک ویژه");
-  const [igMediaUrls, setIgMediaUrls] = useState<string[]>([]);
+  const [igMediaUrls, setIgMediaUrls] = useState<MediaReference[]>([]);
   const [igLocation, setIgLocation] = useState("");
 
   // ── Medium Form State ───────────────────────────────────────────────────
@@ -157,7 +158,16 @@ export default function CreatePostScene() {
         if (parsed.title) setIgTitle(parsed.title);
         if (parsed.caption) setIgCaption(parsed.caption);
         if (parsed.category) setIgCategory(parsed.category);
-        if (parsed.mediaUrls) setIgMediaUrls(parsed.mediaUrls);
+        if (parsed.mediaUrls && Array.isArray(parsed.mediaUrls)) {
+          setIgMediaUrls(
+            parsed.mediaUrls.map((item: unknown) => {
+              if (typeof item === "string") {
+                return { id: item, type: "IMAGE" as const };
+              }
+              return item as MediaReference;
+            })
+          );
+        }
         if (parsed.location) setIgLocation(parsed.location);
       }
 
@@ -280,13 +290,17 @@ export default function CreatePostScene() {
           igCaption.trim().slice(0, 45) ||
           `پست تصویری ${activePublisher.name}`;
 
+        const effectiveMediaUrls = igMediaUrls.map((m) =>
+          typeof m === "object" ? m.id : m
+        );
         const created = await createPostMutation.mutateAsync({
           publisherType: activePublisher.type,
           publisherId: activePublisher.id,
           title: effectiveTitle,
           content: igCaption.trim() || effectiveTitle,
           category: igCategory || "معرفی ملک ویژه",
-          mediaUrls: igMediaUrls,
+          mediaUrls: effectiveMediaUrls,
+          mediaIds: igMediaUrls,
           isPublished,
           isFeatured: false,
         });

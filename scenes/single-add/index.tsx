@@ -3,7 +3,7 @@
 import { useAd, useAdContact, useAds } from "@/hooks/useAds";
 import { useAuth } from "@/hooks/useAuth";
 import { useCreateConversation } from "@/hooks/useChat";
-import { cn, formatPrice, toPersianDigits } from "@/lib/utils";
+import { cn, formatPrice, toPersianDigits, getMediaUrl } from "@/lib/utils";
 import { AdSummary } from "@/types/api/ads.types";
 import {
     Bath,
@@ -18,6 +18,7 @@ import {
     Maximize2,
     MessageCircle,
     Phone,
+    Play,
     Share2,
     ShieldCheck,
     Sparkles,
@@ -106,15 +107,24 @@ export default function SingleAdScene() {
         { enabled: !!ad?.cityId }
     );
 
-    // Collect all media URLs
-    const mediaUrls = useMemo(() => {
+    // Collect all media items
+    const mediaItems = useMemo(() => {
         if (!ad?.mediaIds || ad.mediaIds.length === 0) {
-            return ["/property-placeholder.svg"];
+            return [{ id: "placeholder", url: "/property-placeholder.svg", isVideo: false }];
         }
-        return ad.mediaIds.map((mId) => `${process.env.NEXT_PUBLIC_API_URL}/media/${mId}`);
+        return ad.mediaIds.map((mId, index) => {
+            const id = typeof mId === "string" ? mId : (mId.id || `media-${index}`);
+            const type = typeof mId === "object" && mId !== null && "type" in mId ? mId.type : undefined;
+            const isVideo = type === "VIDEO";
+            return {
+                id,
+                url: getMediaUrl(mId),
+                isVideo,
+            };
+        });
     }, [ad?.mediaIds]);
 
-    const activeImage = mediaUrls[activeImageIndex] || mediaUrls[0] || "/property-placeholder.svg";
+    const activeMedia = mediaItems[activeImageIndex] || mediaItems[0] || { id: "placeholder", url: "/property-placeholder.svg", isVideo: false };
 
     const handleChat = () => {
         if (!isLoggedIn) {
@@ -245,13 +255,22 @@ export default function SingleAdScene() {
             {/* Gallery Section */}
             <section className="space-y-3">
                 <div className="relative w-full aspect-[16/10] sm:aspect-[16/8] rounded-3xl overflow-hidden bg-gray-100 shadow-md">
-                    <Image
-                        src={activeImage}
-                        alt={ad.title}
-                        fill
-                        priority
-                        className="object-cover transition-opacity duration-300"
-                    />
+                    {activeMedia.isVideo ? (
+                        <video
+                            src={activeMedia.url}
+                            controls
+                            playsInline
+                            className="w-full h-full object-cover"
+                        />
+                    ) : (
+                        <Image
+                            src={activeMedia.url}
+                            alt={ad.title}
+                            fill
+                            priority
+                            className="object-cover transition-opacity duration-300"
+                        />
+                    )}
                     <div className="absolute top-4 right-4 flex items-center gap-1.5 z-10">
                         {subcategoryTitle && (
                             <span className="bg-brand/85 backdrop-blur-md text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">
@@ -267,18 +286,25 @@ export default function SingleAdScene() {
                 </div>
 
                 {/* Thumbnails */}
-                {mediaUrls.length > 1 && (
+                {mediaItems.length > 1 && (
                     <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
-                        {mediaUrls.map((url, idx) => (
+                        {mediaItems.map((media, idx) => (
                             <button
-                                key={idx}
+                                key={media.id || idx}
                                 onClick={() => setActiveImageIndex(idx)}
                                 className={cn(
                                     "relative w-20 h-16 sm:w-24 sm:h-18 rounded-2xl overflow-hidden shrink-0 border-2 transition-all",
                                     activeImageIndex === idx ? "border-primary scale-105 shadow-md" : "border-transparent opacity-70 hover:opacity-100"
                                 )}
                             >
-                                <Image src={url} alt={`تصویر ${idx + 1}`} fill className="object-cover" />
+                                {media.isVideo ? (
+                                    <div className="relative w-full h-full bg-slate-900 flex items-center justify-center">
+                                        <Play className="w-5 h-5 text-white fill-white" />
+                                        <span className="absolute bottom-1 right-1 text-[10px] text-white bg-black/60 px-1 rounded">ویدیو</span>
+                                    </div>
+                                ) : (
+                                    <Image src={media.url} alt={`تصویر ${idx + 1}`} fill className="object-cover" />
+                                )}
                             </button>
                         ))}
                     </div>
@@ -523,11 +549,7 @@ export default function SingleAdScene() {
                                     price={Object.values(item.pricing)[0] ?? 0}
                                     rating={4.7}
                                     location={getCityName(item.cityId || ad.cityId)}
-                                    image={
-                                        item.mediaIds?.[0]
-                                            ? `${process.env.NEXT_PUBLIC_API_URL}/media/${item.mediaIds[0]}`
-                                            : "/property-placeholder.svg"
-                                    }
+                                    image={getMediaUrl(item.mediaIds?.[0])}
                                     category={
                                         getSubcategoryName(item.categoryPath?.subcategoryKey, item.categoryPath?.categoryKey) ||
                                         getCategoryName(item.categoryPath?.categoryKey) ||

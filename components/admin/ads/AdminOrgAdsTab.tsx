@@ -3,7 +3,7 @@
 import { useAds } from "@/hooks/useAds";
 import { useAuth } from "@/hooks/useAuth";
 import { useCategoryLookup } from "@/hooks/useCategoryLookup";
-import { formatPrice, toPersianDigits } from "@/lib/utils";
+import { formatPrice, toPersianDigits, getMediaUrl } from "@/lib/utils";
 import { adminService } from "@/services/admin.service";
 import { adsService } from "@/services/ads.service";
 import { AdSummary } from "@/types/api/ads.types";
@@ -424,8 +424,8 @@ export default function AdminOrgAdsTab() {
                                 </tr>
                             ) : (
                                 filteredItems.map((ad: AdSummary) => {
-                                    const mediaId = ad.mediaIds?.[0];
-                                    const hasMedia = !!mediaId;
+                                    const mediaUrl = getMediaUrl(ad.mediaIds?.[0]);
+                                    const hasMedia = !!ad.mediaIds?.[0] && mediaUrl !== "/property-placeholder.svg";
 
                                     return (
                                         <tr key={ad.adId} className="hover:bg-slate-50/70 transition-colors group">
@@ -435,7 +435,7 @@ export default function AdminOrgAdsTab() {
                                                     <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0 flex items-center justify-center">
                                                         {hasMedia ? (
                                                             <Image
-                                                                src={`${process.env.NEXT_PUBLIC_API_URL}/media/${mediaId}`}
+                                                                src={mediaUrl}
                                                                 alt={ad.title}
                                                                 fill
                                                                 unoptimized

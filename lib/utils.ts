@@ -23,19 +23,26 @@ export function formatPrice(amount: number | string | undefined | null, suffix =
     return `${new Intl.NumberFormat("fa-IR").format(num)}${suffix}`;
 }
 
-export function getMediaUrl(mediaIdOrUrl?: string | null): string {
+export function extractMediaId(media?: string | { id: string; type?: string } | null): string {
+    if (!media) return "";
+    return typeof media === "object" ? media.id : media;
+}
+
+export function getMediaUrl(mediaIdOrUrl?: string | { id: string; type?: string } | null): string {
     if (!mediaIdOrUrl) return "";
+    const raw = typeof mediaIdOrUrl === "object" ? mediaIdOrUrl.id : mediaIdOrUrl;
+    if (!raw) return "";
     if (
-        mediaIdOrUrl.startsWith("http://") ||
-        mediaIdOrUrl.startsWith("https://") ||
-        mediaIdOrUrl.startsWith("/") ||
-        mediaIdOrUrl.startsWith("data:")
+        raw.startsWith("http://") ||
+        raw.startsWith("https://") ||
+        raw.startsWith("/") ||
+        raw.startsWith("data:")
     ) {
-        return mediaIdOrUrl;
+        return raw;
     }
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || "";
     const cleanBase = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
-    return `${cleanBase}/media/${mediaIdOrUrl}`;
+    return `${cleanBase}/media/${raw}`;
 }
 
 export function getPaginationItems(

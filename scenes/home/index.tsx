@@ -16,6 +16,7 @@ import { useTemporaryRentAds } from "@/hooks/useTemporaryRent";
 import { TemporaryRentAdSummary } from "@/services/temporary-rent.service";
 import { AdSummary } from "@/types/api/ads.types";
 import { AgencySummary } from "@/types/api/agency.types";
+import { getMediaUrl } from "@/lib/utils";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
@@ -116,7 +117,7 @@ export const HomeScene = () => {
                                     price={Object.values(property.pricing)[0] ?? 0}
                                     rating={5.0}
                                     location={selectedCity.name}
-                                    image={property.mediaIds?.[0] ? `${process.env.NEXT_PUBLIC_API_URL}/media/${property.mediaIds[0]}` : "/property-placeholder.svg"}
+                                    image={getMediaUrl(property.mediaIds?.[0])}
                                     category={
                                         property.subcategoryTitle ||
                                         property.categoryPath?.subcategoryTitle ||
@@ -189,7 +190,7 @@ export const HomeScene = () => {
                                 unit="/شب"
                                 rating={4.9}
                                 location={selectedCity.name}
-                                image={property.mediaIds?.[0] ? `${process.env.NEXT_PUBLIC_API_URL}/media/${property.mediaIds[0]}` : "/property-placeholder.svg"}
+                                image={getMediaUrl(property.mediaIds?.[0])}
                                 category="اجاره روزانه"
                                 className="w-[210px] lg:w-[250px]"
                                 isSaved={property.isSaved ?? isTemporaryRentSaved(property.id)}
@@ -231,7 +232,7 @@ export const HomeScene = () => {
                                     price={Object.values(property.pricing)[0] ?? 0}
                                     rating={4.8}
                                     location={selectedCity.name}
-                                    image={property.mediaIds?.[0] ? `${process.env.NEXT_PUBLIC_API_URL}/media/${property.mediaIds[0]}` : "/property-placeholder.svg"}
+                                    image={getMediaUrl(property.mediaIds?.[0])}
                                     category={
                                         property.subcategoryTitle ||
                                         property.categoryPath?.subcategoryTitle ||

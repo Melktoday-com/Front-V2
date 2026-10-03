@@ -9,7 +9,7 @@ import { ChevronRight, Plus, Rocket, Info, Calendar, Users, MapPin, Trash2, Exte
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
-import { formatCurrency, cn } from "@/lib/utils";
+import { formatCurrency, cn, getMediaUrl } from "@/lib/utils";
 import { toast } from "sonner";
 import { useState } from "react";
 
@@ -185,7 +185,7 @@ export default function TemporaryRentPanelScene() {
                                 <div className="w-full md:w-64 h-48 md:h-auto bg-soft-bg relative overflow-hidden">
                                     {ad.mediaIds && ad.mediaIds.length > 0 ? (
                                         <img
-                                            src={`${process.env.NEXT_PUBLIC_API_URL}/media/${ad.mediaIds[0]}`}
+                                            src={getMediaUrl(ad.mediaIds[0])}
                                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                                             alt={ad.title}
                                         />

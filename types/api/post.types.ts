@@ -1,3 +1,5 @@
+import type { MediaReference } from './media.types';
+
 export type PublisherType = 'AGENCY' | 'HOST' | 'PLATFORM';
 
 export interface PostPublisher {
@@ -19,6 +21,7 @@ export interface UnifiedPost {
   content: string;
   category?: string;
   mediaUrls: string[];
+  mediaIds?: MediaReference[];
   isPublished: boolean;
   isFeatured: boolean;
   viewCount: number;
@@ -45,6 +48,7 @@ export interface CreatePostRequest {
   content: string;
   category?: string;
   mediaUrls?: string[];
+  mediaIds?: (MediaReference | string)[];
   isPublished?: boolean;
   isFeatured?: boolean;
 }
@@ -56,6 +60,7 @@ export interface UpdatePostRequest {
   content?: string;
   category?: string;
   mediaUrls?: string[];
+  mediaIds?: (MediaReference | string)[];
   isPublished?: boolean;
   isFeatured?: boolean;
 }
