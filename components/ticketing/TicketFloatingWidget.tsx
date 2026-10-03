@@ -16,11 +16,11 @@ import {
     TicketSenderRole,
     TicketStatus,
 } from "@/types/api/ticketing.types";
+import { getCookie } from "cookies-next";
 import { formatDistanceToNow } from "date-fns-jalali";
 import {
     AlertCircle,
     ArrowLeft,
-    CheckCircle2,
     Headphones,
     LifeBuoy,
     Loader2,
@@ -30,11 +30,10 @@ import {
     RefreshCw,
     Send,
     Tag,
-    X,
+    X
 } from "lucide-react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { getCookie } from "cookies-next";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useId, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -330,7 +329,7 @@ export function TicketFloatingWidget() {
                             <Headphones className="w-5 h-5 text-white group-hover:rotate-12 transition-transform" />
                         </span>
                         <span className="text-sm font-black hidden sm:inline-block pr-0.5">
-                            پشتیبانی و تیکت
+                            پشتیبانی
                         </span>
                     </button>
                 </div>
@@ -446,358 +445,358 @@ export function TicketFloatingWidget() {
                             </div>
                         ) : (
                             <>
-                        {/* ── TAB 1: User Ticket History ───────────────────────────── */}
-                        {activeTab === "history" && (
-                            <div className="space-y-3 flex-1">
-                                <div className="flex items-center justify-between pb-1">
-                                    <span className="text-xs font-bold text-secondary">
-                                        سابقه تیکت‌های شما
-                                    </span>
-                                    <button
-                                        type="button"
-                                        onClick={() => refetchMyTickets()}
-                                        className="text-xs text-primary hover:underline flex items-center gap-1 font-bold"
-                                    >
-                                        <RefreshCw className="w-3.5 h-3.5" />
-                                        <span>بروزرسانی</span>
-                                    </button>
-                                </div>
-
-                                {isMyTicketsLoading ? (
-                                    <div className="flex flex-col items-center justify-center py-16 gap-3 text-secondary">
-                                        <Loader2 className="w-7 h-7 animate-spin text-primary" />
-                                        <span className="text-xs font-bold">
-                                            در حال دریافت تیکت‌ها...
-                                        </span>
-                                    </div>
-                                ) : !myTicketsData?.tickets || myTicketsData.tickets.length === 0 ? (
-                                    <div className="flex flex-col items-center justify-center py-14 px-4 text-center">
-                                        <div className="w-14 h-14 rounded-3xl bg-soft-bg flex items-center justify-center text-secondary mb-3">
-                                            <MessageSquare className="w-7 h-7" />
-                                        </div>
-                                        <p className="text-sm font-black text-brand mb-1">
-                                            تیکتی ثبت نشده است
-                                        </p>
-                                        <p className="text-xs text-secondary mb-5 max-w-xs">
-                                            در صورت وجود هرگونه سوال، پیشنهاد یا گزارش مشکل، می‌توانید تیکت
-                                            جدید ثبت کنید.
-                                        </p>
-                                        <button
-                                            type="button"
-                                            onClick={handleStartNewTicket}
-                                            className="px-4 py-2.5 rounded-2xl bg-brand text-white text-xs font-black shadow-md hover:bg-brand/90 transition-all flex items-center gap-2"
-                                        >
-                                            <Plus className="w-4 h-4 text-primary" />
-                                            <span>ثبت اولین تیکت</span>
-                                        </button>
-                                    </div>
-                                ) : (
-                                    <div className="space-y-2.5">
-                                        {myTicketsData.tickets.map((ticket) => {
-                                            const statusCfg =
-                                                TICKET_STATUS_CONFIG[ticket.status] ||
-                                                TICKET_STATUS_CONFIG[TicketStatus.OPEN];
-                                            return (
-                                                <button
-                                                    key={ticket.id}
-                                                    type="button"
-                                                    onClick={() => handleSelectTicket(ticket)}
-                                                    className="w-full text-right p-3.5 rounded-2xl border border-soft-border/80 hover:border-primary/50 hover:bg-soft-bg/40 transition-all group flex flex-col gap-2 shadow-xs"
-                                                >
-                                                    <div className="flex items-center justify-between gap-2">
-                                                        <span className="text-xs font-bold text-secondary flex items-center gap-1.5 truncate">
-                                                            <Tag className="w-3.5 h-3.5 text-primary" />
-                                                            {ticket.topicLabel || "پشتیبانی"}
-                                                        </span>
-                                                        <span
-                                                            className={cn(
-                                                                "text-[10px] font-black px-2 py-0.5 rounded-full border",
-                                                                statusCfg.badgeBg,
-                                                                statusCfg.badgeText,
-                                                                statusCfg.borderColor
-                                                            )}
-                                                        >
-                                                            {statusCfg.label}
-                                                        </span>
-                                                    </div>
-
-                                                    <h4 className="text-xs font-black text-brand group-hover:text-primary transition-colors line-clamp-1">
-                                                        {ticket.subject}
-                                                    </h4>
-
-                                                    <div className="flex items-center justify-between text-[11px] text-secondary/80 pt-1 border-t border-soft-border/50">
-                                                        <span>
-                                                            بروزرسانی: {formatTimestamp(ticket.updatedAt)}
-                                                        </span>
-                                                        <span className="text-primary font-bold group-hover:translate-x-[-2px] transition-transform">
-                                                            مشاهده گفت‌وگو ←
-                                                        </span>
-                                                    </div>
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-                                )}
-                            </div>
-                        )}
-
-                        {/* ── TAB 2: Create New Ticket ─────────────────────────────── */}
-                        {activeTab === "new" && (
-                            <form
-                                onSubmit={handleCreateTicketSubmit}
-                                className="space-y-4 flex-1 flex flex-col"
-                            >
-                                {/* Topic Selection */}
-                                <div>
-                                    <label
-                                        htmlFor="ticket-topic-select"
-                                        className="block text-xs font-black text-brand mb-2"
-                                    >
-                                        ۱. انتخاب موضوع تیکت
-                                    </label>
-                                    {isTopicsLoading ? (
-                                        <div className="py-6 flex items-center justify-center gap-2 text-xs text-secondary">
-                                            <Loader2 className="w-4 h-4 animate-spin text-primary" />
-                                            <span>در حال دریافت موضوعات...</span>
-                                        </div>
-                                    ) : isTopicsError ? (
-                                        <div className="p-3 bg-red-50 border border-red-200 rounded-2xl flex items-center justify-between text-xs text-red-600">
-                                            <span>خطا در دریافت موضوعات</span>
+                                {/* ── TAB 1: User Ticket History ───────────────────────────── */}
+                                {activeTab === "history" && (
+                                    <div className="space-y-3 flex-1">
+                                        <div className="flex items-center justify-between pb-1">
+                                            <span className="text-xs font-bold text-secondary">
+                                                سابقه تیکت‌های شما
+                                            </span>
                                             <button
                                                 type="button"
-                                                onClick={() => refetchTopics()}
-                                                className="underline font-bold"
+                                                onClick={() => refetchMyTickets()}
+                                                className="text-xs text-primary hover:underline flex items-center gap-1 font-bold"
                                             >
-                                                تلاش مجدد
+                                                <RefreshCw className="w-3.5 h-3.5" />
+                                                <span>بروزرسانی</span>
                                             </button>
                                         </div>
-                                    ) : (
-                                        <div className="grid grid-cols-2 gap-2" id="ticket-topic-select">
-                                            {topics?.map((t) => {
-                                                const isSelected = selectedTopicId === t.id;
-                                                return (
-                                                    <button
-                                                        key={t.id}
-                                                        type="button"
-                                                        onClick={() => {
-                                                            setSelectedTopicId(t.id);
-                                                            setUiState("message composition");
-                                                        }}
-                                                        className={cn(
-                                                            "p-2.5 rounded-2xl border text-right transition-all flex items-center gap-2 text-xs font-bold",
-                                                            isSelected
-                                                                ? "border-primary bg-primary/10 text-primary font-black shadow-xs"
-                                                                : "border-soft-border/80 bg-white text-brand hover:border-soft-border hover:bg-soft-bg/50"
-                                                        )}
-                                                    >
-                                                        <Tag
-                                                            className={cn(
-                                                                "w-4 h-4 shrink-0",
-                                                                isSelected ? "text-primary" : "text-secondary"
-                                                            )}
-                                                        />
-                                                        <span className="truncate">{t.label}</span>
-                                                    </button>
-                                                );
-                                            })}
-                                        </div>
-                                    )}
-                                </div>
 
-                                {/* Subject */}
-                                <div>
-                                    <label
-                                        htmlFor="ticket-subject-input"
-                                        className="block text-xs font-black text-brand mb-1.5"
-                                    >
-                                        ۲. عنوان تیکت
-                                    </label>
-                                    <input
-                                        id="ticket-subject-input"
-                                        type="text"
-                                        value={subject}
-                                        onChange={(e) => setSubject(e.target.value)}
-                                        placeholder="مثال: سوال درباره نحوه ثبت آگهی یا ارتقای اشتراک"
-                                        required
-                                        className="w-full px-3.5 py-2.5 rounded-2xl border border-soft-border/80 focus:border-primary focus:ring-1 focus:ring-primary text-xs outline-none bg-soft-bg/20 placeholder:text-secondary/50 font-bold"
-                                    />
-                                </div>
-
-                                {/* Initial Message */}
-                                <div className="flex-1 flex flex-col">
-                                    <label
-                                        htmlFor="ticket-message-input"
-                                        className="block text-xs font-black text-brand mb-1.5"
-                                    >
-                                        ۳. شرح پیام
-                                    </label>
-                                    <textarea
-                                        id="ticket-message-input"
-                                        value={initialMessage}
-                                        onChange={(e) => setInitialMessage(e.target.value)}
-                                        placeholder="لطفاً جزییات درخواست، مشکل یا سوال خود را به طور کامل بنویسید..."
-                                        rows={4}
-                                        required
-                                        className="w-full flex-1 px-3.5 py-2.5 rounded-2xl border border-soft-border/80 focus:border-primary focus:ring-1 focus:ring-primary text-xs outline-none bg-soft-bg/20 placeholder:text-secondary/50 resize-none font-bold min-h-[100px]"
-                                    />
-                                </div>
-
-                                {formError && (
-                                    <div className="p-3 bg-red-50 border border-red-200 rounded-2xl flex items-center gap-2 text-xs text-red-600 font-bold">
-                                        <AlertCircle className="w-4 h-4 shrink-0" />
-                                        <span>{formError}</span>
-                                    </div>
-                                )}
-
-                                {/* Submit Button */}
-                                <button
-                                    type="submit"
-                                    disabled={createTicketMutation.isPending}
-                                    className="w-full py-3 px-4 rounded-2xl bg-brand text-white font-black text-xs shadow-md hover:bg-brand/90 active:scale-98 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-                                >
-                                    {createTicketMutation.isPending ? (
-                                        <>
-                                            <Loader2 className="w-4 h-4 animate-spin text-primary" />
-                                            <span>در حال ثبت تیکت...</span>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Send className="w-4 h-4 text-primary" />
-                                            <span>ارسال تیکت به پشتیبانی</span>
-                                        </>
-                                    )}
-                                </button>
-                            </form>
-                        )}
-
-                        {/* ── TAB 3: Ticket Conversation ───────────────────────────── */}
-                        {activeTab === "conversation" && (
-                            <div className="flex-1 flex flex-col h-full min-h-0">
-                                {/* Ticket Summary Banner */}
-                                {currentTicket && (
-                                    <div className="p-3 mb-3 rounded-2xl bg-soft-bg/70 border border-soft-border flex flex-col gap-1.5 shrink-0">
-                                        <div className="flex items-center justify-between gap-2">
-                                            <span className="text-xs font-black text-brand line-clamp-1">
-                                                {currentTicket.subject}
-                                            </span>
-                                            {(() => {
-                                                const cfg =
-                                                    TICKET_STATUS_CONFIG[currentTicket.status] ||
-                                                    TICKET_STATUS_CONFIG[TicketStatus.OPEN];
-                                                return (
-                                                    <span
-                                                        className={cn(
-                                                            "text-[10px] font-black px-2 py-0.5 rounded-full border shrink-0",
-                                                            cfg.badgeBg,
-                                                            cfg.badgeText,
-                                                            cfg.borderColor
-                                                        )}
-                                                    >
-                                                        {cfg.label}
-                                                    </span>
-                                                );
-                                            })()}
-                                        </div>
-                                        <div className="flex items-center justify-between text-[10px] text-secondary">
-                                            <span>موضوع: {currentTicket.topicLabel || "پشتیبانی"}</span>
-                                            <span>ثبت: {formatTimestamp(currentTicket.createdAt)}</span>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Message History */}
-                                <div className="flex-1 overflow-y-auto space-y-3 pl-1 pr-0.5 pb-2">
-                                    {isMessagesLoading || isCurrentTicketLoading ? (
-                                        <div className="flex items-center justify-center py-12 gap-2 text-xs text-secondary font-bold">
-                                            <Loader2 className="w-5 h-5 animate-spin text-primary" />
-                                            <span>در حال بارگذاری پیام‌ها...</span>
-                                        </div>
-                                    ) : !messagesData?.messages || messagesData.messages.length === 0 ? (
-                                        <div className="text-center py-10 text-xs text-secondary font-bold">
-                                            پیامی در این تیکت یافت نشد.
-                                        </div>
-                                    ) : (
-                                        messagesData.messages.map((msg) => {
-                                            const isAdmin = msg.senderRole === TicketSenderRole.ADMIN;
-                                            return (
-                                                <div
-                                                    key={msg.id}
-                                                    className={cn(
-                                                        "flex flex-col max-w-[85%] rounded-2xl p-3 shadow-xs text-xs space-y-1.5",
-                                                        isAdmin
-                                                            ? "ml-auto bg-soft-bg border border-soft-border text-brand rounded-br-xs"
-                                                            : "mr-auto bg-primary text-white rounded-bl-xs"
-                                                    )}
-                                                >
-                                                    <div className="flex items-center justify-between gap-3 text-[10px] opacity-80 pb-0.5 border-b border-white/10">
-                                                        <span className="font-bold flex items-center gap-1">
-                                                            {isAdmin ? (
-                                                                <>
-                                                                    <LifeBuoy className="w-3 h-3 text-primary" />
-                                                                    <span>پشتیبانی ملک‌تودی</span>
-                                                                </>
-                                                            ) : (
-                                                                <span>شما (کاربر)</span>
-                                                            )}
-                                                        </span>
-                                                        <span className="text-[9px]">
-                                                            {formatTimestamp(msg.createdAt)}
-                                                        </span>
-                                                    </div>
-                                                    <p className="whitespace-pre-wrap leading-relaxed font-bold">
-                                                        {msg.body}
-                                                    </p>
+                                        {isMyTicketsLoading ? (
+                                            <div className="flex flex-col items-center justify-center py-16 gap-3 text-secondary">
+                                                <Loader2 className="w-7 h-7 animate-spin text-primary" />
+                                                <span className="text-xs font-bold">
+                                                    در حال دریافت تیکت‌ها...
+                                                </span>
+                                            </div>
+                                        ) : !myTicketsData?.tickets || myTicketsData.tickets.length === 0 ? (
+                                            <div className="flex flex-col items-center justify-center py-14 px-4 text-center">
+                                                <div className="w-14 h-14 rounded-3xl bg-soft-bg flex items-center justify-center text-secondary mb-3">
+                                                    <MessageSquare className="w-7 h-7" />
                                                 </div>
-                                            );
-                                        })
-                                    )}
-                                    <div ref={messagesEndRef} />
-                                </div>
+                                                <p className="text-sm font-black text-brand mb-1">
+                                                    تیکتی ثبت نشده است
+                                                </p>
+                                                <p className="text-xs text-secondary mb-5 max-w-xs">
+                                                    در صورت وجود هرگونه سوال، پیشنهاد یا گزارش مشکل، می‌توانید تیکت
+                                                    جدید ثبت کنید.
+                                                </p>
+                                                <button
+                                                    type="button"
+                                                    onClick={handleStartNewTicket}
+                                                    className="px-4 py-2.5 rounded-2xl bg-brand text-white text-xs font-black shadow-md hover:bg-brand/90 transition-all flex items-center gap-2"
+                                                >
+                                                    <Plus className="w-4 h-4 text-primary" />
+                                                    <span>ثبت اولین تیکت</span>
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-2.5">
+                                                {myTicketsData.tickets.map((ticket) => {
+                                                    const statusCfg =
+                                                        TICKET_STATUS_CONFIG[ticket.status] ||
+                                                        TICKET_STATUS_CONFIG[TicketStatus.OPEN];
+                                                    return (
+                                                        <button
+                                                            key={ticket.id}
+                                                            type="button"
+                                                            onClick={() => handleSelectTicket(ticket)}
+                                                            className="w-full text-right p-3.5 rounded-2xl border border-soft-border/80 hover:border-primary/50 hover:bg-soft-bg/40 transition-all group flex flex-col gap-2 shadow-xs"
+                                                        >
+                                                            <div className="flex items-center justify-between gap-2">
+                                                                <span className="text-xs font-bold text-secondary flex items-center gap-1.5 truncate">
+                                                                    <Tag className="w-3.5 h-3.5 text-primary" />
+                                                                    {ticket.topicLabel || "پشتیبانی"}
+                                                                </span>
+                                                                <span
+                                                                    className={cn(
+                                                                        "text-[10px] font-black px-2 py-0.5 rounded-full border",
+                                                                        statusCfg.badgeBg,
+                                                                        statusCfg.badgeText,
+                                                                        statusCfg.borderColor
+                                                                    )}
+                                                                >
+                                                                    {statusCfg.label}
+                                                                </span>
+                                                            </div>
 
-                                {/* Closed Ticket Notice or Reply Composer */}
-                                {currentTicket?.status === TicketStatus.CLOSED ||
-                                currentTicket?.status === TicketStatus.RESOLVED ? (
-                                    <div className="p-3 bg-gray-100 border border-gray-200 rounded-2xl text-center text-xs text-secondary font-bold flex items-center justify-center gap-2 mt-2">
-                                        <Lock className="w-4 h-4 text-gray-500" />
-                                        <span>
-                                            این تیکت بسته شده است و امکان ارسال پاسخ جدید وجود ندارد.
-                                        </span>
+                                                            <h4 className="text-xs font-black text-brand group-hover:text-primary transition-colors line-clamp-1">
+                                                                {ticket.subject}
+                                                            </h4>
+
+                                                            <div className="flex items-center justify-between text-[11px] text-secondary/80 pt-1 border-t border-soft-border/50">
+                                                                <span>
+                                                                    بروزرسانی: {formatTimestamp(ticket.updatedAt)}
+                                                                </span>
+                                                                <span className="text-primary font-bold group-hover:translate-x-[-2px] transition-transform">
+                                                                    مشاهده گفت‌وگو ←
+                                                                </span>
+                                                            </div>
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
                                     </div>
-                                ) : (
+                                )}
+
+                                {/* ── TAB 2: Create New Ticket ─────────────────────────────── */}
+                                {activeTab === "new" && (
                                     <form
-                                        onSubmit={handleSendReply}
-                                        className="pt-2 border-t border-soft-border flex items-center gap-2 shrink-0"
+                                        onSubmit={handleCreateTicketSubmit}
+                                        className="space-y-4 flex-1 flex flex-col"
                                     >
-                                        <textarea
-                                            value={replyBody}
-                                            onChange={(e) => setReplyBody(e.target.value)}
-                                            onKeyDown={(e) => {
-                                                if (e.key === "Enter" && !e.shiftKey) {
-                                                    e.preventDefault();
-                                                    handleSendReply(e);
-                                                }
-                                            }}
-                                            placeholder="پاسخ خود را بنویسید..."
-                                            disabled={isInputDisabled}
-                                            rows={1}
-                                            className="flex-1 px-3.5 py-2.5 rounded-2xl border border-soft-border focus:border-primary text-xs outline-none bg-soft-bg/30 placeholder:text-secondary/60 resize-none font-bold max-h-24 disabled:opacity-50"
-                                        />
+                                        {/* Topic Selection */}
+                                        <div>
+                                            <label
+                                                htmlFor="ticket-topic-select"
+                                                className="block text-xs font-black text-brand mb-2"
+                                            >
+                                                ۱. انتخاب موضوع تیکت
+                                            </label>
+                                            {isTopicsLoading ? (
+                                                <div className="py-6 flex items-center justify-center gap-2 text-xs text-secondary">
+                                                    <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                                                    <span>در حال دریافت موضوعات...</span>
+                                                </div>
+                                            ) : isTopicsError ? (
+                                                <div className="p-3 bg-red-50 border border-red-200 rounded-2xl flex items-center justify-between text-xs text-red-600">
+                                                    <span>خطا در دریافت موضوعات</span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => refetchTopics()}
+                                                        className="underline font-bold"
+                                                    >
+                                                        تلاش مجدد
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <div className="grid grid-cols-2 gap-2" id="ticket-topic-select">
+                                                    {topics?.map((t) => {
+                                                        const isSelected = selectedTopicId === t.id;
+                                                        return (
+                                                            <button
+                                                                key={t.id}
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    setSelectedTopicId(t.id);
+                                                                    setUiState("message composition");
+                                                                }}
+                                                                className={cn(
+                                                                    "p-2.5 rounded-2xl border text-right transition-all flex items-center gap-2 text-xs font-bold",
+                                                                    isSelected
+                                                                        ? "border-primary bg-primary/10 text-primary font-black shadow-xs"
+                                                                        : "border-soft-border/80 bg-white text-brand hover:border-soft-border hover:bg-soft-bg/50"
+                                                                )}
+                                                            >
+                                                                <Tag
+                                                                    className={cn(
+                                                                        "w-4 h-4 shrink-0",
+                                                                        isSelected ? "text-primary" : "text-secondary"
+                                                                    )}
+                                                                />
+                                                                <span className="truncate">{t.label}</span>
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Subject */}
+                                        <div>
+                                            <label
+                                                htmlFor="ticket-subject-input"
+                                                className="block text-xs font-black text-brand mb-1.5"
+                                            >
+                                                ۲. عنوان تیکت
+                                            </label>
+                                            <input
+                                                id="ticket-subject-input"
+                                                type="text"
+                                                value={subject}
+                                                onChange={(e) => setSubject(e.target.value)}
+                                                placeholder="مثال: سوال درباره نحوه ثبت آگهی یا ارتقای اشتراک"
+                                                required
+                                                className="w-full px-3.5 py-2.5 rounded-2xl border border-soft-border/80 focus:border-primary focus:ring-1 focus:ring-primary text-xs outline-none bg-soft-bg/20 placeholder:text-secondary/50 font-bold"
+                                            />
+                                        </div>
+
+                                        {/* Initial Message */}
+                                        <div className="flex-1 flex flex-col">
+                                            <label
+                                                htmlFor="ticket-message-input"
+                                                className="block text-xs font-black text-brand mb-1.5"
+                                            >
+                                                ۳. شرح پیام
+                                            </label>
+                                            <textarea
+                                                id="ticket-message-input"
+                                                value={initialMessage}
+                                                onChange={(e) => setInitialMessage(e.target.value)}
+                                                placeholder="لطفاً جزییات درخواست، مشکل یا سوال خود را به طور کامل بنویسید..."
+                                                rows={4}
+                                                required
+                                                className="w-full flex-1 px-3.5 py-2.5 rounded-2xl border border-soft-border/80 focus:border-primary focus:ring-1 focus:ring-primary text-xs outline-none bg-soft-bg/20 placeholder:text-secondary/50 resize-none font-bold min-h-[100px]"
+                                            />
+                                        </div>
+
+                                        {formError && (
+                                            <div className="p-3 bg-red-50 border border-red-200 rounded-2xl flex items-center gap-2 text-xs text-red-600 font-bold">
+                                                <AlertCircle className="w-4 h-4 shrink-0" />
+                                                <span>{formError}</span>
+                                            </div>
+                                        )}
+
+                                        {/* Submit Button */}
                                         <button
                                             type="submit"
-                                            disabled={isInputDisabled || !replyBody.trim()}
-                                            aria-label="ارسال پاسخ"
-                                            className="w-10 h-10 rounded-2xl bg-brand text-white flex items-center justify-center shadow-md hover:bg-brand/90 active:scale-95 disabled:opacity-40 transition-all shrink-0"
+                                            disabled={createTicketMutation.isPending}
+                                            className="w-full py-3 px-4 rounded-2xl bg-brand text-white font-black text-xs shadow-md hover:bg-brand/90 active:scale-98 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                                         >
-                                            {addReplyMutation.isPending ? (
-                                                <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                                            {createTicketMutation.isPending ? (
+                                                <>
+                                                    <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                                                    <span>در حال ثبت تیکت...</span>
+                                                </>
                                             ) : (
-                                                <Send className="w-4 h-4 text-primary" />
+                                                <>
+                                                    <Send className="w-4 h-4 text-primary" />
+                                                    <span>ارسال تیکت به پشتیبانی</span>
+                                                </>
                                             )}
                                         </button>
                                     </form>
                                 )}
-                            </div>
-                        )}
+
+                                {/* ── TAB 3: Ticket Conversation ───────────────────────────── */}
+                                {activeTab === "conversation" && (
+                                    <div className="flex-1 flex flex-col h-full min-h-0">
+                                        {/* Ticket Summary Banner */}
+                                        {currentTicket && (
+                                            <div className="p-3 mb-3 rounded-2xl bg-soft-bg/70 border border-soft-border flex flex-col gap-1.5 shrink-0">
+                                                <div className="flex items-center justify-between gap-2">
+                                                    <span className="text-xs font-black text-brand line-clamp-1">
+                                                        {currentTicket.subject}
+                                                    </span>
+                                                    {(() => {
+                                                        const cfg =
+                                                            TICKET_STATUS_CONFIG[currentTicket.status] ||
+                                                            TICKET_STATUS_CONFIG[TicketStatus.OPEN];
+                                                        return (
+                                                            <span
+                                                                className={cn(
+                                                                    "text-[10px] font-black px-2 py-0.5 rounded-full border shrink-0",
+                                                                    cfg.badgeBg,
+                                                                    cfg.badgeText,
+                                                                    cfg.borderColor
+                                                                )}
+                                                            >
+                                                                {cfg.label}
+                                                            </span>
+                                                        );
+                                                    })()}
+                                                </div>
+                                                <div className="flex items-center justify-between text-[10px] text-secondary">
+                                                    <span>موضوع: {currentTicket.topicLabel || "پشتیبانی"}</span>
+                                                    <span>ثبت: {formatTimestamp(currentTicket.createdAt)}</span>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Message History */}
+                                        <div className="flex-1 overflow-y-auto space-y-3 pl-1 pr-0.5 pb-2">
+                                            {isMessagesLoading || isCurrentTicketLoading ? (
+                                                <div className="flex items-center justify-center py-12 gap-2 text-xs text-secondary font-bold">
+                                                    <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                                                    <span>در حال بارگذاری پیام‌ها...</span>
+                                                </div>
+                                            ) : !messagesData?.messages || messagesData.messages.length === 0 ? (
+                                                <div className="text-center py-10 text-xs text-secondary font-bold">
+                                                    پیامی در این تیکت یافت نشد.
+                                                </div>
+                                            ) : (
+                                                messagesData.messages.map((msg) => {
+                                                    const isAdmin = msg.senderRole === TicketSenderRole.ADMIN;
+                                                    return (
+                                                        <div
+                                                            key={msg.id}
+                                                            className={cn(
+                                                                "flex flex-col max-w-[85%] rounded-2xl p-3 shadow-xs text-xs space-y-1.5",
+                                                                isAdmin
+                                                                    ? "ml-auto bg-soft-bg border border-soft-border text-brand rounded-br-xs"
+                                                                    : "mr-auto bg-primary text-white rounded-bl-xs"
+                                                            )}
+                                                        >
+                                                            <div className="flex items-center justify-between gap-3 text-[10px] opacity-80 pb-0.5 border-b border-white/10">
+                                                                <span className="font-bold flex items-center gap-1">
+                                                                    {isAdmin ? (
+                                                                        <>
+                                                                            <LifeBuoy className="w-3 h-3 text-primary" />
+                                                                            <span>پشتیبانی ملک‌تودی</span>
+                                                                        </>
+                                                                    ) : (
+                                                                        <span>شما (کاربر)</span>
+                                                                    )}
+                                                                </span>
+                                                                <span className="text-[9px]">
+                                                                    {formatTimestamp(msg.createdAt)}
+                                                                </span>
+                                                            </div>
+                                                            <p className="whitespace-pre-wrap leading-relaxed font-bold">
+                                                                {msg.body}
+                                                            </p>
+                                                        </div>
+                                                    );
+                                                })
+                                            )}
+                                            <div ref={messagesEndRef} />
+                                        </div>
+
+                                        {/* Closed Ticket Notice or Reply Composer */}
+                                        {currentTicket?.status === TicketStatus.CLOSED ||
+                                            currentTicket?.status === TicketStatus.RESOLVED ? (
+                                            <div className="p-3 bg-gray-100 border border-gray-200 rounded-2xl text-center text-xs text-secondary font-bold flex items-center justify-center gap-2 mt-2">
+                                                <Lock className="w-4 h-4 text-gray-500" />
+                                                <span>
+                                                    این تیکت بسته شده است و امکان ارسال پاسخ جدید وجود ندارد.
+                                                </span>
+                                            </div>
+                                        ) : (
+                                            <form
+                                                onSubmit={handleSendReply}
+                                                className="pt-2 border-t border-soft-border flex items-center gap-2 shrink-0"
+                                            >
+                                                <textarea
+                                                    value={replyBody}
+                                                    onChange={(e) => setReplyBody(e.target.value)}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === "Enter" && !e.shiftKey) {
+                                                            e.preventDefault();
+                                                            handleSendReply(e);
+                                                        }
+                                                    }}
+                                                    placeholder="پاسخ خود را بنویسید..."
+                                                    disabled={isInputDisabled}
+                                                    rows={1}
+                                                    className="flex-1 px-3.5 py-2.5 rounded-2xl border border-soft-border focus:border-primary text-xs outline-none bg-soft-bg/30 placeholder:text-secondary/60 resize-none font-bold max-h-24 disabled:opacity-50"
+                                                />
+                                                <button
+                                                    type="submit"
+                                                    disabled={isInputDisabled || !replyBody.trim()}
+                                                    aria-label="ارسال پاسخ"
+                                                    className="w-10 h-10 rounded-2xl bg-brand text-white flex items-center justify-center shadow-md hover:bg-brand/90 active:scale-95 disabled:opacity-40 transition-all shrink-0"
+                                                >
+                                                    {addReplyMutation.isPending ? (
+                                                        <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                                                    ) : (
+                                                        <Send className="w-4 h-4 text-primary" />
+                                                    )}
+                                                </button>
+                                            </form>
+                                        )}
+                                    </div>
+                                )}
                             </>
                         )}
                     </div>
