@@ -1,7 +1,7 @@
 "use client";
 
 import { CategoryIcon } from "@/components/CategoryIcon";
-import { cn, toPersianDigits } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { CategoryListItem, Subcategory } from "@/types/api/ads.types";
 import {
     ArrowLeft,
@@ -25,7 +25,6 @@ export interface CategoryDirectoryProps {
 
 interface CategoryMeta {
     displayName: string;
-    description: string;
     icon: LucideIcon;
     customHref?: string;
     iconColor: string;
@@ -38,56 +37,47 @@ interface CategoryMeta {
 const CATEGORY_META_CONFIG: Record<string, CategoryMeta> = {
     residential: {
         displayName: "املاک مسکونی",
-        description: "خرید، رهن و اجاره خانه و آپارتمان",
         icon: Home,
         iconColor: "text-blue-600",
         defaultSubcategories: [
             { key: "apartment", displayName: "آپارتمان" },
             { key: "villa", displayName: "ویلا" },
             { key: "suite", displayName: "سوئیت" },
-            { key: "furnished_apartment", displayName: "مبله" },
         ],
     },
     commercial: {
         displayName: "تجاری و اداری",
-        description: "دفاتر کار، مغازه‌ها و مراکز تجاری",
         icon: Building2,
         iconColor: "text-teal-600",
         defaultSubcategories: [
             { key: "office", displayName: "دفتر کار" },
             { key: "store", displayName: "مغازه" },
             { key: "shop", displayName: "اداری" },
-            { key: "commercial_land", displayName: "موقعیت تجاری" },
         ],
     },
     land: {
         displayName: "زمین و کلنگی",
-        description: "سرمایه‌گذاری، باغ، ساخت و ساز",
         icon: LandPlot,
         iconColor: "text-amber-600",
         defaultSubcategories: [
             { key: "residential_land", displayName: "زمین مسکونی" },
             { key: "garden", displayName: "باغ و باغچه" },
-            { key: "agricultural", displayName: "کشاورزی" },
             { key: "old_building", displayName: "کلنگی" },
         ],
     },
     temporary_rent: {
         displayName: "اجاره روزانه",
-        description: "ویلاهای لوکس و اقامتگاه‌های مسافرتی",
         icon: Hotel,
         iconColor: "text-rose-600",
         customHref: "/temporary-rent",
         defaultSubcategories: [
             { key: "villa", displayName: "ویلا استخردار" },
-            { key: "cottage", displayName: "کلبه چوبی" },
+            { key: "cottage", displayName: "کلبه" },
             { key: "suite", displayName: "سوئیت روزانه" },
-            { key: "beach", displayName: "اقامتگاه ساحلی" },
         ],
     },
     industrial: {
-        displayName: "املاک صنعتی",
-        description: "سوله، کارگاه، کارخانه و انبار",
+        displayName: "صنعتی و کارگاه",
         icon: Factory,
         iconColor: "text-indigo-600",
         defaultSubcategories: [
@@ -118,7 +108,6 @@ export function CategoryDirectory({
             return categories.map((cat) => {
                 const meta = CATEGORY_META_CONFIG[cat.key] || {
                     displayName: cat.displayName,
-                    description: cat.description || "مشاهده آگهی‌های مرتبط",
                     icon: Building2,
                     iconColor: "text-zinc-700",
                     defaultSubcategories: [],
@@ -132,7 +121,6 @@ export function CategoryDirectory({
                     id: cat.id || cat.key,
                     key: cat.key,
                     displayName: cat.displayName || meta.displayName,
-                    description: cat.description || meta.description,
                     icon: cat.icon,
                     FallbackIcon: meta.icon,
                     iconColor: meta.iconColor,
@@ -148,7 +136,6 @@ export function CategoryDirectory({
                 id: key,
                 key,
                 displayName: meta.displayName,
-                description: meta.description,
                 icon: undefined,
                 FallbackIcon: meta.icon,
                 iconColor: meta.iconColor,
@@ -161,23 +148,24 @@ export function CategoryDirectory({
     // Loading Skeletons
     if (isLoading) {
         return (
-            <div className={cn("grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4", className)}>
+            <div className={cn("grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3", className)}>
                 {[1, 2, 3, 4].map((i) => (
                     <div
                         key={i}
-                        className="bg-[#F5F5F7] rounded-[26px] p-6 flex flex-col justify-between min-h-[220px] animate-pulse"
+                        className="bg-[#F5F5F7] rounded-2xl p-3 sm:p-3.5 flex flex-col justify-between min-h-[88px] animate-pulse"
                     >
-                        <div>
-                            <div className="w-12 h-12 rounded-2xl bg-white/80 mb-4" />
-                            <div className="w-24 h-4 bg-zinc-200 rounded-full mb-2" />
-                            <div className="w-36 h-3 bg-zinc-200/60 rounded-full mb-5" />
-                            <div className="flex gap-2">
-                                <div className="w-16 h-7 bg-white/80 rounded-full" />
-                                <div className="w-14 h-7 bg-white/80 rounded-full" />
-                                <div className="w-16 h-7 bg-white/80 rounded-full" />
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <div className="w-8 h-8 rounded-xl bg-white/80" />
+                                <div className="w-16 h-3 bg-zinc-200 rounded-full" />
                             </div>
+                            <div className="w-6 h-3 bg-zinc-200/60 rounded-full" />
                         </div>
-                        <div className="w-20 h-4 bg-zinc-200/60 rounded-full mt-6" />
+                        <div className="flex gap-1 mt-2.5">
+                            <div className="w-12 h-5 bg-white/80 rounded-full" />
+                            <div className="w-10 h-5 bg-white/80 rounded-full" />
+                            <div className="w-12 h-5 bg-white/80 rounded-full" />
+                        </div>
                     </div>
                 ))}
             </div>
@@ -185,9 +173,9 @@ export function CategoryDirectory({
     }
 
     return (
-        <div className={cn("grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4", className)}>
+        <div className={cn("grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5", className)}>
             {directoryItems.map((item) => {
-                const { key, displayName, description, icon, FallbackIcon, iconColor, customHref, subcategories } = item;
+                const { key, displayName, icon, FallbackIcon, iconColor, customHref, subcategories } = item;
 
                 const mainCategoryHref = customHref
                     ? `${customHref}${cityQuery ? `?${cityQuery.replace(/^&/, "")}` : ""}`
@@ -196,73 +184,61 @@ export function CategoryDirectory({
                 return (
                     <div
                         key={item.id || key}
-                        className="bg-[#F5F5F7] hover:bg-[#EFEFF2] rounded-[26px] p-6 border border-black/[0.03] transition-all duration-300 flex flex-col justify-between group hover:shadow-[0_8px_30px_rgba(0,0,0,0.04)] hover:-translate-y-0.5"
+                        className="bg-[#F5F5F7] hover:bg-[#EFEFF2] rounded-2xl p-3 sm:p-3.5 border border-black/[0.03] transition-all duration-200 flex flex-col justify-between group hover:shadow-sm"
                     >
-                        <div>
-                            {/* Category Header Link */}
+                        {/* Compact Header: Icon + Title + Direct View All Link */}
+                        <div className="flex items-center justify-between gap-1.5">
                             <Link
                                 href={mainCategoryHref}
-                                className="block group/title"
+                                className="flex items-center gap-2 min-w-0 group/header"
                             >
-                                <div className="w-12 h-12 rounded-2xl bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-black/[0.04] flex items-center justify-center shrink-0 mb-4 group-hover/title:scale-105 transition-transform duration-300">
+                                <div className="w-8 h-8 rounded-xl bg-white shadow-xs border border-black/[0.04] flex items-center justify-center shrink-0 group-hover/header:scale-105 transition-transform duration-200">
                                     {icon ? (
                                         <CategoryIcon
                                             icon={icon}
                                             displayName={displayName}
-                                            size={24}
+                                            size={16}
                                             className="shrink-0"
                                         />
                                     ) : (
-                                        <FallbackIcon className={cn("w-6 h-6", iconColor)} />
+                                        <FallbackIcon className={cn("w-4 h-4", iconColor)} />
                                     )}
                                 </div>
-
-                                <h3 className="text-zinc-900 font-extrabold text-base tracking-tight group-hover/title:text-primary transition-colors">
+                                <span className="text-xs sm:text-sm font-bold text-zinc-900 group-hover/header:text-primary transition-colors truncate">
                                     {displayName}
-                                </h3>
-                                <p className="text-zinc-500 text-xs font-normal mt-0.5 line-clamp-1 leading-relaxed">
-                                    {description}
-                                </p>
+                                </span>
                             </Link>
 
-                            {/* Subcategories (Clean Apple-style Pill Capsules) */}
-                            {subcategories && subcategories.length > 0 && (
-                                <div className="flex flex-wrap gap-1.5 mt-4">
-                                    {subcategories.slice(0, 4).map((sub) => {
-                                        const subHref = customHref
-                                            ? `${customHref}${cityQuery ? `?${cityQuery.replace(/^&/, "")}` : ""}`
-                                            : `/ads?categoryKey=${encodeURIComponent(key)}&subcategoryKey=${encodeURIComponent(sub.key)}${cityQuery}`;
-
-                                        return (
-                                            <Link
-                                                key={sub.id || sub.key}
-                                                href={subHref}
-                                                className="inline-flex items-center px-3 py-1.5 rounded-full bg-white hover:bg-zinc-900 text-zinc-700 hover:text-white border border-black/[0.04] hover:border-transparent text-xs font-medium shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition-all duration-200 active:scale-95"
-                                            >
-                                                <span>{sub.displayName}</span>
-                                            </Link>
-                                        );
-                                    })}
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Footer Link & Counter */}
-                        <div className="mt-5 pt-2 flex items-center justify-between">
                             <Link
                                 href={mainCategoryHref}
-                                className="inline-flex items-center gap-1 text-xs font-bold text-zinc-900 hover:text-primary transition-colors group/link"
+                                aria-label={`مشاهده همه ${displayName}`}
+                                className="text-[11px] font-semibold text-zinc-400 hover:text-primary flex items-center gap-0.5 shrink-0 transition-colors py-0.5 px-1"
                             >
-                                <span>مشاهده همه</span>
-                                <ArrowLeft className="w-3.5 h-3.5 text-zinc-400 group-hover/link:text-primary group-hover/link:-translate-x-0.5 transition-all" />
+                                <span className="hidden sm:inline">همه</span>
+                                <ArrowLeft className="w-3 h-3 group-hover:translate-x-[-2px] transition-transform" />
                             </Link>
-
-                            {subcategories && subcategories.length > 0 && (
-                                <span className="text-[11px] font-medium text-zinc-400">
-                                    {toPersianDigits(subcategories.length)} زیردسته
-                                </span>
-                            )}
                         </div>
+
+                        {/* Compact Apple-style Pills (Subcategories) */}
+                        {subcategories && subcategories.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-2.5">
+                                {subcategories.slice(0, 3).map((sub) => {
+                                    const subHref = customHref
+                                        ? `${customHref}${cityQuery ? `?${cityQuery.replace(/^&/, "")}` : ""}`
+                                        : `/ads?categoryKey=${encodeURIComponent(key)}&subcategoryKey=${encodeURIComponent(sub.key)}${cityQuery}`;
+
+                                    return (
+                                        <Link
+                                            key={sub.id || sub.key}
+                                            href={subHref}
+                                            className="inline-flex items-center px-2 py-0.5 rounded-full bg-white hover:bg-zinc-900 text-zinc-600 hover:text-white border border-black/[0.04] hover:border-transparent text-[10px] sm:text-[11px] font-medium shadow-2xs transition-all active:scale-95"
+                                        >
+                                            {sub.displayName}
+                                        </Link>
+                                    );
+                                })}
+                            </div>
+                        )}
                     </div>
                 );
             })}
