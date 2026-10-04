@@ -13,7 +13,7 @@ import { useUserStatus } from "@/hooks/useUserStatus";
 import { useWallet } from "@/hooks/useWallet";
 import { cn, formatCurrency, toPersianDigits } from "@/lib/utils";
 import { userService } from "@/services/user.service";
-import { RoleName } from "@/types/access";
+import { RoleName, isRoleAdmin } from "@/types/access";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
     Bell,
@@ -310,7 +310,7 @@ export default function ProfileScene() {
                         </div>
                     </RoleGuard>
 
-                    <RoleGuard roles={[RoleName.Admin, RoleName.SuperAdmin]}>
+                    {(isRoleAdmin(activeRole) || profile?.roles?.some((r) => isRoleAdmin(r))) && (
                         <div className="space-y-2">
                             <Button
                                 variant="outline"
@@ -326,7 +326,7 @@ export default function ProfileScene() {
                                 <ChevronLeft className="w-5 h-5 text-secondary" />
                             </Button>
                         </div>
-                    </RoleGuard>
+                    )}
 
                     <Button
                         variant="outline"

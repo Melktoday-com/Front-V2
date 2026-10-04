@@ -1,5 +1,5 @@
 import { authService } from "@/services/auth.service";
-import { Permission, ROLE_PERMISSIONS, RoleName } from "@/types/access";
+import { Permission, ROLE_PERMISSIONS, RoleName, tryRoleNameFrom } from "@/types/access";
 import { JwtPayload } from "@/types/api/auth.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { deleteCookie, getCookie, setCookie } from "cookies-next";
@@ -89,7 +89,7 @@ export function useAuth() {
                     return {
                         userId: decoded.sub,
                         sessionId: decoded.sessionId,
-                        activeRole: decoded.activeRoleName as RoleName | null
+                        activeRole: tryRoleNameFrom(decoded.activeRoleName)
                     };
                 } catch (e) {
                     console.error("Failed to decode token", e);

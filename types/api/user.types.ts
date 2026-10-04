@@ -7,6 +7,7 @@ export interface UserProfile {
     lastName?: string;
     kycStatus: KYCStatus;
     status: UserStatus;
+    roles?: string[];
     createdAt: string;
 }
 

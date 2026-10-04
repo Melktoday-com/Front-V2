@@ -1,5 +1,6 @@
 "use client";
 
+import { useAdminPermissions } from "@/hooks/useAdminPermissions";
 import { useAdminUsers, usePendingCampaigns, usePendingPromotions } from "@/hooks/useAdmin";
 import { useAds } from "@/hooks/useAds";
 import { cn, toPersianDigits } from "@/lib/utils";
@@ -117,6 +118,10 @@ function QuickActionLink({ href, title, description, icon: Icon, badgeCount }: Q
 export default function AdminDashboard() {
     const queryClient = useQueryClient();
     const [isRefreshing, setIsRefreshing] = useState(false);
+    const { isSuperAdmin, hasPermission } = useAdminPermissions();
+
+    const canManageReports = isSuperAdmin || hasPermission("reports.manage");
+    const canManagePromotions = isSuperAdmin || hasPermission("promotions.manage");
 
     // 1. Live Users Data
     const { data: usersData, isLoading: isLoadingUsers } = useAdminUsers({ page: 1, limit: 100 });
@@ -127,17 +132,18 @@ export default function AdminDashboard() {
         limit: 1,
     });
 
-    // 3. Live Pending Reports Data
+    // 3. Live Pending Reports Data (guarded by permission)
     const { data: pendingReportsData, isLoading: isLoadingReports } = useQuery({
         queryKey: ["admin", "reports", "pending"],
         queryFn: () => adminService.listPendingReports(),
+        enabled: canManageReports,
     });
 
-    // 4. Live Pending Promotions Data
-    const { data: pendingPromotionsData } = usePendingPromotions();
+    // 4. Live Pending Promotions Data (guarded by permission)
+    const { data: pendingPromotionsData } = usePendingPromotions({}, canManagePromotions);
 
-    // 5. Live Pending Campaigns Data
-    const { data: pendingCampaignsData } = usePendingCampaigns();
+    // 5. Live Pending Campaigns Data (guarded by permission)
+    const { data: pendingCampaignsData } = usePendingCampaigns({}, canManagePromotions);
 
     // 6. Live Wallet Transactions Data
     const { data: transactionsData, isLoading: isLoadingTransactions } = useQuery({

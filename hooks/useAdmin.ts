@@ -23,16 +23,18 @@ export function useGeoZones(zoneType: string) {
     });
 }
 
-export function usePendingPromotions(params: { page?: number; limit?: number } = {}) {
+export function usePendingPromotions(params: { page?: number; limit?: number } = {}, enabled: boolean = true) {
     return useQuery({
         queryKey: ["admin", "promotions", "pending", params],
         queryFn: () => adminService.listPendingPromotions(params),
+        enabled,
     });
 }
 
-export function usePendingCampaigns(params: { page?: number; limit?: number } = {}) {
+export function usePendingCampaigns(params: { page?: number; limit?: number } = {}, enabled: boolean = true) {
     return useQuery({
         queryKey: ["admin", "campaigns", "pending", params],
         queryFn: () => adminService.listPendingCampaigns(params),
+        enabled,
     });
 }

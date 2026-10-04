@@ -74,3 +74,35 @@ export type Permission =
     | 'tickets.view'
     | 'tickets.reply'
     | 'tickets.manage';
+
+export function tryRoleNameFrom(value?: string | null): RoleName | null {
+    if (!value) return null;
+    const normalized = value.trim().toLowerCase().replace(/[-_]/g, '');
+    switch (normalized) {
+        case 'user':
+            return RoleName.User;
+        case 'admin':
+            return RoleName.Admin;
+        case 'superadmin':
+            return RoleName.SuperAdmin;
+        case 'agent':
+            return RoleName.Agent;
+        case 'landlord':
+            return RoleName.Landlord;
+        default:
+            return null;
+    }
+}
+
+export function isRoleAdmin(role?: string | RoleName | null): boolean {
+    if (!role) return false;
+    const parsed = tryRoleNameFrom(role);
+    return parsed === RoleName.Admin || parsed === RoleName.SuperAdmin;
+}
+
+export function isRoleSuperAdmin(role?: string | RoleName | null): boolean {
+    if (!role) return false;
+    const parsed = tryRoleNameFrom(role);
+    return parsed === RoleName.SuperAdmin;
+}
+
