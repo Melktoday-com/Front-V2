@@ -174,6 +174,17 @@ export function TicketFloatingWidget() {
         return () => window.removeEventListener("keydown", handleKeyDown);
     }, [isOpen, handleCloseWidget]);
 
+    // Lock body scroll on mobile when widget is open
+    useEffect(() => {
+        if (isOpen) {
+            const originalOverflow = document.body.style.overflow;
+            document.body.style.overflow = "hidden";
+            return () => {
+                document.body.style.overflow = originalOverflow;
+            };
+        }
+    }, [isOpen]);
+
     // Auto-scroll messages to bottom when new messages arrive
     useEffect(() => {
         if (activeTab === "conversation" && messagesData?.messages?.length) {
@@ -343,7 +354,7 @@ export function TicketFloatingWidget() {
                     aria-modal="true"
                     aria-labelledby={titleId}
                     tabIndex={-1}
-                    className="fixed bottom-0 lg:bottom-8 left-0 lg:left-8 w-full sm:w-[440px] h-[85vh] sm:h-[620px] max-h-[92vh] bg-white sm:rounded-3xl shadow-2xl border border-soft-border/80 flex flex-col z-50 overflow-hidden outline-none animate-in fade-in slide-in-from-bottom-6 duration-300"
+                    className="fixed inset-0 sm:inset-auto sm:bottom-8 sm:left-8 w-full sm:w-[440px] h-full h-[100dvh] sm:h-[620px] sm:max-h-[92vh] bg-white rounded-none sm:rounded-3xl shadow-2xl border-0 sm:border border-soft-border/80 flex flex-col z-50 overflow-hidden outline-none animate-in fade-in sm:slide-in-from-bottom-6 duration-300"
                     dir="rtl"
                 >
                     {/* Header */}
@@ -765,7 +776,7 @@ export function TicketFloatingWidget() {
                                         ) : (
                                             <form
                                                 onSubmit={handleSendReply}
-                                                className="pt-2 border-t border-soft-border flex items-center gap-2 shrink-0"
+                                                className="pt-2 pb-3 sm:pb-0 border-t border-soft-border flex items-center gap-2 shrink-0"
                                             >
                                                 <textarea
                                                     value={replyBody}
