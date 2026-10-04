@@ -78,13 +78,13 @@ export const HomeScene = () => {
                 isInitialOpen={isInitialModalOpen}
             />
 
-            {/* Category Directory */}
+            {/* Categories */}
             <section className="container mx-auto px-4">
                 <SectionHeader
-                    title="دسته‌بندی و خدمات ملکی"
-                    subtitle="دسترسی مستقیم به انواع املاک و اقامتگاه‌ها در ملکتودی"
+                    title="دسته‌بندی‌ها"
+                    subtitle="کاوش املاک مسکونی، تجاری، زمین و اقامتگاه‌ها"
                     link={selectedCity.id ? `/ads?cityId=${selectedCity.id}&cityName=${encodeURIComponent(selectedCity.name)}` : "/ads"}
-                    actionLabel="مشاهده کل بازار"
+                    actionLabel="مشاهده همه"
                 />
                 <CategoryDirectory
                     categories={categoriesData || []}
