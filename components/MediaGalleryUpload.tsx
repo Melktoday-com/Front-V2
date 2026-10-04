@@ -27,7 +27,16 @@ export default function MediaGalleryUpload({
     allowVideos = true,
 }: MediaGalleryUploadProps) {
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const localPreviewsRef = useRef<Map<string, string>>(new Map());
     const { mutateAsync: uploadMedia, isPending: isUploading } = useUploadMedia();
+
+    // Revoke any local blob preview URLs when the component unmounts
+    React.useEffect(() => {
+        return () => {
+            localPreviewsRef.current.forEach((url) => URL.revokeObjectURL(url));
+            localPreviewsRef.current.clear();
+        };
+    }, []);
 
     const normalizedValue: MediaReference[] = useMemo(() => {
         return value || [];
@@ -81,6 +90,14 @@ export default function MediaGalleryUpload({
                 });
                 const uploadedId = result?.mediaId ?? result?.id;
                 if (uploadedId) {
+                    if (isVideo) {
+                        try {
+                            const blobUrl = URL.createObjectURL(file);
+                            localPreviewsRef.current.set(uploadedId, blobUrl);
+                        } catch {
+                            // Non-critical fallback
+                        }
+                    }
                     newMedia.push({
                         id: uploadedId,
                         type: mediaType,
@@ -100,6 +117,11 @@ export default function MediaGalleryUpload({
     };
 
     const handleRemove = (indexToRemove: number) => {
+        const itemToRemove = normalizedValue[indexToRemove];
+        if (itemToRemove && localPreviewsRef.current.has(itemToRemove.id)) {
+            URL.revokeObjectURL(localPreviewsRef.current.get(itemToRemove.id)!);
+            localPreviewsRef.current.delete(itemToRemove.id);
+        }
         const updated = normalizedValue.filter((_, idx) => idx !== indexToRemove);
         onChange(updated);
     };
@@ -137,7 +159,7 @@ export default function MediaGalleryUpload({
                             {isVideo ? (
                                 <div className="w-full h-full relative bg-slate-900 flex items-center justify-center">
                                     <video
-                                        src={fullUrl}
+                                        src={localPreviewsRef.current.get(item.id) || fullUrl}
                                         poster={getMediaPosterUrl(item)}
                                         className="w-full h-full object-cover"
                                         muted

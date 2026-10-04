@@ -48,11 +48,38 @@ export const mediaService = {
         await this.uploadToS3(uploadUrl, file, headers);
 
         // Step 3: Finalize upload session (triggers S3 HEAD verification and async RabbitMQ processing)
-        await apiClient.post(`/media/${mediaId}/finalize`);
+        const finalizeRes = await apiClient.post<{
+            mediaId: string;
+            status: string;
+            message: string;
+        }>(`/media/${mediaId}/finalize`);
 
-        // Step 4: Poll status until READY or FAILED (max 60 seconds)
-        const pollInterval = 1000;
-        const maxAttempts = 60;
+        // OPTIMISTIC ASYNCHRONOUS INGESTION:
+        // Binary is securely verified in S3 storage and processing job is enqueued in RabbitMQ.
+        // Return immediately so the user can submit the ad/post without waiting for background worker processing.
+        return {
+            id: mediaId,
+            mediaId,
+            status: (finalizeRes.data?.status as any) || "PROCESSING",
+            mediaType: detectedType,
+            visibility,
+            url: null,
+            posterUrl: null,
+            originalFileName: file.name,
+            sizeBytes: file.size,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+        };
+    },
+
+    /**
+     * Poll media status until READY or FAILED (optional utility for components that need final derivatives)
+     */
+    async waitForReady(
+        mediaId: string,
+        maxAttempts = 60,
+        pollInterval = 1000,
+    ): Promise<MediaDetails> {
         for (let attempt = 0; attempt < maxAttempts; attempt++) {
             await new Promise((resolve) => setTimeout(resolve, pollInterval));
             try {
@@ -66,10 +93,10 @@ export const mediaService = {
                     posterUrl?: string;
                 }>(`/media/${mediaId}/status`);
 
-                if (statusRes.data.isReady) {
+                if (statusRes.data?.isReady) {
                     return this.getDetails(mediaId);
                 }
-                if (statusRes.data.isFailed) {
+                if (statusRes.data?.isFailed) {
                     throw new Error(statusRes.data.failureReason || "Media processing failed");
                 }
             } catch (err) {

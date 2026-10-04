@@ -37,7 +37,7 @@ export interface MediaDetails {
     sizeBytes?: number;
     mediaType?: string;
     visibility?: string;
-    status: "PENDING" | "READY" | "DELETED";
+    status: "PENDING" | "PENDING_UPLOAD" | "PROCESSING" | "READY" | "FAILED" | "DELETED";
     /** URL returned by direct upload or get-details */
     url?: string | null;
     /** Video poster image URL */
