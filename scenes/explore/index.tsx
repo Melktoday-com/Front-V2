@@ -4,11 +4,12 @@ import React, { useState, useMemo, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useInfiniteExplorePosts, useLikePost } from "@/hooks/usePosts";
-import { useSearchPosts } from "@/hooks/useSearch";
 import { useAuth } from "@/hooks/useAuth";
 import { usePostViewObserver } from "@/hooks/usePostViewObserver";
 import { getMediaUrl, getMediaPosterUrl, toPersianDigits, cn } from "@/lib/utils";
 import { UnifiedPost, PublisherType } from "@/types/api/post.types";
+import { PaginationControls } from "@/components/ui/PaginationControls";
+import { PageSectionDivider } from "@/components/ui/PageSectionDivider";
 import {
   Search,
   Plus,
@@ -19,13 +20,9 @@ import {
   Building2,
   Hotel,
   ShieldCheck,
-  Verified,
-  Filter,
   Loader2,
-  Calendar,
   Grid,
-  TrendingUp,
-  Flame,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -166,13 +163,30 @@ export default function ExploreScene() {
   const [activeSearch, setActiveSearch] = useState(urlSearch);
   const [selectedTag, setSelectedTag] = useState("all");
   const [selectedPublisherType, setSelectedPublisherType] = useState<"ALL" | PublisherType>("ALL");
+  const [startPage, setStartPage] = useState<number>(1);
 
   const observerTargetRef = useRef<HTMLDivElement | null>(null);
 
-  // Fetch explore posts with infinite query when browsing
+  // Sync url search param if changed externally
+  useEffect(() => {
+    const s = searchParams.get("search") || "";
+    if (s !== activeSearch) {
+      setSearchQuery(s);
+      setActiveSearch(s);
+      setStartPage(1);
+    }
+  }, [searchParams, activeSearch]);
+
+  const activeCategory = useMemo(() => {
+    if (selectedTag === "all") return undefined;
+    const found = TOPIC_TAGS.find((t) => t.id === selectedTag);
+    return found ? found.label : selectedTag;
+  }, [selectedTag]);
+
+  // Fetch explore posts with infinite query (batching up to 7 pages)
   const {
     data: postsData,
-    isLoading: isFeedLoading,
+    isLoading,
     isFetchingNextPage,
     hasNextPage,
     fetchNextPage,
@@ -181,23 +195,21 @@ export default function ExploreScene() {
   } = useInfiniteExplorePosts(
     {
       limit: 16,
+      search: activeSearch || undefined,
+      category: activeCategory,
+      publisherType: selectedPublisherType !== "ALL" ? selectedPublisherType : undefined,
     },
-    { startPage: 1, maxPages: 10 }
+    { startPage, maxPages: 7 }
   );
 
-  // Search query via /search/posts when activeSearch is set
-  const { data: searchPostsData, isLoading: isSearchLoading } = useSearchPosts(
-    { query: activeSearch, limit: 24 },
-    !!activeSearch
-  );
-
-  const isLoading = activeSearch ? isSearchLoading : isFeedLoading;
-
-  // Infinite Scroll Trigger
+  // Auto-scroll infinite scroll up to 7 pages per batch
   useEffect(() => {
     const target = observerTargetRef.current;
     if (!target) return;
-    if (!hasNextPage || isFetchingNextPage || !!activeSearch) return;
+
+    const currentBatchPageCount = postsData?.pages.length ?? 0;
+    if (currentBatchPageCount >= 7) return;
+    if (!hasNextPage || isFetchingNextPage) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -205,16 +217,94 @@ export default function ExploreScene() {
           fetchNextPage();
         }
       },
-      { rootMargin: "400px" }
+      { rootMargin: "350px" }
     );
 
     observer.observe(target);
-    return () => observer.disconnect();
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage, activeSearch]);
+    return () => {
+      observer.disconnect();
+    };
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage, postsData?.pages.length]);
+
+  // Pagination metrics
+  const totalCount = postsData?.pages[0]?.total ?? 0;
+  const limitPerPage = postsData?.pages[0]?.limit ?? 16;
+  const totalPages = postsData?.pages[0]?.totalPages ?? Math.ceil(totalCount / limitPerPage);
+  const lastLoadedPage = postsData?.pages[postsData.pages.length - 1]?.page ?? startPage;
+  const isBatchFinished = (postsData?.pages.length ?? 0) >= 7 || !hasNextPage;
+  const loadedPages = useMemo(() => postsData?.pages.map((p) => p.page) || [], [postsData]);
+
+  // Flatten posts across loaded pages in current batch
+  const allLoadedPosts = useMemo(() => {
+    return postsData?.pages.flatMap((page) => page.items) || [];
+  }, [postsData]);
+
+  const handlePageSelect = (targetPage: number) => {
+    const isLoadedInCurrentBatch = loadedPages.includes(targetPage);
+    if (isLoadedInCurrentBatch) {
+      if (targetPage === startPage) {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } else {
+        const sectionElem = document.getElementById(`explore-page-section-${targetPage}`);
+        if (sectionElem) {
+          sectionElem.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }
+    } else {
+      setStartPage(targetPage);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  const handleNextPage = () => {
+    if (lastLoadedPage < totalPages) {
+      handlePageSelect(lastLoadedPage + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (startPage > 1) {
+      handlePageSelect(Math.max(1, startPage - 7));
+    }
+  };
+
+  const handleScrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setActiveSearch(searchQuery.trim());
+    const trimmed = searchQuery.trim();
+    setActiveSearch(trimmed);
+    setStartPage(1);
+
+    const params = new URLSearchParams(searchParams.toString());
+    if (trimmed) {
+      params.set("search", trimmed);
+    } else {
+      params.delete("search");
+    }
+    router.replace(`/explore${params.toString() ? `?${params.toString()}` : ""}`);
+  };
+
+  const handleClearSearch = () => {
+    setSearchQuery("");
+    setActiveSearch("");
+    setStartPage(1);
+
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("search");
+    router.replace(`/explore${params.toString() ? `?${params.toString()}` : ""}`);
+  };
+
+  const handleTagSelect = (tagId: string) => {
+    setSelectedTag(tagId);
+    setStartPage(1);
+  };
+
+  const handlePublisherSelect = (pubId: "ALL" | PublisherType) => {
+    setSelectedPublisherType(pubId);
+    setStartPage(1);
   };
 
   const handleLike = (e: React.MouseEvent, postId: string) => {
@@ -227,56 +317,6 @@ export default function ExploreScene() {
     }
     likeMutation.mutate(postId);
   };
-
-  // Flatten posts across pages (or search hits)
-  const allLoadedPosts = useMemo(() => {
-    if (activeSearch && searchPostsData) {
-      return searchPostsData.hits.map(
-        (doc): UnifiedPost => ({
-          id: doc.id,
-          authorUserId: doc.authorUserId,
-          publisherType: doc.ownerType,
-          publisherId: doc.ownerId,
-          title: doc.title,
-          slug: doc.slug || undefined,
-          summary: doc.summary || undefined,
-          content: doc.content,
-          category: doc.category || undefined,
-          mediaUrls: doc.mediaUrls || [],
-          isPublished: doc.isPublished,
-          isFeatured: doc.isFeatured,
-          viewCount: doc.viewCount,
-          likeCount: doc.likeCount,
-          createdAt: doc.createdAt,
-          updatedAt: doc.updatedAt,
-        })
-      );
-    }
-    return postsData?.pages.flatMap((page) => page.items) || [];
-  }, [activeSearch, searchPostsData, postsData]);
-
-  // Filter posts by tag and publisher type
-  const filteredPosts = useMemo(() => {
-    return allLoadedPosts.filter((post) => {
-      // Publisher Filter
-      if (selectedPublisherType !== "ALL" && post.publisherType !== selectedPublisherType) {
-        return false;
-      }
-
-      // Tag Filter
-      if (selectedTag === "all") return true;
-      const cat = (post.category || "").toLowerCase();
-      const text = `${post.title || ""} ${post.summary || ""} ${post.content || ""} ${cat}`.toLowerCase();
-
-      if (selectedTag === "market") return cat.includes("تحلیل") || cat.includes("بازار") || text.includes("بازار") || text.includes("قیمت");
-      if (selectedTag === "guide") return cat.includes("راهنما") || cat.includes("خرید") || text.includes("راهنما");
-      if (selectedTag === "legal") return cat.includes("حقوق") || text.includes("حقوق") || text.includes("سند") || text.includes("قرارداد");
-      if (selectedTag === "investment") return cat.includes("سرمایه") || text.includes("سرمایه") || text.includes("سود");
-      if (selectedTag === "news") return cat.includes("پلتفرم") || cat.includes("اخبار") || text.includes("خبر");
-      if (selectedTag === "host") return post.publisherType === "HOST" || text.includes("اقامت") || text.includes("سوئیت") || text.includes("ویلا");
-      return true;
-    });
-  }, [allLoadedPosts, selectedTag, selectedPublisherType]);
 
   return (
     <div className="min-w-0 max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6" dir="rtl">
@@ -291,8 +331,18 @@ export default function ExploreScene() {
               placeholder="جستجو در تصاویر، مقالات، تحلیل‌ها و اخبار ملکی..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pr-11 pl-24 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs sm:text-sm text-slate-800 focus:bg-white focus:border-primary focus:outline-hidden transition-all placeholder:text-slate-400"
+              className="w-full pr-11 pl-28 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs sm:text-sm text-slate-800 focus:bg-white focus:border-primary focus:outline-hidden transition-all placeholder:text-slate-400"
             />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={handleClearSearch}
+                className="absolute left-20 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-200 transition-colors"
+                title="پاک کردن جستجو"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
             <button
               type="submit"
               className="absolute left-2 top-1/2 -translate-y-1/2 px-4 py-1.5 rounded-xl bg-brand text-white text-xs font-bold hover:bg-brand/90 transition-all"
@@ -318,7 +368,7 @@ export default function ExploreScene() {
               <button
                 key={pub.id}
                 type="button"
-                onClick={() => setSelectedPublisherType(pub.id)}
+                onClick={() => handlePublisherSelect(pub.id)}
                 className={cn(
                   "px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap",
                   isSelected
@@ -340,12 +390,12 @@ export default function ExploreScene() {
               <button
                 key={tag.id}
                 type="button"
-                onClick={() => setSelectedTag(tag.id)}
+                onClick={() => handleTagSelect(tag.id)}
                 className={cn(
                   "px-3 py-1.5 rounded-full text-[11px] font-bold transition-all whitespace-nowrap border",
                   isSelected
-                    ? "bg-primary text-slate-950 border-primary"
-                    : "bg-white text-slate-500 border-slate-200 hover:border-slate-300"
+                    ? "bg-primary text-slate-950 border-primary shadow-2xs"
+                    : "bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50"
                 )}
               >
                 {tag.label}
@@ -355,9 +405,9 @@ export default function ExploreScene() {
         </div>
       </div>
 
-      {/* ── INSTAGRAM-STYLE EXPLORE GRID ───────────────────────────────── */}
+      {/* ── INSTAGRAM-STYLE EXPLORE GRID WITH BATCHED INFINITE SCROLL ─── */}
       {isLoading ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 sm:gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 sm:gap-4 pb-12">
           {Array.from({ length: 8 }).map((_, idx) => (
             <div
               key={idx}
@@ -369,39 +419,96 @@ export default function ExploreScene() {
         <div className="bg-white p-8 rounded-3xl border border-slate-200 text-center space-y-4">
           <p className="text-xs font-bold text-red-600">خطا در دریافت فید کاوش.</p>
           <button
+            type="button"
             onClick={() => refetch()}
-            className="px-4 py-2 rounded-xl bg-brand text-white text-xs font-bold"
+            className="px-4 py-2 rounded-xl bg-brand text-white text-xs font-bold hover:bg-brand/90 transition-colors"
           >
             تلاش مجدد
           </button>
         </div>
-      ) : filteredPosts.length === 0 ? (
+      ) : allLoadedPosts.length === 0 ? (
         <div className="bg-white p-12 rounded-3xl border border-slate-200 text-center space-y-3">
           <Grid className="w-10 h-10 text-slate-300 mx-auto" />
           <p className="text-sm font-black text-brand">پستی با این مشخصات یافت نشد</p>
           <p className="text-xs text-slate-400">می‌توانید فیلترها را تغییر داده یا اولین پست را شما منتشر کنید.</p>
+          {(activeSearch || selectedTag !== "all" || selectedPublisherType !== "ALL") && (
+            <button
+              type="button"
+              onClick={() => {
+                handleClearSearch();
+                setSelectedTag("all");
+                setSelectedPublisherType("ALL");
+              }}
+              className="mt-2 px-4 py-2 bg-slate-100 text-brand text-xs font-bold rounded-xl hover:bg-slate-200 transition-colors"
+            >
+              پاک کردن همه فیلترها
+            </button>
+          )}
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 sm:gap-4">
-          {filteredPosts.map((post) => (
-            <ExplorePostCard
-              key={post.id}
-              post={post}
-              onLike={handleLike}
-            />
-          ))}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 sm:gap-4 pb-6">
+          {postsData?.pages.map((page, pageIndex) => {
+            const pagePosts = page.items;
+            if (pagePosts.length === 0 && pageIndex > 0) return null;
+
+            return (
+              <React.Fragment key={`explore-page-${page.page}`}>
+                {/* Page Section Divider for page 2 onwards */}
+                {pageIndex > 0 && (
+                  <PageSectionDivider
+                    id={`explore-page-section-${page.page}`}
+                    page={page.page}
+                    count={pagePosts.length}
+                    itemLabel="پست"
+                  />
+                )}
+
+                {pagePosts.map((post) => (
+                  <ExplorePostCard
+                    key={post.id}
+                    post={post}
+                    onLike={handleLike}
+                  />
+                ))}
+              </React.Fragment>
+            );
+          })}
+
+          {/* Infinite scroll sentinel (auto-loads up to 7 pages per batch) */}
+          {hasNextPage && (postsData?.pages.length ?? 0) < 7 && (
+            <div
+              ref={observerTargetRef}
+              className="col-span-full py-8 flex flex-col items-center justify-center gap-2"
+            >
+              {isFetchingNextPage ? (
+                <div className="flex items-center gap-2 text-xs font-bold text-secondary bg-white px-5 py-2.5 rounded-xl shadow-xs border border-gray-100">
+                  <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                  <span>در حال بارگذاری بخش بعدی پست‌ها...</span>
+                </div>
+              ) : (
+                <div className="h-6" />
+              )}
+            </div>
+          )}
         </div>
       )}
 
-      {/* Infinite scroll observer target */}
-      <div ref={observerTargetRef} className="h-10 flex items-center justify-center">
-        {isFetchingNextPage && (
-          <div className="flex items-center gap-2 text-xs text-slate-500 font-bold">
-            <Loader2 className="w-4 h-4 animate-spin text-primary" />
-            <span>در حال بارگذاری پست‌های بیشتر...</span>
-          </div>
-        )}
-      </div>
+      {/* Pagination Controls at the End of Batch */}
+      {!isLoading && allLoadedPosts.length > 0 && totalPages > 1 && isBatchFinished && (
+        <PaginationControls
+          startPage={startPage}
+          lastLoadedPage={lastLoadedPage}
+          totalPages={totalPages}
+          totalCount={totalCount}
+          itemLabel="پست"
+          loadedPages={loadedPages}
+          onPageSelect={handlePageSelect}
+          onPrevPage={handlePrevPage}
+          onNextPage={handleNextPage}
+          onScrollToTop={handleScrollToTop}
+          className="mb-8"
+        />
+      )}
 
     </div>
   );

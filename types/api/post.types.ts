@@ -37,6 +37,7 @@ export interface ExploreParams {
   limit?: number;
   category?: string;
   search?: string;
+  publisherType?: string;
 }
 
 export interface CreatePostRequest {
