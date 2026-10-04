@@ -396,42 +396,13 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
                     onCitySelect={handleCitySelect}
                 />
 
-                {/* Selected filters tags (categories, subcategories, neighborhoods) */}
-                {(selectedZones.length > 0 || selectedCategory || selectedSubcategory) && (
+                {/* Selected neighborhood tags — shown below search bar */}
+                {selectedZones.length > 0 && (
                     <div
                         data-testid="selected-zone-tags"
                         className="flex flex-wrap items-center gap-2"
                     >
-                        <span className="text-[11px] text-text-light font-medium shrink-0">فیلترهای فعال:</span>
-
-                        {selectedCategory && (
-                            <span className="inline-flex items-center gap-1.5 bg-brand/10 text-brand text-xs font-semibold px-3 py-1 rounded-full border border-brand/20">
-                                <span>{getCategoryName(selectedCategory)}</span>
-                                <button
-                                    type="button"
-                                    onClick={() => handleCategorySelect("")}
-                                    aria-label="حذف فیلتر دسته‌بندی"
-                                    className="hover:opacity-70 transition-opacity cursor-pointer"
-                                >
-                                    <X className="w-3 h-3" />
-                                </button>
-                            </span>
-                        )}
-
-                        {selectedSubcategory && (
-                            <span className="inline-flex items-center gap-1.5 bg-primary/10 text-primary text-xs font-semibold px-3 py-1 rounded-full border border-primary/20">
-                                <span>{getSubcategoryName(selectedSubcategory, selectedCategory)}</span>
-                                <button
-                                    type="button"
-                                    onClick={() => handleSubcategorySelect("")}
-                                    aria-label="حذف فیلتر زیردسته"
-                                    className="hover:opacity-70 transition-opacity cursor-pointer"
-                                >
-                                    <X className="w-3 h-3" />
-                                </button>
-                            </span>
-                        )}
-
+                        <span className="text-[11px] text-text-light font-medium shrink-0">محله‌های انتخابی:</span>
                         {selectedZones.map((zone) => (
                             <span
                                 key={zone.id}
@@ -448,13 +419,9 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
                                 </button>
                             </span>
                         ))}
-
                         <button
                             type="button"
-                            onClick={() => {
-                                setSelectedZones([]);
-                                if (selectedCategory) handleCategorySelect("");
-                            }}
+                            onClick={() => setSelectedZones([])}
                             className="text-[11px] text-secondary hover:text-red-500 font-semibold transition-colors cursor-pointer"
                         >
                             پاک کردن همه

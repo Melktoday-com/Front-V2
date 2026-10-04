@@ -78,8 +78,13 @@ export const HomeScene = () => {
                 isInitialOpen={isInitialModalOpen}
             />
 
-            {/* Categories Showcase */}
-            <section className="container mx-auto px-4">
+            {/* Categories */}
+            <section className="container mx-auto pr-4">
+                <SectionHeader
+                    title="دسته‌بندی‌ها"
+                    subtitle="دسترسی سریع به انواع املاک"
+                    link={selectedCity.id ? `/ads?cityId=${selectedCity.id}&cityName=${encodeURIComponent(selectedCity.name)}` : "/ads"}
+                />
                 <CategoryFilter
                     categories={categoriesData || []}
                     isLoading={isCategoriesLoading}
