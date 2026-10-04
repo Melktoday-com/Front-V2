@@ -68,10 +68,19 @@ function MapController({
             !isNaN(targetCenter[0]) &&
             !isNaN(targetCenter[1])
         ) {
-            map.flyTo(targetCenter, targetZoom, {
-                duration: 1.2,
-                easeLinearity: 0.25,
-            });
+            const size = map.getSize();
+            if (size && size.x > 0 && size.y > 0) {
+                try {
+                    map.flyTo(targetCenter, targetZoom, {
+                        duration: 1.2,
+                        easeLinearity: 0.25,
+                    });
+                } catch {
+                    map.setView(targetCenter, targetZoom);
+                }
+            } else {
+                map.setView(targetCenter, targetZoom);
+            }
         }
     }, [targetCenter[0], targetCenter[1], targetZoom, map]);
 

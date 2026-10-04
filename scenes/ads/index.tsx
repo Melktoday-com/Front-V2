@@ -215,12 +215,20 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
                     (c) => (targetId && c.id === targetId) || (targetName && c.name === targetName)
                 );
                 if (city?.centerPoint) {
-                    return { latitude: city.centerPoint.latitude, longitude: city.centerPoint.longitude };
+                    const lat = Number(city.centerPoint.latitude ?? (city.centerPoint as any).lat);
+                    const lng = Number(city.centerPoint.longitude ?? (city.centerPoint as any).lng);
+                    if (!isNaN(lat) && !isNaN(lng)) {
+                        return { latitude: lat, longitude: lng };
+                    }
                 }
             }
         }
         if (selectedCity.centerPoint) {
-            return { latitude: selectedCity.centerPoint.latitude, longitude: selectedCity.centerPoint.longitude };
+            const lat = Number(selectedCity.centerPoint.latitude ?? (selectedCity.centerPoint as any).lat);
+            const lng = Number(selectedCity.centerPoint.longitude ?? (selectedCity.centerPoint as any).lng);
+            if (!isNaN(lat) && !isNaN(lng)) {
+                return { latitude: lat, longitude: lng };
+            }
         }
         return null;
     }, [hierarchy, effectiveCityId, effectiveCityName, selectedCity]);
@@ -373,8 +381,15 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
 
     // Map center: based on city coordinates or ads; decoupled from zone selection count to avoid disruptive viewport resets
     const mapCenter: [number, number] = useMemo(() => {
-        if (currentCityCoords) return [currentCityCoords.latitude, currentCityCoords.longitude];
-        if (adsForMap.length > 0) return [adsForMap[0].location.latitude, adsForMap[0].location.longitude];
+        if (currentCityCoords && !isNaN(currentCityCoords.latitude) && !isNaN(currentCityCoords.longitude)) {
+            return [currentCityCoords.latitude, currentCityCoords.longitude];
+        }
+        if (adsForMap.length > 0) {
+            const firstLoc = adsForMap[0]?.location;
+            if (firstLoc && !isNaN(firstLoc.latitude) && !isNaN(firstLoc.longitude)) {
+                return [firstLoc.latitude, firstLoc.longitude];
+            }
+        }
         return [35.6892, 51.389];
     }, [currentCityCoords, adsForMap]);
 

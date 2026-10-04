@@ -39,8 +39,18 @@ function MapViewHandler({ center, zoom, bounds }: { center: [number, number]; zo
     const prevZoomRef = useRef<number | null>(null);
 
     useEffect(() => {
+        const size = map.getSize();
+        const hasValidSize = Boolean(size && size.x > 0 && size.y > 0);
+
         if (bounds) {
-            map.fitBounds(bounds, { padding: [50, 50], animate: true });
+            if (hasValidSize) {
+                map.fitBounds(bounds, { padding: [50, 50], animate: true });
+            }
+            return;
+        }
+
+        // Validate center coordinates
+        if (!Array.isArray(center) || center.length !== 2 || isNaN(center[0]) || isNaN(center[1])) {
             return;
         }
 
@@ -55,12 +65,42 @@ function MapViewHandler({ center, zoom, bounds }: { center: [number, number]; zo
         if (centerChanged || zoomChanged) {
             prevCenterRef.current = center;
             prevZoomRef.current = zoom;
-            map.flyTo(center, zoom, {
-                duration: 1.0,
-                easeLinearity: 0.25,
-            });
+
+            // Only use flyTo if map has valid non-zero dimensions!
+            // When hidden on mobile list view (display: none), flyTo produces NaN division in Leaflet
+            if (hasValidSize) {
+                try {
+                    map.flyTo(center, zoom, {
+                        duration: 1.0,
+                        easeLinearity: 0.25,
+                    });
+                } catch {
+                    map.setView(center, zoom);
+                }
+            } else {
+                map.setView(center, zoom);
+            }
         }
     }, [center, zoom, bounds, map]);
+
+    // When the map container transitions from hidden to visible (e.g. user toggles to map on mobile), recalculate size
+    useEffect(() => {
+        const container = map.getContainer();
+        if (!container || typeof ResizeObserver === "undefined") return;
+
+        const observer = new ResizeObserver(() => {
+            const size = map.getSize();
+            if (size.x > 0 && size.y > 0) {
+                map.invalidateSize();
+                if (prevCenterRef.current) {
+                    map.setView(prevCenterRef.current, prevZoomRef.current || zoom);
+                }
+            }
+        });
+
+        observer.observe(container);
+        return () => observer.disconnect();
+    }, [map, zoom]);
 
     return null;
 }
@@ -205,7 +245,7 @@ export default function Map({ ads, zones, selectedZoneId, selectedZoneIds, onZon
                     );
                 })}
                 {adsWithLocation.map((ad) => {
-                    const price = Object.values(ad.pricing)[0];
+                    const price = ad.pricing ? Object.values(ad.pricing)[0] : undefined;
                     const priceLabel = price ?
                         (price >= 1000000000 ? `${(price / 1000000000).toFixed(1)} میلیارد` :
                             (price >= 1000000 ? `${(price / 1000000).toFixed(0)} میلیون` : price.toLocaleString()))
