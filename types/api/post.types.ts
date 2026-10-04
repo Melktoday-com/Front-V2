@@ -20,8 +20,7 @@ export interface UnifiedPost {
   summary?: string;
   content: string;
   category?: string;
-  mediaUrls: string[];
-  mediaIds?: MediaReference[];
+  mediaIds: MediaReference[];
   isPublished: boolean;
   isFeatured: boolean;
   viewCount: number;
@@ -48,7 +47,6 @@ export interface CreatePostRequest {
   summary?: string;
   content: string;
   category?: string;
-  mediaUrls?: string[];
   mediaIds?: MediaReference[];
   isPublished?: boolean;
   isFeatured?: boolean;
@@ -60,7 +58,6 @@ export interface UpdatePostRequest {
   summary?: string;
   content?: string;
   category?: string;
-  mediaUrls?: string[];
   mediaIds?: MediaReference[];
   isPublished?: boolean;
   isFeatured?: boolean;

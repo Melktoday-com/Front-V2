@@ -97,44 +97,16 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
     posterUrl: string;
   }
 
-  // Normalize media from post.mediaIds (first-class) or post.mediaUrls (fallback)
+  // Canonical media references directly from post.mediaIds
   const mediaList = useMemo<NormalizedMediaItem[]>(() => {
-    if (!post) return [];
+    if (!post?.mediaIds || post.mediaIds.length === 0) return [];
 
-    // 1. If post.mediaIds is provided and non-empty, use it as canonical
-    if (post.mediaIds && post.mediaIds.length > 0) {
-      return post.mediaIds.map((item, idx) => {
-        const id = typeof item === "object" ? item.id : item;
-        const type = typeof item === "object" ? item.type : "IMAGE";
-        const url = getMediaUrl(item);
-        const posterUrl = getMediaPosterUrl(item);
-        return {
-          id: id || `media-${idx}`,
-          type: type || "IMAGE",
-          url,
-          posterUrl,
-        };
-      });
-    }
-
-    // 2. Otherwise fallback to post.mediaUrls
-    if (post.mediaUrls && post.mediaUrls.length > 0) {
-      return post.mediaUrls.map((url, idx) => {
-        const isVideo =
-          url.endsWith(".mp4") ||
-          url.endsWith(".webm") ||
-          url.includes("/video") ||
-          url.includes("normalized.mp4");
-        return {
-          id: url || `media-${idx}`,
-          type: isVideo ? "VIDEO" : "IMAGE",
-          url: getMediaUrl(url),
-          posterUrl: getMediaPosterUrl(url),
-        };
-      });
-    }
-
-    return [];
+    return post.mediaIds.map((item, idx) => ({
+      id: item.id || `media-${idx}`,
+      type: item.type,
+      url: getMediaUrl(item),
+      posterUrl: getMediaPosterUrl(item),
+    }));
   }, [post]);
 
   // Determine if post is Instagram style or Medium style

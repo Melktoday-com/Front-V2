@@ -148,8 +148,7 @@ export interface AgencyPost {
     slug: string;
     content: string;
     summary?: string;
-    mediaUrls?: string[];
-    mediaIds?: MediaReference[];
+    mediaIds: MediaReference[];
     isPublished: boolean;
     viewCount: number;
     likeCount: number;
@@ -178,7 +177,7 @@ export interface CreateAgencyPostRequest {
     slug?: string;
     content: string;
     summary?: string;
-    mediaUrls?: string[];
+    mediaIds?: MediaReference[];
     isPublished?: boolean;
 }
 
@@ -187,7 +186,7 @@ export interface UpdateAgencyPostRequest {
     slug?: string;
     content?: string;
     summary?: string;
-    mediaUrls?: string[];
+    mediaIds?: MediaReference[];
     isPublished?: boolean;
 }
 

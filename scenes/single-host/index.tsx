@@ -257,9 +257,9 @@ export default function SingleHostScene({ idOrSlug }: SingleHostSceneProps) {
                     className="bg-white rounded-3xl overflow-hidden border border-soft-border hover:shadow-lg transition-all group flex flex-col"
                   >
                     <div className="relative h-48 w-full bg-soft-bg overflow-hidden">
-                      {rental.mediaUrls?.[0] ? (
+                      {rental.mediaIds?.[0] ? (
                         <Image
-                          src={getMediaUrl(rental.mediaUrls[0])}
+                          src={getMediaUrl(rental.mediaIds[0])}
                           alt={rental.title}
                           fill
                           className="object-cover group-hover:scale-105 transition-transform duration-300"
@@ -346,7 +346,7 @@ export default function SingleHostScene({ idOrSlug }: SingleHostSceneProps) {
                     className="bg-white rounded-3xl p-6 border border-soft-border hover:border-primary/30 transition-all cursor-pointer space-y-4 group"
                   >
                     {(() => {
-                      const firstMedia = post.mediaIds?.[0] || post.mediaUrls?.[0];
+                      const firstMedia = post.mediaIds?.[0];
                       if (!firstMedia) return null;
                       return (
                         <div className="relative h-44 w-full rounded-2xl overflow-hidden bg-soft-bg">
@@ -438,9 +438,9 @@ export default function SingleHostScene({ idOrSlug }: SingleHostSceneProps) {
               </div>
             </div>
             {(() => {
-              const firstMedia = selectedPost.mediaIds?.[0] || selectedPost.mediaUrls?.[0];
+              const firstMedia = selectedPost.mediaIds?.[0];
               if (!firstMedia) return null;
-              const isVideo = typeof firstMedia === "object" ? firstMedia.type === "VIDEO" : (firstMedia.endsWith(".mp4") || firstMedia.includes("/video"));
+              const isVideo = firstMedia.type === "VIDEO";
               if (isVideo) {
                 return (
                   <div className="relative h-64 w-full rounded-2xl overflow-hidden bg-slate-950">

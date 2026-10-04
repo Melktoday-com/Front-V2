@@ -285,7 +285,7 @@ export default function SinglePlatformScene() {
                     className="bg-white rounded-3xl p-6 border border-soft-border hover:border-primary/30 transition-all cursor-pointer space-y-4 group"
                   >
                     {(() => {
-                      const firstMedia = post.mediaIds?.[0] || post.mediaUrls?.[0];
+                      const firstMedia = post.mediaIds?.[0];
                       if (!firstMedia) return null;
                       return (
                         <div className="relative h-44 w-full rounded-2xl overflow-hidden bg-soft-bg">
@@ -355,8 +355,8 @@ export default function SinglePlatformScene() {
                     className="bg-white rounded-3xl overflow-hidden border border-soft-border hover:shadow-lg transition-all group flex flex-col"
                   >
                     <div className="relative h-48 w-full bg-soft-bg overflow-hidden">
-                      {ad.mediaUrls?.[0] ? (
-                        <Image src={getMediaUrl(ad.mediaUrls[0])} alt={ad.title} fill className="object-cover group-hover:scale-105 transition-transform" />
+                      {ad.mediaIds?.[0] ? (
+                        <Image src={getMediaUrl(ad.mediaIds[0])} alt={ad.title} fill className="object-cover group-hover:scale-105 transition-transform" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-secondary/40">
                           <Home className="w-8 h-8" />
@@ -443,9 +443,9 @@ export default function SinglePlatformScene() {
               </div>
             </div>
             {(() => {
-              const firstMedia = selectedPost.mediaIds?.[0] || selectedPost.mediaUrls?.[0];
+              const firstMedia = selectedPost.mediaIds?.[0];
               if (!firstMedia) return null;
-              const isVideo = typeof firstMedia === "object" ? firstMedia.type === "VIDEO" : (firstMedia.endsWith(".mp4") || firstMedia.includes("/video"));
+              const isVideo = firstMedia.type === "VIDEO";
               if (isVideo) {
                 return (
                   <div className="relative h-64 w-full rounded-2xl overflow-hidden bg-slate-950">

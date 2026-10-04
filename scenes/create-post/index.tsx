@@ -72,7 +72,7 @@ export default function CreatePostScene() {
   const [igTitle, setIgTitle] = useState("");
   const [igCaption, setIgCaption] = useState("");
   const [igCategory, setIgCategory] = useState("معرفی ملک ویژه");
-  const [igMediaUrls, setIgMediaUrls] = useState<MediaReference[]>([]);
+  const [igMedia, setIgMedia] = useState<MediaReference[]>([]);
   const [igLocation, setIgLocation] = useState("");
 
   // ── Medium Form State ───────────────────────────────────────────────────
@@ -158,15 +158,8 @@ export default function CreatePostScene() {
         if (parsed.title) setIgTitle(parsed.title);
         if (parsed.caption) setIgCaption(parsed.caption);
         if (parsed.category) setIgCategory(parsed.category);
-        if (parsed.mediaUrls && Array.isArray(parsed.mediaUrls)) {
-          setIgMediaUrls(
-            parsed.mediaUrls.map((item: unknown) => {
-              if (typeof item === "string") {
-                return { id: item, type: "IMAGE" as const };
-              }
-              return item as MediaReference;
-            })
-          );
+        if (parsed.mediaIds && Array.isArray(parsed.mediaIds)) {
+          setIgMedia(parsed.mediaIds as MediaReference[]);
         }
         if (parsed.location) setIgLocation(parsed.location);
       }
@@ -188,19 +181,19 @@ export default function CreatePostScene() {
 
   // Auto-save draft on changes
   useEffect(() => {
-    if (igTitle || igCaption || igMediaUrls.length > 0) {
+    if (igTitle || igCaption || igMedia.length > 0) {
       localStorage.setItem(
         "melktoday_draft_instagram",
         JSON.stringify({
           title: igTitle,
           caption: igCaption,
           category: igCategory,
-          mediaUrls: igMediaUrls,
+          mediaIds: igMedia,
           location: igLocation,
         })
       );
     }
-  }, [igTitle, igCaption, igCategory, igMediaUrls, igLocation]);
+  }, [igTitle, igCaption, igCategory, igMedia, igLocation]);
 
   useEffect(() => {
     if (medTitle || medContent || medFeaturedImage) {
@@ -222,7 +215,7 @@ export default function CreatePostScene() {
     if (postFormat === "instagram") {
       setIgTitle("");
       setIgCaption("");
-      setIgMediaUrls([]);
+      setIgMedia([]);
       setIgLocation("");
       localStorage.removeItem("melktoday_draft_instagram");
       toast.success("پیش‌نویس قالب تصویری پاک شد.");
@@ -249,7 +242,7 @@ export default function CreatePostScene() {
 
   const handleNextFromStep2 = () => {
     if (postFormat === "instagram") {
-      if (igMediaUrls.length === 0) {
+      if (igMedia.length === 0) {
         toast.error("لطفاً حداقل یک تصویر برای پست اسلایدی آپلود کنید.");
         return;
       }
@@ -280,7 +273,7 @@ export default function CreatePostScene() {
 
     try {
       if (postFormat === "instagram") {
-        if (igMediaUrls.length === 0) {
+        if (igMedia.length === 0) {
           toast.error("لطفاً حداقل یک تصویر برای پست اینستاگرامی آپلود کنید.");
           return;
         }
@@ -290,17 +283,13 @@ export default function CreatePostScene() {
           igCaption.trim().slice(0, 45) ||
           `پست تصویری ${activePublisher.name}`;
 
-        const effectiveMediaUrls = igMediaUrls.map((m) =>
-          typeof m === "object" ? m.id : m
-        );
         const created = await createPostMutation.mutateAsync({
           publisherType: activePublisher.type,
           publisherId: activePublisher.id,
           title: effectiveTitle,
           content: igCaption.trim() || effectiveTitle,
           category: igCategory || "معرفی ملک ویژه",
-          mediaUrls: effectiveMediaUrls,
-          mediaIds: igMediaUrls,
+          mediaIds: igMedia,
           isPublished,
           isFeatured: false,
         });
@@ -322,9 +311,9 @@ export default function CreatePostScene() {
           return;
         }
 
-        const mediaArray: string[] = [];
+        const mediaIds: MediaReference[] = [];
         if (medFeaturedImage) {
-          mediaArray.push(medFeaturedImage);
+          mediaIds.push({ id: medFeaturedImage, type: "IMAGE" });
         }
 
         const created = await createPostMutation.mutateAsync({
@@ -335,7 +324,7 @@ export default function CreatePostScene() {
           content: medContent.trim(),
           slug: medSlug.trim() || undefined,
           category: medCategory || "تحلیل بازار مسکن",
-          mediaUrls: mediaArray,
+          mediaIds,
           isPublished,
           isFeatured: false,
         });
@@ -546,7 +535,7 @@ export default function CreatePostScene() {
             type="button"
             onClick={() => {
               if (
-                (postFormat === "instagram" && (igMediaUrls.length > 0 || igTitle || igCaption)) ||
+                (postFormat === "instagram" && (igMedia.length > 0 || igTitle || igCaption)) ||
                 (postFormat === "medium" && medTitle && medContent)
               ) {
                 setCurrentStep(3);
@@ -804,8 +793,8 @@ export default function CreatePostScene() {
               setCaption={setIgCaption}
               category={igCategory}
               setCategory={setIgCategory}
-              mediaUrls={igMediaUrls}
-              setMediaUrls={setIgMediaUrls}
+              media={igMedia}
+              setMedia={setIgMedia}
               locationTag={igLocation}
               setLocationTag={setIgLocation}
             />
@@ -898,7 +887,7 @@ export default function CreatePostScene() {
                     <span className="text-slate-500">تعداد رسانه‌ها:</span>
                     <span className="font-bold text-brand">
                       {postFormat === "instagram"
-                        ? `${toPersianDigits(igMediaUrls.length)} تصویر اسلایدی`
+                        ? `${toPersianDigits(igMedia.length)} تصویر اسلایدی`
                         : medFeaturedImage
                         ? "۱ تصویر شاخص + تصاویر داخل متن"
                         : "بدون تصویر شاخص"}
@@ -980,9 +969,9 @@ export default function CreatePostScene() {
                     </div>
 
                     <div className="relative aspect-square w-full bg-slate-900 overflow-hidden">
-                      {igMediaUrls.length > 0 ? (
+                      {igMedia.length > 0 ? (
                         <img
-                          src={getMediaUrl(igMediaUrls[0])}
+                          src={getMediaUrl(igMedia[0])}
                           alt="اسلاید اول"
                           className="w-full h-full object-cover"
                         />
@@ -991,9 +980,9 @@ export default function CreatePostScene() {
                           تصویری انتخاب نشده
                         </div>
                       )}
-                      {igMediaUrls.length > 1 && (
+                      {igMedia.length > 1 && (
                         <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-black/60 text-white text-[10px] font-bold">
-                          ۱ / {toPersianDigits(igMediaUrls.length)}
+                          ۱ / {toPersianDigits(igMedia.length)}
                         </div>
                       )}
                     </div>

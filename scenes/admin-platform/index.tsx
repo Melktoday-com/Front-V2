@@ -448,7 +448,7 @@ export default function AdminPlatformScene() {
               >
                 <div className="flex items-center gap-3.5 min-w-0">
                   {(() => {
-                    const firstMedia = post.mediaIds?.[0] || post.mediaUrls?.[0];
+                    const firstMedia = post.mediaIds?.[0];
                     if (firstMedia) {
                       return (
                         <img

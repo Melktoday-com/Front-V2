@@ -41,8 +41,8 @@ interface InstagramPostEditorProps {
   setCaption: (v: string) => void;
   category: string;
   setCategory: (v: string) => void;
-  mediaUrls: MediaReference[];
-  setMediaUrls: (v: MediaReference[]) => void;
+  media: MediaReference[];
+  setMedia: (v: MediaReference[]) => void;
   locationTag?: string;
   setLocationTag?: (v: string) => void;
 }
@@ -77,8 +77,8 @@ export function InstagramPostEditor({
   setCaption,
   category,
   setCategory,
-  mediaUrls,
-  setMediaUrls,
+  media,
+  setMedia,
   locationTag = "",
   setLocationTag,
 }: InstagramPostEditorProps) {
@@ -92,7 +92,7 @@ export function InstagramPostEditor({
   };
 
   const handleNextSlide = () => {
-    if (activeSlide < mediaUrls.length - 1) {
+    if (activeSlide < media.length - 1) {
       setActiveSlide(activeSlide + 1);
     }
   };
@@ -130,14 +130,14 @@ export function InstagramPostEditor({
               <span className="text-red-500">*</span>
             </label>
             <span className="text-xs font-bold text-slate-400">
-              {toPersianDigits(mediaUrls.length)} از ۱۰ تصویر
+              {toPersianDigits(media.length)} از ۱۰ تصویر
             </span>
           </div>
 
           <MediaGalleryUpload
-            value={mediaUrls}
+            value={media}
             onChange={(items) => {
-              setMediaUrls(items);
+              setMedia(items);
               if (activeSlide >= items.length) {
                 setActiveSlide(Math.max(0, items.length - 1));
               }
@@ -319,10 +319,10 @@ export function InstagramPostEditor({
 
           {/* Media Carousel Preview */}
           <div className="relative aspect-square w-full bg-slate-900 overflow-hidden group">
-            {mediaUrls.length > 0 ? (
+            {media.length > 0 ? (
               <>
                 {(() => {
-                  const currentItem = mediaUrls[activeSlide] || mediaUrls[0];
+                  const currentItem = media[activeSlide] || media[0];
                   const currentUrl = getMediaUrl(currentItem);
                   const isVideo = currentItem?.type === "VIDEO";
 
@@ -352,10 +352,10 @@ export function InstagramPostEditor({
                       )}
 
                       {/* Slide index badge */}
-                      {mediaUrls.length > 1 && (
+                      {media.length > 1 && (
                         <div className="absolute top-3 left-3 px-2 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[10px] font-bold z-10">
                           {toPersianDigits(activeSlide + 1)} /{" "}
-                          {toPersianDigits(mediaUrls.length)}
+                          {toPersianDigits(media.length)}
                         </div>
                       )}
                     </>
@@ -363,7 +363,7 @@ export function InstagramPostEditor({
                 })()}
 
                 {/* Left/Right Navigation arrows */}
-                {mediaUrls.length > 1 && (
+                {media.length > 1 && (
                   <>
                     {activeSlide > 0 && (
                       <button
@@ -374,7 +374,7 @@ export function InstagramPostEditor({
                         <ChevronRight className="w-4 h-4" />
                       </button>
                     )}
-                    {activeSlide < mediaUrls.length - 1 && (
+                    {activeSlide < media.length - 1 && (
                       <button
                         type="button"
                         onClick={handleNextSlide}
@@ -387,9 +387,9 @@ export function InstagramPostEditor({
                 )}
 
                 {/* Dot Indicators */}
-                {mediaUrls.length > 1 && (
+                {media.length > 1 && (
                   <div className="absolute bottom-3 inset-x-0 flex items-center justify-center gap-1.5">
-                    {mediaUrls.map((_, dotIdx) => (
+                    {media.map((_, dotIdx) => (
                       <span
                         key={dotIdx}
                         className={cn(

@@ -282,7 +282,7 @@ export default function FavoritesPage() {
                                         imageUrl={
                                             post.mediaIds?.[0]
                                                 ? getMediaPosterUrl(post.mediaIds[0])
-                                                : post.mediaUrls?.[0]
+                                                : undefined
                                         }
                                         publisherType={post.publisherType}
                                         publisherName={post.publisher?.name}
@@ -352,18 +352,12 @@ export default function FavoritesPage() {
 
                         {/* Media gallery */}
                         {(() => {
-                            const items =
-                                readingPost.mediaIds && readingPost.mediaIds.length > 0
-                                    ? readingPost.mediaIds
-                                    : (readingPost.mediaUrls || []);
+                            const items = readingPost.mediaIds || [];
                             if (items.length === 0) return null;
                             return (
                                 <div className="space-y-3">
                                     {items.map((item, i) => {
-                                        const isVideo =
-                                            typeof item === "object"
-                                                ? item.type === "VIDEO"
-                                                : item.endsWith(".mp4") || item.includes("/video");
+                                        const isVideo = item.type === "VIDEO";
                                         const url = getMediaUrl(item);
                                         const poster = getMediaPosterUrl(item);
 

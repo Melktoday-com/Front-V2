@@ -8,6 +8,7 @@ import {
   PostsListResponse,
   ToggleLikeResponse,
 } from './post.types';
+import type { MediaReference } from './media.types';
 
 export type {
   PublisherType,
@@ -94,7 +95,7 @@ export interface ShowcaseListingItem {
   totalPrice?: number;
   basePricePerNight?: number;
   address?: string;
-  mediaUrls?: string[];
+  mediaIds?: MediaReference[];
   createdAt?: string;
 }
 

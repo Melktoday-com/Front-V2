@@ -596,7 +596,7 @@ export default function SingleAgencyScene() {
                                     className="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-xs hover:border-blue-400 transition-all cursor-pointer flex flex-col justify-between space-y-3 group"
                                 >
                                     {(() => {
-                                        const firstMedia = post.mediaIds?.[0] || post.mediaUrls?.[0];
+                                        const firstMedia = post.mediaIds?.[0];
                                         if (!firstMedia) return null;
                                         return (
                                             <div className="h-40 w-full rounded-2xl overflow-hidden bg-slate-100">
@@ -783,9 +783,9 @@ export default function SingleAgencyScene() {
                         </div>
 
                         {(() => {
-                            const firstMedia = readingPost.mediaIds?.[0] || readingPost.mediaUrls?.[0];
+                            const firstMedia = readingPost.mediaIds?.[0];
                             if (!firstMedia) return null;
-                            const isVideo = typeof firstMedia === "object" ? firstMedia.type === "VIDEO" : (firstMedia.endsWith(".mp4") || firstMedia.includes("/video"));
+                            const isVideo = firstMedia.type === "VIDEO";
                             if (isVideo) {
                                 return (
                                     <div className="h-60 w-full rounded-2xl overflow-hidden bg-slate-950">

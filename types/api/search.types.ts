@@ -150,7 +150,6 @@ export interface PostSearchDocument {
   summary: string | null;
   content: string;
   category: string | null;
-  mediaUrls: string[];
   mediaIds: MediaReference[];
   isFeatured: boolean;
   isPublished: boolean;
