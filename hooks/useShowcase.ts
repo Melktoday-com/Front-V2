@@ -139,7 +139,7 @@ export function useHostProfile() {
   const { user, activeRole } = useAuth();
 
   return useQuery({
-    queryKey: [...SHOWCASE_KEYS.hostProfile(), user?.userId],
+    queryKey: [...SHOWCASE_KEYS.hostProfile(), user?.userId, activeRole],
     queryFn: () => showcaseService.getMyHostProfile(),
     enabled: !!user?.userId && activeRole === RoleName.Landlord,
     retry: false,

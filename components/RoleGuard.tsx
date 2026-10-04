@@ -10,6 +10,7 @@ interface RoleGuardProps {
     fallback?: React.ReactNode;
     roles?: RoleName[];
     permissions?: Permission[];
+    requireActiveRole?: boolean;
 }
 
 /**
@@ -26,7 +27,8 @@ export const RoleGuard: React.FC<RoleGuardProps> = ({
     children,
     fallback = null,
     roles,
-    permissions
+    permissions,
+    requireActiveRole = false,
 }) => {
     const { isLoggedIn, activeRole, hasPermission, isLoading } = useAuth();
     const { data: profile } = useMeProfile();
@@ -47,10 +49,10 @@ export const RoleGuard: React.FC<RoleGuardProps> = ({
         }
     }
 
-    // Check roles if provided (matches activeRole OR any assigned role in profile)
+    // Check roles if provided
     if (roles && roles.length > 0) {
         const hasActiveRole = activeRole && roles.includes(activeRole);
-        const hasAssignedRole = profile?.roles?.some((r) => {
+        const hasAssignedRole = !requireActiveRole && profile?.roles?.some((r) => {
             const parsed = tryRoleNameFrom(r);
             return parsed && roles.includes(parsed);
         });

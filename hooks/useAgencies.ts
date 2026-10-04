@@ -140,7 +140,7 @@ export function useMyAgency() {
     const { user, activeRole } = useAuth();
 
     return useQuery({
-        queryKey: ["my-agency", user?.userId],
+        queryKey: ["my-agency", user?.userId, activeRole],
         queryFn: async () => {
             if (!user?.userId) return null;
             try {

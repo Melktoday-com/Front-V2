@@ -278,7 +278,7 @@ export default function ProfileScene() {
 
                 {/* Dashboard Options based on Permissions */}
                 <section className="grid gap-4">
-                    <RoleGuard roles={[RoleName.Agent]}>
+                    <RoleGuard roles={[RoleName.Agent]} requireActiveRole>
                         <div className="space-y-2">
                             <Button
                                 variant="outline"
@@ -333,7 +333,7 @@ export default function ProfileScene() {
                         </div>
                     </RoleGuard>
 
-                    <RoleGuard roles={[RoleName.Landlord]}>
+                    <RoleGuard roles={[RoleName.Landlord]} requireActiveRole>
                         <div className="space-y-2">
                             <Button
                                 variant="outline"
@@ -388,7 +388,7 @@ export default function ProfileScene() {
                         </div>
                     </RoleGuard>
 
-                    {(isRoleAdmin(activeRole) || profile?.roles?.some((r) => isRoleAdmin(r))) && (
+                    {isRoleAdmin(activeRole) && (
                         <div className="space-y-2">
                             <Button
                                 variant="outline"

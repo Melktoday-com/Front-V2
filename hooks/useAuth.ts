@@ -65,9 +65,23 @@ export function useSwitchRole() {
                 if (data.refreshToken) {
                     setCookie("refresh_token", data.refreshToken, { maxAge: 30 * 24 * 60 * 60 });
                 }
+                try {
+                    const decoded = jwtDecode<JwtPayload>(data.accessToken);
+                    queryClient.setQueryData(["auth-session"], {
+                        userId: decoded.sub,
+                        sessionId: decoded.sessionId,
+                        activeRole: tryRoleNameFrom(decoded.activeRoleName),
+                    });
+                } catch (e) {
+                    console.error("Failed to decode switched token", e);
+                }
             }
+            queryClient.cancelQueries();
             queryClient.invalidateQueries({ queryKey: ["auth-session"] });
             queryClient.invalidateQueries({ queryKey: ["user"] });
+            queryClient.invalidateQueries({ queryKey: ["me"] });
+            queryClient.invalidateQueries({ queryKey: ["my-agency"] });
+            queryClient.invalidateQueries({ queryKey: ["hosts"] });
         }
     });
 }
