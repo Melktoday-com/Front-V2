@@ -1,7 +1,7 @@
 "use client";
 
 import { AgentAvatar } from "@/components/AgentAvatar";
-import CategoryFilter from "@/components/CategoryFilter";
+import { CategoryDirectory } from "@/components/CategoryDirectory";
 import { useCity } from "@/components/providers/CityProvider";
 import { SearchHeader } from "@/components/SearchHeader";
 import { SectionHeader } from "@/components/SectionHeader";
@@ -78,17 +78,17 @@ export const HomeScene = () => {
                 isInitialOpen={isInitialModalOpen}
             />
 
-            {/* Categories */}
-            <section className="container mx-auto pr-4">
+            {/* Category Directory */}
+            <section className="container mx-auto px-4">
                 <SectionHeader
-                    title="دسته‌بندی‌ها"
-                    subtitle="دسترسی سریع به انواع املاک"
+                    title="دسته‌بندی و خدمات ملکی"
+                    subtitle="دسترسی مستقیم به انواع املاک و اقامتگاه‌ها در ملکتودی"
                     link={selectedCity.id ? `/ads?cityId=${selectedCity.id}&cityName=${encodeURIComponent(selectedCity.name)}` : "/ads"}
+                    actionLabel="مشاهده کل بازار"
                 />
-                <CategoryFilter
+                <CategoryDirectory
                     categories={categoriesData || []}
                     isLoading={isCategoriesLoading}
-                    variant="landing"
                     cityId={selectedCity.id || undefined}
                     cityName={selectedCity.name || undefined}
                 />

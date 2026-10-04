@@ -1,11 +1,12 @@
 "use client";
 
+import { CategoryDirectory } from "@/components/CategoryDirectory";
 import { CategoryIcon } from "@/components/CategoryIcon";
 import { cn } from "@/lib/utils";
 import { CategoryListItem } from "@/types/api/ads.types";
 import { X } from "lucide-react";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 
 export interface CategoryFilterProps {
     categories: CategoryListItem[];
@@ -32,29 +33,10 @@ export default function CategoryFilter({
     cityName,
     className,
 }: CategoryFilterProps) {
-    // Active category for landing page disclosure
-    const [landingActiveKey, setLandingActiveKey] = useState<string>(() => {
-        if (selectedCategoryKey) return selectedCategoryKey;
-        return categories?.[0]?.key || "";
-    });
-
-    const effectiveLandingKey = landingActiveKey || categories?.[0]?.key || "";
-    const activeLandingCategory = useMemo(() => {
-        return categories.find((c) => c.key === effectiveLandingKey) || categories[0];
-    }, [categories, effectiveLandingKey]);
-
     const activeFilterCategory = useMemo(() => {
         if (!selectedCategoryKey) return null;
         return categories.find((c) => c.key === selectedCategoryKey) || null;
     }, [categories, selectedCategoryKey]);
-
-    // Build URL query string helper for city params
-    const getCityQueryString = () => {
-        const parts: string[] = [];
-        if (cityId) parts.push(`cityId=${encodeURIComponent(cityId)}`);
-        if (cityName && cityName !== "همه شهرها") parts.push(`cityName=${encodeURIComponent(cityName)}`);
-        return parts.length > 0 ? `&${parts.join("&")}` : "";
-    };
 
     // Skeletons
     if (isLoading) {
@@ -75,76 +57,17 @@ export default function CategoryFilter({
     }
 
     // ==========================================
-    // VARIANT: LANDING PAGE (Simple & Clean Apple Design)
+    // VARIANT: LANDING PAGE (Visual Column Directory)
     // ==========================================
     if (variant === "landing") {
-        const cityQuery = getCityQueryString();
-
         return (
-            <div className={cn("space-y-3", className)}>
-                {/* Categories Row */}
-                <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto no-scrollbar scroll-smooth py-1">
-                    {categories.map((category) => {
-                        const isSelected = activeLandingCategory?.key === category.key;
-
-                        return (
-                            <button
-                                type="button"
-                                key={category.id || category.key}
-                                onClick={() => setLandingActiveKey(category.key)}
-                                className={cn(
-                                    "rounded-2xl px-4 py-2.5 sm:py-3 flex items-center gap-2 shrink-0 transition-all active:scale-95 cursor-pointer border text-right",
-                                    isSelected
-                                        ? "bg-brand text-white border-brand shadow-sm font-bold"
-                                        : "bg-soft-bg text-secondary border-soft-border hover:bg-white hover:text-brand hover:border-gray-200"
-                                )}
-                            >
-                                {category.icon && (
-                                    <CategoryIcon
-                                        icon={category.icon}
-                                        displayName={category.displayName}
-                                        size={18}
-                                        className="shrink-0"
-                                    />
-                                )}
-                                <span className="text-xs sm:text-sm font-bold">{category.displayName}</span>
-                            </button>
-                        );
-                    })}
-                </div>
-
-                {/* Subcategories Row (Simple, elegant Apple pills) */}
-                {activeLandingCategory && activeLandingCategory.subcategories && activeLandingCategory.subcategories.length > 0 && (
-                    <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
-                        {/* View all in this category pill */}
-                        <Link
-                            href={`/ads?categoryKey=${activeLandingCategory.key}${cityQuery}`}
-                            className="rounded-full px-3.5 py-1.5 text-xs font-bold shrink-0 transition-all bg-primary text-white hover:bg-primary/90 shadow-xs active:scale-95"
-                        >
-                            همه {activeLandingCategory.displayName}
-                        </Link>
-
-                        {/* Subcategory pills */}
-                        {activeLandingCategory.subcategories.map((sub) => (
-                            <Link
-                                key={sub.id || sub.key}
-                                href={`/ads?categoryKey=${activeLandingCategory.key}&subcategoryKey=${sub.key}${cityQuery}`}
-                                className="rounded-full px-3.5 py-1.5 text-xs font-semibold shrink-0 transition-all bg-soft-bg text-secondary border border-soft-border hover:bg-white hover:text-brand hover:border-gray-300 active:scale-95 flex items-center gap-1.5"
-                            >
-                                {sub.icon && (
-                                    <CategoryIcon
-                                        icon={sub.icon}
-                                        displayName={sub.displayName}
-                                        size={14}
-                                        className="shrink-0"
-                                    />
-                                )}
-                                <span>{sub.displayName}</span>
-                            </Link>
-                        ))}
-                    </div>
-                )}
-            </div>
+            <CategoryDirectory
+                categories={categories}
+                isLoading={isLoading}
+                cityId={cityId}
+                cityName={cityName}
+                className={className}
+            />
         );
     }
 
