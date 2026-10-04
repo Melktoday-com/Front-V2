@@ -1,11 +1,13 @@
 "use client";
 
 import { RoleGuard } from "@/components/RoleGuard";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth, useSwitchRole } from "@/hooks/useAuth";
+import { useMeProfile } from "@/hooks/useUser";
 import { useConversations } from "@/hooks/useChat";
 import { useUnreadNotificationsCount } from "@/hooks/useNotifications";
 import { cn, toPersianDigits } from "@/lib/utils";
-import { RoleName } from "@/types/access";
+import { RoleName, tryRoleNameFrom } from "@/types/access";
+import { toast } from "sonner";
 import {
     Bell,
     Building2,
@@ -36,11 +38,38 @@ const navItems = [
 
 export function Sidebar() {
     const pathname = usePathname();
-    const { isLoggedIn } = useAuth();
+    const { isLoggedIn, user, activeRole } = useAuth();
+    const { data: profile } = useMeProfile();
+    const switchRoleMutation = useSwitchRole();
     const { data: conversations } = useConversations();
     const { data: unreadNotificationsCount = 0 } = useUnreadNotificationsCount();
 
     const unreadChatCount = conversations?.reduce((sum, c) => sum + (c.unreadCount || 0), 0) ?? 0;
+
+    const roleLabels: Record<string, string> = {
+        user: "کاربر عادی",
+        agent: "مشاور املاک",
+        landlord: "میزبان اقامتگاه",
+        admin: "ادمین",
+        "super-admin": "مدیر کل",
+    };
+
+    const userRoles = (profile?.roles || [])
+        .map((r) => tryRoleNameFrom(r))
+        .filter((r): r is RoleName => r !== null);
+
+    const handleSwitchRole = async (targetRole: RoleName) => {
+        if (!user?.sessionId || activeRole === targetRole || switchRoleMutation.isPending) return;
+        try {
+            await switchRoleMutation.mutateAsync({
+                sessionId: user.sessionId,
+                roleName: targetRole,
+            });
+            toast.success(`نقش فعال شما به «${roleLabels[targetRole] || targetRole}» تغییر یافت.`);
+        } catch {
+            toast.error("خطا در تغییر نقش فعال.");
+        }
+    };
 
     if (pathname.includes("/profile/chat")) return null;
     if (pathname.startsWith("/admin")) return null;
@@ -125,7 +154,7 @@ export function Sidebar() {
                                     pathname.startsWith("/profile/chat")
                                         ? "bg-white text-primary"
                                         : "bg-primary/15 text-primary"
-                                )}>
+                                    )}>
                                     {toPersianDigits(unreadChatCount)}
                                 </span>
                             )}
@@ -160,10 +189,11 @@ export function Sidebar() {
                     </>
                 )}
 
-                <RoleGuard roles={[RoleName.Agent]}>
+                <RoleGuard roles={[RoleName.Agent]} requireActiveRole>
                     <div className="pt-1">
                         <Link
                             href="/agency/panel"
+                            data-testid="sidebar-agency-panel"
                             className={cn(
                                 "flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 group font-bold",
                                 pathname.startsWith("/agency/panel")
@@ -177,10 +207,11 @@ export function Sidebar() {
                     </div>
                 </RoleGuard>
 
-                <RoleGuard roles={[RoleName.Landlord]}>
+                <RoleGuard roles={[RoleName.Landlord]} requireActiveRole>
                     <div className="pt-1">
                         <Link
                             href="/profile/temporary-rent"
+                            data-testid="sidebar-host-panel"
                             className={cn(
                                 "flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 group font-bold",
                                 pathname.startsWith("/profile/temporary-rent")
@@ -194,10 +225,11 @@ export function Sidebar() {
                     </div>
                 </RoleGuard>
 
-                <RoleGuard roles={[RoleName.Admin, RoleName.SuperAdmin]}>
+                <RoleGuard roles={[RoleName.Admin, RoleName.SuperAdmin]} requireActiveRole>
                     <div className="pt-1">
                         <Link
                             href="/admin"
+                            data-testid="sidebar-admin-panel"
                             className={cn(
                                 "flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 group font-bold",
                                 pathname.startsWith("/admin")
@@ -221,6 +253,39 @@ export function Sidebar() {
                     </Link>
                 )}
             </nav>
+
+            {isLoggedIn && userRoles.length > 1 && (
+                <div className="mt-4 pt-4 border-t border-soft-border/80">
+                    <div className="flex items-center justify-between mb-2 px-1">
+                        <span className="text-[11px] font-bold text-secondary">نقش فعال:</span>
+                        <span data-testid="sidebar-active-role-badge" className="text-[11px] font-black text-brand bg-primary/10 px-2 py-0.5 rounded-lg">
+                            {roleLabels[activeRole || 'user']}
+                        </span>
+                    </div>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                        {userRoles.map((role) => {
+                            const isActive = activeRole === role;
+                            return (
+                                <button
+                                    key={role}
+                                    type="button"
+                                    data-testid={`sidebar-switch-${role}`}
+                                    disabled={isActive || switchRoleMutation.isPending}
+                                    onClick={() => handleSwitchRole(role)}
+                                    className={cn(
+                                        "flex-1 py-1.5 px-2 rounded-xl text-[11px] font-bold transition-all text-center",
+                                        isActive
+                                            ? "bg-brand text-white shadow-sm cursor-default"
+                                            : "bg-soft-bg text-secondary hover:text-brand border border-soft-border hover:border-brand/40 active:scale-95"
+                                    )}
+                                >
+                                    {roleLabels[role] || role}
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
         </aside>
     );
 }
