@@ -122,13 +122,22 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
     const effectiveCityId = searchParams.get("cityId") || selectedCity.id || undefined;
     const effectiveCityName = searchParams.get("cityName") || selectedCity.name || "همه شهرها";
     const urlCategory = searchParams.get("categoryKey") || "";
+    const urlSubcategory = searchParams.get("subcategoryKey") || "";
     const urlDealType = searchParams.get("businessModelKey") || "";
     const urlIsFeatured = searchParams.get("isFeatured") === "true";
 
     const [search, setSearch] = useState(urlSearch);
     const [selectedCategory, setSelectedCategory] = useState(urlCategory);
+    const [selectedSubcategory, setSelectedSubcategory] = useState(urlSubcategory);
     const [sort, setSort] = useState<SearchSortOption>("relevance");
     const [startPage, setStartPage] = useState<number>(1);
+
+    // Keep state in sync with URL search params
+    useEffect(() => {
+        setSelectedCategory(searchParams.get("categoryKey") || "");
+        setSelectedSubcategory(searchParams.get("subcategoryKey") || "");
+        setSearch(searchParams.get("search") || "");
+    }, [searchParams]);
 
     const observerTargetRef = useRef<HTMLDivElement | null>(null);
     const listContainerRef = useRef<HTMLDivElement | null>(null);
@@ -151,6 +160,7 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
             cityName: effectiveCityName !== "همه شهرها" ? effectiveCityName : undefined,
             neighbourhoodName: selectedZones.length === 1 ? selectedZones[0].name : undefined,
             categoryKey: selectedCategory || undefined,
+            subcategoryKey: selectedSubcategory || undefined,
             sort,
         },
         { startPage, maxPages: 7, enabled: !!effectiveCityId }
@@ -305,12 +315,26 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
 
     const handleCategorySelect = (catKey: string) => {
         setSelectedCategory(catKey);
+        setSelectedSubcategory("");
         setStartPage(1);
         const params = new URLSearchParams(searchParams.toString());
         if (catKey) {
             params.set("categoryKey", catKey);
         } else {
             params.delete("categoryKey");
+        }
+        params.delete("subcategoryKey");
+        router.push(`${window.location.pathname}?${params.toString()}`);
+    };
+
+    const handleSubcategorySelect = (subKey: string) => {
+        setSelectedSubcategory(subKey);
+        setStartPage(1);
+        const params = new URLSearchParams(searchParams.toString());
+        if (subKey) {
+            params.set("subcategoryKey", subKey);
+        } else {
+            params.delete("subcategoryKey");
         }
         router.push(`${window.location.pathname}?${params.toString()}`);
     };
@@ -372,13 +396,42 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
                     onCitySelect={handleCitySelect}
                 />
 
-                {/* Selected neighborhood tags — shown below search bar */}
-                {selectedZones.length > 0 && (
+                {/* Selected filters tags (categories, subcategories, neighborhoods) */}
+                {(selectedZones.length > 0 || selectedCategory || selectedSubcategory) && (
                     <div
                         data-testid="selected-zone-tags"
                         className="flex flex-wrap items-center gap-2"
                     >
-                        <span className="text-[11px] text-text-light font-medium shrink-0">محله‌های انتخابی:</span>
+                        <span className="text-[11px] text-text-light font-medium shrink-0">فیلترهای فعال:</span>
+
+                        {selectedCategory && (
+                            <span className="inline-flex items-center gap-1.5 bg-brand/10 text-brand text-xs font-semibold px-3 py-1 rounded-full border border-brand/20">
+                                <span>{getCategoryName(selectedCategory)}</span>
+                                <button
+                                    type="button"
+                                    onClick={() => handleCategorySelect("")}
+                                    aria-label="حذف فیلتر دسته‌بندی"
+                                    className="hover:opacity-70 transition-opacity cursor-pointer"
+                                >
+                                    <X className="w-3 h-3" />
+                                </button>
+                            </span>
+                        )}
+
+                        {selectedSubcategory && (
+                            <span className="inline-flex items-center gap-1.5 bg-primary/10 text-primary text-xs font-semibold px-3 py-1 rounded-full border border-primary/20">
+                                <span>{getSubcategoryName(selectedSubcategory, selectedCategory)}</span>
+                                <button
+                                    type="button"
+                                    onClick={() => handleSubcategorySelect("")}
+                                    aria-label="حذف فیلتر زیردسته"
+                                    className="hover:opacity-70 transition-opacity cursor-pointer"
+                                >
+                                    <X className="w-3 h-3" />
+                                </button>
+                            </span>
+                        )}
+
                         {selectedZones.map((zone) => (
                             <span
                                 key={zone.id}
@@ -389,16 +442,20 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
                                     type="button"
                                     onClick={() => handleRemoveZone(zone.id)}
                                     aria-label={`حذف محله ${zone.name}`}
-                                    className="hover:opacity-70 transition-opacity"
+                                    className="hover:opacity-70 transition-opacity cursor-pointer"
                                 >
                                     <X className="w-3 h-3" />
                                 </button>
                             </span>
                         ))}
+
                         <button
                             type="button"
-                            onClick={() => setSelectedZones([])}
-                            className="text-[11px] text-secondary hover:text-red-500 font-semibold transition-colors"
+                            onClick={() => {
+                                setSelectedZones([]);
+                                if (selectedCategory) handleCategorySelect("");
+                            }}
+                            className="text-[11px] text-secondary hover:text-red-500 font-semibold transition-colors cursor-pointer"
                         >
                             پاک کردن همه
                         </button>
@@ -406,54 +463,59 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
                 )}
 
                 {/* Category filter row + Neighborhood trigger button */}
-                <div className="flex items-center gap-3">
+                <div className="flex items-start gap-3">
                     <div className="flex-1 min-w-0">
                         <CategoryFilter
                             categories={categoriesData || []}
                             isLoading={isCategoriesLoading}
                             selectedCategoryKey={selectedCategory}
+                            selectedSubcategoryKey={selectedSubcategory}
                             onSelectCategory={handleCategorySelect}
+                            onSelectSubcategory={handleSubcategorySelect}
+                            variant="filter"
                         />
                     </div>
 
-                    {neighborhoods.length > 0 && (
-                        <button
-                            data-testid="neighborhood-drawer-trigger"
-                            type="button"
-                            onClick={() => setDrawerOpen(true)}
-                            className={cn(
-                                "shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-bold border transition-all whitespace-nowrap",
-                                selectedZones.length > 0
-                                    ? "bg-primary text-white border-primary shadow-sm"
-                                    : "bg-soft-bg text-secondary border-soft-border hover:border-primary/50 hover:text-primary"
-                            )}
-                        >
-                            <MapPin className="w-3.5 h-3.5" />
-                            <span>نواحی</span>
-                            {selectedZones.length > 0 && (
-                                <span className="bg-white/30 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full leading-none">
-                                    {selectedZones.length}
-                                </span>
-                            )}
-                        </button>
-                    )}
+                    <div className="shrink-0 flex items-center gap-2 pt-1">
+                        {neighborhoods.length > 0 && (
+                            <button
+                                data-testid="neighborhood-drawer-trigger"
+                                type="button"
+                                onClick={() => setDrawerOpen(true)}
+                                className={cn(
+                                    "shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 sm:py-2 rounded-full text-xs font-bold border transition-all whitespace-nowrap cursor-pointer",
+                                    selectedZones.length > 0
+                                        ? "bg-primary text-white border-primary shadow-sm"
+                                        : "bg-soft-bg text-secondary border-soft-border hover:border-primary/50 hover:text-primary"
+                                )}
+                            >
+                                <MapPin className="w-3.5 h-3.5" />
+                                <span>نواحی</span>
+                                {selectedZones.length > 0 && (
+                                    <span className="bg-white/30 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full leading-none">
+                                        {selectedZones.length}
+                                    </span>
+                                )}
+                            </button>
+                        )}
 
-                    {/* Sort selector */}
-                    <div className="shrink-0 flex items-center gap-1.5 bg-soft-bg px-3 py-1.5 rounded-full border border-soft-border">
-                        <SlidersHorizontal className="w-3.5 h-3.5 text-secondary" />
-                        <select
-                            value={sort}
-                            onChange={(e) => {
-                                setSort(e.target.value as SearchSortOption);
-                                setStartPage(1);
-                            }}
-                            className="bg-transparent text-secondary text-xs font-bold outline-none cursor-pointer"
-                        >
-                            <option value="relevance">مرتبط‌ترین</option>
-                            <option value="newest">جدیدترین</option>
-                            <option value="price_asc">ارزان‌ترین</option>
-                            <option value="price_desc">گران‌ترین</option>
-                        </select>
+                        {/* Sort selector */}
+                        <div className="shrink-0 flex items-center gap-1.5 bg-soft-bg px-3 py-1.5 sm:py-2 rounded-full border border-soft-border">
+                            <SlidersHorizontal className="w-3.5 h-3.5 text-secondary" />
+                            <select
+                                value={sort}
+                                onChange={(e) => {
+                                    setSort(e.target.value as SearchSortOption);
+                                    setStartPage(1);
+                                }}
+                                className="bg-transparent text-secondary text-xs font-bold outline-none cursor-pointer"
+                            >
+                                <option value="relevance">مرتبط‌ترین</option>
+                                <option value="newest">جدیدترین</option>
+                                <option value="price_asc">ارزان‌ترین</option>
+                                <option value="price_desc">گران‌ترین</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -475,7 +537,15 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
                     {/* Count summary */}
                     <div className="flex items-center justify-between mb-3 px-1 text-xs text-text-light font-medium">
                         <span>
-                            {isLoading ? "در حال جستجو..." : `${toPersianDigits(displayedAds.length)} آگهی نمایش داده شده`}
+                            {isLoading
+                                ? "در حال جستجو..."
+                                : `${toPersianDigits(displayedAds.length)} آگهی نمایش داده شده${
+                                      selectedSubcategory
+                                          ? ` در ${getSubcategoryName(selectedSubcategory, selectedCategory)}`
+                                          : selectedCategory
+                                          ? ` در ${getCategoryName(selectedCategory)}`
+                                          : ""
+                                  }`}
                         </span>
                         <span>{effectiveCityName}</span>
                     </div>

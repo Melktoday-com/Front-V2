@@ -78,11 +78,14 @@ export const HomeScene = () => {
                 isInitialOpen={isInitialModalOpen}
             />
 
-            {/* Categories */}
-            <section className="container mx-auto pr-4">
+            {/* Categories Showcase */}
+            <section className="container mx-auto px-4">
                 <CategoryFilter
                     categories={categoriesData || []}
                     isLoading={isCategoriesLoading}
+                    variant="landing"
+                    cityId={selectedCity.id || undefined}
+                    cityName={selectedCity.name || undefined}
                 />
             </section>
 
