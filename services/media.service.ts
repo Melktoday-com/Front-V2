@@ -8,14 +8,103 @@ import type {
 
 export const mediaService = {
     /**
-     * Direct single-step upload via multipart/form-data.
-     * Sends file binary to POST /media/upload and gets back a ready MediaDetails.
+     * Direct S3 Presigned Upload Flow:
+     * 1. Provisions presigned PUT URL via /media/upload-session
+     * 2. Streams binary directly to SeaweedFS (zero Node.js memory footprint)
+     * 3. Finalizes via /media/:id/finalize (S3 HEAD verification + RabbitMQ job dispatch)
+     * 4. Polls /media/:id/status until READY
+     */
+    async uploadDirect(
+        file: File,
+        visibility: "PUBLIC" | "PRIVATE" = "PUBLIC",
+        mediaType?: "IMAGE" | "VIDEO" | "DOCUMENT",
+    ): Promise<MediaDetails> {
+        const detectedType: "IMAGE" | "VIDEO" | "DOCUMENT" =
+            mediaType ||
+            (file.type.startsWith("video/") || /\.(mp4|mov|webm|m4v)$/i.test(file.name)
+                ? "VIDEO"
+                : file.type.startsWith("image/") || /\.(svg|png|jpg|jpeg|webp|gif)$/i.test(file.name)
+                  ? "IMAGE"
+                  : "DOCUMENT");
+
+        // Step 1: Negotiate direct presigned upload session
+        const sessionRes = await apiClient.post<{
+            mediaId: string;
+            uploadUrl: string;
+            objectKey: string;
+            method: string;
+            headers?: Record<string, string>;
+        }>("/media/upload-session", {
+            mediaType: detectedType,
+            filename: file.name,
+            mimeType: file.type || (detectedType === "VIDEO" ? "video/mp4" : "image/jpeg"),
+            sizeBytes: file.size,
+            visibility,
+        });
+
+        const { mediaId, uploadUrl, headers } = sessionRes.data;
+
+        // Step 2: Upload binary payload directly to SeaweedFS / S3 via PUT
+        await this.uploadToS3(uploadUrl, file, headers);
+
+        // Step 3: Finalize upload session (triggers S3 HEAD verification and async RabbitMQ processing)
+        await apiClient.post(`/media/${mediaId}/finalize`);
+
+        // Step 4: Poll status until READY or FAILED (max 60 seconds)
+        const pollInterval = 1000;
+        const maxAttempts = 60;
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+            await new Promise((resolve) => setTimeout(resolve, pollInterval));
+            try {
+                const statusRes = await apiClient.get<{
+                    mediaId: string;
+                    status: string;
+                    isReady: boolean;
+                    isFailed: boolean;
+                    failureReason?: string;
+                    url?: string;
+                    posterUrl?: string;
+                }>(`/media/${mediaId}/status`);
+
+                if (statusRes.data.isReady) {
+                    return this.getDetails(mediaId);
+                }
+                if (statusRes.data.isFailed) {
+                    throw new Error(statusRes.data.failureReason || "Media processing failed");
+                }
+            } catch (err) {
+                if (err instanceof Error && err.message.includes("failed")) {
+                    throw err;
+                }
+            }
+        }
+
+        return this.getDetails(mediaId);
+    },
+
+    /**
+     * Upload media file.
+     * Uses direct S3 presigned streaming for videos to prevent memory buffering,
+     * and direct multipart/form-data for lightweight assets.
      */
     async upload(
         file: File,
         visibility: "PUBLIC" | "PRIVATE" = "PUBLIC",
         mediaType?: "IMAGE" | "VIDEO" | "DOCUMENT",
     ): Promise<MediaDetails> {
+        const isVideo =
+            mediaType === "VIDEO" ||
+            file.type.startsWith("video/") ||
+            /\.(mp4|mov|webm|m4v)$/i.test(file.name);
+
+        if (isVideo) {
+            try {
+                return await this.uploadDirect(file, visibility, "VIDEO");
+            } catch (err) {
+                console.warn("Direct upload session failed, falling back to multipart:", err);
+            }
+        }
+
         const formData = new FormData();
         formData.append("file", file);
         formData.append("visibility", visibility);
