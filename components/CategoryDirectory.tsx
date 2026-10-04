@@ -2,16 +2,8 @@
 
 import { CategoryIcon } from "@/components/CategoryIcon";
 import { cn } from "@/lib/utils";
-import { CategoryListItem, Subcategory } from "@/types/api/ads.types";
-import {
-    ArrowLeft,
-    Building2,
-    Factory,
-    Home,
-    Hotel,
-    LandPlot,
-    type LucideIcon,
-} from "lucide-react";
+import { CategoryListItem } from "@/types/api/ads.types";
+import { ArrowLeft, Building2 } from "lucide-react";
 import Link from "next/link";
 import { useMemo } from "react";
 
@@ -23,72 +15,6 @@ export interface CategoryDirectoryProps {
     className?: string;
 }
 
-interface CategoryMeta {
-    displayName: string;
-    icon: LucideIcon;
-    customHref?: string;
-    iconColor: string;
-    defaultSubcategories: {
-        key: string;
-        displayName: string;
-    }[];
-}
-
-const CATEGORY_META_CONFIG: Record<string, CategoryMeta> = {
-    residential: {
-        displayName: "املاک مسکونی",
-        icon: Home,
-        iconColor: "text-blue-600",
-        defaultSubcategories: [
-            { key: "apartment", displayName: "آپارتمان" },
-            { key: "villa", displayName: "ویلا" },
-            { key: "suite", displayName: "سوئیت" },
-        ],
-    },
-    commercial: {
-        displayName: "تجاری و اداری",
-        icon: Building2,
-        iconColor: "text-teal-600",
-        defaultSubcategories: [
-            { key: "office", displayName: "دفتر کار" },
-            { key: "store", displayName: "مغازه" },
-            { key: "shop", displayName: "اداری" },
-        ],
-    },
-    land: {
-        displayName: "زمین و کلنگی",
-        icon: LandPlot,
-        iconColor: "text-amber-600",
-        defaultSubcategories: [
-            { key: "residential_land", displayName: "زمین مسکونی" },
-            { key: "garden", displayName: "باغ و باغچه" },
-            { key: "old_building", displayName: "کلنگی" },
-        ],
-    },
-    temporary_rent: {
-        displayName: "اجاره روزانه",
-        icon: Hotel,
-        iconColor: "text-rose-600",
-        customHref: "/temporary-rent",
-        defaultSubcategories: [
-            { key: "villa", displayName: "ویلا استخردار" },
-            { key: "cottage", displayName: "کلبه" },
-            { key: "suite", displayName: "سوئیت روزانه" },
-        ],
-    },
-    industrial: {
-        displayName: "صنعتی و کارگاه",
-        icon: Factory,
-        iconColor: "text-indigo-600",
-        defaultSubcategories: [
-            { key: "factory", displayName: "کارخانه" },
-            { key: "warehouse", displayName: "انبار و سوله" },
-        ],
-    },
-};
-
-const ORDERED_DEFAULT_KEYS = ["residential", "commercial", "land", "temporary_rent"];
-
 export function CategoryDirectory({
     categories,
     isLoading,
@@ -96,6 +22,7 @@ export function CategoryDirectory({
     cityName,
     className,
 }: CategoryDirectoryProps) {
+    // Build query params for city
     const cityQuery = useMemo(() => {
         const parts: string[] = [];
         if (cityId) parts.push(`cityId=${encodeURIComponent(cityId)}`);
@@ -103,52 +30,10 @@ export function CategoryDirectory({
         return parts.length > 0 ? `&${parts.join("&")}` : "";
     }, [cityId, cityName]);
 
-    const directoryItems = useMemo(() => {
-        if (categories && categories.length > 0) {
-            return categories.map((cat) => {
-                const meta = CATEGORY_META_CONFIG[cat.key] || {
-                    displayName: cat.displayName,
-                    icon: Building2,
-                    iconColor: "text-zinc-700",
-                    defaultSubcategories: [],
-                };
-
-                const subcategories = (cat.subcategories && cat.subcategories.length > 0)
-                    ? cat.subcategories
-                    : (meta.defaultSubcategories as Subcategory[]);
-
-                return {
-                    id: cat.id || cat.key,
-                    key: cat.key,
-                    displayName: cat.displayName || meta.displayName,
-                    icon: cat.icon,
-                    FallbackIcon: meta.icon,
-                    iconColor: meta.iconColor,
-                    customHref: meta.customHref,
-                    subcategories,
-                };
-            });
-        }
-
-        return ORDERED_DEFAULT_KEYS.map((key) => {
-            const meta = CATEGORY_META_CONFIG[key];
-            return {
-                id: key,
-                key,
-                displayName: meta.displayName,
-                icon: undefined,
-                FallbackIcon: meta.icon,
-                iconColor: meta.iconColor,
-                customHref: meta.customHref,
-                subcategories: meta.defaultSubcategories as unknown as Subcategory[],
-            };
-        });
-    }, [categories]);
-
     // Loading Skeletons
     if (isLoading) {
         return (
-            <div className={cn("grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3", className)}>
+            <div className={cn("grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5", className)}>
                 {[1, 2, 3, 4].map((i) => (
                     <div
                         key={i}
@@ -172,18 +57,27 @@ export function CategoryDirectory({
         );
     }
 
+    // If API returned no categories, do not render fake data
+    if (!categories || categories.length === 0) {
+        return null;
+    }
+
     return (
         <div className={cn("grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5", className)}>
-            {directoryItems.map((item) => {
-                const { key, displayName, icon, FallbackIcon, iconColor, customHref, subcategories } = item;
+            {categories.map((category) => {
+                const isTempRent = category.key === "temporary_rent";
+                const mainCategoryHref = isTempRent
+                    ? `/temporary-rent${cityQuery ? `?${cityQuery.replace(/^&/, "")}` : ""}`
+                    : `/ads?categoryKey=${encodeURIComponent(category.key)}${cityQuery}`;
 
-                const mainCategoryHref = customHref
-                    ? `${customHref}${cityQuery ? `?${cityQuery.replace(/^&/, "")}` : ""}`
-                    : `/ads?categoryKey=${encodeURIComponent(key)}${cityQuery}`;
+                // Filter active, non-archived subcategories directly from API
+                const activeSubcategories = (category.subcategories || []).filter(
+                    (sub) => sub.isActive !== false && !sub.isArchived
+                );
 
                 return (
                     <div
-                        key={item.id || key}
+                        key={category.id || category.key}
                         className="bg-[#F5F5F7] hover:bg-[#EFEFF2] rounded-2xl p-3 sm:p-3.5 border border-black/[0.03] transition-all duration-200 flex flex-col justify-between group hover:shadow-sm"
                     >
                         {/* Compact Header: Icon + Title + Direct View All Link */}
@@ -193,25 +87,25 @@ export function CategoryDirectory({
                                 className="flex items-center gap-2 min-w-0 group/header"
                             >
                                 <div className="w-8 h-8 rounded-xl bg-white shadow-xs border border-black/[0.04] flex items-center justify-center shrink-0 group-hover/header:scale-105 transition-transform duration-200">
-                                    {icon ? (
+                                    {category.icon ? (
                                         <CategoryIcon
-                                            icon={icon}
-                                            displayName={displayName}
+                                            icon={category.icon}
+                                            displayName={category.displayName}
                                             size={16}
                                             className="shrink-0"
                                         />
                                     ) : (
-                                        <FallbackIcon className={cn("w-4 h-4", iconColor)} />
+                                        <Building2 className="w-4 h-4 text-zinc-600" />
                                     )}
                                 </div>
                                 <span className="text-xs sm:text-sm font-bold text-zinc-900 group-hover/header:text-primary transition-colors truncate">
-                                    {displayName}
+                                    {category.displayName}
                                 </span>
                             </Link>
 
                             <Link
                                 href={mainCategoryHref}
-                                aria-label={`مشاهده همه ${displayName}`}
+                                aria-label={`مشاهده همه ${category.displayName}`}
                                 className="text-[11px] font-semibold text-zinc-400 hover:text-primary flex items-center gap-0.5 shrink-0 transition-colors py-0.5 px-1"
                             >
                                 <span className="hidden sm:inline">همه</span>
@@ -219,21 +113,29 @@ export function CategoryDirectory({
                             </Link>
                         </div>
 
-                        {/* Compact Apple-style Pills (Subcategories) */}
-                        {subcategories && subcategories.length > 0 && (
+                        {/* Subcategories (Directly from API as Apple-style Micro-pills) */}
+                        {activeSubcategories.length > 0 && (
                             <div className="flex flex-wrap gap-1 mt-2.5">
-                                {subcategories.slice(0, 3).map((sub) => {
-                                    const subHref = customHref
-                                        ? `${customHref}${cityQuery ? `?${cityQuery.replace(/^&/, "")}` : ""}`
-                                        : `/ads?categoryKey=${encodeURIComponent(key)}&subcategoryKey=${encodeURIComponent(sub.key)}${cityQuery}`;
+                                {activeSubcategories.slice(0, 4).map((sub) => {
+                                    const subHref = isTempRent
+                                        ? `/temporary-rent${cityQuery ? `?${cityQuery.replace(/^&/, "")}` : ""}`
+                                        : `/ads?categoryKey=${encodeURIComponent(category.key)}&subcategoryKey=${encodeURIComponent(sub.key)}${cityQuery}`;
 
                                     return (
                                         <Link
                                             key={sub.id || sub.key}
                                             href={subHref}
-                                            className="inline-flex items-center px-2 py-0.5 rounded-full bg-white hover:bg-zinc-900 text-zinc-600 hover:text-white border border-black/[0.04] hover:border-transparent text-[10px] sm:text-[11px] font-medium shadow-2xs transition-all active:scale-95"
+                                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white hover:bg-zinc-900 text-zinc-600 hover:text-white border border-black/[0.04] hover:border-transparent text-[10px] sm:text-[11px] font-medium shadow-2xs transition-all active:scale-95"
                                         >
-                                            {sub.displayName}
+                                            {sub.icon && (
+                                                <CategoryIcon
+                                                    icon={sub.icon}
+                                                    displayName={sub.displayName}
+                                                    size={12}
+                                                    className="shrink-0"
+                                                />
+                                            )}
+                                            <span>{sub.displayName}</span>
                                         </Link>
                                     );
                                 })}

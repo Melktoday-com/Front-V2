@@ -79,20 +79,22 @@ export const HomeScene = () => {
             />
 
             {/* Categories */}
-            <section className="container mx-auto px-4">
-                <SectionHeader
-                    title="دسته‌بندی‌ها"
-                    subtitle="کاوش املاک مسکونی، تجاری، زمین و اقامتگاه‌ها"
-                    link={selectedCity.id ? `/ads?cityId=${selectedCity.id}&cityName=${encodeURIComponent(selectedCity.name)}` : "/ads"}
-                    actionLabel="مشاهده همه"
-                />
-                <CategoryDirectory
-                    categories={categoriesData || []}
-                    isLoading={isCategoriesLoading}
-                    cityId={selectedCity.id || undefined}
-                    cityName={selectedCity.name || undefined}
-                />
-            </section>
+            {((categoriesData && categoriesData.length > 0) || isCategoriesLoading) && (
+                <section className="container mx-auto px-4">
+                    <SectionHeader
+                        title="دسته‌بندی‌ها"
+                        subtitle="کاوش املاک مسکونی، تجاری، زمین و اقامتگاه‌ها"
+                        link={selectedCity.id ? `/ads?cityId=${selectedCity.id}&cityName=${encodeURIComponent(selectedCity.name)}` : "/ads"}
+                        actionLabel="مشاهده همه"
+                    />
+                    <CategoryDirectory
+                        categories={categoriesData || []}
+                        isLoading={isCategoriesLoading}
+                        cityId={selectedCity.id || undefined}
+                        cityName={selectedCity.name || undefined}
+                    />
+                </section>
+            )}
 
             {/* Featured Properties */}
             <section className="container mx-auto pr-4">
