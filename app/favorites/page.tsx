@@ -25,7 +25,7 @@ import {
     Sparkles,
     X,
 } from 'lucide-react';
-import { cn, toPersianDigits, getMediaUrl } from '@/lib/utils';
+import { cn, toPersianDigits, getMediaUrl, getMediaPosterUrl } from '@/lib/utils';
 import { toast } from 'sonner';
 
 type FilterTab = 'ALL' | 'AD' | 'TEMPORARY_RENT' | 'POST';
@@ -279,7 +279,11 @@ export default function FavoritesPage() {
                                         summary={post.summary}
                                         content={post.content}
                                         category={post.category}
-                                        imageUrl={post.mediaUrls?.[0]}
+                                        imageUrl={
+                                            post.mediaIds?.[0]
+                                                ? getMediaPosterUrl(post.mediaIds[0])
+                                                : post.mediaUrls?.[0]
+                                        }
                                         publisherType={post.publisherType}
                                         publisherName={post.publisher?.name}
                                         publisherLogo={post.publisher?.logoUrl}
@@ -347,20 +351,50 @@ export default function FavoritesPage() {
                         )}
 
                         {/* Media gallery */}
-                        {readingPost.mediaUrls && readingPost.mediaUrls.length > 0 && (
-                            <div className="space-y-3">
-                                {readingPost.mediaUrls.map((url, i) => (
-                                    <div key={i} className="relative aspect-video w-full rounded-2xl overflow-hidden bg-gray-100 border border-gray-200">
-                                        <Image
-                                            src={getMediaUrl(url)}
-                                            alt={`تصویر ${i + 1}`}
-                                            fill
-                                            className="object-cover"
-                                        />
-                                    </div>
-                                ))}
-                            </div>
-                        )}
+                        {(() => {
+                            const items =
+                                readingPost.mediaIds && readingPost.mediaIds.length > 0
+                                    ? readingPost.mediaIds
+                                    : (readingPost.mediaUrls || []);
+                            if (items.length === 0) return null;
+                            return (
+                                <div className="space-y-3">
+                                    {items.map((item, i) => {
+                                        const isVideo =
+                                            typeof item === "object"
+                                                ? item.type === "VIDEO"
+                                                : item.endsWith(".mp4") || item.includes("/video");
+                                        const url = getMediaUrl(item);
+                                        const poster = getMediaPosterUrl(item);
+
+                                        if (isVideo) {
+                                            return (
+                                                <div key={i} className="relative aspect-video w-full rounded-2xl overflow-hidden bg-slate-950 border border-gray-200">
+                                                    <video
+                                                        src={url}
+                                                        poster={poster}
+                                                        controls
+                                                        playsInline
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                </div>
+                                            );
+                                        }
+
+                                        return (
+                                            <div key={i} className="relative aspect-video w-full rounded-2xl overflow-hidden bg-gray-100 border border-gray-200">
+                                                <Image
+                                                    src={url}
+                                                    alt={`تصویر ${i + 1}`}
+                                                    fill
+                                                    className="object-cover"
+                                                />
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            );
+                        })()}
 
                         {/* Content */}
                         <div className="text-gray-700 text-sm sm:text-base leading-loose whitespace-pre-line font-normal space-y-3">

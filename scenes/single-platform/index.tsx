@@ -32,7 +32,7 @@ import {
   Video,
   X,
 } from "lucide-react";
-import { formatCurrency, toPersianDigits, cn, getMediaUrl } from "@/lib/utils";
+import { formatCurrency, toPersianDigits, cn, getMediaUrl, getMediaPosterUrl } from "@/lib/utils";
 import { toast } from "sonner";
 import { UnifiedPost } from "@/types/api/post.types";
 import { MarkdownRenderer } from "@/components/ui/MarkdownRenderer";
@@ -284,11 +284,15 @@ export default function SinglePlatformScene() {
                     onClick={() => setSelectedPost(post)}
                     className="bg-white rounded-3xl p-6 border border-soft-border hover:border-primary/30 transition-all cursor-pointer space-y-4 group"
                   >
-                    {post.mediaUrls?.[0] && (
-                      <div className="relative h-44 w-full rounded-2xl overflow-hidden bg-soft-bg">
-                        <Image src={getMediaUrl(post.mediaUrls[0])} alt={post.title} fill className="object-cover group-hover:scale-105 transition-transform" />
-                      </div>
-                    )}
+                    {(() => {
+                      const firstMedia = post.mediaIds?.[0] || post.mediaUrls?.[0];
+                      if (!firstMedia) return null;
+                      return (
+                        <div className="relative h-44 w-full rounded-2xl overflow-hidden bg-soft-bg">
+                          <Image src={getMediaPosterUrl(firstMedia)} alt={post.title} fill className="object-cover group-hover:scale-105 transition-transform" />
+                        </div>
+                      );
+                    })()}
                     <div className="space-y-2">
                       <div className="flex items-center justify-between text-[11px] text-secondary">
                         <span className="bg-primary/10 text-primary px-2.5 py-0.5 rounded-lg font-bold">
@@ -438,11 +442,29 @@ export default function SinglePlatformScene() {
                 انتشار: {new Date(selectedPost.createdAt).toLocaleDateString("fa-IR")}
               </div>
             </div>
-            {selectedPost.mediaUrls?.[0] && (
-              <div className="relative h-64 w-full rounded-2xl overflow-hidden bg-soft-bg">
-                <Image src={getMediaUrl(selectedPost.mediaUrls[0])} alt={selectedPost.title} fill className="object-cover" />
-              </div>
-            )}
+            {(() => {
+              const firstMedia = selectedPost.mediaIds?.[0] || selectedPost.mediaUrls?.[0];
+              if (!firstMedia) return null;
+              const isVideo = typeof firstMedia === "object" ? firstMedia.type === "VIDEO" : (firstMedia.endsWith(".mp4") || firstMedia.includes("/video"));
+              if (isVideo) {
+                return (
+                  <div className="relative h-64 w-full rounded-2xl overflow-hidden bg-slate-950">
+                    <video
+                      src={getMediaUrl(firstMedia)}
+                      poster={getMediaPosterUrl(firstMedia)}
+                      controls
+                      playsInline
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                );
+              }
+              return (
+                <div className="relative h-64 w-full rounded-2xl overflow-hidden bg-soft-bg">
+                  <Image src={getMediaUrl(firstMedia)} alt={selectedPost.title} fill className="object-cover" />
+                </div>
+              );
+            })()}
             <div className="pt-2">
               <MarkdownRenderer content={selectedPost.content} />
             </div>

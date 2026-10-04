@@ -595,15 +595,19 @@ export default function SingleAgencyScene() {
                                     onClick={() => setReadingPost(post)}
                                     className="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-xs hover:border-blue-400 transition-all cursor-pointer flex flex-col justify-between space-y-3 group"
                                 >
-                                    {post.mediaUrls && post.mediaUrls.length > 0 && (
-                                        <div className="h-40 w-full rounded-2xl overflow-hidden bg-slate-100">
-                                            <img
-                                                src={getMediaUrl(post.mediaUrls[0])}
-                                                alt={post.title}
-                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                            />
-                                        </div>
-                                    )}
+                                    {(() => {
+                                        const firstMedia = post.mediaIds?.[0] || post.mediaUrls?.[0];
+                                        if (!firstMedia) return null;
+                                        return (
+                                            <div className="h-40 w-full rounded-2xl overflow-hidden bg-slate-100">
+                                                <img
+                                                    src={getMediaPosterUrl(firstMedia)}
+                                                    alt={post.title}
+                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                                />
+                                            </div>
+                                        );
+                                    })()}
 
                                     <div className="space-y-1.5">
                                         <h3 className="text-sm font-black text-slate-900 group-hover:text-blue-600 transition-colors">
@@ -778,11 +782,29 @@ export default function SingleAgencyScene() {
                             </button>
                         </div>
 
-                        {readingPost.mediaUrls && readingPost.mediaUrls.length > 0 && (
-                            <div className="h-60 w-full rounded-2xl overflow-hidden bg-slate-100">
-                                <img src={getMediaUrl(readingPost.mediaUrls[0])} alt={readingPost.title} className="w-full h-full object-cover" />
-                            </div>
-                        )}
+                        {(() => {
+                            const firstMedia = readingPost.mediaIds?.[0] || readingPost.mediaUrls?.[0];
+                            if (!firstMedia) return null;
+                            const isVideo = typeof firstMedia === "object" ? firstMedia.type === "VIDEO" : (firstMedia.endsWith(".mp4") || firstMedia.includes("/video"));
+                            if (isVideo) {
+                                return (
+                                    <div className="h-60 w-full rounded-2xl overflow-hidden bg-slate-950">
+                                        <video
+                                            src={getMediaUrl(firstMedia)}
+                                            poster={getMediaPosterUrl(firstMedia)}
+                                            controls
+                                            playsInline
+                                            className="w-full h-full object-cover"
+                                        />
+                                    </div>
+                                );
+                            }
+                            return (
+                                <div className="h-60 w-full rounded-2xl overflow-hidden bg-slate-100">
+                                    <img src={getMediaUrl(firstMedia)} alt={readingPost.title} className="w-full h-full object-cover" />
+                                </div>
+                            );
+                        })()}
 
                         <div className="text-xs text-slate-400 flex items-center gap-3">
                             <span>منتشر شده در: {new Date(readingPost.createdAt).toLocaleDateString("fa-IR")}</span>

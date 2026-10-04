@@ -37,7 +37,7 @@ import {
   X,
 } from "lucide-react";
 import { toast } from "sonner";
-import { toPersianDigits, getMediaUrl, cn } from "@/lib/utils";
+import { toPersianDigits, getMediaUrl, getMediaPosterUrl, cn } from "@/lib/utils";
 
 export default function AdminPlatformScene() {
   const router = useRouter();
@@ -447,17 +447,23 @@ export default function AdminPlatformScene() {
                 className="p-4 rounded-2xl border border-soft-border hover:bg-soft-bg/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors"
               >
                 <div className="flex items-center gap-3.5 min-w-0">
-                  {post.mediaUrls?.[0] ? (
-                    <img
-                      src={getMediaUrl(post.mediaUrls[0])}
-                      alt={post.title}
-                      className="w-16 h-16 rounded-xl object-cover border border-soft-border flex-shrink-0"
-                    />
-                  ) : (
-                    <div className="w-16 h-16 rounded-xl bg-soft-bg border border-soft-border flex items-center justify-center text-secondary flex-shrink-0">
-                      <Calendar className="w-6 h-6 text-secondary/40" />
-                    </div>
-                  )}
+                  {(() => {
+                    const firstMedia = post.mediaIds?.[0] || post.mediaUrls?.[0];
+                    if (firstMedia) {
+                      return (
+                        <img
+                          src={getMediaPosterUrl(firstMedia)}
+                          alt={post.title}
+                          className="w-16 h-16 rounded-xl object-cover border border-soft-border flex-shrink-0"
+                        />
+                      );
+                    }
+                    return (
+                      <div className="w-16 h-16 rounded-xl bg-soft-bg border border-soft-border flex items-center justify-center text-secondary flex-shrink-0">
+                        <Calendar className="w-6 h-6 text-secondary/40" />
+                      </div>
+                    );
+                  })()}
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2 mb-1.5">
                       <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-md">

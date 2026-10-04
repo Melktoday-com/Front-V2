@@ -56,11 +56,13 @@ function ExplorePostCard({
   const observerRef = usePostViewObserver(post.id);
 
   // Check format: multi-image, article, or single photo
-  const isMultiImage = (post.mediaUrls?.length || 0) > 1;
+  const mediaCount = (post.mediaIds?.length || 0) > 0 ? (post.mediaIds?.length || 0) : (post.mediaUrls?.length || 0);
+  const isMultiImage = mediaCount > 1;
   const isArticle = (post.content?.length || 0) > 400 || !!post.summary || post.category?.includes("مقاله");
 
   // Determine cover image URL
-  const coverUrl = post.mediaUrls && post.mediaUrls[0] ? getMediaPosterUrl(post.mediaUrls[0]) : "/property-placeholder.svg";
+  const firstMedia = post.mediaIds?.[0] || post.mediaUrls?.[0];
+  const coverUrl = firstMedia ? getMediaPosterUrl(firstMedia) : "/property-placeholder.svg";
 
   const publisherName =
     post.publisherType === "PLATFORM"

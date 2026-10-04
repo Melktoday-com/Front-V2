@@ -90,14 +90,61 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
     };
   }, [post]);
 
+  interface NormalizedMediaItem {
+    id: string;
+    type: "IMAGE" | "VIDEO" | "DOCUMENT";
+    url: string;
+    posterUrl: string;
+  }
+
+  // Normalize media from post.mediaIds (first-class) or post.mediaUrls (fallback)
+  const mediaList = useMemo<NormalizedMediaItem[]>(() => {
+    if (!post) return [];
+
+    // 1. If post.mediaIds is provided and non-empty, use it as canonical
+    if (post.mediaIds && post.mediaIds.length > 0) {
+      return post.mediaIds.map((item, idx) => {
+        const id = typeof item === "object" ? item.id : item;
+        const type = typeof item === "object" ? item.type : "IMAGE";
+        const url = getMediaUrl(item);
+        const posterUrl = getMediaPosterUrl(item);
+        return {
+          id: id || `media-${idx}`,
+          type: type || "IMAGE",
+          url,
+          posterUrl,
+        };
+      });
+    }
+
+    // 2. Otherwise fallback to post.mediaUrls
+    if (post.mediaUrls && post.mediaUrls.length > 0) {
+      return post.mediaUrls.map((url, idx) => {
+        const isVideo =
+          url.endsWith(".mp4") ||
+          url.endsWith(".webm") ||
+          url.includes("/video") ||
+          url.includes("normalized.mp4");
+        return {
+          id: url || `media-${idx}`,
+          type: isVideo ? "VIDEO" : "IMAGE",
+          url: getMediaUrl(url),
+          posterUrl: getMediaPosterUrl(url),
+        };
+      });
+    }
+
+    return [];
+  }, [post]);
+
   // Determine if post is Instagram style or Medium style
   const isInstagramStyle = useMemo(() => {
     if (!post) return false;
-    // Explicit condition: multiple images OR short text without markdown structure
-    const hasMultipleImages = (post.mediaUrls?.length || 0) > 1;
+    // Explicit condition: multiple media items OR short text without markdown structure
+    const hasMultipleMedia = mediaList.length > 1;
     const isShortText = (post.content?.length || 0) < 500 && !post.content?.includes("## ");
-    return hasMultipleImages || (isShortText && !post.summary);
-  }, [post]);
+    return hasMultipleMedia || (isShortText && !post.summary);
+  }, [post, mediaList]);
 
   const handleLike = (e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
@@ -233,25 +280,27 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
               className="relative aspect-square sm:aspect-4/5 w-full overflow-hidden flex items-center justify-center cursor-pointer"
               onDoubleClick={handleDoubleTapMedia}
             >
-              {post.mediaUrls && post.mediaUrls.length > 0 ? (
+              {mediaList.length > 0 ? (
                 <>
                   {(() => {
-                    const currentMedia = post.mediaUrls[activeSlide] || post.mediaUrls[0];
-                    const isVideo = currentMedia?.endsWith(".mp4") || currentMedia?.endsWith(".webm") || currentMedia?.includes("/video");
-                    if (isVideo) {
+                    const currentMedia = mediaList[activeSlide] || mediaList[0];
+                    if (currentMedia.type === "VIDEO") {
                       return (
                         <video
-                          src={getMediaUrl(currentMedia)}
-                          poster={getMediaPosterUrl(currentMedia)}
+                          key={currentMedia.id}
+                          src={currentMedia.url}
+                          poster={currentMedia.posterUrl}
                           controls
                           playsInline
+                          preload="metadata"
                           className="w-full h-full object-cover"
                         />
                       );
                     }
                     return (
                       <img
-                        src={getMediaUrl(currentMedia)}
+                        key={currentMedia.id}
+                        src={currentMedia.url}
                         alt={post.title || `اسلاید ${activeSlide + 1}`}
                         className="w-full h-full object-cover"
                       />
@@ -266,14 +315,14 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
                   )}
 
                   {/* Slide index badge */}
-                  {post.mediaUrls.length > 1 && (
+                  {mediaList.length > 1 && (
                     <div className="absolute top-4 left-4 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-xs font-bold shadow-xs">
-                      {toPersianDigits(activeSlide + 1)} / {toPersianDigits(post.mediaUrls.length)}
+                      {toPersianDigits(activeSlide + 1)} / {toPersianDigits(mediaList.length)}
                     </div>
                   )}
 
                   {/* Left / Right Carousel Controls */}
-                  {post.mediaUrls.length > 1 && (
+                  {mediaList.length > 1 && (
                     <>
                       {activeSlide > 0 && (
                         <button
@@ -287,7 +336,7 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
                           <ChevronRight className="w-5 h-5" />
                         </button>
                       )}
-                      {activeSlide < post.mediaUrls.length - 1 && (
+                      {activeSlide < mediaList.length - 1 && (
                         <button
                           type="button"
                           onClick={(e) => {
@@ -303,9 +352,9 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
                   )}
 
                   {/* Dots Indicator */}
-                  {post.mediaUrls.length > 1 && (
+                  {mediaList.length > 1 && (
                     <div className="absolute bottom-4 inset-x-0 flex items-center justify-center gap-1.5">
-                      {post.mediaUrls.map((_, dotIdx) => (
+                      {mediaList.map((_, dotIdx) => (
                         <button
                           key={dotIdx}
                           type="button"
@@ -523,14 +572,92 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
             )}
           </div>
 
-          {/* Hero Featured Image */}
-          {post.mediaUrls && post.mediaUrls[0] && (
-            <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-slate-100 border border-slate-200/80 shadow-xs">
-              <img
-                src={getMediaUrl(post.mediaUrls[0])}
-                alt={post.title}
-                className="w-full h-full object-cover"
-              />
+          {/* Hero Featured Media (Image / Video / Carousel) */}
+          {mediaList.length > 0 && (
+            <div className="space-y-3">
+              <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-slate-950 border border-slate-200/80 shadow-xs flex items-center justify-center">
+                {(() => {
+                  const currentMedia = mediaList[activeSlide] || mediaList[0];
+                  if (currentMedia.type === "VIDEO") {
+                    return (
+                      <video
+                        key={currentMedia.id}
+                        src={currentMedia.url}
+                        poster={currentMedia.posterUrl}
+                        controls
+                        playsInline
+                        preload="metadata"
+                        className="w-full h-full object-cover"
+                      />
+                    );
+                  }
+                  return (
+                    <img
+                      key={currentMedia.id}
+                      src={currentMedia.url}
+                      alt={post.title || `تصویر ${activeSlide + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  );
+                })()}
+
+                {/* Slide indicator & nav in Medium style if multiple media */}
+                {mediaList.length > 1 && (
+                  <>
+                    <div className="absolute top-4 left-4 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-xs font-bold shadow-xs">
+                      {toPersianDigits(activeSlide + 1)} / {toPersianDigits(mediaList.length)}
+                    </div>
+                    {activeSlide > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setActiveSlide(activeSlide - 1)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/80 hover:bg-white text-slate-800 flex items-center justify-center shadow-lg transition-all"
+                      >
+                        <ChevronRight className="w-5 h-5" />
+                      </button>
+                    )}
+                    {activeSlide < mediaList.length - 1 && (
+                      <button
+                        type="button"
+                        onClick={() => setActiveSlide(activeSlide + 1)}
+                        className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/80 hover:bg-white text-slate-800 flex items-center justify-center shadow-lg transition-all"
+                      >
+                        <ChevronLeft className="w-5 h-5" />
+                      </button>
+                    )}
+                  </>
+                )}
+              </div>
+
+              {/* Dots / Thumbnails row if multiple items */}
+              {mediaList.length > 1 && (
+                <div className="flex items-center justify-center gap-2 py-1">
+                  {mediaList.map((item, idx) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => setActiveSlide(idx)}
+                      className={cn(
+                        "relative w-16 h-12 rounded-xl overflow-hidden border-2 transition-all shrink-0 bg-slate-900",
+                        idx === activeSlide
+                          ? "border-primary ring-2 ring-primary/20 scale-105"
+                          : "border-slate-200 opacity-60 hover:opacity-100"
+                      )}
+                    >
+                      <img
+                        src={item.type === "VIDEO" ? item.posterUrl : item.url}
+                        alt={`بند انگشتی ${idx + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                      {item.type === "VIDEO" && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                          <span className="w-3 h-3 text-white text-[10px]">▶</span>
+                        </div>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 

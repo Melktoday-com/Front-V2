@@ -1,4 +1,5 @@
 import { JsonObject } from "../common";
+import type { MediaReference } from "./media.types";
 
 export type AgentApplicationType = "AGENCY" | "CONSULTANT";
 export type AgentApplicationStatus = "PENDING" | "APPROVED" | "REJECTED";
@@ -148,6 +149,7 @@ export interface AgencyPost {
     content: string;
     summary?: string;
     mediaUrls?: string[];
+    mediaIds?: MediaReference[];
     isPublished: boolean;
     viewCount: number;
     likeCount: number;
