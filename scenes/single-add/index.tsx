@@ -3,7 +3,7 @@
 import { useAd, useAdContact, useAds } from "@/hooks/useAds";
 import { useAuth } from "@/hooks/useAuth";
 import { useCreateConversation } from "@/hooks/useChat";
-import { cn, formatPrice, toPersianDigits, getMediaUrl } from "@/lib/utils";
+import { cn, formatPrice, toPersianDigits, getMediaUrl, getMediaPosterUrl } from "@/lib/utils";
 import { AdSummary } from "@/types/api/ads.types";
 import {
     Bath,
@@ -110,7 +110,7 @@ export default function SingleAdScene() {
     // Collect all media items
     const mediaItems = useMemo(() => {
         if (!ad?.mediaIds || ad.mediaIds.length === 0) {
-            return [{ id: "placeholder", url: "/property-placeholder.svg", isVideo: false }];
+            return [{ id: "placeholder", url: "/property-placeholder.svg", isVideo: false, posterUrl: undefined }];
         }
         return ad.mediaIds.map((mId, index) => {
             const id = typeof mId === "string" ? mId : (mId.id || `media-${index}`);
@@ -119,12 +119,13 @@ export default function SingleAdScene() {
             return {
                 id,
                 url: getMediaUrl(mId),
+                posterUrl: isVideo ? getMediaPosterUrl(mId) : undefined,
                 isVideo,
             };
         });
     }, [ad?.mediaIds]);
 
-    const activeMedia = mediaItems[activeImageIndex] || mediaItems[0] || { id: "placeholder", url: "/property-placeholder.svg", isVideo: false };
+    const activeMedia = mediaItems[activeImageIndex] || mediaItems[0] || { id: "placeholder", url: "/property-placeholder.svg", isVideo: false, posterUrl: undefined };
 
     const handleChat = () => {
         if (!isLoggedIn) {
@@ -258,6 +259,7 @@ export default function SingleAdScene() {
                     {activeMedia.isVideo ? (
                         <video
                             src={activeMedia.url}
+                            poster={activeMedia.posterUrl}
                             controls
                             playsInline
                             className="w-full h-full object-cover"
@@ -299,8 +301,11 @@ export default function SingleAdScene() {
                             >
                                 {media.isVideo ? (
                                     <div className="relative w-full h-full bg-slate-900 flex items-center justify-center">
-                                        <Play className="w-5 h-5 text-white fill-white" />
-                                        <span className="absolute bottom-1 right-1 text-[10px] text-white bg-black/60 px-1 rounded">ویدیو</span>
+                                        {media.posterUrl && (
+                                            <Image src={media.posterUrl} alt={`ویدیو ${idx + 1}`} fill className="object-cover opacity-80" />
+                                        )}
+                                        <Play className="w-5 h-5 text-white fill-white relative z-10 drop-shadow" />
+                                        <span className="absolute bottom-1 right-1 text-[10px] text-white bg-black/60 px-1 rounded z-10">ویدیو</span>
                                     </div>
                                 ) : (
                                     <Image src={media.url} alt={`تصویر ${idx + 1}`} fill className="object-cover" />
@@ -549,7 +554,8 @@ export default function SingleAdScene() {
                                     price={Object.values(item.pricing)[0] ?? 0}
                                     rating={4.7}
                                     location={getCityName(item.cityId || ad.cityId)}
-                                    image={getMediaUrl(item.mediaIds?.[0])}
+                                    image={getMediaPosterUrl(item.mediaIds?.[0])}
+                                    isVideo={item.mediaIds?.[0]?.type === "VIDEO"}
                                     category={
                                         getSubcategoryName(item.categoryPath?.subcategoryKey, item.categoryPath?.categoryKey) ||
                                         getCategoryName(item.categoryPath?.categoryKey) ||

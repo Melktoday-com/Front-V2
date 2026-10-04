@@ -45,6 +45,32 @@ export function getMediaUrl(mediaIdOrUrl?: string | { id: string; type?: string 
     return `${cleanBase}/media/${raw}`;
 }
 
+export function getMediaPosterUrl(media?: string | { id: string; type?: string; posterUrl?: string } | null): string {
+    if (!media) return "/property-placeholder.svg";
+    if (typeof media === "object") {
+        if (media.posterUrl) return media.posterUrl;
+        const id = media.id;
+        if (!id) return "/property-placeholder.svg";
+        if (media.type === "IMAGE") {
+            return getMediaUrl(id);
+        }
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || "";
+        const cleanBase = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
+        return `${cleanBase}/media/${id}/poster`;
+    }
+    if (
+        media.startsWith("http://") ||
+        media.startsWith("https://") ||
+        media.startsWith("/") ||
+        media.startsWith("data:")
+    ) {
+        return media;
+    }
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "";
+    const cleanBase = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
+    return `${cleanBase}/media/${media}/poster`;
+}
+
 export function getPaginationItems(
     currentStart: number,
     currentEnd: number,

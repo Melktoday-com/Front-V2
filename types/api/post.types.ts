@@ -48,7 +48,7 @@ export interface CreatePostRequest {
   content: string;
   category?: string;
   mediaUrls?: string[];
-  mediaIds?: (MediaReference | string)[];
+  mediaIds?: MediaReference[];
   isPublished?: boolean;
   isFeatured?: boolean;
 }
@@ -60,7 +60,7 @@ export interface UpdatePostRequest {
   content?: string;
   category?: string;
   mediaUrls?: string[];
-  mediaIds?: (MediaReference | string)[];
+  mediaIds?: MediaReference[];
   isPublished?: boolean;
   isFeatured?: boolean;
 }

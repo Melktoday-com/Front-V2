@@ -6,7 +6,7 @@ import { TemporaryRentCard } from "@/components/ui/TemporaryRentCard";
 import { useAuth } from "@/hooks/useAuth";
 import { useCreateConversation } from "@/hooks/useChat";
 import { useTemporaryRentAdDetail, useTemporaryRentAds } from "@/hooks/useTemporaryRent";
-import { cn, formatPrice, toPersianDigits, getMediaUrl } from "@/lib/utils";
+import { cn, formatPrice, toPersianDigits, getMediaUrl, getMediaPosterUrl } from "@/lib/utils";
 import {
     Bath,
     Bed,
@@ -94,7 +94,7 @@ export default function ResidenceDetailScene() {
 
     const mediaItems = useMemo(() => {
         if (!residence?.mediaIds || residence.mediaIds.length === 0) {
-            return [{ id: "placeholder", url: "/property-placeholder.svg", isVideo: false }];
+            return [{ id: "placeholder", url: "/property-placeholder.svg", isVideo: false, posterUrl: undefined }];
         }
         return residence.mediaIds.map((mid, index) => {
             const id = typeof mid === "string" ? mid : (mid.id || `media-${index}`);
@@ -103,12 +103,13 @@ export default function ResidenceDetailScene() {
             return {
                 id,
                 url: getMediaUrl(mid),
+                posterUrl: isVideo ? getMediaPosterUrl(mid) : undefined,
                 isVideo,
             };
         });
     }, [residence?.mediaIds]);
 
-    const activeMedia = mediaItems[activeImageIndex] || mediaItems[0] || { id: "placeholder", url: "/property-placeholder.svg", isVideo: false };
+    const activeMedia = mediaItems[activeImageIndex] || mediaItems[0] || { id: "placeholder", url: "/property-placeholder.svg", isVideo: false, posterUrl: undefined };
 
     const handleChat = () => {
         if (!isLoggedIn) {
@@ -235,6 +236,7 @@ export default function ResidenceDetailScene() {
                     {activeMedia.isVideo ? (
                         <video
                             src={activeMedia.url}
+                            poster={activeMedia.posterUrl}
                             controls
                             playsInline
                             className="w-full h-full object-cover"
@@ -268,8 +270,11 @@ export default function ResidenceDetailScene() {
                             >
                                 {media.isVideo ? (
                                     <div className="relative w-full h-full bg-slate-900 flex items-center justify-center">
-                                        <Play className="w-5 h-5 text-white fill-white" />
-                                        <span className="absolute bottom-1 right-1 text-[10px] text-white bg-black/60 px-1 rounded">ویدیو</span>
+                                        {media.posterUrl && (
+                                            <Image src={media.posterUrl} alt={`ویدیو ${idx + 1}`} fill className="object-cover opacity-80" />
+                                        )}
+                                        <Play className="w-5 h-5 text-white fill-white relative z-10 drop-shadow" />
+                                        <span className="absolute bottom-1 right-1 text-[10px] text-white bg-black/60 px-1 rounded z-10">ویدیو</span>
                                     </div>
                                 ) : (
                                     <Image src={media.url} alt={`تصویر ${idx + 1}`} fill className="object-cover" />

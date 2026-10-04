@@ -97,7 +97,7 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
         },
         latitude: 35.6892,
         longitude: 51.389,
-        mediaIds: [] as (MediaReference | string)[],
+        mediaIds: [] as MediaReference[],
         attributes: {},
     });
 

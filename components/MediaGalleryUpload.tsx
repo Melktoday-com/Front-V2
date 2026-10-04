@@ -2,13 +2,13 @@
 
 import React, { useRef, useMemo } from 'react';
 import { useUploadMedia } from '@/hooks/useMedia';
-import { getMediaUrl } from '@/lib/utils';
+import { getMediaUrl, getMediaPosterUrl } from '@/lib/utils';
 import type { MediaReference, ExistingMediaType } from '@/types/api/media.types';
 import { Loader2, ImagePlus, X, Play, Video } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface MediaGalleryUploadProps {
-    value?: (MediaReference | string)[];
+    value?: MediaReference[];
     onChange: (media: MediaReference[]) => void;
     label?: string;
     helperText?: string;
@@ -30,12 +30,7 @@ export default function MediaGalleryUpload({
     const { mutateAsync: uploadMedia, isPending: isUploading } = useUploadMedia();
 
     const normalizedValue: MediaReference[] = useMemo(() => {
-        return (value || []).map((item) => {
-            if (typeof item === 'string') {
-                return { id: item, type: 'IMAGE' as ExistingMediaType };
-            }
-            return item;
-        });
+        return value || [];
     }, [value]);
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -143,6 +138,7 @@ export default function MediaGalleryUpload({
                                 <div className="w-full h-full relative bg-slate-900 flex items-center justify-center">
                                     <video
                                         src={fullUrl}
+                                        poster={getMediaPosterUrl(item)}
                                         className="w-full h-full object-cover"
                                         muted
                                         playsInline

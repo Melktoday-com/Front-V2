@@ -6,7 +6,7 @@ import {
     usePublishTemporaryRent,
     useTemporaryRentAds,
 } from "@/hooks/useTemporaryRent";
-import { formatPrice, toPersianDigits, getMediaUrl } from "@/lib/utils";
+import { formatPrice, toPersianDigits, getMediaUrl, getMediaPosterUrl } from "@/lib/utils";
 import { TemporaryRentAdSummary } from "@/services/temporary-rent.service";
 import {
     AlertCircle,
@@ -23,6 +23,7 @@ import {
     Home,
     Layers,
     MapPin,
+    Play,
     RefreshCw,
     Search,
     SlidersHorizontal,
@@ -414,7 +415,7 @@ export default function TemporaryRentItemsTab() {
                                 </tr>
                             ) : (
                                 filteredItems.map((item: TemporaryRentAdSummary) => {
-                                    const mediaUrl = getMediaUrl(item.mediaIds?.[0]);
+                                    const mediaUrl = getMediaPosterUrl(item.mediaIds?.[0]);
                                     const hasMedia = !!item.mediaIds?.[0] && mediaUrl !== "/property-placeholder.svg";
 
                                     return (
@@ -427,13 +428,20 @@ export default function TemporaryRentItemsTab() {
                                                 <div className="flex items-center gap-3">
                                                     <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0 flex items-center justify-center">
                                                         {hasMedia ? (
-                                                            <Image
-                                                                src={mediaUrl}
-                                                                alt={item.title}
-                                                                fill
-                                                                unoptimized
-                                                                className="object-cover"
-                                                            />
+                                                            <>
+                                                                <Image
+                                                                    src={mediaUrl}
+                                                                    alt={item.title}
+                                                                    fill
+                                                                    unoptimized
+                                                                    className="object-cover"
+                                                                />
+                                                                {item.mediaIds?.[0]?.type === "VIDEO" && (
+                                                                    <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                                                                        <Play className="w-3.5 h-3.5 text-white fill-white" />
+                                                                    </div>
+                                                                )}
+                                                            </>
                                                         ) : (
                                                             <Building2 className="w-5 h-5 text-slate-400" />
                                                         )}

@@ -8,7 +8,7 @@ import { useAds } from "@/hooks/useAds";
 import { useAgencyContact, useFollowAgency, useUnfollowAgency } from "@/hooks/useAgencies";
 import { useAuth } from "@/hooks/useAuth";
 import { useCreateConversation } from "@/hooks/useChat";
-import { cn, formatPrice, toPersianDigits, getMediaUrl } from "@/lib/utils";
+import { cn, formatPrice, toPersianDigits, getMediaUrl, getMediaPosterUrl } from "@/lib/utils";
 import { agencyService } from "@/services/agency.service";
 import { AgencyPost } from "@/types/api/agency.types";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -533,7 +533,8 @@ export default function SingleAgencyScene() {
                                     title={ad.title}
                                     price={ad.pricing ? (Object.values(ad.pricing)[0] ?? 0) : 0}
                                     location={ad.cityId}
-                                    image={getMediaUrl(ad.mediaIds?.[0])}
+                                    image={getMediaPosterUrl(ad.mediaIds?.[0])}
+                                    isVideo={ad.mediaIds?.[0]?.type === "VIDEO"}
                                     category={ad.subcategoryTitle || ad.categoryPath?.subcategoryTitle || ad.categoryPath?.subcategoryKey}
                                 />
                             ))}

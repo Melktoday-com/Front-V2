@@ -13,7 +13,7 @@ import { useInfiniteSearchListings } from "@/hooks/useSearch";
 import { useCategoryLookup } from "@/hooks/useCategoryLookup";
 import { useFavorites, useToggleSaveAd } from "@/hooks/useFavorites";
 import { useGeoHierarchy } from "@/hooks/useGeoHierarchy";
-import { cn, formatPrice, getMediaUrl, toPersianDigits } from "@/lib/utils";
+import { cn, formatPrice, getMediaUrl, getMediaPosterUrl, toPersianDigits } from "@/lib/utils";
 import { geoService } from "@/services/geo.service";
 import { AdSummary } from "@/types/api/ads.types";
 import { AdStatus } from "@/types/api/enums";
@@ -566,9 +566,10 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
                                                     location={ad.cityName || effectiveCityName || ad.cityId}
                                                     image={
                                                         ad.mediaIds && ad.mediaIds.length > 0
-                                                            ? getMediaUrl(ad.mediaIds[0])
+                                                            ? getMediaPosterUrl(ad.mediaIds[0])
                                                             : "/property-placeholder.svg"
                                                     }
+                                                    isVideo={ad.mediaIds?.[0]?.type === "VIDEO"}
                                                     category={subcategoryDisplay}
                                                     isSaved={ad.isSaved ?? isAdSaved(effectiveId)}
                                                     onToggleSave={(id) => toggleSaveMutation.mutateAsync(id)}

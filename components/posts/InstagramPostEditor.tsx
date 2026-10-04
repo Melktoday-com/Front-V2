@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import MediaGalleryUpload from "@/components/MediaGalleryUpload";
-import { getMediaUrl, toPersianDigits, cn } from "@/lib/utils";
+import { getMediaUrl, getMediaPosterUrl, toPersianDigits, cn } from "@/lib/utils";
 import {
   Heart,
   MessageCircle,
@@ -41,7 +41,7 @@ interface InstagramPostEditorProps {
   setCaption: (v: string) => void;
   category: string;
   setCategory: (v: string) => void;
-  mediaUrls: (MediaReference | string)[];
+  mediaUrls: MediaReference[];
   setMediaUrls: (v: MediaReference[]) => void;
   locationTag?: string;
   setLocationTag?: (v: string) => void;
@@ -324,15 +324,14 @@ export function InstagramPostEditor({
                 {(() => {
                   const currentItem = mediaUrls[activeSlide] || mediaUrls[0];
                   const currentUrl = getMediaUrl(currentItem);
-                  const isVideo =
-                    (typeof currentItem === "object" && currentItem?.type === "VIDEO") ||
-                    (typeof currentItem === "string" && /\.(mp4|mov|webm)$/i.test(currentItem));
+                  const isVideo = currentItem?.type === "VIDEO";
 
                   return (
                     <>
                       {isVideo ? (
                         <video
                           src={currentUrl}
+                          poster={getMediaPosterUrl(currentItem)}
                           autoPlay
                           loop
                           muted

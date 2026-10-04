@@ -3,6 +3,7 @@ export type ExistingMediaType = "IMAGE" | "VIDEO" | "DOCUMENT";
 export interface MediaReference {
     id: string;
     type: ExistingMediaType;
+    posterUrl?: string;
 }
 
 /** Request payload for generating a pre-signed S3 upload URL */
@@ -39,6 +40,8 @@ export interface MediaDetails {
     status: "PENDING" | "READY" | "DELETED";
     /** URL returned by direct upload or get-details */
     url?: string | null;
+    /** Video poster image URL */
+    posterUrl?: string | null;
     /** Legacy alias */
     publicUrl?: string | null;
     createdAt?: string;

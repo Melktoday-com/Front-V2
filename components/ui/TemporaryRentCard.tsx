@@ -1,9 +1,9 @@
 "use client";
 
 import { useAuth } from "@/hooks/useAuth";
-import { cn, formatPrice, toPersianDigits, getMediaUrl } from "@/lib/utils";
+import { cn, formatPrice, toPersianDigits, getMediaUrl, getMediaPosterUrl } from "@/lib/utils";
 import type { MediaReference } from "@/types/api/media.types";
-import { ChevronLeft, ChevronRight, Heart, MapPin, Star, Users } from "lucide-react";
+import { ChevronLeft, ChevronRight, Heart, MapPin, Star, Users, Play } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -15,7 +15,7 @@ interface TemporaryRentCardProps {
     title: string;
     nightlyPrice: number;
     location: string;
-    mediaIds?: (MediaReference | string)[];
+    mediaIds?: MediaReference[];
     imageUrl?: string;
     rating?: number;
     maxGuests?: number;
@@ -57,7 +57,7 @@ export function TemporaryRentCard({
     const images = imageUrl
         ? [imageUrl]
         : mediaIds && mediaIds.length > 0
-        ? mediaIds.map((mId) => getMediaUrl(mId))
+        ? mediaIds.map((mId) => (mId.type === "VIDEO" ? getMediaPosterUrl(mId) : getMediaUrl(mId)))
         : ["/property-placeholder.svg"];
 
     const handlePrevImage = (e: React.MouseEvent) => {
@@ -112,6 +112,13 @@ export function TemporaryRentCard({
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     className="object-cover transition-transform duration-500 group-hover:scale-105"
                 />
+
+                {mediaIds[currentImageIndex]?.type === "VIDEO" && (
+                    <div className="absolute bottom-2.5 right-2.5 bg-black/60 backdrop-blur-xs text-white text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1 z-10 font-medium">
+                        <Play className="w-3 h-3 fill-white" />
+                        <span>ویدیو</span>
+                    </div>
+                )}
 
                 {/* Save Heart Button */}
                 <button

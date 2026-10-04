@@ -8,7 +8,7 @@ import { useSinglePost, useLikePost } from "@/hooks/usePosts";
 import { useAuth } from "@/hooks/useAuth";
 import { usePostViewObserver } from "@/hooks/usePostViewObserver";
 import { MarkdownRenderer } from "@/components/ui/MarkdownRenderer";
-import { getMediaUrl, toPersianDigits, cn } from "@/lib/utils";
+import { getMediaUrl, getMediaPosterUrl, toPersianDigits, cn } from "@/lib/utils";
 import { UnifiedPost } from "@/types/api/post.types";
 import {
   Heart,
@@ -235,11 +235,28 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
             >
               {post.mediaUrls && post.mediaUrls.length > 0 ? (
                 <>
-                  <img
-                    src={getMediaUrl(post.mediaUrls[activeSlide] || post.mediaUrls[0])}
-                    alt={post.title || `اسلاید ${activeSlide + 1}`}
-                    className="w-full h-full object-cover"
-                  />
+                  {(() => {
+                    const currentMedia = post.mediaUrls[activeSlide] || post.mediaUrls[0];
+                    const isVideo = currentMedia?.endsWith(".mp4") || currentMedia?.endsWith(".webm") || currentMedia?.includes("/video");
+                    if (isVideo) {
+                      return (
+                        <video
+                          src={getMediaUrl(currentMedia)}
+                          poster={getMediaPosterUrl(currentMedia)}
+                          controls
+                          playsInline
+                          className="w-full h-full object-cover"
+                        />
+                      );
+                    }
+                    return (
+                      <img
+                        src={getMediaUrl(currentMedia)}
+                        alt={post.title || `اسلاید ${activeSlide + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    );
+                  })()}
 
                   {/* Double tap heart animation */}
                   {showHeartBurst && (

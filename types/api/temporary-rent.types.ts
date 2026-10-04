@@ -24,7 +24,7 @@ export interface TemporaryRentAd {
     };
     maxGuests: number;
     guestCapacity?: number;
-    mediaIds: (MediaReference | string)[];
+    mediaIds: MediaReference[];
     latitude: number;
     longitude: number;
     address?: string;
@@ -51,7 +51,7 @@ export interface CreateTemporaryRentDraftRequest {
     latitude: number;
     longitude: number;
     attributes?: Record<string, JsonValue>;
-    mediaIds?: (MediaReference | string)[];
+    mediaIds?: MediaReference[];
     priceModelKey?: string;
     pricing?: Record<string, number | string | boolean>;
 }

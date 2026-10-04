@@ -32,7 +32,7 @@ export interface AdSummary {
     pricing: Record<string, number>;
     isFeatured: boolean;
     isSaved?: boolean;
-    mediaIds?: (MediaReference | string)[];
+    mediaIds?: MediaReference[];
     createdAt: string;
     location?: AdLocation | null;
 }
@@ -97,7 +97,7 @@ export interface CreateAdDraftRequest {
     attributes: JsonObject;
     latitude: number;
     longitude: number;
-    mediaIds?: (MediaReference | string)[];
+    mediaIds?: MediaReference[];
 }
 
 export interface EditAdRequest {
@@ -105,7 +105,7 @@ export interface EditAdRequest {
     description?: string;
     rawPricing?: Record<string, number | string | boolean>;
     attributes?: JsonObject;
-    mediaIds?: (MediaReference | string)[];
+    mediaIds?: MediaReference[];
 }
 
 export interface AdMutationResponse {

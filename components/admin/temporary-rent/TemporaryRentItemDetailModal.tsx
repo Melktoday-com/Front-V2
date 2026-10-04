@@ -1,7 +1,7 @@
 "use client";
 
 import { useTemporaryRentAdDetail } from "@/hooks/useTemporaryRent";
-import { formatPrice, toPersianDigits, getMediaUrl } from "@/lib/utils";
+import { formatPrice, toPersianDigits, getMediaUrl, getMediaPosterUrl } from "@/lib/utils";
 import { temporaryRentService } from "@/services/temporary-rent.service";
 import {
     Calendar,
@@ -87,6 +87,7 @@ export default function TemporaryRentItemDetailModal({
             return {
                 id,
                 url: getMediaUrl(m),
+                posterUrl: isVideo ? getMediaPosterUrl(m) : undefined,
                 isVideo,
             };
         });
@@ -167,6 +168,7 @@ export default function TemporaryRentItemDetailModal({
                                         {activeMedia.isVideo ? (
                                             <video
                                                 src={activeMedia.url}
+                                                poster={activeMedia.posterUrl}
                                                 controls
                                                 playsInline
                                                 className="w-full h-full object-cover"
@@ -196,7 +198,16 @@ export default function TemporaryRentItemDetailModal({
                                                 >
                                                     {media.isVideo ? (
                                                         <div className="relative w-full h-full bg-slate-900 flex items-center justify-center">
-                                                            <Play className="w-4 h-4 text-white fill-white" />
+                                                            {media.posterUrl && (
+                                                                <Image
+                                                                    src={media.posterUrl}
+                                                                    alt=""
+                                                                    fill
+                                                                    unoptimized
+                                                                    className="object-cover opacity-80"
+                                                                />
+                                                            )}
+                                                            <Play className="w-4 h-4 text-white fill-white relative z-10 drop-shadow" />
                                                         </div>
                                                     ) : (
                                                         <Image

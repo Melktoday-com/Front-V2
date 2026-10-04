@@ -3,7 +3,7 @@
 import { useAuth } from "@/hooks/useAuth";
 import { DEFAULT_CATEGORY_TRANSLATIONS } from "@/hooks/useCategoryLookup";
 import { cn, toPersianDigits } from "@/lib/utils";
-import { Heart, MapPin, Star } from "lucide-react";
+import { Heart, MapPin, Play, Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -18,6 +18,7 @@ interface PropertyCardProps {
     rating?: number;
     location: string;
     image: string;
+    isVideo?: boolean;
     category?: string;
     unit?: string;
     currency?: string;
@@ -41,6 +42,7 @@ export function PropertyCard({
     rating,
     location,
     image,
+    isVideo = false,
     category,
     unit,
     currency = "تومان",
@@ -142,6 +144,14 @@ export function PropertyCard({
                             saved ? "fill-white text-white" : "text-gray-700 hover:text-red-500"
                         )} />
                     </button>
+                )}
+
+                {/* Video Indicator */}
+                {isVideo && (
+                    <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-xs text-white text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1 z-10 font-medium">
+                        <Play className="w-3 h-3 fill-white" />
+                        <span>ویدیو</span>
+                    </div>
                 )}
 
                 {/* Category Badge */}

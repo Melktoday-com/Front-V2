@@ -3,7 +3,7 @@
 import { useAd } from "@/hooks/useAds";
 import { useCityLookup } from "@/hooks/useCityLookup";
 import { useCategoryLookup } from "@/hooks/useCategoryLookup";
-import { formatPrice, toPersianDigits, getMediaUrl } from "@/lib/utils";
+import { formatPrice, toPersianDigits, getMediaUrl, getMediaPosterUrl } from "@/lib/utils";
 import { adsService } from "@/services/ads.service";
 import { AdContactInfo } from "@/types/api/ads.types";
 import { AdStatus } from "@/types/api/enums";
@@ -103,6 +103,7 @@ export default function AdminAdDetailModal({
             return {
                 id,
                 url: getMediaUrl(m),
+                posterUrl: isVideo ? getMediaPosterUrl(m) : undefined,
                 isVideo,
             };
         });
@@ -183,6 +184,7 @@ export default function AdminAdDetailModal({
                                         {activeMedia.isVideo ? (
                                             <video
                                                 src={activeMedia.url}
+                                                poster={activeMedia.posterUrl}
                                                 controls
                                                 playsInline
                                                 className="w-full h-full object-cover"
@@ -212,7 +214,16 @@ export default function AdminAdDetailModal({
                                                 >
                                                     {media.isVideo ? (
                                                         <div className="relative w-full h-full bg-slate-900 flex items-center justify-center">
-                                                            <Play className="w-4 h-4 text-white fill-white" />
+                                                            {media.posterUrl && (
+                                                                <Image
+                                                                    src={media.posterUrl}
+                                                                    alt=""
+                                                                    fill
+                                                                    unoptimized
+                                                                    className="object-cover opacity-80"
+                                                                />
+                                                            )}
+                                                            <Play className="w-4 h-4 text-white fill-white relative z-10 drop-shadow" />
                                                         </div>
                                                     ) : (
                                                         <Image

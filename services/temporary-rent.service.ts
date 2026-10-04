@@ -1,5 +1,6 @@
 import apiClient from "@/lib/api/client";
 import { PaginatedResponse } from "@/types/api/ads.types";
+import { MediaReference } from "@/types/api/media.types";
 import {
     CreateTemporaryRentDraftRequest,
     TemporaryRentAd,
@@ -19,7 +20,7 @@ export interface TemporaryRentAdSummary {
     pricing: {
         nightlyPrice: number;
     };
-    mediaIds?: string[];
+    mediaIds?: MediaReference[];
     createdAt: string;
     maxGuests?: number;
     isSaved?: boolean;

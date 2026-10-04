@@ -16,7 +16,7 @@ import { useTemporaryRentAds } from "@/hooks/useTemporaryRent";
 import { TemporaryRentAdSummary } from "@/services/temporary-rent.service";
 import { AdSummary } from "@/types/api/ads.types";
 import { AgencySummary } from "@/types/api/agency.types";
-import { getMediaUrl } from "@/lib/utils";
+import { getMediaUrl, getMediaPosterUrl } from "@/lib/utils";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
@@ -117,7 +117,8 @@ export const HomeScene = () => {
                                     price={Object.values(property.pricing)[0] ?? 0}
                                     rating={5.0}
                                     location={selectedCity.name}
-                                    image={getMediaUrl(property.mediaIds?.[0])}
+                                    image={getMediaPosterUrl(property.mediaIds?.[0])}
+                                    isVideo={property.mediaIds?.[0]?.type === "VIDEO"}
                                     category={
                                         property.subcategoryTitle ||
                                         property.categoryPath?.subcategoryTitle ||
@@ -190,7 +191,8 @@ export const HomeScene = () => {
                                 unit="/شب"
                                 rating={4.9}
                                 location={selectedCity.name}
-                                image={getMediaUrl(property.mediaIds?.[0])}
+                                image={getMediaPosterUrl(property.mediaIds?.[0])}
+                                isVideo={property.mediaIds?.[0]?.type === "VIDEO"}
                                 category="اجاره روزانه"
                                 className="w-[210px] lg:w-[250px]"
                                 isSaved={property.isSaved ?? isTemporaryRentSaved(property.id)}
@@ -232,7 +234,8 @@ export const HomeScene = () => {
                                     price={Object.values(property.pricing)[0] ?? 0}
                                     rating={4.8}
                                     location={selectedCity.name}
-                                    image={getMediaUrl(property.mediaIds?.[0])}
+                                    image={getMediaPosterUrl(property.mediaIds?.[0])}
+                                    isVideo={property.mediaIds?.[0]?.type === "VIDEO"}
                                     category={
                                         property.subcategoryTitle ||
                                         property.categoryPath?.subcategoryTitle ||

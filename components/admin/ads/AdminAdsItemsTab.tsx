@@ -3,7 +3,7 @@
 import { useCities } from "@/hooks/useGeo";
 import { useAds, useCategories } from "@/hooks/useAds";
 import { useCategoryLookup } from "@/hooks/useCategoryLookup";
-import { formatPrice, toPersianDigits, getMediaUrl } from "@/lib/utils";
+import { formatPrice, toPersianDigits, getMediaUrl, getMediaPosterUrl } from "@/lib/utils";
 import { adminService } from "@/services/admin.service";
 import { AdSummary } from "@/types/api/ads.types";
 import { AdStatus } from "@/types/api/enums";
@@ -24,6 +24,7 @@ import {
     FolderTree,
     Layers,
     MapPin,
+    Play,
     RefreshCw,
     Search,
     ShieldAlert,
@@ -499,7 +500,7 @@ export default function AdminAdsItemsTab() {
                                 </tr>
                             ) : (
                                 filteredItems.map((ad: AdSummary) => {
-                                    const mediaUrl = getMediaUrl(ad.mediaIds?.[0]);
+                                    const mediaUrl = getMediaPosterUrl(ad.mediaIds?.[0]);
                                     const hasMedia = !!ad.mediaIds?.[0] && mediaUrl !== "/property-placeholder.svg";
 
                                     return (
@@ -512,13 +513,20 @@ export default function AdminAdsItemsTab() {
                                                 <div className="flex items-center gap-3">
                                                     <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0 flex items-center justify-center">
                                                         {hasMedia ? (
-                                                            <Image
-                                                                src={mediaUrl}
-                                                                alt={ad.title}
-                                                                fill
-                                                                unoptimized
-                                                                className="object-cover"
-                                                            />
+                                                            <>
+                                                                <Image
+                                                                    src={mediaUrl}
+                                                                    alt={ad.title}
+                                                                    fill
+                                                                    unoptimized
+                                                                    className="object-cover"
+                                                                />
+                                                                {ad.mediaIds?.[0]?.type === "VIDEO" && (
+                                                                    <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                                                                        <Play className="w-3.5 h-3.5 text-white fill-white" />
+                                                                    </div>
+                                                                )}
+                                                            </>
                                                         ) : (
                                                             <Building2 className="w-5 h-5 text-slate-400" />
                                                         )}

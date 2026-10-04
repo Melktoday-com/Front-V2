@@ -7,7 +7,7 @@ import { useInfiniteExplorePosts, useLikePost } from "@/hooks/usePosts";
 import { useSearchPosts } from "@/hooks/useSearch";
 import { useAuth } from "@/hooks/useAuth";
 import { usePostViewObserver } from "@/hooks/usePostViewObserver";
-import { getMediaUrl, toPersianDigits, cn } from "@/lib/utils";
+import { getMediaUrl, getMediaPosterUrl, toPersianDigits, cn } from "@/lib/utils";
 import { UnifiedPost, PublisherType } from "@/types/api/post.types";
 import {
   Search,
@@ -63,7 +63,7 @@ function ExplorePostCard({
   const isArticle = (post.content?.length || 0) > 400 || !!post.summary || post.category?.includes("مقاله");
 
   // Determine cover image URL
-  const coverUrl = post.mediaUrls && post.mediaUrls[0] ? getMediaUrl(post.mediaUrls[0]) : "/property-placeholder.svg";
+  const coverUrl = post.mediaUrls && post.mediaUrls[0] ? getMediaPosterUrl(post.mediaUrls[0]) : "/property-placeholder.svg";
 
   const publisherName =
     post.publisherType === "PLATFORM"

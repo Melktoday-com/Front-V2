@@ -100,7 +100,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
         rawPricing: {},
         latitude: initialCoords.latitude,
         longitude: initialCoords.longitude,
-        mediaIds: [] as (MediaReference | string)[],
+        mediaIds: [] as MediaReference[],
     });
 
     const { data: categories } = useCategories();

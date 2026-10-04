@@ -335,7 +335,7 @@ export interface AdminCreateAdRequest {
     attributes?: JsonObject;
     latitude: number;
     longitude: number;
-    mediaIds?: (MediaReference | string)[];
+    mediaIds?: MediaReference[];
 }
 
 export interface AdminCreateTemporaryRentRequest {
@@ -361,7 +361,7 @@ export interface AdminCreateTemporaryRentRequest {
     latitude: number;
     longitude: number;
     attributes?: JsonObject;
-    mediaIds?: (MediaReference | string)[];
+    mediaIds?: MediaReference[];
 }
 
 // ── Admin Archive Types ──────────────────────────────────────────────────────
