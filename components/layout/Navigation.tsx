@@ -47,8 +47,12 @@ export function Sidebar() {
     if (pathname.startsWith("/auth")) return null;
 
     const isItemActive = (href: string) => {
-        if (href === "/") return pathname === "/";
-        return pathname.startsWith(href);
+        const currentPath = pathname.replace(/\/+$/, "") || "/";
+        if (href === "/") return currentPath === "/";
+        if (href === "/profile") return currentPath === "/profile";
+        if (href === "/agency") return currentPath.startsWith("/agency") && !currentPath.startsWith("/agency/panel");
+        if (href === "/ads") return currentPath.startsWith("/ads") && currentPath !== "/ads/submit";
+        return currentPath.startsWith(href);
     };
 
     return (
