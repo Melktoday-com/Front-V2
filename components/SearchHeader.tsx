@@ -58,6 +58,21 @@ export function SearchHeader({ isInitialOpen }: SearchHeaderProps) {
 
     const unreadChatCount = conversations?.reduce((sum, c) => sum + (c.unreadCount || 0), 0) ?? 0;
 
+    const [placeholderText, setPlaceholderText] = useState("جستجو در املاک، اقامتگاه‌ها و دفاتر...");
+
+    useEffect(() => {
+        const updatePlaceholder = () => {
+            if (window.innerWidth >= 640) {
+                setPlaceholderText("جستجو در املاک، اقامتگاه‌ها، دفاتر، مشاورین یا مقالات...");
+            } else {
+                setPlaceholderText("جستجو در املاک، اقامتگاه‌ها و دفاتر...");
+            }
+        };
+        updatePlaceholder();
+        window.addEventListener("resize", updatePlaceholder);
+        return () => window.removeEventListener("resize", updatePlaceholder);
+    }, []);
+
     // Effect to open modal if selectedCity is empty and isInitialOpen is true
     useEffect(() => {
         if (isInitialOpen && !selectedCity.id) {
@@ -120,25 +135,25 @@ export function SearchHeader({ isInitialOpen }: SearchHeaderProps) {
     };
 
     return (
-        <div className="px-3 space-y-6 lg:space-y-8">
+        <div className="container mx-auto px-4 space-y-6 lg:space-y-8">
             {/* Top Bar: Location & Profile */}
             <div className="flex justify-between items-center">
                 <button
                     onClick={() => setIsSelectorOpen(true)}
-                    className="flex items-center gap-2.5 bg-white px-3.5 py-2 rounded-full border border-soft-border group hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300"
+                    className="flex items-center gap-2 sm:gap-2.5 bg-white px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-full border border-soft-border group hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300"
                 >
-                    <div className="w-7 h-7 rounded-full bg-soft-bg flex items-center justify-center group-hover:bg-primary/10 transition-colors">
-                        <MapPin className="w-3.5 h-3.5 text-primary" />
+                    <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-soft-bg flex items-center justify-center group-hover:bg-primary/10 transition-colors">
+                        <MapPin className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-primary" />
                     </div>
-                    <div className="flex items-center gap-1.5">
-                        <span className="text-brand font-black text-xs lg:text-sm">
+                    <div className="flex items-center gap-1 sm:gap-1.5">
+                        <span className="text-brand font-black text-xs sm:text-sm">
                             {selectedCity.name || "انتخاب شهر"}
                         </span>
-                        <ChevronDown className="w-3.5 h-3.5 text-secondary group-hover:text-primary transition-all duration-500 group-hover:rotate-180" />
+                        <ChevronDown className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-secondary group-hover:text-primary transition-all duration-500 group-hover:rotate-180" />
                     </div>
                 </button>
 
-                <div className="flex items-center gap-2 sm:gap-3">
+                <div className="flex items-center gap-1.5 sm:gap-3">
                     {isLoggedIn && (
                         <>
                             {/* Chat Icon */}
@@ -146,9 +161,9 @@ export function SearchHeader({ isInitialOpen }: SearchHeaderProps) {
                                 href="/profile/chat"
                                 aria-label="پیام‌ها و گفت‌وگوها"
                                 title="پیام‌ها و گفت‌وگوها"
-                                className="p-2.5 bg-white rounded-full border border-soft-border text-brand hover:text-primary hover:border-primary/30 transition-all relative shadow-sm hover:shadow-md flex items-center justify-center"
+                                className="p-2 sm:p-2.5 bg-white rounded-full border border-soft-border text-brand hover:text-primary hover:border-primary/30 transition-all relative shadow-sm hover:shadow-md flex items-center justify-center"
                             >
-                                <MessageSquare className="w-5 h-5" />
+                                <MessageSquare className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
                                 {unreadChatCount > 0 && (
                                     <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-primary text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-white shadow-sm">
                                         {toPersianDigits(unreadChatCount > 99 ? "99+" : unreadChatCount)}
@@ -161,9 +176,9 @@ export function SearchHeader({ isInitialOpen }: SearchHeaderProps) {
                                 href="/notifications"
                                 aria-label="اعلان‌های سیستم"
                                 title="اعلان‌های سیستم"
-                                className="p-2.5 bg-white rounded-full border border-soft-border text-brand hover:text-primary hover:border-primary/30 transition-all relative shadow-sm hover:shadow-md flex items-center justify-center"
+                                className="p-2 sm:p-2.5 bg-white rounded-full border border-soft-border text-brand hover:text-primary hover:border-primary/30 transition-all relative shadow-sm hover:shadow-md flex items-center justify-center"
                             >
-                                <Bell className="w-5 h-5" />
+                                <Bell className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
                                 {unreadNotificationsCount > 0 && (
                                     <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-white shadow-sm animate-pulse">
                                         {toPersianDigits(unreadNotificationsCount > 99 ? "99+" : unreadNotificationsCount)}
@@ -176,9 +191,9 @@ export function SearchHeader({ isInitialOpen }: SearchHeaderProps) {
                                 href="/profile"
                                 aria-label="حساب کاربری"
                                 title="حساب کاربری"
-                                className="p-2.5 bg-white rounded-full border border-soft-border text-brand hover:text-primary hover:border-primary/30 transition-all relative shadow-sm hover:shadow-md flex items-center justify-center"
+                                className="p-2 sm:p-2.5 bg-white rounded-full border border-soft-border text-brand hover:text-primary hover:border-primary/30 transition-all relative shadow-sm hover:shadow-md flex items-center justify-center"
                             >
-                                <User className="w-5 h-5" />
+                                <User className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
                             </Link>
                         </>
                     )}
@@ -186,10 +201,10 @@ export function SearchHeader({ isInitialOpen }: SearchHeaderProps) {
                         <Link href={"/auth"}>
                             <Button
                                 variant="outline"
-                                className="h-11 px-5 rounded-full flex items-center gap-2 border-soft-border bg-white shadow-sm hover:shadow-md hover:border-primary/30 transition-all"
+                                className="h-10 sm:h-11 px-3.5 sm:px-5 rounded-full flex items-center gap-1.5 sm:gap-2 border-soft-border bg-white shadow-sm hover:shadow-md hover:border-primary/30 transition-all text-xs sm:text-sm font-black"
                             >
-                                <User className="w-4 h-4 text-primary" />
-                                <span className="font-black text-sm">{"ورود / ثبت‌نام"}</span>
+                                <User className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
+                                <span>{"ورود / ثبت‌نام"}</span>
                             </Button>
                         </Link>
                     )}
@@ -197,19 +212,19 @@ export function SearchHeader({ isInitialOpen }: SearchHeaderProps) {
             </div>
 
             {/* Hero & Search Area */}
-            <div className="space-y-6">
-                <div className="max-w-2xl space-y-2">
-                    <h1 className="text-brand text-2xl lg:text-4xl font-black tracking-tighter leading-[1.1]">
+            <div className="space-y-4 sm:space-y-6">
+                <div className="max-w-2xl space-y-1.5 sm:space-y-2">
+                    <h1 className="text-brand text-xl sm:text-2xl lg:text-4xl font-black tracking-tight leading-[1.2] sm:leading-[1.1]">
                         اینجا، داستان <span className="text-primary">خانه</span> شما آغاز می‌شود
                     </h1>
-                    <p className="text-secondary text-sm lg:text-base font-bold opacity-70">
+                    <p className="text-secondary text-xs sm:text-sm lg:text-base font-medium sm:font-bold opacity-75 sm:opacity-70">
                         هوشمندانه جستجو کنید، با اطمینان انتخاب کنید
                     </p>
                 </div>
 
                 <form onSubmit={handleSearch} className="relative z-20 w-full lg:max-w-4xl">
                     <div className="relative group">
-                        <Search className="absolute right-5 top-1/2 -translate-y-1/2 w-6 h-6 text-secondary/50 group-focus-within:text-primary transition-all duration-500" />
+                        <Search className="absolute right-3.5 sm:right-5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 sm:w-6 sm:h-6 text-secondary/50 group-focus-within:text-primary transition-all duration-300 pointer-events-none" />
                         <input
                             type="text"
                             value={searchQuery}
@@ -218,10 +233,10 @@ export function SearchHeader({ isInitialOpen }: SearchHeaderProps) {
                                 if (!isSearching) setIsSearching(true);
                             }}
                             onFocus={() => setIsSearching(true)}
-                            placeholder="جستجو در املاک، اقامتگاه‌ها، دفاتر، مشاورین یا مقالات..."
-                            className="w-full bg-white border-2 border-soft-border/50 rounded-[20px] py-4 pr-14 pl-16 text-lg font-bold text-brand focus:ring-8 focus:ring-primary/5 focus:border-primary/30 outline-none transition-all placeholder:text-secondary/40 shadow-xl shadow-brand/5 hover:border-soft-border"
+                            placeholder={placeholderText}
+                            className="w-full bg-white border border-soft-border/80 sm:border-2 sm:border-soft-border/50 rounded-2xl sm:rounded-[20px] py-3 sm:py-4 pr-11 sm:pr-14 pl-20 sm:pl-24 text-sm sm:text-base lg:text-lg font-medium sm:font-bold text-brand focus:ring-4 sm:focus:ring-8 focus:ring-primary/5 focus:border-primary/40 outline-none transition-all placeholder:text-secondary/50 placeholder:font-normal placeholder:text-xs sm:placeholder:text-sm lg:placeholder:text-base shadow-md sm:shadow-xl shadow-brand/5 hover:border-soft-border"
                         />
-                        <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                        <div className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 flex items-center gap-1 sm:gap-2">
                             {searchQuery && (
                                 <button
                                     type="button"
@@ -229,16 +244,18 @@ export function SearchHeader({ isInitialOpen }: SearchHeaderProps) {
                                         setSearchQuery("");
                                         setIsSearching(false);
                                     }}
-                                    className="p-2 hover:bg-soft-bg rounded-full transition-colors"
+                                    aria-label="پاک کردن متن جستجو"
+                                    className="p-1 sm:p-2 hover:bg-soft-bg rounded-full transition-colors"
                                 >
-                                    <X className="w-5 h-5 text-secondary" />
+                                    <X className="w-4 h-4 sm:w-5 sm:h-5 text-secondary" />
                                 </button>
                             )}
                             <button
                                 type="submit"
-                                className="bg-primary hover:bg-primary/90 text-white p-2.5 rounded-full shadow-lg shadow-primary/25 hover:scale-110 active:scale-95 transition-all"
+                                aria-label="جستجو"
+                                className="bg-primary hover:bg-primary/90 text-white p-2 sm:p-2.5 rounded-xl sm:rounded-full shadow-md sm:shadow-lg shadow-primary/25 hover:scale-105 sm:hover:scale-110 active:scale-95 transition-all"
                             >
-                                <Search className="w-5 h-5" />
+                                <Search className="w-4 h-4 sm:w-5 sm:h-5" />
                             </button>
                         </div>
                     </div>
@@ -247,15 +264,15 @@ export function SearchHeader({ isInitialOpen }: SearchHeaderProps) {
                     {isSearching && searchQuery.trim().length > 1 && (
                         <>
                             <div className="fixed inset-0 z-[-1]" onClick={() => setIsSearching(false)} />
-                            <div className="absolute top-full left-0 right-0 mt-3 bg-white/98 backdrop-blur-2xl border border-soft-border rounded-[25px] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.15)] p-4 animate-in fade-in slide-in-from-top-4 duration-300 max-h-[520px] overflow-y-auto">
+                            <div className="absolute top-full left-0 right-0 mt-2 sm:mt-3 bg-white/98 backdrop-blur-2xl border border-soft-border rounded-2xl sm:rounded-[25px] shadow-[0_20px_50px_-10px_rgba(0,0,0,0.15)] p-3 sm:p-4 animate-in fade-in slide-in-from-top-4 duration-300 max-h-[75vh] sm:max-h-[520px] overflow-y-auto">
                                 {/* Autocomplete suggestion pills */}
                                 {suggestions && suggestions.length > 0 && (
-                                    <div className="mb-3.5 pb-3 border-b border-soft-border/60">
-                                        <div className="flex items-center gap-1.5 text-xs text-secondary font-bold mb-2">
+                                    <div className="mb-3 pb-2.5 sm:mb-3.5 sm:pb-3 border-b border-soft-border/60">
+                                        <div className="flex items-center gap-1.5 text-[11px] sm:text-xs text-secondary font-bold mb-2">
                                             <Sparkles className="w-3.5 h-3.5 text-primary" />
                                             <span>پیشنهادهای هوشمند:</span>
                                         </div>
-                                        <div className="flex flex-wrap gap-1.5">
+                                        <div className="flex flex-wrap gap-1 sm:gap-1.5">
                                             {suggestions.map((item, idx) => (
                                                 <button
                                                     key={idx}
@@ -263,7 +280,7 @@ export function SearchHeader({ isInitialOpen }: SearchHeaderProps) {
                                                     onClick={() => {
                                                         setSearchQuery(item.text);
                                                     }}
-                                                    className="inline-flex items-center gap-1.5 px-3 py-1 bg-soft-bg hover:bg-primary/10 hover:text-primary rounded-full text-xs font-bold text-brand transition-colors"
+                                                    className="inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 bg-soft-bg hover:bg-primary/10 hover:text-primary rounded-full text-[11px] sm:text-xs font-bold text-brand transition-colors"
                                                 >
                                                     <Search className="w-3 h-3 opacity-50" />
                                                     <span>{item.text}</span>
@@ -274,11 +291,11 @@ export function SearchHeader({ isInitialOpen }: SearchHeaderProps) {
                                 )}
 
                                 {/* Category Tabs */}
-                                <div className="flex items-center gap-1.5 overflow-x-auto pb-2.5 mb-3 border-b border-soft-border/60 text-xs font-bold">
+                                <div className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto pb-2 mb-3 border-b border-soft-border/60 text-[11px] sm:text-xs font-bold no-scrollbar">
                                     <button
                                         type="button"
                                         onClick={() => setActiveTab("ALL")}
-                                        className={`px-3 py-1.5 rounded-full transition-all shrink-0 ${
+                                        className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full transition-all shrink-0 ${
                                             activeTab === "ALL"
                                                 ? "bg-primary text-white shadow-sm"
                                                 : "bg-soft-bg text-secondary hover:text-brand"
@@ -289,7 +306,7 @@ export function SearchHeader({ isInitialOpen }: SearchHeaderProps) {
                                     <button
                                         type="button"
                                         onClick={() => setActiveTab("LISTINGS")}
-                                        className={`px-3 py-1.5 rounded-full transition-all shrink-0 ${
+                                        className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full transition-all shrink-0 ${
                                             activeTab === "LISTINGS"
                                                 ? "bg-primary text-white shadow-sm"
                                                 : "bg-soft-bg text-secondary hover:text-brand"
@@ -300,7 +317,7 @@ export function SearchHeader({ isInitialOpen }: SearchHeaderProps) {
                                     <button
                                         type="button"
                                         onClick={() => setActiveTab("RENTALS")}
-                                        className={`px-3 py-1.5 rounded-full transition-all shrink-0 ${
+                                        className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full transition-all shrink-0 ${
                                             activeTab === "RENTALS"
                                                 ? "bg-primary text-white shadow-sm"
                                                 : "bg-soft-bg text-secondary hover:text-brand"
@@ -311,7 +328,7 @@ export function SearchHeader({ isInitialOpen }: SearchHeaderProps) {
                                     <button
                                         type="button"
                                         onClick={() => setActiveTab("PROFILES")}
-                                        className={`px-3 py-1.5 rounded-full transition-all shrink-0 ${
+                                        className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full transition-all shrink-0 ${
                                             activeTab === "PROFILES"
                                                 ? "bg-primary text-white shadow-sm"
                                                 : "bg-soft-bg text-secondary hover:text-brand"
@@ -322,7 +339,7 @@ export function SearchHeader({ isInitialOpen }: SearchHeaderProps) {
                                     <button
                                         type="button"
                                         onClick={() => setActiveTab("POSTS")}
-                                        className={`px-3 py-1.5 rounded-full transition-all shrink-0 ${
+                                        className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full transition-all shrink-0 ${
                                             activeTab === "POSTS"
                                                 ? "bg-primary text-white shadow-sm"
                                                 : "bg-soft-bg text-secondary hover:text-brand"
@@ -375,24 +392,24 @@ export function SearchHeader({ isInitialOpen }: SearchHeaderProps) {
                                                                 key={doc.id}
                                                                 href={`/ads/${doc.id}`}
                                                                 onClick={() => setIsSearching(false)}
-                                                                className="flex items-center justify-between p-2.5 hover:bg-soft-bg rounded-xl transition-all group"
+                                                                className="flex items-center justify-between p-2 sm:p-2.5 hover:bg-soft-bg rounded-xl transition-all group"
                                                             >
-                                                                <div className="flex items-center gap-3">
-                                                                    <div className="w-9 h-9 bg-primary/10 text-primary rounded-lg flex items-center justify-center shrink-0 group-hover:bg-primary group-hover:text-white transition-colors">
+                                                                <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                                                                    <div className="w-8 h-8 sm:w-9 sm:h-9 bg-primary/10 text-primary rounded-lg flex items-center justify-center shrink-0 group-hover:bg-primary group-hover:text-white transition-colors">
                                                                         <Building2 className="w-4 h-4" />
                                                                     </div>
-                                                                    <div className="flex flex-col text-right">
-                                                                        <span className="text-brand font-bold text-sm line-clamp-1 group-hover:text-primary transition-colors">
+                                                                    <div className="flex flex-col text-right min-w-0">
+                                                                        <span className="text-brand font-bold text-xs sm:text-sm line-clamp-1 group-hover:text-primary transition-colors">
                                                                             {doc.title}
                                                                         </span>
-                                                                        <span className="text-[11px] text-secondary">
+                                                                        <span className="text-[10px] sm:text-[11px] text-secondary truncate">
                                                                             {doc.geo?.cityName}
                                                                             {doc.geo?.neighbourhoodName ? `، ${doc.geo.neighbourhoodName}` : ""}
                                                                             {pNum ? ` • ${formatPriceNumber(pNum)}` : ""}
                                                                         </span>
                                                                     </div>
                                                                 </div>
-                                                                <ArrowLeft className="w-4 h-4 text-secondary/40 group-hover:text-primary transition-colors shrink-0" />
+                                                                <ArrowLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-secondary/40 group-hover:text-primary transition-colors shrink-0" />
                                                             </Link>
                                                         );
                                                     })}
@@ -425,23 +442,23 @@ export function SearchHeader({ isInitialOpen }: SearchHeaderProps) {
                                                                 key={doc.id}
                                                                 href={`/temporary-rent/${doc.id}`}
                                                                 onClick={() => setIsSearching(false)}
-                                                                className="flex items-center justify-between p-2.5 hover:bg-soft-bg rounded-xl transition-all group"
+                                                                className="flex items-center justify-between p-2 sm:p-2.5 hover:bg-soft-bg rounded-xl transition-all group"
                                                             >
-                                                                <div className="flex items-center gap-3">
-                                                                    <div className="w-9 h-9 bg-teal-50 text-teal-600 rounded-lg flex items-center justify-center shrink-0 group-hover:bg-teal-600 group-hover:text-white transition-colors">
+                                                                <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                                                                    <div className="w-8 h-8 sm:w-9 sm:h-9 bg-teal-50 text-teal-600 rounded-lg flex items-center justify-center shrink-0 group-hover:bg-teal-600 group-hover:text-white transition-colors">
                                                                         <Hotel className="w-4 h-4" />
                                                                     </div>
-                                                                    <div className="flex flex-col text-right">
-                                                                        <span className="text-brand font-bold text-sm line-clamp-1 group-hover:text-primary transition-colors">
+                                                                    <div className="flex flex-col text-right min-w-0">
+                                                                        <span className="text-brand font-bold text-xs sm:text-sm line-clamp-1 group-hover:text-primary transition-colors">
                                                                             {doc.title}
                                                                         </span>
-                                                                        <span className="text-[11px] text-secondary">
+                                                                        <span className="text-[10px] sm:text-[11px] text-secondary truncate">
                                                                             {doc.geo?.cityName}
                                                                             {nightly ? ` • هر شب: ${formatPriceNumber(nightly)}` : ""}
                                                                         </span>
                                                                     </div>
                                                                 </div>
-                                                                <ArrowLeft className="w-4 h-4 text-secondary/40 group-hover:text-primary transition-colors shrink-0" />
+                                                                <ArrowLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-secondary/40 group-hover:text-primary transition-colors shrink-0" />
                                                             </Link>
                                                         );
                                                     })}
@@ -469,27 +486,27 @@ export function SearchHeader({ isInitialOpen }: SearchHeaderProps) {
                                                                 key={doc.id}
                                                                 href={href}
                                                                 onClick={() => setIsSearching(false)}
-                                                                className="flex items-center justify-between p-2.5 hover:bg-soft-bg rounded-xl transition-all group"
+                                                                className="flex items-center justify-between p-2 sm:p-2.5 hover:bg-soft-bg rounded-xl transition-all group"
                                                             >
-                                                                <div className="flex items-center gap-3">
-                                                                    <div className="w-9 h-9 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center shrink-0 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                                                                <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                                                                    <div className="w-8 h-8 sm:w-9 sm:h-9 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center shrink-0 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
                                                                         <Users className="w-4 h-4" />
                                                                     </div>
-                                                                    <div className="flex flex-col text-right">
+                                                                    <div className="flex flex-col text-right min-w-0">
                                                                         <div className="flex items-center gap-1.5">
-                                                                            <span className="text-brand font-bold text-sm line-clamp-1 group-hover:text-primary transition-colors">
+                                                                            <span className="text-brand font-bold text-xs sm:text-sm line-clamp-1 group-hover:text-primary transition-colors">
                                                                                 {doc.displayName}
                                                                             </span>
-                                                                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-soft-bg text-secondary font-medium">
+                                                                            <span className="text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 rounded-full bg-soft-bg text-secondary font-medium shrink-0">
                                                                                 {isAgency ? "دفتر املاک" : "میزبان"}
                                                                             </span>
                                                                         </div>
-                                                                        <span className="text-[11px] text-secondary">
+                                                                        <span className="text-[10px] sm:text-[11px] text-secondary truncate">
                                                                             {doc.cityName || doc.agencyType || "فعال در پلتفرم"}
                                                                         </span>
                                                                     </div>
                                                                 </div>
-                                                                <ArrowLeft className="w-4 h-4 text-secondary/40 group-hover:text-primary transition-colors shrink-0" />
+                                                                <ArrowLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-secondary/40 group-hover:text-primary transition-colors shrink-0" />
                                                             </Link>
                                                         );
                                                     })}
@@ -520,22 +537,22 @@ export function SearchHeader({ isInitialOpen }: SearchHeaderProps) {
                                                             key={doc.id}
                                                             href={`/posts/${doc.slug || doc.id}`}
                                                             onClick={() => setIsSearching(false)}
-                                                            className="flex items-center justify-between p-2.5 hover:bg-soft-bg rounded-xl transition-all group"
+                                                            className="flex items-center justify-between p-2 sm:p-2.5 hover:bg-soft-bg rounded-xl transition-all group"
                                                         >
-                                                            <div className="flex items-center gap-3">
-                                                                <div className="w-9 h-9 bg-amber-50 text-amber-600 rounded-lg flex items-center justify-center shrink-0 group-hover:bg-amber-600 group-hover:text-white transition-colors">
+                                                            <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                                                                <div className="w-8 h-8 sm:w-9 sm:h-9 bg-amber-50 text-amber-600 rounded-lg flex items-center justify-center shrink-0 group-hover:bg-amber-600 group-hover:text-white transition-colors">
                                                                     <BookOpen className="w-4 h-4" />
                                                                 </div>
-                                                                <div className="flex flex-col text-right">
-                                                                    <span className="text-brand font-bold text-sm line-clamp-1 group-hover:text-primary transition-colors">
+                                                                <div className="flex flex-col text-right min-w-0">
+                                                                    <span className="text-brand font-bold text-xs sm:text-sm line-clamp-1 group-hover:text-primary transition-colors">
                                                                         {doc.title}
                                                                     </span>
-                                                                    <span className="text-[11px] text-secondary line-clamp-1">
+                                                                    <span className="text-[10px] sm:text-[11px] text-secondary line-clamp-1">
                                                                         {doc.summary || doc.category || "مقاله تخصصی"}
                                                                     </span>
                                                                 </div>
                                                             </div>
-                                                            <ArrowLeft className="w-4 h-4 text-secondary/40 group-hover:text-primary transition-colors shrink-0" />
+                                                            <ArrowLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-secondary/40 group-hover:text-primary transition-colors shrink-0" />
                                                         </Link>
                                                     ))}
                                                 </div>

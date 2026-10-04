@@ -73,7 +73,7 @@ export const HomeScene = () => {
     }, [agencyData]);
 
     return (
-        <div className="flex flex-col gap-10 pb-36 pt-5 ">
+        <div className="flex flex-col gap-8 sm:gap-10 pb-32 sm:pb-36 pt-4 sm:pt-6">
             <SearchHeader
                 isInitialOpen={isInitialModalOpen}
             />
@@ -97,7 +97,7 @@ export const HomeScene = () => {
             )}
 
             {/* Featured Properties */}
-            <section className="container mx-auto pr-4">
+            <section className="container mx-auto px-4">
                 <SectionHeader
                     title="املاک ویژه"
                     subtitle="منتخب آگهی‌های برتر"
@@ -148,7 +148,7 @@ export const HomeScene = () => {
             </section>
 
             {/* Top Agencies */}
-            <section className="container mx-auto pr-4">
+            <section className="container mx-auto px-4">
                 <SectionHeader
                     title="آژانس‌های برتر"
                     subtitle="همکاری با بهترین متخصصان"
@@ -172,49 +172,51 @@ export const HomeScene = () => {
             </section>
 
             {/* Temporary Rentals */}
-            <section className="container mx-auto pr-4 bg-orange-50/20 py-8 rounded-2xl">
-                <SectionHeader
-                    title="اجاره روزانه"
-                    subtitle="بهترین گزینه‌ها برای سفرهای کوتاه"
-                    link="/temporary-rent"
-                />
-                {isTempRentLoading ? (
-                    <div className="flex gap-4 overflow-hidden">
-                        {[1, 2, 3, 4].map((i) => (
-                            <div key={i} className="min-w-72 h-64 bg-gray-100 animate-pulse rounded-xl" />
-                        ))}
-                    </div>
-                ) : tempRentError ? (
-                    <ErrorState onRetry={refetchTempRent} />
-                ) : !tempRentData?.items.length ? (
-                    <EmptyState message="در حال حاضر اقامتگاه روزانه‌ای در این شهر ثبت نشده است" />
-                ) : (
-                    <Slider>
-                        {tempRentData.items.map((property: TemporaryRentAdSummary) => (
-                            <PropertyCard
-                                key={property.id}
-                                id={property.id}
-                                adId={property.id}
-                                href={`/temporary-rent/${property.id}`}
-                                title={property.title}
-                                price={property.pricing.nightlyPrice}
-                                unit="/شب"
-                                rating={4.9}
-                                location={selectedCity.name}
-                                image={getMediaPosterUrl(property.mediaIds?.[0])}
-                                isVideo={property.mediaIds?.[0]?.type === "VIDEO"}
-                                category="اجاره روزانه"
-                                className="w-[210px] lg:w-[250px]"
-                                isSaved={property.isSaved ?? isTemporaryRentSaved(property.id)}
-                                onToggleSave={(id) => toggleSaveTempMutation.mutateAsync(id)}
-                            />
-                        ))}
-                    </Slider>
-                )}
+            <section className="container mx-auto px-4">
+                <div className="bg-orange-50/30 border border-orange-100/50 py-6 px-3.5 sm:px-6 rounded-2xl sm:rounded-3xl">
+                    <SectionHeader
+                        title="اجاره روزانه"
+                        subtitle="بهترین گزینه‌ها برای سفرهای کوتاه"
+                        link="/temporary-rent"
+                    />
+                    {isTempRentLoading ? (
+                        <div className="flex gap-4 overflow-hidden">
+                            {[1, 2, 3, 4].map((i) => (
+                                <div key={i} className="min-w-72 h-64 bg-gray-100 animate-pulse rounded-xl" />
+                            ))}
+                        </div>
+                    ) : tempRentError ? (
+                        <ErrorState onRetry={refetchTempRent} />
+                    ) : !tempRentData?.items.length ? (
+                        <EmptyState message="در حال حاضر اقامتگاه روزانه‌ای در این شهر ثبت نشده است" />
+                    ) : (
+                        <Slider>
+                            {tempRentData.items.map((property: TemporaryRentAdSummary) => (
+                                <PropertyCard
+                                    key={property.id}
+                                    id={property.id}
+                                    adId={property.id}
+                                    href={`/temporary-rent/${property.id}`}
+                                    title={property.title}
+                                    price={property.pricing.nightlyPrice}
+                                    unit="/شب"
+                                    rating={4.9}
+                                    location={selectedCity.name}
+                                    image={getMediaPosterUrl(property.mediaIds?.[0])}
+                                    isVideo={property.mediaIds?.[0]?.type === "VIDEO"}
+                                    category="اجاره روزانه"
+                                    className="w-[210px] lg:w-[250px]"
+                                    isSaved={property.isSaved ?? isTemporaryRentSaved(property.id)}
+                                    onToggleSave={(id) => toggleSaveTempMutation.mutateAsync(id)}
+                                />
+                            ))}
+                        </Slider>
+                    )}
+                </div>
             </section>
 
             {/* Latest Listings */}
-            <section className="container mx-auto pr-4">
+            <section className="container mx-auto px-4">
                 <SectionHeader
                     title="تازه ترین‌ها"
                     subtitle="جدیدترین آگهی‌های منطقه شما"
