@@ -137,20 +137,11 @@ export function useCreatePost() {
 
 export function useHostProfile() {
   const { user, activeRole } = useAuth();
-  const { data: profile } = useMeProfile();
-
-  const isLandlordOrAdmin =
-    activeRole === RoleName.Landlord ||
-    isRoleAdmin(activeRole) ||
-    profile?.roles?.some((r) => {
-      const parsed = tryRoleNameFrom(r);
-      return parsed === RoleName.Landlord || isRoleAdmin(parsed);
-    });
 
   return useQuery({
     queryKey: [...SHOWCASE_KEYS.hostProfile(), user?.userId],
     queryFn: () => showcaseService.getMyHostProfile(),
-    enabled: !!user?.userId && !!isLandlordOrAdmin,
+    enabled: !!user?.userId && activeRole === RoleName.Landlord,
     retry: false,
   });
 }

@@ -7,6 +7,7 @@ import {
 } from "@/types/api/agency.types";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient, UseQueryOptions } from "@tanstack/react-query";
 import axios from "axios";
+import { RoleName } from "@/types/access";
 import { useAuth } from "./useAuth";
 
 interface AgencyListQuery {
@@ -136,7 +137,7 @@ export const useRequestConsultation = () => {
 };
 
 export function useMyAgency() {
-    const { user } = useAuth();
+    const { user, activeRole } = useAuth();
 
     return useQuery({
         queryKey: ["my-agency", user?.userId],
@@ -151,7 +152,8 @@ export function useMyAgency() {
                 throw err;
             }
         },
-        enabled: !!user?.userId,
+        enabled: !!user?.userId && activeRole === RoleName.Agent,
+        retry: false,
     });
 }
 
