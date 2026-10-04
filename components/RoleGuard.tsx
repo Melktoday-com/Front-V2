@@ -1,7 +1,8 @@
 "use client";
 
 import { useAuth } from "@/hooks/useAuth";
-import { Permission, RoleName } from "@/types/access";
+import { useMeProfile } from "@/hooks/useUser";
+import { Permission, RoleName, tryRoleNameFrom } from "@/types/access";
 import React from "react";
 
 interface RoleGuardProps {
@@ -14,7 +15,7 @@ interface RoleGuardProps {
 /**
  * RoleGuard Component
  * 
- * Conditionally renders children based on the user's active role or permissions.
+ * Conditionally renders children based on the user's active role, assigned roles, or permissions.
  * 
  * Usage:
  * <RoleGuard roles={[RoleName.Admin]}>
@@ -28,6 +29,7 @@ export const RoleGuard: React.FC<RoleGuardProps> = ({
     permissions
 }) => {
     const { isLoggedIn, activeRole, hasPermission, isLoading } = useAuth();
+    const { data: profile } = useMeProfile();
 
     if (isLoading) {
         return null; // Or a skeleton/loading spinner
@@ -45,9 +47,15 @@ export const RoleGuard: React.FC<RoleGuardProps> = ({
         }
     }
 
-    // Check roles if provided
+    // Check roles if provided (matches activeRole OR any assigned role in profile)
     if (roles && roles.length > 0) {
-        if (!activeRole || !roles.includes(activeRole)) {
+        const hasActiveRole = activeRole && roles.includes(activeRole);
+        const hasAssignedRole = profile?.roles?.some((r) => {
+            const parsed = tryRoleNameFrom(r);
+            return parsed && roles.includes(parsed);
+        });
+
+        if (!hasActiveRole && !hasAssignedRole) {
             return <>{fallback}</>;
         }
     }

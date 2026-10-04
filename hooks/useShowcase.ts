@@ -2,6 +2,8 @@ import { UseQueryResult, useMutation, useQuery, useQueryClient } from "@tanstack
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useAuth } from "./useAuth";
+import { useMeProfile } from "./useUser";
+import { RoleName, isRoleAdmin, tryRoleNameFrom } from "@/types/access";
 import { showcaseService, PaginationParams } from "@/services/showcase.service";
 import {
   AgencyAbout,
@@ -134,11 +136,22 @@ export function useCreatePost() {
 }
 
 export function useHostProfile() {
-  const { user } = useAuth();
+  const { user, activeRole } = useAuth();
+  const { data: profile } = useMeProfile();
+
+  const isLandlordOrAdmin =
+    activeRole === RoleName.Landlord ||
+    isRoleAdmin(activeRole) ||
+    profile?.roles?.some((r) => {
+      const parsed = tryRoleNameFrom(r);
+      return parsed === RoleName.Landlord || isRoleAdmin(parsed);
+    });
+
   return useQuery({
     queryKey: [...SHOWCASE_KEYS.hostProfile(), user?.userId],
     queryFn: () => showcaseService.getMyHostProfile(),
-    enabled: !!user?.userId,
+    enabled: !!user?.userId && !!isLandlordOrAdmin,
+    retry: false,
   });
 }
 

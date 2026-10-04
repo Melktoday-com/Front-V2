@@ -4,7 +4,7 @@ import { RoleGuard } from "@/components/RoleGuard";
 import { AccountStatusBanner } from "@/components/ui/AccountStatusBanner";
 import { Button } from "@/components/ui/Button";
 import { useMyAgency } from "@/hooks/useAgencies";
-import { useAuth, useLogout } from "@/hooks/useAuth";
+import { useAuth, useLogout, useSwitchRole } from "@/hooks/useAuth";
 import { useConversations } from "@/hooks/useChat";
 import { useUnreadNotificationsCount } from "@/hooks/useNotifications";
 import { useHostProfile } from "@/hooks/useShowcase";
@@ -13,7 +13,7 @@ import { useUserStatus } from "@/hooks/useUserStatus";
 import { useWallet } from "@/hooks/useWallet";
 import { cn, formatCurrency, toPersianDigits } from "@/lib/utils";
 import { userService } from "@/services/user.service";
-import { RoleName, isRoleAdmin } from "@/types/access";
+import { RoleName, isRoleAdmin, tryRoleNameFrom } from "@/types/access";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
     Bell,
@@ -43,6 +43,7 @@ import { toast } from "sonner";
 export default function ProfileScene() {
     const { user, activeRole, isLoggedIn, isLoading: isAuthLoading } = useAuth();
     const { logout } = useLogout();
+    const switchRoleMutation = useSwitchRole();
     const router = useRouter();
 
     const [firstName, setFirstName] = useState("");
@@ -103,6 +104,23 @@ export default function ProfileScene() {
         landlord: "میزبان",
     };
 
+    const userRoles = (profile?.roles || [])
+        .map((r) => tryRoleNameFrom(r))
+        .filter((r): r is RoleName => r !== null);
+
+    const handleSwitchRole = async (targetRole: RoleName) => {
+        if (!user?.sessionId || activeRole === targetRole || switchRoleMutation.isPending) return;
+        try {
+            await switchRoleMutation.mutateAsync({
+                sessionId: user.sessionId,
+                roleName: targetRole,
+            });
+            toast.success(`نقش فعال شما به «${roleLabels[targetRole] || targetRole}» تغییر یافت.`);
+        } catch {
+            toast.error("خطا در تغییر نقش فعال.");
+        }
+    };
+
     if (!isAuthLoading && !isLoggedIn) {
         return (
             <div className="max-w-md mx-auto px-4 py-20 text-center space-y-6">
@@ -160,6 +178,42 @@ export default function ProfileScene() {
                             </div>
                         </div>
                     </div>
+
+                    {userRoles.length > 1 && (
+                        <div className="pt-4 border-t border-soft-border/80">
+                            <div className="flex items-center justify-between mb-2.5">
+                                <span className="text-xs font-bold text-brand">تغییر نقش فعال در حساب:</span>
+                                {switchRoleMutation.isPending && (
+                                    <span className="text-[11px] text-secondary flex items-center gap-1 font-medium">
+                                        <Loader2 className="w-3 h-3 animate-spin text-primary" /> در حال تغییر نقش...
+                                    </span>
+                                )}
+                            </div>
+                            <div className="flex items-center gap-2 flex-wrap">
+                                {userRoles.map((role) => {
+                                    const isActive = activeRole === role;
+                                    return (
+                                        <button
+                                            key={role}
+                                            type="button"
+                                            disabled={isActive || switchRoleMutation.isPending}
+                                            onClick={() => handleSwitchRole(role)}
+                                            className={cn(
+                                                "px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5",
+                                                isActive
+                                                    ? "bg-brand text-white shadow-sm ring-2 ring-brand/20 cursor-default"
+                                                    : "bg-white text-secondary hover:text-brand border border-soft-border hover:border-brand/40 active:scale-95"
+                                            )}
+                                        >
+                                            {isActive && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />}
+                                            <span>{roleLabels[role] || role}</span>
+                                            {isActive && <span className="text-[10px] text-white/70 font-normal">(فعال)</span>}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
 
                     <div className="grid gap-4">
                         <div className="space-y-2">
@@ -229,7 +283,19 @@ export default function ProfileScene() {
                             <Button
                                 variant="outline"
                                 className="w-full h-16 rounded-[25px] flex items-center justify-between px-6 border-brand/10 hover:bg-brand/5"
-                                onClick={() => router.push('/agency/panel')}
+                                onClick={async () => {
+                                    if (activeRole !== RoleName.Agent && user?.sessionId) {
+                                        try {
+                                            await switchRoleMutation.mutateAsync({
+                                                sessionId: user.sessionId,
+                                                roleName: RoleName.Agent,
+                                            });
+                                        } catch {
+                                            // continue navigation
+                                        }
+                                    }
+                                    router.push('/agency/panel');
+                                }}
                             >
                                 <div className="flex items-center gap-4">
                                     <div className="p-3 rounded-2xl bg-brand/5 text-brand">
@@ -272,7 +338,19 @@ export default function ProfileScene() {
                             <Button
                                 variant="outline"
                                 className="w-full h-16 rounded-[25px] flex items-center justify-between px-6 border-soft-border hover:bg-soft-bg"
-                                onClick={() => router.push('/profile/temporary-rent')}
+                                onClick={async () => {
+                                    if (activeRole !== RoleName.Landlord && user?.sessionId) {
+                                        try {
+                                            await switchRoleMutation.mutateAsync({
+                                                sessionId: user.sessionId,
+                                                roleName: RoleName.Landlord,
+                                            });
+                                        } catch {
+                                            // continue navigation
+                                        }
+                                    }
+                                    router.push('/profile/temporary-rent');
+                                }}
                             >
                                 <div className="flex items-center gap-4">
                                     <div className="p-3 rounded-2xl bg-soft-bg text-secondary">
