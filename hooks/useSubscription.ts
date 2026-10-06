@@ -1,8 +1,10 @@
 import { subscriptionService } from "@/services/subscription.service";
 import {
     ClaimWelcomePackageRequest,
+    CreateSubscriptionPlanRequest,
     PurchasePlanRequest,
     SubscriptionTargetRole,
+    UpdateWelcomePackageRequest,
 } from "@/types/api/subscription.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "./useAuth";
@@ -55,6 +57,57 @@ export function useClaimWelcomePackage() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["subscription"] });
             queryClient.invalidateQueries({ queryKey: ["wallet"] });
+        },
+    });
+}
+
+export function useAdminSubscriptionPlans() {
+    return useQuery({
+        queryKey: ["admin", "subscription", "plans"],
+        queryFn: () => subscriptionService.adminListPlans(),
+    });
+}
+
+export function useAdminCreatePlan() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: subscriptionService.adminCreatePlan,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["admin", "subscription", "plans"] });
+            queryClient.invalidateQueries({ queryKey: ["subscription", "plans"] });
+        },
+    });
+}
+
+export function useAdminUpdatePlan() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: ({ id, payload }: { id: string; payload: Partial<CreateSubscriptionPlanRequest> }) =>
+            subscriptionService.adminUpdatePlan(id, payload),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["admin", "subscription", "plans"] });
+            queryClient.invalidateQueries({ queryKey: ["subscription", "plans"] });
+        },
+    });
+}
+
+export function useAdminWelcomePackages() {
+    return useQuery({
+        queryKey: ["admin", "subscription", "welcome-packages"],
+        queryFn: () => subscriptionService.adminListWelcomePackages(),
+    });
+}
+
+export function useAdminUpdateWelcomePackage() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: ({ id, payload }: { id: string; payload: UpdateWelcomePackageRequest }) =>
+            subscriptionService.adminUpdateWelcomePackage(id, payload),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["admin", "subscription", "welcome-packages"] });
         },
     });
 }

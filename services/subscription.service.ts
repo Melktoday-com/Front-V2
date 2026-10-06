@@ -3,11 +3,15 @@ import {
     ActiveBadgeInfo,
     ClaimWelcomePackageRequest,
     ClaimWelcomePackageResponse,
+    CreateSubscriptionPlanRequest,
     PurchasePlanRequest,
     PurchasePlanResponse,
     SubscriptionEntitlement,
     SubscriptionPlan,
     SubscriptionTargetRole,
+    UpdateSubscriptionPlanRequest,
+    UpdateWelcomePackageRequest,
+    WelcomePackage,
 } from "@/types/api/subscription.types";
 
 export const subscriptionService = {
@@ -39,6 +43,40 @@ export const subscriptionService = {
         const { data } = await api.post<ClaimWelcomePackageResponse>(
             "/subscriptions/welcome-package/claim",
             payload || {},
+        );
+        return data;
+    },
+
+    adminListPlans: async (): Promise<SubscriptionPlan[]> => {
+        const { data } = await api.get<SubscriptionPlan[]>("/subscriptions/admin/plans");
+        return data;
+    },
+
+    adminCreatePlan: async (payload: CreateSubscriptionPlanRequest): Promise<SubscriptionPlan> => {
+        const { data } = await api.post<SubscriptionPlan>("/subscriptions/admin/plans", payload);
+        return data;
+    },
+
+    adminUpdatePlan: async (
+        id: string,
+        payload: Partial<CreateSubscriptionPlanRequest>,
+    ): Promise<SubscriptionPlan> => {
+        const { data } = await api.patch<SubscriptionPlan>(`/subscriptions/admin/plans/${id}`, payload);
+        return data;
+    },
+
+    adminListWelcomePackages: async (): Promise<WelcomePackage[]> => {
+        const { data } = await api.get<WelcomePackage[]>("/subscriptions/admin/welcome-packages");
+        return data;
+    },
+
+    adminUpdateWelcomePackage: async (
+        id: string,
+        payload: UpdateWelcomePackageRequest,
+    ): Promise<WelcomePackage> => {
+        const { data } = await api.patch<WelcomePackage>(
+            `/subscriptions/admin/welcome-packages/${id}`,
+            payload,
         );
         return data;
     },

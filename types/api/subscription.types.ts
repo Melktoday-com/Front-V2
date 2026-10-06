@@ -92,3 +92,71 @@ export interface ClaimWelcomePackageResponse {
         }[];
     };
 }
+
+export interface WelcomePackage {
+    id: string;
+    title: string;
+    targetRole: string; // 'user' | 'landlord' | 'agent'
+    walletBonusIrr: string;
+    planId: string | null;
+    publicationQuota: number;
+    tempRentQuota: number;
+    urgentQuota: number;
+    ladderQuota: number;
+    durationDays: number;
+    isActive: boolean;
+    createdAt?: string;
+    updatedAt?: string;
+}
+
+export interface CreateSubscriptionPlanRequest {
+    name: string;
+    slug: string;
+    description?: string;
+    targetRole: SubscriptionTargetRole;
+    priceIrr: string;
+    durationDays: number;
+    publicationQuota: number;
+    tempRentQuota: number;
+    urgentQuota: number;
+    ladderQuota: number;
+    badgeName?: string;
+    badgeIcon?: string;
+    badgeIconType?: string;
+    badgeMetadata?: SubscriptionBadgeMetadata;
+    isActive?: boolean;
+    sortOrder?: number;
+}
+
+export interface UpdateSubscriptionPlanRequest {
+    id: string;
+    name?: string;
+    description?: string;
+    targetRole?: SubscriptionTargetRole;
+    priceIrr?: string;
+    durationDays?: number;
+    publicationQuota?: number;
+    tempRentQuota?: number;
+    urgentQuota?: number;
+    ladderQuota?: number;
+    badgeName?: string;
+    badgeIcon?: string;
+    badgeIconType?: string;
+    badgeMetadata?: SubscriptionBadgeMetadata;
+    isActive?: boolean;
+    sortOrder?: number;
+}
+
+export interface UpdateWelcomePackageRequest {
+    id: string;
+    title?: string;
+    targetRole?: string;
+    walletBonusIrr?: string;
+    planId?: string;
+    publicationQuota?: number;
+    tempRentQuota?: number;
+    urgentQuota?: number;
+    ladderQuota?: number;
+    durationDays?: number;
+    isActive?: boolean;
+}
