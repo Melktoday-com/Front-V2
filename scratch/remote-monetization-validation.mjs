@@ -408,6 +408,189 @@ async function runValidation() {
     }
   }
 
+  // Scenario 10: Admin Welcome Package CRUD & RBAC Protection
+  let createdPkgId = null;
+  if (superAdminUser) {
+    try {
+      // 10.1: SuperAdmin creates a new Welcome Package
+      const createPkgRes = await request('/subscriptions/admin/welcome-packages', {
+        method: 'POST',
+        headers: superAdminUser.headers,
+        body: {
+          title: `بسته تستی اعتبارسنجی ${Date.now()}`,
+          targetRole: 'agent',
+          walletBonusIrr: '350000',
+          publicationQuota: 10,
+          tempRentQuota: 3,
+          urgentQuota: 2,
+          ladderQuota: 5,
+          durationDays: 45,
+          isActive: true,
+        },
+      });
+
+      const pkgData = createPkgRes.data.data || createPkgRes.data;
+      createdPkgId = pkgData?.id;
+      const isCreated = (createPkgRes.status === 201 || createPkgRes.status === 200) && Boolean(createdPkgId);
+      record(
+        'Scenario 10.1: Super-Admin can CREATE a Welcome Package via POST /subscriptions/admin/welcome-packages',
+        isCreated,
+        `Status: ${createPkgRes.status}, ID: ${createdPkgId}, Title: ${pkgData?.title}`,
+      );
+
+      // 10.2: SuperAdmin updates the created Welcome Package
+      if (createdPkgId) {
+        const updatePkgRes = await request(`/subscriptions/admin/welcome-packages/${createdPkgId}`, {
+          method: 'PATCH',
+          headers: superAdminUser.headers,
+          body: {
+            title: `بسته تستی ویرایش‌شده ${Date.now()}`,
+            isActive: false,
+          },
+        });
+
+        const updatedData = updatePkgRes.data.data || updatePkgRes.data;
+        const isUpdated = updatePkgRes.status === 200 && updatedData?.isActive === false;
+        record(
+          'Scenario 10.2: Super-Admin can UPDATE/TOGGLE a Welcome Package via PATCH /subscriptions/admin/welcome-packages/:id',
+          isUpdated,
+          `Status: ${updatePkgRes.status}, Active: ${updatedData?.isActive}`,
+        );
+      }
+
+      // 10.3: Regular user is FORBIDDEN from creating welcome package
+      const regCreatePkgRes = await request('/subscriptions/admin/welcome-packages', {
+        method: 'POST',
+        headers: regularUser.headers,
+        body: {
+          title: 'تلاش غیرمجاز کاربر',
+          targetRole: 'agent',
+        },
+      });
+      record(
+        'Scenario 10.3: Regular user is FORBIDDEN from creating Welcome Packages (HTTP 403)',
+        regCreatePkgRes.status === 403,
+        `Status: ${regCreatePkgRes.status}`,
+      );
+    } catch (err) {
+      record('Scenario 10: Admin Welcome Package CRUD', false, err.message);
+    }
+  }
+
+  // Scenario 11: Backend Domain Guard against Regular User Subscription Plans
+  if (superAdminUser) {
+    try {
+      const invalidPlanRes = await request('/subscriptions/admin/plans', {
+        method: 'POST',
+        headers: superAdminUser.headers,
+        body: {
+          name: 'پلن غیرمجاز کاربران عادی',
+          slug: `invalid-user-plan-${Date.now()}`,
+          targetRole: 'user', // STRICTLY PROHIBITED
+          priceIrr: '1500000',
+          durationDays: 30,
+          publicationQuota: 5,
+          tempRentQuota: 0,
+          urgentQuota: 0,
+          ladderQuota: 0,
+        },
+      });
+
+      console.log('DEBUG Scenario 11 invalidPlanRes:', JSON.stringify(invalidPlanRes.data, null, 2));
+      const isRejected = invalidPlanRes.status === 400;
+      record(
+        'Scenario 11: Backend domain strictly REJECTS creating subscription plan for regular user (HTTP 400 Bad Request)',
+        isRejected,
+        `Status: ${invalidPlanRes.status}, Message: ${JSON.stringify(invalidPlanRes.data.error?.message || invalidPlanRes.data.message || invalidPlanRes.data)}`,
+      );
+    } catch (err) {
+      record('Scenario 11: Regular user plan rejection guard', false, err.message);
+    }
+  }
+
+  // Scenario 12: Webhook Endpoint CSRF Exemption Test
+  try {
+    const webhookRes = await request('/wallet/payments/webhook', {
+      method: 'POST',
+      headers: {
+        // Deliberately no X-XSRF-TOKEN and no cookie to test CSRF exemption
+      },
+      body: {
+        event: 'PAYMENT_VERIFIED',
+        payload: { referenceId: 'e2e-csrf-check' },
+      },
+    });
+
+    const csrfBlocked =
+      webhookRes.status === 403 &&
+      JSON.stringify(webhookRes.data).toLowerCase().includes('csrf');
+    record(
+      'Scenario 12: Webhook endpoint /wallet/payments/webhook is EXEMPT from double-submit cookie CSRF check',
+      !csrfBlocked,
+      `HTTP Status: ${webhookRes.status} (Not CSRF-blocked)`,
+    );
+  } catch (err) {
+    record('Scenario 12: Webhook CSRF exemption', false, err.message);
+  }
+
+  // Scenario 13: Phone Privacy & Contact Reveal Authentication Requirement
+  try {
+    // 13.1: Unauthenticated request to contact endpoint is rejected with 401
+    const unauthContactRes = await request('/ads/00000000-0000-0000-0000-000000000001/contact', {
+      method: 'GET',
+    });
+    record(
+      'Scenario 13.1: Phone/Contact reveal strictly REQUIRES authentication (Unauthenticated returns 401)',
+      unauthContactRes.status === 401,
+      `HTTP Status: ${unauthContactRes.status}`,
+    );
+
+    // 13.2: Authenticated request reaches controller (returns 200 or 404 for non-existent ad)
+    const authContactRes = await request('/ads/00000000-0000-0000-0000-000000000001/contact', {
+      method: 'GET',
+      headers: regularUser.headers,
+    });
+    record(
+      'Scenario 13.2: Authenticated user reaches contact controller (404/200, auth passed)',
+      authContactRes.status === 404 || authContactRes.status === 200,
+      `HTTP Status: ${authContactRes.status}`,
+    );
+  } catch (err) {
+    record('Scenario 13: Phone Privacy and Contact reveal', false, err.message);
+  }
+
+  // Scenario 14: Promotion Pricing & Status Requirements
+  try {
+    const promoPricingRes = await request('/promotions/pricing', {
+      method: 'GET',
+      headers: regularUser.headers,
+    });
+    const pricingRules = promoPricingRes.data.data?.rules || promoPricingRes.data?.rules;
+    record(
+      'Scenario 14.1: Query /promotions/pricing returns active promotion pricing configuration',
+      promoPricingRes.status === 200 && Array.isArray(pricingRules),
+      `Rules count: ${pricingRules?.length || 0}`,
+    );
+
+    // Attempting to promote invalid or unapproved ad is rejected cleanly
+    const invalidPromoRes = await request('/promotions', {
+      method: 'POST',
+      headers: regularUser.headers,
+      body: {
+        listingId: '123e4567-e89b-42d3-a456-426614174000',
+        promotionType: 'URGENT_TAG',
+        durationDays: 7,
+      },
+    });
+    record(
+      'Scenario 14.2: Requesting promotion requires existing and PUBLISHED ad (Clean domain rejection, not 500)',
+      invalidPromoRes.status === 404 || invalidPromoRes.status === 400,
+      `HTTP Status: ${invalidPromoRes.status}, Message: ${JSON.stringify(invalidPromoRes.data.error?.message || invalidPromoRes.data.message || invalidPromoRes.data)}`,
+    );
+  } catch (err) {
+    record('Scenario 14: Promotion pricing and status requirements', false, err.message);
+  }
+
   // Summary
   console.log('\n====================================================');
   console.log('📊 Remote Validation Summary:');
