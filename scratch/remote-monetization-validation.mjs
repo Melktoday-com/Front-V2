@@ -496,7 +496,6 @@ async function runValidation() {
         },
       });
 
-      console.log('DEBUG Scenario 11 invalidPlanRes:', JSON.stringify(invalidPlanRes.data, null, 2));
       const isRejected = invalidPlanRes.status === 400;
       record(
         'Scenario 11: Backend domain strictly REJECTS creating subscription plan for regular user (HTTP 400 Bad Request)',
