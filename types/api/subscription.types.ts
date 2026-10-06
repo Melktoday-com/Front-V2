@@ -148,11 +148,24 @@ export interface UpdateSubscriptionPlanRequest {
 }
 
 export interface UpdateWelcomePackageRequest {
-    id: string;
+    id?: string;
     title?: string;
     targetRole?: string;
     walletBonusIrr?: string;
     planId?: string;
+    publicationQuota?: number;
+    tempRentQuota?: number;
+    urgentQuota?: number;
+    ladderQuota?: number;
+    durationDays?: number;
+    isActive?: boolean;
+}
+
+export interface CreateWelcomePackageRequest {
+    title: string;
+    targetRole: string; // 'user' | 'landlord' | 'agent'
+    walletBonusIrr?: string;
+    planId?: string | null;
     publicationQuota?: number;
     tempRentQuota?: number;
     urgentQuota?: number;

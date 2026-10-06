@@ -2,6 +2,7 @@ import { subscriptionService } from "@/services/subscription.service";
 import {
     ClaimWelcomePackageRequest,
     CreateSubscriptionPlanRequest,
+    CreateWelcomePackageRequest,
     PurchasePlanRequest,
     SubscriptionTargetRole,
     UpdateWelcomePackageRequest,
@@ -97,6 +98,18 @@ export function useAdminWelcomePackages() {
     return useQuery({
         queryKey: ["admin", "subscription", "welcome-packages"],
         queryFn: () => subscriptionService.adminListWelcomePackages(),
+    });
+}
+
+export function useAdminCreateWelcomePackage() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (payload: CreateWelcomePackageRequest) =>
+            subscriptionService.adminCreateWelcomePackage(payload),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["admin", "subscription", "welcome-packages"] });
+        },
     });
 }
 

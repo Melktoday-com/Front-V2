@@ -4,6 +4,7 @@ import {
     ClaimWelcomePackageRequest,
     ClaimWelcomePackageResponse,
     CreateSubscriptionPlanRequest,
+    CreateWelcomePackageRequest,
     PurchasePlanRequest,
     PurchasePlanResponse,
     SubscriptionEntitlement,
@@ -67,6 +68,16 @@ export const subscriptionService = {
 
     adminListWelcomePackages: async (): Promise<WelcomePackage[]> => {
         const { data } = await api.get<WelcomePackage[]>("/subscriptions/admin/welcome-packages");
+        return data;
+    },
+
+    adminCreateWelcomePackage: async (
+        payload: CreateWelcomePackageRequest,
+    ): Promise<WelcomePackage> => {
+        const { data } = await api.post<WelcomePackage>(
+            "/subscriptions/admin/welcome-packages",
+            payload,
+        );
         return data;
     },
 

@@ -41,6 +41,7 @@ import {
     WelcomePackage,
     SubscriptionTargetRole,
     CreateSubscriptionPlanRequest,
+    CreateWelcomePackageRequest,
     UpdateWelcomePackageRequest,
     SubscriptionBadgeMetadata,
 } from "@/types/api/subscription.types";
@@ -49,6 +50,7 @@ import {
     useAdminCreatePlan,
     useAdminUpdatePlan,
     useAdminWelcomePackages,
+    useAdminCreateWelcomePackage,
     useAdminUpdateWelcomePackage,
 } from "@/hooks/useSubscription";
 import { useAdminPermissions } from "@/hooks/useAdminPermissions";
@@ -210,6 +212,7 @@ export default function AdminConfigPage() {
         isError: packagesError,
         refetch: refetchPackages,
     } = useAdminWelcomePackages();
+    const createPackageMutation = useAdminCreateWelcomePackage();
     const updatePackageMutation = useAdminUpdateWelcomePackage();
 
     // Legacy limits state
@@ -391,6 +394,22 @@ export default function AdminConfigPage() {
     };
 
     // Handlers for Welcome Package
+    const openCreatePackageModal = () => {
+        setEditingPackageId(null);
+        setPackageForm({
+            title: "بسته خوش‌آمدگویی جدید",
+            targetRole: "agent",
+            walletBonusIrr: "0",
+            publicationQuota: 5,
+            tempRentQuota: 0,
+            urgentQuota: 2,
+            ladderQuota: 3,
+            durationDays: 30,
+            isActive: true,
+        });
+        setIsPackageModalOpen(true);
+    };
+
     const openEditPackageModal = (pkg: WelcomePackage) => {
         setEditingPackageId(pkg.id);
         setPackageForm({
@@ -407,29 +426,65 @@ export default function AdminConfigPage() {
         setIsPackageModalOpen(true);
     };
 
+    const handleTogglePackageActive = async (pkg: WelcomePackage) => {
+        if (!canManageConfig) {
+            toast.error("شما مجوز تغییر وضعیت بسته خوش‌آمدگویی را ندارید.");
+            return;
+        }
+        try {
+            await updatePackageMutation.mutateAsync({
+                id: pkg.id,
+                payload: { isActive: !pkg.isActive },
+            });
+            toast.success(pkg.isActive ? "بسته غیرفعال شد." : "بسته فعال شد.");
+        } catch (err: unknown) {
+            toast.error("خطا در تغییر وضعیت بسته: " + normalizeApiError(err instanceof Error ? err : new Error(String(err))));
+        }
+    };
+
     const handleSavePackage = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!canManageConfig) {
             toast.error("شما مجوز مدیریت بسته‌های خوش‌آمدگویی را ندارید.");
             return;
         }
-        if (!editingPackageId) return;
+
+        if (!packageForm.title.trim()) {
+            toast.error("لطفاً عنوان بسته خوش‌آمدگویی را وارد کنید.");
+            return;
+        }
 
         try {
-            const payload: UpdateWelcomePackageRequest = {
-                id: editingPackageId,
-                title: packageForm.title.trim(),
-                targetRole: packageForm.targetRole,
-                walletBonusIrr: packageForm.walletBonusIrr,
-                publicationQuota: Number(packageForm.publicationQuota),
-                tempRentQuota: Number(packageForm.tempRentQuota),
-                urgentQuota: Number(packageForm.urgentQuota),
-                ladderQuota: Number(packageForm.ladderQuota),
-                durationDays: Number(packageForm.durationDays),
-                isActive: packageForm.isActive,
-            };
-            await updatePackageMutation.mutateAsync({ id: editingPackageId, payload });
-            toast.success("بسته خوش‌آمدگویی با موفقیت به‌روزرسانی شد.");
+            if (editingPackageId) {
+                const payload: UpdateWelcomePackageRequest = {
+                    id: editingPackageId,
+                    title: packageForm.title.trim(),
+                    targetRole: packageForm.targetRole,
+                    walletBonusIrr: packageForm.walletBonusIrr,
+                    publicationQuota: Number(packageForm.publicationQuota),
+                    tempRentQuota: Number(packageForm.tempRentQuota),
+                    urgentQuota: Number(packageForm.urgentQuota),
+                    ladderQuota: Number(packageForm.ladderQuota),
+                    durationDays: Number(packageForm.durationDays),
+                    isActive: packageForm.isActive,
+                };
+                await updatePackageMutation.mutateAsync({ id: editingPackageId, payload });
+                toast.success("بسته خوش‌آمدگویی با موفقیت به‌روزرسانی شد.");
+            } else {
+                const payload: CreateWelcomePackageRequest = {
+                    title: packageForm.title.trim(),
+                    targetRole: packageForm.targetRole,
+                    walletBonusIrr: packageForm.walletBonusIrr,
+                    publicationQuota: Number(packageForm.publicationQuota),
+                    tempRentQuota: Number(packageForm.tempRentQuota),
+                    urgentQuota: Number(packageForm.urgentQuota),
+                    ladderQuota: Number(packageForm.ladderQuota),
+                    durationDays: Number(packageForm.durationDays),
+                    isActive: packageForm.isActive,
+                };
+                await createPackageMutation.mutateAsync(payload);
+                toast.success("بسته خوش‌آمدگویی جدید با موفقیت ایجاد شد.");
+            }
             setIsPackageModalOpen(false);
         } catch (err: unknown) {
             toast.error("خطا در ذخیره بسته خوش‌آمدگویی: " + normalizeApiError(err instanceof Error ? err : new Error(String(err))));
@@ -468,6 +523,15 @@ export default function AdminConfigPage() {
                         >
                             <Plus size={18} />
                             افزودن پلن جدید
+                        </button>
+                    )}
+                    {activeTab === "welcome" && canManageConfig && (
+                        <button
+                            onClick={openCreatePackageModal}
+                            className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 text-white text-sm font-bold rounded-xl shadow-sm hover:bg-emerald-700 transition-all active:scale-95"
+                        >
+                            <Plus size={18} />
+                            افزودن بسته خوش‌آمدگویی جدید
                         </button>
                     )}
                 </div>
@@ -807,20 +871,23 @@ export default function AdminConfigPage() {
                                                         : "میزبان (Landlord)"}
                                                 </span>
 
-                                                <span
-                                                    className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold ${
+                                                <button
+                                                    onClick={() => handleTogglePackageActive(pkg)}
+                                                    disabled={!canManageConfig}
+                                                    title={pkg.isActive ? "کلیک برای غیرفعال‌سازی" : "کلیک برای فعال‌سازی"}
+                                                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold transition-all ${
                                                         pkg.isActive
-                                                            ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                                                            : "bg-gray-100 text-gray-500 border border-gray-300"
+                                                            ? "bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100"
+                                                            : "bg-gray-100 text-gray-500 border border-gray-300 hover:bg-gray-200"
                                                     }`}
                                                 >
                                                     <span
                                                         className={`w-2 h-2 rounded-full ${
-                                                            pkg.isActive ? "bg-emerald-500" : "bg-gray-400"
+                                                            pkg.isActive ? "bg-emerald-500 animate-pulse" : "bg-gray-400"
                                                         }`}
                                                     />
                                                     {pkg.isActive ? "فعال" : "غیرفعال"}
-                                                </span>
+                                                </button>
                                             </div>
 
                                             <div>
@@ -1398,9 +1465,15 @@ export default function AdminConfigPage() {
                     <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-gray-100 my-8 space-y-6">
                         <div className="flex justify-between items-center border-b pb-4">
                             <div>
-                                <h3 className="text-xl font-black text-gray-900">ویرایش بسته خوش‌آمدگویی</h3>
+                                <h3 className="text-xl font-black text-gray-900">
+                                    {editingPackageId ? "ویرایش بسته خوش‌آمدگویی" : "افزودن بسته خوش‌آمدگویی جدید"}
+                                </h3>
                                 <p className="text-xs text-gray-500 mt-0.5">
-                                    نقش هدف: <strong className="font-mono">{packageForm.targetRole}</strong>
+                                    {editingPackageId ? (
+                                        <>نقش هدف: <strong className="font-mono">{packageForm.targetRole}</strong></>
+                                    ) : (
+                                        "پیکربندی بسته هدیه ثبت‌نام برای کاربران و نقش‌های تجاری"
+                                    )}
                                 </p>
                             </div>
                             <button
@@ -1412,6 +1485,21 @@ export default function AdminConfigPage() {
                         </div>
 
                         <form onSubmit={handleSavePackage} className="space-y-5">
+                            {!editingPackageId && (
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-bold text-gray-700">نقش هدف بسته *</label>
+                                    <select
+                                        value={packageForm.targetRole}
+                                        onChange={(e) => setPackageForm({ ...packageForm, targetRole: e.target.value })}
+                                        className="w-full p-3 rounded-xl border border-gray-300 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                    >
+                                        <option value="user">کاربر عادی (user) - هدیه کیف پول</option>
+                                        <option value="landlord">میزبان اقامتگاه (landlord) - سهمیه‌های آغازین</option>
+                                        <option value="agent">مشاور املاک (agent) - سهمیه‌های آغازین</option>
+                                    </select>
+                                </div>
+                            )}
+
                             <div className="space-y-1.5">
                                 <label className="text-xs font-bold text-gray-700">عنوان بسته *</label>
                                 <input
