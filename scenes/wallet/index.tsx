@@ -1,6 +1,6 @@
 "use client";
 
-import { useChargeWallet, useWalletBalance, useWalletTransactions } from "@/hooks/useWallet";
+import { useInitiateTopUp, useWalletBalance, useWalletTransactions } from "@/hooks/useWallet";
 import { cn, formatPrice, toPersianDigits } from "@/lib/utils";
 import {
     ArrowDownRight,
@@ -35,7 +35,7 @@ export default function WalletScene() {
 
     const { data: balanceData, isLoading: isLoadingBalance } = useWalletBalance();
     const { data: transactionsData, isLoading: isLoadingTransactions } = useWalletTransactions(1, 20);
-    const chargeMutation = useChargeWallet();
+    const initiateMutation = useInitiateTopUp();
 
     const handleCharge = async () => {
         const finalAmount = customAmount ? Number(customAmount) : selectedAmount;
@@ -44,21 +44,23 @@ export default function WalletScene() {
             return;
         }
 
-        chargeMutation.mutate(
+        // Convert Toman to IRR (1 Toman = 10 IRR)
+        const amountIRR = finalAmount * 10;
+        const callbackUrl = `${window.location.origin}/wallet/callback`;
+
+        initiateMutation.mutate(
             {
-                amount: finalAmount,
-                currency: "IRR",
-                idempotencyKey: `charge_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
-                reason: "شارژ آنلاین کیف پول",
+                amountIRR,
+                callbackUrl,
+                idempotencyKey: `topup_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
             },
             {
                 onSuccess: (res) => {
-                    toast.success("کیف پول شما با موفقیت شارژ شد.");
-                    setIsChargeModalOpen(false);
-                    setCustomAmount("");
+                    toast.info("در حال انتقال به درگاه پرداخت شاپرک...");
+                    window.location.href = res.paymentUrl;
                 },
                 onError: () => {
-                    toast.error("خطا در ایجاد تراکنش پرداخت");
+                    toast.error("خطا در برقراری ارتباط با درگاه پرداخت");
                 },
             }
         );
@@ -281,10 +283,10 @@ export default function WalletScene() {
                         <button
                             type="button"
                             onClick={handleCharge}
-                            disabled={chargeMutation.isPending}
+                            disabled={initiateMutation.isPending}
                             className="w-full py-4 bg-primary text-white font-black text-sm rounded-2xl shadow-lg shadow-primary/25 hover:bg-primary/90 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                         >
-                            {chargeMutation.isPending ? (
+                            {initiateMutation.isPending ? (
                                 <Loader2 className="w-5 h-5 animate-spin" />
                             ) : (
                                 <>

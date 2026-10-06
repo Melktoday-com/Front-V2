@@ -1,5 +1,8 @@
 import { walletService } from "@/services/wallet.service";
-import { ChargeWalletRequest } from "@/types/api/wallet.types";
+import {
+    ChargeWalletRequest,
+    InitiateTopUpRequest,
+} from "@/types/api/wallet.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "./useAuth";
 
@@ -20,6 +23,24 @@ export function useWalletTransactions(page = 1, limit = 10) {
         queryKey: ["wallet", "transactions", page, limit],
         queryFn: () => walletService.getTransactions(page, limit),
         enabled: isLoggedIn,
+    });
+}
+
+export function useInitiateTopUp() {
+    return useMutation({
+        mutationFn: (payload: InitiateTopUpRequest) => walletService.initiateTopUp(payload),
+    });
+}
+
+export function usePaymentStatus(purchaseId?: string) {
+    return useQuery({
+        queryKey: ["wallet", "payment-status", purchaseId],
+        queryFn: () => walletService.getPaymentStatus(purchaseId!),
+        enabled: !!purchaseId,
+        refetchInterval: (query) => {
+            const status = query.state.data?.status;
+            return status === "PENDING" ? 2000 : false;
+        },
     });
 }
 

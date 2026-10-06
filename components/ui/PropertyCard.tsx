@@ -3,7 +3,7 @@
 import { useAuth } from "@/hooks/useAuth";
 import { DEFAULT_CATEGORY_TRANSLATIONS } from "@/hooks/useCategoryLookup";
 import { cn, toPersianDigits } from "@/lib/utils";
-import { Heart, MapPin, Play, Star } from "lucide-react";
+import { Heart, MapPin, Play, ShieldCheck, Sparkles, Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -32,6 +32,9 @@ interface PropertyCardProps {
     onToggleFavorite?: (adId: string) => Promise<{ isFavorited: boolean } | { isSaved: boolean } | void> | void;
     area?: number | string;
     rooms?: number | string;
+    badgeName?: string | null;
+    badgeIcon?: string | null;
+    isUrgent?: boolean;
 }
 
 export function PropertyCard({
@@ -55,6 +58,9 @@ export function PropertyCard({
     onToggleFavorite,
     area,
     rooms,
+    badgeName,
+    badgeIcon,
+    isUrgent = false,
 }: PropertyCardProps) {
     const effectiveAdId = adId || id;
     const effectiveIsSaved = isSaved !== undefined ? isSaved : isFavorited;
@@ -146,13 +152,26 @@ export function PropertyCard({
                     </button>
                 )}
 
-                {/* Video Indicator */}
-                {isVideo && (
-                    <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-xs text-white text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1 z-10 font-medium">
-                        <Play className="w-3 h-3 fill-white" />
-                        <span>ویدیو</span>
-                    </div>
-                )}
+                {/* Badges Container (Top Right) */}
+                <div className="absolute top-2 right-2 flex flex-col items-end gap-1 z-10">
+                    {isUrgent && (
+                        <div className="bg-rose-600 text-white text-[10px] font-black px-2 py-0.5 rounded-lg shadow-sm flex items-center gap-1">
+                            <span>فوری</span>
+                        </div>
+                    )}
+                    {badgeName && (
+                        <div className="bg-white/95 backdrop-blur-md text-amber-800 border border-amber-200/80 shadow-xs px-2 py-0.5 rounded-lg text-[10px] font-black flex items-center gap-1">
+                            <Sparkles className="w-3 h-3 text-amber-500" />
+                            <span>{badgeName}</span>
+                        </div>
+                    )}
+                    {isVideo && (
+                        <div className="bg-black/60 backdrop-blur-xs text-white text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1 font-medium">
+                            <Play className="w-3 h-3 fill-white" />
+                            <span>ویدیو</span>
+                        </div>
+                    )}
+                </div>
 
                 {/* Category Badge */}
                 {category && (

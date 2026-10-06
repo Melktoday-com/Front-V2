@@ -14,15 +14,19 @@ import {
     ChevronRight,
     Heart,
     Layers,
+    Lock,
     MapPin,
     Maximize2,
     MessageCircle,
     Phone,
     Play,
     Share2,
+    ShieldAlert,
     ShieldCheck,
     Sparkles,
     Star,
+    Copy,
+    X,
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
@@ -49,6 +53,7 @@ export default function SingleAdScene() {
     const [saved, setSaved] = useState(false);
     const [activeImageIndex, setActiveImageIndex] = useState(0);
     const [showFullPhone, setShowFullPhone] = useState(false);
+    const [isContactModalOpen, setIsContactModalOpen] = useState(false);
 
     const { isLoggedIn } = useAuth();
     const chatMutation = useCreateConversation();
@@ -494,37 +499,18 @@ export default function SingleAdScene() {
                         </div>
 
                         <div className="space-y-3 pt-2">
-                            {contact?.mobileNumber ? (
-                                showFullPhone ? (
-                                    <a
-                                        href={`tel:${contact.mobileNumber}`}
-                                        className="flex items-center justify-center gap-2 w-full py-3.5 bg-primary text-white font-bold text-sm rounded-2xl shadow-md hover:bg-primary/90 transition-all"
-                                    >
-                                        <Phone className="w-4 h-4" />
-                                        <span dir="ltr">{toPersianDigits(contact.mobileNumber)}</span>
-                                    </a>
-                                ) : (
-                                    <button
-                                        onClick={() => setShowFullPhone(true)}
-                                        className="flex items-center justify-center gap-2 w-full py-3.5 bg-primary text-white font-bold text-sm rounded-2xl shadow-md hover:bg-primary/90 transition-all"
-                                    >
-                                        <Phone className="w-4 h-4" />
-                                        <span>مشاهده شماره تماس</span>
-                                    </button>
-                                )
-                            ) : (
-                                <button
-                                    disabled
-                                    className="w-full py-3.5 bg-gray-100 text-gray-400 font-bold text-sm rounded-2xl cursor-not-allowed"
-                                >
-                                    شماره تماس ثبت نشده
-                                </button>
-                            )}
+                            <button
+                                onClick={() => setIsContactModalOpen(true)}
+                                className="flex items-center justify-center gap-2 w-full py-3.5 bg-primary text-white font-bold text-sm rounded-2xl shadow-md hover:bg-primary/90 transition-all cursor-pointer"
+                            >
+                                <Phone className="w-4 h-4" />
+                                <span>اطلاعات تماس آگهی‌دهنده</span>
+                            </button>
 
                             <button
                                 onClick={handleChat}
                                 disabled={chatMutation.isPending}
-                                className="flex items-center justify-center gap-2 w-full py-3.5 bg-brand text-white font-bold text-sm rounded-2xl shadow-md hover:bg-brand/90 transition-all disabled:opacity-50"
+                                className="flex items-center justify-center gap-2 w-full py-3.5 bg-brand text-white font-bold text-sm rounded-2xl shadow-md hover:bg-brand/90 transition-all disabled:opacity-50 cursor-pointer"
                             >
                                 <MessageCircle className="w-4 h-4" />
                                 <span>شروع گفتگوی آنلاین</span>
@@ -574,25 +560,151 @@ export default function SingleAdScene() {
                     <span className="text-sm font-black text-brand truncate">{priceMain}</span>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                    {contact?.mobileNumber && (
-                        <a
-                            href={`tel:${contact.mobileNumber}`}
-                            className="flex items-center gap-1.5 px-4 py-2.5 bg-primary text-white rounded-xl text-xs font-bold shadow-md shadow-primary/25 active:scale-95 transition-transform"
-                        >
-                            <Phone className="w-4 h-4" />
-                            <span>تماس</span>
-                        </a>
-                    )}
+                    <button
+                        onClick={() => setIsContactModalOpen(true)}
+                        className="flex items-center gap-1.5 px-4 py-2.5 bg-primary text-white rounded-xl text-xs font-bold shadow-md shadow-primary/25 active:scale-95 transition-transform cursor-pointer"
+                    >
+                        <Phone className="w-4 h-4" />
+                        <span>تماس</span>
+                    </button>
                     <button
                         onClick={handleChat}
                         disabled={chatMutation.isPending}
-                        className="flex items-center gap-1.5 px-4 py-2.5 bg-brand text-white rounded-xl text-xs font-bold hover:bg-brand/90 active:scale-95 transition-transform"
+                        className="flex items-center gap-1.5 px-4 py-2.5 bg-brand text-white rounded-xl text-xs font-bold hover:bg-brand/90 active:scale-95 transition-transform cursor-pointer"
                     >
                         <MessageCircle className="w-4 h-4" />
                         <span>چت</span>
                     </button>
                 </div>
             </div>
+
+            {/* RESPONSIVE CONTACT MODAL (Desktop Dialog / Mobile Drawer) */}
+            {isContactModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center">
+                    {/* Backdrop */}
+                    <div
+                        className="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity"
+                        onClick={() => setIsContactModalOpen(false)}
+                    />
+
+                    {/* Responsive Container */}
+                    <div className="relative z-10 w-full md:max-w-md bg-white rounded-t-3xl md:rounded-3xl p-6 shadow-2xl transition-all max-h-[85vh] overflow-y-auto">
+                        <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-5">
+                            <div className="flex items-center gap-2">
+                                <div className="p-2 bg-primary/10 text-primary rounded-xl">
+                                    <Phone className="w-4 h-4" />
+                                </div>
+                                <h3 className="font-black text-brand text-base">اطلاعات تماس آگهی‌دهنده</h3>
+                            </div>
+                            <button
+                                onClick={() => setIsContactModalOpen(false)}
+                                className="p-1.5 text-gray-400 hover:text-gray-700 rounded-xl hover:bg-gray-50 transition cursor-pointer"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        {!isLoggedIn ? (
+                            <div className="text-center py-4 space-y-4">
+                                <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center mx-auto">
+                                    <Lock className="w-6 h-6" />
+                                </div>
+                                <div>
+                                    <h4 className="font-black text-brand text-sm mb-1">ورود به حساب کاربری</h4>
+                                    <p className="text-xs text-text-light leading-relaxed">
+                                        جهت مشاهده شماره تماس یا آغاز گفتگوی آنلاین، لطفاً ابتدا وارد حساب کاربری خود شوید.
+                                    </p>
+                                </div>
+                                <button
+                                    onClick={() => router.push(`/auth?returnUrl=/ads/${id}`)}
+                                    className="w-full py-3 bg-primary text-white font-bold text-xs rounded-2xl shadow-sm hover:bg-primary/90 transition cursor-pointer"
+                                >
+                                    ورود به حساب کاربری
+                                </button>
+                            </div>
+                        ) : contact?.phoneHidden || (!contact?.phoneNumber && !contact?.mobileNumber) ? (
+                            <div className="space-y-4">
+                                <div className="p-4 bg-amber-50/70 border border-amber-200/80 rounded-2xl flex items-start gap-3">
+                                    <ShieldAlert className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                                    <div className="text-xs">
+                                        <h5 className="font-black text-amber-950 mb-1">شماره تماس مخفی شده است</h5>
+                                        <p className="text-amber-900/80 leading-relaxed">
+                                            به درخواست آگهی‌دهنده و جهت حفظ حریم خصوصی، شماره تلفن مستقیم مخفی شده است. شما می‌توانید از طریق چت آنلاین با ایشان در ارتباط باشید.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <button
+                                    onClick={() => {
+                                        setIsContactModalOpen(false);
+                                        handleChat();
+                                    }}
+                                    disabled={chatMutation.isPending}
+                                    className="w-full py-3.5 bg-brand hover:bg-brand/90 text-white font-bold text-xs rounded-2xl shadow-md transition flex items-center justify-center gap-2 cursor-pointer"
+                                >
+                                    <MessageCircle className="w-4 h-4" />
+                                    <span>ارسال پیام در چت آنلاین</span>
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="space-y-4">
+                                {(() => {
+                                    const phoneNum = contact?.phoneNumber || contact?.mobileNumber || "";
+                                    return (
+                                        <>
+                                            <div className="p-4 bg-gray-50 border border-gray-100 rounded-2xl flex items-center justify-between">
+                                                <div>
+                                                    <span className="text-[11px] text-text-light block mb-0.5">شماره تماس مستقیم:</span>
+                                                    <span className="text-lg font-black text-brand tracking-widest font-mono" dir="ltr">
+                                                        {toPersianDigits(phoneNum)}
+                                                    </span>
+                                                </div>
+                                                <button
+                                                    onClick={() => {
+                                                        if (navigator.clipboard) {
+                                                            navigator.clipboard.writeText(phoneNum);
+                                                            toast.success("شماره تماس کپی شد");
+                                                        }
+                                                    }}
+                                                    className="p-2.5 bg-white border border-gray-200 hover:bg-gray-100 rounded-xl text-gray-600 transition shadow-xs cursor-pointer"
+                                                    title="کپی شماره"
+                                                >
+                                                    <Copy className="w-4 h-4" />
+                                                </button>
+                                            </div>
+
+                                            <div className="grid grid-cols-2 gap-3 pt-1">
+                                                <a
+                                                    href={`tel:${phoneNum}`}
+                                                    className="flex items-center justify-center gap-2 py-3.5 bg-primary text-white font-bold text-xs rounded-2xl shadow-sm hover:bg-primary/90 transition text-center"
+                                                >
+                                                    <Phone className="w-4 h-4" />
+                                                    <span>تماس تلفنی</span>
+                                                </a>
+                                                <button
+                                                    onClick={() => {
+                                                        setIsContactModalOpen(false);
+                                                        handleChat();
+                                                    }}
+                                                    disabled={chatMutation.isPending}
+                                                    className="flex items-center justify-center gap-2 py-3.5 bg-brand text-white font-bold text-xs rounded-2xl shadow-sm hover:bg-brand/90 transition cursor-pointer"
+                                                >
+                                                    <MessageCircle className="w-4 h-4" />
+                                                    <span>ارسال چت</span>
+                                                </button>
+                                            </div>
+                                        </>
+                                    );
+                                })()}
+                            </div>
+                        )}
+
+                        <p className="mt-5 text-[11px] text-text-light text-center leading-relaxed">
+                            قبل از هرگونه بیعانه یا معامله، هویت مالک و مدارک رسمی ملک را بررسی فرمایید.
+                        </p>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

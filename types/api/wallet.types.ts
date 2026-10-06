@@ -3,9 +3,31 @@ export interface WalletBalance {
     walletId: string;
     balance: number;
     currency: string;
+    heldAmount?: number;
+    availableBalance?: number;
 }
 
 import { JsonObject } from "../common";
+
+export interface InitiateTopUpRequest {
+    amountIRR: number;
+    callbackUrl: string;
+    idempotencyKey: string;
+}
+
+export interface InitiateTopUpResponse {
+    purchaseId: string;
+    paymentUrl: string;
+    walletId: string;
+    amountIRR: number;
+}
+
+export interface PaymentStatusResponse {
+    purchaseId: string;
+    status: string;
+    amountIRR: number;
+    rrn?: string | null;
+}
 
 export interface ChargeWalletRequest {
     amount: number;

@@ -135,6 +135,7 @@ export interface AgentApplicationResponse {
     reviewedBy?: string;
     reviewedAt?: string;
     jibitVerificationData?: JsonObject;
+    kycDetails?: JsonObject;
     createdAt: string;
     updatedAt: string;
 }

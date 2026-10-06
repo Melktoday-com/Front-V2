@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useMemo } from 'react';
+import React, { useRef, useMemo, useState, useEffect } from 'react';
 import { useUploadMedia } from '@/hooks/useMedia';
 import { getMediaUrl, getMediaPosterUrl } from '@/lib/utils';
 import type { MediaReference, ExistingMediaType } from '@/types/api/media.types';
@@ -27,16 +27,15 @@ export default function MediaGalleryUpload({
     allowVideos = true,
 }: MediaGalleryUploadProps) {
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const localPreviewsRef = useRef<Map<string, string>>(new Map());
+    const [localPreviews, setLocalPreviews] = useState<Record<string, string>>({});
     const { mutateAsync: uploadMedia, isPending: isUploading } = useUploadMedia();
 
     // Revoke any local blob preview URLs when the component unmounts
-    React.useEffect(() => {
+    useEffect(() => {
         return () => {
-            localPreviewsRef.current.forEach((url) => URL.revokeObjectURL(url));
-            localPreviewsRef.current.clear();
+            Object.values(localPreviews).forEach((url) => URL.revokeObjectURL(url));
         };
-    }, []);
+    }, [localPreviews]);
 
     const normalizedValue: MediaReference[] = useMemo(() => {
         return value || [];
@@ -93,7 +92,7 @@ export default function MediaGalleryUpload({
                     if (isVideo) {
                         try {
                             const blobUrl = URL.createObjectURL(file);
-                            localPreviewsRef.current.set(uploadedId, blobUrl);
+                            setLocalPreviews((prev) => ({ ...prev, [uploadedId]: blobUrl }));
                         } catch {
                             // Non-critical fallback
                         }
@@ -118,9 +117,13 @@ export default function MediaGalleryUpload({
 
     const handleRemove = (indexToRemove: number) => {
         const itemToRemove = normalizedValue[indexToRemove];
-        if (itemToRemove && localPreviewsRef.current.has(itemToRemove.id)) {
-            URL.revokeObjectURL(localPreviewsRef.current.get(itemToRemove.id)!);
-            localPreviewsRef.current.delete(itemToRemove.id);
+        if (itemToRemove && localPreviews[itemToRemove.id]) {
+            URL.revokeObjectURL(localPreviews[itemToRemove.id]);
+            setLocalPreviews((prev) => {
+                const next = { ...prev };
+                delete next[itemToRemove.id];
+                return next;
+            });
         }
         const updated = normalizedValue.filter((_, idx) => idx !== indexToRemove);
         onChange(updated);
@@ -159,7 +162,7 @@ export default function MediaGalleryUpload({
                             {isVideo ? (
                                 <div className="w-full h-full relative bg-slate-900 flex items-center justify-center">
                                     <video
-                                        src={localPreviewsRef.current.get(item.id) || fullUrl}
+                                        src={localPreviews[item.id] || fullUrl}
                                         poster={getMediaPosterUrl(item)}
                                         className="w-full h-full object-cover"
                                         muted

@@ -125,7 +125,10 @@ export interface CreateAdDraftResponse extends AdMutationResponse {
 export interface AdContactInfo {
     adId: string;
     ownerId: string;
-    mobileNumber: string;
+    phoneNumber?: string | null;
+    mobileNumber?: string | null;
+    phoneHidden?: boolean;
+    chatAvailable?: boolean;
     email?: string;
 }
 

@@ -37,7 +37,18 @@ export function useLogout() {
     const router = useRouter();
     const queryClient = useQueryClient();
 
-    const logout = useCallback(() => {
+    const logout = useCallback(async () => {
+        try {
+            const token = getCookie("access_token");
+            if (token && typeof token === "string") {
+                const decoded = jwtDecode<JwtPayload>(token);
+                if (decoded?.sessionId) {
+                    await authService.terminateSession({ sessionId: decoded.sessionId });
+                }
+            }
+        } catch (e) {
+            console.error("Session termination error:", e);
+        }
         deleteCookie("access_token");
         deleteCookie("refresh_token");
 

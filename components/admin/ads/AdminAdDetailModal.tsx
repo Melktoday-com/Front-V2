@@ -75,6 +75,20 @@ export default function AdminAdDetailModal({
     const { getCityName } = useCityLookup();
     const { getCategoryPathLabel } = useCategoryLookup();
 
+    const mediaItems = useMemo(() => {
+        return (ad?.mediaIds || []).map((m, idx) => {
+            const id = typeof m === "string" ? m : (m.id || `media-${idx}`);
+            const type = typeof m === "object" && m !== null && "type" in m ? m.type : undefined;
+            const isVideo = type === "VIDEO";
+            return {
+                id,
+                url: getMediaUrl(m),
+                posterUrl: isVideo ? getMediaPosterUrl(m) : undefined,
+                isVideo,
+            };
+        });
+    }, [ad?.mediaIds]);
+
     if (!isOpen || !adId) return null;
 
     const handleCopyId = () => {
@@ -94,20 +108,6 @@ export default function AdminAdDetailModal({
             setIsLoadingContact(false);
         }
     };
-
-    const mediaItems = useMemo(() => {
-        return (ad?.mediaIds || []).map((m, idx) => {
-            const id = typeof m === "string" ? m : (m.id || `media-${idx}`);
-            const type = typeof m === "object" && m !== null && "type" in m ? m.type : undefined;
-            const isVideo = type === "VIDEO";
-            return {
-                id,
-                url: getMediaUrl(m),
-                posterUrl: isVideo ? getMediaPosterUrl(m) : undefined,
-                isVideo,
-            };
-        });
-    }, [ad?.mediaIds]);
 
     const activeMedia = mediaItems[activeImageIndex] || mediaItems[0];
     const statusInfo = statusConfig[ad?.status || ""] || {

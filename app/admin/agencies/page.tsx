@@ -272,26 +272,31 @@ export default function AdminAgenciesPage() {
                                                     {app.phone || "-"}
                                                 </td>
                                                 <td className="py-4 px-6">
-                                                    {app.jibitVerificationData?.matched !== undefined ? (
-                                                        app.jibitVerificationData.matched ? (
-                                                            <span className="inline-flex items-center gap-1 text-emerald-600 font-bold text-[11px]">
-                                                                <CheckCircle className="w-3.5 h-3.5" />
-                                                                <span>تطابق شاهکار تأیید</span>
-                                                            </span>
-                                                        ) : (
-                                                            <span className="inline-flex items-center gap-1 text-rose-600 font-bold text-[11px]">
-                                                                <XCircle className="w-3.5 h-3.5" />
-                                                                <span>عدم تطابق کدملی</span>
-                                                            </span>
-                                                        )
-                                                    ) : app.jibitVerificationData?.corporation ? (
-                                                        <span className="inline-flex items-center gap-1 text-emerald-600 font-bold text-[11px]">
-                                                            <CheckCircle className="w-3.5 h-3.5" />
-                                                            <span>اصناف استعلام شد</span>
-                                                        </span>
-                                                    ) : (
-                                                        <span className="text-slate-400 text-[11px]">-</span>
-                                                    )}
+                                                    {(() => {
+                                                        const kyc = app.kycDetails || app.jibitVerificationData;
+                                                        if (kyc?.matched !== undefined) {
+                                                            return kyc.matched ? (
+                                                                <span className="inline-flex items-center gap-1 text-emerald-600 font-bold text-[11px]">
+                                                                    <CheckCircle className="w-3.5 h-3.5" />
+                                                                    <span>تطابق شاهکار تأیید</span>
+                                                                </span>
+                                                            ) : (
+                                                                <span className="inline-flex items-center gap-1 text-rose-600 font-bold text-[11px]">
+                                                                    <XCircle className="w-3.5 h-3.5" />
+                                                                    <span>عدم تطابق کدملی</span>
+                                                                </span>
+                                                            );
+                                                        }
+                                                        if (kyc?.corporation) {
+                                                            return (
+                                                                <span className="inline-flex items-center gap-1 text-emerald-600 font-bold text-[11px]">
+                                                                    <CheckCircle className="w-3.5 h-3.5" />
+                                                                    <span>اصناف استعلام شد</span>
+                                                                </span>
+                                                            );
+                                                        }
+                                                        return <span className="text-slate-400 text-[11px]">-</span>;
+                                                    })()}
                                                 </td>
                                                 <td className="py-4 px-6">
                                                     {app.status === "PENDING" && (
@@ -557,7 +562,7 @@ export default function AdminAgenciesPage() {
                                 <span>نتیجه استعلام احراز هویت هوشمند (سرویس جیبیت):</span>
                             </div>
                             <pre className="text-[11px] font-mono bg-white p-3 rounded-xl border border-blue-100/80 text-slate-700 overflow-x-auto">
-                                {JSON.stringify(selectedApp.jibitVerificationData || { message: "اطلاعات استعلام ثبت نشده است" }, null, 2)}
+                                {JSON.stringify(selectedApp.kycDetails || selectedApp.jibitVerificationData || { message: "اطلاعات استعلام ثبت نشده است" }, null, 2)}
                             </pre>
                         </div>
 
