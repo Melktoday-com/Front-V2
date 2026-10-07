@@ -41,17 +41,27 @@ const processQueue = (error: Error | AxiosError | null, token: string | null = n
 
 // Request Interceptor: Add Authorization Header
 apiClient.interceptors.request.use((config) => {
-    const token = getCookie("access_token");
+    const rawToken = getCookie("access_token");
+    const token = typeof rawToken === "string" ? rawToken : undefined;
     if (token && config.headers) {
-        config.headers.Authorization = `Bearer ${token}`;
+        if (typeof config.headers.set === "function") {
+            config.headers.set("Authorization", `Bearer ${token}`);
+        } else {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
     }
 
     // Add CSRF token for unsafe methods (POST, PUT, PATCH, DELETE)
     const unsafeMethods = ["post", "put", "patch", "delete"];
     if (config.method && unsafeMethods.includes(config.method.toLowerCase())) {
-        const csrfToken = getCookie("XSRF-TOKEN");
+        const rawCsrf = getCookie("XSRF-TOKEN");
+        const csrfToken = typeof rawCsrf === "string" ? rawCsrf : undefined;
         if (csrfToken && config.headers) {
-            config.headers["x-xsrf-token"] = csrfToken;
+            if (typeof config.headers.set === "function") {
+                config.headers.set("x-xsrf-token", csrfToken);
+            } else {
+                config.headers["x-xsrf-token"] = csrfToken;
+            }
         }
     }
 
