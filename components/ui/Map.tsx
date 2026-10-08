@@ -261,6 +261,7 @@ export default function Map({ ads, zones, selectedZoneId, selectedZoneIds, onZon
                                 <div className="w-64 p-1">
                                     <PropertyCard
                                         adId={ad.adId}
+                                        variant="vertical"
                                         title={ad.title}
                                         price={price?.toLocaleString() || "0"}
                                         rating={4.5}

@@ -35,6 +35,8 @@ export interface AdSummary {
     mediaIds?: MediaReference[];
     createdAt: string;
     location?: AdLocation | null;
+    area?: number | string;
+    rooms?: number | string;
 }
 
 export interface ListAdsQuery {

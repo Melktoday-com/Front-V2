@@ -123,6 +123,7 @@ export const HomeScene = () => {
                                     key={effectiveId}
                                     id={effectiveId}
                                     adId={effectiveId}
+                                    variant="vertical"
                                     href={`/ads/${effectiveId}`}
                                     title={property.title}
                                     price={Object.values(property.pricing)[0] ?? 0}
@@ -197,6 +198,7 @@ export const HomeScene = () => {
                                     key={property.id}
                                     id={property.id}
                                     adId={property.id}
+                                    variant="vertical"
                                     href={`/temporary-rent/${property.id}`}
                                     title={property.title}
                                     price={property.pricing.nightlyPrice}
@@ -242,6 +244,7 @@ export const HomeScene = () => {
                                     key={effectiveId}
                                     id={effectiveId}
                                     adId={effectiveId}
+                                    variant="vertical"
                                     href={`/ads/${effectiveId}`}
                                     title={property.title}
                                     price={Object.values(property.pricing)[0] ?? 0}

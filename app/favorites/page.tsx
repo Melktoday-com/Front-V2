@@ -244,7 +244,7 @@ export default function FavoritesPage() {
                                             category={item.details?.category || 'آگهی'}
                                             location={item.subtitle || 'نامشخص'}
                                             rating={4.8}
-                                            variant="vertical"
+                                            variant="responsive"
                                             className="bg-white rounded-2xl border border-gray-100 shadow-xs hover:shadow-md transition-shadow"
                                             isSaved={true}
                                             onToggleSave={(id) => toggleSaveAdMutation.mutateAsync(id)}

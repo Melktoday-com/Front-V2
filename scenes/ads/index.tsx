@@ -75,6 +75,8 @@ function adMatchesZone(ad: AdSummary, zone: ZoneSummary): boolean {
 
 function searchDocToAdSummary(doc: ListingSearchDocument): AdSummary {
     const primaryPrice = doc.pricing?.number?.price ?? doc.pricing?.number?.totalPrice ?? 0;
+    const area = doc.attributes?.number?.area || doc.attributes?.number?.meter || doc.attributes?.number?.metraj;
+    const rooms = doc.attributes?.number?.rooms || doc.attributes?.number?.bedrooms || doc.attributes?.number?.room;
     return {
         adId: doc.id,
         ownerId: doc.ownerId,
@@ -103,6 +105,8 @@ function searchDocToAdSummary(doc: ListingSearchDocument): AdSummary {
                       longitude: doc._geo.lng,
                   }
                 : null,
+        area: typeof area === "number" ? area : undefined,
+        rooms: typeof rooms === "number" ? rooms : undefined,
     };
 }
 
@@ -629,6 +633,9 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
                                                     category={subcategoryDisplay}
                                                     isSaved={ad.isSaved ?? isAdSaved(effectiveId)}
                                                     onToggleSave={(id) => toggleSaveMutation.mutateAsync(id)}
+                                                    area={ad.area}
+                                                    rooms={ad.rooms}
+                                                    isUrgent={ad.isFeatured}
                                                 />
                                             );
                                         })}
