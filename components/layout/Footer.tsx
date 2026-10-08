@@ -41,52 +41,7 @@ export function Footer() {
 
   return (
     <footer className="w-full mt-10 md:mt-16 bg-brand text-white overflow-hidden rounded-t-[32px] md:rounded-t-[44px] shadow-2xl border-t border-white/10">
-      {/* Top Value Highlights Banner */}
-      <div className="border-b border-white/10 bg-white/[0.02]">
-        <div className="container mx-auto px-4 sm:px-6 py-6 md:py-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-primary/15 border border-primary/20 flex items-center justify-center shrink-0 text-primary">
-                <ShieldCheck className="w-5 h-5 md:w-6 md:h-6" />
-              </div>
-              <div>
-                <h4 className="text-xs md:text-sm font-black text-white">شفافیت اطلاعات</h4>
-                <p className="text-[10px] md:text-xs text-white/60 mt-0.5">آگهی‌های تاییدشده و دقیق</p>
-              </div>
-            </div>
 
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-primary/15 border border-primary/20 flex items-center justify-center shrink-0 text-primary">
-                <Sparkles className="w-5 h-5 md:w-6 md:h-6" />
-              </div>
-              <div>
-                <h4 className="text-xs md:text-sm font-black text-white">جست‌وجوی سریع</h4>
-                <p className="text-[10px] md:text-xs text-white/60 mt-0.5">فیلترهای هوشمند و نقشه</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-primary/15 border border-primary/20 flex items-center justify-center shrink-0 text-primary">
-                <Building2 className="w-5 h-5 md:w-6 md:h-6" />
-              </div>
-              <div>
-                <h4 className="text-xs md:text-sm font-black text-white">آژانس‌های برتر</h4>
-                <p className="text-[10px] md:text-xs text-white/60 mt-0.5">همکاری با متخصصان معتبر</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-primary/15 border border-primary/20 flex items-center justify-center shrink-0 text-primary">
-                <Clock className="w-5 h-5 md:w-6 md:h-6" />
-              </div>
-              <div>
-                <h4 className="text-xs md:text-sm font-black text-white">پشتیبانی پاسخگو</h4>
-                <p className="text-[10px] md:text-xs text-white/60 mt-0.5">شنبه تا پنج‌شنبه ۹ تا ۲۱</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* Main Footer Content */}
       <div className="container mx-auto px-4 sm:px-6 py-10 md:py-14">
