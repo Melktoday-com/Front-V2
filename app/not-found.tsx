@@ -66,7 +66,7 @@ export default function NotFound() {
                 </Link>
                 <Link href="/ads/submit" className="text-primary hover:underline flex items-center gap-1.5 font-black">
                     <Plus className="w-4 h-4" />
-                    <span>ثبت رایگان آگهی</span>
+                    <span>ثبت آگهی</span>
                 </Link>
             </div>
         </div>

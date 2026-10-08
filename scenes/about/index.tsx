@@ -154,7 +154,7 @@ export default function AboutScene() {
               className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white font-black text-sm px-6 py-3.5 rounded-2xl border border-white/15 transition-all active:scale-95"
             >
               <PlusCircle className="w-4 h-4 text-primary" />
-              <span>ثبت رایگان آگهی</span>
+              <span>ثبت آگهی</span>
             </Link>
           </div>
         </div>

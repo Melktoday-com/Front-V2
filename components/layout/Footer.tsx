@@ -85,7 +85,7 @@ export function Footer() {
                 className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-white font-bold text-xs sm:text-sm py-2.5 px-4 rounded-xl shadow-md transition-all group"
               >
                 <PlusCircle className="w-4 h-4 text-white group-hover:scale-110 transition-transform" />
-                <span>ثبت رایگان آگهی</span>
+                <span>ثبت آگهی</span>
               </Link>
               <Link
                 href="/ads"

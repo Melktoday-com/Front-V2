@@ -99,7 +99,7 @@ export function Sidebar() {
                 className="flex items-center justify-center gap-2 w-full py-3.5 px-4 rounded-2xl bg-brand text-white font-bold text-sm shadow-md hover:bg-brand/90 transition-all mb-6 group"
             >
                 <PlusCircle className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
-                <span>ثبت رایگان آگهی</span>
+                <span>ثبت آگهی</span>
             </Link>
 
             <nav className="flex-1 space-y-2 overflow-y-auto">
