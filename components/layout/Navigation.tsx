@@ -281,6 +281,12 @@ export function MobileNav() {
     if (pathname.startsWith("/admin")) return null;
     if (pathname.startsWith("/auth")) return null;
 
+    // Hide bottom navbar on single ad pages (they have their own dedicated sticky action bar)
+    const isSingleAd =
+        (pathname.startsWith("/ads/") && !pathname.startsWith("/ads/submit")) ||
+        (pathname.startsWith("/temporary-rent/") && !pathname.startsWith("/temporary-rent/create"));
+    if (isSingleAd) return null;
+
     const isHome = pathname === "/";
     const isExplore =
         (pathname.startsWith("/explore") || pathname.startsWith("/ads")) &&
