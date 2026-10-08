@@ -569,23 +569,6 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
                     {/* Anchor for top of list */}
                     <div id="ads-list-top" />
 
-                    {/* Count summary */}
-                    <div className="flex items-center justify-between mb-3 px-1 text-xs text-text-light font-medium">
-                        <span>
-                            {isLoading
-                                ? "در حال جستجو..."
-                                : displayedAds.length === 0
-                                ? "آگهی یافت نشد"
-                                : `${toPersianDigits(displayedAds.length)} آگهی نمایش داده شده${
-                                      selectedSubcategory
-                                          ? ` در ${getSubcategoryName(selectedSubcategory, selectedCategory)}`
-                                          : selectedCategory
-                                          ? ` در ${getCategoryName(selectedCategory)}`
-                                          : ""
-                                  }`}
-                        </span>
-                        <span>{effectiveCityName}</span>
-                    </div>
 
                     {isLoading ? (
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-4 pb-12">
