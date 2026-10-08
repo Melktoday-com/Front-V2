@@ -456,13 +456,13 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
                         type="button"
                         onClick={() => setCategoryDialogOpen(true)}
                         className={cn(
-                            "shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 sm:py-2 rounded-full text-xs font-bold border transition-all whitespace-nowrap cursor-pointer",
+                            "shrink-0 flex items-center gap-1.5 px-3 h-8 sm:h-8.5 rounded-full text-[11px] sm:text-xs font-bold border transition-all whitespace-nowrap cursor-pointer",
                             selectedCategory || selectedSubcategory
                                 ? "bg-primary text-white border-primary shadow-xs shadow-primary/25"
                                 : "bg-soft-bg text-secondary border-soft-border hover:border-primary/50 hover:text-primary"
                         )}
                     >
-                        <Tag className="w-3.5 h-3.5" />
+                        <Tag className="w-3.5 h-3.5 shrink-0" />
                         <span>
                             {selectedSubcategory
                                 ? getSubcategoryName(selectedSubcategory, selectedCategory) || "دسته‌بندی"
@@ -476,13 +476,13 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
                                     e.stopPropagation();
                                     handleCategorySelect("");
                                 }}
-                                className="hover:bg-white/20 p-0.5 rounded-full transition-colors cursor-pointer"
+                                className="hover:bg-white/20 p-0.5 rounded-full transition-colors cursor-pointer mr-0.5"
                                 title="حذف فیلتر دسته‌بندی"
                             >
                                 <X className="w-3 h-3" />
                             </span>
                         )}
-                        <ChevronDown className="w-3.5 h-3.5 opacity-70" />
+                        <ChevronDown className="w-3 h-3 opacity-70 shrink-0" />
                     </button>
 
                     {/* Filter (Neighborhoods) control */}
@@ -492,39 +492,40 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
                             type="button"
                             onClick={() => setDrawerOpen(true)}
                             className={cn(
-                                "shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 sm:py-2 rounded-full text-xs font-bold border transition-all whitespace-nowrap cursor-pointer",
+                                "shrink-0 flex items-center gap-1.5 px-3 h-8 sm:h-8.5 rounded-full text-[11px] sm:text-xs font-bold border transition-all whitespace-nowrap cursor-pointer",
                                 selectedZones.length > 0
                                     ? "bg-primary text-white border-primary shadow-sm"
                                     : "bg-soft-bg text-secondary border-soft-border hover:border-primary/50 hover:text-primary"
                             )}
                         >
-                            <MapPin className="w-3.5 h-3.5" />
+                            <MapPin className="w-3.5 h-3.5 shrink-0" />
                             <span>نواحی</span>
                             {selectedZones.length > 0 && (
                                 <span className="bg-white/30 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full leading-none">
                                     {selectedZones.length}
                                 </span>
                             )}
-                            <ChevronDown className="w-3.5 h-3.5 opacity-70" />
+                            <ChevronDown className="w-3 h-3 opacity-70 shrink-0" />
                         </button>
                     )}
 
                     {/* Sort selector */}
-                    <div className="shrink-0 flex items-center gap-1.5 bg-soft-bg px-3 py-1.5 sm:py-2 rounded-full border border-soft-border">
-                        <SlidersHorizontal className="w-3.5 h-3.5 text-secondary" />
+                    <div className="relative shrink-0 flex items-center gap-1.5 bg-soft-bg hover:border-primary/50 text-secondary hover:text-primary px-3 h-8 sm:h-8.5 rounded-full border border-soft-border transition-all cursor-pointer">
+                        <SlidersHorizontal className="w-3.5 h-3.5 text-secondary shrink-0 pointer-events-none" />
                         <select
                             value={sort}
                             onChange={(e) => {
                                 setSort(e.target.value as SearchSortOption);
                                 setStartPage(1);
                             }}
-                            className="bg-transparent text-secondary text-xs font-bold outline-none cursor-pointer"
+                            className="bg-transparent text-secondary hover:text-primary text-[11px] sm:text-xs font-bold outline-none cursor-pointer appearance-none pl-4.5 pr-0 py-0 leading-tight"
                         >
                             <option value="relevance">مرتبط‌ترین</option>
                             <option value="newest">جدیدترین</option>
                             <option value="price_asc">ارزان‌ترین</option>
                             <option value="price_desc">گران‌ترین</option>
                         </select>
+                        <ChevronDown className="w-3 h-3 text-secondary opacity-70 absolute left-2 top-1/2 -translate-y-1/2 pointer-events-none" />
                     </div>
                 </div>
             </div>
