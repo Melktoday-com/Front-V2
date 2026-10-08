@@ -2,12 +2,11 @@
 
 import { RoleGuard } from "@/components/RoleGuard";
 import { useAuth, useSwitchRole } from "@/hooks/useAuth";
-import { useMeProfile } from "@/hooks/useUser";
 import { useConversations } from "@/hooks/useChat";
 import { useUnreadNotificationsCount } from "@/hooks/useNotifications";
+import { useMeProfile } from "@/hooks/useUser";
 import { cn, toPersianDigits } from "@/lib/utils";
 import { RoleName, tryRoleNameFrom } from "@/types/access";
-import { toast } from "sonner";
 import {
     Bell,
     Building2,
@@ -28,6 +27,7 @@ import {
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
+import { toast } from "sonner";
 
 const navItems = [
     { icon: Home, label: "خانه", href: "/" },
@@ -156,7 +156,7 @@ export function Sidebar() {
                                     pathname.startsWith("/profile/chat")
                                         ? "bg-white text-primary"
                                         : "bg-primary/15 text-primary"
-                                    )}>
+                                )}>
                                     {toPersianDigits(unreadChatCount)}
                                 </span>
                             )}
@@ -267,7 +267,7 @@ export function Sidebar() {
                     )}
                 >
                     <Info className="w-4 h-4 text-primary" />
-                    <span>درباره ملکتودی</span>
+                    <span>درباره ملک تودی</span>
                 </Link>
             </div>
         </aside>

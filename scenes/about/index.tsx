@@ -1,30 +1,30 @@
 "use client";
 
-import React, { useState } from "react";
-import Link from "next/link";
-import {
-  Building2,
-  Phone,
-  Smartphone,
-  MapPin,
-  Clock,
-  ShieldCheck,
-  Sparkles,
-  ChevronRight,
-  Compass,
-  PlusCircle,
-  CheckCircle2,
-  Users,
-  Target,
-  Layers,
-  HeartHandshake,
-  ExternalLink,
-  Copy,
-  Check,
-  ArrowLeft,
-  Navigation as NavigationIcon,
-} from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  ArrowLeft,
+  Building2,
+  Check,
+  CheckCircle2,
+  ChevronRight,
+  Clock,
+  Compass,
+  Copy,
+  ExternalLink,
+  HeartHandshake,
+  Layers,
+  MapPin,
+  Navigation as NavigationIcon,
+  Phone,
+  PlusCircle,
+  ShieldCheck,
+  Smartphone,
+  Sparkles,
+  Target,
+  Users,
+} from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
 import { toast } from "sonner";
 
 export default function AboutScene() {
@@ -63,7 +63,7 @@ export default function AboutScene() {
   const coreValues = [
     {
       title: "شفافیت و صداقت اطلاعات",
-      desc: "در ملکتودی اطلاعات دقیق، جزئیات معتبر و قیمت‌گذاری‌های شفاف ارائه می‌شود تا با دیدی باز تصمیم بگیرید.",
+      desc: "در ملک تودی اطلاعات دقیق، جزئیات معتبر و قیمت‌گذاری‌های شفاف ارائه می‌شود تا با دیدی باز تصمیم بگیرید.",
       icon: ShieldCheck,
       color: "from-emerald-500/10 to-emerald-500/5 text-emerald-600 border-emerald-200/50",
     },
@@ -130,7 +130,7 @@ export default function AboutScene() {
         <div className="relative z-10 max-w-3xl space-y-6">
           <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/15 px-3.5 py-1.5 rounded-full text-xs font-black text-primary">
             <Sparkles className="w-4 h-4" />
-            <span>درباره پلتفرم ملکتودی</span>
+            <span>درباره پلتفرم ملک تودی</span>
           </div>
 
           <h1 className="text-2xl sm:text-3xl md:text-5xl font-black leading-tight sm:leading-tight md:leading-tight text-white tracking-tight">
@@ -138,7 +138,7 @@ export default function AboutScene() {
           </h1>
 
           <p className="text-white/80 text-sm sm:text-base md:text-lg leading-relaxed font-normal">
-            ملکتودی؛ جایی برای پیدا کردن ملک مناسب، با اطلاعاتی که به تصمیم بهتر کمک می‌کند.
+            ملک تودی؛ جایی برای پیدا کردن ملک مناسب، با اطلاعاتی که به تصمیم بهتر کمک می‌کند.
           </p>
 
           <div className="pt-2 flex flex-wrap gap-3">
@@ -166,13 +166,13 @@ export default function AboutScene() {
           <div className="flex items-center gap-3">
             <div className="w-2.5 h-7 bg-primary rounded-full" />
             <h2 className="text-xl sm:text-2xl font-black text-brand tracking-tight">
-              داستان و هدف ملکتودی
+              داستان و هدف ملک تودی
             </h2>
           </div>
 
           <div className="space-y-5 text-secondary text-sm sm:text-base leading-loose text-justify font-normal">
             <p className="text-brand font-medium">
-              <strong className="text-brand font-black">ملکتودی</strong> با هدف ساده‌تر، سریع‌تر و شفاف‌تر کردن مسیر جست‌وجو و معامله ملک شکل گرفته است.
+              <strong className="text-brand font-black">ملک تودی</strong> با هدف ساده‌تر، سریع‌تر و شفاف‌تر کردن مسیر جست‌وجو و معامله ملک شکل گرفته است.
             </p>
 
             <p>
@@ -181,17 +181,17 @@ export default function AboutScene() {
 
             <div className="p-5 sm:p-6 rounded-2xl bg-soft-bg border-r-4 border-r-primary border-y border-l border-soft-border space-y-2">
               <p className="text-brand font-bold text-sm sm:text-base leading-relaxed">
-                در ملکتودی، هدف فقط نمایش آگهی‌های ملکی نیست؛ بلکه می‌خواهیم تجربه‌ای دقیق‌تر و قابل‌اعتمادتر برای پیدا کردن ملک ایجاد کنیم؛ تجربه‌ای که در آن کاربران بتوانند با دسترسی آسان به اطلاعات، گزینه‌های مختلف را بررسی و آگاهانه‌تر تصمیم‌گیری کنند.
+                در ملک تودی، هدف فقط نمایش آگهی‌های ملکی نیست؛ بلکه می‌خواهیم تجربه‌ای دقیق‌تر و قابل‌اعتمادتر برای پیدا کردن ملک ایجاد کنیم؛ تجربه‌ای که در آن کاربران بتوانند با دسترسی آسان به اطلاعات، گزینه‌های مختلف را بررسی و آگاهانه‌تر تصمیم‌گیری کنند.
               </p>
             </div>
 
             <p>
-              ملکتودی در مسیر توسعه خود، همواره به بهبود تجربه کاربری، ارائه اطلاعات کاربردی و ایجاد بستری حرفه‌ای برای ارتباط میان متقاضیان و فعالان بازار ملک توجه دارد.
+              ملک تودی در مسیر توسعه خود، همواره به بهبود تجربه کاربری، ارائه اطلاعات کاربردی و ایجاد بستری حرفه‌ای برای ارتباط میان متقاضیان و فعالان بازار ملک توجه دارد.
             </p>
 
             <div className="pt-2 flex items-center gap-2 text-primary font-black text-base sm:text-lg">
               <CheckCircle2 className="w-5 h-5 shrink-0" />
-              <span>ملکتودی؛ جایی برای پیدا کردن ملک مناسب، با اطلاعاتی که به تصمیم بهتر کمک می‌کند.</span>
+              <span>ملک تودی؛ جایی برای پیدا کردن ملک مناسب، با اطلاعاتی که به تصمیم بهتر کمک می‌کند.</span>
             </div>
           </div>
         </div>
@@ -203,7 +203,7 @@ export default function AboutScene() {
           <div className="flex items-center gap-2">
             <div className="w-2 h-6 bg-primary rounded-full" />
             <h2 className="text-xl sm:text-2xl font-black text-brand tracking-tight">
-              اصول و ارزش‌های بنیادین ملکتودی
+              اصول و ارزش‌های بنیادین ملک تودی
             </h2>
           </div>
           <p className="text-secondary text-xs sm:text-sm pr-4">
@@ -238,7 +238,7 @@ export default function AboutScene() {
           <div className="flex items-center gap-2">
             <div className="w-2 h-6 bg-primary rounded-full" />
             <h2 className="text-xl sm:text-2xl font-black text-brand tracking-tight">
-              ملکتودی برای چه کسانی است؟
+              ملک تودی برای چه کسانی است؟
             </h2>
           </div>
           <p className="text-secondary text-xs sm:text-sm pr-4">
@@ -400,7 +400,7 @@ export default function AboutScene() {
             همراه شما در انتخاب بهترین ملک
           </h3>
           <p className="text-white/80 text-xs sm:text-sm leading-relaxed">
-            فرصت‌های برتر خرید، رهن، اجاره و اقامتگاه‌های روزانه را در ملکتودی کاوش کنید یا ملک خود را به سرعت در معرض دید هزاران مخاطب قرار دهید.
+            فرصت‌های برتر خرید، رهن، اجاره و اقامتگاه‌های روزانه را در ملک تودی کاوش کنید یا ملک خود را به سرعت در معرض دید هزاران مخاطب قرار دهید.
           </p>
         </div>
 

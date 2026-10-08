@@ -1,24 +1,20 @@
 "use client";
 
-import React, { useState } from "react";
-import Link from "next/link";
-import {
-  Building2,
-  Phone,
-  Smartphone,
-  MapPin,
-  Clock,
-  ArrowUp,
-  PlusCircle,
-  Compass,
-  ChevronLeft,
-  ShieldCheck,
-  CheckCircle2,
-  Sparkles,
-  Copy,
-  Check,
-} from "lucide-react";
 import { toPersianDigits } from "@/lib/utils";
+import {
+  ArrowUp,
+  Check,
+  CheckCircle2,
+  ChevronLeft,
+  Compass,
+  Copy,
+  MapPin,
+  Phone,
+  PlusCircle,
+  Smartphone
+} from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
 import { toast } from "sonner";
 
 export function Footer() {
@@ -54,13 +50,13 @@ export function Footer() {
                   MELK<span className="text-primary group-hover:opacity-90 transition-opacity">TODAY</span>
                 </span>
                 <span className="text-[11px] font-black bg-primary/20 text-primary px-2.5 py-0.5 rounded-full border border-primary/30">
-                  ملکتودی
+                  ملک تودی
                 </span>
               </Link>
             </div>
 
             <p className="text-white/80 text-xs sm:text-sm leading-relaxed text-justify">
-              ملکتودی با هدف ساده‌تر، سریع‌تر و شفاف‌تر کردن مسیر جست‌وجو و معامله ملک شکل گرفته است.
+              ملک تودی با هدف ساده‌تر، سریع‌تر و شفاف‌تر کردن مسیر جست‌وجو و معامله ملک شکل گرفته است.
               ما بستری یکپارچه برای معرفی و بررسی انواع املاک مسکونی، تجاری و اقامتگاه‌های روزانه ایجاد
               کرده‌ایم تا خریداران، مستأجران، مالکان و مشاورین بتوانند آگاهانه‌تر تصمیم‌گیری کنند.
             </p>
@@ -68,7 +64,7 @@ export function Footer() {
             <div className="p-3.5 rounded-2xl bg-white/[0.04] border border-white/10 flex items-center justify-between gap-3">
               <div className="flex items-center gap-2 text-xs font-bold text-white/90">
                 <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
-                <span>ملکتودی؛ جایی برای پیدا کردن ملک مناسب</span>
+                <span>ملک تودی؛ جایی برای پیدا کردن ملک مناسب</span>
               </div>
               <Link
                 href="/about"
@@ -153,7 +149,7 @@ export function Footer() {
               <li>
                 <Link href="/about" className="hover:text-primary transition-colors flex items-center gap-1.5 font-bold text-white">
                   <ChevronLeft className="w-3 h-3 text-primary" />
-                  <span>درباره ملکتودی</span>
+                  <span>درباره ملک تودی</span>
                 </Link>
               </li>
               <li>
@@ -298,7 +294,7 @@ export function Footer() {
         <div className="container mx-auto px-4 sm:px-6 pt-4 pb-24 lg:pb-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/60">
           <div className="text-center sm:text-right">
             <span>تمامی حقوق مادی و معنوی این وب‌سایت متعلق به پلتفرم </span>
-            <span className="text-white font-bold">ملکتودی (MelkToday)</span>
+            <span className="text-white font-bold">ملک تودی (MelkToday)</span>
             <span> می‌باشد.</span>
           </div>
 
