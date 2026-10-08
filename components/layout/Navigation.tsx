@@ -15,6 +15,7 @@ import {
     Heart,
     Home,
     Hotel,
+    Info,
     LogIn,
     MapPin,
     MessageSquare,
@@ -254,6 +255,20 @@ export function Sidebar() {
                 )}
             </nav>
 
+            <div className="pt-3 mt-auto border-t border-soft-border flex items-center justify-between text-xs">
+                <Link
+                    href="/about"
+                    className={cn(
+                        "flex items-center gap-2 py-1.5 px-2 rounded-xl transition-colors font-medium",
+                        pathname === "/about"
+                            ? "text-primary font-bold bg-primary/10"
+                            : "text-secondary hover:text-brand"
+                    )}
+                >
+                    <Info className="w-4 h-4 text-primary" />
+                    <span>درباره ملکتودی</span>
+                </Link>
+            </div>
         </aside>
     );
 }

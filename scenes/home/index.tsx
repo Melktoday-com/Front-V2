@@ -17,6 +17,7 @@ import { TemporaryRentAdSummary } from "@/services/temporary-rent.service";
 import { AdSummary } from "@/types/api/ads.types";
 import { AgencySummary } from "@/types/api/agency.types";
 import { getMediaUrl, getMediaPosterUrl } from "@/lib/utils";
+import { Footer } from "@/components/layout/Footer";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
@@ -73,7 +74,7 @@ export const HomeScene = () => {
     }, [agencyData]);
 
     return (
-        <div className="flex flex-col gap-8 sm:gap-10 pb-32 sm:pb-36 pt-4 sm:pt-6">
+        <div className="flex flex-col gap-8 sm:gap-10 pt-4 sm:pt-6">
             <SearchHeader
                 isInitialOpen={isInitialModalOpen}
             />
@@ -265,6 +266,9 @@ export const HomeScene = () => {
                     </Slider>
                 )}
             </section>
+
+            {/* Footer */}
+            <Footer />
         </div>
     );
 };
