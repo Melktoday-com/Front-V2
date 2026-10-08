@@ -3,7 +3,7 @@
 import { useAuth } from "@/hooks/useAuth";
 import { DEFAULT_CATEGORY_TRANSLATIONS } from "@/hooks/useCategoryLookup";
 import { cn, toPersianDigits } from "@/lib/utils";
-import { Heart, MapPin, Play, ShieldCheck, Sparkles, Star } from "lucide-react";
+import { Heart, MapPin, Play, Sparkles, Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -129,19 +129,75 @@ export function PropertyCard({
                 isResponsive
                     ? "flex flex-row sm:flex-col"
                     : isHorizontal
-                    ? "flex flex-row"
-                    : "flex flex-col",
+                        ? "flex flex-row"
+                        : "flex flex-col",
                 className
             )}
         >
+
+            {/* Details Section */}
+            <div
+                className={cn(
+                    "min-w-0 flex flex-col flex-1 text-right justify-between",
+                    isResponsive
+                        ? "py-2.5 pl-3 pr-1 sm:p-3"
+                        : isHorizontal
+                            ? "py-2.5 pl-3 pr-1"
+                            : "p-3"
+                )}
+            >
+                <div className="min-w-0">
+                    {/* Top row: Price and Rating */}
+                    <div className="flex justify-between items-baseline gap-1">
+                        <div className="flex items-baseline gap-1 min-w-0">
+                            <span className="text-brand font-black text-sm sm:text-base truncate">
+                                {formatDisplayPrice()}
+                            </span>
+                            {unit && <span className="text-[10px] text-text-light shrink-0">{unit}</span>}
+                        </div>
+
+                        {rating !== undefined && Number(rating) > 0 && (
+                            <div className="flex items-center gap-0.5 shrink-0 text-brand text-[10px] sm:text-[11px] font-bold">
+                                <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
+                                <span>{toPersianDigits(Number(rating).toFixed(1))}</span>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Title */}
+                    <h3
+                        className={cn(
+                            "text-brand font-bold text-xs sm:text-sm mt-1 sm:mt-1.5 group-hover:text-primary transition-colors leading-snug",
+                            isVertical ? "line-clamp-1" : "line-clamp-2 sm:line-clamp-1"
+                        )}
+                    >
+                        {title}
+                    </h3>
+
+                    {/* Specs Row (area, rooms) */}
+                    {(area || rooms) && (
+                        <div className="flex items-center gap-2 text-[10px] sm:text-[11px] text-text-light mt-1 font-medium">
+                            {area ? <span>{toPersianDigits(area)} متر</span> : null}
+                            {area && rooms ? <span>•</span> : null}
+                            {rooms ? <span>{toPersianDigits(rooms)} خوابه</span> : null}
+                        </div>
+                    )}
+                </div>
+
+                {/* Location at bottom */}
+                <div className="mt-auto pt-1.5 sm:pt-2 flex items-center gap-1 text-text-light text-[10px] sm:text-[11px]">
+                    <MapPin className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0 text-text-light/70" />
+                    <span className="truncate">{location}</span>
+                </div>
+            </div>
             <div
                 className={cn(
                     "relative shrink-0 overflow-hidden",
                     isResponsive
                         ? "w-28 h-28 min-[380px]:w-32 min-[380px]:h-32 sm:w-full sm:h-auto sm:aspect-[4/3] rounded-xl sm:rounded-none m-2 sm:m-0"
                         : isHorizontal
-                        ? "w-28 h-28 sm:w-32 sm:h-32 rounded-xl m-2"
-                        : "aspect-[4/3] w-full"
+                            ? "w-28 h-28 sm:w-32 sm:h-32 rounded-xl m-2"
+                            : "aspect-[4/3] w-full"
                 )}
             >
                 <Image
@@ -201,61 +257,6 @@ export function PropertyCard({
                 )}
             </div>
 
-            {/* Details Section */}
-            <div
-                className={cn(
-                    "min-w-0 flex flex-col flex-1 text-right justify-between",
-                    isResponsive
-                        ? "py-2.5 pl-3 pr-1 sm:p-3"
-                        : isHorizontal
-                        ? "py-2.5 pl-3 pr-1"
-                        : "p-3"
-                )}
-            >
-                <div className="min-w-0">
-                    {/* Top row: Price and Rating */}
-                    <div className="flex justify-between items-baseline gap-1">
-                        <div className="flex items-baseline gap-1 min-w-0">
-                            <span className="text-brand font-black text-sm sm:text-base truncate">
-                                {formatDisplayPrice()}
-                            </span>
-                            {unit && <span className="text-[10px] text-text-light shrink-0">{unit}</span>}
-                        </div>
-
-                        {rating !== undefined && Number(rating) > 0 && (
-                            <div className="flex items-center gap-0.5 shrink-0 text-brand text-[10px] sm:text-[11px] font-bold">
-                                <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
-                                <span>{toPersianDigits(Number(rating).toFixed(1))}</span>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Title */}
-                    <h3
-                        className={cn(
-                            "text-brand font-bold text-xs sm:text-sm mt-1 sm:mt-1.5 group-hover:text-primary transition-colors leading-snug",
-                            isVertical ? "line-clamp-1" : "line-clamp-2 sm:line-clamp-1"
-                        )}
-                    >
-                        {title}
-                    </h3>
-
-                    {/* Specs Row (area, rooms) */}
-                    {(area || rooms) && (
-                        <div className="flex items-center gap-2 text-[10px] sm:text-[11px] text-text-light mt-1 font-medium">
-                            {area ? <span>{toPersianDigits(area)} متر</span> : null}
-                            {area && rooms ? <span>•</span> : null}
-                            {rooms ? <span>{toPersianDigits(rooms)} خوابه</span> : null}
-                        </div>
-                    )}
-                </div>
-
-                {/* Location at bottom */}
-                <div className="mt-auto pt-1.5 sm:pt-2 flex items-center gap-1 text-text-light text-[10px] sm:text-[11px]">
-                    <MapPin className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0 text-text-light/70" />
-                    <span className="truncate">{location}</span>
-                </div>
-            </div>
         </div>
     );
 
