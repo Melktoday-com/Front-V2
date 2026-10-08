@@ -13,6 +13,7 @@ import { useInfiniteSearchListings } from "@/hooks/useSearch";
 import { useCategoryLookup } from "@/hooks/useCategoryLookup";
 import { useFavorites, useToggleSaveAd } from "@/hooks/useFavorites";
 import { useGeoHierarchy } from "@/hooks/useGeoHierarchy";
+import { useDebounce } from "@/hooks/useDebounce";
 import { cn, formatPrice, getMediaUrl, getMediaPosterUrl, toPersianDigits } from "@/lib/utils";
 import { geoService } from "@/services/geo.service";
 import { AdSummary } from "@/types/api/ads.types";
@@ -137,12 +138,19 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
     const [sort, setSort] = useState<SearchSortOption>("relevance");
     const [startPage, setStartPage] = useState<number>(1);
 
+    const debouncedSearch = useDebounce(search, 350);
+
     // Keep state in sync with URL search params
     useEffect(() => {
         setSelectedCategory(searchParams.get("categoryKey") || "");
         setSelectedSubcategory(searchParams.get("subcategoryKey") || "");
         setSearch(searchParams.get("search") || "");
     }, [searchParams]);
+
+    // Reset pagination when search query or city changes
+    useEffect(() => {
+        setStartPage(1);
+    }, [debouncedSearch, effectiveCityId]);
 
     const observerTargetRef = useRef<HTMLDivElement | null>(null);
     const listContainerRef = useRef<HTMLDivElement | null>(null);
@@ -160,7 +168,7 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
     } = useInfiniteSearchListings(
         {
             limit: 20,
-            query: search || undefined,
+            query: debouncedSearch.trim() || undefined,
             cityId: effectiveCityId,
             cityName: effectiveCityName !== "همه شهرها" ? effectiveCityName : undefined,
             neighbourhoodName: selectedZones.length === 1 ? selectedZones[0].name : undefined,
@@ -168,7 +176,7 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
             subcategoryKey: selectedSubcategory || undefined,
             sort,
         },
-        { startPage, maxPages: 7, enabled: !!effectiveCityId }
+        { startPage, maxPages: 7, enabled: true }
     );
 
     // Auto-scroll infinite scroll up to 7 pages
@@ -321,9 +329,14 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
         setSelectedZones([]);
         setStartPage(1);
         const params = new URLSearchParams(searchParams.toString());
-        params.set("cityId", city.id);
-        params.set("cityName", city.name);
-        router.push(`${window.location.pathname}?${params.toString()}`);
+        if (city.id) {
+            params.set("cityId", city.id);
+            params.set("cityName", city.name);
+        } else {
+            params.delete("cityId");
+            params.delete("cityName");
+        }
+        router.push(`/ads?${params.toString()}`);
     };
 
     const handleCategorySelect = (catKey: string) => {
@@ -337,7 +350,7 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
             params.delete("categoryKey");
         }
         params.delete("subcategoryKey");
-        router.push(`${window.location.pathname}?${params.toString()}`);
+        router.push(`/ads?${params.toString()}`);
     };
 
     const handleSubcategorySelect = (subKey: string) => {
@@ -349,7 +362,7 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
         } else {
             params.delete("subcategoryKey");
         }
-        router.push(`${window.location.pathname}?${params.toString()}`);
+        router.push(`/ads?${params.toString()}`);
     };
 
     const handleSearchChange = (val: string) => {
