@@ -113,7 +113,15 @@ export function TicketFloatingWidget() {
     const createTicketMutation = useCreateTicket();
     const addReplyMutation = useAddTicketReply(selectedTicketId || undefined);
 
+    const isHistoryPushedRef = useRef(false);
+
     const handleCloseWidget = React.useCallback(() => {
+        if (isHistoryPushedRef.current) {
+            isHistoryPushedRef.current = false;
+            if (typeof window !== "undefined" && window.history.state?.melktodayTicketOpen) {
+                window.history.back();
+            }
+        }
         setIsOpen(false);
         setUiState("closed");
         setFormError(null);
@@ -174,15 +182,55 @@ export function TicketFloatingWidget() {
         return () => window.removeEventListener("keydown", handleKeyDown);
     }, [isOpen, handleCloseWidget]);
 
-    // Lock body scroll on mobile when widget is open
+    // Push browser history state on modal open so mobile phone back button closes the modal
     useEffect(() => {
-        if (isOpen) {
-            const originalOverflow = document.body.style.overflow;
-            document.body.style.overflow = "hidden";
-            return () => {
-                document.body.style.overflow = originalOverflow;
-            };
-        }
+        if (!isOpen) return;
+
+        window.history.pushState({ melktodayTicketOpen: true }, "");
+        isHistoryPushedRef.current = true;
+
+        const handlePopState = () => {
+            isHistoryPushedRef.current = false;
+            setIsOpen(false);
+            setUiState("closed");
+            setFormError(null);
+            if (searchParams.get("ticketId")) {
+                const newParams = new URLSearchParams(searchParams.toString());
+                newParams.delete("ticketId");
+                const newUrl = newParams.toString()
+                    ? `${pathname}?${newParams.toString()}`
+                    : pathname;
+                router.replace(newUrl, { scroll: false });
+            }
+        };
+
+        window.addEventListener("popstate", handlePopState);
+
+        return () => {
+            window.removeEventListener("popstate", handlePopState);
+            if (isHistoryPushedRef.current) {
+                isHistoryPushedRef.current = false;
+                if (typeof window !== "undefined" && window.history.state?.melktodayTicketOpen) {
+                    window.history.back();
+                }
+            }
+        };
+    }, [isOpen, pathname, router, searchParams]);
+
+    // Lock body and html scroll when widget is open and unfreeze on close
+    useEffect(() => {
+        if (!isOpen) return;
+
+        const originalBodyOverflow = document.body.style.overflow;
+        const originalHtmlOverflow = document.documentElement.style.overflow;
+
+        document.body.style.overflow = "hidden";
+        document.documentElement.style.overflow = "hidden";
+
+        return () => {
+            document.body.style.overflow = originalBodyOverflow;
+            document.documentElement.style.overflow = originalHtmlOverflow;
+        };
     }, [isOpen]);
 
     // Auto-scroll messages to bottom when new messages arrive
@@ -354,7 +402,7 @@ export function TicketFloatingWidget() {
                     aria-modal="true"
                     aria-labelledby={titleId}
                     tabIndex={-1}
-                    className="fixed inset-0 sm:inset-auto sm:bottom-8 sm:left-8 w-full sm:w-[440px] h-full h-[100dvh] sm:h-[620px] sm:max-h-[92vh] bg-white rounded-none sm:rounded-3xl shadow-2xl border-0 sm:border border-soft-border/80 flex flex-col z-50 overflow-hidden outline-none animate-in fade-in sm:slide-in-from-bottom-6 duration-300"
+                    className="fixed inset-0 sm:inset-auto sm:bottom-8 sm:left-8 w-full sm:w-[440px] h-full h-[100dvh] sm:h-[620px] sm:max-h-[92vh] bg-white rounded-none sm:rounded-3xl shadow-2xl border-0 sm:border border-soft-border/80 flex flex-col z-50 overflow-hidden outline-none animate-in fade-in sm:slide-in-from-bottom-6 duration-300 overscroll-contain"
                     dir="rtl"
                 >
                     {/* Header */}
@@ -435,7 +483,7 @@ export function TicketFloatingWidget() {
                     )}
 
                     {/* Content Area */}
-                    <div className="flex-1 overflow-y-auto p-4 bg-white flex flex-col">
+                    <div className="flex-1 overflow-y-auto p-4 bg-white flex flex-col overscroll-contain">
                         {!isAuthenticated ? (
                             <div className="flex flex-col items-center justify-center py-12 px-4 text-center gap-4 flex-1">
                                 <div className="w-16 h-16 rounded-3xl bg-primary/10 text-primary flex items-center justify-center">

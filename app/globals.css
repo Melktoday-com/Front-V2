@@ -56,3 +56,12 @@ path.leaflet-interactive {
   transition: stroke 0.15s ease, fill 0.15s ease, stroke-width 0.15s ease;
 }
 
+/* Prevent auto-zooming on focus in iOS Safari and mobile browsers */
+@media screen and (max-width: 768px) {
+  input:not([type="checkbox"]):not([type="radio"]),
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
+

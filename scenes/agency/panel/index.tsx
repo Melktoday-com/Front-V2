@@ -359,10 +359,14 @@ export default function AgencyPanelScene() {
                         </div>
 
                         {/* Showcase link banner */}
-                        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-3xl p-6 sm:p-8 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
-                            <div className="space-y-1">
+                        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-3xl p-6 sm:p-8 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm overflow-hidden">
+                            <div className="space-y-1 min-w-0 flex-1 overflow-hidden">
                                 <h3 className="text-lg font-black">لینک اختصاصی صفحه ویترین شما:</h3>
-                                <p className="text-blue-100 text-xs font-mono select-all">
+                                <p
+                                    className="text-blue-100 text-xs font-mono select-all truncate overflow-hidden max-w-full block"
+                                    dir="ltr"
+                                    title={`${typeof window !== "undefined" ? window.location.origin : ""}${publicShowcaseUrl}`}
+                                >
                                     {typeof window !== "undefined" ? window.location.origin : ""}{publicShowcaseUrl}
                                 </p>
                             </div>

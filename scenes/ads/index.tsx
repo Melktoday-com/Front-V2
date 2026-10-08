@@ -523,6 +523,8 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
                         <span>
                             {isLoading
                                 ? "در حال جستجو..."
+                                : displayedAds.length === 0
+                                ? "آگهی یافت نشد"
                                 : `${toPersianDigits(displayedAds.length)} آگهی نمایش داده شده${
                                       selectedSubcategory
                                           ? ` در ${getSubcategoryName(selectedSubcategory, selectedCategory)}`
@@ -568,7 +570,7 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
                             )}
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-4 pb-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-4 pb-32 lg:pb-6">
                             {data?.pages.map((page, pageIndex) => {
                                 const pageSummaries = page.hits.map(searchDocToAdSummary);
                                 const pageAds =
@@ -666,7 +668,7 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
                             onPrevPage={handlePrevPage}
                             onNextPage={handleNextPage}
                             onScrollToTop={handleScrollToTop}
-                            className="mb-8"
+                            className="mb-32 lg:mb-8"
                         />
                     )}
                 </div>

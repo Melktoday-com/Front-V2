@@ -78,7 +78,7 @@ export default function UserRequestsPage() {
     const hasAnyRequests = Boolean(agencyApp || hostApp);
 
     return (
-        <div className="max-w-4xl mx-auto px-4 py-8 space-y-6" dir="rtl">
+        <div className="max-w-4xl mx-auto px-4 pt-8 pb-36 lg:pb-8 space-y-6" dir="rtl">
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-soft-border shadow-xs">
                 <div className="flex items-center gap-3.5">
