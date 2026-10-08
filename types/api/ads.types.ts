@@ -17,6 +17,14 @@ export interface AdLocation {
     lng?: number;
 }
 
+export interface AdPublisher {
+    type: 'host' | 'agency' | 'platform' | 'user';
+    name: string;
+    slug: string;
+    avatar?: string | null;
+    isVerified?: boolean;
+}
+
 export interface AdSummary {
     adId: string;
     ownerId: string;
@@ -37,6 +45,7 @@ export interface AdSummary {
     location?: AdLocation | null;
     area?: number | string;
     rooms?: number | string;
+    publisher?: AdPublisher;
 }
 
 export interface ListAdsQuery {

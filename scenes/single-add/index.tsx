@@ -11,6 +11,7 @@ import {
     Building,
     Calendar,
     CheckCircle2,
+    ChevronLeft,
     ChevronRight,
     Heart,
     Layers,
@@ -37,6 +38,7 @@ import { useCityLookup } from "@/hooks/useCityLookup";
 import { useCategoryLookup } from "@/hooks/useCategoryLookup";
 import { PropertyCard } from "@/components/ui/PropertyCard";
 import { useToggleSaveAd } from "@/hooks/useFavorites";
+import { PromotionModal } from "@/components/promotions/PromotionModal";
 
 const Map = dynamic(() => import("@/components/ui/Map"), {
     ssr: false,
@@ -54,12 +56,15 @@ export default function SingleAdScene() {
     const [activeImageIndex, setActiveImageIndex] = useState(0);
     const [showFullPhone, setShowFullPhone] = useState(false);
     const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+    const [isPromotionModalOpen, setIsPromotionModalOpen] = useState(false);
 
-    const { isLoggedIn } = useAuth();
+    const { user, isLoggedIn } = useAuth();
     const chatMutation = useCreateConversation();
     const toggleSaveMutation = useToggleSaveAd();
     const { data: ad, isLoading, error } = useAd(id);
     const { data: contact } = useAdContact(id);
+
+    const isOwner = isLoggedIn && !!user?.userId && user?.userId === ad?.ownerId;
 
     useEffect(() => {
         if (ad?.isSaved !== undefined) {
@@ -483,22 +488,68 @@ export default function SingleAdScene() {
                             اطلاعات تماس آگهی‌دهنده
                         </h3>
 
+                        {/* Publisher Info */}
                         <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center font-black text-lg">
-                                م
-                            </div>
-                            <div>
-                                <h4 className="font-bold text-sm text-brand">
-                                    آگهی‌دهنده ملک‌تودی
+                            {ad.publisher?.avatar ? (
+                                <img
+                                    src={ad.publisher.avatar}
+                                    alt={ad.publisher.name}
+                                    className="w-12 h-12 rounded-full object-cover border border-gray-100 shadow-xs shrink-0"
+                                />
+                            ) : (
+                                <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center font-black text-lg shrink-0">
+                                    {ad.publisher?.name ? ad.publisher.name.charAt(0) : "م"}
+                                </div>
+                            )}
+                            <div className="min-w-0 flex-1">
+                                <h4 className="font-bold text-sm text-brand truncate">
+                                    {ad.publisher?.name || "آگهی‌دهنده ملک‌تودی"}
                                 </h4>
-                                <span className="text-[11px] text-text-light flex items-center gap-1">
-                                    <ShieldCheck className="w-3.5 h-3.5 text-primary" />
-                                    کاربر تایید شده
-                                </span>
+                                <div className="flex items-center gap-1.5 mt-0.5">
+                                    {ad.publisher?.type === "agency" && (
+                                        <span className="text-[11px] text-text-light font-medium">مشاور املاک / آژانس</span>
+                                    )}
+                                    {ad.publisher?.type === "host" && (
+                                        <span className="text-[11px] text-text-light font-medium">میزبان اقامتگاه</span>
+                                    )}
+                                    {(!ad.publisher || ad.publisher.type === "user" || ad.publisher.type === "platform") && (
+                                        <span className="text-[11px] text-text-light font-medium">
+                                            {ad.publisher?.type === "platform" ? "سامانه ملک‌تودی" : "کاربر ملک‌تودی"}
+                                        </span>
+                                    )}
+                                    {ad.publisher?.isVerified && (
+                                        <span className="text-[11px] text-primary flex items-center gap-0.5 font-bold">
+                                            <ShieldCheck className="w-3.5 h-3.5" />
+                                            تایید شده
+                                        </span>
+                                    )}
+                                </div>
                             </div>
                         </div>
 
+                        {/* Showcase link if publisher is host or agency */}
+                        {ad.publisher && ad.publisher.type !== "user" && ad.publisher.slug && (
+                            <button
+                                onClick={() => router.push(ad.publisher!.type === "host" ? `/host/${ad.publisher!.slug}` : `/agency/showcase/${ad.publisher!.slug}`)}
+                                className="w-full py-2.5 px-3 rounded-xl border border-gray-200/80 hover:bg-gray-50 text-xs font-bold text-brand flex items-center justify-between transition-colors cursor-pointer"
+                            >
+                                <span>{ad.publisher.type === "host" ? "مشاهده پروفایل و سایر اقامتگاه‌ها" : "مشاهده ویترین و آگهی‌های آژانس"}</span>
+                                <ChevronLeft className="w-4 h-4 text-gray-400" />
+                            </button>
+                        )}
+
                         <div className="space-y-3 pt-2">
+                            {/* Owner Promotion Action Button */}
+                            {isOwner && (
+                                <button
+                                    onClick={() => setIsPromotionModalOpen(true)}
+                                    className="flex items-center justify-center gap-2 w-full py-3.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-black text-sm rounded-2xl shadow-md shadow-orange-500/20 transition-all cursor-pointer"
+                                >
+                                    <Sparkles className="w-4 h-4" />
+                                    <span>ارتقای آگهی (فوری / نردبان)</span>
+                                </button>
+                            )}
+
                             <button
                                 onClick={() => setIsContactModalOpen(true)}
                                 className="flex items-center justify-center gap-2 w-full py-3.5 bg-primary text-white font-bold text-sm rounded-2xl shadow-md hover:bg-primary/90 transition-all cursor-pointer"
@@ -547,6 +598,7 @@ export default function SingleAdScene() {
                                         getCategoryName(item.categoryPath?.categoryKey) ||
                                         item.categoryPath?.subcategoryKey
                                     }
+                                    publisher={item.publisher}
                                 />
                             ))}
                     </div>
@@ -560,6 +612,15 @@ export default function SingleAdScene() {
                     <span className="text-sm font-black text-brand truncate">{priceMain}</span>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
+                    {isOwner && (
+                        <button
+                            onClick={() => setIsPromotionModalOpen(true)}
+                            className="flex items-center gap-1 px-3 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl text-xs font-black shadow-md shadow-orange-500/20 active:scale-95 transition-transform cursor-pointer"
+                        >
+                            <Sparkles className="w-3.5 h-3.5" />
+                            <span>ارتقا</span>
+                        </button>
+                    )}
                     <button
                         onClick={() => setIsContactModalOpen(true)}
                         className="flex items-center gap-1.5 px-4 py-2.5 bg-primary text-white rounded-xl text-xs font-bold shadow-md shadow-primary/25 active:scale-95 transition-transform cursor-pointer"
@@ -705,6 +766,14 @@ export default function SingleAdScene() {
                     </div>
                 </div>
             )}
+
+            {/* Promotion Modal */}
+            <PromotionModal
+                isOpen={isPromotionModalOpen}
+                onClose={() => setIsPromotionModalOpen(false)}
+                listingId={id}
+                listingTitle={ad?.title || ""}
+            />
         </div>
     );
 }

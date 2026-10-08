@@ -42,6 +42,7 @@ import { AdminCreateAdRequest } from "@/types/api/admin.types";
 import { useUserStatus } from "@/hooks/useUserStatus";
 import { AccountStatusBanner } from "@/components/ui/AccountStatusBanner";
 import { ShieldAlert } from "lucide-react";
+import { useEntitlements } from "@/hooks/useSubscription";
 
 // Leaflet is client-side only
 const DynamicMapPicker = dynamic(() => import("@/components/ui/MapPicker"), { ssr: false });
@@ -67,6 +68,13 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
     const editAdId = searchParams.get("edit");
     const { selectedCity } = useCity();
     const { isRestricted, restrictionTitle, restrictionMessage } = useUserStatus();
+    const { data: entitlements = [] } = useEntitlements();
+
+    const publicationEntitlement = useMemo(() => {
+        if (!Array.isArray(entitlements)) return null;
+        return entitlements.find((e) => e.entitlementType === "LISTING_PUBLICATION") || null;
+    }, [entitlements]);
+    const remainingQuota = publicationEntitlement?.remainingQuota ?? 0;
 
     const [adminOwnership, setAdminOwnership] = useState<AdminOwnershipData>({
         isPlatform: true,
@@ -353,17 +361,42 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
             if (shouldPublish && adId) {
                 try {
                     await adsService.submitForReview(adId);
-                } catch (e) {
-                    console.warn("Notice during submitForReview:", e);
+                } catch (e: unknown) {
+                    const err = e as { response?: { status?: number; data?: { message?: string } }; message?: string };
+                    const message = err?.response?.data?.message || err?.message || "";
+                    const isInsufficient =
+                        err?.response?.status === 402 ||
+                        (err?.response?.status === 400 && (
+                            message.toLowerCase().includes("insufficient") ||
+                            message.includes("موجودی") ||
+                            message.includes("کیف پول")
+                        ));
+                    if (isInsufficient) {
+                        toast.error("موجودی کیف پول برای پرداخت تعرفه انتشار کافی نیست. لطفاً ابتدا کیف پول خود را شارژ کنید.", {
+                            action: {
+                                label: "شارژ کیف پول",
+                                onClick: () => router.push("/wallet"),
+                            },
+                            duration: 8000,
+                        });
+                        return { adId, shouldPublish: false, paymentRequired: true };
+                    }
+                    console.error("Error during submitForReview:", e);
+                    throw e;
                 }
             }
 
-            return { adId, shouldPublish };
+            return { adId, shouldPublish, paymentRequired: false };
         },
-        onSuccess: ({ shouldPublish }) => {
+        onSuccess: ({ shouldPublish, paymentRequired }: { shouldPublish: boolean; paymentRequired?: boolean }) => {
             if (adminMode) {
                 toast.success("آگهی با موفقیت توسط ادمین ثبت گردید");
                 router.push("/admin/ads");
+                return;
+            }
+            if (paymentRequired) {
+                toast.info("آگهی به عنوان پیش‌نویس ذخیره شد. پس از شارژ کیف پول می‌توانید از بخش آگهی‌های من آن را ارسال کنید.");
+                router.push("/profile/ads");
                 return;
             }
             if (shouldPublish) {
@@ -1167,6 +1200,31 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                         </p>
                                     </div>
                                 </div>
+
+                                {/* Quota / Publication Fee Entitlement Status */}
+                                {!adminMode && (
+                                    remainingQuota > 0 ? (
+                                        <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200/80 text-xs text-emerald-800 leading-relaxed flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <Sparkles className="w-4 h-4 text-emerald-600 shrink-0" />
+                                                <span className="font-bold">انتشار رایگان از سهمیه اشتراک</span>
+                                            </div>
+                                            <span className="px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-900 font-black text-[11px]">
+                                                سهمیه باقیمانده: {toPersianDigits(remainingQuota)} آگهی
+                                            </span>
+                                        </div>
+                                    ) : (
+                                        <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200/80 text-xs text-amber-900 leading-relaxed flex items-start gap-2.5">
+                                            <Wallet className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                                            <div>
+                                                <span className="font-bold block mb-0.5">تعرفه انتشار آگهی</span>
+                                                <p className="text-amber-800/90 text-[11px] leading-relaxed">
+                                                    سهمیه اشتراک فعال موجود نیست. هزینه انتشار آگهی طبق تعرفه مصوب در لحظه ارسال از کیف پول رزرو (Hold) شده و پس از بررسی و تایید کارشناسان نهایی می‌گردد. در صورت عدم تایید، مبلغ به کیف پول بازگردانده می‌شود.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    )
+                                )}
 
                                 <div className="p-4 rounded-2xl bg-amber-50 border border-amber-100 text-xs text-amber-800 leading-relaxed flex items-start gap-2.5">
                                     <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />

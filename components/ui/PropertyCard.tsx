@@ -2,9 +2,10 @@
 
 import { DEFAULT_CATEGORY_TRANSLATIONS } from "@/hooks/useCategoryLookup";
 import { cn, toPersianDigits } from "@/lib/utils";
-import { MapPin, Play, Sparkles, Star } from "lucide-react";
+import { MapPin, Play, ShieldCheck, Sparkles, Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 interface PropertyCardProps {
@@ -32,6 +33,13 @@ interface PropertyCardProps {
     badgeName?: string | null;
     badgeIcon?: string | null;
     isUrgent?: boolean;
+    publisher?: {
+        type: 'host' | 'agency' | 'platform' | 'user';
+        name: string;
+        slug: string;
+        avatar?: string | null;
+        isVerified?: boolean;
+    };
 }
 
 export function PropertyCard({
@@ -54,7 +62,9 @@ export function PropertyCard({
     badgeName,
     badgeIcon,
     isUrgent = false,
+    publisher,
 }: PropertyCardProps) {
+    const router = useRouter();
     const effectiveAdId = adId || id;
     const [imgSrc, setImgSrc] = useState(image || "/property-placeholder.svg");
 
@@ -133,6 +143,36 @@ export function PropertyCard({
                             {area ? <span>{toPersianDigits(area)} متر</span> : null}
                             {area && rooms ? <span>•</span> : null}
                             {rooms ? <span>{toPersianDigits(rooms)} خوابه</span> : null}
+                        </div>
+                    )}
+
+                    {/* Publisher Showcase Badge */}
+                    {publisher && publisher.type !== 'user' && publisher.name && (
+                        <div className="mt-1 flex items-center">
+                            <button
+                                type="button"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    const targetUrl = publisher.type === 'host'
+                                        ? `/host/${publisher.slug}`
+                                        : `/agency/showcase/${publisher.slug}`;
+                                    router.push(targetUrl);
+                                }}
+                                className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-gray-50 hover:bg-gray-100 border border-gray-200/60 text-[10px] text-text-main font-bold transition-colors cursor-pointer"
+                            >
+                                {publisher.avatar ? (
+                                    <img
+                                        src={publisher.avatar}
+                                        alt={publisher.name}
+                                        className="w-3.5 h-3.5 rounded-full object-cover shrink-0"
+                                    />
+                                ) : null}
+                                <span className="truncate max-w-[90px]">{publisher.name}</span>
+                                {publisher.isVerified && (
+                                    <ShieldCheck className="w-3 h-3 text-primary shrink-0" />
+                                )}
+                            </button>
                         </div>
                     )}
                 </div>

@@ -598,6 +598,17 @@ export const adminService = {
         const response = await api.post<{ success: boolean; isFrozen: boolean }>(`/admin/wallet/users/${userId}/freeze`, data);
         return response.data;
     },
+
+    // ── Ad Pricing Management ────────────────────────────────────────────────
+    getAdPricing: async (): Promise<{ publicationFee: number; currency: string; updatedAt?: string }> => {
+        const response = await api.get<{ publicationFee: number; currency: string; updatedAt?: string }>("/admin/ads/pricing");
+        return response.data;
+    },
+
+    setAdPricing: async (data: { publicationFee: number }): Promise<{ publicationFee: number; currency: string; updatedAt: string }> => {
+        const response = await api.put<{ publicationFee: number; currency: string; updatedAt: string }>("/admin/ads/pricing", data);
+        return response.data;
+    },
 };
 
 
