@@ -82,7 +82,7 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
     return (
         <div className="h-full flex flex-col bg-white overflow-hidden">
             {/* Header */}
-            <div className="p-3 lg:px-6 lg:py-4 border-b border-soft-border bg-white flex items-center gap-3 shrink-0">
+            <div className="p-3 lg:px-6 lg:py-4 border-b border-soft-border bg-white flex items-center gap-3 shrink-0 sticky top-0 z-20">
                 <div className="w-9 h-9 lg:w-10 lg:h-10 bg-soft-bg rounded-xl flex items-center justify-center text-brand overflow-hidden">
                     {otherParticipant?.avatar ? (
                         <img src={otherParticipant.avatar} alt={otherParticipant.name} className="w-full h-full object-cover" />
@@ -118,7 +118,7 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
             {/* Messages */}
             <div
                 ref={scrollRef}
-                className="flex-1 overflow-y-auto p-3 lg:p-4 space-y-2.5 scrollbar-thin scrollbar-track-transparent"
+                className="flex-1 overflow-y-auto px-3 lg:px-4 py-4 lg:py-6 space-y-2.5 scrollbar-thin scrollbar-track-transparent"
             >
                 {hasNextPage && (
                     <div className="flex justify-center pb-4">
@@ -160,7 +160,7 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
             </div>
 
             {/* Input */}
-            <form onSubmit={handleSend} className="p-3 lg:p-4 bg-white border-t border-soft-border shrink-0">
+            <form onSubmit={handleSend} className="p-3 lg:p-4 bg-white border-t border-soft-border shrink-0 sticky bottom-0 z-20">
                 <div className="relative flex items-center bg-soft-bg/20 rounded-xl border border-soft-border focus-within:border-brand/20 focus-within:bg-white transition-all pr-4">
                     <input
                         type="text"
