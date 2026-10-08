@@ -1,14 +1,11 @@
 "use client";
 
-import { useAuth } from "@/hooks/useAuth";
 import { DEFAULT_CATEGORY_TRANSLATIONS } from "@/hooks/useCategoryLookup";
 import { cn, toPersianDigits } from "@/lib/utils";
-import { Heart, MapPin, Play, Sparkles, Star } from "lucide-react";
+import { MapPin, Play, Sparkles, Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
+import { useState } from "react";
 
 interface PropertyCardProps {
     id?: string;
@@ -52,10 +49,6 @@ export function PropertyCard({
     variant = "responsive",
     className,
     href,
-    isSaved,
-    onToggleSave,
-    isFavorited = false,
-    onToggleFavorite,
     area,
     rooms,
     badgeName,
@@ -63,15 +56,7 @@ export function PropertyCard({
     isUrgent = false,
 }: PropertyCardProps) {
     const effectiveAdId = adId || id;
-    const effectiveIsSaved = isSaved !== undefined ? isSaved : isFavorited;
-    const effectiveToggle = onToggleSave || onToggleFavorite;
-
     const [imgSrc, setImgSrc] = useState(image || "/property-placeholder.svg");
-    const [saved, setSaved] = useState(effectiveIsSaved);
-
-    useEffect(() => {
-        setSaved(effectiveIsSaved);
-    }, [effectiveIsSaved]);
 
     // Format price: handle string with commas or raw numbers
     const formatDisplayPrice = () => {
@@ -95,29 +80,6 @@ export function PropertyCard({
         return `${toPersianDigits(priceStr)} ${currency}`;
     };
 
-    const { isLoggedIn } = useAuth();
-    const router = useRouter();
-
-    const handleFavoriteClick = async (e: React.MouseEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (!isLoggedIn) {
-            toast.info("برای نشان کردن آگهی، لطفاً ابتدا وارد حساب کاربری خود شوید.");
-            const currentPath = typeof window !== "undefined" ? window.location.pathname + window.location.search : "/ads";
-            router.push(`/auth?redirect=${encodeURIComponent(currentPath)}`);
-            return;
-        }
-        if (effectiveAdId && effectiveToggle) {
-            const nextState = !saved;
-            setSaved(nextState);
-            try {
-                await effectiveToggle(effectiveAdId);
-            } catch {
-                setSaved(!nextState); // rollback on error
-            }
-        }
-    };
-
     const isResponsive = variant === "responsive";
     const isHorizontal = variant === "horizontal";
     const isVertical = variant === "vertical";
@@ -134,7 +96,6 @@ export function PropertyCard({
                 className
             )}
         >
-
             {/* Details Section */}
             <div
                 className={cn(
@@ -147,32 +108,24 @@ export function PropertyCard({
                 )}
             >
                 <div className="min-w-0">
-                    {/* Top row: Price and Rating */}
-                    <div className="flex justify-between items-baseline gap-1">
-                        <div className="flex items-baseline gap-1 min-w-0">
-                            <span className="text-brand font-black text-sm sm:text-base truncate">
-                                {formatDisplayPrice()}
-                            </span>
-                            {unit && <span className="text-[10px] text-text-light shrink-0">{unit}</span>}
-                        </div>
+                    {/* Top row: Title and Rating */}
+                    <div className="flex items-start justify-between gap-1.5">
+                        <h3
+                            className={cn(
+                                "text-brand font-bold text-xs sm:text-sm group-hover:text-primary transition-colors leading-snug",
+                                isVertical ? "line-clamp-1" : "line-clamp-2 sm:line-clamp-1"
+                            )}
+                        >
+                            {title}
+                        </h3>
 
                         {rating !== undefined && Number(rating) > 0 && (
-                            <div className="flex items-center gap-0.5 shrink-0 text-brand text-[10px] sm:text-[11px] font-bold">
+                            <div className="flex items-center gap-0.5 shrink-0 text-brand text-[10px] sm:text-[11px] font-bold mt-0.5">
                                 <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
                                 <span>{toPersianDigits(Number(rating).toFixed(1))}</span>
                             </div>
                         )}
                     </div>
-
-                    {/* Title */}
-                    <h3
-                        className={cn(
-                            "text-brand font-bold text-xs sm:text-sm mt-1 sm:mt-1.5 group-hover:text-primary transition-colors leading-snug",
-                            isVertical ? "line-clamp-1" : "line-clamp-2 sm:line-clamp-1"
-                        )}
-                    >
-                        {title}
-                    </h3>
 
                     {/* Specs Row (area, rooms) */}
                     {(area || rooms) && (
@@ -184,12 +137,24 @@ export function PropertyCard({
                     )}
                 </div>
 
-                {/* Location at bottom */}
-                <div className="mt-auto pt-1.5 sm:pt-2 flex items-center gap-1 text-text-light text-[10px] sm:text-[11px]">
-                    <MapPin className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0 text-text-light/70" />
-                    <span className="truncate">{location}</span>
+                {/* Bottom row: Price on right, Location on left (opposite) */}
+                <div className="mt-auto pt-2 flex items-center justify-between gap-1.5">
+                    <div className="flex items-baseline gap-1 min-w-0">
+                        <span className="text-brand font-bold text-xs sm:text-sm truncate">
+                            {formatDisplayPrice()}
+                        </span>
+                        {unit && <span className="text-[10px] text-text-light shrink-0">{unit}</span>}
+                    </div>
+
+                    {location && (
+                        <div className="flex items-center gap-1 text-text-light text-[10px] sm:text-[11px] min-w-0 shrink-0 max-w-[50%]">
+                            <MapPin className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0 text-text-light/70" />
+                            <span className="truncate">{location}</span>
+                        </div>
+                    )}
                 </div>
             </div>
+
             <div
                 className={cn(
                     "relative shrink-0 overflow-hidden",
@@ -208,25 +173,6 @@ export function PropertyCard({
                     className="object-cover transition-transform duration-500 group-hover:scale-105"
                     onError={() => setImgSrc("/property-placeholder.svg")}
                 />
-
-                {/* Save Heart Button */}
-                {effectiveAdId && (
-                    <button
-                        onClick={handleFavoriteClick}
-                        aria-label="ذخیره آگهی"
-                        className={cn(
-                            "absolute top-1.5 left-1.5 sm:top-2 sm:left-2 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center backdrop-blur-md shadow-sm transition-all z-10 active:scale-90",
-                            saved ? "bg-red-500 text-white" : "bg-white/80 hover:bg-white text-gray-700"
-                        )}
-                    >
-                        <Heart
-                            className={cn(
-                                "w-3.5 h-3.5 sm:w-4 sm:h-4 transition-colors",
-                                saved ? "fill-white text-white" : "text-gray-700 hover:text-red-500"
-                            )}
-                        />
-                    </button>
-                )}
 
                 {/* Badges Container (Top Right) */}
                 <div className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 flex flex-col items-end gap-1 z-10">
@@ -256,7 +202,6 @@ export function PropertyCard({
                     </div>
                 )}
             </div>
-
         </div>
     );
 
