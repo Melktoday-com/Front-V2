@@ -669,7 +669,6 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
                                                     title={ad.title}
                                                     price={pricing.price}
                                                     unit={pricing.unit}
-                                                    rating={4.8}
                                                     location={ad.cityName || effectiveCityName || ad.cityId}
                                                     image={
                                                         ad.mediaIds && ad.mediaIds.length > 0
