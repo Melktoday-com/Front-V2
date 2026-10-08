@@ -26,7 +26,8 @@ import {
     User,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
 const navItems = [
     { icon: Home, label: "خانه", href: "/" },
@@ -274,10 +275,25 @@ export function Sidebar() {
 }
 
 export function MobileNav() {
+    return (
+        <Suspense fallback={null}>
+            <MobileNavContent />
+        </Suspense>
+    );
+}
+
+function MobileNavContent() {
     const pathname = usePathname();
+    const searchParams = useSearchParams();
     const { isLoggedIn } = useAuth();
 
-    if (pathname.includes("/profile/chat")) return null;
+    // In chat: hide bottom navbar if inside a specific conversation (id query param is present)
+    // but KEEP it visible on the conversations list (/profile/chat or /chat with no id)
+    if (pathname.includes("/profile/chat") || pathname.startsWith("/chat")) {
+        const conversationId = searchParams.get("id");
+        if (conversationId) return null;
+    }
+
     if (pathname.startsWith("/admin")) return null;
     if (pathname.startsWith("/auth")) return null;
 

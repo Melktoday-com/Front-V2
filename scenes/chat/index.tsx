@@ -26,7 +26,7 @@ function ChatContent() {
                     </h1>
                 </header>
 
-                <div className="flex-1 overflow-y-auto custom-scrollbar p-2">
+                <div className="flex-1 overflow-y-auto custom-scrollbar p-2 pb-24 md:pb-2">
                     <ConversationList />
                 </div>
             </div>
@@ -63,7 +63,7 @@ function ChatContent() {
 
 export function ChatScene() {
     return (
-        <div className="chat-page-content fixed inset-0 z-60 flex flex-col bg-white overflow-hidden" dir="rtl">
+        <div className="chat-page-content fixed inset-0 z-40 flex flex-col bg-white overflow-hidden" dir="rtl">
             <ChatHeader />
             <div className="flex-1 w-full h-full flex flex-col overflow-hidden">
                 <div className="flex-1 bg-white flex flex-col overflow-hidden">
