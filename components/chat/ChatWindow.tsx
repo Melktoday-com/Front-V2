@@ -83,14 +83,6 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
         <div className="h-full flex flex-col bg-white overflow-hidden">
             {/* Header */}
             <div className="p-3 lg:px-6 lg:py-4 border-b border-soft-border bg-white flex items-center gap-3 shrink-0">
-                {onBack && (
-                    <button
-                        onClick={onBack}
-                        className="lg:hidden w-8 h-8 bg-soft-bg rounded-full flex items-center justify-center text-brand"
-                    >
-                        <ChevronRight className="w-5 h-5" />
-                    </button>
-                )}
                 <div className="w-9 h-9 lg:w-10 lg:h-10 bg-soft-bg rounded-xl flex items-center justify-center text-brand overflow-hidden">
                     {otherParticipant?.avatar ? (
                         <img src={otherParticipant.avatar} alt={otherParticipant.name} className="w-full h-full object-cover" />
