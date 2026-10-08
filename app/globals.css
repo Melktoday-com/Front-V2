@@ -65,3 +65,11 @@ path.leaflet-interactive {
   }
 }
 
+/* Global Modal Lock: Prevent background scrolling and bouncing */
+body.modal-open,
+html.modal-open {
+  overflow: hidden !important;
+  touch-action: none;
+  -webkit-overflow-scrolling: touch;
+}
+

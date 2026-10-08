@@ -793,7 +793,7 @@ export default function MyAdsScene() {
 
             {/* Delete Confirmation Modal */}
             {deleteTarget && (
-                <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200">
+                <div role="dialog" aria-modal="true" aria-label="حذف دائمی آگهی" className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200">
                     <div className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-gray-100 animate-in zoom-in-95 duration-200">
                         <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mb-4">
                             <Trash2 className="w-6 h-6" />
@@ -828,7 +828,7 @@ export default function MyAdsScene() {
 
             {/* Archive Confirmation Modal */}
             {archiveTarget && (
-                <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200">
+                <div role="dialog" aria-modal="true" aria-label="بایگانی کردن آگهی" className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200">
                     <div className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-gray-100 animate-in zoom-in-95 duration-200">
                         <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mb-4">
                             <Archive className="w-6 h-6" />

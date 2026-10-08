@@ -63,6 +63,7 @@ export function NeighborhoodDrawer({
                 )}
                 role="dialog"
                 aria-modal="true"
+                aria-hidden={!isOpen}
                 aria-label="انتخاب محله"
             >
                 {/* Handle bar — mobile only */}

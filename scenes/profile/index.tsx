@@ -542,7 +542,7 @@ export default function ProfileScene() {
 
             {/* KYC Verification Modal */}
             {isKycModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in">
+                <div role="dialog" aria-modal="true" aria-label="احراز هویت هوشمند" className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in">
                     <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-5 border border-gray-100">
                         <div className="flex justify-between items-center border-b border-gray-100 pb-3">
                             <h3 className="font-black text-brand text-base flex items-center gap-2">

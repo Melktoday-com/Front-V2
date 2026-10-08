@@ -603,7 +603,7 @@ export default function SubscriptionsScene() {
 
             {/* RESPONSIVE PURCHASE CONFIRMATION MODAL (Desktop Dialog / Mobile Drawer) */}
             {selectedPlanForPurchase && (
-                <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center">
+                <div role="dialog" aria-modal="true" aria-label="تأیید خرید اشتراک" className="fixed inset-0 z-50 flex items-end md:items-center justify-center">
                     {/* Backdrop */}
                     <div
                         className="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity"

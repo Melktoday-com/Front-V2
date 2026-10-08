@@ -580,7 +580,7 @@ export default function SingleAdScene() {
 
             {/* RESPONSIVE CONTACT MODAL (Desktop Dialog / Mobile Drawer) */}
             {isContactModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center">
+                <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-end md:items-center justify-center">
                     {/* Backdrop */}
                     <div
                         className="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity"

@@ -677,7 +677,7 @@ export default function SingleAgencyScene() {
 
             {/* Send Message / Consultation Modal */}
             {isConsultationModalOpen && (
-                <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+                <div role="dialog" aria-modal="true" aria-label="ارسال پیام مشاوره" className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
                     <div className="bg-white rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl border border-slate-100">
                         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                             <div className="flex items-center gap-2">
@@ -769,7 +769,7 @@ export default function SingleAgencyScene() {
 
             {/* Read Post Modal */}
             {readingPost && (
-                <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+                <div role="dialog" aria-modal="true" aria-label="مشاهده پست" className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
                     <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 space-y-4 shadow-2xl border border-slate-100 my-8">
                         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                             <h3 className="text-base font-black text-slate-900">{readingPost.title}</h3>

@@ -1,5 +1,6 @@
 import { MobileNav, Sidebar } from "@/components/layout/Navigation";
 import { CityProvider } from "@/components/providers/CityProvider";
+import { GlobalModalManager } from "@/components/providers/GlobalModalManager";
 import { QueryProvider } from "@/components/providers/QueryProvider";
 import { TicketFloatingWidget } from "@/components/ticketing/TicketFloatingWidget";
 import type { Metadata, Viewport } from "next";
@@ -44,6 +45,7 @@ export default function RootLayout({
                 {children}
               </div>
             </main>
+            <GlobalModalManager />
             <MobileNav />
             <Suspense fallback={null}>
               <TicketFloatingWidget />
