@@ -1,6 +1,6 @@
 "use client";
 
-import CategoryFilter from "@/components/CategoryFilter";
+import { CategoryTreeDialog } from "@/components/CategoryTreeDialog";
 import { PageHeader } from "@/components/PageHeader";
 import { useCity } from "@/components/providers/CityProvider";
 import { NeighborhoodDrawer } from "@/components/ui/NeighborhoodDrawer";
@@ -20,7 +20,7 @@ import { AdStatus } from "@/types/api/enums";
 import { ZoneSummary } from "@/types/api/geo.types";
 import { ListingSearchDocument, SearchSortOption } from "@/types/api/search.types";
 import { useQuery } from "@tanstack/react-query";
-import { LayoutGrid, Loader2, Map as MapIcon, MapPin, SlidersHorizontal, X } from "lucide-react";
+import { ChevronDown, LayoutGrid, Loader2, Map as MapIcon, MapPin, SlidersHorizontal, Tag, X } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -121,6 +121,7 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
     const [viewMode, setViewMode] = useState<"list" | "map">(initialViewMode);
     const [selectedZones, setSelectedZones] = useState<ZoneSummary[]>([]);
     const [drawerOpen, setDrawerOpen] = useState(false);
+    const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
 
     const urlSearch = searchParams.get("search") || "";
     const effectiveCityId = searchParams.get("cityId") || selectedCity.id || undefined;
@@ -448,62 +449,82 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
                     </div>
                 )}
 
-                {/* Category filter row + Filter & Sort controls */}
-                <div className="flex flex-col md:flex-row md:items-start gap-2.5 sm:gap-3">
-                    {/* Filter (Neighborhoods) & Sort controls */}
-                    <div className="shrink-0 flex items-center gap-2 md:pt-1 order-1 md:order-2">
-                        {neighborhoods.length > 0 && (
-                            <button
-                                data-testid="neighborhood-drawer-trigger"
-                                type="button"
-                                onClick={() => setDrawerOpen(true)}
-                                className={cn(
-                                    "shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 sm:py-2 rounded-full text-xs font-bold border transition-all whitespace-nowrap cursor-pointer",
-                                    selectedZones.length > 0
-                                        ? "bg-primary text-white border-primary shadow-sm"
-                                        : "bg-soft-bg text-secondary border-soft-border hover:border-primary/50 hover:text-primary"
-                                )}
-                            >
-                                <MapPin className="w-3.5 h-3.5" />
-                                <span>نواحی</span>
-                                {selectedZones.length > 0 && (
-                                    <span className="bg-white/30 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full leading-none">
-                                        {selectedZones.length}
-                                    </span>
-                                )}
-                            </button>
+                {/* Filter row: Categories, Neighborhoods, Sort controls in one clean row */}
+                <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+                    {/* Category tree trigger button */}
+                    <button
+                        type="button"
+                        onClick={() => setCategoryDialogOpen(true)}
+                        className={cn(
+                            "shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 sm:py-2 rounded-full text-xs font-bold border transition-all whitespace-nowrap cursor-pointer",
+                            selectedCategory || selectedSubcategory
+                                ? "bg-primary text-white border-primary shadow-xs shadow-primary/25"
+                                : "bg-soft-bg text-secondary border-soft-border hover:border-primary/50 hover:text-primary"
                         )}
-
-                        {/* Sort selector */}
-                        <div className="shrink-0 flex items-center gap-1.5 bg-soft-bg px-3 py-1.5 sm:py-2 rounded-full border border-soft-border">
-                            <SlidersHorizontal className="w-3.5 h-3.5 text-secondary" />
-                            <select
-                                value={sort}
-                                onChange={(e) => {
-                                    setSort(e.target.value as SearchSortOption);
-                                    setStartPage(1);
+                    >
+                        <Tag className="w-3.5 h-3.5" />
+                        <span>
+                            {selectedSubcategory
+                                ? getSubcategoryName(selectedSubcategory, selectedCategory) || "دسته‌بندی"
+                                : selectedCategory
+                                ? getCategoryName(selectedCategory) || "دسته‌بندی"
+                                : "دسته‌بندی‌ها"}
+                        </span>
+                        {(selectedCategory || selectedSubcategory) && (
+                            <span
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleCategorySelect("");
                                 }}
-                                className="bg-transparent text-secondary text-xs font-bold outline-none cursor-pointer"
+                                className="hover:bg-white/20 p-0.5 rounded-full transition-colors cursor-pointer"
+                                title="حذف فیلتر دسته‌بندی"
                             >
-                                <option value="relevance">مرتبط‌ترین</option>
-                                <option value="newest">جدیدترین</option>
-                                <option value="price_asc">ارزان‌ترین</option>
-                                <option value="price_desc">گران‌ترین</option>
-                            </select>
-                        </div>
-                    </div>
+                                <X className="w-3 h-3" />
+                            </span>
+                        )}
+                        <ChevronDown className="w-3.5 h-3.5 opacity-70" />
+                    </button>
 
-                    {/* Category & Subcategory Filter */}
-                    <div className="flex-1 min-w-0 w-full order-2 md:order-1">
-                        <CategoryFilter
-                            categories={categoriesData || []}
-                            isLoading={isCategoriesLoading}
-                            selectedCategoryKey={selectedCategory}
-                            selectedSubcategoryKey={selectedSubcategory}
-                            onSelectCategory={handleCategorySelect}
-                            onSelectSubcategory={handleSubcategorySelect}
-                            variant="filter"
-                        />
+                    {/* Filter (Neighborhoods) control */}
+                    {neighborhoods.length > 0 && (
+                        <button
+                            data-testid="neighborhood-drawer-trigger"
+                            type="button"
+                            onClick={() => setDrawerOpen(true)}
+                            className={cn(
+                                "shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 sm:py-2 rounded-full text-xs font-bold border transition-all whitespace-nowrap cursor-pointer",
+                                selectedZones.length > 0
+                                    ? "bg-primary text-white border-primary shadow-sm"
+                                    : "bg-soft-bg text-secondary border-soft-border hover:border-primary/50 hover:text-primary"
+                            )}
+                        >
+                            <MapPin className="w-3.5 h-3.5" />
+                            <span>نواحی</span>
+                            {selectedZones.length > 0 && (
+                                <span className="bg-white/30 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full leading-none">
+                                    {selectedZones.length}
+                                </span>
+                            )}
+                            <ChevronDown className="w-3.5 h-3.5 opacity-70" />
+                        </button>
+                    )}
+
+                    {/* Sort selector */}
+                    <div className="shrink-0 flex items-center gap-1.5 bg-soft-bg px-3 py-1.5 sm:py-2 rounded-full border border-soft-border">
+                        <SlidersHorizontal className="w-3.5 h-3.5 text-secondary" />
+                        <select
+                            value={sort}
+                            onChange={(e) => {
+                                setSort(e.target.value as SearchSortOption);
+                                setStartPage(1);
+                            }}
+                            className="bg-transparent text-secondary text-xs font-bold outline-none cursor-pointer"
+                        >
+                            <option value="relevance">مرتبط‌ترین</option>
+                            <option value="newest">جدیدترین</option>
+                            <option value="price_asc">ارزان‌ترین</option>
+                            <option value="price_desc">گران‌ترین</option>
+                        </select>
                     </div>
                 </div>
             </div>
@@ -725,6 +746,17 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
                 selectedIds={selectedZoneIds}
                 onToggle={handleZoneToggle}
                 onClear={() => setSelectedZones([])}
+            />
+
+            {/* Category Tree Dialog / Drawer */}
+            <CategoryTreeDialog
+                isOpen={categoryDialogOpen}
+                onClose={() => setCategoryDialogOpen(false)}
+                categories={categoriesData || []}
+                selectedCategoryKey={selectedCategory}
+                selectedSubcategoryKey={selectedSubcategory}
+                onSelectCategory={handleCategorySelect}
+                onSelectSubcategory={handleSubcategorySelect}
             />
         </div>
     );
