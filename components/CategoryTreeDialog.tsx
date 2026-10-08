@@ -45,16 +45,6 @@ export function CategoryTreeDialog({
         return () => window.removeEventListener("keydown", handleKey);
     }, [isOpen, onClose]);
 
-    // Prevent body scroll when open on mobile
-    useEffect(() => {
-        if (isOpen) {
-            document.body.style.overflow = "hidden";
-        } else {
-            document.body.style.overflow = "";
-        }
-        return () => { document.body.style.overflow = ""; };
-    }, [isOpen]);
-
     const expandedCat = categories.find((c) => c.key === expandedCategory) || null;
 
     const handleSelectCategory = (key: string) => {
@@ -106,6 +96,8 @@ export function CategoryTreeDialog({
                     <button
                         type="button"
                         onClick={onClose}
+                        aria-label="بستن"
+                        data-modal-close="true"
                         className="p-1.5 rounded-full hover:bg-soft-bg text-secondary hover:text-brand transition-colors cursor-pointer"
                     >
                         <X className="w-4 h-4" />
@@ -226,7 +218,12 @@ export function CategoryTreeDialog({
     return (
         <>
             {/* Desktop: Dialog */}
-            <div className="hidden md:flex fixed inset-0 z-50 items-center justify-center">
+            <div
+                role="dialog"
+                aria-modal="true"
+                data-modal="true"
+                className="hidden md:flex fixed inset-0 z-60 items-center justify-center"
+            >
                 {/* Backdrop */}
                 <div
                     ref={overlayRef}
@@ -240,7 +237,12 @@ export function CategoryTreeDialog({
             </div>
 
             {/* Mobile: Bottom Drawer */}
-            <div className="md:hidden fixed inset-0 z-50 flex flex-col justify-end">
+            <div
+                role="dialog"
+                aria-modal="true"
+                data-modal="true"
+                className="md:hidden fixed inset-0 z-60 flex flex-col justify-end"
+            >
                 {/* Backdrop */}
                 <div
                     className="absolute inset-0 bg-black/40"

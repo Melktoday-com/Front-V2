@@ -511,21 +511,33 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
 
                     {/* Sort selector */}
                     <div className="relative shrink-0 flex items-center gap-1.5 bg-soft-bg hover:border-primary/50 text-secondary hover:text-primary px-3 h-8 sm:h-8.5 rounded-full border border-soft-border transition-all cursor-pointer">
-                        <SlidersHorizontal className="w-3.5 h-3.5 text-secondary shrink-0 pointer-events-none" />
+                        <SlidersHorizontal className="w-3.5 h-3.5 shrink-0 pointer-events-none" />
+                        <span className="text-[11px] sm:text-xs font-bold whitespace-nowrap">
+                            {sort === "relevance"
+                                ? "مرتبط‌ترین"
+                                : sort === "newest"
+                                ? "جدیدترین"
+                                : sort === "price_asc"
+                                ? "ارزان‌ترین"
+                                : "گران‌ترین"}
+                        </span>
+                        <ChevronDown className="w-3 h-3 opacity-70 shrink-0 pointer-events-none" />
+
+                        {/* Invisible native select on top for native interaction */}
                         <select
                             value={sort}
                             onChange={(e) => {
                                 setSort(e.target.value as SearchSortOption);
                                 setStartPage(1);
                             }}
-                            className="bg-transparent text-secondary hover:text-primary text-[11px] sm:text-xs font-bold outline-none cursor-pointer appearance-none pl-4.5 pr-0 py-0 leading-tight"
+                            aria-label="مرتب‌سازی"
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                         >
                             <option value="relevance">مرتبط‌ترین</option>
                             <option value="newest">جدیدترین</option>
                             <option value="price_asc">ارزان‌ترین</option>
                             <option value="price_desc">گران‌ترین</option>
                         </select>
-                        <ChevronDown className="w-3 h-3 text-secondary opacity-70 absolute left-2 top-1/2 -translate-y-1/2 pointer-events-none" />
                     </div>
                 </div>
             </div>

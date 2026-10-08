@@ -73,3 +73,12 @@ html.modal-open {
   -webkit-overflow-scrolling: touch;
 }
 
+/* Hide mobile bottom navbar when any modal or drawer is open */
+body.modal-open nav[aria-label="منوی موبایل"],
+html.modal-open nav[aria-label="منوی موبایل"],
+body.modal-open .mobile-bottom-nav,
+html.modal-open .mobile-bottom-nav {
+  display: none !important;
+}
+
+

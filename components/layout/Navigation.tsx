@@ -299,7 +299,7 @@ export function MobileNav() {
     return (
         <nav
             aria-label="منوی موبایل"
-            className="lg:hidden fixed bottom-5 left-4 right-4 h-16 bg-white/90 backdrop-blur-xl border border-gray-100/60 rounded-full flex items-center justify-around px-3 shadow-2xl shadow-brand/10 z-50"
+            className="mobile-bottom-nav lg:hidden fixed bottom-5 left-4 right-4 h-16 bg-white/90 backdrop-blur-xl border border-gray-100/60 rounded-full flex items-center justify-around px-3 shadow-2xl shadow-brand/10 z-50"
         >
             {/* 1. Home */}
             <Link

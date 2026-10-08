@@ -103,6 +103,14 @@ export function GlobalModalManager() {
                 document.documentElement.style.overflow = "hidden";
                 document.body.classList.add("modal-open");
                 document.documentElement.classList.add("modal-open");
+
+                // Explicitly hide mobile bottom navigation bar when modal opens
+                const bottomNavs = document.querySelectorAll(
+                    'nav[aria-label="منوی موبایل"], .mobile-bottom-nav'
+                );
+                bottomNavs.forEach((nav) => {
+                    (nav as HTMLElement).style.setProperty("display", "none", "important");
+                });
             }
         };
 
@@ -113,6 +121,14 @@ export function GlobalModalManager() {
                 document.body.style.paddingRight = originalBodyPaddingRight;
                 document.body.classList.remove("modal-open");
                 document.documentElement.classList.remove("modal-open");
+
+                // Restore mobile bottom navigation bar when all modals close
+                const bottomNavs = document.querySelectorAll(
+                    'nav[aria-label="منوی موبایل"], .mobile-bottom-nav'
+                );
+                bottomNavs.forEach((nav) => {
+                    (nav as HTMLElement).style.removeProperty("display");
+                });
             }
         };
 
