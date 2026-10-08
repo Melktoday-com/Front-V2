@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { Compass, Home, LayoutGrid, Search, User, X } from "lucide-react";
+import { ChevronRight, Compass, Home, LayoutGrid, Search, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
@@ -16,6 +16,14 @@ export function ChatHeader() {
         { icon: User, label: "پروفایل", href: "/profile" },
     ];
 
+    const handleBack = () => {
+        if (typeof window !== "undefined" && window.history.length > 1) {
+            router.back();
+        } else {
+            router.push("/profile");
+        }
+    };
+
     return (
         <header className="h-16 md:h-18 bg-white border-b border-soft-border flex items-center justify-between px-4 md:px-8 shrink-0 z-70 sticky top-0" dir="rtl">
             <div className="flex items-center gap-4 md:gap-10">
@@ -23,12 +31,13 @@ export function ChatHeader() {
                     <div className="w-9 h-9 bg-brand rounded-xl flex items-center justify-center shadow-lg shadow-brand/20">
                         <LayoutGrid className="w-5 h-5 text-primary" />
                     </div>
-                    <span className="text-xl font-black text-brand tracking-tighter hidden xs:block">
+                    <span className="text-xl font-black text-brand tracking-tighter">
                         MELK<span className="text-primary">TODAY</span>
                     </span>
                 </Link>
 
-                <nav className="flex items-center gap-1 md:gap-3">
+                {/* Hide in mobile view because bottom navbar is present */}
+                <nav className="hidden md:flex items-center gap-1 md:gap-3">
                     {navItems.map((item) => {
                         const active = pathname === item.href;
                         return (
@@ -47,7 +56,7 @@ export function ChatHeader() {
                                     active ? "text-primary" : "text-secondary group-hover:text-primary"
                                 )} />
                                 <span className={cn(
-                                    "font-bold text-sm hidden md:block",
+                                    "font-bold text-sm",
                                     active ? "text-brand" : "text-secondary group-hover:text-brand"
                                 )}>
                                     {item.label}
@@ -60,13 +69,14 @@ export function ChatHeader() {
 
             <div className="flex items-center gap-3">
                 <button
-                    onClick={() => router.push('/profile')}
-                    className="flex items-center gap-2 px-4 py-2 bg-soft-bg rounded-xl text-secondary hover:text-brand transition-all border border-soft-border group"
+                    onClick={handleBack}
+                    className="flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-2 bg-soft-bg rounded-xl text-secondary hover:text-brand transition-all border border-soft-border group active:scale-95"
                 >
-                    <span className="text-xs md:text-sm font-bold">خروج از چت</span>
-                    <X className="w-5 h-5 text-secondary group-hover:text-brand" />
+                    <ChevronRight className="w-4 h-4 md:w-5 md:h-5 text-secondary group-hover:text-brand transition-colors" />
+                    <span className="text-xs md:text-sm font-bold">بازگشت</span>
                 </button>
             </div>
         </header>
     );
 }
+
