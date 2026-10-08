@@ -59,8 +59,12 @@ export function TicketFloatingWidget() {
     const searchParams = useSearchParams();
     const { isLoggedIn } = useAuth();
 
-    // Do not show floating widget inside Admin layout or Auth pages
-    const isExcludedRoute = pathname.startsWith("/admin") || pathname.startsWith("/auth");
+    // Do not show floating widget inside Admin layout, Auth pages, or Chat/Conversation pages
+    const isExcludedRoute =
+        pathname.startsWith("/admin") ||
+        pathname.startsWith("/auth") ||
+        pathname.startsWith("/profile/chat") ||
+        pathname.startsWith("/chat");
 
     const [isOpen, setIsOpen] = useState(false);
     const [hasToken, setHasToken] = useState(false);
