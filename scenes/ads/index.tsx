@@ -444,21 +444,10 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
                     </div>
                 )}
 
-                {/* Category filter row + Neighborhood trigger button */}
-                <div className="flex items-start gap-3">
-                    <div className="flex-1 min-w-0">
-                        <CategoryFilter
-                            categories={categoriesData || []}
-                            isLoading={isCategoriesLoading}
-                            selectedCategoryKey={selectedCategory}
-                            selectedSubcategoryKey={selectedSubcategory}
-                            onSelectCategory={handleCategorySelect}
-                            onSelectSubcategory={handleSubcategorySelect}
-                            variant="filter"
-                        />
-                    </div>
-
-                    <div className="shrink-0 flex items-center gap-2 pt-1">
+                {/* Category filter row + Filter & Sort controls */}
+                <div className="flex flex-col md:flex-row md:items-start gap-2.5 sm:gap-3">
+                    {/* Filter (Neighborhoods) & Sort controls */}
+                    <div className="shrink-0 flex items-center gap-2 md:pt-1 order-1 md:order-2">
                         {neighborhoods.length > 0 && (
                             <button
                                 data-testid="neighborhood-drawer-trigger"
@@ -498,6 +487,19 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
                                 <option value="price_desc">گران‌ترین</option>
                             </select>
                         </div>
+                    </div>
+
+                    {/* Category & Subcategory Filter */}
+                    <div className="flex-1 min-w-0 w-full order-2 md:order-1">
+                        <CategoryFilter
+                            categories={categoriesData || []}
+                            isLoading={isCategoriesLoading}
+                            selectedCategoryKey={selectedCategory}
+                            selectedSubcategoryKey={selectedSubcategory}
+                            onSelectCategory={handleCategorySelect}
+                            onSelectSubcategory={handleSubcategorySelect}
+                            variant="filter"
+                        />
                     </div>
                 </div>
             </div>
