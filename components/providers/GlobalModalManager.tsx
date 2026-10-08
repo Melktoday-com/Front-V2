@@ -4,14 +4,17 @@ import { useEffect } from "react";
 
 /**
  * GlobalModalManager:
- * Automatically freezes background document body and traps/directs focus
- * whenever any modal or dialog opens anywhere in the application.
+ * Automatically freezes background document body, traps/directs focus,
+ * and handles mobile/browser hardware back button (popstate) to dismiss modals
+ * instead of navigating away.
  */
 export function GlobalModalManager() {
     useEffect(() => {
         if (typeof window === "undefined" || typeof document === "undefined") return;
 
         const activeModals = new Set<HTMLElement>();
+        const historyPushedModals = new Set<HTMLElement>();
+        let isHandlingPopState = false;
         let previousActiveElement: HTMLElement | null = null;
         let originalBodyOverflow = "";
         let originalHtmlOverflow = "";
@@ -31,8 +34,14 @@ export function GlobalModalManager() {
 
             // Explicit semantic modal markers
             const role = element.getAttribute("role");
-            if (role === "dialog" || role === "alertdialog") return true;
-            if (element.getAttribute("aria-modal") === "true") return true;
+            if (role === "dialog" || role === "alertdialog") {
+                if (element.getAttribute("aria-hidden") === "true") return false;
+                return true;
+            }
+            if (element.getAttribute("aria-modal") === "true") {
+                if (element.getAttribute("aria-hidden") === "true") return false;
+                return true;
+            }
             if (element.hasAttribute("data-modal")) return true;
 
             // HTML5 native dialog element
@@ -149,6 +158,73 @@ export function GlobalModalManager() {
             }
         };
 
+        const triggerModalClose = (modalEl: HTMLElement): boolean => {
+            if (!modalEl || !document.body.contains(modalEl)) return false;
+
+            // 1. Look for explicit close trigger
+            const explicitClose = modalEl.querySelector<HTMLElement>("[data-modal-close]");
+            if (explicitClose) {
+                explicitClose.click();
+                return true;
+            }
+
+            // 2. Look for button containing standard X icon
+            const xIcon = modalEl.querySelector("svg.lucide-x, svg[data-icon='x']");
+            if (xIcon) {
+                const closeBtn = xIcon.closest("button");
+                if (closeBtn) {
+                    closeBtn.click();
+                    return true;
+                }
+            }
+
+            // 3. Look for button with aria-label or title containing close
+            const labelledCloseBtn = modalEl.querySelector<HTMLElement>(
+                'button[aria-label*="بستن"], button[aria-label*="close"], button[aria-label*="Close"], button[title*="بستن"], button[title*="close"]'
+            );
+            if (labelledCloseBtn) {
+                labelledCloseBtn.click();
+                return true;
+            }
+
+            // 4. Look for cancel button in Persian
+            const buttons = Array.from(modalEl.querySelectorAll<HTMLButtonElement>("button"));
+            const cancelBtn = buttons.find((btn) => {
+                const txt = btn.textContent?.trim();
+                return txt === "انصراف" || txt === "لغو" || txt === "بازگشت";
+            });
+            if (cancelBtn) {
+                cancelBtn.click();
+                return true;
+            }
+
+            // 5. Look for backdrop overlay with click listener
+            const backdrop = modalEl.querySelector<HTMLElement>(
+                '.backdrop-blur-sm, .backdrop-blur-xs, [class*="bg-black/"], [class*="bg-slate-900/"], [class*="bg-brand/"]'
+            );
+            if (backdrop) {
+                backdrop.click();
+                return true;
+            }
+
+            // 6. Click outer container
+            modalEl.click();
+
+            // 7. Dispatch Escape key event
+            modalEl.dispatchEvent(
+                new KeyboardEvent("keydown", {
+                    key: "Escape",
+                    code: "Escape",
+                    keyCode: 27,
+                    which: 27,
+                    bubbles: true,
+                    cancelable: true,
+                })
+            );
+
+            return true;
+        };
+
         const registerModal = (modalEl: HTMLElement) => {
             if (activeModals.has(modalEl)) return;
 
@@ -159,7 +235,23 @@ export function GlobalModalManager() {
             activeModals.add(modalEl);
             lockBody();
 
-            // Run focus in next tick to allow DOM animations & inner elements to render
+            // Manage history push for mobile back button interception
+            // Do not double-push if the modal itself already pushed its own state (e.g. melktodayTicketOpen)
+            if (
+                typeof window !== "undefined" &&
+                !window.history.state?.melktodayTicketOpen &&
+                !modalEl.hasAttribute("data-history-handled")
+            ) {
+                try {
+                    window.history.pushState(
+                        { melktodayModal: true, timestamp: Date.now() },
+                        ""
+                    );
+                    historyPushedModals.add(modalEl);
+                } catch {}
+            }
+
+            // Focus in next animation frame
             setTimeout(() => {
                 if (activeModals.has(modalEl)) {
                     focusModal(modalEl);
@@ -171,6 +263,23 @@ export function GlobalModalManager() {
             if (!activeModals.has(modalEl)) return;
 
             activeModals.delete(modalEl);
+
+            // If history state was pushed for this modal and this unregister was NOT initiated by popstate,
+            // clean up the pushed history entry to prevent ghost states in the browser stack
+            if (historyPushedModals.has(modalEl)) {
+                historyPushedModals.delete(modalEl);
+                if (!isHandlingPopState) {
+                    if (
+                        typeof window !== "undefined" &&
+                        window.history.state?.melktodayModal
+                    ) {
+                        try {
+                            window.history.back();
+                        } catch {}
+                    }
+                }
+            }
+
             unlockBody();
 
             if (activeModals.size === 0) {
@@ -190,6 +299,28 @@ export function GlobalModalManager() {
                 if (topModal) {
                     focusModal(topModal);
                 }
+            }
+        };
+
+        // Handle mobile phone / browser back button
+        const handlePopState = () => {
+            if (activeModals.size > 0) {
+                isHandlingPopState = true;
+                const remaining = Array.from(activeModals);
+                const topModal = remaining[remaining.length - 1];
+
+                if (topModal) {
+                    historyPushedModals.delete(topModal);
+                    triggerModalClose(topModal);
+                }
+
+                // Guarantee body unfreeze if all modals closed
+                setTimeout(() => {
+                    isHandlingPopState = false;
+                    if (activeModals.size === 0) {
+                        unlockBody();
+                    }
+                }, 100);
             }
         };
 
@@ -244,16 +375,11 @@ export function GlobalModalManager() {
                     }
                 }
             } else if (e.key === "Escape") {
-                const closeBtn = currentModal.querySelector<HTMLElement>(
-                    'button[aria-label*="بستن"], button[aria-label*="close"], button[title*="بستن"], button[title*="close"], [data-modal-close]'
-                );
-                if (closeBtn) {
-                    closeBtn.click();
-                }
+                triggerModalClose(currentModal);
             }
         };
 
-        // Scan for existing modals on mount
+        // Initial scan for modals on mount
         const scan = () => {
             const elements = document.querySelectorAll(
                 '[role="dialog"], [role="alertdialog"], [aria-modal="true"], [data-modal], .fixed.inset-0'
@@ -320,12 +446,15 @@ export function GlobalModalManager() {
             attributeFilter: ["class", "style", "aria-hidden", "hidden", "open"],
         });
 
+        window.addEventListener("popstate", handlePopState);
         window.addEventListener("keydown", handleKeydown, true);
 
         return () => {
             observer.disconnect();
+            window.removeEventListener("popstate", handlePopState);
             window.removeEventListener("keydown", handleKeydown, true);
             activeModals.clear();
+            historyPushedModals.clear();
             unlockBody();
         };
     }, []);
