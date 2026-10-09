@@ -2,7 +2,7 @@
 
 import { DEFAULT_CATEGORY_TRANSLATIONS } from "@/hooks/useCategoryLookup";
 import { cn, toPersianDigits } from "@/lib/utils";
-import { MapPin, Play, ShieldCheck, Sparkles, Star } from "lucide-react";
+import { MapPin, Play, ShieldCheck, Sparkles } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -13,7 +13,6 @@ interface PropertyCardProps {
     adId?: string;
     title: string;
     price: string | number;
-    rating?: number;
     location: string;
     image: string;
     isVideo?: boolean;
@@ -47,7 +46,6 @@ export function PropertyCard({
     adId,
     title,
     price,
-    rating,
     location,
     image,
     isVideo = false,
@@ -118,7 +116,7 @@ export function PropertyCard({
                 )}
             >
                 <div className="min-w-0">
-                    {/* Top row: Title and Rating */}
+                    {/* Top row: Title */}
                     <div className="flex items-start justify-between gap-1.5">
                         <h3
                             className={cn(
@@ -128,13 +126,6 @@ export function PropertyCard({
                         >
                             {title}
                         </h3>
-
-                        {rating !== undefined && Number(rating) > 0 && (
-                            <div className="flex items-center gap-0.5 shrink-0 text-brand text-[10px] sm:text-[11px] font-bold mt-0.5">
-                                <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
-                                <span>{toPersianDigits(Number(rating).toFixed(1))}</span>
-                            </div>
-                        )}
                     </div>
 
                     {/* Specs Row (area, rooms) */}

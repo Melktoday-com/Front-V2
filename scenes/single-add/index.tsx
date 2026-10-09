@@ -589,7 +589,6 @@ export default function SingleAdScene() {
                                     adId={item.adId}
                                     title={item.title}
                                     price={Object.values(item.pricing)[0] ?? 0}
-                                    rating={4.7}
                                     location={getCityName(item.cityId || ad.cityId)}
                                     image={getMediaPosterUrl(item.mediaIds?.[0])}
                                     isVideo={item.mediaIds?.[0]?.type === "VIDEO"}

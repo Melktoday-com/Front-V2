@@ -264,7 +264,6 @@ export default function Map({ ads, zones, selectedZoneId, selectedZoneIds, onZon
                                         variant="vertical"
                                         title={ad.title}
                                         price={price?.toLocaleString() || "0"}
-                                        rating={4.5}
                                         location={ad.cityId}
                                         image={getMediaPosterUrl(ad.mediaIds?.[0])}
                                         isVideo={ad.mediaIds?.[0]?.type === "VIDEO"}

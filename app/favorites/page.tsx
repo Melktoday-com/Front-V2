@@ -224,7 +224,6 @@ export default function FavoritesPage() {
                                                 nightlyPrice={Number(item.details?.nightlyPrice || item.details?.price || 0)}
                                                 location={item.subtitle || 'نامشخص'}
                                                 imageUrl={item.imageUrl}
-                                                rating={4.9}
                                                 maxGuests={typeof item.details?.maxGuests === 'number' ? item.details.maxGuests : undefined}
                                                 rooms={typeof item.details?.rooms === 'number' ? item.details.rooms : undefined}
                                                 isSaved={true}
@@ -243,7 +242,6 @@ export default function FavoritesPage() {
                                             price={item.details?.price?.toString() || 'توافقی'}
                                             category={item.details?.category || 'آگهی'}
                                             location={item.subtitle || 'نامشخص'}
-                                            rating={4.8}
                                             variant="responsive"
                                             className="bg-white rounded-2xl border border-gray-100 shadow-xs hover:shadow-md transition-shadow"
                                             isSaved={true}

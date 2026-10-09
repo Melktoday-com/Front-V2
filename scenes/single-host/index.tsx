@@ -166,11 +166,15 @@ export default function SingleHostScene({ idOrSlug }: SingleHostSceneProps) {
                 </div>
 
                 <div className="flex items-center justify-center sm:justify-start gap-4 text-xs text-secondary font-medium flex-wrap">
-                  <span className="flex items-center gap-1 text-amber-500 font-bold">
-                    <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-                    {toPersianDigits(header.rating?.toFixed(1) || "5.0")}
-                  </span>
-                  <span>•</span>
+                  {header.rating != null && !isNaN(Number(header.rating)) && Number(header.rating) > 0 && (
+                    <>
+                      <span className="flex items-center gap-1 text-amber-500 font-bold">
+                        <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+                        {toPersianDigits(Number(header.rating).toFixed(1))}
+                      </span>
+                      <span>•</span>
+                    </>
+                  )}
                   <span className="flex items-center gap-1">
                     <Users className="w-3.5 h-3.5 text-secondary/70" />
                     {toPersianDigits(header.followersCount || 0)} دنبال‌کننده

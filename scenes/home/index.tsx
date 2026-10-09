@@ -127,7 +127,6 @@ export const HomeScene = () => {
                                     href={`/ads/${effectiveId}`}
                                     title={property.title}
                                     price={Object.values(property.pricing)[0] ?? 0}
-                                    rating={5.0}
                                     location={selectedCity.name}
                                     image={getMediaPosterUrl(property.mediaIds?.[0])}
                                     isVideo={property.mediaIds?.[0]?.type === "VIDEO"}
@@ -203,7 +202,6 @@ export const HomeScene = () => {
                                     title={property.title}
                                     price={property.pricing.nightlyPrice}
                                     unit="/شب"
-                                    rating={4.9}
                                     location={selectedCity.name}
                                     image={getMediaPosterUrl(property.mediaIds?.[0])}
                                     isVideo={property.mediaIds?.[0]?.type === "VIDEO"}
@@ -248,7 +246,6 @@ export const HomeScene = () => {
                                     href={`/ads/${effectiveId}`}
                                     title={property.title}
                                     price={Object.values(property.pricing)[0] ?? 0}
-                                    rating={4.8}
                                     location={selectedCity.name}
                                     image={getMediaPosterUrl(property.mediaIds?.[0])}
                                     isVideo={property.mediaIds?.[0]?.type === "VIDEO"}

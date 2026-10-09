@@ -44,7 +44,7 @@ export function TemporaryRentCard({
     location,
     mediaIds = [],
     imageUrl,
-    rating = 4.9,
+    rating,
     maxGuests,
     rooms,
     isSaved,
@@ -200,10 +200,12 @@ export function TemporaryRentCard({
                             <MapPin className="w-3.5 h-3.5 shrink-0 text-primary" />
                             <span className="truncate font-bold">{location}</span>
                         </div>
-                        <div className="flex items-center gap-1 shrink-0 font-bold text-brand">
-                            <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-                            <span>{toPersianDigits((Number(rating) || 0).toFixed(1))}</span>
-                        </div>
+                        {rating != null && !isNaN(Number(rating)) && Number(rating) > 0 ? (
+                            <div className="flex items-center gap-1 shrink-0 font-bold text-brand">
+                                <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+                                <span>{toPersianDigits(Number(rating).toFixed(1))}</span>
+                            </div>
+                        ) : null}
                     </div>
 
                     {/* Title */}

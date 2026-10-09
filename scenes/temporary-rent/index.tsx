@@ -141,7 +141,6 @@ export default function TemporaryRentScene() {
                                 nightlyPrice={ad.pricing?.number?.nightlyPrice || ad.pricing?.number?.price || 0}
                                 location={ad.geo?.cityName || effectiveCityName}
                                 mediaIds={ad.mediaIds}
-                                rating={4.9}
                                 maxGuests={ad.attributes?.number?.max_guests || ad.attributes?.number?.capacity}
                             />
                         ))}
