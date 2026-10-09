@@ -2,7 +2,7 @@
 
 import { useConversations } from "@/hooks/useChat";
 import { useMeProfile } from "@/hooks/useUser";
-import { cn } from "@/lib/utils";
+import { cn, getMediaUrl } from "@/lib/utils";
 import { ChatConversation } from "@/services/chat.service";
 import { Building2, MessageSquare, ShieldCheck, User } from "lucide-react";
 import Link from "next/link";
@@ -59,7 +59,7 @@ function ConversationListContent() {
                               border-soft-border overflow-hidden shrink-0">
                                 {conv.otherParticipant?.avatar ? (
                                     <img
-                                        src={conv.otherParticipant.avatar}
+                                        src={getMediaUrl(conv.otherParticipant.avatar)}
                                         alt={conv.otherParticipant.name || "User"}
                                         className="w-full h-full object-cover"
                                     />

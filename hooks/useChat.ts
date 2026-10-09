@@ -1,6 +1,6 @@
 "use client";
 
-import { chatService } from "@/services/chat.service";
+import { chatService, CreatePollDto, SendMessageDto } from "@/services/chat.service";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useAuth } from "./useAuth";
@@ -39,14 +39,15 @@ export const useMessages = (conversationId?: string) => {
             return lastPage[lastPage.length - 1].id;
         },
         enabled: isLoggedIn && !!conversationId,
+        refetchInterval: isLoggedIn && !!conversationId ? 4000 : false,
     });
 };
 
 export const useSendMessage = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: ({ conversationId, content }: { conversationId: string; content: string }) =>
-            chatService.sendMessage(conversationId, { content }),
+        mutationFn: ({ conversationId, ...dto }: { conversationId: string } & SendMessageDto) =>
+            chatService.sendMessage(conversationId, dto),
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries({ queryKey: ["messages", variables.conversationId] });
             queryClient.invalidateQueries({ queryKey: ["conversations"] });
@@ -64,6 +65,43 @@ export const useCreateConversation = () => {
         onSuccess: (data) => {
             queryClient.invalidateQueries({ queryKey: ["conversations"] });
             router.push(`/profile/chat?id=${data.id}`);
+        },
+    });
+};
+
+export const usePoll = (pollId?: string) => {
+    const { isLoggedIn } = useAuth();
+
+    return useQuery({
+        queryKey: ["poll", pollId],
+        queryFn: () => chatService.getPoll(pollId!),
+        enabled: isLoggedIn && !!pollId,
+        refetchInterval: isLoggedIn && !!pollId ? 5000 : false,
+    });
+};
+
+export const useVotePoll = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: ({ pollId, optionId }: { pollId: string; optionId: string }) =>
+            chatService.votePoll(pollId, optionId),
+        onSuccess: (data) => {
+            queryClient.setQueryData(["poll", data.id], data);
+            queryClient.invalidateQueries({ queryKey: ["messages", data.conversationId] });
+        },
+    });
+};
+
+export const useCreatePoll = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: ({ conversationId, ...dto }: { conversationId: string } & CreatePollDto) =>
+            chatService.createPoll(conversationId, dto),
+        onSuccess: (_, variables) => {
+            queryClient.invalidateQueries({ queryKey: ["messages", variables.conversationId] });
+            queryClient.invalidateQueries({ queryKey: ["conversations"] });
         },
     });
 };

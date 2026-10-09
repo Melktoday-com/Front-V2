@@ -54,13 +54,6 @@ export default function SingleAgencyScene() {
     const [activeTab, setActiveTab] = useState<"listings" | "posts" | "about" | "reviews">("listings");
     const [viewMode, setViewMode] = useState<"grid" | "feed">("feed");
 
-    // Consultation modal states
-    const [isConsultationModalOpen, setIsConsultationModalOpen] = useState(false);
-    const [consultationSubject, setConsultationSubject] = useState("مشاوره عمومی ملک");
-    const [consultationMessage, setConsultationMessage] = useState("");
-    const [senderName, setSenderName] = useState("");
-    const [senderPhone, setSenderPhone] = useState("");
-
     // Post reader modal
     const [readingPost, setReadingPost] = useState<AgencyPost | null>(null);
 
@@ -114,26 +107,6 @@ export default function SingleAgencyScene() {
     const followMutation = useFollowAgency();
     const unfollowMutation = useUnfollowAgency();
     const chatMutation = useCreateConversation();
-
-    const consultationMutation = useMutation({
-        mutationFn: () =>
-            agencyService.sendMessageToAgency(targetAgencyId, {
-                subject: consultationSubject,
-                message: consultationMessage,
-                senderName: senderName.trim() || undefined,
-                senderPhone: senderPhone.trim() || undefined,
-            }),
-        onSuccess: () => {
-            toast.success("پیام شما با موفقیت به صفحه املاک ارسال شد.");
-            setIsConsultationModalOpen(false);
-            setConsultationMessage("");
-            setSenderName("");
-            setSenderPhone("");
-        },
-        onError: () => {
-            toast.error("خطا در ارسال پیام به صفحه املاک.");
-        },
-    });
 
     const handleFollow = () => {
         if (!isLoggedIn) {
@@ -308,20 +281,12 @@ export default function SingleAgencyScene() {
                             )}
 
                             <button
-                                onClick={() => setIsConsultationModalOpen(true)}
-                                className="flex-1 sm:flex-initial py-2.5 px-5 rounded-xl bg-slate-900 text-white font-bold text-xs flex items-center justify-center gap-1.5 hover:bg-slate-800 transition-all shadow-xs"
-                            >
-                                <MessageSquare className="w-3.5 h-3.5 text-blue-400" />
-                                <span>ارسال پیام و مشاوره</span>
-                            </button>
-
-                            <button
                                 onClick={handleChat}
                                 disabled={chatMutation.isPending}
-                                className="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-700 transition-colors"
-                                title="چت آنلاین"
+                                className="flex-1 sm:flex-initial py-2.5 px-5 rounded-xl bg-slate-900 text-white font-bold text-xs flex items-center justify-center gap-1.5 hover:bg-slate-800 transition-all shadow-xs disabled:opacity-50 cursor-pointer"
                             >
-                                <MessageCircle className="w-4 h-4" />
+                                <MessageCircle className="w-4 h-4 text-blue-400" />
+                                <span>{chatMutation.isPending ? "در حال اتصال به چت..." : "گفتگو و مشاوره آنلاین"}</span>
                             </button>
                         </div>
                     </div>
@@ -672,98 +637,6 @@ export default function SingleAgencyScene() {
             {activeTab === "reviews" && (
                 <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs">
                     <ReviewsSection targetId={targetAgencyId} targetType="agency" />
-                </div>
-            )}
-
-            {/* Send Message / Consultation Modal */}
-            {isConsultationModalOpen && (
-                <div role="dialog" aria-modal="true" aria-label="ارسال پیام مشاوره" className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-                    <div className="bg-white rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl border border-slate-100">
-                        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                            <div className="flex items-center gap-2">
-                                <MessageSquare className="w-5 h-5 text-blue-600" />
-                                <h3 className="text-base font-black text-slate-900">
-                                    ارسال پیام به {agency.agencyName || agency.name}
-                                </h3>
-                            </div>
-                            <button
-                                type="button"
-                                onClick={() => setIsConsultationModalOpen(false)}
-                                className="w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 flex items-center justify-center"
-                            >
-                                ✕
-                            </button>
-                        </div>
-
-                        <div className="space-y-3 text-xs">
-                            <div className="space-y-1">
-                                <label className="text-slate-700 font-bold">نام و نام خانوادگی شما</label>
-                                <input
-                                    type="text"
-                                    value={senderName}
-                                    onChange={(e) => setSenderName(e.target.value)}
-                                    placeholder="مثال: محمد رضایی"
-                                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl"
-                                />
-                            </div>
-
-                            <div className="space-y-1">
-                                <label className="text-slate-700 font-bold">شماره تماس جهت هماهنگی</label>
-                                <input
-                                    type="text"
-                                    value={senderPhone}
-                                    onChange={(e) => setSenderPhone(e.target.value)}
-                                    placeholder="۰۹۱۲..."
-                                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-mono"
-                                />
-                            </div>
-
-                            <div className="space-y-1">
-                                <label className="text-slate-700 font-bold">موضوع پیام یا درخواست</label>
-                                <input
-                                    type="text"
-                                    value={consultationSubject}
-                                    onChange={(e) => setConsultationSubject(e.target.value)}
-                                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl"
-                                />
-                            </div>
-
-                            <div className="space-y-1">
-                                <label className="text-slate-700 font-bold">متن پیام *</label>
-                                <textarea
-                                    rows={4}
-                                    value={consultationMessage}
-                                    onChange={(e) => setConsultationMessage(e.target.value)}
-                                    placeholder="درخواست ملکی یا سوال خود را اینجا مطرح فرمایید..."
-                                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="flex gap-2 pt-2 border-t border-slate-100">
-                            <button
-                                type="button"
-                                onClick={() => setIsConsultationModalOpen(false)}
-                                className="flex-1 py-2.5 rounded-xl border border-slate-200 font-bold text-xs text-slate-600 hover:bg-slate-50"
-                            >
-                                انصراف
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    if (!consultationMessage.trim()) {
-                                        toast.error("متن پیام نمی‌تواند خالی باشد.");
-                                        return;
-                                    }
-                                    consultationMutation.mutate();
-                                }}
-                                disabled={consultationMutation.isPending}
-                                className="flex-1 py-2.5 rounded-xl bg-blue-600 text-white font-black text-xs hover:bg-blue-700 shadow-sm"
-                            >
-                                {consultationMutation.isPending ? "در حال ارسال..." : "ارسال مستقیم پیام"}
-                            </button>
-                        </div>
-                    </div>
                 </div>
             )}
 

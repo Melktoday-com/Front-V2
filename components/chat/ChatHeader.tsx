@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { ChevronLeft, Compass, Home, LayoutGrid, Search, User } from "lucide-react";
+import { ChevronRight, Compass, Home, LayoutGrid, Search, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
@@ -72,8 +72,9 @@ export function ChatHeader() {
                     onClick={handleBack}
                     className="flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-2 bg-soft-bg rounded-xl text-secondary hover:text-brand transition-all border border-soft-border group active:scale-95"
                 >
+                    <ChevronRight className="w-4 h-4 md:w-5 md:h-5 text-secondary group-hover:text-brand transition-colors" />
+
                     <span className="text-xs md:text-sm font-bold">بازگشت</span>
-                    <ChevronLeft className="w-4 h-4 md:w-5 md:h-5 text-secondary group-hover:text-brand transition-colors" />
 
                 </button>
             </div>

@@ -380,16 +380,16 @@ export function TicketFloatingWidget() {
         <aside aria-label="پشتیبانی و تیکت">
             {/* ── Floating Support Button (Bottom-Left) ─────────────────────────── */}
             {!isOpen && (
-                <div className="fixed bottom-24 lg:bottom-8 left-4 lg:left-8 z-40">
+                <div className="fixed bottom-20 sm:bottom-24 lg:bottom-8 left-3.5 sm:left-4 lg:left-8 z-40">
                     <button
                         type="button"
                         onClick={handleOpenWidget}
                         aria-label="پشتیبانی و تیکت"
                         aria-expanded={isOpen}
-                        className="group relative flex items-center gap-3 bg-brand text-white px-4 py-3.5 rounded-full shadow-2xl hover:bg-brand/90 hover:scale-105 active:scale-95 transition-all duration-300 border border-white/20"
+                        className="group relative flex items-center justify-center sm:gap-3 bg-brand text-white p-2 sm:px-4 sm:py-3.5 rounded-full shadow-lg sm:shadow-2xl hover:bg-brand/90 hover:scale-105 active:scale-95 transition-all duration-300 border border-white/20"
                     >
-                        <span className="relative flex items-center justify-center w-8 h-8 rounded-full bg-primary/20 text-primary">
-                            <Headphones className="w-5 h-5 text-white group-hover:rotate-12 transition-transform" />
+                        <span className="relative flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary/20 text-primary">
+                            <Headphones className="w-4 h-4 sm:w-5 sm:h-5 text-white group-hover:rotate-12 transition-transform" />
                         </span>
                         <span className="text-sm font-black hidden sm:inline-block pr-0.5">
                             پشتیبانی

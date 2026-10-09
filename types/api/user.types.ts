@@ -5,6 +5,7 @@ export interface UserProfile {
     mobileNumber: string;
     firstName?: string;
     lastName?: string;
+    avatarUrl?: string | null;
     kycStatus: KYCStatus;
     status: UserStatus;
     roles?: string[];
@@ -14,6 +15,7 @@ export interface UserProfile {
 export interface UpdateUserProfileRequest {
     firstName?: string;
     lastName?: string;
+    avatarUrl?: string | null;
 }
 
 export interface RegisterUserRequest {

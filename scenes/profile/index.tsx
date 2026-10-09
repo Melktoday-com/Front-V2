@@ -11,13 +11,15 @@ import { useHostProfile } from "@/hooks/useShowcase";
 import { useMeProfile, useUser } from "@/hooks/useUser";
 import { useUserStatus } from "@/hooks/useUserStatus";
 import { useWallet } from "@/hooks/useWallet";
-import { cn, formatCurrency, toPersianDigits } from "@/lib/utils";
+import { cn, formatCurrency, getMediaUrl, toPersianDigits } from "@/lib/utils";
+import { mediaService } from "@/services/media.service";
 import { userService } from "@/services/user.service";
 import { RoleName, isRoleAdmin, tryRoleNameFrom } from "@/types/access";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
     Bell,
     Building2,
+    Camera,
     CheckCircle2,
     ChevronLeft,
     CreditCard,
@@ -37,7 +39,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 export default function ProfileScene() {
@@ -48,10 +50,12 @@ export default function ProfileScene() {
 
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
+    const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
     const [isKycModalOpen, setIsKycModalOpen] = useState(false);
     const [nationalCode, setNationalCode] = useState("");
     const [birthDate, setBirthDate] = useState("");
 
+    const avatarInputRef = useRef<HTMLInputElement>(null);
     const queryClient = useQueryClient();
 
     const { data: profile } = useMeProfile();
@@ -83,6 +87,33 @@ export default function ProfileScene() {
     });
 
     const { isRestricted, isBanned, isSuspended, statusLabel } = useUserStatus();
+
+    const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        if (!file.type.startsWith("image/")) {
+            toast.error("لطفاً یک فایل تصویری معتبر انتخاب کنید");
+            return;
+        }
+
+        try {
+            setIsUploadingAvatar(true);
+            const media = await mediaService.upload(file, "PUBLIC", "IMAGE");
+            const mediaUrl = media.url || getMediaUrl(media.id || media.mediaId);
+            await userService.updateMe({ avatarUrl: mediaUrl });
+            queryClient.invalidateQueries({ queryKey: ["user"] });
+            queryClient.invalidateQueries({ queryKey: ["me"] });
+            toast.success("تصویر نمایه با موفقیت بروزرسانی شد");
+        } catch {
+            toast.error("خطا در بارگذاری تصویر نمایه");
+        } finally {
+            setIsUploadingAvatar(false);
+            if (avatarInputRef.current) {
+                avatarInputRef.current.value = "";
+            }
+        }
+    };
 
     useEffect(() => {
         if (profile) {
@@ -152,11 +183,41 @@ export default function ProfileScene() {
                 {/* Profile Info */}
                 <section className="bg-soft-bg rounded-[30px] p-6 space-y-6 border border-soft-border">
                     <div className="flex items-center gap-4">
-                        <div className="w-16 h-16 rounded-full bg-white border border-soft-border flex items-center justify-center">
-                            <User className="w-8 h-8 text-brand" />
+                        <input
+                            ref={avatarInputRef}
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={handleAvatarChange}
+                        />
+                        <div className="relative group shrink-0">
+                            <div className="w-18 h-18 rounded-full bg-white border-2 border-soft-border flex items-center justify-center overflow-hidden shadow-xs">
+                                {profile?.avatarUrl ? (
+                                    <img
+                                        src={getMediaUrl(profile.avatarUrl)}
+                                        alt={firstName || "Profile"}
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    <User className="w-9 h-9 text-brand/60" />
+                                )}
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => avatarInputRef.current?.click()}
+                                disabled={isUploadingAvatar}
+                                className="absolute -bottom-1 -left-1 w-7 h-7 bg-brand text-white rounded-full flex items-center justify-center shadow-md hover:bg-brand/90 hover:scale-110 active:scale-95 transition-all border-2 border-white cursor-pointer"
+                                title="تغییر تصویر نمایه"
+                            >
+                                {isUploadingAvatar ? (
+                                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                ) : (
+                                    <Camera className="w-3.5 h-3.5" />
+                                )}
+                            </button>
                         </div>
-                        <div>
-                            <div className="text-brand font-black text-lg">
+                        <div className="flex-1 min-w-0">
+                            <div className="text-brand font-black text-lg truncate">
                                 {firstName || "کاربر"} {lastName || "ملک تودی"}
                             </div>
                             <div className="flex items-center gap-2 flex-wrap mt-1">
