@@ -19,11 +19,13 @@ import {
   ChevronRight,
   Eye,
   Globe,
+  Headphones,
   Heart,
   Home,
   Info,
   Mail,
   MapPin,
+  MessageSquare,
   Phone,
   Send,
   Share2,
@@ -162,14 +164,24 @@ export default function SinglePlatformScene() {
               </div>
             </div>
 
-            {/* Follow Button */}
-            <div className="w-full sm:w-auto">
+            {/* Action Buttons: Chat & Follow */}
+            <div className="w-full sm:w-auto flex flex-col sm:flex-row items-center gap-2.5">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  window.dispatchEvent(new CustomEvent("melktoday:open-ticket"));
+                }}
+                className="w-full sm:w-auto h-11 px-6 rounded-2xl font-bold text-xs border-primary/30 text-primary hover:bg-primary/5 flex items-center justify-center gap-2 cursor-pointer transition-all"
+              >
+                <MessageSquare className="w-4 h-4" />
+                <span>گفتگو و پشتیبانی آنلاین</span>
+              </Button>
               <Button
                 variant={header?.isFollowing ? "outline" : "primary"}
                 onClick={handleToggleFollow}
                 disabled={toggleFollowMutation.isPending}
                 className={cn(
-                  "w-full sm:w-auto h-11 px-8 rounded-2xl font-bold text-xs transition-all",
+                  "w-full sm:w-auto h-11 px-8 rounded-2xl font-bold text-xs transition-all cursor-pointer",
                   header?.isFollowing && "border-secondary/30 text-secondary hover:bg-red-50 hover:text-red-500 hover:border-red-200"
                 )}
               >
@@ -388,6 +400,29 @@ export default function SinglePlatformScene() {
               <p className="text-sm text-secondary font-medium leading-relaxed whitespace-pre-line">
                 {about?.description || "توضیحاتی ثبت نشده است."}
               </p>
+            </div>
+
+            {/* Online Support & Ticketing Card */}
+            <div className="p-5 sm:p-6 rounded-2xl bg-primary/5 border border-primary/20 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="space-y-1 text-center sm:text-right">
+                <h4 className="text-sm font-black text-brand flex items-center justify-center sm:justify-start gap-2">
+                  <Headphones className="w-4 h-4 text-primary" />
+                  <span>پشتیبانی و گفتگوی آنلاین سامانه</span>
+                </h4>
+                <p className="text-xs text-secondary font-medium">
+                  برای ارسال درخواست، گزارش مشکل یا دریافت راهنمایی، تیکت پشتیبانی ارسال فرمایید.
+                </p>
+              </div>
+              <Button
+                variant="primary"
+                onClick={() => {
+                  window.dispatchEvent(new CustomEvent("melktoday:open-ticket"));
+                }}
+                className="h-10 px-5 rounded-xl font-bold text-xs flex items-center gap-2 shrink-0 cursor-pointer"
+              >
+                <MessageSquare className="w-4 h-4" />
+                <span>ارسال پیام به پشتیبانی</span>
+              </Button>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 pt-6 border-t border-soft-border">
