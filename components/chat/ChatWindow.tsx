@@ -200,12 +200,10 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
                     <div className="w-10 h-10 bg-soft-bg rounded-2xl flex items-center justify-center text-brand overflow-hidden border border-soft-border shrink-0">
                         {otherParticipant?.avatar ? (
                             <img
-                                src={otherParticipant.avatar}
+                                src={getMediaUrl(otherParticipant.avatar)}
                                 alt={otherParticipant.name || "User"}
                                 className="w-full h-full object-cover"
                             />
-                        ) : conversation?.subjectType === "SUPPORT" ? (
-                            <ShieldCheck className="w-5 h-5 text-brand" />
                         ) : conversation?.subjectType === "AGENCY" ? (
                             <Building2 className="w-5 h-5 text-brand/50" />
                         ) : (
@@ -217,9 +215,7 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
                             {otherParticipant?.name || "گفتگو"}
                         </h3>
                         <p className="text-[10px] text-secondary flex items-center gap-1.5 opacity-80 mt-0.5">
-                            {conversation?.subjectType === "SUPPORT" ? (
-                                "تیم پشتیبانی ملک تودی"
-                            ) : conversation?.subjectType === "AGENCY" ? (
+                            {conversation?.subjectType === "AGENCY" ? (
                                 "مشاور املاک"
                             ) : conversation?.subjectType === "RENTAL" ? (
                                 "میزبان اجاره موقت"
