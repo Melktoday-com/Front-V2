@@ -30,7 +30,7 @@ export function PromotionModal({
     const [selectedType, setSelectedType] = useState<PromotionType>("URGENT_TAG");
 
     const { data: pricingData, isLoading: isPricingLoading } = usePromotionPricing();
-    const { data: tariffs = [] } = useTariffs();
+    const { data: tariffs = [], isLoading: isTariffsLoading } = useTariffs();
     const { data: entitlements = [] } = useEntitlements();
     const { data: walletBalance } = useWalletBalance();
     const requestMutation = useRequestPromotion();
@@ -60,13 +60,13 @@ export function PromotionModal({
     const urgentPriceRials = useMemo(() => {
         if (urgentTariff) return Number(urgentTariff.amountIrr);
         const rule = pricingData?.rules?.find((r) => r.promotionType === "URGENT_TAG");
-        return rule ? Number(rule.pricePerDayRials) : 100000;
+        return rule ? Number(rule.pricePerDayRials) : 0;
     }, [urgentTariff, pricingData]);
 
     const ladderPriceRials = useMemo(() => {
         if (ladderTariff) return Number(ladderTariff.amountIrr);
         const rule = pricingData?.rules?.find((r) => r.promotionType === "LADDER");
-        return rule ? Number(rule.pricePerDayRials) : 200000;
+        return rule ? Number(rule.pricePerDayRials) : 0;
     }, [ladderTariff, pricingData]);
 
     const urgentPriceTomans = Math.round(urgentPriceRials / 10);
@@ -76,9 +76,11 @@ export function PromotionModal({
     const activePriceTomans = selectedType === "URGENT_TAG" ? urgentPriceTomans : ladderPriceTomans;
 
     const isQuotaAvailable = selectedType === "URGENT_TAG" ? urgentQuota > 0 : ladderQuota > 0;
+    const isPricingLoadingCombined = isPricingLoading || isTariffsLoading;
+    const isTariffConfigured = activePriceRials > 0;
 
     const currentBalanceRials = walletBalance?.availableBalance ? Number(walletBalance.availableBalance) : 0;
-    const isBalanceSufficient = isQuotaAvailable || currentBalanceRials >= activePriceRials;
+    const isBalanceSufficient = isQuotaAvailable || (isTariffConfigured && currentBalanceRials >= activePriceRials);
 
     const handleConfirm = async () => {
         try {
@@ -168,9 +170,18 @@ export function PromotionModal({
                                             سهمیه: {toPersianDigits(urgentQuota)} عدد
                                         </span>
                                     </div>
-                                ) : (
+                                ) : isPricingLoadingCombined ? (
+                                    <span className="text-xs text-text-light flex items-center gap-1">
+                                        <Loader2 className="w-3 h-3 animate-spin" />
+                                        در حال استعلام...
+                                    </span>
+                                ) : urgentPriceTomans > 0 ? (
                                     <span className="text-xs font-bold text-brand">
                                         {formatPrice(urgentPriceTomans)} تومان
+                                    </span>
+                                ) : (
+                                    <span className="text-xs font-bold text-rose-500">
+                                        تعرفه نامشخص
                                     </span>
                                 )}
                             </div>
@@ -205,9 +216,18 @@ export function PromotionModal({
                                             سهمیه: {toPersianDigits(ladderQuota)} عدد
                                         </span>
                                     </div>
-                                ) : (
+                                ) : isPricingLoadingCombined ? (
+                                    <span className="text-xs text-text-light flex items-center gap-1">
+                                        <Loader2 className="w-3 h-3 animate-spin" />
+                                        در حال استعلام...
+                                    </span>
+                                ) : ladderPriceTomans > 0 ? (
                                     <span className="text-xs font-bold text-brand">
                                         {formatPrice(ladderPriceTomans)} تومان
+                                    </span>
+                                ) : (
+                                    <span className="text-xs font-bold text-rose-500">
+                                        تعرفه نامشخص
                                     </span>
                                 )}
                             </div>
@@ -232,12 +252,21 @@ export function PromotionModal({
                                     رایگان (مصرف ۱ سهمیه اشتراک)
                                 </span>
                             </div>
-                        ) : (
+                        ) : isPricingLoadingCombined ? (
+                            <span className="text-xs text-text-light flex items-center gap-1">
+                                <Loader2 className="w-3 h-3 animate-spin" />
+                                در حال استعلام تعرفه...
+                            </span>
+                        ) : activePriceTomans > 0 ? (
                             <div className="text-left">
                                 <span className="font-black text-brand text-sm">
                                     {formatPrice(activePriceTomans)} تومان
                                 </span>
                             </div>
+                        ) : (
+                            <span className="text-xs font-bold text-rose-500">
+                                تعرفه نامشخص
+                            </span>
                         )}
                     </div>
 
@@ -251,19 +280,33 @@ export function PromotionModal({
                     )}
                 </div>
 
-                {/* Insufficient Balance Notice */}
-                {!isBalanceSufficient && (
+                {/* Alerts */}
+                {!isQuotaAvailable && !isPricingLoadingCombined && !isTariffConfigured ? (
+                    <div className="p-3.5 bg-rose-50 border border-rose-200/80 rounded-2xl flex items-start gap-2.5 mb-5">
+                        <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                        <div className="text-xs text-rose-900 leading-relaxed">
+                            تعرفه این نوع ارتقا در حال حاضر فعال یا تنظیم نشده است.
+                        </div>
+                    </div>
+                ) : !isBalanceSufficient ? (
                     <div className="p-3.5 bg-rose-50 border border-rose-200/80 rounded-2xl flex items-start gap-2.5 mb-5">
                         <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
                         <div className="text-xs text-rose-900 leading-relaxed">
                             موجودی کیف پول شما برای این عملیات کافی نیست. لطفاً ابتدا کیف پول خود را شارژ فرمایید.
                         </div>
                     </div>
-                )}
+                ) : null}
 
                 {/* Action Buttons */}
                 <div className="flex items-center gap-2.5">
-                    {!isBalanceSufficient ? (
+                    {!isQuotaAvailable && !isTariffConfigured ? (
+                        <button
+                            disabled
+                            className="flex-1 py-3 bg-gray-200 text-gray-500 font-bold text-xs rounded-2xl shadow-sm cursor-not-allowed"
+                        >
+                            تعرفه غیرفعال است
+                        </button>
+                    ) : !isBalanceSufficient ? (
                         <button
                             onClick={() => {
                                 onClose();
@@ -276,7 +319,7 @@ export function PromotionModal({
                     ) : (
                         <button
                             onClick={handleConfirm}
-                            disabled={requestMutation.isPending || isPricingLoading}
+                            disabled={requestMutation.isPending || isPricingLoadingCombined}
                             className="flex-1 py-3 bg-primary hover:bg-primary/90 text-white font-bold text-xs rounded-2xl transition shadow-sm cursor-pointer disabled:opacity-50 flex items-center justify-center gap-1.5"
                         >
                             {requestMutation.isPending ? (
