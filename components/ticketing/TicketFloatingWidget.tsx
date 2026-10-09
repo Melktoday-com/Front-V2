@@ -380,7 +380,7 @@ export function TicketFloatingWidget() {
         <aside aria-label="پشتیبانی و تیکت">
             {/* ── Floating Support Button (Bottom-Left) ─────────────────────────── */}
             {!isOpen && (
-                <div className="fixed bottom-20 sm:bottom-24 lg:bottom-8 left-3.5 sm:left-4 lg:left-8 z-40">
+                <div className="fixed bottom-24 sm:bottom-26 lg:bottom-8 left-3.5 sm:left-4 lg:left-8 z-40">
                     <button
                         type="button"
                         onClick={handleOpenWidget}

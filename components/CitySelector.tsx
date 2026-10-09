@@ -150,17 +150,17 @@ export function CitySelector({ isOpen, onClose, onSelect, currentCityId }: CityS
         }
     }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-    // Prevent scrolling when open
+    // Close on Escape key as local safety net
     useEffect(() => {
-        if (isOpen) {
-            document.body.style.overflow = "hidden";
-        } else {
-            document.body.style.overflow = "unset";
-        }
-        return () => {
-            document.body.style.overflow = "unset";
+        if (!isOpen) return;
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === "Escape") {
+                onClose();
+            }
         };
-    }, [isOpen]);
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [isOpen, onClose]);
 
     if (!isOpen) return null;
 
@@ -182,7 +182,13 @@ export function CitySelector({ isOpen, onClose, onSelect, currentCityId }: CityS
                 <div className="p-6 border-b border-soft-border space-y-4">
                     <div className="flex justify-between items-center">
                         <h2 className="text-brand text-xl font-black">انتخاب شهر</h2>
-                        <button onClick={onClose} className="p-2 hover:bg-soft-bg rounded-full transition-colors">
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            aria-label="بستن"
+                            data-modal-close="true"
+                            className="p-2 hover:bg-soft-bg rounded-full transition-colors cursor-pointer"
+                        >
                             <X className="w-6 h-6 text-secondary" />
                         </button>
                     </div>

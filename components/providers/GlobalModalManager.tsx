@@ -32,14 +32,25 @@ export function GlobalModalManager() {
                 return false;
             }
 
+            // Inactive overlay check (must be checked BEFORE semantic markers)
+            const classList = element.classList;
+            if (element.getAttribute("aria-hidden") === "true" || element.hasAttribute("hidden")) {
+                return false;
+            }
+            if (classList.contains("hidden")) return false;
+            if (
+                classList.contains("pointer-events-none") &&
+                classList.contains("opacity-0")
+            ) {
+                return false;
+            }
+
             // Explicit semantic modal markers
             const role = element.getAttribute("role");
             if (role === "dialog" || role === "alertdialog") {
-                if (element.getAttribute("aria-hidden") === "true") return false;
                 return true;
             }
             if (element.getAttribute("aria-modal") === "true") {
-                if (element.getAttribute("aria-hidden") === "true") return false;
                 return true;
             }
             if (element.hasAttribute("data-modal")) return true;
@@ -51,17 +62,6 @@ export function GlobalModalManager() {
             ) {
                 return true;
             }
-
-            // Inactive overlay check
-            const classList = element.classList;
-            if (classList.contains("hidden")) return false;
-            if (
-                classList.contains("pointer-events-none") &&
-                classList.contains("opacity-0")
-            ) {
-                return false;
-            }
-            if (element.getAttribute("aria-hidden") === "true") return false;
 
             // Tailwind fixed backdrop overlay with high z-index signature
             const isFixed = classList.contains("fixed");
@@ -88,8 +88,20 @@ export function GlobalModalManager() {
 
         const lockBody = () => {
             if (activeModals.size === 1) {
-                originalBodyOverflow = document.body.style.overflow;
-                originalHtmlOverflow = document.documentElement.style.overflow;
+                const curBodyOverflow = document.body.style.overflow;
+                if (curBodyOverflow && curBodyOverflow !== "hidden" && curBodyOverflow !== "unset") {
+                    originalBodyOverflow = curBodyOverflow;
+                } else {
+                    originalBodyOverflow = "";
+                }
+
+                const curHtmlOverflow = document.documentElement.style.overflow;
+                if (curHtmlOverflow && curHtmlOverflow !== "hidden" && curHtmlOverflow !== "unset") {
+                    originalHtmlOverflow = curHtmlOverflow;
+                } else {
+                    originalHtmlOverflow = "";
+                }
+
                 originalBodyPaddingRight = document.body.style.paddingRight;
 
                 // Prevent layout shift from scrollbar disappearing on desktop
@@ -115,12 +127,39 @@ export function GlobalModalManager() {
         };
 
         const unlockBody = () => {
+            // Prune any stale, hidden or detached modals before checking size
+            for (const modalEl of Array.from(activeModals)) {
+                if (!document.body.contains(modalEl) || !isModalOverlay(modalEl)) {
+                    activeModals.delete(modalEl);
+                    historyPushedModals.delete(modalEl);
+                }
+            }
+
             if (activeModals.size === 0) {
-                document.body.style.overflow = originalBodyOverflow;
-                document.documentElement.style.overflow = originalHtmlOverflow;
-                document.body.style.paddingRight = originalBodyPaddingRight;
+                if (originalBodyOverflow && originalBodyOverflow !== "hidden" && originalBodyOverflow !== "unset") {
+                    document.body.style.overflow = originalBodyOverflow;
+                } else {
+                    document.body.style.removeProperty("overflow");
+                }
+
+                if (originalHtmlOverflow && originalHtmlOverflow !== "hidden" && originalHtmlOverflow !== "unset") {
+                    document.documentElement.style.overflow = originalHtmlOverflow;
+                } else {
+                    document.documentElement.style.removeProperty("overflow");
+                }
+
+                if (originalBodyPaddingRight) {
+                    document.body.style.paddingRight = originalBodyPaddingRight;
+                } else {
+                    document.body.style.removeProperty("padding-right");
+                }
+
                 document.body.classList.remove("modal-open");
                 document.documentElement.classList.remove("modal-open");
+
+                originalBodyOverflow = "";
+                originalHtmlOverflow = "";
+                originalBodyPaddingRight = "";
 
                 // Restore mobile bottom navigation bar when all modals close
                 const bottomNavs = document.querySelectorAll(
@@ -434,7 +473,7 @@ export function GlobalModalManager() {
                                 unregisterModal(node);
                             } else {
                                 // Check if any registered modal was inside the removed tree
-                                activeModals.forEach((modalEl) => {
+                                Array.from(activeModals).forEach((modalEl) => {
                                     if (!document.body.contains(modalEl)) {
                                         unregisterModal(modalEl);
                                     }
