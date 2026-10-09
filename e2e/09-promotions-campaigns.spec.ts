@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { attachTelemetry } from './helpers/auth';
 
 test.describe('Flow 9: Promotions & Campaigns Review UI Test', () => {
-  test.use({ storageState: 'playwright/.auth/admin.json' });
+  test.use({ storageState: 'playwright/.auth/superadmin.json' });
 
   test('Admin navigates to /admin/promotions and verifies promotions queue and actions', async ({ page }) => {
     const telemetry = attachTelemetry(page);

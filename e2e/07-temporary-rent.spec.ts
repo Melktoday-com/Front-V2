@@ -3,7 +3,7 @@ import { attachTelemetry } from './helpers/auth';
 
 test.describe('Flow 7: Temporary Rent & Host Lifecycle UI Test', () => {
   test.describe('Admin temporary rent management', () => {
-    test.use({ storageState: 'playwright/.auth/admin.json' });
+    test.use({ storageState: 'playwright/.auth/superadmin.json' });
 
     test('Admin navigates to /admin/temporary-rent and checks accommodation queues and tabs', async ({ page }) => {
       const telemetry = attachTelemetry(page);
