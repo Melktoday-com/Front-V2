@@ -1,24 +1,20 @@
 "use client";
 
-import { useConversation, useMessages, useSendMessage } from "@/hooks/useChat";
 import { useAuth } from "@/hooks/useAuth";
+import { useConversation, useMessages, useSendMessage } from "@/hooks/useChat";
 import { useMeProfile } from "@/hooks/useUser";
 import { cn, getMediaUrl } from "@/lib/utils";
-import { ChatMessage, ListingMetadata, PollMetadata } from "@/services/chat.service";
+import { ChatMessage, ListingMetadata } from "@/services/chat.service";
 import { mediaService } from "@/services/media.service";
 import {
     Building2,
-    Check,
     CheckCheck,
-    ChevronLeft,
     Image as ImageIcon,
     Loader2,
     MessageCircle,
-    Paperclip,
     Send,
-    ShieldCheck,
     Star,
-    User,
+    User
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -188,15 +184,6 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
             {/* Header */}
             <div className="p-3 lg:px-6 lg:py-3.5 border-b border-soft-border bg-white flex items-center justify-between shrink-0 sticky top-0 z-20">
                 <div className="flex items-center gap-3">
-                    {onBack && (
-                        <button
-                            type="button"
-                            onClick={onBack}
-                            className="md:hidden p-1.5 -mr-1 rounded-xl hover:bg-soft-bg text-secondary"
-                        >
-                            <ChevronLeft className="w-5 h-5 rotate-180" />
-                        </button>
-                    )}
                     <div className="w-10 h-10 bg-soft-bg rounded-2xl flex items-center justify-center text-brand overflow-hidden border border-soft-border shrink-0">
                         {otherParticipant?.avatar ? (
                             <img
