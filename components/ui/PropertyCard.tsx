@@ -99,10 +99,10 @@ export function PropertyCard({
             className={cn(
                 "group h-full bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-md transition-shadow cursor-pointer",
                 isResponsive
-                    ? "flex flex-row sm:flex-col"
+                    ? "flex flex-row sm:flex-col-reverse"
                     : isHorizontal
                         ? "flex flex-row"
-                        : "flex flex-col",
+                        : "flex flex-col-reverse",
                 className
             )}
         >
