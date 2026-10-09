@@ -7,7 +7,6 @@ import { cn, getMediaUrl } from "@/lib/utils";
 import { ChatMessage, ListingMetadata, PollMetadata } from "@/services/chat.service";
 import { mediaService } from "@/services/media.service";
 import {
-    BarChart3,
     Building2,
     Check,
     CheckCheck,
@@ -18,13 +17,13 @@ import {
     Paperclip,
     Send,
     ShieldCheck,
+    Star,
     User,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { CreatePollModal } from "./CreatePollModal";
 import { ListingMessageCard } from "./ListingMessageCard";
-import { PollMessageCard } from "./PollMessageCard";
+import { ReviewRequestCard } from "./ReviewRequestCard";
 
 interface ChatWindowProps {
     conversationId: string | null;
@@ -34,7 +33,6 @@ interface ChatWindowProps {
 export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
     const [message, setMessage] = useState("");
     const [isUploadingImage, setIsUploadingImage] = useState(false);
-    const [isPollModalOpen, setIsPollModalOpen] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const {
@@ -122,13 +120,44 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
         }
     };
 
-    const canCreatePoll =
+    const canRequestReview =
         activeRole === "agent" ||
         activeRole === "landlord" ||
         activeRole === "admin" ||
         activeRole === "super-admin" ||
         conversation?.subjectType === "AGENCY" ||
         conversation?.subjectType === "RENTAL";
+
+    const handleRequestReview = () => {
+        if (!conversationId || isSending) return;
+        const otherParticipant = conversation?.otherParticipant;
+        const targetType = conversation?.subjectType === "RENTAL" ? "temporary-rent" : "agency";
+        const targetId = conversation?.subjectId || "";
+        const targetTitle = otherParticipant?.name || (targetType === "temporary-rent" ? "میزبان اقامتگاه" : "مشاور املاک");
+
+        send(
+            {
+                conversationId,
+                content: "لطفاً نظر و امتیاز خود را درباره عملکرد کارشناس ثبت نمایید.",
+                type: "POLL",
+                metadata: {
+                    isReviewRequest: true,
+                    targetType,
+                    targetId,
+                    targetTitle,
+                    requestedAt: new Date().toISOString(),
+                },
+            },
+            {
+                onSuccess: () => {
+                    toast.success("درخواست ثبت نظر با موفقیت برای کاربر ارسال شد");
+                },
+                onError: (err: any) => {
+                    toast.error(err?.response?.data?.message || "خطا در ارسال درخواست نظر");
+                },
+            }
+        );
+    };
 
     if (!conversationId) {
         return (
@@ -204,15 +233,16 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
                     </div>
                 </div>
 
-                {canCreatePoll && (
+                {canRequestReview && (
                     <button
                         type="button"
-                        onClick={() => setIsPollModalOpen(true)}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-brand/5 hover:bg-brand/10 text-brand text-xs font-bold transition-colors border border-brand/10"
-                        title="ایجاد نظرسنجی"
+                        onClick={handleRequestReview}
+                        disabled={isSending}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-800 text-xs font-bold transition-colors border border-amber-500/20 cursor-pointer"
+                        title="ارسال درخواست ثبت نظر و امتیاز به کاربر"
                     >
-                        <BarChart3 className="w-4 h-4" />
-                        <span className="hidden sm:inline">نظرسنجی</span>
+                        <Star className="w-4 h-4 fill-amber-500 text-amber-500" />
+                        <span className="hidden sm:inline">درخواست ثبت نظر</span>
                     </button>
                 )}
             </div>
@@ -258,12 +288,14 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
                                     metadata={msg.metadata as ListingMetadata}
                                     mediaIds={msg.mediaIds}
                                 />
-                            ) : msg.type === "POLL" ? (
-                                /* Message Type: POLL */
-                                <PollMessageCard
-                                    pollId={(msg.metadata as PollMetadata)?.pollId || msg.id}
-                                    initialData={msg.metadata as PollMetadata}
+                            ) : msg.type === "POLL" || (msg.metadata as any)?.isReviewRequest ? (
+                                /* Message Type: REVIEW REQUEST */
+                                <ReviewRequestCard
+                                    messageId={msg.id}
+                                    metadata={msg.metadata as any}
                                     isMine={isMine}
+                                    conversationSubjectType={conversation?.subjectType}
+                                    conversationSubjectId={conversation?.subjectId}
                                 />
                             ) : msg.type === "IMAGE" || (msg.mediaIds && msg.mediaIds.length > 0 && !msg.content) ? (
                                 /* Message Type: IMAGE */
@@ -355,15 +387,16 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
                         )}
                     </button>
 
-                    {/* Poll creation button */}
-                    {canCreatePoll && (
+                    {/* Review request button */}
+                    {canRequestReview && (
                         <button
                             type="button"
-                            onClick={() => setIsPollModalOpen(true)}
-                            className="p-2 text-secondary hover:text-brand hover:bg-white rounded-xl transition-all"
-                            title="ایجاد نظرسنجی"
+                            onClick={handleRequestReview}
+                            disabled={isSending}
+                            className="p-2 text-secondary hover:text-amber-600 hover:bg-amber-50 rounded-xl transition-all cursor-pointer"
+                            title="درخواست ثبت نظر و امتیاز عملکرد"
                         >
-                            <BarChart3 className="w-5 h-5" />
+                            <Star className="w-5 h-5 text-amber-500" />
                         </button>
                     )}
 
@@ -390,13 +423,6 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
                     </button>
                 </div>
             </form>
-
-            {/* Poll Modal */}
-            <CreatePollModal
-                conversationId={conversationId}
-                isOpen={isPollModalOpen}
-                onClose={() => setIsPollModalOpen(false)}
-            />
         </div>
     );
 }
