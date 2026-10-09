@@ -644,7 +644,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
     }
 
     return (
-        <div className="min-h-screen bg-gray-50/50 py-8 px-4 sm:px-6 lg:px-8 pb-32">
+        <div className="min-h-screen bg-gray-50/50 py-8 px-4 sm:px-6 lg:px-8 pb-32 lg:pb-12">
             <div className="max-w-3xl mx-auto">
                 <header className="mb-6 flex items-start justify-between">
                     <div>

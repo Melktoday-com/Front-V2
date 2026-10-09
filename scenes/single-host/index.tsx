@@ -109,7 +109,7 @@ export default function SingleHostScene({ idOrSlug }: SingleHostSceneProps) {
   }
 
   return (
-    <div className="min-h-screen bg-soft-bg pb-24" dir="rtl">
+    <div className="min-h-screen bg-soft-bg pb-24 lg:pb-10" dir="rtl">
       {/* Cover Banner */}
       <div className="relative h-48 sm:h-64 md:h-80 w-full bg-linear-to-l from-emerald-800 to-teal-900 overflow-hidden">
         {header.coverUrl ? (

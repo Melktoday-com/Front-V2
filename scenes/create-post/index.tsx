@@ -423,7 +423,7 @@ export default function CreatePostScene() {
   }
 
   return (
-    <div className="min-w-0 max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-8" dir="rtl">
+    <div className="min-w-0 max-w-6xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8 pb-28 lg:pb-10 space-y-8" dir="rtl">
 
       {/* ── TOP HEADER & WIZARD STEPPER ─────────────────────────────────── */}
       <div className="bg-white p-5 sm:p-6 rounded-3xl border border-slate-200 shadow-xs space-y-6">

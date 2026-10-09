@@ -122,7 +122,7 @@ export default function FavoritesPage() {
     }
 
     return (
-        <div className="max-w-5xl mx-auto px-4 py-8 pb-32">
+        <div className="max-w-5xl mx-auto px-4 py-8 pb-28 lg:pb-12">
             <header className="mb-6">
                 <h1 className="text-2xl font-black text-brand mb-2">علاقه‌مندی‌ها و نشان‌شده‌ها</h1>
                 <p className="text-sm text-gray-500">

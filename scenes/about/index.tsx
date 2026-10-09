@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { Footer } from "@/components/layout/Footer";
 import {
   ArrowLeft,
   Building2,
@@ -111,9 +112,10 @@ export default function AboutScene() {
   ];
 
   return (
-    <div className="flex flex-col gap-8 md:gap-14 pb-28 md:pb-36 pt-4 sm:pt-6 max-w-6xl mx-auto px-4 sm:px-6">
-      {/* Breadcrumb Navigation */}
-      <nav aria-label="راهنمای مسیر" className="flex items-center gap-2 text-xs text-secondary">
+    <div className="flex flex-col gap-8 md:gap-14 pt-4 sm:pt-6">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 w-full space-y-8 md:space-y-14">
+        {/* Breadcrumb Navigation */}
+        <nav aria-label="راهنمای مسیر" className="flex items-center gap-2 text-xs text-secondary">
         <Link href="/" className="hover:text-brand transition-colors">
           صفحه اصلی
         </Link>
@@ -419,6 +421,10 @@ export default function AboutScene() {
           </Link>
         </div>
       </section>
+      </div>
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }

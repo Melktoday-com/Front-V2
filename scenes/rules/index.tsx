@@ -1,6 +1,7 @@
 "use client";
 
 import { cn, toPersianDigits } from "@/lib/utils";
+import { Footer } from "@/components/layout/Footer";
 import {
   AlertTriangle,
   ArrowLeft,
@@ -76,9 +77,10 @@ export default function RulesScene() {
   ];
 
   return (
-    <div className="flex flex-col gap-6 md:gap-10 pb-28 md:pb-36 pt-4 sm:pt-6 max-w-6xl mx-auto px-4 sm:px-6">
-      {/* Breadcrumb Navigation */}
-      <nav aria-label="راهنمای مسیر" className="flex items-center gap-2 text-xs text-secondary">
+    <div className="flex flex-col gap-6 md:gap-10 pt-4 sm:pt-6">
+      <div className="flex flex-col gap-6 md:gap-10 max-w-6xl mx-auto px-4 sm:px-6 w-full">
+        {/* Breadcrumb Navigation */}
+        <nav aria-label="راهنمای مسیر" className="flex items-center gap-2 text-xs text-secondary">
         <Link href="/" className="hover:text-brand transition-colors">
           صفحه اصلی
         </Link>
@@ -994,6 +996,10 @@ export default function RulesScene() {
           </div>
         </main>
       </div>
+      </div>
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }

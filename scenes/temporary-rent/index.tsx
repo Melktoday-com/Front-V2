@@ -50,7 +50,7 @@ export default function TemporaryRentScene() {
     }, [hits, guestCount]);
 
     return (
-        <div className="min-h-screen bg-white pb-32">
+        <div className="min-h-screen bg-white pb-28 lg:pb-10">
             {/* Warm Header Section (Airbnb vibe) */}
             <div className="bg-gradient-to-b from-orange-50/50 to-transparent p-4 sm:p-6 lg:px-10 lg:pt-8 border-b border-orange-100/50 space-y-5">
                 <PageHeader

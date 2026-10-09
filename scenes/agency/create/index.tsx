@@ -46,7 +46,7 @@ export default function CreateAgencyScene() {
     };
 
     return (
-        <div className="min-h-screen bg-white">
+        <div className="min-h-screen bg-white pb-28 lg:pb-10">
             <header className="bg-white border-b border-soft-border sticky top-0 z-10 px-6 py-4 flex items-center gap-3">
                 <button onClick={() => router.back()} className="p-2 hover:bg-soft-bg rounded-xl transition-colors">
                     <ChevronLeft className="w-6 h-6 text-brand rotate-180" />

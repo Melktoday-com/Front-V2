@@ -321,7 +321,7 @@ export default function ExploreScene() {
   };
 
   return (
-    <div className="min-w-0 max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6" dir="rtl">
+    <div className="min-w-0 max-w-6xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8 pb-28 lg:pb-8 space-y-6" dir="rtl">
 
       {/* ── TOP ACTION & SEARCH BAR ────────────────────────────────────── */}
       <div className="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200 shadow-xs space-y-4">

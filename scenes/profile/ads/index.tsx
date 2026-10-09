@@ -523,7 +523,7 @@ export default function MyAdsScene() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50/50 pb-28">
+        <div className="min-h-screen bg-gray-50/50 pb-28 lg:pb-10">
             {/* Header */}
             <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-gray-100 shadow-2xs">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between gap-4">

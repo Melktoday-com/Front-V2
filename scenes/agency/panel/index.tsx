@@ -211,7 +211,7 @@ export default function AgencyPanelScene() {
     const publicShowcaseUrl = `/agency/showcase/${agency.slug || agency.id}`;
 
     return (
-        <div className="min-h-screen bg-slate-50 pb-20" dir="rtl">
+        <div className="min-h-screen bg-slate-50 pb-24 lg:pb-10" dir="rtl">
             {/* Top Navigation Bar */}
             <header className="bg-white border-b border-slate-200/80 sticky top-0 z-20 px-6 py-4 flex items-center justify-between shadow-2xs">
                 <div className="flex items-center gap-3">

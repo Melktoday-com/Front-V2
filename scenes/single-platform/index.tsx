@@ -90,7 +90,7 @@ export default function SinglePlatformScene() {
   }
 
   return (
-    <div className="min-h-screen bg-soft-bg pb-24" dir="rtl">
+    <div className="min-h-screen bg-soft-bg pb-24 lg:pb-10" dir="rtl">
       {/* Cover Banner */}
       <div className="relative h-48 sm:h-64 md:h-80 w-full bg-linear-to-l from-brand via-gray-900 to-primary overflow-hidden">
         {header?.coverUrl && (

@@ -221,7 +221,7 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
   }
 
   return (
-    <div ref={observerRef} className="min-w-0 max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6" dir="rtl">
+    <div ref={observerRef} className="min-w-0 max-w-6xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8 pb-28 lg:pb-8 space-y-6" dir="rtl">
 
       {/* ── BREADCRUMB & BACK NAVIGATION ─────────────────────────────── */}
       <div className="flex items-center justify-between">
