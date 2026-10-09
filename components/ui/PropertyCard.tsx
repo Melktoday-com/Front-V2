@@ -154,10 +154,11 @@ export function PropertyCard({
                                 onClick={(e) => {
                                     e.preventDefault();
                                     e.stopPropagation();
-                                    const targetUrl = publisher.type === 'host'
-                                        ? `/host/${publisher.slug}`
-                                        : `/agency/showcase/${publisher.slug}`;
-                                    router.push(targetUrl);
+                                    if (publisher.type === 'host' && publisher.slug) {
+                                        router.push(`/host/${publisher.slug}`);
+                                    } else if (publisher.type === 'agency' && publisher.slug) {
+                                        router.push(`/agency/showcase/${publisher.slug}`);
+                                    }
                                 }}
                                 className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-gray-50 hover:bg-gray-100 border border-gray-200/60 text-[10px] text-text-main font-bold transition-colors cursor-pointer"
                             >

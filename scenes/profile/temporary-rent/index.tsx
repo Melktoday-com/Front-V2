@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/Button";
 import { formatCurrency, cn, getMediaUrl } from "@/lib/utils";
 import { toast } from "sonner";
 import { useState } from "react";
+import { PromotionModal } from "@/components/promotions/PromotionModal";
 
 const statusLabels: Record<string, { label: string; color: string; border: string }> = {
     DRAFT: { label: "پیش‌نویس", color: "bg-gray-100 text-gray-600", border: "border-gray-200" },
@@ -25,6 +26,7 @@ export default function TemporaryRentPanelScene() {
     const { user } = useAuth();
     const { isRestricted } = useUserStatus();
     const { data: hostProfile } = useHostProfile();
+    const [promotingAd, setPromotingAd] = useState<{ id: string; title: string } | null>(null);
     
     // Fetch user's own rentals using the newly added ownerId filter
     const { data: ads, isLoading, error } = useTemporaryRentAds(
@@ -251,6 +253,15 @@ export default function TemporaryRentPanelScene() {
                                                 انتشار آگهی
                                             </Button>
                                         )}
+                                        {ad.status === 'PUBLISHED' && (
+                                            <Button
+                                                onClick={() => setPromotingAd({ id: ad.id, title: ad.title })}
+                                                className="rounded-2xl gap-2 font-black px-6 bg-amber-500 hover:bg-amber-600 text-white shadow-sm"
+                                            >
+                                                <Sparkles className="w-4 h-4" />
+                                                ارتقا (فوری / نردبان)
+                                            </Button>
+                                        )}
                                         <Button
                                             variant="outline"
                                             onClick={() => router.push(`/temporary-rent/${ad.id}`)}
@@ -273,6 +284,15 @@ export default function TemporaryRentPanelScene() {
                     ))}
                 </div>
             </main>
+
+            {/* Promotion Modal */}
+            <PromotionModal
+                isOpen={Boolean(promotingAd)}
+                onClose={() => setPromotingAd(null)}
+                listingId={promotingAd?.id || ""}
+                listingTitle={promotingAd?.title || ""}
+                itemType="TEMPORARY_RENTAL"
+            />
         </div>
     );
 }

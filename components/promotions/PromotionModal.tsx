@@ -4,6 +4,7 @@ import React, { useState, useMemo } from "react";
 import { usePromotionPricing, useRequestPromotion } from "@/hooks/usePromotions";
 import { useEntitlements } from "@/hooks/useSubscription";
 import { useWalletBalance } from "@/hooks/useWallet";
+import { useTariffs } from "@/hooks/useTariffs";
 import { PromotionType } from "@/types/api/promotion.types";
 import { formatPrice, toPersianDigits } from "@/lib/utils";
 import { Zap, TrendingUp, X, Sparkles, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
@@ -15,6 +16,7 @@ interface PromotionModalProps {
     onClose: () => void;
     listingId: string;
     listingTitle: string;
+    itemType?: "LISTING" | "TEMPORARY_RENTAL";
 }
 
 export function PromotionModal({
@@ -22,11 +24,13 @@ export function PromotionModal({
     onClose,
     listingId,
     listingTitle,
+    itemType = "LISTING",
 }: PromotionModalProps) {
     const router = useRouter();
     const [selectedType, setSelectedType] = useState<PromotionType>("URGENT_TAG");
 
     const { data: pricingData, isLoading: isPricingLoading } = usePromotionPricing();
+    const { data: tariffs = [] } = useTariffs();
     const { data: entitlements = [] } = useEntitlements();
     const { data: walletBalance } = useWalletBalance();
     const requestMutation = useRequestPromotion();
@@ -42,19 +46,39 @@ export function PromotionModal({
         return ent?.remainingQuota ?? 0;
     }, [entitlements]);
 
-    // Pricing calculation
-    const currentRule = useMemo(() => {
-        return pricingData?.rules?.find((r) => r.promotionType === selectedType);
-    }, [pricingData, selectedType]);
+    // Dynamic 6-Tariff Resolution based on itemType and operation
+    const urgentTariff = useMemo(() => {
+        const targetKey = itemType === "TEMPORARY_RENTAL" ? "TEMPORARY_RENTAL_URGENT" : "LISTING_URGENT";
+        return tariffs.find((t) => t.key === targetKey);
+    }, [tariffs, itemType]);
 
-    const rawPriceRials = currentRule ? Number(currentRule.pricePerDayRials) : 0;
-    const priceTomans = Math.round(rawPriceRials / 10);
+    const ladderTariff = useMemo(() => {
+        const targetKey = itemType === "TEMPORARY_RENTAL" ? "TEMPORARY_RENTAL_LADDER" : "LISTING_LADDER";
+        return tariffs.find((t) => t.key === targetKey);
+    }, [tariffs, itemType]);
+
+    const urgentPriceRials = useMemo(() => {
+        if (urgentTariff) return Number(urgentTariff.amountIrr);
+        const rule = pricingData?.rules?.find((r) => r.promotionType === "URGENT_TAG");
+        return rule ? Number(rule.pricePerDayRials) : 100000;
+    }, [urgentTariff, pricingData]);
+
+    const ladderPriceRials = useMemo(() => {
+        if (ladderTariff) return Number(ladderTariff.amountIrr);
+        const rule = pricingData?.rules?.find((r) => r.promotionType === "LADDER");
+        return rule ? Number(rule.pricePerDayRials) : 200000;
+    }, [ladderTariff, pricingData]);
+
+    const urgentPriceTomans = Math.round(urgentPriceRials / 10);
+    const ladderPriceTomans = Math.round(ladderPriceRials / 10);
+
+    const activePriceRials = selectedType === "URGENT_TAG" ? urgentPriceRials : ladderPriceRials;
+    const activePriceTomans = selectedType === "URGENT_TAG" ? urgentPriceTomans : ladderPriceTomans;
 
     const isQuotaAvailable = selectedType === "URGENT_TAG" ? urgentQuota > 0 : ladderQuota > 0;
-    const availableQuotaCount = selectedType === "URGENT_TAG" ? urgentQuota : ladderQuota;
 
     const currentBalanceRials = walletBalance?.availableBalance ? Number(walletBalance.availableBalance) : 0;
-    const isBalanceSufficient = isQuotaAvailable || currentBalanceRials >= rawPriceRials;
+    const isBalanceSufficient = isQuotaAvailable || currentBalanceRials >= activePriceRials;
 
     const handleConfirm = async () => {
         try {
@@ -91,8 +115,11 @@ export function PromotionModal({
                 onClick={onClose}
             />
 
-            {/* Modal / Drawer Container */}
+            {/* Modal / Drawer Container: Drawer on mobile, Dialog on desktop */}
             <div className="relative z-10 w-full md:max-w-md bg-white rounded-t-3xl md:rounded-3xl p-6 shadow-2xl transition-all max-h-[90vh] overflow-y-auto">
+                {/* Mobile Drawer Pull Handle */}
+                <div className="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-4 md:hidden" />
+
                 {/* Header */}
                 <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-5">
                     <div className="flex items-center gap-2">
@@ -100,7 +127,9 @@ export function PromotionModal({
                             <Sparkles className="w-5 h-5" />
                         </div>
                         <div>
-                            <h3 className="font-black text-brand text-base">ارتقای آگهی</h3>
+                            <h3 className="font-black text-brand text-base">
+                                {itemType === "TEMPORARY_RENTAL" ? "ارتقای اقامتگاه موقت" : "ارتقای آگهی"}
+                            </h3>
                             <p className="text-text-light text-[11px] truncate max-w-[240px]">{listingTitle}</p>
                         </div>
                     </div>
@@ -130,17 +159,23 @@ export function PromotionModal({
                             <div className="flex items-center justify-between">
                                 <h4 className="font-black text-brand text-sm">نشان فوری</h4>
                                 {urgentQuota > 0 ? (
-                                    <span className="text-[10px] font-black bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
-                                        سهمیه: {toPersianDigits(urgentQuota)} عدد
-                                    </span>
+                                    <div className="flex items-center gap-1.5">
+                                        <span className="text-xs line-through text-gray-400">
+                                            {formatPrice(urgentPriceTomans)} تومان
+                                        </span>
+                                        <span className="text-xs text-emerald-600 font-bold">رایگان</span>
+                                        <span className="text-[10px] font-black bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
+                                            سهمیه: {toPersianDigits(urgentQuota)} عدد
+                                        </span>
+                                    </div>
                                 ) : (
                                     <span className="text-xs font-bold text-brand">
-                                        {formatPrice(10000)} تومان
+                                        {formatPrice(urgentPriceTomans)} تومان
                                     </span>
                                 )}
                             </div>
                             <p className="text-text-light text-xs mt-1 leading-relaxed">
-                                نمایش نشان قرمز «فوری» روی تصویر آگهی برای جلب توجه حداکثری خریداران
+                                نمایش نشان قرمز «فوری» روی تصویر آگهی برای جلب توجه حداکثری مخاطبان
                             </p>
                         </div>
                     </div>
@@ -161,12 +196,18 @@ export function PromotionModal({
                             <div className="flex items-center justify-between">
                                 <h4 className="font-black text-brand text-sm">نردبان</h4>
                                 {ladderQuota > 0 ? (
-                                    <span className="text-[10px] font-black bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
-                                        سهمیه: {toPersianDigits(ladderQuota)} عدد
-                                    </span>
+                                    <div className="flex items-center gap-1.5">
+                                        <span className="text-xs line-through text-gray-400">
+                                            {formatPrice(ladderPriceTomans)} تومان
+                                        </span>
+                                        <span className="text-xs text-emerald-600 font-bold">رایگان</span>
+                                        <span className="text-[10px] font-black bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
+                                            سهمیه: {toPersianDigits(ladderQuota)} عدد
+                                        </span>
+                                    </div>
                                 ) : (
                                     <span className="text-xs font-bold text-brand">
-                                        {formatPrice(20000)} تومان
+                                        {formatPrice(ladderPriceTomans)} تومان
                                     </span>
                                 )}
                             </div>
@@ -182,14 +223,19 @@ export function PromotionModal({
                     <div className="flex items-center justify-between text-xs mb-2">
                         <span className="text-text-light font-medium">وضعیت پرداخت:</span>
                         {isQuotaAvailable ? (
-                            <span className="text-emerald-700 font-black flex items-center gap-1">
-                                <CheckCircle2 className="w-3.5 h-3.5" />
-                                رایگان (مصرف ۱ سهمیه اشتراک)
-                            </span>
+                            <div className="flex items-center gap-2">
+                                <span className="text-xs line-through text-gray-400">
+                                    {formatPrice(activePriceTomans)} تومان
+                                </span>
+                                <span className="text-emerald-700 font-black flex items-center gap-1">
+                                    <CheckCircle2 className="w-3.5 h-3.5" />
+                                    رایگان (مصرف ۱ سهمیه اشتراک)
+                                </span>
+                            </div>
                         ) : (
                             <div className="text-left">
                                 <span className="font-black text-brand text-sm">
-                                    {formatPrice(priceTomans || (selectedType === "URGENT_TAG" ? 10000 : 20000))} تومان
+                                    {formatPrice(activePriceTomans)} تومان
                                 </span>
                             </div>
                         )}

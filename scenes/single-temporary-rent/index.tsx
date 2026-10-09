@@ -29,6 +29,11 @@ import {
     Utensils,
     Wifi,
     Wind,
+    Copy,
+    Phone,
+    ShieldAlert,
+    Sparkles,
+    X,
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
@@ -36,6 +41,9 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useToggleSaveTemporaryRent } from "@/hooks/useFavorites";
+import { PromotionModal } from "@/components/promotions/PromotionModal";
+import { temporaryRentService } from "@/services/temporary-rent.service";
+import type { TemporaryRentContactInfo } from "@/types/api/temporary-rent.types";
 
 const Map = dynamic(() => import("@/components/ui/Map"), {
     ssr: false,
@@ -51,10 +59,11 @@ export default function ResidenceDetailScene() {
     const id = params.id as string;
     const router = useRouter();
 
-    const { isLoggedIn } = useAuth();
+    const { isLoggedIn, user } = useAuth();
     const chatMutation = useCreateConversation();
 
     const { data: residence, isLoading, error, refetch } = useTemporaryRentAdDetail(id);
+    const isOwner = Boolean(user && residence?.ownerId && user.userId === residence.ownerId);
 
     const { data: similarResidences } = useTemporaryRentAds(
         {
@@ -69,6 +78,28 @@ export default function ResidenceDetailScene() {
     const [saved, setSaved] = useState(false);
     const [nights, setNights] = useState(1);
     const [activeImageIndex, setActiveImageIndex] = useState(0);
+    const [isPromotionModalOpen, setIsPromotionModalOpen] = useState(false);
+    const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+    const [contactInfo, setContactInfo] = useState<TemporaryRentContactInfo | null>(null);
+    const [isLoadingContact, setIsLoadingContact] = useState(false);
+
+    const handleOpenContact = async () => {
+        if (!isLoggedIn) {
+            toast.error("لطفاً ابتدا وارد حساب کاربری خود شوید");
+            router.push(`/auth?returnUrl=/temporary-rent/${id}`);
+            return;
+        }
+        setIsLoadingContact(true);
+        try {
+            const data = await temporaryRentService.getContactInfo(id);
+            setContactInfo(data);
+            setIsContactModalOpen(true);
+        } catch {
+            toast.error("خطا در دریافت اطلاعات تماس میزبان");
+        } finally {
+            setIsLoadingContact(false);
+        }
+    };
 
     useEffect(() => {
         if (residence?.isSaved !== undefined) {
@@ -479,6 +510,27 @@ export default function ResidenceDetailScene() {
                             <span>درخواست رزرو و گفتگو با میزبان</span>
                         </button>
 
+                        {/* Contact Host Direct CTA */}
+                        <button
+                            onClick={handleOpenContact}
+                            disabled={isLoadingContact}
+                            className="w-full py-3 bg-gray-50 hover:bg-gray-100 text-brand font-bold text-xs rounded-2xl border border-gray-200 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+                        >
+                            <Phone className="w-4 h-4 text-emerald-600" />
+                            <span>{isLoadingContact ? "در حال دریافت..." : "اطلاعات تماس با میزبان"}</span>
+                        </button>
+
+                        {/* Owner Promotion CTA */}
+                        {isOwner && (
+                            <button
+                                onClick={() => setIsPromotionModalOpen(true)}
+                                className="w-full py-3 bg-amber-500 hover:bg-amber-600 text-white font-black text-xs rounded-2xl shadow-md shadow-amber-500/20 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                            >
+                                <Sparkles className="w-4 h-4" />
+                                <span>ارتقای اقامتگاه (فوری / نردبان)</span>
+                            </button>
+                        )}
+
                         <p className="text-[10px] text-text-light text-center leading-relaxed">
                             در این مرحله وجهی کسر نمی‌شود. هماهنگی نهایی پس از تایید میزبان صورت می‌گیرد.
                         </p>
@@ -500,7 +552,7 @@ export default function ResidenceDetailScene() {
                                     id={item.id}
                                     title={item.title}
                                     nightlyPrice={item.pricing.nightlyPrice}
-                                    location={item.cityName || residence.cityName || item.cityId || "ایران"}
+                                    location={item.cityName || residence?.cityName || item.cityId || "ایران"}
                                     mediaIds={item.mediaIds}
                                     maxGuests={item.maxGuests}
                                 />
@@ -518,15 +570,147 @@ export default function ResidenceDetailScene() {
                     </div>
                     <span className="text-[11px] text-text-light font-medium">هر شب</span>
                 </div>
-                <button
-                    onClick={handleChat}
-                    disabled={chatMutation.isPending}
-                    className="px-5 py-2.5 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl text-xs font-black shadow-md shadow-orange-500/25 active:scale-95 transition-transform flex items-center gap-1.5"
-                >
-                    <MessageCircle className="w-4 h-4" />
-                    <span>رزرو و گفتگو</span>
-                </button>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={handleOpenContact}
+                        disabled={isLoadingContact}
+                        className="p-2.5 bg-gray-100 hover:bg-gray-200 text-brand rounded-xl border border-gray-200 transition-all flex items-center justify-center cursor-pointer"
+                        title="تماس با میزبان"
+                    >
+                        <Phone className="w-4 h-4 text-emerald-600" />
+                    </button>
+                    {isOwner && (
+                        <button
+                            onClick={() => setIsPromotionModalOpen(true)}
+                            className="p-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl shadow-xs transition-all flex items-center justify-center cursor-pointer"
+                            title="ارتقای اقامتگاه"
+                        >
+                            <Sparkles className="w-4 h-4" />
+                        </button>
+                    )}
+                    <button
+                        onClick={handleChat}
+                        disabled={chatMutation.isPending}
+                        className="px-5 py-2.5 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl text-xs font-black shadow-md shadow-orange-500/25 active:scale-95 transition-transform flex items-center gap-1.5 cursor-pointer"
+                    >
+                        <MessageCircle className="w-4 h-4" />
+                        <span>رزرو و گفتگو</span>
+                    </button>
+                </div>
             </div>
+
+            {/* Contact Reveal Modal */}
+            {isContactModalOpen && (
+                <div
+                    role="dialog"
+                    aria-modal="true"
+                    className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4"
+                >
+                    <div
+                        className="fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity"
+                        onClick={() => setIsContactModalOpen(false)}
+                    />
+                    <div className="relative z-10 w-full md:max-w-md bg-white rounded-t-3xl md:rounded-3xl p-6 shadow-2xl transition-all max-h-[90vh] overflow-y-auto">
+                        <div className="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-4 md:hidden" />
+                        <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-5">
+                            <div className="flex items-center gap-2">
+                                <div className="p-2 bg-emerald-500/10 text-emerald-600 rounded-xl">
+                                    <Phone className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <h3 className="font-black text-brand text-base">اطلاعات تماس با میزبان</h3>
+                                    <p className="text-text-light text-[11px] truncate max-w-[240px]">
+                                        {contactInfo?.ownerName ? `میزبان: ${contactInfo.ownerName}` : residence?.title}
+                                    </p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setIsContactModalOpen(false)}
+                                className="p-1.5 text-gray-400 hover:text-gray-700 rounded-xl hover:bg-gray-50 transition cursor-pointer"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        {!contactInfo?.phoneNumber ? (
+                            <div className="space-y-4">
+                                <div className="p-4 bg-amber-50/70 border border-amber-200/80 rounded-2xl flex items-start gap-3">
+                                    <ShieldAlert className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                                    <div className="text-xs">
+                                        <h5 className="font-black text-amber-950 mb-1">شماره تماس مخفی شده است</h5>
+                                        <p className="text-amber-900/80 leading-relaxed">
+                                            به درخواست میزبان و جهت حفظ حریم خصوصی، شماره تلفن مستقیم مخفی شده است. شما می‌توانید از طریق چت آنلاین با ایشان در ارتباط باشید.
+                                        </p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => {
+                                        setIsContactModalOpen(false);
+                                        handleChat();
+                                    }}
+                                    disabled={chatMutation.isPending}
+                                    className="w-full py-3.5 bg-brand hover:bg-brand/90 text-white font-bold text-xs rounded-2xl shadow-md transition flex items-center justify-center gap-2 cursor-pointer"
+                                >
+                                    <MessageCircle className="w-4 h-4" />
+                                    <span>ارسال پیام در چت آنلاین</span>
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="space-y-4">
+                                <div className="p-4 bg-gray-50 border border-gray-100 rounded-2xl flex items-center justify-between">
+                                    <div>
+                                        <span className="text-[11px] text-text-light block mb-0.5">شماره تماس مستقیم:</span>
+                                        <span className="text-lg font-black text-brand tracking-widest font-mono" dir="ltr">
+                                            {toPersianDigits(contactInfo.phoneNumber)}
+                                        </span>
+                                    </div>
+                                    <button
+                                        onClick={() => {
+                                            if (navigator.clipboard) {
+                                                navigator.clipboard.writeText(contactInfo.phoneNumber);
+                                                toast.success("شماره تماس در کلیپ‌بورد کپی شد");
+                                            }
+                                        }}
+                                        className="p-2.5 bg-white border border-gray-200 text-brand rounded-xl hover:bg-gray-50 transition shadow-xs cursor-pointer"
+                                        title="کپی شماره"
+                                    >
+                                        <Copy className="w-4 h-4" />
+                                    </button>
+                                </div>
+
+                                <div className="flex items-center gap-2.5 pt-2">
+                                    <a
+                                        href={`tel:${contactInfo.phoneNumber}`}
+                                        className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-2xl shadow-md transition flex items-center justify-center gap-2 cursor-pointer text-center"
+                                    >
+                                        <Phone className="w-4 h-4" />
+                                        <span>تماس تلفنی</span>
+                                    </a>
+                                    <button
+                                        onClick={() => {
+                                            setIsContactModalOpen(false);
+                                            handleChat();
+                                        }}
+                                        className="flex-1 py-3 border border-gray-200 hover:bg-gray-50 text-brand font-bold text-xs rounded-2xl transition flex items-center justify-center gap-2 cursor-pointer"
+                                    >
+                                        <MessageCircle className="w-4 h-4" />
+                                        <span>ارسال پیام آنلاین</span>
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* Promotion Modal */}
+            <PromotionModal
+                isOpen={isPromotionModalOpen}
+                onClose={() => setIsPromotionModalOpen(false)}
+                listingId={id}
+                listingTitle={residence?.title || ""}
+                itemType="TEMPORARY_RENTAL"
+            />
         </div>
     );
 }

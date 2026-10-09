@@ -3,7 +3,7 @@
 import { useAuth } from "@/hooks/useAuth";
 import { cn, formatPrice, toPersianDigits, getMediaUrl, getMediaPosterUrl } from "@/lib/utils";
 import type { MediaReference } from "@/types/api/media.types";
-import { ChevronLeft, ChevronRight, Heart, MapPin, Star, Users, Play } from "lucide-react";
+import { ChevronLeft, ChevronRight, Heart, MapPin, Star, Users, Play, ShieldCheck } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -26,6 +26,15 @@ interface TemporaryRentCardProps {
     isFavorited?: boolean;
     onToggleFavorite?: (id: string) => Promise<{ isFavorited: boolean } | { isSaved: boolean } | void> | void;
     className?: string;
+    isFeatured?: boolean;
+    isUrgent?: boolean;
+    publisher?: {
+        type: 'host' | 'agency' | 'platform' | 'user';
+        name: string;
+        slug: string;
+        avatar?: string | null;
+        isVerified?: boolean;
+    };
 }
 
 export function TemporaryRentCard({
@@ -43,6 +52,9 @@ export function TemporaryRentCard({
     isFavorited = false,
     onToggleFavorite,
     className,
+    isFeatured = false,
+    isUrgent = false,
+    publisher,
 }: TemporaryRentCardProps) {
     const effectiveIsSaved = isSaved !== undefined ? isSaved : isFavorited;
     const effectiveToggle = onToggleSave || onToggleFavorite;
@@ -112,6 +124,15 @@ export function TemporaryRentCard({
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     className="object-cover transition-transform duration-500 group-hover:scale-105"
                 />
+
+                {/* Urgent / Featured Badge */}
+                {(isUrgent || isFeatured) && (
+                    <div className="absolute top-2.5 right-2.5 z-10">
+                        <div className="bg-rose-600 text-white text-[9px] sm:text-[10px] font-black px-2 py-0.5 rounded-md shadow-sm">
+                            <span>فوری</span>
+                        </div>
+                    </div>
+                )}
 
                 {mediaIds[currentImageIndex]?.type === "VIDEO" && (
                     <div className="absolute bottom-2.5 right-2.5 bg-black/60 backdrop-blur-xs text-white text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1 z-10 font-medium">
@@ -201,6 +222,25 @@ export function TemporaryRentCard({
                             )}
                             {maxGuests && rooms && <span>•</span>}
                             {rooms && <span>{toPersianDigits(rooms)} خوابه</span>}
+                        </div>
+                    )}
+
+                    {/* Publisher Showcase Badge */}
+                    {publisher && publisher.type !== 'user' && publisher.name && (
+                        <div className="mt-1.5 flex items-center">
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-gray-50 border border-gray-200/60 text-[10px] text-text-main font-bold">
+                                {publisher.avatar ? (
+                                    <img
+                                        src={publisher.avatar}
+                                        alt={publisher.name}
+                                        className="w-3.5 h-3.5 rounded-full object-cover shrink-0"
+                                    />
+                                ) : null}
+                                <span className="truncate max-w-[90px]">{publisher.name}</span>
+                                {publisher.isVerified && (
+                                    <ShieldCheck className="w-3 h-3 text-primary shrink-0" />
+                                )}
+                            </span>
                         </div>
                     )}
                 </div>

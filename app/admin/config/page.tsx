@@ -54,6 +54,8 @@ import {
     useAdminUpdateWelcomePackage,
 } from "@/hooks/useSubscription";
 import { useAdminPermissions } from "@/hooks/useAdminPermissions";
+import { useAdminTariffs, useUpdateTariff } from "@/hooks/useTariffs";
+import { TariffDetail } from "@/services/tariff.service";
 import { normalizeApiError } from "@/lib/api/error-handler";
 import { toPersianDigits } from "@/lib/utils";
 
@@ -71,6 +73,167 @@ function formatRials(rialAmount: string | number | undefined | null): string {
     const num = typeof rialAmount === "string" ? parseFloat(rialAmount) : rialAmount;
     if (isNaN(num) || num === 0) return "۰ ریال";
     return `${new Intl.NumberFormat("fa-IR").format(num)} ریال`;
+}
+
+const TARIFF_META: Record<
+    string,
+    { title: string; category: "LISTING" | "TEMP_RENT"; desc: string; icon: LucideIcon }
+> = {
+    LISTING_PUBLICATION: {
+        title: "هزینه انتشار آگهی عادی",
+        category: "LISTING",
+        desc: "هزینه انتشار هر آگهی فروش یا رهن و اجاره توسط کاربر عادی یا مازاد بر سهمیه مشاور",
+        icon: Building2,
+    },
+    LISTING_URGENT: {
+        title: "نشان فوری آگهی عادی",
+        category: "LISTING",
+        desc: "تعرفه افزودن نشان فوری (فروش/اجاره فوری) به آگهی‌های ملکی عادی",
+        icon: Zap,
+    },
+    LISTING_LADDER: {
+        title: "نردبان آگهی عادی",
+        category: "LISTING",
+        desc: "تعرفه بروزرسانی تاریخ و انتقال آگهی عادی به ابتدای فهرست نتایج",
+        icon: TrendingUp,
+    },
+    TEMPORARY_RENTAL_PUBLICATION: {
+        title: "هزینه انتشار اقامتگاه موقت",
+        category: "TEMP_RENT",
+        desc: "هزینه انتشار اقامتگاه اجاره روزانه برای میزبان در صورت اتمام سهمیه پلن فعال",
+        icon: Home,
+    },
+    TEMPORARY_RENTAL_URGENT: {
+        title: "نشان فوری اقامتگاه موقت",
+        category: "TEMP_RENT",
+        desc: "تعرفه افزودن نشان فوری به کارت اقامتگاه روزانه و موقت",
+        icon: Zap,
+    },
+    TEMPORARY_RENTAL_LADDER: {
+        title: "نردبان اقامتگاه موقت",
+        category: "TEMP_RENT",
+        desc: "تعرفه نردبان و ارتقای اقامتگاه موقت به بالای لیست جستجوی مسافران",
+        icon: TrendingUp,
+    },
+};
+
+interface TariffEditorCardProps {
+    tariff: TariffDetail;
+    canManage: boolean;
+    onUpdate: (key: string, amountIrr: string, isEnabled: boolean) => Promise<void>;
+    isUpdating: boolean;
+}
+
+function TariffEditorCard({ tariff, canManage, onUpdate, isUpdating }: TariffEditorCardProps) {
+    const meta = TARIFF_META[tariff.key] || {
+        title: tariff.name || tariff.key,
+        category: "LISTING" as const,
+        desc: tariff.description || "",
+        icon: Coins,
+    };
+    const Icon = meta.icon;
+    const [amount, setAmount] = useState(tariff.amountIrr);
+    const [isEnabled, setIsEnabled] = useState(tariff.isEnabled);
+    const [dirty, setDirty] = useState(false);
+
+    React.useEffect(() => {
+        if (!dirty) {
+            setAmount(tariff.amountIrr);
+            setIsEnabled(tariff.isEnabled);
+        }
+    }, [tariff.amountIrr, tariff.isEnabled, dirty]);
+
+    const handleSave = async () => {
+        await onUpdate(tariff.key, amount, isEnabled);
+        setDirty(false);
+    };
+
+    return (
+        <div
+            className={`bg-white rounded-2xl border p-5 transition-all shadow-sm flex flex-col justify-between ${
+                isEnabled ? "border-gray-200" : "border-gray-200 bg-gray-50/70 opacity-80"
+            }`}
+        >
+            <div>
+                <div className="flex items-start justify-between gap-3 mb-3">
+                    <div className="flex items-center gap-2.5">
+                        <div
+                            className={`p-2.5 rounded-xl ${
+                                meta.category === "TEMP_RENT"
+                                    ? "bg-amber-50 text-amber-600"
+                                    : "bg-blue-50 text-blue-600"
+                            }`}
+                        >
+                            <Icon size={20} />
+                        </div>
+                        <div>
+                            <h4 className="font-bold text-sm text-gray-900">{meta.title}</h4>
+                            <span className="text-[10px] font-mono text-gray-400">{tariff.key}</span>
+                        </div>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setIsEnabled(!isEnabled);
+                            setDirty(true);
+                        }}
+                        disabled={!canManage}
+                        title={isEnabled ? "فعال" : "غیرفعال"}
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold transition-all ${
+                            isEnabled
+                                ? "bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100"
+                                : "bg-gray-100 text-gray-500 border border-gray-300 hover:bg-gray-200"
+                        }`}
+                    >
+                        <span
+                            className={`w-2 h-2 rounded-full ${
+                                isEnabled ? "bg-emerald-500 animate-pulse" : "bg-gray-400"
+                            }`}
+                        />
+                        {isEnabled ? "فعال" : "غیرفعال"}
+                    </button>
+                </div>
+
+                <p className="text-xs text-gray-500 mb-4 leading-relaxed min-h-[36px]">
+                    {meta.desc}
+                </p>
+
+                <div className="space-y-1.5 mb-4 bg-gray-50 p-3.5 rounded-xl border border-gray-100">
+                    <div className="flex justify-between items-center text-xs font-bold text-gray-700">
+                        <span>مبلغ تعرفه (ریال):</span>
+                        <span className="text-blue-700">{formatRialToToman(amount)}</span>
+                    </div>
+                    <input
+                        type="text"
+                        value={amount}
+                        onChange={(e) => {
+                            setAmount(e.target.value.replace(/[^0-9]/g, ""));
+                            setDirty(true);
+                        }}
+                        disabled={!canManage}
+                        className="w-full p-2.5 rounded-lg border border-gray-300 font-mono text-sm focus:ring-2 focus:ring-blue-500 outline-none text-left bg-white"
+                        placeholder="مبلغ به ریال"
+                    />
+                </div>
+            </div>
+
+            <div className="flex justify-between items-center pt-3 border-t border-gray-100">
+                <span className="text-[10px] text-gray-400">
+                    {tariff.updatedAt
+                        ? `بروزرسانی: ${new Date(tariff.updatedAt).toLocaleDateString("fa-IR")}`
+                        : "تعرفه پایه سیستمی"}
+                </span>
+                <button
+                    onClick={handleSave}
+                    disabled={!canManage || isUpdating || !dirty}
+                    className="flex items-center gap-1.5 px-3.5 py-1.5 bg-blue-600 text-white text-xs font-bold rounded-lg shadow hover:bg-blue-700 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                    <Save size={14} />
+                    ذخیره تغییرات
+                </button>
+            </div>
+        </div>
+    );
 }
 
 // Dynamic Icon Component
@@ -192,8 +355,39 @@ export default function AdminConfigPage() {
     const canManageConfig = isSuperAdmin || hasPermission("config.manage");
 
     // Tabs
-    const [activeTab, setActiveTab] = useState<"plans" | "welcome" | "limits">("plans");
+    const [activeTab, setActiveTab] = useState<"plans" | "welcome" | "limits" | "tariffs">("plans");
     const [planRoleFilter, setPlanRoleFilter] = useState<"ALL" | "agent" | "landlord">("ALL");
+
+    // Platform Tariffs Queries & Mutations
+    const {
+        data: rawTariffs,
+        isLoading: tariffsLoading,
+        isError: tariffsError,
+        refetch: refetchTariffs,
+    } = useAdminTariffs();
+    const updateTariffMutation = useUpdateTariff();
+
+    const tariffs: TariffDetail[] = useMemo(() => {
+        if (Array.isArray(rawTariffs)) return rawTariffs;
+        if (rawTariffs && typeof rawTariffs === "object" && "data" in rawTariffs) {
+            const nested = (rawTariffs as { data: TariffDetail[] }).data;
+            if (Array.isArray(nested)) return nested;
+        }
+        return [];
+    }, [rawTariffs]);
+
+    const handleUpdateTariff = async (key: string, amountIrr: string, isEnabled: boolean) => {
+        if (!canManageConfig) {
+            toast.error("شما مجوز تغییر تعرفه‌های پلتفرم را ندارید.");
+            return;
+        }
+        try {
+            await updateTariffMutation.mutateAsync({ key, amountIrr, isEnabled });
+            toast.success("تعرفه با موفقیت به‌روزرسانی شد.");
+        } catch (err: unknown) {
+            toast.error("خطا در به‌روزرسانی تعرفه: " + normalizeApiError(err instanceof Error ? err : new Error(String(err))));
+        }
+    };
 
     // Plan Queries & Mutations
     const {
@@ -579,6 +773,21 @@ export default function AdminConfigPage() {
                 >
                     <ShieldCheck size={18} />
                     <span>محدودیت‌های پایه سیستم</span>
+                </button>
+
+                <button
+                    onClick={() => setActiveTab("tariffs")}
+                    className={`flex items-center gap-2.5 px-5 py-3 rounded-xl text-sm font-bold transition-all relative ${
+                        activeTab === "tariffs"
+                            ? "bg-white text-blue-600 shadow-sm border border-gray-200"
+                            : "text-gray-600 hover:text-gray-900 hover:bg-gray-100/60"
+                    }`}
+                >
+                    <Coins size={18} />
+                    <span>تعرفه‌های ۶گانه سیستم</span>
+                    <span className="px-2 py-0.5 rounded-full text-xs bg-amber-50 text-amber-700 font-mono font-bold">
+                        {toPersianDigits(tariffs.length || 6)}
+                    </span>
                 </button>
             </div>
 
@@ -1146,6 +1355,106 @@ export default function AdminConfigPage() {
                             </div>
                         </div>
                     </div>
+                </div>
+            )}
+
+            {/* TAB 4: PLATFORM TARIFFS */}
+            {activeTab === "tariffs" && (
+                <div className="space-y-6">
+                    {/* Information Box */}
+                    <div className="p-5 bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl border border-amber-200 flex gap-4 text-amber-900">
+                        <Coins size={28} className="text-amber-600 shrink-0 mt-0.5" />
+                        <div className="text-xs leading-relaxed space-y-1">
+                            <h4 className="font-black text-sm text-amber-950">
+                                تعرفه‌های شش‌گانه مستقل پلتفرم (Platform Monetary Tariffs):
+                            </h4>
+                            <p>
+                                • کلیه مبالغ زیر به ریال در دیتابیس ثبت شده و به صورت کاملاً معتبر و لحظه‌ای در تمامی ماژول‌های آگهی، اقامتگاه، ارتقا و پرداخت اعمال می‌گردند.
+                            </p>
+                            <p>
+                                • تعرفه‌های آگهی عادی و اقامتگاه موقت، و همچنین ارتقای فوری و نردبان به صورت کاملاً تفکیک‌شده و مستقل مدیریت می‌شوند و تغییر یک تعرفه هیچ اثری بر سایر تعرفه‌ها ندارد.
+                            </p>
+                            <p>
+                                • در زمان انتشار یا ارتقا، در صورت عدم وجود سهمیه رایگان در پلن کاربر، مبلغ به صورت خودکار و اتمیک از کیف پول کاربر کسر می‌گردد.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="flex justify-between items-center bg-white p-4 rounded-xl border border-gray-200">
+                        <span className="text-xs font-bold text-gray-600">
+                            فهرست نرخ‌گذاری خدمات فعال پلتفرم ملک‌تودی
+                        </span>
+                        <button
+                            onClick={() => refetchTariffs()}
+                            disabled={tariffsLoading}
+                            className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-800 transition-colors"
+                        >
+                            <RefreshCcw size={14} className={tariffsLoading ? "animate-spin" : ""} />
+                            به‌روزرسانی تعرفه‌ها
+                        </button>
+                    </div>
+
+                    {tariffsLoading ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {[1, 2, 3, 4, 5, 6].map((i) => (
+                                <div key={i} className="h-64 bg-gray-100 rounded-2xl animate-pulse" />
+                            ))}
+                        </div>
+                    ) : tariffsError ? (
+                        <div className="p-8 bg-red-50 rounded-2xl border border-red-200 text-center text-red-700">
+                            <AlertCircle size={36} className="mx-auto mb-2 text-red-500" />
+                            <p className="font-bold">خطا در دریافت فهرست تعرفه‌ها</p>
+                            <p className="text-xs mt-1 text-red-600">لطفاً اتصال اینترنت خود را بررسی و دوباره تلاش نمایید.</p>
+                        </div>
+                    ) : (
+                        <div className="space-y-8">
+                            {/* Section 1: Normal Listing Tariffs */}
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-2 pb-2 border-b border-gray-200">
+                                    <Building2 className="w-5 h-5 text-blue-600" />
+                                    <h3 className="font-black text-base text-gray-900">
+                                        تعرفه‌های آگهی‌های ملکی عادی (خرید، فروش، رهن و اجاره)
+                                    </h3>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {tariffs
+                                        .filter((t) => t.key.startsWith("LISTING_"))
+                                        .map((tariff) => (
+                                            <TariffEditorCard
+                                                key={tariff.key}
+                                                tariff={tariff}
+                                                canManage={canManageConfig}
+                                                onUpdate={handleUpdateTariff}
+                                                isUpdating={updateTariffMutation.isPending}
+                                            />
+                                        ))}
+                                </div>
+                            </div>
+
+                            {/* Section 2: Temporary Rental Tariffs */}
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-2 pb-2 border-b border-gray-200">
+                                    <Home className="w-5 h-5 text-amber-600" />
+                                    <h3 className="font-black text-base text-gray-900">
+                                        تعرفه‌های اقامتگاه‌های اجاره روزانه و موقت
+                                    </h3>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {tariffs
+                                        .filter((t) => t.key.startsWith("TEMPORARY_RENTAL_"))
+                                        .map((tariff) => (
+                                            <TariffEditorCard
+                                                key={tariff.key}
+                                                tariff={tariff}
+                                                canManage={canManageConfig}
+                                                onUpdate={handleUpdateTariff}
+                                                isUpdating={updateTariffMutation.isPending}
+                                            />
+                                        ))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
 

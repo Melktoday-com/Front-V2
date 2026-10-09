@@ -24,6 +24,7 @@ import {
     Plus,
     Send,
     Share2,
+    Sparkles,
     Trash2,
 } from "lucide-react";
 import Image from "next/image";
@@ -32,6 +33,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useUserStatus } from "@/hooks/useUserStatus";
 import { AccountStatusBanner } from "@/components/ui/AccountStatusBanner";
+import { PromotionModal } from "@/components/promotions/PromotionModal";
 
 type FilterTab = "ALL" | AdStatus;
 
@@ -174,6 +176,7 @@ interface MyAdCardProps {
     onArchive: (ad: AdSummary) => void;
     onDelete: (ad: AdSummary) => void;
     onShare: (adId: string) => void;
+    onPromote?: (ad: AdSummary) => void;
 }
 
 function MyAdCard({
@@ -183,6 +186,7 @@ function MyAdCard({
     onArchive,
     onDelete,
     onShare,
+    onPromote,
 }: MyAdCardProps) {
     const router = useRouter();
     const [imgSrc, setImgSrc] = useState<string>(
@@ -290,6 +294,16 @@ function MyAdCard({
                             </button>
                         )}
 
+                        {ad.status === AdStatus.PUBLISHED && onPromote && (
+                            <button
+                                onClick={() => onPromote(ad)}
+                                className="bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs px-3 py-2 rounded-xl flex items-center gap-1.5 transition-colors active:scale-95 shadow-xs"
+                            >
+                                <Sparkles className="w-3.5 h-3.5" />
+                                <span>ارتقا</span>
+                            </button>
+                        )}
+
                         {[AdStatus.DRAFT, AdStatus.PENDING_APPROVAL, AdStatus.REJECTED, AdStatus.PUBLISHED].includes(ad.status) && (
                             <button
                                 onClick={() => router.push(`/ads/submit?edit=${ad.adId}`)}
@@ -355,6 +369,7 @@ export default function MyAdsScene() {
     const [submittingId, setSubmittingId] = useState<string | null>(null);
     const [deleteTarget, setDeleteTarget] = useState<AdSummary | null>(null);
     const [archiveTarget, setArchiveTarget] = useState<AdSummary | null>(null);
+    const [promotingAd, setPromotingAd] = useState<{ id: string; title: string } | null>(null);
 
     const observerTargetRef = useRef<HTMLDivElement | null>(null);
 
@@ -691,6 +706,7 @@ export default function MyAdsScene() {
                                             onArchive={(target) => setArchiveTarget(target)}
                                             onDelete={(target) => setDeleteTarget(target)}
                                             onShare={handleShare}
+                                            onPromote={(target) => setPromotingAd({ id: target.adId, title: target.title })}
                                         />
                                     ))}
                                 </div>
@@ -860,6 +876,15 @@ export default function MyAdsScene() {
                     </div>
                 </div>
             )}
+
+            {/* Promotion Modal */}
+            <PromotionModal
+                isOpen={Boolean(promotingAd)}
+                onClose={() => setPromotingAd(null)}
+                listingId={promotingAd?.id || ""}
+                listingTitle={promotingAd?.title || ""}
+                itemType="LISTING"
+            />
         </div>
     );
 }
