@@ -230,7 +230,6 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
           className="inline-flex items-center gap-1.5 text-xs font-black text-brand hover:text-primary transition-colors bg-white px-3.5 py-2 rounded-xl border border-slate-200 shadow-2xs"
         >
           <ArrowRight className="w-4 h-4" />
-          <span>بازگشت به بخش کاوش</span>
         </Link>
 
         {post.category && (
