@@ -344,7 +344,7 @@ export default function ResidenceDetailScene() {
                             </div>
                             <div>
                                 <h3 className="font-bold text-base text-brand">
-                                    میزبان: {residence.owner?.fullName || "میزبان مَلک‌تودی"}
+                                    میزبان: {residence.owner?.fullName || "میزبان ملک تودی"}
                                 </h3>
                                 <p className="text-xs text-text-light mt-0.5 flex items-center gap-1">
                                     <ShieldCheck className="w-3.5 h-3.5 text-primary" />
