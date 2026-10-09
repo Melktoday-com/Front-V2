@@ -153,6 +153,12 @@ export function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/rules" className="hover:text-primary transition-colors flex items-center gap-1.5 font-bold text-white">
+                  <ChevronLeft className="w-3 h-3 text-primary" />
+                  <span>قوانین و مقررات</span>
+                </Link>
+              </li>
+              <li>
                 <Link href="/ads/submit" className="hover:text-primary transition-colors flex items-center gap-1.5">
                   <ChevronLeft className="w-3 h-3 text-primary/70" />
                   <span>ثبت آگهی ملک</span>
@@ -298,9 +304,13 @@ export function Footer() {
             <span> می‌باشد.</span>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 sm:gap-4">
             <Link href="/about" className="hover:text-primary transition-colors text-white/70">
               درباره ما
+            </Link>
+            <span className="text-white/20">•</span>
+            <Link href="/rules" className="hover:text-primary transition-colors text-white/70">
+              قوانین و مقررات
             </Link>
             <span className="text-white/20">•</span>
             <button
