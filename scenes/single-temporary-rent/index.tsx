@@ -64,6 +64,9 @@ export default function ResidenceDetailScene() {
 
     const { data: residence, isLoading, error, refetch } = useTemporaryRentAdDetail(id);
     const isOwner = Boolean(user && residence?.ownerId && user.userId === residence.ownerId);
+    const isPublished = residence?.status === 'PUBLISHED';
+    const isPromoted = Boolean(residence?.isFeatured || residence?.isUrgent);
+    const isEligibleForPromotion = isOwner && isPublished && !isPromoted;
 
     const { data: similarResidences } = useTemporaryRentAds(
         {
@@ -352,14 +355,16 @@ export default function ResidenceDetailScene() {
                                 </p>
                             </div>
                         </div>
-                        <button
-                            onClick={handleChat}
-                            disabled={chatMutation.isPending}
-                            className="flex items-center gap-1.5 px-4 py-2 bg-white rounded-xl border border-gray-200 text-xs font-bold text-brand hover:border-primary shadow-xs transition-colors"
-                        >
-                            <MessageCircle className="w-4 h-4 text-primary" />
-                            <span>ارسال پیام</span>
-                        </button>
+                        {!isOwner && (
+                            <button
+                                onClick={handleChat}
+                                disabled={chatMutation.isPending}
+                                className="flex items-center gap-1.5 px-4 py-2 bg-white rounded-xl border border-gray-200 text-xs font-bold text-brand hover:border-primary shadow-xs transition-colors"
+                            >
+                                <MessageCircle className="w-4 h-4 text-primary" />
+                                <span>ارسال پیام</span>
+                            </button>
+                        )}
                     </div>
 
                     {/* Description */}
@@ -500,35 +505,69 @@ export default function ResidenceDetailScene() {
                             </div>
                         </div>
 
-                        {/* Booking CTA Button */}
-                        <button
-                            onClick={handleChat}
-                            disabled={chatMutation.isPending}
-                            className="w-full py-4 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black text-sm rounded-2xl shadow-lg shadow-orange-500/25 active:scale-98 transition-all flex items-center justify-center gap-2"
-                        >
-                            <MessageCircle className="w-5 h-5" />
-                            <span>درخواست رزرو و گفتگو با میزبان</span>
-                        </button>
+                        {isOwner ? (
+                            <div className="space-y-3">
+                                <div className="p-3.5 bg-amber-50/70 border border-amber-200/80 rounded-2xl flex items-center gap-2.5 text-xs font-bold text-amber-950">
+                                    <ShieldCheck className="w-4 h-4 text-amber-600 shrink-0" />
+                                    <span>این اقامتگاه توسط شما ثبت شده است.</span>
+                                </div>
 
-                        {/* Contact Host Direct CTA */}
-                        <button
-                            onClick={handleOpenContact}
-                            disabled={isLoadingContact}
-                            className="w-full py-3 bg-gray-50 hover:bg-gray-100 text-brand font-bold text-xs rounded-2xl border border-gray-200 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
-                        >
-                            <Phone className="w-4 h-4 text-emerald-600" />
-                            <span>{isLoadingContact ? "در حال دریافت..." : "اطلاعات تماس با میزبان"}</span>
-                        </button>
+                                {/* Owner Promotion CTA if eligible */}
+                                {isEligibleForPromotion && (
+                                    <button
+                                        onClick={() => setIsPromotionModalOpen(true)}
+                                        className="w-full py-3.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-black text-sm rounded-2xl shadow-md shadow-amber-500/20 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                                    >
+                                        <Sparkles className="w-4 h-4" />
+                                        <span>ارتقای اقامتگاه (فوری / نردبان)</span>
+                                    </button>
+                                )}
 
-                        {/* Owner Promotion CTA */}
-                        {isOwner && (
-                            <button
-                                onClick={() => setIsPromotionModalOpen(true)}
-                                className="w-full py-3 bg-amber-500 hover:bg-amber-600 text-white font-black text-xs rounded-2xl shadow-md shadow-amber-500/20 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer"
-                            >
-                                <Sparkles className="w-4 h-4" />
-                                <span>ارتقای اقامتگاه (فوری / نردبان)</span>
-                            </button>
+                                {/* Already promoted indicator */}
+                                {isPublished && isPromoted && (
+                                    <div className="flex items-center justify-center gap-2 w-full py-3 bg-amber-50 border border-amber-200 text-amber-800 font-black text-xs rounded-2xl shadow-xs">
+                                        <Sparkles className="w-4 h-4 text-amber-600" />
+                                        <span>اقامتگاه شما ارتقا یافته است (فوری / ویژه)</span>
+                                    </div>
+                                )}
+
+                                {!isPublished && (
+                                    <div className="p-2.5 bg-gray-50 border border-gray-200 text-gray-600 text-xs text-center rounded-xl font-medium">
+                                        {residence?.status === 'PENDING_APPROVAL'
+                                            ? "اقامتگاه در انتظار تایید کارشناسان است"
+                                            : "اقامتگاه در حالت فعال نمی‌باشد"}
+                                    </div>
+                                )}
+
+                                <button
+                                    onClick={() => router.push('/profile/temporary-rent')}
+                                    className="w-full py-3 bg-brand/5 hover:bg-brand/10 text-brand font-bold text-xs rounded-2xl border border-brand/20 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+                                >
+                                    <span>مدیریت در پنل اقامتگاه‌ها</span>
+                                </button>
+                            </div>
+                        ) : (
+                            <>
+                                {/* Booking CTA Button */}
+                                <button
+                                    onClick={handleChat}
+                                    disabled={chatMutation.isPending}
+                                    className="w-full py-4 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black text-sm rounded-2xl shadow-lg shadow-orange-500/25 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                                >
+                                    <MessageCircle className="w-5 h-5" />
+                                    <span>درخواست رزرو و گفتگو با میزبان</span>
+                                </button>
+
+                                {/* Contact Host Direct CTA */}
+                                <button
+                                    onClick={handleOpenContact}
+                                    disabled={isLoadingContact}
+                                    className="w-full py-3 bg-gray-50 hover:bg-gray-100 text-brand font-bold text-xs rounded-2xl border border-gray-200 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+                                >
+                                    <Phone className="w-4 h-4 text-emerald-600" />
+                                    <span>{isLoadingContact ? "در حال دریافت..." : "اطلاعات تماس با میزبان"}</span>
+                                </button>
+                            </>
                         )}
 
                         <p className="text-[10px] text-text-light text-center leading-relaxed">
@@ -571,31 +610,50 @@ export default function ResidenceDetailScene() {
                     <span className="text-[11px] text-text-light font-medium">هر شب</span>
                 </div>
                 <div className="flex items-center gap-2">
-                    <button
-                        onClick={handleOpenContact}
-                        disabled={isLoadingContact}
-                        className="p-2.5 bg-gray-100 hover:bg-gray-200 text-brand rounded-xl border border-gray-200 transition-all flex items-center justify-center cursor-pointer"
-                        title="تماس با میزبان"
-                    >
-                        <Phone className="w-4 h-4 text-emerald-600" />
-                    </button>
-                    {isOwner && (
-                        <button
-                            onClick={() => setIsPromotionModalOpen(true)}
-                            className="p-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl shadow-xs transition-all flex items-center justify-center cursor-pointer"
-                            title="ارتقای اقامتگاه"
-                        >
-                            <Sparkles className="w-4 h-4" />
-                        </button>
+                    {isOwner ? (
+                        <>
+                            {isEligibleForPromotion && (
+                                <button
+                                    onClick={() => setIsPromotionModalOpen(true)}
+                                    className="flex items-center gap-1 px-3 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl text-xs font-black shadow-md shadow-orange-500/20 active:scale-95 transition-transform cursor-pointer"
+                                >
+                                    <Sparkles className="w-3.5 h-3.5" />
+                                    <span>ارتقا</span>
+                                </button>
+                            )}
+                            {isPublished && isPromoted && (
+                                <span className="flex items-center gap-1 px-2.5 py-2 bg-amber-100 text-amber-800 rounded-xl text-xs font-bold">
+                                    <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                                    <span>ارتقا یافته</span>
+                                </span>
+                            )}
+                            <button
+                                onClick={() => router.push('/profile/temporary-rent')}
+                                className="px-4 py-2.5 bg-brand text-white rounded-xl text-xs font-bold active:scale-95 transition-transform cursor-pointer"
+                            >
+                                <span>مدیریت</span>
+                            </button>
+                        </>
+                    ) : (
+                        <>
+                            <button
+                                onClick={handleOpenContact}
+                                disabled={isLoadingContact}
+                                className="p-2.5 bg-gray-100 hover:bg-gray-200 text-brand rounded-xl border border-gray-200 transition-all flex items-center justify-center cursor-pointer"
+                                title="تماس با میزبان"
+                            >
+                                <Phone className="w-4 h-4 text-emerald-600" />
+                            </button>
+                            <button
+                                onClick={handleChat}
+                                disabled={chatMutation.isPending}
+                                className="px-5 py-2.5 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl text-xs font-black shadow-md shadow-orange-500/25 active:scale-95 transition-transform flex items-center gap-1.5 cursor-pointer"
+                            >
+                                <MessageCircle className="w-4 h-4" />
+                                <span>رزرو و گفتگو</span>
+                            </button>
+                        </>
                     )}
-                    <button
-                        onClick={handleChat}
-                        disabled={chatMutation.isPending}
-                        className="px-5 py-2.5 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl text-xs font-black shadow-md shadow-orange-500/25 active:scale-95 transition-transform flex items-center gap-1.5 cursor-pointer"
-                    >
-                        <MessageCircle className="w-4 h-4" />
-                        <span>رزرو و گفتگو</span>
-                    </button>
                 </div>
             </div>
 

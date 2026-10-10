@@ -253,7 +253,7 @@ export default function TemporaryRentPanelScene() {
                                                 انتشار آگهی
                                             </Button>
                                         )}
-                                        {ad.status === 'PUBLISHED' && (
+                                        {ad.status === 'PUBLISHED' && !ad.isFeatured && !ad.isUrgent && (
                                             <Button
                                                 onClick={() => setPromotingAd({ id: ad.id, title: ad.title })}
                                                 className="rounded-2xl gap-2 font-black px-6 bg-amber-500 hover:bg-amber-600 text-white shadow-sm"
@@ -261,6 +261,12 @@ export default function TemporaryRentPanelScene() {
                                                 <Sparkles className="w-4 h-4" />
                                                 ارتقا (فوری / نردبان)
                                             </Button>
+                                        )}
+                                        {ad.status === 'PUBLISHED' && (ad.isFeatured || ad.isUrgent) && (
+                                            <span className="bg-amber-50 text-amber-700 border border-amber-200/80 font-black text-xs px-4 py-2.5 rounded-2xl flex items-center gap-1.5 shadow-xs">
+                                                <Sparkles className="w-4 h-4 text-amber-500" />
+                                                <span>ارتقا یافته (فوری)</span>
+                                            </span>
                                         )}
                                         <Button
                                             variant="outline"

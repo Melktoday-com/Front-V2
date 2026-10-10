@@ -24,6 +24,8 @@ export interface TemporaryRentAdSummary {
     createdAt: string;
     maxGuests?: number;
     isSaved?: boolean;
+    isFeatured?: boolean;
+    isUrgent?: boolean;
 }
 
 export interface ListTemporaryRentQuery {

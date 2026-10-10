@@ -19,6 +19,7 @@ import {
     MapPin,
     Maximize2,
     MessageCircle,
+    Pencil,
     Phone,
     Play,
     Share2,
@@ -39,6 +40,7 @@ import { useCategoryLookup } from "@/hooks/useCategoryLookup";
 import { PropertyCard } from "@/components/ui/PropertyCard";
 import { useToggleSaveAd } from "@/hooks/useFavorites";
 import { PromotionModal } from "@/components/promotions/PromotionModal";
+import { AdStatus } from "@/types/api/enums";
 
 const Map = dynamic(() => import("@/components/ui/Map"), {
     ssr: false,
@@ -65,6 +67,9 @@ export default function SingleAdScene() {
     const { data: contact } = useAdContact(id);
 
     const isOwner = isLoggedIn && !!user?.userId && user?.userId === ad?.ownerId;
+    const isPublished = ad?.status === AdStatus.PUBLISHED || (ad?.status as string) === "PUBLISHED";
+    const isPromoted = Boolean(ad?.isFeatured);
+    const isEligibleForPromotion = isOwner && isPublished && !isPromoted;
 
     useEffect(() => {
         if (ad?.isSaved !== undefined) {
@@ -539,33 +544,77 @@ export default function SingleAdScene() {
                         )}
 
                         <div className="space-y-3 pt-2">
-                            {/* Owner Promotion Action Button */}
-                            {isOwner && (
-                                <button
-                                    onClick={() => setIsPromotionModalOpen(true)}
-                                    className="flex items-center justify-center gap-2 w-full py-3.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-black text-sm rounded-2xl shadow-md shadow-orange-500/20 transition-all cursor-pointer"
-                                >
-                                    <Sparkles className="w-4 h-4" />
-                                    <span>ارتقای آگهی (فوری / نردبان)</span>
-                                </button>
+                            {isOwner ? (
+                                <>
+                                    <div className="p-3.5 bg-amber-50/70 border border-amber-200/80 rounded-2xl flex items-center gap-2.5 text-xs font-bold text-amber-950">
+                                        <ShieldCheck className="w-4 h-4 text-amber-600 shrink-0" />
+                                        <span>این آگهی توسط شما ثبت شده است.</span>
+                                    </div>
+
+                                    {/* Promotion Action if eligible */}
+                                    {isEligibleForPromotion && (
+                                        <button
+                                            onClick={() => setIsPromotionModalOpen(true)}
+                                            className="flex items-center justify-center gap-2 w-full py-3.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-black text-sm rounded-2xl shadow-md shadow-orange-500/20 active:scale-98 transition-all cursor-pointer"
+                                        >
+                                            <Sparkles className="w-4 h-4" />
+                                            <span>ارتقای آگهی (فوری / نردبان)</span>
+                                        </button>
+                                    )}
+
+                                    {/* Already promoted indicator */}
+                                    {isPublished && isPromoted && (
+                                        <div className="flex items-center justify-center gap-2 w-full py-3 bg-amber-50 border border-amber-200 text-amber-800 font-black text-xs rounded-2xl shadow-xs">
+                                            <Sparkles className="w-4 h-4 text-amber-600" />
+                                            <span>آگهی شما ارتقا یافته است (فوری / ویژه)</span>
+                                        </div>
+                                    )}
+
+                                    {/* Not published notice */}
+                                    {!isPublished && (
+                                        <div className="p-2.5 bg-gray-50 border border-gray-200 text-gray-600 text-xs text-center rounded-xl font-medium">
+                                            {ad?.status === AdStatus.PENDING_APPROVAL
+                                                ? "آگهی در انتظار بررسی و تایید کارشناسان است"
+                                                : "آگهی در حالت فعال نمی‌باشد"}
+                                        </div>
+                                    )}
+
+                                    {/* Owner edit action */}
+                                    <button
+                                        onClick={() => router.push(`/ads/submit?edit=${ad.adId}`)}
+                                        className="flex items-center justify-center gap-2 w-full py-3 bg-brand/5 hover:bg-brand/10 text-brand font-bold text-xs rounded-2xl border border-brand/20 transition-all cursor-pointer active:scale-98"
+                                    >
+                                        <Pencil className="w-4 h-4" />
+                                        <span>ویرایش اطلاعات آگهی</span>
+                                    </button>
+
+                                    <button
+                                        onClick={() => router.push(`/profile/ads`)}
+                                        className="w-full py-2 text-center text-xs text-secondary hover:text-brand font-bold transition-colors cursor-pointer"
+                                    >
+                                        مدیریت در پنل کاربری
+                                    </button>
+                                </>
+                            ) : (
+                                <>
+                                    <button
+                                        onClick={() => setIsContactModalOpen(true)}
+                                        className="flex items-center justify-center gap-2 w-full py-3.5 bg-primary text-white font-bold text-sm rounded-2xl shadow-md hover:bg-primary/90 transition-all cursor-pointer"
+                                    >
+                                        <Phone className="w-4 h-4" />
+                                        <span>اطلاعات تماس آگهی‌دهنده</span>
+                                    </button>
+
+                                    <button
+                                        onClick={handleChat}
+                                        disabled={chatMutation.isPending}
+                                        className="flex items-center justify-center gap-2 w-full py-3.5 bg-brand text-white font-bold text-sm rounded-2xl shadow-md hover:bg-brand/90 transition-all disabled:opacity-50 cursor-pointer"
+                                    >
+                                        <MessageCircle className="w-4 h-4" />
+                                        <span>شروع گفتگوی آنلاین</span>
+                                    </button>
+                                </>
                             )}
-
-                            <button
-                                onClick={() => setIsContactModalOpen(true)}
-                                className="flex items-center justify-center gap-2 w-full py-3.5 bg-primary text-white font-bold text-sm rounded-2xl shadow-md hover:bg-primary/90 transition-all cursor-pointer"
-                            >
-                                <Phone className="w-4 h-4" />
-                                <span>اطلاعات تماس آگهی‌دهنده</span>
-                            </button>
-
-                            <button
-                                onClick={handleChat}
-                                disabled={chatMutation.isPending}
-                                className="flex items-center justify-center gap-2 w-full py-3.5 bg-brand text-white font-bold text-sm rounded-2xl shadow-md hover:bg-brand/90 transition-all disabled:opacity-50 cursor-pointer"
-                            >
-                                <MessageCircle className="w-4 h-4" />
-                                <span>شروع گفتگوی آنلاین</span>
-                            </button>
                         </div>
 
                         <p className="text-[11px] text-text-light text-center leading-relaxed">
@@ -611,30 +660,50 @@ export default function SingleAdScene() {
                     <span className="text-sm font-black text-brand truncate">{priceMain}</span>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                    {isOwner && (
-                        <button
-                            onClick={() => setIsPromotionModalOpen(true)}
-                            className="flex items-center gap-1 px-3 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl text-xs font-black shadow-md shadow-orange-500/20 active:scale-95 transition-transform cursor-pointer"
-                        >
-                            <Sparkles className="w-3.5 h-3.5" />
-                            <span>ارتقا</span>
-                        </button>
+                    {isOwner ? (
+                        <>
+                            {isEligibleForPromotion && (
+                                <button
+                                    onClick={() => setIsPromotionModalOpen(true)}
+                                    className="flex items-center gap-1 px-3 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl text-xs font-black shadow-md shadow-orange-500/20 active:scale-95 transition-transform cursor-pointer"
+                                >
+                                    <Sparkles className="w-3.5 h-3.5" />
+                                    <span>ارتقا</span>
+                                </button>
+                            )}
+                            {isPublished && isPromoted && (
+                                <span className="flex items-center gap-1 px-2.5 py-2 bg-amber-100 text-amber-800 rounded-xl text-xs font-bold">
+                                    <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                                    <span>ارتقا یافته</span>
+                                </span>
+                            )}
+                            <button
+                                onClick={() => router.push(`/ads/submit?edit=${ad.adId}`)}
+                                className="flex items-center gap-1.5 px-3 py-2.5 bg-brand text-white rounded-xl text-xs font-bold active:scale-95 transition-transform cursor-pointer"
+                            >
+                                <Pencil className="w-3.5 h-3.5" />
+                                <span>ویرایش</span>
+                            </button>
+                        </>
+                    ) : (
+                        <>
+                            <button
+                                onClick={() => setIsContactModalOpen(true)}
+                                className="flex items-center gap-1.5 px-4 py-2.5 bg-primary text-white rounded-xl text-xs font-bold shadow-md shadow-primary/25 active:scale-95 transition-transform cursor-pointer"
+                            >
+                                <Phone className="w-4 h-4" />
+                                <span>تماس</span>
+                            </button>
+                            <button
+                                onClick={handleChat}
+                                disabled={chatMutation.isPending}
+                                className="flex items-center gap-1.5 px-4 py-2.5 bg-brand text-white rounded-xl text-xs font-bold hover:bg-brand/90 active:scale-95 transition-transform cursor-pointer"
+                            >
+                                <MessageCircle className="w-4 h-4" />
+                                <span>چت</span>
+                            </button>
+                        </>
                     )}
-                    <button
-                        onClick={() => setIsContactModalOpen(true)}
-                        className="flex items-center gap-1.5 px-4 py-2.5 bg-primary text-white rounded-xl text-xs font-bold shadow-md shadow-primary/25 active:scale-95 transition-transform cursor-pointer"
-                    >
-                        <Phone className="w-4 h-4" />
-                        <span>تماس</span>
-                    </button>
-                    <button
-                        onClick={handleChat}
-                        disabled={chatMutation.isPending}
-                        className="flex items-center gap-1.5 px-4 py-2.5 bg-brand text-white rounded-xl text-xs font-bold hover:bg-brand/90 active:scale-95 transition-transform cursor-pointer"
-                    >
-                        <MessageCircle className="w-4 h-4" />
-                        <span>چت</span>
-                    </button>
                 </div>
             </div>
 

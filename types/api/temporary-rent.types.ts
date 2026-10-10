@@ -33,6 +33,8 @@ export interface TemporaryRentAd {
     createdAt: string;
     updatedAt: string;
     isSaved?: boolean;
+    isFeatured?: boolean;
+    isUrgent?: boolean;
     owner?: {
         fullName?: string;
         avatarUrl?: string;

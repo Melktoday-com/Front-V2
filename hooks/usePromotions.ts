@@ -18,6 +18,8 @@ export function useRequestPromotion() {
         onSuccess: (_data, variables) => {
             queryClient.invalidateQueries({ queryKey: ["ad", variables.listingId] });
             queryClient.invalidateQueries({ queryKey: ["ads"] });
+            queryClient.invalidateQueries({ queryKey: ["temporary-rent-ad", variables.listingId] });
+            queryClient.invalidateQueries({ queryKey: ["temporary-rent-ads"] });
             queryClient.invalidateQueries({ queryKey: ["subscription"] });
             queryClient.invalidateQueries({ queryKey: ["wallet"] });
         },

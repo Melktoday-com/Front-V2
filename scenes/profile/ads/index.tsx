@@ -294,7 +294,7 @@ function MyAdCard({
                             </button>
                         )}
 
-                        {ad.status === AdStatus.PUBLISHED && onPromote && (
+                        {ad.status === AdStatus.PUBLISHED && !ad.isFeatured && onPromote && (
                             <button
                                 onClick={() => onPromote(ad)}
                                 className="bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs px-3 py-2 rounded-xl flex items-center gap-1.5 transition-colors active:scale-95 shadow-xs"
@@ -302,6 +302,13 @@ function MyAdCard({
                                 <Sparkles className="w-3.5 h-3.5" />
                                 <span>ارتقا</span>
                             </button>
+                        )}
+
+                        {ad.status === AdStatus.PUBLISHED && ad.isFeatured && (
+                            <span className="bg-amber-50 text-amber-700 border border-amber-200/80 font-bold text-xs px-2.5 py-1.5 rounded-xl flex items-center gap-1">
+                                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                                <span>ارتقا یافته</span>
+                            </span>
                         )}
 
                         {[AdStatus.DRAFT, AdStatus.PENDING_APPROVAL, AdStatus.REJECTED, AdStatus.PUBLISHED].includes(ad.status) && (
