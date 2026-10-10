@@ -165,7 +165,13 @@ export function CitySelector({ isOpen, onClose, onSelect, currentCityId }: CityS
     if (!isOpen) return null;
 
     return (
-        <div role="dialog" aria-modal="true" aria-label="انتخاب شهر" className="fixed inset-0 z-10000 flex items-end lg:items-center justify-center">
+        <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="انتخاب شهر"
+            data-history-handled="true"
+            className="fixed inset-0 z-[10000] flex items-end lg:items-center justify-center"
+        >
             {/* Backdrop */}
             <div
                 className="absolute inset-0 bg-brand/40 backdrop-blur-sm animate-in fade-in duration-300"
@@ -197,7 +203,6 @@ export function CitySelector({ isOpen, onClose, onSelect, currentCityId }: CityS
                         <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-secondary" />
                         <input
                             type="text"
-                            autoFocus
                             placeholder="جستجوی نام شهر یا استان..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
@@ -270,12 +275,13 @@ export function CitySelector({ isOpen, onClose, onSelect, currentCityId }: CityS
                                         {province.cities.map((city) => (
                                             <button
                                                 key={city.id}
+                                                type="button"
                                                 onClick={() => {
                                                     handleSelectCity(city);
                                                     onClose();
                                                 }}
                                                 className={cn(
-                                                    "text-right px-3.5 py-2.5 rounded-[15px] text-sm font-bold transition-all border flex items-center justify-between gap-1",
+                                                    "text-right px-3.5 py-2.5 rounded-[15px] text-sm font-bold transition-all border flex items-center justify-between gap-1 cursor-pointer",
                                                     currentCityId === city.id
                                                         ? "bg-primary/10 border-primary text-primary"
                                                         : "bg-white border-soft-border text-brand hover:border-primary/30 hover:bg-soft-bg"

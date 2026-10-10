@@ -336,7 +336,7 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
             params.delete("cityId");
             params.delete("cityName");
         }
-        router.push(`/ads?${params.toString()}`);
+        router.replace(`/ads?${params.toString()}`, { scroll: false });
     };
 
     const handleCategorySelect = (catKey: string) => {

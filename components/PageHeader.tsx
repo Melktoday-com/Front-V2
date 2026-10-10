@@ -12,7 +12,7 @@ interface PageHeaderProps {
     onSearchChange?: (value: string) => void;
     cityName: string;
     cityId?: string;
-    onCitySelect: (city: { id: string; name: string }) => void;
+    onCitySelect: (city: { id: string; name: string; centerPoint?: { latitude: number; longitude: number } }) => void;
 }
 
 export function PageHeader({
