@@ -146,6 +146,14 @@ export function useHostProfile() {
   });
 }
 
+export function usePublicHostProfile(idOrSlug: string) {
+  return useQuery({
+    queryKey: ['public-host-profile', idOrSlug],
+    queryFn: () => showcaseService.getPublicHostProfile(idOrSlug),
+    enabled: !!idOrSlug,
+  });
+}
+
 export function useUpdateHostProfile() {
   const queryClient = useQueryClient();
 

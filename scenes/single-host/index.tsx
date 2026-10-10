@@ -4,19 +4,23 @@ import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSafeBack } from "@/hooks/useSafeBack";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   useShowcase,
   useShowcaseListings,
   useShowcasePosts,
   useToggleFollow,
   useToggleLikePost,
+  usePublicHostProfile,
 } from "@/hooks/useShowcase";
+import { useAds } from "@/hooks/useAds";
+import { PropertyCard } from "@/components/ui/PropertyCard";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/Button";
 import {
   BadgeCheck,
   BookOpen,
+  Building2,
   Calendar,
   ChevronLeft,
   ChevronRight,
@@ -33,9 +37,10 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { formatCurrency, toPersianDigits, cn, getMediaUrl, getMediaPosterUrl } from "@/lib/utils";
+import { formatCurrency, formatPrice, toPersianDigits, cn, getMediaUrl, getMediaPosterUrl } from "@/lib/utils";
 import { toast } from "sonner";
 import { UnifiedPost } from "@/types/api/post.types";
+import { AdSummary } from "@/types/api/ads.types";
 import { MarkdownRenderer } from "@/components/ui/MarkdownRenderer";
 
 interface SingleHostSceneProps {
@@ -44,13 +49,21 @@ interface SingleHostSceneProps {
 
 export default function SingleHostScene({ idOrSlug }: SingleHostSceneProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const requestedTab = searchParams.get("tab");
   const handleBack = useSafeBack("/");
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<"rentals" | "posts" | "about">("rentals");
+  const [activeTab, setActiveTab] = useState<"rentals" | "ads" | "posts" | "about">(() => {
+    if (requestedTab === "ads") return "ads";
+    if (requestedTab === "posts") return "posts";
+    if (requestedTab === "about") return "about";
+    return "rentals";
+  });
   const [selectedPost, setSelectedPost] = useState<UnifiedPost | null>(null);
 
   // Queries
   const { data: showcase, isLoading, error } = useShowcase("host", idOrSlug);
+  const { data: publicHost } = usePublicHostProfile(idOrSlug);
   const { data: rentalsData, isLoading: isLoadingRentals } = useShowcaseListings("host", idOrSlug);
   const { data: postsData, isLoading: isLoadingPosts } = useShowcasePosts("host", idOrSlug);
 
@@ -60,6 +73,31 @@ export default function SingleHostScene({ idOrSlug }: SingleHostSceneProps) {
 
   const header = showcase?.header;
   const about = showcase?.about;
+
+  // Resolve target owner ID for host's ads
+  const hostUserId = header?.userId || publicHost?.userId || (idOrSlug.includes("-") && idOrSlug.length === 36 ? idOrSlug : undefined);
+  const { data: adsResponse, isLoading: isLoadingAds } = useAds(
+    hostUserId ? { ownerId: hostUserId, limit: 30 } : {},
+    { enabled: !!hostUserId }
+  );
+
+  const ads = adsResponse?.items || [];
+  const hasAds = ads.length > 0;
+  const isHostOwner = Boolean(user?.userId && (hostUserId === user.userId || header?.id === user.userId || idOrSlug === user.userId));
+
+  const getPricingDisplay = (ad: AdSummary) => {
+    const pricing = ad.pricing;
+    if (!pricing || Object.keys(pricing).length === 0) return { price: "توافقی", unit: undefined };
+    if (pricing.mortgagePrice !== undefined && pricing.rentPrice !== undefined) {
+      return {
+        price: `رهن ${formatPrice(pricing.mortgagePrice, "")} - اجاره ${formatPrice(pricing.rentPrice, "")}`,
+        unit: "تومان",
+      };
+    }
+    if (pricing.nightlyPrice !== undefined) return { price: pricing.nightlyPrice, unit: "/شب" };
+    const firstValue = Object.values(pricing)[0];
+    return { price: firstValue ?? "توافقی", unit: undefined };
+  };
 
   const handleToggleFollow = () => {
     if (!user) {
@@ -186,6 +224,15 @@ export default function SingleHostScene({ idOrSlug }: SingleHostSceneProps) {
                     <Home className="w-3.5 h-3.5 text-secondary/70" />
                     {toPersianDigits(header.listingsCount || 0)} اقامتگاه فعال
                   </span>
+                  {hasAds && (
+                    <>
+                      <span>•</span>
+                      <span className="flex items-center gap-1">
+                        <Building2 className="w-3.5 h-3.5 text-secondary/70" />
+                        {toPersianDigits(ads.length)} آگهی فعال
+                      </span>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -208,21 +255,33 @@ export default function SingleHostScene({ idOrSlug }: SingleHostSceneProps) {
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex border-b border-soft-border gap-6 sm:gap-10 text-sm font-bold bg-white px-6 rounded-2xl border">
+        <div className="flex border-b border-soft-border gap-6 sm:gap-10 text-sm font-bold bg-white px-6 rounded-2xl border overflow-x-auto no-scrollbar">
           <button
             onClick={() => setActiveTab("rentals")}
             className={cn(
-              "py-4 relative transition-colors flex items-center gap-2",
+              "py-4 relative transition-colors flex items-center gap-2 shrink-0 cursor-pointer",
               activeTab === "rentals" ? "text-primary border-b-2 border-primary -mb-px font-black" : "text-secondary hover:text-brand"
             )}
           >
             <Home className="w-4 h-4" />
             <span>اقامتگاه‌ها ({toPersianDigits(header.listingsCount || 0)})</span>
           </button>
+          {hasAds && (
+            <button
+              onClick={() => setActiveTab("ads")}
+              className={cn(
+                "py-4 relative transition-colors flex items-center gap-2 shrink-0 cursor-pointer",
+                activeTab === "ads" ? "text-primary border-b-2 border-primary -mb-px font-black" : "text-secondary hover:text-brand"
+              )}
+            >
+              <Building2 className="w-4 h-4" />
+              <span>لیست آگهی‌ها ({toPersianDigits(ads.length)})</span>
+            </button>
+          )}
           <button
             onClick={() => setActiveTab("posts")}
             className={cn(
-              "py-4 relative transition-colors flex items-center gap-2",
+              "py-4 relative transition-colors flex items-center gap-2 shrink-0 cursor-pointer",
               activeTab === "posts" ? "text-primary border-b-2 border-primary -mb-px font-black" : "text-secondary hover:text-brand"
             )}
           >
@@ -232,7 +291,7 @@ export default function SingleHostScene({ idOrSlug }: SingleHostSceneProps) {
           <button
             onClick={() => setActiveTab("about")}
             className={cn(
-              "py-4 relative transition-colors flex items-center gap-2",
+              "py-4 relative transition-colors flex items-center gap-2 shrink-0 cursor-pointer",
               activeTab === "about" ? "text-primary border-b-2 border-primary -mb-px font-black" : "text-secondary hover:text-brand"
             )}
           >
@@ -302,9 +361,60 @@ export default function SingleHostScene({ idOrSlug }: SingleHostSceneProps) {
           </div>
         )}
 
+        {activeTab === "ads" && hasAds && (
+          <div className="space-y-6">
+            {isLoadingAds ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="h-64 bg-slate-100 animate-pulse rounded-3xl" />
+                ))}
+              </div>
+            ) : ads.length === 0 ? (
+              <div className="text-center py-16 bg-white rounded-3xl border border-soft-border space-y-2">
+                <Building2 className="w-10 h-10 text-secondary/30 mx-auto" />
+                <p className="text-sm font-bold text-brand">هنوز آگهی‌ای از این میزبان ثبت نشده است</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                {ads.map((ad) => {
+                  const pricing = getPricingDisplay(ad);
+                  const effectiveId = ad.adId || (ad as any).id;
+                  const categoryName =
+                    ad.subcategoryTitle ||
+                    ad.categoryPath?.subcategoryTitle ||
+                    ad.categoryTitle ||
+                    ad.categoryPath?.categoryTitle ||
+                    "آگهی ملک";
+
+                  return (
+                    <PropertyCard
+                      key={effectiveId}
+                      adId={effectiveId}
+                      href={`/ads/${effectiveId}`}
+                      title={ad.title}
+                      price={pricing.price}
+                      unit={pricing.unit}
+                      location={ad.cityName || ad.cityId}
+                      image={
+                        ad.mediaIds && ad.mediaIds.length > 0
+                          ? getMediaPosterUrl(ad.mediaIds[0])
+                          : "/property-placeholder.svg"
+                      }
+                      isVideo={ad.mediaIds?.[0]?.type === "VIDEO"}
+                      category={categoryName}
+                      area={ad.area}
+                      rooms={ad.rooms}
+                    />
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
         {activeTab === "posts" && (
           <div className="space-y-6">
-            {user?.userId && (header?.id === user.userId || idOrSlug === user.userId) && (
+            {isHostOwner && (
               <div className="flex items-center justify-between p-4 sm:p-5 bg-gradient-to-l from-emerald-50 to-teal-50 border border-emerald-200/80 rounded-3xl shadow-xs">
                 <div className="space-y-0.5">
                   <h4 className="text-xs sm:text-sm font-black text-emerald-900 flex items-center gap-1.5">
@@ -333,7 +443,7 @@ export default function SingleHostScene({ idOrSlug }: SingleHostSceneProps) {
               <div className="text-center py-16 bg-white rounded-3xl border border-soft-border space-y-3">
                 <Calendar className="w-10 h-10 text-secondary/30 mx-auto" />
                 <p className="text-sm font-bold text-brand">هنوز مطلبی منتشر نشده است</p>
-                {user?.userId && (header?.id === user.userId || idOrSlug === user.userId) && (
+                {isHostOwner && (
                   <Link
                     href="/posts/create"
                     className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black transition-colors"

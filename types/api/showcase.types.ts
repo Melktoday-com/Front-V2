@@ -37,6 +37,7 @@ export interface ShowcaseHeader {
   isFollowing?: boolean;
   postsCount: number;
   listingsCount: number;
+  userId?: string;
 }
 
 export interface HostAbout {

@@ -163,6 +163,29 @@ export const showcaseService = {
     return response.data;
   },
 
+  async getPublicHostProfile(idOrSlug: string) {
+    try {
+      const response = await apiClient.get<{
+        id: string;
+        userId: string;
+        hostName: string;
+        slug?: string;
+        bio?: string;
+        cityId?: string;
+        avatarUrl?: string;
+        coverUrl?: string;
+        rating?: number;
+        address?: string;
+        phone?: string;
+        mobile?: string;
+        verificationStatus?: string;
+      }>(`/hosts/${encodeURIComponent(idOrSlug)}`);
+      return response.data;
+    } catch {
+      return null;
+    }
+  },
+
   /**
    * Platform profile & admin management
    */
