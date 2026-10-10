@@ -1,6 +1,6 @@
 "use client";
 
-import { cn, formatPrice, getMediaUrl, toPersianDigits } from "@/lib/utils";
+import { cn, formatAdPrice, getMediaUrl, toPersianDigits } from "@/lib/utils";
 import { ListingMetadata } from "@/services/chat.service";
 import { Building2, ExternalLink, Home, Hotel } from "lucide-react";
 import Link from "next/link";
@@ -30,16 +30,16 @@ export function ListingMessageCard({ metadata, mediaIds }: ListingMessageCardPro
     let priceDisplay: string = "توافقی";
     if (metadata?.price) {
         if (typeof metadata.price === 'number' || typeof metadata.price === 'string') {
-            priceDisplay = formatPrice(metadata.price);
+            priceDisplay = formatAdPrice(metadata.price);
         } else if (typeof metadata.price === 'object') {
             if (metadata.price.totalPrice) {
-                priceDisplay = formatPrice(metadata.price.totalPrice);
+                priceDisplay = formatAdPrice(metadata.price.totalPrice);
             } else if (metadata.price.rentPrice || metadata.price.depositPrice) {
-                const deposit = metadata.price.depositPrice ? `رهن: ${formatPrice(metadata.price.depositPrice)}` : '';
-                const rent = metadata.price.rentPrice ? `اجاره: ${formatPrice(metadata.price.rentPrice)}` : '';
+                const deposit = metadata.price.depositPrice ? `رهن: ${formatAdPrice(metadata.price.depositPrice)}` : '';
+                const rent = metadata.price.rentPrice ? `اجاره: ${formatAdPrice(metadata.price.rentPrice)}` : '';
                 priceDisplay = [deposit, rent].filter(Boolean).join(' | ') || "توافقی";
             } else if (metadata.price.weekdayPrice) {
-                priceDisplay = `هر شب: ${formatPrice(metadata.price.weekdayPrice)}`;
+                priceDisplay = `هر شب: ${formatAdPrice(metadata.price.weekdayPrice)}`;
             }
         }
     }

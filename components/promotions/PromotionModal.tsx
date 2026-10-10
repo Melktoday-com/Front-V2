@@ -79,7 +79,7 @@ export function PromotionModal({
     const isPricingLoadingCombined = isPricingLoading || isTariffsLoading;
     const isTariffConfigured = activePriceRials > 0;
 
-    const currentBalanceRials = walletBalance?.availableBalance ? Number(walletBalance.availableBalance) : 0;
+    const currentBalanceRials = Number(walletBalance?.availableBalance ?? walletBalance?.balance ?? 0);
     const isBalanceSufficient = isQuotaAvailable || (isTariffConfigured && currentBalanceRials >= activePriceRials);
 
     const handleConfirm = async () => {

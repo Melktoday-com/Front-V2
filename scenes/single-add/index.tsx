@@ -3,7 +3,7 @@
 import { useAd, useAdContact, useAds } from "@/hooks/useAds";
 import { useAuth } from "@/hooks/useAuth";
 import { useCreateConversation } from "@/hooks/useChat";
-import { cn, formatPrice, toPersianDigits, getMediaUrl, getMediaPosterUrl } from "@/lib/utils";
+import { cn, formatAdPrice, formatPrice, toPersianDigits, getMediaUrl, getMediaPosterUrl } from "@/lib/utils";
 import { AdSummary } from "@/types/api/ads.types";
 import {
     Bath,
@@ -204,14 +204,14 @@ export default function SingleAdScene() {
     let priceSub: string | null = null;
 
     if (pricing.mortgagePrice !== undefined && pricing.rentPrice !== undefined) {
-        priceMain = `رهن: ${formatPrice(pricing.mortgagePrice)}`;
-        priceSub = `اجاره ماهانه: ${formatPrice(pricing.rentPrice)}`;
+        priceMain = `رهن: ${formatAdPrice(pricing.mortgagePrice)}`;
+        priceSub = `اجاره ماهانه: ${formatAdPrice(pricing.rentPrice)}`;
     } else if (pricing.totalPrice !== undefined) {
-        priceMain = formatPrice(pricing.totalPrice);
+        priceMain = formatAdPrice(pricing.totalPrice);
     } else if (pricing.nightlyPrice !== undefined) {
-        priceMain = `${formatPrice(pricing.nightlyPrice)} /شب`;
+        priceMain = `${formatAdPrice(pricing.nightlyPrice)} /شب`;
     } else if (Object.values(pricing).length > 0) {
-        priceMain = formatPrice(Object.values(pricing)[0]);
+        priceMain = formatAdPrice(Object.values(pricing)[0]);
     }
 
     // Attributes extraction

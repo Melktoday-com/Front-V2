@@ -19,9 +19,19 @@ export function toPersianDigits(n: number | string | undefined | null): string {
 }
 
 export function formatPrice(amount: number | string | undefined | null, suffix = " تومان"): string {
+    if (amount === undefined || amount === null || amount === "") return `۰${suffix}`;
+    const num = typeof amount === "string" ? parseFloat(amount.replace(/,/g, "")) : amount;
+    if (isNaN(num)) return `۰${suffix}`;
+    return `${new Intl.NumberFormat("fa-IR").format(num)}${suffix}`;
+}
+
+/**
+ * Specifically for listing (ad) or temporary rental prices where an unset or 0 price means "توافقی" (negotiable).
+ */
+export function formatAdPrice(amount: number | string | undefined | null, suffix = " تومان"): string {
     if (amount === undefined || amount === null || amount === "") return "توافقی";
     const num = typeof amount === "string" ? parseFloat(amount.replace(/,/g, "")) : amount;
-    if (isNaN(num) || num === 0) return "توافقی";
+    if (isNaN(num) || num <= 0) return "توافقی";
     return `${new Intl.NumberFormat("fa-IR").format(num)}${suffix}`;
 }
 
