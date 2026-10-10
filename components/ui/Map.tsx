@@ -144,10 +144,10 @@ export default function Map({ ads, zones, selectedZoneId, selectedZoneIds, onZon
                 center={sanitizedCenter}
                 zoom={zoom}
                 scrollWheelZoom={true}
+                attributionControl={false}
                 className="w-full h-full"
             >
                 <TileLayer
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
                 <MapViewHandler center={sanitizedCenter} zoom={zoom} bounds={bounds} />
