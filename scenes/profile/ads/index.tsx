@@ -28,6 +28,7 @@ import {
     Trash2,
 } from "lucide-react";
 import Image from "next/image";
+import { useSafeBack } from "@/hooks/useSafeBack";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -368,6 +369,7 @@ function MyAdCard({
 
 export default function MyAdsScene() {
     const router = useRouter();
+    const handleBack = useSafeBack("/");
     const queryClient = useQueryClient();
     const { isRestricted } = useUserStatus();
 
@@ -536,7 +538,7 @@ export default function MyAdsScene() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
                         <button
-                            onClick={() => router.back()}
+                            onClick={handleBack}
                             className="p-2 rounded-xl text-brand hover:bg-gray-100 transition-colors"
                             aria-label="بازگشت"
                         >

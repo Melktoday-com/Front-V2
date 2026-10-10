@@ -7,12 +7,14 @@ import { useCities } from "@/hooks/useGeo";
 import { useUserStatus } from "@/hooks/useUserStatus";
 import { AccountStatusBanner } from "@/components/ui/AccountStatusBanner";
 import { Building2, ChevronLeft, FileText, Globe, MapPin, Phone } from "lucide-react";
+import { useSafeBack } from "@/hooks/useSafeBack";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
 export default function CreateAgencyScene() {
     const router = useRouter();
+    const handleBack = useSafeBack("/");
     const { isRestricted } = useUserStatus();
     const { mutate: createAgency, isPending } = useCreateAgency();
     const { data: citiesData } = useCities({ limit: 100 });
@@ -48,7 +50,7 @@ export default function CreateAgencyScene() {
     return (
         <div className="min-h-screen bg-white pb-28 lg:pb-10">
             <header className="bg-white border-b border-soft-border sticky top-0 z-10 px-6 py-4 flex items-center gap-3">
-                <button onClick={() => router.back()} className="p-2 hover:bg-soft-bg rounded-xl transition-colors">
+                <button onClick={handleBack} className="p-2 hover:bg-soft-bg rounded-xl transition-colors">
                     <ChevronLeft className="w-6 h-6 text-brand rotate-180" />
                 </button>
                 <h1 className="text-brand font-black text-lg leading-none">ایجاد پروفایل آژانس</h1>

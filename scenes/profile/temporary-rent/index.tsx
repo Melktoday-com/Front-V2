@@ -7,6 +7,7 @@ import { useTemporaryRentAds, usePublishTemporaryRent, useDeleteTemporaryRent } 
 import { useHostProfile } from "@/hooks/useShowcase";
 import { ChevronRight, Plus, Rocket, Info, Calendar, Users, MapPin, Trash2, ExternalLink, Sparkles } from "lucide-react";
 import Link from "next/link";
+import { useSafeBack } from "@/hooks/useSafeBack";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { formatCurrency, cn, getMediaUrl } from "@/lib/utils";
@@ -23,6 +24,7 @@ const statusLabels: Record<string, { label: string; color: string; border: strin
 
 export default function TemporaryRentPanelScene() {
     const router = useRouter();
+    const handleBack = useSafeBack("/");
     const { user } = useAuth();
     const { isRestricted } = useUserStatus();
     const { data: hostProfile } = useHostProfile();
@@ -72,7 +74,7 @@ export default function TemporaryRentPanelScene() {
         <div className="min-h-screen bg-white pb-24 lg:pb-10">
             <header className="p-6 lg:px-10 border-b flex items-center justify-between bg-white sticky top-0 z-10">
                 <div className="flex items-center gap-4">
-                    <button onClick={() => router.back()} className="hover:bg-soft-bg p-2 rounded-xl transition-colors">
+                    <button onClick={handleBack} className="hover:bg-soft-bg p-2 rounded-xl transition-colors">
                         <ChevronRight className="w-6 h-6 text-brand" />
                     </button>
                     <h1 className="text-xl lg:text-2xl font-black text-brand">پنل اقامتگاه‌ها و میزبانی</h1>

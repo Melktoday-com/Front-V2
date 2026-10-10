@@ -36,6 +36,7 @@ import {
     Trash2,
 } from "lucide-react";
 import Link from "next/link";
+import { useSafeBack } from "@/hooks/useSafeBack";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -45,6 +46,7 @@ type Tab = "overview" | "settings" | "posts" | "messages";
 export default function AgencyPanelScene() {
     const { user, isLoggedIn } = useAuth();
     const router = useRouter();
+    const handleBack = useSafeBack("/");
     const queryClient = useQueryClient();
     const [activeTab, setActiveTab] = useState<Tab>("overview");
 
@@ -216,7 +218,7 @@ export default function AgencyPanelScene() {
             <header className="bg-white border-b border-slate-200/80 sticky top-0 z-20 px-6 py-4 flex items-center justify-between shadow-2xs">
                 <div className="flex items-center gap-3">
                     <button
-                        onClick={() => router.push("/")}
+                        onClick={handleBack}
                         className="p-2 hover:bg-slate-100 rounded-xl transition-colors text-slate-600"
                     >
                         <ChevronLeft className="w-5 h-5 rotate-180" />

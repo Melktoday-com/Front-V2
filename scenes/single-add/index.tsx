@@ -32,6 +32,7 @@ import {
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
+import { useSafeBack } from "@/hooks/useSafeBack";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -54,6 +55,7 @@ const Map = dynamic(() => import("@/components/ui/Map"), {
 export default function SingleAdScene() {
     const { id } = useParams() as { id: string };
     const router = useRouter();
+    const handleBack = useSafeBack("/");
     const [saved, setSaved] = useState(false);
     const [activeImageIndex, setActiveImageIndex] = useState(0);
     const [showFullPhone, setShowFullPhone] = useState(false);
@@ -240,7 +242,7 @@ export default function SingleAdScene() {
             {/* Top Navigation & Breadcrumb */}
             <div className="flex items-center justify-between mb-4">
                 <button
-                    onClick={() => router.back()}
+                    onClick={handleBack}
                     className="flex items-center gap-1.5 text-xs font-bold text-text-light hover:text-brand transition-colors"
                 >
                     <ChevronRight className="w-5 h-5" />

@@ -1,11 +1,11 @@
 "use client";
 
 import { Building2, Compass, Home, Plus, Search, Undo2 } from "lucide-react";
+import { useSafeBack } from "@/hooks/useSafeBack";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 export default function NotFound() {
-    const router = useRouter();
+    const handleBack = useSafeBack("/");
 
     return (
         <div className="min-h-[85vh] flex flex-col items-center justify-center p-6 text-center" dir="rtl">
@@ -30,7 +30,7 @@ export default function NotFound() {
             {/* Quick Actions */}
             <div className="flex flex-wrap items-center justify-center gap-3 w-full max-w-md">
                 <button
-                    onClick={() => router.back()}
+                    onClick={handleBack}
                     className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl border border-soft-border bg-white text-brand font-bold text-sm hover:bg-soft-bg transition-colors shadow-xs"
                 >
                     <Undo2 className="w-4 h-4" />

@@ -16,6 +16,7 @@ import {
     X,
 } from "lucide-react";
 import { TransactionStatus, TransactionType } from "@/types/api/enums";
+import { useSafeBack } from "@/hooks/useSafeBack";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -29,6 +30,7 @@ const QUICK_AMOUNTS = [
 
 export default function WalletScene() {
     const router = useRouter();
+    const handleBack = useSafeBack("/");
     const [isChargeModalOpen, setIsChargeModalOpen] = useState(false);
     const [selectedAmount, setSelectedAmount] = useState<number>(250000);
     const [customAmount, setCustomAmount] = useState<string>("");
@@ -73,7 +75,7 @@ export default function WalletScene() {
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
                 <button
-                    onClick={() => router.back()}
+                    onClick={handleBack}
                     className="flex items-center gap-1.5 text-xs font-bold text-text-light hover:text-brand transition-colors"
                 >
                     <ChevronRight className="w-5 h-5" />

@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useSafeBack } from "@/hooks/useSafeBack";
 import { useRouter } from "next/navigation";
 import {
   useShowcase,
@@ -43,6 +44,7 @@ interface SingleHostSceneProps {
 
 export default function SingleHostScene({ idOrSlug }: SingleHostSceneProps) {
   const router = useRouter();
+  const handleBack = useSafeBack("/");
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<"rentals" | "posts" | "about">("rentals");
   const [selectedPost, setSelectedPost] = useState<UnifiedPost | null>(null);
@@ -122,7 +124,7 @@ export default function SingleHostScene({ idOrSlug }: SingleHostSceneProps) {
         {/* Top Floating Controls */}
         <div className="absolute top-4 inset-x-4 max-w-5xl mx-auto flex items-center justify-between z-10">
           <button
-            onClick={() => router.back()}
+            onClick={handleBack}
             className="p-2.5 rounded-2xl bg-black/40 backdrop-blur-md text-white hover:bg-black/60 transition-colors"
           >
             <ChevronRight className="w-5 h-5" />

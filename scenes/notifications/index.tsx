@@ -20,12 +20,14 @@ import {
     RotateCw,
 } from "lucide-react";
 import Link from "next/link";
+import { useSafeBack } from "@/hooks/useSafeBack";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 export default function NotificationsScene() {
     const router = useRouter();
+    const handleBack = useSafeBack("/");
     const { isLoggedIn, isLoading: isAuthLoading } = useAuth();
     const [onlyUnread, setOnlyUnread] = useState(false);
     const sentinelRef = useRef<HTMLDivElement>(null);
@@ -135,7 +137,7 @@ export default function NotificationsScene() {
             <div className="flex items-center justify-between">
                 <button
                     type="button"
-                    onClick={() => router.back()}
+                    onClick={handleBack}
                     className="flex items-center gap-1.5 text-xs font-bold text-secondary hover:text-brand transition-colors"
                 >
                     <ChevronRight className="w-5 h-5" />

@@ -41,6 +41,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useSafeBack } from "@/hooks/useSafeBack";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -50,6 +51,7 @@ export default function SingleAgencyScene() {
     const params = useParams();
     const idOrSlug = (params.idOrSlug || params.id) as string;
     const router = useRouter();
+    const handleBack = useSafeBack("/");
 
     const [activeTab, setActiveTab] = useState<"listings" | "posts" | "about" | "reviews">("listings");
     const [viewMode, setViewMode] = useState<"grid" | "feed">("feed");
@@ -176,7 +178,7 @@ export default function SingleAgencyScene() {
             {/* Top Navigation */}
             <div className="flex items-center justify-between mb-4">
                 <button
-                    onClick={() => router.back()}
+                    onClick={handleBack}
                     className="flex items-center gap-1 text-xs font-bold text-text-light hover:text-brand transition-colors"
                 >
                     <ChevronRight className="w-4 h-4" />

@@ -37,6 +37,7 @@ import {
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
+import { useSafeBack } from "@/hooks/useSafeBack";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -58,6 +59,7 @@ export default function ResidenceDetailScene() {
     const params = useParams();
     const id = params.id as string;
     const router = useRouter();
+    const handleBack = useSafeBack("/");
 
     const { isLoggedIn, user } = useAuth();
     const chatMutation = useCreateConversation();
@@ -211,7 +213,7 @@ export default function ResidenceDetailScene() {
             {/* Top Navigation */}
             <div className="flex items-center justify-between mb-4">
                 <button
-                    onClick={() => router.back()}
+                    onClick={handleBack}
                     className="flex items-center gap-1.5 text-xs font-bold text-text-light hover:text-brand transition-colors"
                 >
                     <ChevronRight className="w-5 h-5" />

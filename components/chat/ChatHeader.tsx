@@ -2,12 +2,13 @@
 
 import { cn } from "@/lib/utils";
 import { ChevronLeft, Compass, Home, LayoutGrid, Search, User } from "lucide-react";
+import { useSafeBack } from "@/hooks/useSafeBack";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 
 export function ChatHeader() {
     const pathname = usePathname();
-    const router = useRouter();
+    const handleBack = useSafeBack("/");
 
     const navItems = [
         { icon: Home, label: "خانه", href: "/" },
@@ -15,14 +16,6 @@ export function ChatHeader() {
         { icon: Compass, label: "کاوش", href: "/explore" },
         { icon: User, label: "پروفایل", href: "/profile" },
     ];
-
-    const handleBack = () => {
-        if (typeof window !== "undefined" && window.history.length > 1) {
-            router.back();
-        } else {
-            router.push("/profile");
-        }
-    };
 
     return (
         <header className="h-16 md:h-18 bg-white border-b border-soft-border flex items-center justify-between px-4 md:px-8 shrink-0 z-70 sticky top-0" dir="rtl">

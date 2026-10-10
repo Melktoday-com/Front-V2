@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { useSafeBack } from "@/hooks/useSafeBack";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -41,6 +42,7 @@ interface SinglePostSceneProps {
 
 export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
   const router = useRouter();
+  const handleBack = useSafeBack("/");
   const { isLoggedIn } = useAuth();
   const { data: post, isLoading, isError, refetch } = useSinglePost(idOrSlug);
   const likeMutation = useLikePost();
@@ -225,12 +227,14 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
 
       {/* ── BREADCRUMB & BACK NAVIGATION ─────────────────────────────── */}
       <div className="flex items-center justify-between">
-        <Link
-          href="/explore"
+        <button
+          type="button"
+          onClick={handleBack}
           className="inline-flex items-center gap-1.5 text-xs font-black text-brand hover:text-primary transition-colors bg-white px-3.5 py-2 rounded-xl border border-slate-200 shadow-2xs"
+          aria-label="بازگشت"
         >
           <ArrowRight className="w-4 h-4" />
-        </Link>
+        </button>
 
         {post.category && (
           <span className="px-3 py-1 rounded-full bg-slate-100 text-slate-700 text-xs font-bold">
