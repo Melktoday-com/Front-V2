@@ -75,7 +75,7 @@ export default function SingleHostScene({ idOrSlug }: SingleHostSceneProps) {
   const about = showcase?.about;
 
   // Resolve target owner ID for host's ads
-  const hostUserId = header?.userId || publicHost?.userId || (idOrSlug.includes("-") && idOrSlug.length === 36 ? idOrSlug : undefined);
+  const hostUserId = header?.userId || publicHost?.userId;
   const { data: adsResponse, isLoading: isLoadingAds } = useAds(
     hostUserId ? { ownerId: hostUserId, limit: 30 } : {},
     { enabled: !!hostUserId }
