@@ -9,6 +9,7 @@ import {
   ToggleLikeResponse,
 } from './post.types';
 import type { MediaReference } from './media.types';
+import type { JsonValue } from '../common';
 
 export type {
   PublisherType,
@@ -89,15 +90,43 @@ export interface ShowcaseResponse<TAbout = ShowcaseAbout> {
   about: TAbout;
 }
 
+export interface ShowcaseListingPricing {
+  nightlyPrice?: number;
+  price?: number;
+  totalPrice?: number;
+  mortgage?: number;
+  rent?: number;
+  securityDeposit?: number;
+  extraGuestNightlyPrice?: number;
+  [key: string]: number | undefined;
+}
+
+export interface ShowcaseListingAttributes {
+  max_guests?: number;
+  maxGuests?: number;
+  rooms?: number;
+  bathrooms?: number;
+  area?: number | string;
+  meterage?: number | string;
+  securityDeposit?: number;
+  extraGuestNightlyPrice?: number;
+  nightlyPrice?: number;
+  [key: string]: JsonValue | undefined;
+}
+
 export interface ShowcaseListingItem {
   id: string;
   title: string;
   price?: number;
   totalPrice?: number;
   basePricePerNight?: number;
+  pricing?: ShowcaseListingPricing;
+  attributes?: ShowcaseListingAttributes;
   address?: string;
   mediaIds?: MediaReference[];
+  media_ids?: MediaReference[];
   createdAt?: string;
+  created_at?: string;
 }
 
 export interface ShowcaseListingsResponse {

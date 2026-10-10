@@ -315,47 +315,51 @@ export default function SingleHostScene({ idOrSlug }: SingleHostSceneProps) {
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                {rentalsData?.items?.map((rental) => (
-                  <Link
-                    key={rental.id}
-                    href={`/temporary-rent/${rental.id}`}
-                    className="bg-white rounded-3xl overflow-hidden border border-soft-border hover:shadow-lg transition-all group flex flex-col"
-                  >
-                    <div className="relative h-48 w-full bg-soft-bg overflow-hidden">
-                      {rental.mediaIds?.[0] ? (
-                        <Image
-                          src={getMediaUrl(rental.mediaIds[0])}
-                          alt={rental.title}
-                          fill
-                          className="object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-secondary/40">
-                          <Home className="w-8 h-8" />
-                        </div>
-                      )}
-                    </div>
-                    <div className="p-5 flex-1 flex flex-col justify-between space-y-3">
-                      <div>
-                        <h3 className="font-black text-brand text-sm line-clamp-1 group-hover:text-primary transition-colors">
-                          {rental.title}
-                        </h3>
-                        {rental.address && (
-                          <p className="text-xs text-secondary flex items-center gap-1 mt-1 line-clamp-1">
-                            <MapPin className="w-3.5 h-3.5 shrink-0" />
-                            {rental.address}
-                          </p>
+                {rentalsData?.items?.map((rental) => {
+                  const media = rental.mediaIds?.[0] || rental.media_ids?.[0];
+                  const price = rental.pricing?.nightlyPrice || rental.attributes?.nightlyPrice || rental.basePricePerNight || rental.price || 0;
+                  return (
+                    <Link
+                      key={rental.id}
+                      href={`/temporary-rent/${rental.id}`}
+                      className="bg-white rounded-3xl overflow-hidden border border-soft-border hover:shadow-lg transition-all group flex flex-col"
+                    >
+                      <div className="relative h-48 w-full bg-soft-bg overflow-hidden">
+                        {media ? (
+                          <Image
+                            src={getMediaUrl(media)}
+                            alt={rental.title}
+                            fill
+                            className="object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-secondary/40">
+                            <Home className="w-8 h-8" />
+                          </div>
                         )}
                       </div>
-                      <div className="pt-3 border-t border-soft-border flex items-center justify-between text-xs">
-                        <span className="text-secondary font-bold">هر شب از:</span>
-                        <span className="font-black text-brand text-sm">
-                          {formatCurrency(rental.basePricePerNight || rental.price || 0)} تومان
-                        </span>
+                      <div className="p-5 flex-1 flex flex-col justify-between space-y-3">
+                        <div>
+                          <h3 className="font-black text-brand text-sm line-clamp-1 group-hover:text-primary transition-colors">
+                            {rental.title}
+                          </h3>
+                          {rental.address && (
+                            <p className="text-xs text-secondary flex items-center gap-1 mt-1 line-clamp-1">
+                              <MapPin className="w-3.5 h-3.5 shrink-0" />
+                              {rental.address}
+                            </p>
+                          )}
+                        </div>
+                        <div className="pt-3 border-t border-soft-border flex items-center justify-between text-xs">
+                          <span className="text-secondary font-bold">هر شب از:</span>
+                          <span className="font-black text-brand text-sm">
+                            {formatCurrency(price)} تومان
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  </Link>
-                ))}
+                    </Link>
+                  );
+                })}
               </div>
             )}
           </div>
