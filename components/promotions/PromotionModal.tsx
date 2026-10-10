@@ -6,7 +6,7 @@ import { useEntitlements } from "@/hooks/useSubscription";
 import { useWalletBalance } from "@/hooks/useWallet";
 import { useTariffs } from "@/hooks/useTariffs";
 import { PromotionType } from "@/types/api/promotion.types";
-import { formatPrice, toPersianDigits } from "@/lib/utils";
+import { formatCurrency, toPersianDigits } from "@/lib/utils";
 import { Zap, TrendingUp, X, Sparkles, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -163,7 +163,7 @@ export function PromotionModal({
                                 {urgentQuota > 0 ? (
                                     <div className="flex items-center gap-1.5">
                                         <span className="text-xs line-through text-gray-400">
-                                            {formatPrice(urgentPriceTomans)} تومان
+                                            {formatCurrency(urgentPriceTomans)} تومان
                                         </span>
                                         <span className="text-xs text-emerald-600 font-bold">رایگان</span>
                                         <span className="text-[10px] font-black bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
@@ -177,7 +177,7 @@ export function PromotionModal({
                                     </span>
                                 ) : urgentPriceTomans > 0 ? (
                                     <span className="text-xs font-bold text-brand">
-                                        {formatPrice(urgentPriceTomans)} تومان
+                                        {formatCurrency(urgentPriceTomans)} تومان
                                     </span>
                                 ) : (
                                     <span className="text-xs font-bold text-rose-500">
@@ -209,7 +209,7 @@ export function PromotionModal({
                                 {ladderQuota > 0 ? (
                                     <div className="flex items-center gap-1.5">
                                         <span className="text-xs line-through text-gray-400">
-                                            {formatPrice(ladderPriceTomans)} تومان
+                                            {formatCurrency(ladderPriceTomans)} تومان
                                         </span>
                                         <span className="text-xs text-emerald-600 font-bold">رایگان</span>
                                         <span className="text-[10px] font-black bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
@@ -223,7 +223,7 @@ export function PromotionModal({
                                     </span>
                                 ) : ladderPriceTomans > 0 ? (
                                     <span className="text-xs font-bold text-brand">
-                                        {formatPrice(ladderPriceTomans)} تومان
+                                        {formatCurrency(ladderPriceTomans)} تومان
                                     </span>
                                 ) : (
                                     <span className="text-xs font-bold text-rose-500">
@@ -245,7 +245,7 @@ export function PromotionModal({
                         {isQuotaAvailable ? (
                             <div className="flex items-center gap-2">
                                 <span className="text-xs line-through text-gray-400">
-                                    {formatPrice(activePriceTomans)} تومان
+                                    {formatCurrency(activePriceTomans)} تومان
                                 </span>
                                 <span className="text-emerald-700 font-black flex items-center gap-1">
                                     <CheckCircle2 className="w-3.5 h-3.5" />
@@ -260,7 +260,7 @@ export function PromotionModal({
                         ) : activePriceTomans > 0 ? (
                             <div className="text-left">
                                 <span className="font-black text-brand text-sm">
-                                    {formatPrice(activePriceTomans)} تومان
+                                    {formatCurrency(activePriceTomans)} تومان
                                 </span>
                             </div>
                         ) : (
@@ -274,7 +274,7 @@ export function PromotionModal({
                         <div className="flex items-center justify-between text-[11px] pt-2 border-t border-gray-200/50">
                             <span className="text-text-light">موجودی کیف پول شما:</span>
                             <span className="font-bold text-brand">
-                                {formatPrice(Math.round(currentBalanceRials / 10))} تومان
+                                {formatCurrency(Math.round(currentBalanceRials / 10))} تومان
                             </span>
                         </div>
                     )}

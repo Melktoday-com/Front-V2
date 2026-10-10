@@ -36,7 +36,7 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { cn, formatPrice, toPersianDigits, getMediaUrl } from "@/lib/utils";
+import { cn, formatCurrency, formatPrice, toPersianDigits, getMediaUrl } from "@/lib/utils";
 import { AdminOwnershipSelector, AdminOwnershipData } from "@/components/admin/AdminOwnershipSelector";
 import { adminService } from "@/services/admin.service";
 import { AdminCreateTemporaryRentRequest } from "@/types/api/admin.types";
@@ -830,7 +830,7 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
                                     <div className="flex justify-between pb-2 border-b border-gray-200/50">
                                         <span className="text-text-light">اجاره هر شب:</span>
                                         <span className="font-bold text-emerald-700">
-                                            {formatPrice(rawPricing.nightlyPrice ? Number(rawPricing.nightlyPrice) : formData.nightlyPrice)} تومان
+                                            {formatCurrency(rawPricing.nightlyPrice ? Number(rawPricing.nightlyPrice) : formData.nightlyPrice)} تومان
                                         </span>
                                     </div>
                                     <div className="border-t border-gray-200/60 pt-3">

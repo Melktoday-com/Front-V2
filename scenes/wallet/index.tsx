@@ -1,7 +1,7 @@
 "use client";
 
 import { useInitiateTopUp, useWalletBalance, useWalletTransactions } from "@/hooks/useWallet";
-import { cn, formatPrice, toPersianDigits } from "@/lib/utils";
+import { cn, formatCurrency, toPersianDigits } from "@/lib/utils";
 import {
     ArrowDownRight,
     ArrowUpLeft,
@@ -106,7 +106,7 @@ export default function WalletScene() {
                         ) : (
                             <div className="flex items-baseline gap-2">
                                 <span className="text-3xl sm:text-4xl font-black tracking-tight">
-                                    {formatPrice(balanceAmount, "")}
+                                    {formatCurrency(balanceAmount)}
                                 </span>
                                 <span className="text-sm font-bold text-white/80">تومان</span>
                             </div>
@@ -197,7 +197,7 @@ export default function WalletScene() {
                                                 isDeposit ? "text-green-600" : "text-red-600"
                                             )}
                                         >
-                                            {isDeposit ? "+" : "-"} {formatPrice(tx.amount, "")} تومان
+                                            {isDeposit ? "+" : "-"} {formatCurrency(tx.amount)} تومان
                                         </span>
                                         <span
                                             className={cn(

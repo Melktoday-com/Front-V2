@@ -5,9 +5,11 @@ export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
 
-export function formatCurrency(amount: number | undefined): string {
-    if (amount === undefined || amount === null) return "۰";
-    return new Intl.NumberFormat("fa-IR").format(amount);
+export function formatCurrency(amount: number | string | undefined | null): string {
+    if (amount === undefined || amount === null || amount === "") return "۰";
+    const num = typeof amount === "string" ? parseFloat(amount.replace(/,/g, "")) : amount;
+    if (isNaN(num)) return "۰";
+    return new Intl.NumberFormat("fa-IR").format(num);
 }
 
 export function toPersianDigits(n: number | string | undefined | null): string {

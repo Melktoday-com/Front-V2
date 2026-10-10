@@ -1,7 +1,7 @@
 "use client";
 
 import { usePaymentStatus } from "@/hooks/useWallet";
-import { formatPrice, toPersianDigits } from "@/lib/utils";
+import { formatCurrency, toPersianDigits } from "@/lib/utils";
 import {
     AlertCircle,
     CheckCircle2,
@@ -56,7 +56,7 @@ function PaymentCallbackContent() {
                                 <div className="flex items-center justify-between">
                                     <span className="text-text-light">مبلغ پرداختی:</span>
                                     <span className="text-brand font-black text-sm">
-                                        {formatPrice(Math.floor(statusData.amountIRR / 10))} تومان
+                                        {formatCurrency(Math.floor(statusData.amountIRR / 10))} تومان
                                     </span>
                                 </div>
                             )}

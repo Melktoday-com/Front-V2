@@ -9,7 +9,7 @@ import {
     useSubscriptionPlans,
 } from "@/hooks/useSubscription";
 import { useWalletBalance } from "@/hooks/useWallet";
-import { cn, formatPrice, toPersianDigits } from "@/lib/utils";
+import { cn, formatCurrency, formatPrice, toPersianDigits } from "@/lib/utils";
 import {
     ActiveBadgeInfo,
     EntitlementTypeName,
@@ -100,7 +100,7 @@ export default function SubscriptionsScene() {
         if (availableBalanceIrr < planPriceIrr) {
             const shortageToman = Math.max(0, Math.floor((planPriceIrr - availableBalanceIrr) / 10));
             toast.error(
-                `موجودی کیف پول کافی نیست. لطفا حداقل ${formatPrice(shortageToman)} تومان کیف پول خود را شارژ کنید.`,
+                `موجودی کیف پول کافی نیست. لطفا حداقل ${formatCurrency(shortageToman)} تومان کیف پول خود را شارژ کنید.`,
             );
             router.push(`/wallet?amount=${shortageToman}`);
             return;
@@ -188,7 +188,7 @@ export default function SubscriptionsScene() {
                                 <div className="text-xs">
                                     <span className="text-slate-400 block font-normal">موجودی در دسترس:</span>
                                     <span className="font-black text-slate-800">
-                                        {isLoadingWallet ? "..." : `${formatPrice(availableBalanceToman)} تومان`}
+                                        {isLoadingWallet ? "..." : `${formatCurrency(availableBalanceToman)} تومان`}
                                     </span>
                                 </div>
                             </div>
@@ -639,7 +639,7 @@ export default function SubscriptionsScene() {
                             <div className="flex justify-between">
                                 <span className="text-slate-500">مبلغ پرداختی:</span>
                                 <span className="font-black text-slate-900 text-sm">
-                                    {formatPrice(Math.floor(Number(selectedPlanForPurchase.priceIrr) / 10))} تومان
+                                    {formatCurrency(Math.floor(Number(selectedPlanForPurchase.priceIrr) / 10))} تومان
                                 </span>
                             </div>
                         </div>
@@ -648,12 +648,12 @@ export default function SubscriptionsScene() {
                         <div className="p-3 bg-blue-50/60 border border-blue-100 rounded-2xl text-xs space-y-1.5 mb-5 text-blue-900">
                             <div className="flex justify-between">
                                 <span>موجودی فعلی کیف پول:</span>
-                                <span className="font-bold">{formatPrice(availableBalanceToman)} تومان</span>
+                                <span className="font-bold">{formatCurrency(availableBalanceToman)} تومان</span>
                             </div>
                             <div className="flex justify-between">
                                 <span>موجودی پس از کسر:</span>
                                 <span className="font-bold">
-                                    {formatPrice(
+                                    {formatCurrency(
                                         Math.max(
                                             0,
                                             availableBalanceToman -
