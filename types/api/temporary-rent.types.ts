@@ -1,5 +1,6 @@
 import { JsonValue } from "../common";
 import type { MediaReference } from "./media.types";
+import type { AdPublisher } from "./ads.types";
 
 export interface TemporaryRentCategoryPath {
     categoryKey: string;
@@ -36,10 +37,13 @@ export interface TemporaryRentAd {
     isFeatured?: boolean;
     isUrgent?: boolean;
     owner?: {
+        id?: string;
         fullName?: string;
         avatarUrl?: string;
+        slug?: string;
     };
     cityName?: string;
+    publisher?: AdPublisher;
 }
 
 export interface CreateTemporaryRentDraftRequest {

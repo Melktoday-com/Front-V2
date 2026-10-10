@@ -37,10 +37,13 @@ import {
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
+import Link from "next/link";
 import { useSafeBack } from "@/hooks/useSafeBack";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { useCityLookup } from "@/hooks/useCityLookup";
+import { useShowcase } from "@/hooks/useShowcase";
 import { useToggleSaveTemporaryRent } from "@/hooks/useFavorites";
 import { PromotionModal } from "@/components/promotions/PromotionModal";
 import { temporaryRentService } from "@/services/temporary-rent.service";
@@ -69,6 +72,23 @@ export default function ResidenceDetailScene() {
     const isPublished = residence?.status === 'PUBLISHED';
     const isPromoted = Boolean(residence?.isFeatured || residence?.isUrgent);
     const isEligibleForPromotion = isOwner && isPublished && !isPromoted;
+
+    const { getCityName } = useCityLookup();
+    const cityName = residence?.cityName || getCityName(residence?.cityId);
+
+    const hostIdentifier = residence?.owner?.slug || residence?.publisher?.slug || residence?.owner?.id || residence?.ownerId;
+    const { data: hostShowcase } = useShowcase("host", hostIdentifier || "");
+
+    const hostName = hostShowcase?.header?.title || residence?.owner?.fullName || residence?.publisher?.name || "میزبان ملک تودی";
+    const hostAvatar = hostShowcase?.header?.avatarUrl || residence?.owner?.avatarUrl || residence?.publisher?.avatar;
+    const isHostVerified = hostShowcase?.header?.isVerified ?? true;
+    const hostSlug = hostShowcase?.header?.slug || residence?.owner?.slug || residence?.publisher?.slug || hostIdentifier;
+    const isAgencyPublisher = residence?.publisher?.type === "agency";
+    const hostShowcaseUrl = hostSlug
+        ? isAgencyPublisher
+            ? `/agency/showcase/${hostSlug}`
+            : `/host/${hostSlug}`
+        : undefined;
 
     const { data: similarResidences } = useTemporaryRentAds(
         {
@@ -255,7 +275,7 @@ export default function ResidenceDetailScene() {
                     <span>•</span>
                     <div className="flex items-center gap-1">
                         <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
-                        <span>{residence.cityName || residence.cityId}</span>
+                        <span>{cityName}</span>
                     </div>
                     {residence.address && (
                         <>
@@ -342,31 +362,89 @@ export default function ResidenceDetailScene() {
                     </div>
 
                     {/* Host Profile */}
-                    <div className="flex items-center justify-between p-5 bg-orange-50/30 rounded-3xl border border-orange-100/60">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 bg-orange-50/40 rounded-3xl border border-orange-100">
                         <div className="flex items-center gap-3.5">
-                            <div className="w-14 h-14 rounded-full bg-orange-100 text-orange-700 flex items-center justify-center font-black text-xl border-2 border-white shadow-xs">
-                                {residence.owner?.fullName?.[0] || "م"}
-                            </div>
+                            {hostAvatar ? (
+                                hostShowcaseUrl ? (
+                                    <Link
+                                        href={hostShowcaseUrl}
+                                        className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-white shadow-xs shrink-0 bg-gray-100 hover:ring-2 hover:ring-orange-400 transition-all cursor-pointer"
+                                        title={`مشاهده ویترین ${hostName}`}
+                                    >
+                                        <Image
+                                            src={getMediaUrl(hostAvatar)}
+                                            alt={hostName}
+                                            fill
+                                            className="object-cover"
+                                        />
+                                    </Link>
+                                ) : (
+                                    <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-white shadow-xs shrink-0 bg-gray-100">
+                                        <Image
+                                            src={getMediaUrl(hostAvatar)}
+                                            alt={hostName}
+                                            fill
+                                            className="object-cover"
+                                        />
+                                    </div>
+                                )
+                            ) : hostShowcaseUrl ? (
+                                <Link
+                                    href={hostShowcaseUrl}
+                                    className="w-14 h-14 rounded-full bg-orange-100 text-orange-700 flex items-center justify-center font-black text-xl border-2 border-white shadow-xs shrink-0 hover:bg-orange-200 transition-colors cursor-pointer"
+                                    title={`مشاهده ویترین ${hostName}`}
+                                >
+                                    {hostName?.[0] || "م"}
+                                </Link>
+                            ) : (
+                                <div className="w-14 h-14 rounded-full bg-orange-100 text-orange-700 flex items-center justify-center font-black text-xl border-2 border-white shadow-xs shrink-0">
+                                    {hostName?.[0] || "م"}
+                                </div>
+                            )}
                             <div>
-                                <h3 className="font-bold text-base text-brand">
-                                    میزبان: {residence.owner?.fullName || "میزبان ملک تودی"}
-                                </h3>
+                                {hostShowcaseUrl ? (
+                                    <Link
+                                        href={hostShowcaseUrl}
+                                        className="font-bold text-base text-brand hover:text-orange-600 transition-colors cursor-pointer block"
+                                    >
+                                        میزبان: {hostName}
+                                    </Link>
+                                ) : (
+                                    <h3 className="font-bold text-base text-brand">
+                                        میزبان: {hostName}
+                                    </h3>
+                                )}
                                 <p className="text-xs text-text-light mt-0.5 flex items-center gap-1">
-                                    <ShieldCheck className="w-3.5 h-3.5 text-primary" />
-                                    میزبان تایید هویت شده
+                                    {isHostVerified && (
+                                        <>
+                                            <ShieldCheck className="w-3.5 h-3.5 text-primary" />
+                                            میزبان تایید هویت شده
+                                        </>
+                                    )}
                                 </p>
                             </div>
                         </div>
-                        {!isOwner && (
-                            <button
-                                onClick={handleChat}
-                                disabled={chatMutation.isPending}
-                                className="flex items-center gap-1.5 px-4 py-2 bg-white rounded-xl border border-gray-200 text-xs font-bold text-brand hover:border-primary shadow-xs transition-colors"
-                            >
-                                <MessageCircle className="w-4 h-4 text-primary" />
-                                <span>ارسال پیام</span>
-                            </button>
-                        )}
+                        <div className="flex items-center gap-2 flex-wrap">
+                            {hostShowcaseUrl && (
+                                <Link
+                                    href={hostShowcaseUrl}
+                                    className="flex items-center gap-1.5 px-3.5 py-2 bg-white rounded-xl border border-orange-200 text-xs font-bold text-orange-950 hover:bg-orange-50 shadow-xs transition-colors cursor-pointer"
+                                >
+                                    <span>مشاهده ویترین میزبان</span>
+                                    <ChevronLeft className="w-4 h-4 text-orange-600" />
+                                </Link>
+                            )}
+                            {!isOwner && (
+                                <button
+                                    onClick={handleChat}
+                                    disabled={chatMutation.isPending}
+                                    className="flex items-center gap-1.5 px-4 py-2 bg-white rounded-xl border border-gray-200 text-xs font-bold text-brand hover:border-primary shadow-xs transition-colors cursor-pointer"
+                                >
+                                    <MessageCircle className="w-4 h-4 text-primary" />
+                                    <span>ارسال پیام</span>
+                                </button>
+                            )}
+                        </div>
                     </div>
 
                     {/* Description */}
@@ -569,6 +647,20 @@ export default function ResidenceDetailScene() {
                                     <Phone className="w-4 h-4 text-emerald-600" />
                                     <span>{isLoadingContact ? "در حال دریافت..." : "اطلاعات تماس با میزبان"}</span>
                                 </button>
+
+                                {/* Host Showcase Link */}
+                                {hostShowcaseUrl && (
+                                    <Link
+                                        href={hostShowcaseUrl}
+                                        className="w-full py-3 bg-orange-50/70 hover:bg-orange-100/80 text-orange-950 font-bold text-xs rounded-2xl border border-orange-200 transition-all flex items-center justify-between px-4 cursor-pointer active:scale-98"
+                                    >
+                                        <span className="flex items-center gap-2">
+                                            <Sparkles className="w-4 h-4 text-orange-600" />
+                                            <span>مشاهده ویترین میزبان</span>
+                                        </span>
+                                        <ChevronLeft className="w-4 h-4 text-orange-600" />
+                                    </Link>
+                                )}
                             </>
                         )}
 
@@ -593,7 +685,7 @@ export default function ResidenceDetailScene() {
                                     id={item.id}
                                     title={item.title}
                                     nightlyPrice={item.pricing.nightlyPrice}
-                                    location={item.cityName || residence?.cityName || item.cityId || "ایران"}
+                                    location={item.cityName || getCityName(item.cityId) || cityName || "ایران"}
                                     mediaIds={item.mediaIds}
                                     maxGuests={item.maxGuests}
                                 />
