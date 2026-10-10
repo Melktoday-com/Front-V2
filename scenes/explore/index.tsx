@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { usePostViewObserver } from "@/hooks/usePostViewObserver";
 import { getMediaUrl, getMediaPosterUrl, toPersianDigits, cn } from "@/lib/utils";
 import { UnifiedPost, PublisherType } from "@/types/api/post.types";
+import { RoleName } from "@/types/access";
 import { PaginationControls } from "@/components/ui/PaginationControls";
 import { PageSectionDivider } from "@/components/ui/PageSectionDivider";
 import {
@@ -25,23 +26,6 @@ import {
   X,
 } from "lucide-react";
 import { toast } from "sonner";
-
-const TOPIC_TAGS = [
-  { id: "all", label: "همه موضوعات" },
-  { id: "market", label: "تحلیل بازار مسکن" },
-  { id: "guide", label: "راهنمای خرید و رهن" },
-  { id: "legal", label: "نکات حقوقی و قرارداد" },
-  { id: "investment", label: "فرصت‌های سرمایه‌گذاری" },
-  { id: "news", label: "اخبار و تحولات" },
-  { id: "host", label: "اقامتگاه و بومگردی" },
-];
-
-const PUBLISHER_FILTERS: { id: "ALL" | PublisherType; label: string }[] = [
-  { id: "ALL", label: "همه ناشران" },
-  { id: "AGENCY", label: "آژانس‌های املاک" },
-  { id: "HOST", label: "میزبان‌های اقامتگاه" },
-  { id: "PLATFORM", label: "پلتفرم رسمی" },
-];
 
 /**
  * Individual Instagram-Style Explore Card with Viewport Observation
@@ -157,14 +141,19 @@ function ExplorePostCard({
 export default function ExploreScene() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, activeRole } = useAuth();
   const likeMutation = useLikePost();
+
+  const canCreatePost =
+    isLoggedIn &&
+    (activeRole === RoleName.Admin ||
+      activeRole === RoleName.SuperAdmin ||
+      activeRole === RoleName.Agent ||
+      activeRole === RoleName.Landlord);
 
   const urlSearch = searchParams.get("search") || "";
   const [searchQuery, setSearchQuery] = useState(urlSearch);
   const [activeSearch, setActiveSearch] = useState(urlSearch);
-  const [selectedTag, setSelectedTag] = useState("all");
-  const [selectedPublisherType, setSelectedPublisherType] = useState<"ALL" | PublisherType>("ALL");
   const [startPage, setStartPage] = useState<number>(1);
 
   const observerTargetRef = useRef<HTMLDivElement | null>(null);
@@ -179,12 +168,6 @@ export default function ExploreScene() {
     }
   }, [searchParams, activeSearch]);
 
-  const activeCategory = useMemo(() => {
-    if (selectedTag === "all") return undefined;
-    const found = TOPIC_TAGS.find((t) => t.id === selectedTag);
-    return found ? found.label : selectedTag;
-  }, [selectedTag]);
-
   // Fetch explore posts with infinite query (batching up to 7 pages)
   const {
     data: postsData,
@@ -198,8 +181,6 @@ export default function ExploreScene() {
     {
       limit: 16,
       search: activeSearch || undefined,
-      category: activeCategory,
-      publisherType: selectedPublisherType !== "ALL" ? selectedPublisherType : undefined,
     },
     { startPage, maxPages: 7 }
   );
@@ -299,16 +280,6 @@ export default function ExploreScene() {
     router.replace(`/explore${params.toString() ? `?${params.toString()}` : ""}`);
   };
 
-  const handleTagSelect = (tagId: string) => {
-    setSelectedTag(tagId);
-    setStartPage(1);
-  };
-
-  const handlePublisherSelect = (pubId: "ALL" | PublisherType) => {
-    setSelectedPublisherType(pubId);
-    setStartPage(1);
-  };
-
   const handleLike = (e: React.MouseEvent, postId: string) => {
     e.preventDefault();
     e.stopPropagation();
@@ -324,7 +295,7 @@ export default function ExploreScene() {
     <div className="min-w-0 max-w-6xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8 pb-28 lg:pb-8 space-y-6" dir="rtl">
 
       {/* ── TOP ACTION & SEARCH BAR ────────────────────────────────────── */}
-      <div className="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200 shadow-xs space-y-4">
+      <div className="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200 shadow-xs">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <form onSubmit={handleSearchSubmit} className="relative flex-1">
             <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -333,7 +304,7 @@ export default function ExploreScene() {
               placeholder="جستجو در تصاویر، مقالات، تحلیل‌ها و اخبار ملکی..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pr-11 pl-28 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs sm:text-sm text-slate-800 focus:bg-white focus:border-primary focus:outline-hidden transition-all placeholder:text-slate-400"
+              className="w-full pr-11 pl-28 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs sm:text-sm text-slate-800 focus:bg-white focus:border-primary focus:outline-hidden transition-all placeholder:text-[11px] sm:placeholder:text-xs placeholder:text-slate-400"
             />
             {searchQuery && (
               <button
@@ -353,57 +324,15 @@ export default function ExploreScene() {
             </button>
           </form>
 
-          <Link
-            href="/posts/create"
-            className="flex items-center justify-center gap-1.5 px-5 py-3 rounded-2xl bg-brand text-white text-xs font-bold hover:bg-brand/90 transition-all shrink-0 shadow-xs"
-          >
-            <Plus className="w-4 h-4 text-primary" />
-            <span>ایجاد پست جدید</span>
-          </Link>
-        </div>
-
-        {/* Publisher Types Tabs */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar border-t border-slate-100 pt-3">
-          {PUBLISHER_FILTERS.map((pub) => {
-            const isSelected = selectedPublisherType === pub.id;
-            return (
-              <button
-                key={pub.id}
-                type="button"
-                onClick={() => handlePublisherSelect(pub.id)}
-                className={cn(
-                  "px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap",
-                  isSelected
-                    ? "bg-slate-900 text-white shadow-xs"
-                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                )}
-              >
-                {pub.label}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Topic Pills */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
-          {TOPIC_TAGS.map((tag) => {
-            const isSelected = selectedTag === tag.id;
-            return (
-              <button
-                key={tag.id}
-                type="button"
-                onClick={() => handleTagSelect(tag.id)}
-                className={cn(
-                  "px-3 py-1.5 rounded-full text-[11px] font-bold transition-all whitespace-nowrap border",
-                  isSelected
-                    ? "bg-primary text-slate-950 border-primary shadow-2xs"
-                    : "bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50"
-                )}
-              >
-                {tag.label}
-              </button>
-            );
-          })}
+          {canCreatePost && (
+            <Link
+              href="/posts/create"
+              className="flex items-center justify-center gap-1.5 px-5 py-3 rounded-2xl bg-brand text-white text-xs font-bold hover:bg-brand/90 transition-all shrink-0 shadow-xs"
+            >
+              <Plus className="w-4 h-4 text-primary" />
+              <span>ایجاد پست جدید</span>
+            </Link>
+          )}
         </div>
       </div>
 
@@ -432,18 +361,14 @@ export default function ExploreScene() {
         <div className="bg-white p-12 rounded-3xl border border-slate-200 text-center space-y-3">
           <Grid className="w-10 h-10 text-slate-300 mx-auto" />
           <p className="text-sm font-black text-brand">پستی با این مشخصات یافت نشد</p>
-          <p className="text-xs text-slate-400">می‌توانید فیلترها را تغییر داده یا اولین پست را شما منتشر کنید.</p>
-          {(activeSearch || selectedTag !== "all" || selectedPublisherType !== "ALL") && (
+          <p className="text-xs text-slate-400">می‌توانید عبارت جستجو را تغییر داده یا بررسی کنید.</p>
+          {activeSearch && (
             <button
               type="button"
-              onClick={() => {
-                handleClearSearch();
-                setSelectedTag("all");
-                setSelectedPublisherType("ALL");
-              }}
+              onClick={handleClearSearch}
               className="mt-2 px-4 py-2 bg-slate-100 text-brand text-xs font-bold rounded-xl hover:bg-slate-200 transition-colors"
             >
-              پاک کردن همه فیلترها
+              پاک کردن جستجو
             </button>
           )}
         </div>
