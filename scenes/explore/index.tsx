@@ -1,30 +1,30 @@
 "use client";
 
-import React, { useState, useMemo, useRef, useEffect } from "react";
-import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useInfiniteExplorePosts, useLikePost } from "@/hooks/usePosts";
-import { useAuth } from "@/hooks/useAuth";
-import { usePostViewObserver } from "@/hooks/usePostViewObserver";
-import { getMediaUrl, getMediaPosterUrl, toPersianDigits, cn } from "@/lib/utils";
-import { UnifiedPost, PublisherType } from "@/types/api/post.types";
-import { RoleName } from "@/types/access";
-import { PaginationControls } from "@/components/ui/PaginationControls";
 import { PageSectionDivider } from "@/components/ui/PageSectionDivider";
+import { PaginationControls } from "@/components/ui/PaginationControls";
+import { useAuth } from "@/hooks/useAuth";
+import { useInfiniteExplorePosts, useLikePost } from "@/hooks/usePosts";
+import { usePostViewObserver } from "@/hooks/usePostViewObserver";
+import { cn, getMediaPosterUrl, toPersianDigits } from "@/lib/utils";
+import { RoleName } from "@/types/access";
+import { UnifiedPost } from "@/types/api/post.types";
 import {
-  Search,
-  Plus,
-  Heart,
-  Eye,
-  Layers,
   BookOpen,
   Building2,
-  Hotel,
-  ShieldCheck,
-  Loader2,
+  Eye,
   Grid,
+  Heart,
+  Hotel,
+  Layers,
+  Loader2,
+  Plus,
+  Search,
+  ShieldCheck,
   X,
 } from "lucide-react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 /**
@@ -295,7 +295,7 @@ export default function ExploreScene() {
     <div className="min-w-0 max-w-6xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8 pb-28 lg:pb-8 space-y-6" dir="rtl">
 
       {/* ── TOP ACTION & SEARCH BAR ────────────────────────────────────── */}
-      <div className="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200 shadow-xs">
+      <div >
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <form onSubmit={handleSearchSubmit} className="relative flex-1">
             <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
