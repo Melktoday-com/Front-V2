@@ -295,46 +295,51 @@ export default function ExploreScene() {
     <div className="min-w-0 max-w-6xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8 pb-28 lg:pb-8 space-y-6" dir="rtl">
 
       {/* ── TOP ACTION & SEARCH BAR ────────────────────────────────────── */}
-   
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-          <form onSubmit={handleSearchSubmit} className="relative flex-1">
-            <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <input
-              type="text"
-              placeholder="جستجو در تصاویر، مقالات، تحلیل‌ها و اخبار ملکی..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pr-11 pl-28 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs sm:text-sm text-slate-800 focus:bg-white focus:border-primary focus:outline-hidden transition-all placeholder:text-[11px] sm:placeholder:text-xs placeholder:text-slate-400"
-            />
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={handleClearSearch}
-                className="absolute left-20 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-200 transition-colors"
-                title="پاک کردن جستجو"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
-            <button
-              type="submit"
-              className="absolute left-2 top-1/2 -translate-y-1/2 px-4 py-1.5 rounded-xl bg-brand text-white text-xs font-bold hover:bg-brand/90 transition-all"
-            >
-              جستجو
-            </button>
-          </form>
 
-          {canCreatePost && (
-            <Link
-              href="/posts/create"
-              className="flex items-center justify-center gap-1.5 px-5 py-3 rounded-2xl bg-brand text-white text-xs font-bold hover:bg-brand/90 transition-all shrink-0 shadow-xs"
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <form onSubmit={handleSearchSubmit} className="relative flex-1">
+          <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <input
+            type="text"
+            placeholder="جستجو در تصاویر، مقالات، تحلیل‌ها و اخبار ملکی..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pr-11 pl-22 py-3 rounded-2xl
+               bg-slate-50 border border-slate-200 text-xs 
+               sm:text-sm text-slate-800 focus:bg-white
+                focus:border-primary focus:outline-hidden 
+                transition-all placeholder:text-[11px] 
+                sm:placeholder:text-xs placeholder:text-slate-400"
+          />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={handleClearSearch}
+              className="absolute left-20 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-200 transition-colors"
+              title="پاک کردن جستجو"
             >
-              <Plus className="w-4 h-4 text-primary" />
-              <span>ایجاد پست جدید</span>
-            </Link>
+              <X className="w-3.5 h-3.5" />
+            </button>
           )}
-        </div>
-    
+          <button
+            type="submit"
+            className="absolute left-2 top-1/2 -translate-y-1/2 px-4 py-1.5 rounded-xl bg-brand text-white text-xs font-bold hover:bg-brand/90 transition-all"
+          >
+            جستجو
+          </button>
+        </form>
+
+        {canCreatePost && (
+          <Link
+            href="/posts/create"
+            className="flex items-center justify-center gap-1.5 px-5 py-3 rounded-2xl bg-brand text-white text-xs font-bold hover:bg-brand/90 transition-all shrink-0 shadow-xs"
+          >
+            <Plus className="w-4 h-4 text-primary" />
+            <span>ایجاد پست جدید</span>
+          </Link>
+        )}
+      </div>
+
 
       {/* ── INSTAGRAM-STYLE EXPLORE GRID WITH BATCHED INFINITE SCROLL ─── */}
       {isLoading ? (
