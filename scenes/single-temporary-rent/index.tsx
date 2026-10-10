@@ -648,19 +648,7 @@ export default function ResidenceDetailScene() {
                                     <span>{isLoadingContact ? "در حال دریافت..." : "اطلاعات تماس با میزبان"}</span>
                                 </button>
 
-                                {/* Host Showcase Link */}
-                                {hostShowcaseUrl && (
-                                    <Link
-                                        href={hostShowcaseUrl}
-                                        className="w-full py-3 bg-orange-50/70 hover:bg-orange-100/80 text-orange-950 font-bold text-xs rounded-2xl border border-orange-200 transition-all flex items-center justify-between px-4 cursor-pointer active:scale-98"
-                                    >
-                                        <span className="flex items-center gap-2">
-                                            <Sparkles className="w-4 h-4 text-orange-600" />
-                                            <span>مشاهده ویترین میزبان</span>
-                                        </span>
-                                        <ChevronLeft className="w-4 h-4 text-orange-600" />
-                                    </Link>
-                                )}
+
                             </>
                         )}
 
