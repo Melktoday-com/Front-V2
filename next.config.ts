@@ -1,52 +1,40 @@
 import type { NextConfig } from "next";
 
+function getEnvHostnames(): Array<{ protocol: "http" | "https"; hostname: string; pathname: string }> {
+  const envVars = [
+    process.env.NEXT_PUBLIC_BASE_URL,
+    process.env.NEXT_PUBLIC_API_URL,
+    process.env.NEXT_PUBLIC_SITE_URL,
+    process.env.NEXT_PUBLIC_S3_URL,
+    process.env.NEXT_PUBLIC_STORAGE_URL,
+    process.env.NEXT_PUBLIC_MEDIA_URL,
+    ...(process.env.NEXT_PUBLIC_ALLOWED_IMAGE_DOMAINS?.split(",") || []),
+  ];
+  const list: Array<{ protocol: "http" | "https"; hostname: string; pathname: string }> = [];
+
+  for (const raw of envVars) {
+    if (!raw?.trim()) continue;
+    const clean = raw.trim();
+    try {
+      const parsed = new URL(clean.startsWith("http://") || clean.startsWith("https://") ? clean : `https://${clean}`);
+      if (parsed.hostname && !list.some((item) => item.hostname === parsed.hostname)) {
+        list.push({
+          protocol: parsed.protocol === "http:" ? "http" : "https",
+          hostname: parsed.hostname,
+          pathname: "/**",
+        });
+      }
+    } catch {}
+  }
+
+  return list;
+}
+
 const nextConfig: NextConfig = {
-  allowedDevOrigins: ["109.122.254.238"],
   images: {
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "www.figma.com",
-        port: "",
-        pathname: "/api/mcp/asset/**",
-      },
-      {
-        protocol: "https",
-        hostname: "images.unsplash.com",
-        port: "",
-        pathname: "/**",
-      },
-      {
-        protocol: "https",
-        hostname: "i.pravatar.cc",
-        port: "",
-        pathname: "/**",
-      },
-      {
-        protocol: "http",
-        hostname: "localhost",
-        port: "3000",
-        pathname: "/api/media/**",
-      },
-      {
-        protocol: "http",
-        hostname: "109.122.254.238",
-        port: "",
-        pathname: "/media/**",
-      },
-      {
-        protocol: "http",
-        hostname: "109.122.254.238",
-        port: "",
-        pathname: "/backend/media/**",
-      },
-      {
-        protocol: "http",
-        hostname: "109.122.254.238",
-        port: "3001",
-        pathname: "/media/**",
-      },
-    ],
+    formats: ["image/avif", "image/webp"],
+    minimumCacheTTL: 2592000,
+    remotePatterns: getEnvHostnames(),
   },
 };
 

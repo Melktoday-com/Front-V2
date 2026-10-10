@@ -40,21 +40,49 @@ export function extractMediaId(media?: string | { id: string; type?: string } | 
     return typeof media === "object" ? media.id : media;
 }
 
+function getSiteBaseUrl(): string {
+    const raw = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_SITE_URL || "";
+    if (raw) {
+        if (raw.startsWith("http://") || raw.startsWith("https://")) {
+            return raw.replace(/\/$/, "");
+        }
+        if (!raw.startsWith("/")) {
+            return `https://${raw.replace(/\/$/, "")}`;
+        }
+    }
+    if (typeof window !== "undefined" && window.location?.origin) {
+        return window.location.origin;
+    }
+    return "";
+}
+
+function getMediaBaseUrl(): string {
+    const apiBase = process.env.NEXT_PUBLIC_API_URL || "/backend/api";
+    if (apiBase.startsWith("http://") || apiBase.startsWith("https://")) {
+        return apiBase.replace(/\/$/, "");
+    }
+    const siteBase = getSiteBaseUrl();
+    if (siteBase) {
+        return `${siteBase}/${apiBase.replace(/^\//, "")}`.replace(/\/$/, "");
+    }
+    return apiBase.startsWith("/") ? apiBase.replace(/\/$/, "") : `/${apiBase.replace(/\/$/, "")}`;
+}
+
 export function getMediaUrl(mediaIdOrUrl?: string | { id: string; type?: string } | null): string {
     if (!mediaIdOrUrl) return "";
     const raw = typeof mediaIdOrUrl === "object" ? mediaIdOrUrl.id : mediaIdOrUrl;
     if (!raw) return "";
-    if (
-        raw.startsWith("http://") ||
-        raw.startsWith("https://") ||
-        raw.startsWith("/") ||
-        raw.startsWith("data:")
-    ) {
+    if (raw.startsWith("http://") || raw.startsWith("https://") || raw.startsWith("data:")) {
         return raw;
     }
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "";
-    const cleanBase = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
-    return `${cleanBase}/media/${raw}`;
+    const siteBase = getSiteBaseUrl();
+    if (raw.startsWith("/backend/api/media/") || raw.startsWith("/media/")) {
+        return siteBase ? `${siteBase}${raw}` : raw;
+    }
+    if (raw.startsWith("/")) {
+        return raw;
+    }
+    return `${getMediaBaseUrl()}/media/${raw}`;
 }
 
 export function getMediaPosterUrl(media?: string | { id: string; type?: string; posterUrl?: string } | null): string {
@@ -66,21 +94,20 @@ export function getMediaPosterUrl(media?: string | { id: string; type?: string; 
         if (media.type === "IMAGE") {
             return getMediaUrl(id);
         }
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL || "";
-        const cleanBase = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
-        return `${cleanBase}/media/${id}/poster`;
+        return `${getMediaBaseUrl()}/media/${id}/poster`;
     }
-    if (
-        media.startsWith("http://") ||
-        media.startsWith("https://") ||
-        media.startsWith("/") ||
-        media.startsWith("data:")
-    ) {
+    if (media.startsWith("http://") || media.startsWith("https://") || media.startsWith("data:")) {
         return media;
     }
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "";
-    const cleanBase = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
-    return `${cleanBase}/media/${media}/poster`;
+    const siteBase = getSiteBaseUrl();
+    if (media.startsWith("/backend/api/media/") || media.startsWith("/media/")) {
+        const full = siteBase ? `${siteBase}${media}` : media;
+        return `${full}/poster`;
+    }
+    if (media.startsWith("/")) {
+        return media;
+    }
+    return `${getMediaBaseUrl()}/media/${media}/poster`;
 }
 
 export function getPaginationItems(
