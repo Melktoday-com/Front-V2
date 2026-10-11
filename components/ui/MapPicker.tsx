@@ -263,7 +263,7 @@ export default function MapPicker({
     return (
         <div className={cn("space-y-3 w-full", className)}>
             {showToolbar && (
-                <div className="flex flex-wrap items-center justify-between gap-2.5 p-3 bg-gray-50/90 rounded-2xl border border-gray-200 text-xs">
+                <div className="flex flex-wrap items-center justify-between gap-2.5 p-3 bg-surface-secondary/90 rounded-2xl border border-border-subtle text-xs">
                     {/* City info badge */}
                     <div className="flex items-center gap-2 min-w-0">
                         <div className="w-7 h-7 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
@@ -282,7 +282,7 @@ export default function MapPicker({
                         <button
                             type="button"
                             onClick={handleResetToCityCenter}
-                            className="px-3 py-1.5 rounded-xl border border-gray-200 bg-white hover:bg-gray-100/80 text-text-main font-bold text-[11px] transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs active:scale-95"
+                            className="px-3 py-1.5 rounded-xl border border-border-subtle bg-surface hover:bg-surface-secondary/80 text-text-main font-bold text-[11px] transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs active:scale-95"
                             title="زوم به مرکز شهر انتخابی"
                         >
                             <Building2 className="w-3.5 h-3.5 text-secondary" />
@@ -313,7 +313,7 @@ export default function MapPicker({
             )}
 
             {/* Map Canvas Container */}
-            <div className="relative w-full h-[380px] sm:h-[420px] rounded-2xl overflow-hidden border border-gray-200 shadow-inner z-0">
+            <div className="relative w-full h-[380px] sm:h-[420px] rounded-2xl overflow-hidden border border-border-subtle shadow-inner z-0">
                 <MapContainer
                     center={position}
                     zoom={zoom}
@@ -348,7 +348,7 @@ export default function MapPicker({
                         aria-label="موقعیت فعلی من"
                         title="موقعیت فعلی من"
                         className={cn(
-                            "w-11 h-11 rounded-2xl bg-white border border-gray-200 text-brand shadow-lg hover:shadow-xl flex items-center justify-center transition-all cursor-pointer hover:bg-gray-50 active:scale-90",
+                            "w-11 h-11 rounded-2xl bg-surface border border-border-subtle text-brand shadow-lg hover:shadow-xl flex items-center justify-center transition-all cursor-pointer hover:bg-surface-secondary active:scale-90",
                             isLocating && "text-primary border-primary animate-pulse"
                         )}
                     >
@@ -361,7 +361,7 @@ export default function MapPicker({
                 </div>
 
                 {/* Bottom coordinates badge */}
-                <div className="absolute bottom-4 left-4 z-[500] hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-white/90 backdrop-blur-md rounded-xl border border-gray-200 text-[11px] font-bold text-brand shadow-sm">
+                <div className="absolute bottom-4 left-4 z-[500] hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-surface/90 backdrop-blur-md rounded-xl border border-border-subtle text-[11px] font-bold text-brand shadow-sm">
                     <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
                     <span>
                         {toPersianDigits(position[0].toFixed(4))} ،{" "}

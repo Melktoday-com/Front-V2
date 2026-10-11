@@ -273,57 +273,57 @@ export default function SubcategoryConfigModal({
     const getTypeBadge = (type: DynamicAttributeType) => {
         switch (type) {
             case 'STRING':
-                return <span className="text-[11px] font-semibold bg-blue-50 text-blue-700 px-2.5 py-0.5 rounded-md">متنی</span>;
+                return <span className="text-[11px] font-semibold bg-info-subtle text-info px-2.5 py-0.5 rounded-md">متنی</span>;
             case 'NUMBER':
-                return <span className="text-[11px] font-semibold bg-emerald-50 text-emerald-700 px-2.5 py-0.5 rounded-md">عددی</span>;
+                return <span className="text-[11px] font-semibold bg-success-subtle text-success px-2.5 py-0.5 rounded-md">عددی</span>;
             case 'BOOLEAN':
                 return <span className="text-[11px] font-semibold bg-purple-50 text-purple-700 px-2.5 py-0.5 rounded-md">بله / خیر</span>;
             case 'SELECT':
-                return <span className="text-[11px] font-semibold bg-amber-50 text-amber-700 px-2.5 py-0.5 rounded-md">انتخابی</span>;
+                return <span className="text-[11px] font-semibold bg-warning-subtle text-warning px-2.5 py-0.5 rounded-md">انتخابی</span>;
         }
     };
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200" dir="rtl">
-            <div className="bg-white rounded-3xl w-full max-w-4xl max-h-[90vh] shadow-2xl flex flex-col overflow-hidden border border-slate-100">
+            <div className="bg-surface rounded-3xl w-full max-w-4xl max-h-[90vh] shadow-2xl flex flex-col overflow-hidden border border-border-subtle">
                 {/* Header */}
-                <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                <div className="p-6 border-b border-border-subtle flex items-center justify-between bg-surface-secondary/50">
                     <div>
                         <div className="flex items-center gap-2">
-                            <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-lg">
+                            <span className="text-xs font-semibold text-info bg-info-subtle px-2.5 py-1 rounded-lg">
                                 {categoryName}
                             </span>
                             <span className="text-slate-300">/</span>
-                            <h2 className="text-xl font-black text-slate-900 flex items-center gap-2">
-                                <Sliders className="w-5 h-5 text-blue-600" />
+                            <h2 className="text-xl font-black text-foreground flex items-center gap-2">
+                                <Sliders className="w-5 h-5 text-info" />
                                 تنظیمات زیردسته: {subcategoryName}
                             </h2>
                         </div>
-                        <p className="text-xs text-slate-500 mt-1">
+                        <p className="text-xs text-foreground-muted mt-1">
                             تنظیم الگوهای قیمت‌گذاری مجاز و ویژگی‌های فیلدی داینامیک این زیردسته
                         </p>
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-200/50 rounded-xl transition-all"
+                        className="p-2 text-foreground-muted hover:text-foreground-secondary hover:bg-slate-200/50 rounded-xl transition-all"
                     >
                         <X className="w-6 h-6" />
                     </button>
                 </div>
 
                 {/* Tabs */}
-                <div className="flex border-b border-slate-100 bg-white px-6">
+                <div className="flex border-b border-border-subtle bg-surface px-6">
                     <button
                         onClick={() => setActiveTab('price-models')}
                         className={`flex items-center gap-2 py-3 px-4 font-bold text-sm border-b-2 transition-all ${
                             activeTab === 'price-models'
-                                ? 'border-blue-600 text-blue-600'
-                                : 'border-transparent text-slate-500 hover:text-slate-800'
+                                ? 'border-blue-600 text-info'
+                                : 'border-transparent text-foreground-muted hover:text-foreground'
                         }`}
                     >
                         <DollarSign className="w-4 h-4" />
                         مدل‌های قیمت‌گذاری مجاز
-                        <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-mono">
+                        <span className="text-xs bg-surface-secondary text-foreground-secondary px-2 py-0.5 rounded-full font-mono">
                             {selectedPriceModelIds.length}
                         </span>
                     </button>
@@ -331,13 +331,13 @@ export default function SubcategoryConfigModal({
                         onClick={() => setActiveTab('attributes')}
                         className={`flex items-center gap-2 py-3 px-4 font-bold text-sm border-b-2 transition-all ${
                             activeTab === 'attributes'
-                                ? 'border-blue-600 text-blue-600'
-                                : 'border-transparent text-slate-500 hover:text-slate-800'
+                                ? 'border-blue-600 text-info'
+                                : 'border-transparent text-foreground-muted hover:text-foreground'
                         }`}
                     >
                         <ListFilter className="w-4 h-4" />
                         ویژگی‌های داینامیک فرم
-                        <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-mono">
+                        <span className="text-xs bg-surface-secondary text-foreground-secondary px-2 py-0.5 rounded-full font-mono">
                             {attributes?.length || 0}
                         </span>
                     </button>
@@ -348,20 +348,20 @@ export default function SubcategoryConfigModal({
                     {/* TAB 1: Price Models */}
                     {activeTab === 'price-models' && (
                         <div className="space-y-6">
-                            <div className="bg-blue-50/60 border border-blue-100 rounded-2xl p-4 flex items-start gap-3">
-                                <AlertCircle className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
-                                <p className="text-xs text-blue-900 leading-relaxed">
+                            <div className="bg-info-subtle/60 border border-info/30 rounded-2xl p-4 flex items-start gap-3">
+                                <AlertCircle className="w-5 h-5 text-info shrink-0 mt-0.5" />
+                                <p className="text-xs text-foreground leading-relaxed">
                                     تنها مدل‌هایی که در این بخش انتخاب و تیک زده شوند، هنگام ثبت آگهی در این زیردسته به کاربر نمایش داده می‌شوند و سیستم صحت مقادیر مالی را با فرمول‌های فیلدهای آن مدل ارزیابی می‌کند.
                                 </p>
                             </div>
 
                             {loadingPriceModels || loadingSubPriceModels ? (
-                                <div className="py-16 text-center text-slate-400">
+                                <div className="py-16 text-center text-foreground-muted">
                                     <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
                                     در حال بارگذاری مدل‌های قیمت‌گذاری...
                                 </div>
                             ) : !allPriceModels || allPriceModels.length === 0 ? (
-                                <div className="text-center py-12 text-slate-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                                <div className="text-center py-12 text-foreground-muted bg-surface-secondary rounded-2xl border border-dashed border-border-subtle">
                                     هیچ مدل قیمت‌گذاری در سیستم تعریف نشده است.
                                 </div>
                             ) : (
@@ -374,32 +374,32 @@ export default function SubcategoryConfigModal({
                                                 onClick={() => togglePriceModel(pm.id)}
                                                 className={`cursor-pointer p-4 rounded-2xl border-2 transition-all flex flex-col justify-between ${
                                                     isChecked
-                                                        ? 'border-blue-600 bg-blue-50/20 shadow-sm shadow-blue-100'
-                                                        : 'border-slate-200 bg-white hover:border-slate-300'
+                                                        ? 'border-blue-600 bg-info-subtle/20 shadow-sm shadow-blue-100'
+                                                        : 'border-border-subtle bg-surface hover:border-border'
                                                 }`}
                                             >
                                                 <div className="flex items-start justify-between gap-3">
                                                     <div className="flex items-start gap-3">
                                                         <div className={`mt-0.5 rounded-lg p-1 transition-colors ${
-                                                            isChecked ? 'text-blue-600' : 'text-slate-300'
+                                                            isChecked ? 'text-info' : 'text-slate-300'
                                                         }`}>
                                                             {isChecked ? (
-                                                                <CheckSquare className="w-5 h-5 text-blue-600" />
+                                                                <CheckSquare className="w-5 h-5 text-info" />
                                                             ) : (
                                                                 <Square className="w-5 h-5 text-slate-300" />
                                                             )}
                                                         </div>
                                                         <div>
                                                             <div className="flex items-center gap-2">
-                                                                <h4 className="font-bold text-sm text-slate-900">
+                                                                <h4 className="font-bold text-sm text-foreground">
                                                                     {pm.displayName || pm.name}
                                                                 </h4>
-                                                                <span className="text-[10px] font-mono bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">
+                                                                <span className="text-[10px] font-mono bg-surface-secondary text-foreground-secondary px-1.5 py-0.5 rounded">
                                                                     {pm.key}
                                                                 </span>
                                                             </div>
                                                             {pm.description && (
-                                                                <p className="text-xs text-slate-500 mt-1 leading-normal">
+                                                                <p className="text-xs text-foreground-muted mt-1 leading-normal">
                                                                     {pm.description}
                                                                 </p>
                                                             )}
@@ -409,15 +409,15 @@ export default function SubcategoryConfigModal({
 
                                                 {/* Pricing fields preview */}
                                                 {pm.pricingFields && Array.isArray(pm.pricingFields) && pm.pricingFields.length > 0 && (
-                                                    <div className="mt-3 pt-3 border-t border-slate-100 flex flex-wrap gap-1.5">
-                                                        <span className="text-[10px] text-slate-400 ml-1">فیلدها:</span>
+                                                    <div className="mt-3 pt-3 border-t border-border-subtle flex flex-wrap gap-1.5">
+                                                        <span className="text-[10px] text-foreground-muted ml-1">فیلدها:</span>
                                                         {pm.pricingFields.map((f: PricingField) => (
                                                             <span
                                                                 key={f.key}
                                                                 className={`text-[10px] px-2 py-0.5 rounded-md font-medium ${
                                                                     f.required
-                                                                        ? 'bg-amber-50 text-amber-800 border border-amber-200'
-                                                                        : 'bg-slate-100 text-slate-600'
+                                                                        ? 'bg-warning-subtle text-warning border border-warning/30'
+                                                                        : 'bg-surface-secondary text-foreground-secondary'
                                                                 }`}
                                                             >
                                                                 {f.label} {f.required && '*'}
@@ -449,8 +449,8 @@ export default function SubcategoryConfigModal({
                         <div className="space-y-6">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <h3 className="font-bold text-slate-900 text-sm">لیست ویژگی‌های اختصاصی این زیردسته</h3>
-                                    <p className="text-xs text-slate-500 mt-0.5">
+                                    <h3 className="font-bold text-foreground text-sm">لیست ویژگی‌های اختصاصی این زیردسته</h3>
+                                    <p className="text-xs text-foreground-muted mt-0.5">
                                         فیلدهای فرم مانند تعداد اتاق، متراژ، طبقه، آسانسور و غیره
                                     </p>
                                 </div>
@@ -464,16 +464,16 @@ export default function SubcategoryConfigModal({
                             </div>
 
                             {loadingAttributes ? (
-                                <div className="py-16 text-center text-slate-400">
+                                <div className="py-16 text-center text-foreground-muted">
                                     <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
                                     در حال بارگذاری ویژگی‌ها...
                                 </div>
                             ) : !attributes || attributes.filter((a: AttributeDefinition) => a.isActive !== false).length === 0 ? (
-                                <div className="text-center py-16 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-                                    <p className="text-slate-400 text-sm mb-3">هنوز هیچ ویژگی داینامیکی برای این زیردسته تعریف نشده است.</p>
+                                <div className="text-center py-16 bg-surface-secondary rounded-2xl border border-dashed border-border-subtle">
+                                    <p className="text-foreground-muted text-sm mb-3">هنوز هیچ ویژگی داینامیکی برای این زیردسته تعریف نشده است.</p>
                                     <button
                                         onClick={handleOpenCreateAttribute}
-                                        className="inline-flex items-center gap-1.5 text-xs text-blue-600 font-bold hover:underline"
+                                        className="inline-flex items-center gap-1.5 text-xs text-info font-bold hover:underline"
                                     >
                                         <Plus className="w-4 h-4" />
                                         تعریف اولین ویژگی
@@ -484,37 +484,37 @@ export default function SubcategoryConfigModal({
                                     {attributes.filter((a: AttributeDefinition) => a.isActive !== false).map((attr: AttributeDefinition) => (
                                         <div
                                             key={attr.id}
-                                            className="bg-white p-4 rounded-2xl border border-slate-200 hover:border-blue-200 transition-all shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4"
+                                            className="bg-surface p-4 rounded-2xl border border-border-subtle hover:border-info/30 transition-all shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4"
                                         >
                                             <div className="flex items-start gap-4">
-                                                <div className="w-7 h-7 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center font-mono text-xs font-bold shrink-0">
+                                                <div className="w-7 h-7 rounded-lg bg-surface-secondary text-foreground-secondary flex items-center justify-center font-mono text-xs font-bold shrink-0">
                                                     #{attr.displayOrder || 1}
                                                 </div>
                                                 <div>
                                                     <div className="flex items-center gap-2 flex-wrap">
-                                                        <span className="font-bold text-slate-900 text-sm">{attr.label}</span>
-                                                        <span className="text-xs font-mono text-slate-400 bg-slate-100 px-2 py-0.5 rounded">
+                                                        <span className="font-bold text-foreground text-sm">{attr.label}</span>
+                                                        <span className="text-xs font-mono text-foreground-muted bg-surface-secondary px-2 py-0.5 rounded">
                                                              {attr.key}
                                                         </span>
                                                         {getTypeBadge(attr.type)}
                                                         {attr.required ? (
-                                                            <span className="text-[10px] font-bold bg-rose-50 text-rose-600 px-2 py-0.5 rounded-full border border-rose-200">
+                                                            <span className="text-[10px] font-bold bg-error-subtle text-error px-2 py-0.5 rounded-full border border-error/30">
                                                                 اجباری
                                                             </span>
                                                         ) : (
-                                                            <span className="text-[10px] font-medium text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">
+                                                            <span className="text-[10px] font-medium text-foreground-muted bg-surface-secondary px-2 py-0.5 rounded-full">
                                                                 اختیاری
                                                             </span>
                                                         )}
                                                     </div>
 
                                                     {attr.description && (
-                                                        <p className="text-xs text-slate-500 mt-1">{attr.description}</p>
+                                                        <p className="text-xs text-foreground-muted mt-1">{attr.description}</p>
                                                     )}
 
                                                     {/* Constraints preview for NUMBER */}
                                                     {attr.type === 'NUMBER' && attr.constraints && (
-                                                        <div className="mt-2 text-[11px] text-slate-500 flex items-center gap-2">
+                                                        <div className="mt-2 text-[11px] text-foreground-muted flex items-center gap-2">
                                                              {attr.constraints.min !== undefined && <span>حداقل: {attr.constraints.min}</span>}
                                                              {attr.constraints.max !== undefined && <span>حداکثر: {attr.constraints.max}</span>}
                                                         </div>
@@ -526,7 +526,7 @@ export default function SubcategoryConfigModal({
                                                             {attr.options.map((opt: AttributeOption) => (
                                                                 <span
                                                                     key={opt.key}
-                                                                    className="text-[11px] bg-slate-100 text-slate-700 px-2 py-0.5 rounded-md font-medium"
+                                                                    className="text-[11px] bg-surface-secondary text-foreground-secondary px-2 py-0.5 rounded-md font-medium"
                                                                 >
                                                                     {opt.label}
                                                                 </span>
@@ -539,7 +539,7 @@ export default function SubcategoryConfigModal({
                                             <div className="flex items-center gap-2 shrink-0 self-end md:self-center">
                                                 <button
                                                     onClick={() => handleOpenEditAttribute(attr)}
-                                                    className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
+                                                    className="p-2 text-foreground-muted hover:text-info hover:bg-info-subtle rounded-xl transition-all"
                                                     title="ویرایش ویژگی"
                                                 >
                                                     <Edit2 className="w-4 h-4" />
@@ -550,7 +550,7 @@ export default function SubcategoryConfigModal({
                                                             deleteAttributeMutation.mutate(attr.id);
                                                         }
                                                     }}
-                                                    className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
+                                                    className="p-2 text-foreground-muted hover:text-error hover:bg-error-subtle rounded-xl transition-all"
                                                     title="حذف ویژگی"
                                                 >
                                                     <Trash2 className="w-4 h-4" />
@@ -568,14 +568,14 @@ export default function SubcategoryConfigModal({
             {/* Submodal: Create / Edit Attribute */}
             {isAttributeModalOpen && (
                 <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-in fade-in duration-150" dir="rtl">
-                    <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden border border-slate-100 max-h-[90vh] flex flex-col">
-                        <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
-                            <h3 className="font-bold text-slate-900 text-base">
+                    <div className="bg-surface rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden border border-border-subtle max-h-[90vh] flex flex-col">
+                        <div className="p-5 border-b border-border-subtle flex items-center justify-between bg-surface-secondary">
+                            <h3 className="font-bold text-foreground text-base">
                                 {attributeFormData.id ? "ویرایش ویژگی" : "افزودن ویژگی جدید"}
                             </h3>
                             <button
                                 onClick={() => setIsAttributeModalOpen(false)}
-                                className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg"
+                                className="p-1.5 text-foreground-muted hover:text-foreground-secondary rounded-lg"
                             >
                                 <X className="w-5 h-5" />
                             </button>
@@ -584,7 +584,7 @@ export default function SubcategoryConfigModal({
                         <div className="p-6 space-y-4 overflow-y-auto flex-1">
                             {/* Key */}
                             <div>
-                                <label className="block text-xs font-bold text-slate-700 mb-1">
+                                <label className="block text-xs font-bold text-foreground-secondary mb-1">
                                     کلید فنی (Key - انگلیسی و بدون فاصله)
                                 </label>
                                 <input
@@ -592,10 +592,10 @@ export default function SubcategoryConfigModal({
                                     placeholder="مثلاً: rooms یا floor یا has_parking"
                                     value={attributeFormData.key}
                                     onChange={(e) => setAttributeFormData({ ...attributeFormData, key: e.target.value })}
-                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                    className="w-full px-3.5 py-2.5 rounded-xl border border-border-subtle font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                                 />
                                 {attributeFormData.id && (
-                                    <p className="text-[11px] text-amber-600 mt-1">
+                                    <p className="text-[11px] text-warning mt-1">
                                         توجه: در صورت تغییر کلید فنی، این فیلد در آگهی‌های ثبت‌شده این زیردسته نیز به‌طور خودکار به‌روزرسانی می‌شود.
                                     </p>
                                 )}
@@ -603,7 +603,7 @@ export default function SubcategoryConfigModal({
 
                             {/* Label */}
                             <div>
-                                <label className="block text-xs font-bold text-slate-700 mb-1">
+                                <label className="block text-xs font-bold text-foreground-secondary mb-1">
                                     عنوان نمایشی (فارسی)
                                 </label>
                                 <input
@@ -611,19 +611,19 @@ export default function SubcategoryConfigModal({
                                     placeholder="مثلاً: تعداد اتاق خواب"
                                     value={attributeFormData.label}
                                     onChange={(e) => setAttributeFormData({ ...attributeFormData, label: e.target.value })}
-                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                    className="w-full px-3.5 py-2.5 rounded-xl border border-border-subtle text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                                 />
                             </div>
 
                             {/* Type */}
                             <div>
-                                <label className="block text-xs font-bold text-slate-700 mb-1">
+                                <label className="block text-xs font-bold text-foreground-secondary mb-1">
                                     نوع فیلد
                                 </label>
                                 <select
                                     value={attributeFormData.type}
                                     onChange={(e) => setAttributeFormData({ ...attributeFormData, type: e.target.value as DynamicAttributeType })}
-                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-white"
+                                    className="w-full px-3.5 py-2.5 rounded-xl border border-border-subtle text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-surface"
                                 >
                                     <option value="STRING">متنی (STRING) - مانند آدرس یا توضیحات خاص</option>
                                     <option value="NUMBER">عددی (NUMBER) - مانند متراژ، سال ساخت، طبقه</option>
@@ -634,9 +634,9 @@ export default function SubcategoryConfigModal({
 
                             {/* Number Constraints */}
                             {attributeFormData.type === 'NUMBER' && (
-                                <div className="grid grid-cols-2 gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
+                                <div className="grid grid-cols-2 gap-3 p-3 bg-surface-secondary rounded-xl border border-border-subtle">
                                     <div>
-                                        <label className="block text-[11px] font-semibold text-slate-600 mb-1">حداقل مقدار</label>
+                                        <label className="block text-[11px] font-semibold text-foreground-secondary mb-1">حداقل مقدار</label>
                                         <input
                                             type="number"
                                             value={attributeFormData.constraints.min ?? ""}
@@ -647,11 +647,11 @@ export default function SubcategoryConfigModal({
                                                     min: e.target.value === "" ? undefined : Number(e.target.value)
                                                 }
                                             })}
-                                            className="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs"
+                                            className="w-full px-3 py-1.5 rounded-lg border border-border-subtle text-xs"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-[11px] font-semibold text-slate-600 mb-1">حداکثر مقدار</label>
+                                        <label className="block text-[11px] font-semibold text-foreground-secondary mb-1">حداکثر مقدار</label>
                                         <input
                                             type="number"
                                             value={attributeFormData.constraints.max ?? ""}
@@ -662,7 +662,7 @@ export default function SubcategoryConfigModal({
                                                     max: e.target.value === "" ? undefined : Number(e.target.value)
                                                 }
                                             })}
-                                            className="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs"
+                                            className="w-full px-3 py-1.5 rounded-lg border border-border-subtle text-xs"
                                         />
                                     </div>
                                 </div>
@@ -670,23 +670,23 @@ export default function SubcategoryConfigModal({
 
                             {/* Select Options Editor */}
                             {attributeFormData.type === 'SELECT' && (
-                                <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
+                                <div className="p-3.5 bg-surface-secondary rounded-2xl border border-border-subtle space-y-3">
                                     <div className="flex items-center justify-between">
-                                        <span className="text-xs font-bold text-slate-700">گزینه‌های انتخابی (Options)</span>
-                                        <span className="text-[10px] text-slate-400">{attributeFormData.options.length} گزینه</span>
+                                        <span className="text-xs font-bold text-foreground-secondary">گزینه‌های انتخابی (Options)</span>
+                                        <span className="text-[10px] text-foreground-muted">{attributeFormData.options.length} گزینه</span>
                                     </div>
 
                                     {attributeFormData.options.length > 0 && (
                                         <div className="space-y-1.5 max-h-32 overflow-y-auto">
                                             {attributeFormData.options.map((opt, idx) => (
-                                                <div key={idx} className="flex items-center justify-between bg-white px-3 py-1.5 rounded-lg border border-slate-200 text-xs">
-                                                    <span className="font-bold text-slate-800">{opt.label}</span>
+                                                <div key={idx} className="flex items-center justify-between bg-surface px-3 py-1.5 rounded-lg border border-border-subtle text-xs">
+                                                    <span className="font-bold text-foreground">{opt.label}</span>
                                                     <div className="flex items-center gap-2">
-                                                        <span className="text-[10px] font-mono text-slate-400">{opt.key}</span>
+                                                        <span className="text-[10px] font-mono text-foreground-muted">{opt.key}</span>
                                                         <button
                                                             type="button"
                                                             onClick={() => handleRemoveOption(idx)}
-                                                            className="text-slate-400 hover:text-red-500"
+                                                            className="text-foreground-muted hover:text-error"
                                                         >
                                                             <Trash2 className="w-3.5 h-3.5" />
                                                         </button>
@@ -696,26 +696,26 @@ export default function SubcategoryConfigModal({
                                         </div>
                                     )}
 
-                                    <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-200">
+                                    <div className="grid grid-cols-2 gap-2 pt-1 border-t border-border-subtle">
                                         <input
                                             type="text"
                                             placeholder="کلید مقدار (e.g. 1)"
                                             value={newOptionKey}
                                             onChange={(e) => setNewOptionKey(e.target.value)}
-                                            className="px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs font-mono"
+                                            className="px-2.5 py-1.5 rounded-lg border border-border-subtle text-xs font-mono"
                                         />
                                         <input
                                             type="text"
                                             placeholder="عنوان فارسی (e.g. ۱ خواب)"
                                             value={newOptionLabel}
                                             onChange={(e) => setNewOptionLabel(e.target.value)}
-                                            className="px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs"
+                                            className="px-2.5 py-1.5 rounded-lg border border-border-subtle text-xs"
                                         />
                                     </div>
                                     <button
                                         type="button"
                                         onClick={handleAddOption}
-                                        className="w-full py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold rounded-lg transition-colors"
+                                        className="w-full py-1.5 bg-slate-200 hover:bg-slate-300 text-foreground-secondary text-xs font-bold rounded-lg transition-colors"
                                     >
                                         + افزودن به گزینه‌ها
                                     </button>
@@ -725,14 +725,14 @@ export default function SubcategoryConfigModal({
                             {/* Required & Display Order */}
                             <div className="grid grid-cols-2 gap-4 items-center">
                                 <div>
-                                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                                    <label className="block text-xs font-bold text-foreground-secondary mb-1">
                                         ترتیب نمایش
                                     </label>
                                     <input
                                         type="number"
                                         value={attributeFormData.displayOrder}
                                         onChange={(e) => setAttributeFormData({ ...attributeFormData, displayOrder: Number(e.target.value) })}
-                                        className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm"
+                                        className="w-full px-3.5 py-2 rounded-xl border border-border-subtle text-sm"
                                     />
                                 </div>
                                 <div className="pt-5">
@@ -741,15 +741,15 @@ export default function SubcategoryConfigModal({
                                             type="checkbox"
                                             checked={attributeFormData.required}
                                             onChange={(e) => setAttributeFormData({ ...attributeFormData, required: e.target.checked })}
-                                            className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
+                                            className="w-4 h-4 text-info rounded border-border focus:ring-blue-500"
                                         />
-                                        <span className="text-xs font-bold text-slate-700">این فیلد اجباری است</span>
+                                        <span className="text-xs font-bold text-foreground-secondary">این فیلد اجباری است</span>
                                     </label>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="p-4 bg-slate-50 border-t border-slate-100 flex items-center gap-3">
+                        <div className="p-4 bg-surface-secondary border-t border-border-subtle flex items-center gap-3">
                             <button
                                 onClick={() => saveAttributeMutation.mutate(attributeFormData)}
                                 disabled={!attributeFormData.key || !attributeFormData.label || saveAttributeMutation.isPending}
@@ -759,7 +759,7 @@ export default function SubcategoryConfigModal({
                             </button>
                             <button
                                 onClick={() => setIsAttributeModalOpen(false)}
-                                className="px-5 py-2.5 font-bold text-slate-500 hover:bg-slate-200 rounded-xl transition-all text-sm"
+                                className="px-5 py-2.5 font-bold text-foreground-muted hover:bg-slate-200 rounded-xl transition-all text-sm"
                             >
                                 انصراف
                             </button>

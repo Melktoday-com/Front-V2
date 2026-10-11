@@ -158,7 +158,7 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
     if (!conversationId) {
         return (
             <div className="h-full flex flex-col items-center justify-center text-center p-10 bg-soft-bg/20 rounded-[40px] border border-soft-border border-dashed">
-                <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center text-secondary mb-6 shadow-sm">
+                <div className="w-20 h-20 bg-surface rounded-full flex items-center justify-center text-secondary mb-6 shadow-sm">
                     <MessageCircle className="w-10 h-10 opacity-20" />
                 </div>
                 <h3 className="text-xl font-black text-brand mb-2">صندوق پیام</h3>
@@ -180,9 +180,9 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
     const otherParticipant = conversation?.otherParticipant;
 
     return (
-        <div className="h-full flex flex-col bg-white overflow-hidden" dir="rtl">
+        <div className="h-full flex flex-col bg-surface overflow-hidden" dir="rtl">
             {/* Header */}
-            <div className="p-3 lg:px-6 lg:py-3.5 border-b border-soft-border bg-white flex items-center justify-between shrink-0 sticky top-0 z-20">
+            <div className="p-3 lg:px-6 lg:py-3.5 border-b border-soft-border bg-surface flex items-center justify-between shrink-0 sticky top-0 z-20">
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-soft-bg rounded-2xl flex items-center justify-center text-brand overflow-hidden border border-soft-border shrink-0">
                         {otherParticipant?.avatar ? (
@@ -221,7 +221,7 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
                         type="button"
                         onClick={handleRequestReview}
                         disabled={isSending}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-800 text-xs font-bold transition-colors border border-amber-500/20 cursor-pointer"
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-warning text-xs font-bold transition-colors border border-amber-500/20 cursor-pointer"
                         title="ارسال درخواست ثبت نظر و امتیاز به کاربر"
                     >
                         <Star className="w-4 h-4 fill-amber-500 text-amber-500" />
@@ -233,14 +233,14 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
             {/* Messages Area */}
             <div
                 ref={scrollRef}
-                className="flex-1 overflow-y-auto px-3 lg:px-6 py-4 space-y-3 custom-scrollbar bg-slate-50/40"
+                className="flex-1 overflow-y-auto px-3 lg:px-6 py-4 space-y-3 custom-scrollbar bg-surface-secondary/40"
             >
                 {hasNextPage && (
                     <div className="flex justify-center pb-2">
                         <button
                             onClick={() => fetchNextPage()}
                             disabled={isFetchingNextPage}
-                            className="text-xs text-brand font-bold bg-white border border-soft-border px-4 py-1.5 rounded-full hover:bg-brand hover:text-white transition-all disabled:opacity-50 shadow-xs"
+                            className="text-xs text-brand font-bold bg-surface border border-soft-border px-4 py-1.5 rounded-full hover:bg-brand hover:text-white transition-all disabled:opacity-50 shadow-xs"
                         >
                             {isFetchingNextPage ? (
                                 <span className="flex items-center gap-1.5">
@@ -285,7 +285,7 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
                                 <div className="space-y-1.5">
                                     <div
                                         className={cn(
-                                            "p-1.5 rounded-2xl overflow-hidden border shadow-xs bg-white",
+                                            "p-1.5 rounded-2xl overflow-hidden border shadow-xs bg-surface",
                                             isMine ? "border-brand/20 rounded-br-none" : "border-soft-border rounded-bl-none"
                                         )}
                                     >
@@ -311,7 +311,7 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
                                                 "px-3.5 py-2 rounded-2xl text-[13px] leading-relaxed",
                                                 isMine
                                                     ? "bg-brand text-white rounded-br-none"
-                                                    : "bg-white text-brand rounded-bl-none border border-soft-border shadow-xs"
+                                                    : "bg-surface text-brand rounded-bl-none border border-soft-border shadow-xs"
                                             )}
                                         >
                                             {msg.content}
@@ -325,7 +325,7 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
                                         "px-3.5 py-2 rounded-2xl text-[13px] leading-relaxed break-words shadow-xs",
                                         isMine
                                             ? "bg-brand text-white rounded-br-none"
-                                            : "bg-white text-brand rounded-bl-none border border-soft-border/90"
+                                            : "bg-surface text-brand rounded-bl-none border border-soft-border/90"
                                     )}
                                 >
                                     {msg.content}
@@ -344,7 +344,7 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
             {/* Input Bar */}
             <form
                 onSubmit={handleSend}
-                className="p-3 lg:p-4 bg-white border-t border-soft-border shrink-0 sticky bottom-0 z-20"
+                className="p-3 lg:p-4 bg-surface border-t border-soft-border shrink-0 sticky bottom-0 z-20"
             >
                 <input
                     ref={fileInputRef}
@@ -354,13 +354,13 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
                     onChange={handleImageSelect}
                 />
 
-                <div className="relative flex items-center bg-soft-bg/30 rounded-2xl border border-soft-border focus-within:border-brand/30 focus-within:bg-white focus-within:ring-2 focus-within:ring-brand/5 transition-all p-1.5">
+                <div className="relative flex items-center bg-soft-bg/30 rounded-2xl border border-soft-border focus-within:border-brand/30 focus-within:bg-surface focus-within:ring-2 focus-within:ring-brand/5 transition-all p-1.5">
                     {/* Attachment / Image button */}
                     <button
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
                         disabled={isUploadingImage || isSending}
-                        className="p-2 text-secondary hover:text-brand hover:bg-white rounded-xl transition-all disabled:opacity-40"
+                        className="p-2 text-secondary hover:text-brand hover:bg-surface rounded-xl transition-all disabled:opacity-40"
                         title="ارسال تصویر"
                     >
                         {isUploadingImage ? (
@@ -376,7 +376,7 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
                             type="button"
                             onClick={handleRequestReview}
                             disabled={isSending}
-                            className="p-2 text-secondary hover:text-amber-600 hover:bg-amber-50 rounded-xl transition-all cursor-pointer"
+                            className="p-2 text-secondary hover:text-warning hover:bg-warning-subtle rounded-xl transition-all cursor-pointer"
                             title="درخواست ثبت نظر و امتیاز عملکرد"
                         >
                             <Star className="w-5 h-5 text-amber-500" />

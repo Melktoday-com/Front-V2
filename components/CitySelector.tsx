@@ -180,7 +180,7 @@ export function CitySelector({ isOpen, onClose, onSelect, currentCityId }: CityS
 
             {/* Content Container */}
             <div className={cn(
-                "relative w-full lg:max-w-2xl bg-white rounded-t-[30px] lg:rounded-[30px] shadow-2xl flex flex-col overflow-hidden transition-transform duration-300 transform",
+                "relative w-full lg:max-w-2xl bg-surface rounded-t-[30px] lg:rounded-[30px] shadow-2xl flex flex-col overflow-hidden transition-transform duration-300 transform",
                 "h-[85vh] lg:h-[70vh]",
                 "animate-in slide-in-from-bottom lg:slide-in-from-bottom-10"
             )}>
@@ -284,7 +284,7 @@ export function CitySelector({ isOpen, onClose, onSelect, currentCityId }: CityS
                                                     "text-right px-3.5 py-2.5 rounded-[15px] text-sm font-bold transition-all border flex items-center justify-between gap-1 cursor-pointer",
                                                     currentCityId === city.id
                                                         ? "bg-primary/10 border-primary text-primary"
-                                                        : "bg-white border-soft-border text-brand hover:border-primary/30 hover:bg-soft-bg"
+                                                        : "bg-surface border-soft-border text-brand hover:border-primary/30 hover:bg-soft-bg"
                                                 )}
                                             >
                                                 <div className="flex items-center gap-1.5 min-w-0">

@@ -4,7 +4,7 @@ export function NotificationSkeleton() {
             {[1, 2, 3, 4].map((i) => (
                 <div
                     key={i}
-                    className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-3xl border border-soft-border/50 bg-white animate-pulse"
+                    className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-3xl border border-soft-border/50 bg-surface animate-pulse"
                 >
                     <div className="flex items-start gap-3.5 flex-1">
                         <div className="w-12 h-12 rounded-2xl bg-soft-bg shrink-0" />

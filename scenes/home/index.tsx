@@ -107,7 +107,7 @@ export const HomeScene = () => {
                 {isFeaturedLoading ? (
                     <div className="flex gap-4 overflow-hidden">
                         {[1, 2, 3].map((i) => (
-                            <div key={i} className="min-w-[180px] aspect-square bg-gray-100 animate-pulse rounded-2xl" />
+                            <div key={i} className="min-w-[180px] aspect-square bg-surface-secondary animate-pulse rounded-2xl" />
                         ))}
                     </div>
                 ) : featuredError ? (
@@ -158,7 +158,7 @@ export const HomeScene = () => {
                 {isAgenciesLoading ? (
                     <div className="flex gap-4 overflow-hidden">
                         {[1, 2, 3, 4, 5, 6].map((i) => (
-                            <div key={i} className="min-w-32 h-40 bg-gray-100 animate-pulse rounded-xl" />
+                            <div key={i} className="min-w-32 h-40 bg-surface-secondary animate-pulse rounded-xl" />
                         ))}
                     </div>
                 ) : (
@@ -183,7 +183,7 @@ export const HomeScene = () => {
                     {isTempRentLoading ? (
                         <div className="flex gap-4 overflow-hidden">
                             {[1, 2, 3, 4].map((i) => (
-                                <div key={i} className="min-w-72 h-64 bg-gray-100 animate-pulse rounded-xl" />
+                                <div key={i} className="min-w-72 h-64 bg-surface-secondary animate-pulse rounded-xl" />
                             ))}
                         </div>
                     ) : tempRentError ? (
@@ -226,7 +226,7 @@ export const HomeScene = () => {
                 {isRecentLoading ? (
                     <div className="flex gap-4 overflow-hidden">
                         {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-                            <div key={i} className="min-w-[180px] aspect-square bg-gray-100 animate-pulse rounded-2xl" />
+                            <div key={i} className="min-w-[180px] aspect-square bg-surface-secondary animate-pulse rounded-2xl" />
                         ))}
                     </div>
                 ) : recentError ? (

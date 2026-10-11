@@ -95,7 +95,7 @@ export function PropertyCard({
     const cardContent = (
         <div
             className={cn(
-                "group h-full bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-md transition-shadow cursor-pointer",
+                "group h-full bg-surface rounded-2xl border border-border-subtle overflow-hidden hover:shadow-md transition-shadow cursor-pointer",
                 isResponsive
                     ? "flex flex-row sm:flex-col-reverse"
                     : isHorizontal
@@ -151,7 +151,7 @@ export function PropertyCard({
                                         router.push(`/agency/showcase/${publisher.slug}`);
                                     }
                                 }}
-                                className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-gray-50 hover:bg-gray-100 border border-gray-200/60 text-[10px] text-text-main font-bold transition-colors cursor-pointer"
+                                className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-surface-secondary hover:bg-surface-secondary border border-border-subtle/60 text-[10px] text-text-main font-bold transition-colors cursor-pointer"
                             >
                                 {publisher.avatar ? (
                                     <img
@@ -214,7 +214,7 @@ export function PropertyCard({
                         </div>
                     )}
                     {badgeName && (
-                        <div className="bg-white/95 backdrop-blur-md text-amber-800 border border-amber-200/80 shadow-xs px-1.5 sm:px-2 py-0.5 rounded-md sm:rounded-lg text-[9px] sm:text-[10px] font-black flex items-center gap-1">
+                        <div className="bg-surface/95 backdrop-blur-md text-warning border border-warning/30/80 shadow-xs px-1.5 sm:px-2 py-0.5 rounded-md sm:rounded-lg text-[9px] sm:text-[10px] font-black flex items-center gap-1">
                             <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-amber-500" />
                             <span>{badgeName}</span>
                         </div>

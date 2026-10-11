@@ -28,10 +28,10 @@ function PaymentCallbackContent() {
 
     return (
         <div className="max-w-md mx-auto px-4 py-12">
-            <div className="bg-white rounded-3xl border border-gray-100 p-8 shadow-xl text-center space-y-6">
+            <div className="bg-surface rounded-3xl border border-border-subtle p-8 shadow-xl text-center space-y-6">
                 {isPending && (
                     <div className="space-y-4">
-                        <div className="w-20 h-20 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto">
+                        <div className="w-20 h-20 bg-info-subtle text-info rounded-full flex items-center justify-center mx-auto">
                             <Loader2 className="w-10 h-10 animate-spin" />
                         </div>
                         <h1 className="text-lg font-black text-brand">در حال تأیید پرداخت...</h1>
@@ -43,15 +43,15 @@ function PaymentCallbackContent() {
 
                 {isSuccess && (
                     <div className="space-y-4">
-                        <div className="w-20 h-20 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-inner">
+                        <div className="w-20 h-20 bg-success-subtle text-success rounded-full flex items-center justify-center mx-auto shadow-inner">
                             <CheckCircle2 className="w-10 h-10" />
                         </div>
-                        <h1 className="text-xl font-black text-emerald-700">پرداخت با موفقیت انجام شد</h1>
+                        <h1 className="text-xl font-black text-success">پرداخت با موفقیت انجام شد</h1>
                         <p className="text-xs text-text-light">
                             مبلغ مورد نظر با موفقیت به موجودی کیف پول شما اضافه گردید.
                         </p>
 
-                        <div className="bg-gray-50 rounded-2xl p-4 text-xs space-y-3 font-bold border border-gray-100 text-right mt-6">
+                        <div className="bg-surface-secondary rounded-2xl p-4 text-xs space-y-3 font-bold border border-border-subtle text-right mt-6">
                             {statusData?.amountIRR && (
                                 <div className="flex items-center justify-between">
                                     <span className="text-text-light">مبلغ پرداختی:</span>
@@ -76,15 +76,15 @@ function PaymentCallbackContent() {
 
                 {isFailed && (
                     <div className="space-y-4">
-                        <div className="w-20 h-20 bg-rose-50 text-rose-600 rounded-full flex items-center justify-center mx-auto shadow-inner">
+                        <div className="w-20 h-20 bg-error-subtle text-error rounded-full flex items-center justify-center mx-auto shadow-inner">
                             <XCircle className="w-10 h-10" />
                         </div>
-                        <h1 className="text-xl font-black text-rose-700">تراکنش ناموفق بود</h1>
+                        <h1 className="text-xl font-black text-error">تراکنش ناموفق بود</h1>
                         <p className="text-xs text-text-light leading-relaxed">
                             پرداخت توسط کاربر لغو شده یا با خطای بانکی مواجه گردید. در صورت کسر وجه از حساب، حداکثر ظرف ۷۲ ساعت توسط بانک بازگردانده می‌شود.
                         </p>
 
-                        <div className="bg-gray-50 rounded-2xl p-4 text-xs space-y-3 font-bold border border-gray-100 text-right mt-6">
+                        <div className="bg-surface-secondary rounded-2xl p-4 text-xs space-y-3 font-bold border border-border-subtle text-right mt-6">
                             <div className="flex items-center justify-between">
                                 <span className="text-text-light">شناسه پرداخت:</span>
                                 <span className="font-mono text-brand truncate max-w-[180px]">{toPersianDigits(purchaseId)}</span>
@@ -95,7 +95,7 @@ function PaymentCallbackContent() {
 
                 {isError && (
                     <div className="space-y-4">
-                        <div className="w-20 h-20 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center mx-auto">
+                        <div className="w-20 h-20 bg-warning-subtle text-warning rounded-full flex items-center justify-center mx-auto">
                             <AlertCircle className="w-10 h-10" />
                         </div>
                         <h1 className="text-lg font-black text-brand">عدم دسترسی به اطلاعات تراکنش</h1>

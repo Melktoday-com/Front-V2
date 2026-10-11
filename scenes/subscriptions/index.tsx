@@ -152,7 +152,7 @@ export default function SubscriptionsScene() {
             case "sparkles":
                 return <Sparkles className="w-4 h-4 text-amber-500" />;
             case "award":
-                return <Award className="w-4 h-4 text-blue-500" />;
+                return <Award className="w-4 h-4 text-info" />;
             case "check":
             case "checkcircle":
                 return <CheckCircle2 className="w-4 h-4 text-emerald-500" />;
@@ -162,7 +162,7 @@ export default function SubscriptionsScene() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50/60 pb-28 lg:pb-10 pt-6">
+        <div className="min-h-screen bg-surface-secondary/60 pb-28 lg:pb-10 pt-6">
             <div className="max-w-6xl mx-auto px-4 sm:px-6">
                 {/* Header */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
@@ -171,11 +171,11 @@ export default function SubscriptionsScene() {
                             <span className="p-2 rounded-xl bg-primary/10 text-primary">
                                 <Sparkles className="w-5 h-5" />
                             </span>
-                            <h1 className="text-2xl font-black text-slate-800 tracking-tight">
+                            <h1 className="text-2xl font-black text-foreground tracking-tight">
                                 پلن‌های اشتراک و سهمیه‌های ویژه
                             </h1>
                         </div>
-                        <p className="text-sm text-slate-500">
+                        <p className="text-sm text-foreground-muted">
                             ارتقای ظرفیت آگهی‌ها، انتشار اقامتگاه، نردبان و برچسب‌های فوری اختصاصی
                         </p>
                     </div>
@@ -183,11 +183,11 @@ export default function SubscriptionsScene() {
                     {/* Wallet Badge & Quick Link */}
                     {isLoggedIn && (
                         <div className="flex items-center gap-3">
-                            <div className="flex items-center gap-2.5 bg-white border border-slate-200/80 px-4 py-2.5 rounded-2xl shadow-sm">
-                                <Wallet className="w-4 h-4 text-emerald-600" />
+                            <div className="flex items-center gap-2.5 bg-surface border border-border-subtle/80 px-4 py-2.5 rounded-2xl shadow-sm">
+                                <Wallet className="w-4 h-4 text-success" />
                                 <div className="text-xs">
-                                    <span className="text-slate-400 block font-normal">موجودی در دسترس:</span>
-                                    <span className="font-black text-slate-800">
+                                    <span className="text-foreground-muted block font-normal">موجودی در دسترس:</span>
+                                    <span className="font-black text-foreground">
                                         {isLoadingWallet ? "..." : `${formatCurrency(availableBalanceToman)} تومان`}
                                     </span>
                                 </div>
@@ -204,10 +204,10 @@ export default function SubscriptionsScene() {
 
                 {/* Non-Host / Non-Agent Banner (Regular User Guidance) */}
                 {!isHostOrAgent && (
-                    <div className="mb-8 p-5 bg-gradient-to-r from-amber-50 to-orange-50/70 border border-amber-200/80 rounded-3xl">
+                    <div className="mb-8 p-5 bg-gradient-to-r from-amber-50 to-orange-50/70 border border-warning/30/80 rounded-3xl">
                         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                             <div className="flex items-start gap-3.5">
-                                <div className="p-2.5 bg-amber-500/10 text-amber-700 rounded-2xl shrink-0 mt-0.5">
+                                <div className="p-2.5 bg-amber-500/10 text-warning rounded-2xl shrink-0 mt-0.5">
                                     <AlertCircle className="w-5 h-5" />
                                 </div>
                                 <div>
@@ -223,7 +223,7 @@ export default function SubscriptionsScene() {
                             <div className="flex items-center gap-2.5 shrink-0 w-full md:w-auto">
                                 <Link
                                     href="/host"
-                                    className="flex-1 md:flex-none text-center px-4 py-2.5 bg-white border border-amber-300 text-amber-900 hover:bg-amber-100/50 font-bold text-xs rounded-2xl shadow-sm transition"
+                                    className="flex-1 md:flex-none text-center px-4 py-2.5 bg-surface border border-amber-300 text-amber-900 hover:bg-warning-subtle/50 font-bold text-xs rounded-2xl shadow-sm transition"
                                 >
                                     ثبت‌نام میزبان
                                 </Link>
@@ -237,16 +237,16 @@ export default function SubscriptionsScene() {
                         </div>
 
                         {/* Role preview switcher */}
-                        <div className="mt-4 pt-4 border-t border-amber-200/60 flex items-center justify-between text-xs">
-                            <span className="text-amber-800 font-medium">پیش‌نمایش پلن‌ها بر اساس نقش:</span>
+                        <div className="mt-4 pt-4 border-t border-warning/30/60 flex items-center justify-between text-xs">
+                            <span className="text-warning font-medium">پیش‌نمایش پلن‌ها بر اساس نقش:</span>
                             <div className="inline-flex p-1 bg-amber-200/40 rounded-xl">
                                 <button
                                     onClick={() => setSelectedRole("landlord")}
                                     className={cn(
                                         "px-3 py-1 rounded-lg font-bold transition",
                                         selectedRole === "landlord"
-                                            ? "bg-white text-amber-900 shadow-sm"
-                                            : "text-amber-700 hover:text-amber-950",
+                                            ? "bg-surface text-amber-900 shadow-sm"
+                                            : "text-warning hover:text-amber-950",
                                     )}
                                 >
                                     میزبان اقامتگاه
@@ -256,8 +256,8 @@ export default function SubscriptionsScene() {
                                     className={cn(
                                         "px-3 py-1 rounded-lg font-bold transition",
                                         selectedRole === "agent"
-                                            ? "bg-white text-amber-900 shadow-sm"
-                                            : "text-amber-700 hover:text-amber-950",
+                                            ? "bg-surface text-amber-900 shadow-sm"
+                                            : "text-warning hover:text-amber-950",
                                     )}
                                 >
                                     مشاور املاک
@@ -269,14 +269,14 @@ export default function SubscriptionsScene() {
 
                 {/* Navigation Tabs (For Host/Agent) */}
                 {isHostOrAgent && (
-                    <div className="flex items-center gap-2 mb-6 border-b border-slate-200">
+                    <div className="flex items-center gap-2 mb-6 border-b border-border-subtle">
                         <button
                             onClick={() => setActiveTab("plans")}
                             className={cn(
                                 "pb-3.5 px-4 text-sm font-bold border-b-2 transition flex items-center gap-2",
                                 activeTab === "plans"
                                     ? "border-primary text-primary"
-                                    : "border-transparent text-slate-500 hover:text-slate-800",
+                                    : "border-transparent text-foreground-muted hover:text-foreground",
                             )}
                         >
                             <Layers className="w-4 h-4" />
@@ -288,7 +288,7 @@ export default function SubscriptionsScene() {
                                 "pb-3.5 px-4 text-sm font-bold border-b-2 transition flex items-center gap-2",
                                 activeTab === "entitlements"
                                     ? "border-primary text-primary"
-                                    : "border-transparent text-slate-500 hover:text-slate-800",
+                                    : "border-transparent text-foreground-muted hover:text-foreground",
                             )}
                         >
                             <ShieldCheck className="w-4 h-4" />
@@ -301,15 +301,15 @@ export default function SubscriptionsScene() {
                 {activeTab === "plans" && (
                     <div>
                         {isLoadingPlans ? (
-                            <div className="py-20 flex flex-col items-center justify-center text-slate-400 gap-3">
+                            <div className="py-20 flex flex-col items-center justify-center text-foreground-muted gap-3">
                                 <Loader2 className="w-8 h-8 animate-spin text-primary" />
                                 <span className="text-xs">در حال بارگذاری پلن‌های اشتراک...</span>
                             </div>
                         ) : plans.length === 0 ? (
-                            <div className="py-16 text-center bg-white rounded-3xl border border-slate-200/80 p-8 shadow-sm">
+                            <div className="py-16 text-center bg-surface rounded-3xl border border-border-subtle/80 p-8 shadow-sm">
                                 <Layers className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-                                <h3 className="font-bold text-slate-700 mb-1">پلن فعالی یافت نشد</h3>
-                                <p className="text-xs text-slate-400">
+                                <h3 className="font-bold text-foreground-secondary mb-1">پلن فعالی یافت نشد</h3>
+                                <p className="text-xs text-foreground-muted">
                                     در حال حاضر پلن فعالی برای این نقش ثبت نشده است. لطفا بعداً مراجعه فرمایید.
                                 </p>
                             </div>
@@ -322,49 +322,49 @@ export default function SubscriptionsScene() {
                                     return (
                                         <div
                                             key={plan.id}
-                                            className="bg-white rounded-3xl border border-slate-200/80 p-6 flex flex-col justify-between shadow-sm hover:shadow-md transition relative group"
+                                            className="bg-surface rounded-3xl border border-border-subtle/80 p-6 flex flex-col justify-between shadow-sm hover:shadow-md transition relative group"
                                         >
                                             {/* Top info */}
                                             <div>
                                                 {/* Dynamic Badge Tag if plan includes badge */}
                                                 {plan.badgeName && (
-                                                    <div className="mb-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-amber-50 text-amber-700 border border-amber-200/60 shadow-xs">
+                                                    <div className="mb-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-warning-subtle text-warning border border-warning/30/60 shadow-xs">
                                                         {renderBadgeIcon(plan.badgeIcon)}
                                                         <span>{plan.badgeName}</span>
                                                     </div>
                                                 )}
 
-                                                <h3 className="text-lg font-black text-slate-800 mb-1">
+                                                <h3 className="text-lg font-black text-foreground mb-1">
                                                     {plan.name}
                                                 </h3>
-                                                <p className="text-xs text-slate-500 mb-4 line-clamp-2">
+                                                <p className="text-xs text-foreground-muted mb-4 line-clamp-2">
                                                     {plan.description || "سهمیه‌های ویژه انتشار و ارتقای آگهی"}
                                                 </p>
 
                                                 {/* Price */}
-                                                <div className="py-3 px-4 bg-slate-50 rounded-2xl mb-5 flex items-baseline justify-between">
-                                                    <span className="text-xs text-slate-500 font-medium">هزینه پلن:</span>
+                                                <div className="py-3 px-4 bg-surface-secondary rounded-2xl mb-5 flex items-baseline justify-between">
+                                                    <span className="text-xs text-foreground-muted font-medium">هزینه پلن:</span>
                                                     <div className="text-left">
-                                                        <span className="text-xl font-black text-slate-900">
+                                                        <span className="text-xl font-black text-foreground">
                                                             {formatPrice(priceToman)}
                                                         </span>
-                                                        <span className="text-[11px] text-slate-500 mr-1.5 font-bold">
+                                                        <span className="text-[11px] text-foreground-muted mr-1.5 font-bold">
                                                             تومان
                                                         </span>
-                                                        <span className="block text-[10px] text-slate-400 font-normal">
+                                                        <span className="block text-[10px] text-foreground-muted font-normal">
                                                             مدت اعتبار: {toPersianDigits(plan.durationDays)} روز
                                                         </span>
                                                     </div>
                                                 </div>
 
                                                 {/* Entitlements feature list */}
-                                                <div className="space-y-2.5 text-xs text-slate-700 mb-6">
+                                                <div className="space-y-2.5 text-xs text-foreground-secondary mb-6">
                                                     {plan.publicationQuota > 0 && (
                                                         <div className="flex items-center gap-2">
                                                             <Check className="w-4 h-4 text-emerald-500 shrink-0" />
                                                             <span>
                                                                 انتشار{" "}
-                                                                <strong className="font-black text-slate-900">
+                                                                <strong className="font-black text-foreground">
                                                                     {toPersianDigits(plan.publicationQuota)}
                                                                 </strong>{" "}
                                                                 آگهی ملکی
@@ -377,7 +377,7 @@ export default function SubscriptionsScene() {
                                                             <Check className="w-4 h-4 text-emerald-500 shrink-0" />
                                                             <span>
                                                                 انتشار{" "}
-                                                                <strong className="font-black text-slate-900">
+                                                                <strong className="font-black text-foreground">
                                                                     {toPersianDigits(plan.tempRentQuota)}
                                                                 </strong>{" "}
                                                                 اقامتگاه روزانه
@@ -389,7 +389,7 @@ export default function SubscriptionsScene() {
                                                         <div className="flex items-center gap-2">
                                                             <Check className="w-4 h-4 text-amber-500 shrink-0" />
                                                             <span>
-                                                                <strong className="font-black text-slate-900">
+                                                                <strong className="font-black text-foreground">
                                                                     {toPersianDigits(plan.urgentQuota)}
                                                                 </strong>{" "}
                                                                 برچسب فوری (فوری شو)
@@ -399,9 +399,9 @@ export default function SubscriptionsScene() {
 
                                                     {plan.ladderQuota > 0 && (
                                                         <div className="flex items-center gap-2">
-                                                            <Check className="w-4 h-4 text-blue-500 shrink-0" />
+                                                            <Check className="w-4 h-4 text-info shrink-0" />
                                                             <span>
-                                                                <strong className="font-black text-slate-900">
+                                                                <strong className="font-black text-foreground">
                                                                     {toPersianDigits(plan.ladderQuota)}
                                                                 </strong>{" "}
                                                                 نردبان آگهی
@@ -428,7 +428,7 @@ export default function SubscriptionsScene() {
                                                     "w-full py-3 rounded-2xl font-black text-xs transition flex items-center justify-center gap-2 shadow-xs",
                                                     isHostOrAgent
                                                         ? "bg-primary hover:bg-primary-hover text-white cursor-pointer"
-                                                        : "bg-slate-100 text-slate-400 cursor-not-allowed",
+                                                        : "bg-surface-secondary text-foreground-muted cursor-not-allowed",
                                                 )}
                                             >
                                                 <span>{isHostOrAgent ? "انتخاب و خرید اشتراک" : "مخصوص میزبانان و مشاوران"}</span>
@@ -442,16 +442,16 @@ export default function SubscriptionsScene() {
 
                         {/* Welcome Package Section */}
                         {isLoggedIn && (
-                            <div className="mt-12 p-6 bg-gradient-to-r from-blue-50/80 to-indigo-50/80 border border-blue-200/60 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-4">
+                            <div className="mt-12 p-6 bg-gradient-to-r from-blue-50/80 to-indigo-50/80 border border-info/30/60 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-4">
                                 <div className="flex items-center gap-3.5">
-                                    <div className="p-3 bg-blue-500/10 text-blue-600 rounded-2xl shrink-0">
+                                    <div className="p-3 bg-blue-500/10 text-info rounded-2xl shrink-0">
                                         <Gift className="w-6 h-6" />
                                     </div>
                                     <div>
-                                        <h4 className="font-black text-slate-900 text-sm mb-1">
+                                        <h4 className="font-black text-foreground text-sm mb-1">
                                             بسته خوش‌آمدگویی ملک‌تودی
                                         </h4>
-                                        <p className="text-xs text-slate-500">
+                                        <p className="text-xs text-foreground-muted">
                                             سهمیه یا اعتبار هدیه به محض ثبت‌نام اولیه در پلتفرم (یک‌بار مصرف و تکرارناپذیر)
                                         </p>
                                     </div>
@@ -476,38 +476,38 @@ export default function SubscriptionsScene() {
                     <div className="space-y-6">
                         {/* Active Badge Card */}
                         {isLoadingBadge ? (
-                            <div className="p-6 bg-white rounded-3xl border border-slate-200/80 animate-pulse h-28" />
+                            <div className="p-6 bg-surface rounded-3xl border border-border-subtle/80 animate-pulse h-28" />
                         ) : activeBadge ? (
-                            <div className="p-6 bg-gradient-to-r from-amber-500/10 via-amber-400/5 to-white border border-amber-200 rounded-3xl flex items-center justify-between gap-4">
+                            <div className="p-6 bg-gradient-to-r from-amber-500/10 via-amber-400/5 to-white border border-warning/30 rounded-3xl flex items-center justify-between gap-4">
                                 <div className="flex items-center gap-4">
-                                    <div className="p-3.5 bg-amber-500/15 text-amber-600 rounded-2xl shadow-xs">
+                                    <div className="p-3.5 bg-amber-500/15 text-warning rounded-2xl shadow-xs">
                                         {renderBadgeIcon(activeBadge.badgeIcon)}
                                     </div>
                                     <div>
                                         <div className="flex items-center gap-2 mb-0.5">
-                                            <span className="text-[11px] font-bold text-amber-700 bg-amber-100/70 px-2 py-0.5 rounded-full">
+                                            <span className="text-[11px] font-bold text-warning bg-warning-subtle/70 px-2 py-0.5 rounded-full">
                                                 نشان فعال شما
                                             </span>
-                                            <h3 className="font-black text-slate-900 text-base">
+                                            <h3 className="font-black text-foreground text-base">
                                                 {activeBadge.badgeName}
                                             </h3>
                                         </div>
-                                        <p className="text-xs text-slate-500">
+                                        <p className="text-xs text-foreground-muted">
                                             این نشان بر روی تمام آگهی‌ها و پروفایل شما به صورت برجسته نمایش داده می‌شود.
                                         </p>
                                     </div>
                                 </div>
-                                <div className="text-left text-xs text-slate-400 shrink-0">
+                                <div className="text-left text-xs text-foreground-muted shrink-0">
                                     <span>اعتبار تا:</span>
-                                    <span className="block font-bold text-slate-700">
+                                    <span className="block font-bold text-foreground-secondary">
                                         {new Date(activeBadge.expiresAt).toLocaleDateString("fa-IR")}
                                     </span>
                                 </div>
                             </div>
                         ) : (
-                            <div className="p-5 bg-white border border-slate-200/80 rounded-3xl flex items-center justify-between text-xs text-slate-500">
+                            <div className="p-5 bg-surface border border-border-subtle/80 rounded-3xl flex items-center justify-between text-xs text-foreground-muted">
                                 <div className="flex items-center gap-2.5">
-                                    <ShieldCheck className="w-5 h-5 text-slate-400" />
+                                    <ShieldCheck className="w-5 h-5 text-foreground-muted" />
                                     <span>در حال حاضر نشان فعالی ندارید. با خرید پلن‌های ویژه می‌توانید نشان اختصاصی دریافت کنید.</span>
                                 </div>
                                 <button
@@ -521,17 +521,17 @@ export default function SubscriptionsScene() {
 
                         {/* Entitlement Quotas Grid */}
                         <div>
-                            <h3 className="text-sm font-black text-slate-800 mb-3 flex items-center gap-2">
+                            <h3 className="text-sm font-black text-foreground mb-3 flex items-center gap-2">
                                 <TrendingUp className="w-4 h-4 text-primary" />
                                 <span>سهمیه‌های باقی‌مانده شما</span>
                             </h3>
 
                             {isLoadingEntitlements ? (
-                                <div className="py-12 flex justify-center text-slate-400">
+                                <div className="py-12 flex justify-center text-foreground-muted">
                                     <Loader2 className="w-6 h-6 animate-spin text-primary" />
                                 </div>
                             ) : entitlements.length === 0 ? (
-                                <div className="py-12 bg-white rounded-3xl border border-slate-200/80 text-center p-6 text-xs text-slate-400">
+                                <div className="py-12 bg-surface rounded-3xl border border-border-subtle/80 text-center p-6 text-xs text-foreground-muted">
                                     سهمیه فعالی ندارید. با خرید اشتراک سهمیه‌های انتشار و ارتقای فوری دریافت خواهید کرد.
                                 </div>
                             ) : (
@@ -547,10 +547,10 @@ export default function SubscriptionsScene() {
 
                                         if (ent.entitlementType === "LISTING_PUBLICATION") {
                                             label = "انتشار آگهی ملکی";
-                                            icon = <Home className="w-4 h-4 text-emerald-600" />;
+                                            icon = <Home className="w-4 h-4 text-success" />;
                                         } else if (ent.entitlementType === "TEMPORARY_RENTAL_PUBLICATION") {
                                             label = "انتشار اقامتگاه روزانه";
-                                            icon = <Building2 className="w-4 h-4 text-blue-600" />;
+                                            icon = <Building2 className="w-4 h-4 text-info" />;
                                         } else if (ent.entitlementType === "URGENT_PROMOTION") {
                                             label = "برچسب فوری";
                                             icon = <Flame className="w-4 h-4 text-amber-500" />;
@@ -562,30 +562,30 @@ export default function SubscriptionsScene() {
                                         return (
                                             <div
                                                 key={ent.id}
-                                                className="bg-white rounded-3xl border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between"
+                                                className="bg-surface rounded-3xl border border-border-subtle/80 p-5 shadow-xs flex flex-col justify-between"
                                             >
                                                 <div>
                                                     <div className="flex items-center justify-between mb-3">
-                                                        <span className="p-2 bg-slate-50 rounded-xl">{icon}</span>
-                                                        <span className="text-[11px] font-bold text-slate-400">
+                                                        <span className="p-2 bg-surface-secondary rounded-xl">{icon}</span>
+                                                        <span className="text-[11px] font-bold text-foreground-muted">
                                                             انقضا: {new Date(ent.expiresAt).toLocaleDateString("fa-IR")}
                                                         </span>
                                                     </div>
-                                                    <h4 className="font-bold text-slate-800 text-xs mb-2">
+                                                    <h4 className="font-bold text-foreground text-xs mb-2">
                                                         {label}
                                                     </h4>
                                                     <div className="flex items-baseline justify-between mb-2">
-                                                        <span className="text-2xl font-black text-slate-900">
+                                                        <span className="text-2xl font-black text-foreground">
                                                             {toPersianDigits(ent.remainingQuota)}
                                                         </span>
-                                                        <span className="text-xs text-slate-400">
+                                                        <span className="text-xs text-foreground-muted">
                                                             از کل {toPersianDigits(ent.totalQuota)} عدد
                                                         </span>
                                                     </div>
                                                 </div>
 
                                                 {/* Progress Bar */}
-                                                <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden mt-3">
+                                                <div className="w-full bg-surface-secondary rounded-full h-2 overflow-hidden mt-3">
                                                     <div
                                                         className="bg-primary h-full transition-all duration-300 rounded-full"
                                                         style={{ width: `${100 - percentUsed}%` }}
@@ -611,41 +611,41 @@ export default function SubscriptionsScene() {
                     />
 
                     {/* Responsive Container */}
-                    <div className="relative z-10 w-full md:max-w-md bg-white rounded-t-3xl md:rounded-3xl p-6 shadow-2xl transition-all max-h-[90vh] overflow-y-auto">
-                        <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-4">
-                            <h3 className="font-black text-slate-800 text-base">تأیید خرید اشتراک</h3>
+                    <div className="relative z-10 w-full md:max-w-md bg-surface rounded-t-3xl md:rounded-3xl p-6 shadow-2xl transition-all max-h-[90vh] overflow-y-auto">
+                        <div className="flex items-center justify-between pb-4 border-b border-border-subtle mb-4">
+                            <h3 className="font-black text-foreground text-base">تأیید خرید اشتراک</h3>
                             <button
                                 onClick={() => setSelectedPlanForPurchase(null)}
-                                className="p-1.5 text-slate-400 hover:text-slate-700 rounded-xl hover:bg-slate-50 transition"
+                                className="p-1.5 text-foreground-muted hover:text-foreground-secondary rounded-xl hover:bg-surface-secondary transition"
                             >
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
 
                         {/* Plan Summary */}
-                        <div className="p-4 bg-slate-50 rounded-2xl mb-4 space-y-2 text-xs">
+                        <div className="p-4 bg-surface-secondary rounded-2xl mb-4 space-y-2 text-xs">
                             <div className="flex justify-between">
-                                <span className="text-slate-500">پلن انتخابی:</span>
-                                <span className="font-bold text-slate-800">
+                                <span className="text-foreground-muted">پلن انتخابی:</span>
+                                <span className="font-bold text-foreground">
                                     {selectedPlanForPurchase.name}
                                 </span>
                             </div>
                             <div className="flex justify-between">
-                                <span className="text-slate-500">مدت اشتراک:</span>
-                                <span className="font-bold text-slate-800">
+                                <span className="text-foreground-muted">مدت اشتراک:</span>
+                                <span className="font-bold text-foreground">
                                     {toPersianDigits(selectedPlanForPurchase.durationDays)} روز
                                 </span>
                             </div>
                             <div className="flex justify-between">
-                                <span className="text-slate-500">مبلغ پرداختی:</span>
-                                <span className="font-black text-slate-900 text-sm">
+                                <span className="text-foreground-muted">مبلغ پرداختی:</span>
+                                <span className="font-black text-foreground text-sm">
                                     {formatCurrency(Math.floor(Number(selectedPlanForPurchase.priceIrr) / 10))} تومان
                                 </span>
                             </div>
                         </div>
 
                         {/* Financial Ledger Breakdown */}
-                        <div className="p-3 bg-blue-50/60 border border-blue-100 rounded-2xl text-xs space-y-1.5 mb-5 text-blue-900">
+                        <div className="p-3 bg-info-subtle/60 border border-info/30 rounded-2xl text-xs space-y-1.5 mb-5 text-foreground">
                             <div className="flex justify-between">
                                 <span>موجودی فعلی کیف پول:</span>
                                 <span className="font-bold">{formatCurrency(availableBalanceToman)} تومان</span>
@@ -666,7 +666,7 @@ export default function SubscriptionsScene() {
                         </div>
 
                         {/* Auto-renew checkbox */}
-                        <label className="flex items-center gap-2.5 text-xs text-slate-700 mb-6 cursor-pointer select-none">
+                        <label className="flex items-center gap-2.5 text-xs text-foreground-secondary mb-6 cursor-pointer select-none">
                             <input
                                 type="checkbox"
                                 checked={autoRenew}
@@ -680,7 +680,7 @@ export default function SubscriptionsScene() {
                         <div className="flex gap-3">
                             <button
                                 onClick={() => setSelectedPlanForPurchase(null)}
-                                className="flex-1 py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition"
+                                className="flex-1 py-3 rounded-2xl bg-surface-secondary hover:bg-slate-200 text-foreground-secondary font-bold text-xs transition"
                             >
                                 انصراف
                             </button>

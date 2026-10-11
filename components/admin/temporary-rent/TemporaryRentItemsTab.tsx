@@ -39,12 +39,12 @@ import { toast } from "sonner";
 import TemporaryRentItemDetailModal from "./TemporaryRentItemDetailModal";
 
 const STATUS_FILTERS = [
-    { key: "PENDING_APPROVAL", label: "در انتظار بررسی", badgeClass: "bg-amber-100 text-amber-800 border-amber-200" },
-    { key: "PUBLISHED", label: "منتشر شده", badgeClass: "bg-emerald-100 text-emerald-800 border-emerald-200" },
-    { key: "DRAFT", label: "پیش‌نویس", badgeClass: "bg-slate-100 text-slate-700 border-slate-200" },
-    { key: "REJECTED", label: "رد شده", badgeClass: "bg-rose-100 text-rose-800 border-rose-200" },
-    { key: "ARCHIVED", label: "آرشیو شده", badgeClass: "bg-zinc-100 text-zinc-700 border-zinc-200" },
-    { key: "ALL", label: "همه وضعیت‌ها", badgeClass: "bg-blue-100 text-blue-800 border-blue-200" },
+    { key: "PENDING_APPROVAL", label: "در انتظار بررسی", badgeClass: "bg-warning-subtle text-warning border-warning/30" },
+    { key: "PUBLISHED", label: "منتشر شده", badgeClass: "bg-success-subtle text-success border-success/30" },
+    { key: "DRAFT", label: "پیش‌نویس", badgeClass: "bg-surface-secondary text-foreground-secondary border-border-subtle" },
+    { key: "REJECTED", label: "رد شده", badgeClass: "bg-error-subtle text-error border-error/30" },
+    { key: "ARCHIVED", label: "آرشیو شده", badgeClass: "bg-surface-secondary text-foreground-secondary border-border-subtle" },
+    { key: "ALL", label: "همه وضعیت‌ها", badgeClass: "bg-info-subtle text-blue-800 border-info/30" },
 ] as const;
 
 export default function TemporaryRentItemsTab() {
@@ -158,21 +158,21 @@ export default function TemporaryRentItemsTab() {
                     className={`cursor-pointer p-5 rounded-2xl border transition-all ${
                         selectedStatus === "PENDING_APPROVAL"
                             ? "bg-amber-500/10 border-amber-500/40 shadow-sm ring-2 ring-amber-500/20"
-                            : "bg-white border-slate-200/80 hover:border-slate-300"
+                            : "bg-surface border-border-subtle/80 hover:border-border"
                     }`}
                 >
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-xs font-bold text-slate-500">در انتظار تایید و بررسی</p>
-                            <h3 className="text-2xl font-black text-slate-900 mt-1">
+                            <p className="text-xs font-bold text-foreground-muted">در انتظار تایید و بررسی</p>
+                            <h3 className="text-2xl font-black text-foreground mt-1">
                                 {toPersianDigits(pendingData?.total ?? 0)}
                             </h3>
                         </div>
-                        <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center">
+                        <div className="w-12 h-12 rounded-2xl bg-warning-subtle text-warning flex items-center justify-center">
                             <Clock className="w-6 h-6" />
                         </div>
                     </div>
-                    <div className="mt-3 text-xs text-amber-700 font-medium flex items-center gap-1">
+                    <div className="mt-3 text-xs text-warning font-medium flex items-center gap-1">
                         <span>نیاز به بازبینی توسط مدیر</span>
                     </div>
                 </div>
@@ -185,21 +185,21 @@ export default function TemporaryRentItemsTab() {
                     className={`cursor-pointer p-5 rounded-2xl border transition-all ${
                         selectedStatus === "PUBLISHED"
                             ? "bg-emerald-500/10 border-emerald-500/40 shadow-sm ring-2 ring-emerald-500/20"
-                            : "bg-white border-slate-200/80 hover:border-slate-300"
+                            : "bg-surface border-border-subtle/80 hover:border-border"
                     }`}
                 >
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-xs font-bold text-slate-500">اقامتگاه‌های منتشر شده</p>
-                            <h3 className="text-2xl font-black text-slate-900 mt-1">
+                            <p className="text-xs font-bold text-foreground-muted">اقامتگاه‌های منتشر شده</p>
+                            <h3 className="text-2xl font-black text-foreground mt-1">
                                 {toPersianDigits(publishedData?.total ?? 0)}
                             </h3>
                         </div>
-                        <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                        <div className="w-12 h-12 rounded-2xl bg-success-subtle text-success flex items-center justify-center">
                             <CheckCircle2 className="w-6 h-6" />
                         </div>
                     </div>
-                    <div className="mt-3 text-xs text-emerald-700 font-medium flex items-center gap-1">
+                    <div className="mt-3 text-xs text-success font-medium flex items-center gap-1">
                         <span>فعال و قابل رزرو در پلتفرم</span>
                     </div>
                 </div>
@@ -211,22 +211,22 @@ export default function TemporaryRentItemsTab() {
                     }}
                     className={`cursor-pointer p-5 rounded-2xl border transition-all ${
                         selectedStatus === "DRAFT"
-                            ? "bg-slate-200/60 border-slate-400 shadow-sm ring-2 ring-slate-400/20"
-                            : "bg-white border-slate-200/80 hover:border-slate-300"
+                            ? "bg-slate-200/60 border-border shadow-sm ring-2 ring-slate-400/20"
+                            : "bg-surface border-border-subtle/80 hover:border-border"
                     }`}
                 >
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-xs font-bold text-slate-500">پیش‌نویس‌ها</p>
-                            <h3 className="text-2xl font-black text-slate-900 mt-1">
+                            <p className="text-xs font-bold text-foreground-muted">پیش‌نویس‌ها</p>
+                            <h3 className="text-2xl font-black text-foreground mt-1">
                                 {toPersianDigits(draftData?.total ?? 0)}
                             </h3>
                         </div>
-                        <div className="w-12 h-12 rounded-2xl bg-slate-100 text-slate-600 flex items-center justify-center">
+                        <div className="w-12 h-12 rounded-2xl bg-surface-secondary text-foreground-secondary flex items-center justify-center">
                             <Layers className="w-6 h-6" />
                         </div>
                     </div>
-                    <div className="mt-3 text-xs text-slate-500 font-medium flex items-center gap-1">
+                    <div className="mt-3 text-xs text-foreground-muted font-medium flex items-center gap-1">
                         <span>هنوز برای انتشار ارسال نشده‌اند</span>
                     </div>
                 </div>
@@ -239,31 +239,31 @@ export default function TemporaryRentItemsTab() {
                     className={`cursor-pointer p-5 rounded-2xl border transition-all ${
                         selectedStatus === "ALL"
                             ? "bg-blue-500/10 border-blue-500/40 shadow-sm ring-2 ring-blue-500/20"
-                            : "bg-white border-slate-200/80 hover:border-slate-300"
+                            : "bg-surface border-border-subtle/80 hover:border-border"
                     }`}
                 >
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-xs font-bold text-slate-500">کل آیتم‌های اجاره موقت</p>
-                            <h3 className="text-2xl font-black text-slate-900 mt-1">
+                            <p className="text-xs font-bold text-foreground-muted">کل آیتم‌های اجاره موقت</p>
+                            <h3 className="text-2xl font-black text-foreground mt-1">
                                 {toPersianDigits(adsData?.total ?? 0)}
                             </h3>
                         </div>
-                        <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                        <div className="w-12 h-12 rounded-2xl bg-info-subtle text-info flex items-center justify-center">
                             <Home className="w-6 h-6" />
                         </div>
                     </div>
-                    <div className="mt-3 text-xs text-blue-700 font-medium flex items-center gap-1">
+                    <div className="mt-3 text-xs text-info font-medium flex items-center gap-1">
                         <span>تمام رکوردها در کلیه وضعیت‌ها</span>
                     </div>
                 </div>
             </div>
 
             {/* Filters and Controls Card */}
-            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+            <div className="bg-surface p-5 rounded-2xl border border-border-subtle shadow-xs space-y-4">
                 {/* Status Badges Filter Bar */}
-                <div className="flex flex-wrap items-center gap-2 border-b border-slate-100 pb-4">
-                    <span className="text-xs font-bold text-slate-400 ml-2">وضعیت:</span>
+                <div className="flex flex-wrap items-center gap-2 border-b border-border-subtle pb-4">
+                    <span className="text-xs font-bold text-foreground-muted ml-2">وضعیت:</span>
                     {STATUS_FILTERS.map((f) => {
                         const isActive = selectedStatus === f.key;
                         let count: number | undefined;
@@ -282,7 +282,7 @@ export default function TemporaryRentItemsTab() {
                                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                                     isActive
                                         ? "bg-emerald-600 text-white shadow-xs"
-                                        : "bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200"
+                                        : "bg-surface-secondary hover:bg-surface-secondary text-foreground-secondary border border-border-subtle"
                                 }`}
                             >
                                 <span>{f.label}</span>
@@ -290,8 +290,8 @@ export default function TemporaryRentItemsTab() {
                                     <span
                                         className={`px-1.5 py-0.2 rounded-full text-[11px] font-black ${
                                             isActive
-                                                ? "bg-white/20 text-white"
-                                                : "bg-slate-200 text-slate-700"
+                                                ? "bg-surface/20 text-white"
+                                                : "bg-slate-200 text-foreground-secondary"
                                         }`}
                                     >
                                         {toPersianDigits(count)}
@@ -306,19 +306,19 @@ export default function TemporaryRentItemsTab() {
                 <div className="flex flex-col sm:flex-row items-center gap-3">
                     {/* Search Input */}
                     <div className="relative flex-1 w-full">
-                        <Search className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <Search className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground-muted" />
                         <input
                             type="text"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             placeholder="جستجو در عنوان، شناسه اقامتگاه یا شناسه مالک..."
-                            className="w-full pl-9 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+                            className="w-full pl-9 pr-10 py-2.5 bg-surface-secondary border border-border-subtle rounded-xl text-xs text-foreground placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
                         />
                         {searchTerm && (
                             <button
                                 type="button"
                                 onClick={() => setSearchTerm("")}
-                                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
+                                className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground-muted hover:text-foreground-secondary p-0.5"
                             >
                                 <X className="w-3.5 h-3.5" />
                             </button>
@@ -333,7 +333,7 @@ export default function TemporaryRentItemsTab() {
                                 setSelectedCityId(e.target.value);
                                 setPage(1);
                             }}
-                            className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all cursor-pointer font-bold"
+                            className="w-full px-3 py-2.5 bg-surface-secondary border border-border-subtle rounded-xl text-xs text-foreground-secondary focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all cursor-pointer font-bold"
                         >
                             <option value="">همه شهرها</option>
                             {citiesList.map((city) => (
@@ -350,19 +350,19 @@ export default function TemporaryRentItemsTab() {
                         onClick={() => refetch()}
                         disabled={isFetching}
                         title="بروزرسانی داده‌ها"
-                        className="w-full sm:w-auto px-4 py-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shrink-0 disabled:opacity-50"
+                        className="w-full sm:w-auto px-4 py-2.5 bg-surface-secondary hover:bg-surface-secondary border border-border-subtle text-foreground-secondary rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shrink-0 disabled:opacity-50"
                     >
-                        <RefreshCw className={`w-4 h-4 ${isFetching ? "animate-spin text-emerald-600" : ""}`} />
+                        <RefreshCw className={`w-4 h-4 ${isFetching ? "animate-spin text-success" : ""}`} />
                         <span className="sm:hidden">بروزرسانی</span>
                     </button>
                 </div>
             </div>
 
             {/* Table View */}
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+            <div className="bg-surface rounded-2xl border border-border-subtle shadow-xs overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-right">
-                        <thead className="bg-slate-50/80 text-slate-600 text-xs border-b border-slate-100">
+                        <thead className="bg-surface-secondary/80 text-foreground-secondary text-xs border-b border-border-subtle">
                             <tr>
                                 <th className="px-5 py-4 font-bold">اقامتگاه</th>
                                 <th className="px-5 py-4 font-bold">شهر و منطقه</th>
@@ -376,9 +376,9 @@ export default function TemporaryRentItemsTab() {
                         <tbody className="divide-y divide-slate-100 text-xs">
                             {isLoading ? (
                                 <tr>
-                                    <td colSpan={7} className="py-20 text-center text-slate-400">
+                                    <td colSpan={7} className="py-20 text-center text-foreground-muted">
                                         <div className="flex flex-col items-center justify-center gap-3">
-                                            <RefreshCw className="w-6 h-6 animate-spin text-emerald-600" />
+                                            <RefreshCw className="w-6 h-6 animate-spin text-success" />
                                             <span className="font-bold">در حال بارگذاری لیست اقامتگاه‌ها...</span>
                                         </div>
                                     </td>
@@ -387,13 +387,13 @@ export default function TemporaryRentItemsTab() {
                                 <tr>
                                     <td colSpan={7} className="py-20 text-center">
                                         <div className="flex flex-col items-center justify-center gap-2 max-w-sm mx-auto">
-                                            <div className="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center">
+                                            <div className="w-12 h-12 rounded-2xl bg-surface-secondary text-foreground-muted flex items-center justify-center">
                                                 <Home className="w-6 h-6" />
                                             </div>
-                                            <p className="font-black text-slate-700 text-sm mt-2">
+                                            <p className="font-black text-foreground-secondary text-sm mt-2">
                                                 هیچ اقامتگاهی با شرایط انتخابی یافت نشد
                                             </p>
-                                            <p className="text-slate-400 text-xs leading-relaxed">
+                                            <p className="text-foreground-muted text-xs leading-relaxed">
                                                 فیلتر وضعیت یا عبارت جستجوی خود را تغییر دهید تا آیتم‌های مورد نظر نمایش داده شوند.
                                             </p>
                                             {(selectedStatus !== "ALL" || selectedCityId || searchTerm) && (
@@ -405,7 +405,7 @@ export default function TemporaryRentItemsTab() {
                                                         setSearchTerm("");
                                                         setPage(1);
                                                     }}
-                                                    className="mt-3 px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-xl text-xs font-bold transition-colors"
+                                                    className="mt-3 px-4 py-2 bg-success-subtle hover:bg-success-subtle text-success rounded-xl text-xs font-bold transition-colors"
                                                 >
                                                     پاک کردن تمام فیلترها
                                                 </button>
@@ -421,12 +421,12 @@ export default function TemporaryRentItemsTab() {
                                     return (
                                         <tr
                                             key={item.id}
-                                            className="hover:bg-slate-50/70 transition-colors group"
+                                            className="hover:bg-surface-secondary/70 transition-colors group"
                                         >
                                             {/* Thumbnail & Title */}
                                             <td className="px-5 py-4">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0 flex items-center justify-center">
+                                                    <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-surface-secondary border border-border-subtle shrink-0 flex items-center justify-center">
                                                         {hasMedia ? (
                                                             <>
                                                                 <Image
@@ -443,17 +443,17 @@ export default function TemporaryRentItemsTab() {
                                                                 )}
                                                             </>
                                                         ) : (
-                                                            <Building2 className="w-5 h-5 text-slate-400" />
+                                                            <Building2 className="w-5 h-5 text-foreground-muted" />
                                                         )}
                                                     </div>
                                                     <div className="min-w-0 max-w-xs sm:max-w-sm">
                                                         <h4
                                                             onClick={() => setDetailModalAdId(item.id)}
-                                                            className="font-black text-slate-900 truncate hover:text-emerald-600 transition-colors cursor-pointer"
+                                                            className="font-black text-foreground truncate hover:text-success transition-colors cursor-pointer"
                                                         >
                                                             {item.title}
                                                         </h4>
-                                                        <div className="flex items-center gap-2 mt-0.5 text-slate-400">
+                                                        <div className="flex items-center gap-2 mt-0.5 text-foreground-muted">
                                                             <span className="font-mono text-[11px]">
                                                                 ID: {item.id.slice(0, 8)}...
                                                             </span>
@@ -461,7 +461,7 @@ export default function TemporaryRentItemsTab() {
                                                                 type="button"
                                                                 onClick={() => handleCopy(item.id, "شناسه اقامتگاه")}
                                                                 title="کپی شناسه کامل"
-                                                                className="hover:text-slate-700 p-0.5"
+                                                                className="hover:text-foreground-secondary p-0.5"
                                                             >
                                                                 <Copy className="w-3 h-3" />
                                                             </button>
@@ -471,18 +471,18 @@ export default function TemporaryRentItemsTab() {
                                             </td>
 
                                             {/* City */}
-                                            <td className="px-5 py-4 text-slate-600">
+                                            <td className="px-5 py-4 text-foreground-secondary">
                                                 <div className="flex items-center gap-1 font-bold">
-                                                    <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                                                    <MapPin className="w-3.5 h-3.5 text-foreground-muted shrink-0" />
                                                     <span>{item.cityName || item.cityId || "نامشخص"}</span>
                                                 </div>
                                             </td>
 
                                             {/* Nightly Price */}
                                             <td className="px-5 py-4">
-                                                <div className="font-black text-emerald-600">
+                                                <div className="font-black text-success">
                                                     {formatPrice(item.pricing?.nightlyPrice || 0, "")}
-                                                    <span className="text-[10px] text-slate-400 font-bold mr-1">
+                                                    <span className="text-[10px] text-foreground-muted font-bold mr-1">
                                                         تومان
                                                     </span>
                                                 </div>
@@ -490,8 +490,8 @@ export default function TemporaryRentItemsTab() {
 
                                             {/* Guests */}
                                             <td className="px-5 py-4">
-                                                <div className="flex items-center gap-1 text-slate-600 font-bold">
-                                                    <Users className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                                                <div className="flex items-center gap-1 text-foreground-secondary font-bold">
+                                                    <Users className="w-3.5 h-3.5 text-foreground-muted shrink-0" />
                                                     <span>{toPersianDigits(item.maxGuests || 1)} نفر</span>
                                                 </div>
                                             </td>
@@ -499,37 +499,37 @@ export default function TemporaryRentItemsTab() {
                                             {/* Status Badge */}
                                             <td className="px-5 py-4">
                                                 {item.status === "PENDING_APPROVAL" && (
-                                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700">
+                                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-warning-subtle text-warning">
                                                         <Clock className="w-3 h-3" />
                                                         <span>در انتظار بررسی</span>
                                                     </span>
                                                 )}
                                                 {item.status === "PUBLISHED" && (
-                                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">
+                                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-success-subtle text-success">
                                                         <Check className="w-3 h-3" />
                                                         <span>منتشر شده</span>
                                                     </span>
                                                 )}
                                                 {item.status === "DRAFT" && (
-                                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600">
+                                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-surface-secondary text-foreground-secondary">
                                                         <span>پیش‌نویس</span>
                                                     </span>
                                                 )}
                                                 {item.status === "REJECTED" && (
-                                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-700">
+                                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-error-subtle text-error">
                                                         <AlertCircle className="w-3 h-3" />
                                                         <span>رد شده</span>
                                                     </span>
                                                 )}
                                                 {item.status === "ARCHIVED" && (
-                                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-zinc-100 text-zinc-600">
+                                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-surface-secondary text-foreground-secondary">
                                                         <span>آرشیو شده</span>
                                                     </span>
                                                 )}
                                             </td>
 
                                             {/* Registered Date */}
-                                            <td className="px-5 py-4 text-slate-500 font-medium">
+                                            <td className="px-5 py-4 text-foreground-muted font-medium">
                                                 {new Date(item.createdAt).toLocaleDateString("fa-IR")}
                                             </td>
 
@@ -543,7 +543,7 @@ export default function TemporaryRentItemsTab() {
                                                             onClick={() => handlePublish(item.id)}
                                                             disabled={publishMutation.isPending}
                                                             title="تایید و انتشار اقامتگاه"
-                                                            className="p-2 rounded-xl text-emerald-600 hover:bg-emerald-50 transition-colors disabled:opacity-50"
+                                                            className="p-2 rounded-xl text-success hover:bg-success-subtle transition-colors disabled:opacity-50"
                                                         >
                                                             <Check className="w-4 h-4" />
                                                         </button>
@@ -554,7 +554,7 @@ export default function TemporaryRentItemsTab() {
                                                         type="button"
                                                         onClick={() => setDetailModalAdId(item.id)}
                                                         title="بررسی جزئیات کامل"
-                                                        className="p-2 rounded-xl text-blue-600 hover:bg-blue-50 transition-colors"
+                                                        className="p-2 rounded-xl text-info hover:bg-info-subtle transition-colors"
                                                     >
                                                         <Eye className="w-4 h-4" />
                                                     </button>
@@ -564,7 +564,7 @@ export default function TemporaryRentItemsTab() {
                                                         href={`/temporary-rent/${item.id}`}
                                                         target="_blank"
                                                         title="مشاهده در صفحه اصلی سایت"
-                                                        className="p-2 rounded-xl text-slate-500 hover:bg-slate-100 transition-colors"
+                                                        className="p-2 rounded-xl text-foreground-muted hover:bg-surface-secondary transition-colors"
                                                     >
                                                         <ExternalLink className="w-4 h-4" />
                                                     </Link>
@@ -579,7 +579,7 @@ export default function TemporaryRentItemsTab() {
                                                             })
                                                         }
                                                         title="حذف اقامتگاه"
-                                                        className="p-2 rounded-xl text-rose-500 hover:bg-rose-50 transition-colors"
+                                                        className="p-2 rounded-xl text-error hover:bg-error-subtle transition-colors"
                                                     >
                                                         <Trash2 className="w-4 h-4" />
                                                     </button>
@@ -595,8 +595,8 @@ export default function TemporaryRentItemsTab() {
 
                 {/* Pagination Controls */}
                 {adsData && adsData.total > limit && (
-                    <div className="p-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-                        <span className="text-slate-500 font-medium">
+                    <div className="p-4 border-t border-border-subtle flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+                        <span className="text-foreground-muted font-medium">
                             نمایش صفحه {toPersianDigits(page)} از {toPersianDigits(totalPages)} (مجموع{" "}
                             {toPersianDigits(adsData.total)} اقامتگاه)
                         </span>
@@ -606,18 +606,18 @@ export default function TemporaryRentItemsTab() {
                                 type="button"
                                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                                 disabled={page <= 1}
-                                className="px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-xl font-bold transition-colors disabled:opacity-40"
+                                className="px-3 py-1.5 bg-surface-secondary hover:bg-surface-secondary border border-border-subtle text-foreground-secondary rounded-xl font-bold transition-colors disabled:opacity-40"
                             >
                                 صفحه قبل
                             </button>
-                            <span className="px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-xl font-black">
+                            <span className="px-3 py-1.5 bg-success-subtle text-success rounded-xl font-black">
                                 {toPersianDigits(page)}
                             </span>
                             <button
                                 type="button"
                                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                                 disabled={page >= totalPages}
-                                className="px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-xl font-bold transition-colors disabled:opacity-40"
+                                className="px-3 py-1.5 bg-surface-secondary hover:bg-surface-secondary border border-border-subtle text-foreground-secondary rounded-xl font-bold transition-colors disabled:opacity-40"
                             >
                                 صفحه بعد
                             </button>
@@ -645,17 +645,17 @@ export default function TemporaryRentItemsTab() {
             {/* Delete Confirmation Modal */}
             {deleteTargetAd && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
-                    <div className="bg-white rounded-3xl w-full max-w-md p-6 shadow-2xl border border-slate-200 text-right space-y-4" dir="rtl">
-                        <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mx-auto">
+                    <div className="bg-surface rounded-3xl w-full max-w-md p-6 shadow-2xl border border-border-subtle text-right space-y-4" dir="rtl">
+                        <div className="w-12 h-12 rounded-2xl bg-error-subtle text-error flex items-center justify-center mx-auto">
                             <Trash2 className="w-6 h-6" />
                         </div>
 
                         <div className="text-center space-y-1">
-                            <h3 className="text-base font-black text-slate-900">
+                            <h3 className="text-base font-black text-foreground">
                                 حذف اقامتگاه اجاره موقت
                             </h3>
-                            <p className="text-xs text-slate-500 leading-relaxed">
-                                آیا از حذف اقامتگاه «<span className="font-bold text-slate-700">{deleteTargetAd.title}</span>» اطمینان دارید؟ این عملیات غیرقابل بازگشت است.
+                            <p className="text-xs text-foreground-muted leading-relaxed">
+                                آیا از حذف اقامتگاه «<span className="font-bold text-foreground-secondary">{deleteTargetAd.title}</span>» اطمینان دارید؟ این عملیات غیرقابل بازگشت است.
                             </p>
                         </div>
 
@@ -677,7 +677,7 @@ export default function TemporaryRentItemsTab() {
                                 type="button"
                                 onClick={() => setDeleteTargetAd(null)}
                                 disabled={deleteMutation.isPending}
-                                className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors"
+                                className="flex-1 py-2.5 bg-surface-secondary hover:bg-slate-200 text-foreground-secondary rounded-xl text-xs font-bold transition-colors"
                             >
                                 انصراف
                             </button>

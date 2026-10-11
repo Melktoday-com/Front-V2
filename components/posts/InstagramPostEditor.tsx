@@ -108,28 +108,28 @@ export function InstagramPostEditor({
       {/* ── LEFT / MAIN: FORM INPUTS ─────────────────────────────────── */}
       <div className="lg:col-span-7 space-y-6">
         {/* Header Alert / Info */}
-        <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-start gap-3">
+        <div className="p-4 rounded-2xl bg-surface-secondary border border-border-subtle/80 flex items-start gap-3">
           <div className="w-9 h-9 rounded-xl bg-brand text-primary flex items-center justify-center shrink-0 shadow-xs">
             <Layers className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-sm font-black text-slate-900">
+            <h3 className="text-sm font-black text-foreground">
               قالب تصویری و چند اسلایدی (مشابه اینستاگرام)
             </h3>
-            <p className="text-xs text-slate-600 mt-0.5 leading-relaxed">
+            <p className="text-xs text-foreground-secondary mt-0.5 leading-relaxed">
               تصاویر باکیفیت از ملک یا نکات کلیدی را در قالب اسلایدر آپلود کرده و همراه با کپشن و هشتگ‌های جذاب به اشتراک بگذارید.
             </p>
           </div>
         </div>
 
         {/* Media Gallery Upload */}
-        <div className="bg-white p-5 sm:p-6 rounded-3xl border border-slate-200/80 shadow-xs space-y-3">
+        <div className="bg-surface p-5 sm:p-6 rounded-3xl border border-border-subtle/80 shadow-xs space-y-3">
           <div className="flex items-center justify-between">
-            <label className="text-xs font-black text-slate-800 flex items-center gap-1.5">
+            <label className="text-xs font-black text-foreground flex items-center gap-1.5">
               <span>گالری تصاویر اسلایدها (چند تصویری)</span>
-              <span className="text-red-500">*</span>
+              <span className="text-error">*</span>
             </label>
-            <span className="text-xs font-bold text-slate-400">
+            <span className="text-xs font-bold text-foreground-muted">
               {toPersianDigits(media.length)} از ۱۰ تصویر
             </span>
           </div>
@@ -150,11 +150,11 @@ export function InstagramPostEditor({
         </div>
 
         {/* Post Headline / Title */}
-        <div className="bg-white p-5 sm:p-6 rounded-3xl border border-slate-200/80 shadow-xs space-y-4">
+        <div className="bg-surface p-5 sm:p-6 rounded-3xl border border-border-subtle/80 shadow-xs space-y-4">
           <div className="space-y-1.5">
-            <label className="text-xs font-black text-slate-800 flex items-center gap-1.5">
+            <label className="text-xs font-black text-foreground flex items-center gap-1.5">
               <span>تیتر کوتاه / عنوان پست</span>
-              <span className="text-red-500">*</span>
+              <span className="text-error">*</span>
             </label>
             <input
               type="text"
@@ -162,21 +162,21 @@ export function InstagramPostEditor({
               placeholder="مثال: معرفی پنت‌هاوس ۲۵۰ متری فرمانیه با دید ابدی"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-sm font-bold text-slate-800 focus:bg-white focus:border-primary focus:outline-hidden transition-all placeholder:text-slate-400"
+              className="w-full px-4 py-3 rounded-2xl bg-surface-secondary border border-border-subtle text-sm font-bold text-foreground focus:bg-surface focus:border-primary focus:outline-hidden transition-all placeholder:text-foreground-muted"
             />
           </div>
 
           {/* Category & Location Tag */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-black text-slate-800 flex items-center gap-1.5">
+              <label className="text-xs font-black text-foreground flex items-center gap-1.5">
                 <Tag className="w-3.5 h-3.5 text-primary" />
                 <span>دسته‌بندی موضوعی</span>
               </label>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full px-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-800 focus:bg-white focus:border-primary focus:outline-hidden transition-all"
+                className="w-full px-4 py-3 rounded-2xl bg-surface-secondary border border-border-subtle text-xs font-bold text-foreground focus:bg-surface focus:border-primary focus:outline-hidden transition-all"
               >
                 {INSTAGRAM_CATEGORIES.map((cat) => (
                   <option key={cat} value={cat}>
@@ -188,8 +188,8 @@ export function InstagramPostEditor({
 
             {setLocationTag && (
               <div className="space-y-1.5">
-                <label className="text-xs font-black text-slate-800 flex items-center gap-1.5">
-                  <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                <label className="text-xs font-black text-foreground flex items-center gap-1.5">
+                  <MapPin className="w-3.5 h-3.5 text-foreground-muted" />
                   <span>تگ موقعیت / محله (اختیاری)</span>
                 </label>
                 <input
@@ -197,7 +197,7 @@ export function InstagramPostEditor({
                   placeholder="مثلاً: زعفرانیه، تهران"
                   value={locationTag}
                   onChange={(e) => setLocationTag(e.target.value)}
-                  className="w-full px-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-800 focus:bg-white focus:border-primary focus:outline-hidden transition-all placeholder:text-slate-400"
+                  className="w-full px-4 py-3 rounded-2xl bg-surface-secondary border border-border-subtle text-xs font-bold text-foreground focus:bg-surface focus:border-primary focus:outline-hidden transition-all placeholder:text-foreground-muted"
                 />
               </div>
             )}
@@ -206,11 +206,11 @@ export function InstagramPostEditor({
           {/* Caption / Content */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-black text-slate-800 flex items-center gap-1.5">
+              <label className="text-xs font-black text-foreground flex items-center gap-1.5">
                 <span>متن کپشن پست</span>
-                <span className="text-red-500">*</span>
+                <span className="text-error">*</span>
               </label>
-              <span className="text-[11px] text-slate-400 font-medium">
+              <span className="text-[11px] text-foreground-muted font-medium">
                 {toPersianDigits(caption.length)} کاراکتر
               </span>
             </div>
@@ -220,13 +220,13 @@ export function InstagramPostEditor({
               placeholder="توضیحات جذاب درباره ملک، مشخصات، قیمت، امکانات یا تحلیل سریع خود را در اینجا بنویسید..."
               value={caption}
               onChange={(e) => setCaption(e.target.value)}
-              className="w-full p-4 rounded-2xl bg-slate-50 border border-slate-200 text-sm text-slate-800 focus:bg-white focus:border-primary focus:outline-hidden transition-all placeholder:text-slate-400 leading-relaxed resize-none"
+              className="w-full p-4 rounded-2xl bg-surface-secondary border border-border-subtle text-sm text-foreground focus:bg-surface focus:border-primary focus:outline-hidden transition-all placeholder:text-foreground-muted leading-relaxed resize-none"
             />
           </div>
 
           {/* Quick Hashtags */}
-          <div className="space-y-2 pt-2 border-t border-slate-100">
-            <span className="text-[11px] font-bold text-slate-500 block">
+          <div className="space-y-2 pt-2 border-t border-border-subtle">
+            <span className="text-[11px] font-bold text-foreground-muted block">
               پیشنهاد هشتگ‌های پرکاربرد (کلیک برای افزودن به کپشن):
             </span>
             <div className="flex flex-wrap gap-1.5">
@@ -239,7 +239,7 @@ export function InstagramPostEditor({
                     "px-2.5 py-1 rounded-full text-xs font-bold transition-all dir-ltr",
                     caption.includes(tag)
                       ? "bg-primary/10 text-primary border border-primary/30"
-                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                      : "bg-surface-secondary text-foreground-secondary hover:bg-slate-200"
                   )}
                 >
                   {tag}
@@ -253,30 +253,30 @@ export function InstagramPostEditor({
       {/* ── RIGHT: LIVE INSTAGRAM PREVIEW MOCKUP ─────────────────────── */}
       <div className="lg:col-span-5 sticky top-24 space-y-3">
         <div className="flex items-center justify-between px-1">
-          <span className="text-xs font-black text-slate-700 flex items-center gap-1.5">
+          <span className="text-xs font-black text-foreground-secondary flex items-center gap-1.5">
             <Eye className="w-4 h-4 text-primary" />
             <span>پیش‌نمایش زنده پست (اینستاگرامی)</span>
           </span>
-          <span className="text-[11px] text-slate-400 font-medium">مشاهده در موبایل</span>
+          <span className="text-[11px] text-foreground-muted font-medium">مشاهده در موبایل</span>
         </div>
 
         {/* Phone Frame */}
-        <div className="bg-white rounded-[32px] border-4 border-slate-800 shadow-2xl overflow-hidden max-w-sm mx-auto">
+        <div className="bg-surface rounded-[32px] border-4 border-slate-800 shadow-2xl overflow-hidden max-w-sm mx-auto">
           {/* Mockup Status Bar */}
           <div className="bg-slate-900 text-white px-6 py-2.5 flex items-center justify-between text-[11px] font-bold">
             <span>20:25</span>
             <div className="w-16 h-4 bg-slate-800 rounded-full" />
             <div className="flex items-center gap-1">
               <span>5G</span>
-              <div className="w-5 h-2.5 bg-white rounded-xs" />
+              <div className="w-5 h-2.5 bg-surface rounded-xs" />
             </div>
           </div>
 
           {/* Mockup Post Header */}
-          <div className="p-3.5 flex items-center justify-between border-b border-slate-100 bg-white">
+          <div className="p-3.5 flex items-center justify-between border-b border-border-subtle bg-surface">
             <div className="flex items-center gap-2.5">
               <div className="relative w-9 h-9 rounded-full p-0.5 border border-primary bg-primary/10">
-                <div className="relative w-full h-full rounded-full overflow-hidden bg-white">
+                <div className="relative w-full h-full rounded-full overflow-hidden bg-surface">
                   {publisher.avatarUrl ? (
                     <Image
                       src={getMediaUrl(publisher.avatarUrl)}
@@ -285,17 +285,17 @@ export function InstagramPostEditor({
                       className="object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-slate-100 text-slate-600 font-black text-xs">
+                    <div className="w-full h-full flex items-center justify-center bg-surface-secondary text-foreground-secondary font-black text-xs">
                       {publisher.type === "PLATFORM" && <ShieldCheck className="w-4 h-4 text-primary" />}
-                      {publisher.type === "HOST" && <Hotel className="w-4 h-4 text-emerald-600" />}
-                      {publisher.type === "AGENCY" && <Building2 className="w-4 h-4 text-blue-600" />}
+                      {publisher.type === "HOST" && <Hotel className="w-4 h-4 text-success" />}
+                      {publisher.type === "AGENCY" && <Building2 className="w-4 h-4 text-info" />}
                     </div>
                   )}
                 </div>
               </div>
               <div>
                 <div className="flex items-center gap-1">
-                  <span className="text-xs font-black text-slate-900 line-clamp-1">
+                  <span className="text-xs font-black text-foreground line-clamp-1">
                     {publisher.name || "نام صفحه ناشر"}
                   </span>
                   {publisher.isVerified && (
@@ -303,8 +303,8 @@ export function InstagramPostEditor({
                   )}
                 </div>
                 {locationTag ? (
-                  <p className="text-[10px] text-slate-500 flex items-center gap-0.5">
-                    <MapPin className="w-2.5 h-2.5 text-slate-400" />
+                  <p className="text-[10px] text-foreground-muted flex items-center gap-0.5">
+                    <MapPin className="w-2.5 h-2.5 text-foreground-muted" />
                     <span>{locationTag}</span>
                   </p>
                 ) : (
@@ -314,7 +314,7 @@ export function InstagramPostEditor({
                 )}
               </div>
             </div>
-            <div className="text-slate-400 text-lg font-bold tracking-widest px-1">•••</div>
+            <div className="text-foreground-muted text-lg font-bold tracking-widest px-1">•••</div>
           </div>
 
           {/* Media Carousel Preview */}
@@ -369,7 +369,7 @@ export function InstagramPostEditor({
                       <button
                         type="button"
                         onClick={handlePrevSlide}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/80 hover:bg-white text-slate-800 flex items-center justify-center shadow-md transition-all"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-surface/80 hover:bg-surface text-foreground flex items-center justify-center shadow-md transition-all"
                       >
                         <ChevronRight className="w-4 h-4" />
                       </button>
@@ -378,7 +378,7 @@ export function InstagramPostEditor({
                       <button
                         type="button"
                         onClick={handleNextSlide}
-                        className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/80 hover:bg-white text-slate-800 flex items-center justify-center shadow-md transition-all"
+                        className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-surface/80 hover:bg-surface text-foreground flex items-center justify-center shadow-md transition-all"
                       >
                         <ChevronLeft className="w-4 h-4" />
                       </button>
@@ -396,7 +396,7 @@ export function InstagramPostEditor({
                           "w-1.5 h-1.5 rounded-full transition-all",
                           dotIdx === activeSlide
                             ? "w-4 bg-primary shadow-xs"
-                            : "bg-white/60"
+                            : "bg-surface/60"
                         )}
                       />
                     ))}
@@ -404,12 +404,12 @@ export function InstagramPostEditor({
                 )}
               </>
             ) : (
-              <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 p-6 text-center space-y-2">
-                <ImageIcon className="w-10 h-10 text-slate-500" />
+              <div className="w-full h-full flex flex-col items-center justify-center text-foreground-muted p-6 text-center space-y-2">
+                <ImageIcon className="w-10 h-10 text-foreground-muted" />
                 <p className="text-xs font-bold text-slate-300">
                   هنوز عکسی آپلود نشده است
                 </p>
-                <p className="text-[11px] text-slate-500">
+                <p className="text-[11px] text-foreground-muted">
                   تصاویر اسلاید در این قسمت نمایش داده خواهند شد
                 </p>
               </div>
@@ -417,26 +417,26 @@ export function InstagramPostEditor({
           </div>
 
           {/* Mockup Action Bar */}
-          <div className="p-3.5 space-y-2 bg-white">
+          <div className="p-3.5 space-y-2 bg-surface">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4 text-slate-700">
-                <Heart className="w-5 h-5 hover:text-red-500 cursor-pointer transition-colors" />
-                <MessageCircle className="w-5 h-5 hover:text-slate-900 cursor-pointer transition-colors" />
-                <Send className="w-5 h-5 hover:text-slate-900 cursor-pointer transition-colors" />
+              <div className="flex items-center gap-4 text-foreground-secondary">
+                <Heart className="w-5 h-5 hover:text-error cursor-pointer transition-colors" />
+                <MessageCircle className="w-5 h-5 hover:text-foreground cursor-pointer transition-colors" />
+                <Send className="w-5 h-5 hover:text-foreground cursor-pointer transition-colors" />
               </div>
-              <Bookmark className="w-5 h-5 text-slate-700 hover:text-slate-900 cursor-pointer transition-colors" />
+              <Bookmark className="w-5 h-5 text-foreground-secondary hover:text-foreground cursor-pointer transition-colors" />
             </div>
 
             {/* Title / Headline */}
             {title && (
-              <h4 className="text-xs font-black text-slate-900 pt-1">
+              <h4 className="text-xs font-black text-foreground pt-1">
                 {title}
               </h4>
             )}
 
             {/* Caption Body */}
-            <div className="text-xs text-slate-700 leading-relaxed font-normal">
-              <span className="font-bold text-slate-900 ml-1.5">
+            <div className="text-xs text-foreground-secondary leading-relaxed font-normal">
+              <span className="font-bold text-foreground ml-1.5">
                 {publisher.name || "ناشر"}
               </span>
               <span>
@@ -449,20 +449,20 @@ export function InstagramPostEditor({
                       <button
                         type="button"
                         onClick={() => setShowFullCaption(true)}
-                        className="text-slate-400 font-bold hover:text-slate-600"
+                        className="text-foreground-muted font-bold hover:text-foreground-secondary"
                       >
                         بیشتر
                       </button>
                     </>
                   )
                 ) : (
-                  <span className="text-slate-400 italic">متن کپشن در اینجا نمایش داده خواهد شد...</span>
+                  <span className="text-foreground-muted italic">متن کپشن در اینجا نمایش داده خواهد شد...</span>
                 )}
               </span>
             </div>
 
             {/* Date preview */}
-            <div className="text-[10px] text-slate-400 pt-1">
+            <div className="text-[10px] text-foreground-muted pt-1">
               همین الان • ملک تودی
             </div>
           </div>

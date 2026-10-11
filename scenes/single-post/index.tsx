@@ -187,27 +187,27 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center gap-4" dir="rtl">
         <Loader2 className="w-10 h-10 animate-spin text-primary" />
-        <p className="text-sm font-bold text-slate-600">در حال دریافت محتوای پست...</p>
+        <p className="text-sm font-bold text-foreground-secondary">در حال دریافت محتوای پست...</p>
       </div>
     );
   }
 
   if (isError || !post) {
     return (
-      <div className="max-w-md mx-auto my-16 p-8 rounded-3xl bg-white border border-slate-200 text-center space-y-5 shadow-sm" dir="rtl">
-        <div className="w-14 h-14 mx-auto rounded-2xl bg-red-50 text-red-600 flex items-center justify-center">
+      <div className="max-w-md mx-auto my-16 p-8 rounded-3xl bg-surface border border-border-subtle text-center space-y-5 shadow-sm" dir="rtl">
+        <div className="w-14 h-14 mx-auto rounded-2xl bg-error-subtle text-error flex items-center justify-center">
           <AlertCircle className="w-7 h-7" />
         </div>
         <div className="space-y-1.5">
           <h2 className="text-lg font-black text-brand">پست یافت نشد</h2>
-          <p className="text-xs text-slate-500 leading-relaxed">
+          <p className="text-xs text-foreground-muted leading-relaxed">
             متأسفانه پست مورد نظر شما وجود ندارد یا از دسترس خارج شده است.
           </p>
         </div>
         <div className="flex items-center justify-center gap-2 pt-2">
           <button
             onClick={() => refetch()}
-            className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 transition-all"
+            className="px-4 py-2 rounded-xl bg-surface-secondary hover:bg-slate-200 text-xs font-bold text-foreground-secondary transition-all"
           >
             تلاش مجدد
           </button>
@@ -230,14 +230,14 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
         <button
           type="button"
           onClick={handleBack}
-          className="inline-flex items-center gap-1.5 text-xs font-black text-brand hover:text-primary transition-colors bg-white px-3.5 py-2 rounded-xl border border-slate-200 shadow-2xs"
+          className="inline-flex items-center gap-1.5 text-xs font-black text-brand hover:text-primary transition-colors bg-surface px-3.5 py-2 rounded-xl border border-border-subtle shadow-2xs"
           aria-label="بازگشت"
         >
           <ArrowRight className="w-4 h-4" />
         </button>
 
         {post.category && (
-          <span className="px-3 py-1 rounded-full bg-slate-100 text-slate-700 text-xs font-bold">
+          <span className="px-3 py-1 rounded-full bg-surface-secondary text-foreground-secondary text-xs font-bold">
             {post.category}
           </span>
         )}
@@ -247,7 +247,7 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
       {/* ── INSTAGRAM-STYLE POST DETAIL ─────────────────────────────────── */}
       {/* ═══════════════════════════════════════════════════════════════════ */}
       {isInstagramStyle ? (
-        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden grid grid-cols-1 lg:grid-cols-12 max-w-5xl mx-auto">
+        <div className="bg-surface rounded-3xl border border-border-subtle shadow-sm overflow-hidden grid grid-cols-1 lg:grid-cols-12 max-w-5xl mx-auto">
 
           {/* ── Left Column / Media Carousel ─────────────────────────────── */}
           <div className="lg:col-span-7 bg-slate-950 relative flex flex-col justify-center select-none group min-h-[380px] sm:min-h-[500px]">
@@ -285,7 +285,7 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
                   {/* Double tap heart animation */}
                   {showHeartBurst && (
                     <div className="absolute inset-0 flex items-center justify-center bg-black/20 pointer-events-none animate-in fade-in zoom-in duration-300">
-                      <Heart className="w-24 h-24 text-red-500 fill-red-500 drop-shadow-xl" />
+                      <Heart className="w-24 h-24 text-error fill-red-500 drop-shadow-xl" />
                     </div>
                   )}
 
@@ -306,7 +306,7 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
                             e.stopPropagation();
                             setActiveSlide(activeSlide - 1);
                           }}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/80 hover:bg-white text-slate-800 flex items-center justify-center shadow-lg transition-all"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-surface/80 hover:bg-surface text-foreground flex items-center justify-center shadow-lg transition-all"
                         >
                           <ChevronRight className="w-5 h-5" />
                         </button>
@@ -318,7 +318,7 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
                             e.stopPropagation();
                             setActiveSlide(activeSlide + 1);
                           }}
-                          className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/80 hover:bg-white text-slate-800 flex items-center justify-center shadow-lg transition-all"
+                          className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-surface/80 hover:bg-surface text-foreground flex items-center justify-center shadow-lg transition-all"
                         >
                           <ChevronLeft className="w-5 h-5" />
                         </button>
@@ -341,7 +341,7 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
                             "h-2 rounded-full transition-all",
                             dotIdx === activeSlide
                               ? "w-6 bg-primary shadow-xs"
-                              : "w-2 bg-white/60 hover:bg-white"
+                              : "w-2 bg-surface/60 hover:bg-surface"
                           )}
                         />
                       ))}
@@ -349,20 +349,20 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
                   )}
                 </>
               ) : (
-                <div className="w-full h-full flex flex-col items-center justify-center text-slate-500 p-8 text-center space-y-2">
-                  <Layers className="w-12 h-12 text-slate-600" />
-                  <p className="text-xs font-bold text-slate-400">تصویری برای این پست ثبت نشده است.</p>
+                <div className="w-full h-full flex flex-col items-center justify-center text-foreground-muted p-8 text-center space-y-2">
+                  <Layers className="w-12 h-12 text-foreground-secondary" />
+                  <p className="text-xs font-bold text-foreground-muted">تصویری برای این پست ثبت نشده است.</p>
                 </div>
               )}
             </div>
           </div>
 
           {/* ── Right Column / Post Details & Interactions ───────────────── */}
-          <div className="lg:col-span-5 flex flex-col justify-between p-5 sm:p-6 bg-white border-t lg:border-t-0 lg:border-r border-slate-100 space-y-4">
+          <div className="lg:col-span-5 flex flex-col justify-between p-5 sm:p-6 bg-surface border-t lg:border-t-0 lg:border-r border-border-subtle space-y-4">
 
             {/* Publisher Header */}
             {publisherInfo && (
-              <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+              <div className="flex items-center justify-between pb-4 border-b border-border-subtle">
                 <Link
                   href={publisherInfo.link}
                   className="flex items-center gap-3 group min-w-0"
@@ -375,13 +375,13 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
                         className="w-full h-full object-cover rounded-full"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-slate-100 text-slate-700 font-bold text-xs rounded-full">
+                      <div className="w-full h-full flex items-center justify-center bg-surface-secondary text-foreground-secondary font-bold text-xs rounded-full">
                         {publisherInfo.type === "PLATFORM" ? (
                           <ShieldCheck className="w-5 h-5 text-brand" />
                         ) : publisherInfo.type === "HOST" ? (
-                          <Hotel className="w-5 h-5 text-emerald-600" />
+                          <Hotel className="w-5 h-5 text-success" />
                         ) : (
-                          <Building2 className="w-5 h-5 text-blue-600" />
+                          <Building2 className="w-5 h-5 text-info" />
                         )}
                       </div>
                     )}
@@ -395,7 +395,7 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
                         <Verified className="w-4 h-4 text-primary fill-primary/10 shrink-0" />
                       )}
                     </div>
-                    <span className="text-[11px] font-bold text-slate-400">
+                    <span className="text-[11px] font-bold text-foreground-muted">
                       {publisherInfo.badge}
                     </span>
                   </div>
@@ -403,7 +403,7 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
 
                 <Link
                   href={publisherInfo.link}
-                  className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all shrink-0"
+                  className="px-3 py-1.5 rounded-xl bg-surface-secondary hover:bg-slate-200 text-foreground-secondary text-xs font-bold transition-all shrink-0"
                 >
                   مشاهده پروفایل
                 </Link>
@@ -416,19 +416,19 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
                 {post.title}
               </h1>
 
-              <div className="text-xs sm:text-sm text-slate-700 leading-loose whitespace-pre-wrap select-text">
+              <div className="text-xs sm:text-sm text-foreground-secondary leading-loose whitespace-pre-wrap select-text">
                 {post.content}
               </div>
 
               {/* Timestamp */}
-              <div className="flex items-center gap-1 text-[11px] text-slate-400 pt-2">
+              <div className="flex items-center gap-1 text-[11px] text-foreground-muted pt-2">
                 <Calendar className="w-3.5 h-3.5" />
                 <span>{formatDate(post.createdAt)}</span>
               </div>
             </div>
 
             {/* Action Bar */}
-            <div className="pt-4 border-t border-slate-100 space-y-3">
+            <div className="pt-4 border-t border-border-subtle space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   {/* Like Button */}
@@ -439,14 +439,14 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
                     className={cn(
                       "flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-xs font-bold transition-all",
                       post.hasLiked
-                        ? "bg-red-50 text-red-600 border border-red-200 shadow-2xs"
-                        : "bg-slate-100 hover:bg-slate-200 text-slate-700"
+                        ? "bg-error-subtle text-error border border-error/30 shadow-2xs"
+                        : "bg-surface-secondary hover:bg-slate-200 text-foreground-secondary"
                     )}
                   >
                     <Heart
                       className={cn(
                         "w-4 h-4 transition-transform active:scale-125",
-                        post.hasLiked ? "fill-red-600 text-red-600" : ""
+                        post.hasLiked ? "fill-red-600 text-error" : ""
                       )}
                     />
                     <span>{toPersianDigits(post.likeCount || 0)}</span>
@@ -456,7 +456,7 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
                   <button
                     type="button"
                     onClick={handleShare}
-                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all"
+                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-surface-secondary hover:bg-slate-200 text-foreground-secondary text-xs font-bold transition-all"
                   >
                     <Share2 className="w-4 h-4" />
                     <span>اشتراک‌گذاری</span>
@@ -464,7 +464,7 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
                 </div>
 
                 {/* View Counter */}
-                <div className="flex items-center gap-1 text-xs font-bold text-slate-400">
+                <div className="flex items-center gap-1 text-xs font-bold text-foreground-muted">
                   <Eye className="w-4 h-4" />
                   <span>{toPersianDigits(post.viewCount || 0)} بازدید</span>
                 </div>
@@ -477,16 +477,16 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
         /* ═══════════════════════════════════════════════════════════════════ */
         /* ── MEDIUM-STYLE ARTICLE DETAIL ─────────────────────────────────── */
         /* ═══════════════════════════════════════════════════════════════════ */
-        <article className="max-w-3xl mx-auto space-y-8 bg-white p-6 sm:p-10 rounded-3xl border border-slate-200 shadow-sm">
+        <article className="max-w-3xl mx-auto space-y-8 bg-surface p-6 sm:p-10 rounded-3xl border border-border-subtle shadow-sm">
 
           {/* Article Header */}
-          <div className="space-y-4 border-b border-slate-100 pb-6">
+          <div className="space-y-4 border-b border-border-subtle pb-6">
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-brand leading-tight tracking-normal">
               {post.title}
             </h1>
 
             {post.summary && (
-              <p className="text-sm sm:text-base text-slate-600 font-medium leading-relaxed bg-slate-50 p-4 rounded-2xl border-r-4 border-primary">
+              <p className="text-sm sm:text-base text-foreground-secondary font-medium leading-relaxed bg-surface-secondary p-4 rounded-2xl border-r-4 border-primary">
                 {post.summary}
               </p>
             )}
@@ -506,13 +506,13 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
                         className="w-full h-full object-cover rounded-full"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-slate-100 text-slate-700 font-bold text-xs rounded-full">
+                      <div className="w-full h-full flex items-center justify-center bg-surface-secondary text-foreground-secondary font-bold text-xs rounded-full">
                         {publisherInfo.type === "PLATFORM" ? (
                           <ShieldCheck className="w-5 h-5 text-brand" />
                         ) : publisherInfo.type === "HOST" ? (
-                          <Hotel className="w-5 h-5 text-emerald-600" />
+                          <Hotel className="w-5 h-5 text-success" />
                         ) : (
-                          <Building2 className="w-5 h-5 text-blue-600" />
+                          <Building2 className="w-5 h-5 text-info" />
                         )}
                       </div>
                     )}
@@ -526,20 +526,20 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
                         <Verified className="w-4 h-4 text-primary fill-primary/10 shrink-0" />
                       )}
                     </div>
-                    <span className="text-xs text-slate-400 font-medium">
+                    <span className="text-xs text-foreground-muted font-medium">
                       {publisherInfo.badge}
                     </span>
                   </div>
                 </Link>
 
-                <div className="flex items-center gap-3 text-xs font-bold text-slate-500">
+                <div className="flex items-center gap-3 text-xs font-bold text-foreground-muted">
                   <span className="flex items-center gap-1">
-                    <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                    <Calendar className="w-3.5 h-3.5 text-foreground-muted" />
                     <span>{formatDate(post.createdAt)}</span>
                   </span>
                   <span>•</span>
                   <span className="flex items-center gap-1">
-                    <Clock className="w-3.5 h-3.5 text-slate-400" />
+                    <Clock className="w-3.5 h-3.5 text-foreground-muted" />
                     <span>{toPersianDigits(estimatedReadingTime)} دقیقه مطالعه</span>
                   </span>
                 </div>
@@ -550,7 +550,7 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
           {/* Hero Featured Media (Image / Video / Carousel) */}
           {mediaList.length > 0 && (
             <div className="space-y-3">
-              <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-slate-950 border border-slate-200/80 shadow-xs flex items-center justify-center">
+              <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-slate-950 border border-border-subtle/80 shadow-xs flex items-center justify-center">
                 {(() => {
                   const currentMedia = mediaList[activeSlide] || mediaList[0];
                   if (currentMedia.type === "VIDEO") {
@@ -586,7 +586,7 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
                       <button
                         type="button"
                         onClick={() => setActiveSlide(activeSlide - 1)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/80 hover:bg-white text-slate-800 flex items-center justify-center shadow-lg transition-all"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-surface/80 hover:bg-surface text-foreground flex items-center justify-center shadow-lg transition-all"
                       >
                         <ChevronRight className="w-5 h-5" />
                       </button>
@@ -595,7 +595,7 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
                       <button
                         type="button"
                         onClick={() => setActiveSlide(activeSlide + 1)}
-                        className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/80 hover:bg-white text-slate-800 flex items-center justify-center shadow-lg transition-all"
+                        className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-surface/80 hover:bg-surface text-foreground flex items-center justify-center shadow-lg transition-all"
                       >
                         <ChevronLeft className="w-5 h-5" />
                       </button>
@@ -616,7 +616,7 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
                         "relative w-16 h-12 rounded-xl overflow-hidden border-2 transition-all shrink-0 bg-slate-900",
                         idx === activeSlide
                           ? "border-primary ring-2 ring-primary/20 scale-105"
-                          : "border-slate-200 opacity-60 hover:opacity-100"
+                          : "border-border-subtle opacity-60 hover:opacity-100"
                       )}
                     >
                       <img
@@ -642,7 +642,7 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
           </div>
 
           {/* Article Footer & Interactions */}
-          <div className="pt-6 border-t border-slate-200 flex flex-wrap items-center justify-between gap-4">
+          <div className="pt-6 border-t border-border-subtle flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               {/* Like / Clap button */}
               <button
@@ -652,14 +652,14 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
                 className={cn(
                   "flex items-center gap-2 px-5 py-2.5 rounded-2xl text-xs font-black transition-all",
                   post.hasLiked
-                    ? "bg-red-50 text-red-600 border border-red-200 shadow-2xs"
-                    : "bg-slate-100 hover:bg-slate-200 text-slate-800"
+                    ? "bg-error-subtle text-error border border-error/30 shadow-2xs"
+                    : "bg-surface-secondary hover:bg-slate-200 text-foreground"
                 )}
               >
                 <Heart
                   className={cn(
                     "w-4 h-4 transition-transform active:scale-125",
-                    post.hasLiked ? "fill-red-600 text-red-600" : ""
+                    post.hasLiked ? "fill-red-600 text-error" : ""
                   )}
                 />
                 <span>پسندیدم ({toPersianDigits(post.likeCount || 0)})</span>
@@ -669,14 +669,14 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
               <button
                 type="button"
                 onClick={handleShare}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-all"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-surface-secondary hover:bg-slate-200 text-foreground text-xs font-bold transition-all"
               >
                 <Share2 className="w-4 h-4" />
                 <span>اشتراک‌گذاری مقاله</span>
               </button>
             </div>
 
-            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-foreground-muted">
               <Eye className="w-4 h-4" />
               <span>{toPersianDigits(post.viewCount || 0)} بازدید ثبت شده</span>
             </div>
@@ -684,9 +684,9 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
 
           {/* Author Bio Box */}
           {publisherInfo && (
-            <div className="p-6 rounded-3xl bg-slate-50 border border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="p-6 rounded-3xl bg-surface-secondary border border-border-subtle/80 flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-3 text-right">
-                <div className="w-12 h-12 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-slate-700 font-bold text-xs shrink-0 overflow-hidden shadow-2xs">
+                <div className="w-12 h-12 rounded-2xl bg-surface border border-border-subtle flex items-center justify-center text-foreground-secondary font-bold text-xs shrink-0 overflow-hidden shadow-2xs">
                   {publisherInfo.logoUrl ? (
                     <img
                       src={getMediaUrl(publisherInfo.logoUrl)}
@@ -699,7 +699,7 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
                 </div>
                 <div>
                   <h4 className="text-sm font-black text-brand">تولید شده توسط {publisherInfo.name}</h4>
-                  <p className="text-xs text-slate-500 mt-0.5">برای مشاهده آگهی‌ها و مقالات بیشتر به صفحه اختصاصی ناشر مراجعه فرمایید.</p>
+                  <p className="text-xs text-foreground-muted mt-0.5">برای مشاهده آگهی‌ها و مقالات بیشتر به صفحه اختصاصی ناشر مراجعه فرمایید.</p>
                 </div>
               </div>
 

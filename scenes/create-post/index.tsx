@@ -369,20 +369,20 @@ export default function CreatePostScene() {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center gap-3" dir="rtl">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        <p className="text-sm font-bold text-slate-600">در حال بارگذاری استودیو محتوا...</p>
+        <p className="text-sm font-bold text-foreground-secondary">در حال بارگذاری استودیو محتوا...</p>
       </div>
     );
   }
 
   if (!isLoggedIn) {
     return (
-      <div className="max-w-md mx-auto my-16 p-8 rounded-3xl bg-white border border-slate-200 text-center space-y-5 shadow-sm" dir="rtl">
-        <div className="w-14 h-14 mx-auto rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center">
+      <div className="max-w-md mx-auto my-16 p-8 rounded-3xl bg-surface border border-border-subtle text-center space-y-5 shadow-sm" dir="rtl">
+        <div className="w-14 h-14 mx-auto rounded-2xl bg-warning-subtle text-warning flex items-center justify-center">
           <Lock className="w-7 h-7" />
         </div>
         <div className="space-y-1.5">
           <h2 className="text-lg font-black text-brand">ورود به حساب کاربری</h2>
-          <p className="text-xs text-slate-500 leading-relaxed">
+          <p className="text-xs text-foreground-muted leading-relaxed">
             برای انتشار پست و مقالات ملکی، لطفاً ابتدا وارد حساب کاربری خود شوید.
           </p>
         </div>
@@ -436,13 +436,13 @@ export default function CreatePostScene() {
     // Edge Case: Landlord active role but profile failed or not yet initialized
     if (user?.activeRole === RoleName.Landlord && !hostProfile) {
       return (
-        <div className="max-w-lg mx-auto my-16 p-8 rounded-3xl bg-white border border-slate-200 text-center space-y-6 shadow-sm" dir="rtl">
-          <div className="w-14 h-14 mx-auto rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center">
+        <div className="max-w-lg mx-auto my-16 p-8 rounded-3xl bg-surface border border-border-subtle text-center space-y-6 shadow-sm" dir="rtl">
+          <div className="w-14 h-14 mx-auto rounded-2xl bg-warning-subtle text-warning flex items-center justify-center">
             <Hotel className="w-7 h-7" />
           </div>
           <div className="space-y-2">
             <h2 className="text-lg font-black text-brand">پروفایل میزبانی در دسترس نیست</h2>
-            <p className="text-xs text-slate-600 leading-relaxed">
+            <p className="text-xs text-foreground-secondary leading-relaxed">
               شما با نقش <strong className="text-brand">میزبان اقامتگاه</strong> وارد شده‌اید، اما اطلاعات پروفایل میزبانی دریافت نشد. لطفاً دوباره تلاش کنید یا به بخش مدیریت اقامتگاه‌ها مراجعه فرمایید.
             </p>
           </div>
@@ -457,7 +457,7 @@ export default function CreatePostScene() {
             </button>
             <Link
               href="/profile/temporary-rent"
-              className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl border border-slate-200 hover:border-primary text-xs font-bold text-slate-700 hover:text-brand transition-all"
+              className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl border border-border-subtle hover:border-primary text-xs font-bold text-foreground-secondary hover:text-brand transition-all"
             >
               <span>مدیریت پروفایل میزبانی</span>
               <ChevronLeft className="w-4 h-4" />
@@ -470,13 +470,13 @@ export default function CreatePostScene() {
     // Role Switch option if user holds eligible publisher role in other mode
     if (switchableRoles.length > 0) {
       return (
-        <div className="max-w-lg mx-auto my-16 p-8 rounded-3xl bg-white border border-slate-200 text-center space-y-6 shadow-sm" dir="rtl">
-          <div className="w-14 h-14 mx-auto rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
+        <div className="max-w-lg mx-auto my-16 p-8 rounded-3xl bg-surface border border-border-subtle text-center space-y-6 shadow-sm" dir="rtl">
+          <div className="w-14 h-14 mx-auto rounded-2xl bg-info-subtle text-info flex items-center justify-center">
             <ShieldCheck className="w-7 h-7" />
           </div>
           <div className="space-y-2">
             <h2 className="text-lg font-black text-brand">تغییر نقش فعال برای ایجاد محتوا</h2>
-            <p className="text-xs text-slate-600 leading-relaxed">
+            <p className="text-xs text-foreground-secondary leading-relaxed">
               نقش فعلی شما «<strong className="text-brand">{roleLabels[user?.activeRole || "user"]}</strong>» است. حساب شما دارای نقش ناشر است. برای انتشار پست، لطفاً نقش فعال خود را انتخاب کنید:
             </p>
           </div>
@@ -486,7 +486,7 @@ export default function CreatePostScene() {
                 key={role}
                 onClick={() => handleSwitchRole(role)}
                 disabled={switchRoleMutation.isPending}
-                className="w-full p-4 rounded-2xl border border-slate-200 hover:border-primary bg-slate-50 hover:bg-white text-right flex items-center justify-between transition-all group"
+                className="w-full p-4 rounded-2xl border border-border-subtle hover:border-primary bg-surface-secondary hover:bg-surface text-right flex items-center justify-between transition-all group"
               >
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold">
@@ -498,10 +498,10 @@ export default function CreatePostScene() {
                   </div>
                   <div>
                     <p className="text-xs font-black text-brand">تغییر به نقش {roleLabels[role]}</p>
-                    <p className="text-[11px] text-slate-500">فعال‌سازی دسترسی ناشر {roleLabels[role]}</p>
+                    <p className="text-[11px] text-foreground-muted">فعال‌سازی دسترسی ناشر {roleLabels[role]}</p>
                   </div>
                 </div>
-                <ChevronLeft className="w-4 h-4 text-slate-400 group-hover:-translate-x-1 transition-transform" />
+                <ChevronLeft className="w-4 h-4 text-foreground-muted group-hover:-translate-x-1 transition-transform" />
               </button>
             ))}
           </div>
@@ -510,38 +510,38 @@ export default function CreatePostScene() {
     }
 
     return (
-      <div className="max-w-lg mx-auto my-16 p-8 rounded-3xl bg-white border border-slate-200 text-center space-y-6 shadow-sm" dir="rtl">
-        <div className="w-14 h-14 mx-auto rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center">
+      <div className="max-w-lg mx-auto my-16 p-8 rounded-3xl bg-surface border border-border-subtle text-center space-y-6 shadow-sm" dir="rtl">
+        <div className="w-14 h-14 mx-auto rounded-2xl bg-warning-subtle text-warning flex items-center justify-center">
           <AlertTriangle className="w-7 h-7" />
         </div>
         <div className="space-y-2">
           <h2 className="text-lg font-black text-brand">دسترسی ناشر یافت نشد</h2>
-          <p className="text-xs text-slate-600 leading-relaxed">
+          <p className="text-xs text-foreground-secondary leading-relaxed">
             در حال حاضر تنها <strong className="text-brand">آژانس‌های املاک تایید شده</strong>، <strong className="text-brand">میزبان‌های اقامتگاه</strong> و <strong className="text-brand">مدیران پلتفرم</strong> امکان تولید و انتشار محتوا در بخش کاوش را دارند.
           </p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
           <Link
             href="/agency/apply"
-            className="p-4 rounded-2xl border border-slate-200 hover:border-primary bg-slate-50 hover:bg-white text-right space-y-1 transition-all group"
+            className="p-4 rounded-2xl border border-border-subtle hover:border-primary bg-surface-secondary hover:bg-surface text-right space-y-1 transition-all group"
           >
             <div className="flex items-center justify-between">
               <Building2 className="w-5 h-5 text-brand group-hover:text-primary transition-colors" />
-              <ChevronLeft className="w-4 h-4 text-slate-400 group-hover:-translate-x-1 transition-transform" />
+              <ChevronLeft className="w-4 h-4 text-foreground-muted group-hover:-translate-x-1 transition-transform" />
             </div>
             <p className="text-xs font-black text-brand">ثبت دفتر املاک</p>
-            <p className="text-[11px] text-slate-500">ارسال درخواست عضویت آژانس</p>
+            <p className="text-[11px] text-foreground-muted">ارسال درخواست عضویت آژانس</p>
           </Link>
           <Link
             href="/host/apply"
-            className="p-4 rounded-2xl border border-slate-200 hover:border-primary bg-slate-50 hover:bg-white text-right space-y-1 transition-all group"
+            className="p-4 rounded-2xl border border-border-subtle hover:border-primary bg-surface-secondary hover:bg-surface text-right space-y-1 transition-all group"
           >
             <div className="flex items-center justify-between">
               <Hotel className="w-5 h-5 text-brand group-hover:text-primary transition-colors" />
-              <ChevronLeft className="w-4 h-4 text-slate-400 group-hover:-translate-x-1 transition-transform" />
+              <ChevronLeft className="w-4 h-4 text-foreground-muted group-hover:-translate-x-1 transition-transform" />
             </div>
             <p className="text-xs font-black text-brand">ثبت‌نام میزبان</p>
-            <p className="text-[11px] text-slate-500">فعال‌سازی پروفایل میزبانی</p>
+            <p className="text-[11px] text-foreground-muted">فعال‌سازی پروفایل میزبانی</p>
           </Link>
         </div>
       </div>
@@ -552,11 +552,11 @@ export default function CreatePostScene() {
     <div className="min-w-0 max-w-6xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8 pb-28 lg:pb-10 space-y-8" dir="rtl">
 
       {/* ── TOP HEADER & WIZARD STEPPER ─────────────────────────────────── */}
-      <div className="bg-white p-5 sm:p-6 rounded-3xl border border-slate-200 shadow-xs space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5">
+      <div className="bg-surface p-5 sm:p-6 rounded-3xl border border-border-subtle shadow-xs space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border-subtle pb-5">
           <div>
             <div className="flex items-center gap-2">
-              <span className="px-2.5 py-1 rounded-lg bg-slate-100 text-brand text-[11px] font-bold">
+              <span className="px-2.5 py-1 rounded-lg bg-surface-secondary text-brand text-[11px] font-bold">
                 استودیو محتوای ملک‌تودی
               </span>
               {activePublisher && (
@@ -575,14 +575,14 @@ export default function CreatePostScene() {
             <button
               type="button"
               onClick={clearDraft}
-              className="flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-bold text-slate-500 hover:text-red-600 hover:bg-red-50 transition-all"
+              className="flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-bold text-foreground-muted hover:text-error hover:bg-error-subtle transition-all"
             >
               <Trash2 className="w-3.5 h-3.5" />
               <span>پاکسازی فرم</span>
             </button>
             <Link
               href="/explore"
-              className="flex items-center gap-1 px-4 py-2 rounded-xl text-xs font-bold text-brand bg-slate-100 hover:bg-slate-200 transition-all"
+              className="flex items-center gap-1 px-4 py-2 rounded-xl text-xs font-bold text-brand bg-surface-secondary hover:bg-slate-200 transition-all"
             >
               <span>مشاهده اکسپلور</span>
               <ChevronLeft className="w-3.5 h-3.5" />
@@ -601,18 +601,18 @@ export default function CreatePostScene() {
               currentStep === 1
                 ? "bg-slate-900 text-white border-slate-900 shadow-xs"
                 : currentStep > 1
-                ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-                : "bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100"
+                ? "bg-success-subtle text-success border-success/30"
+                : "bg-surface-secondary text-foreground-muted border-border-subtle hover:bg-surface-secondary"
             )}
           >
             <div
               className={cn(
                 "w-7 h-7 rounded-xl flex items-center justify-center text-xs font-black shrink-0",
                 currentStep === 1
-                  ? "bg-primary text-slate-950"
+                  ? "bg-primary text-foreground"
                   : currentStep > 1
                   ? "bg-emerald-600 text-white"
-                  : "bg-slate-200 text-slate-600"
+                  : "bg-slate-200 text-foreground-secondary"
               )}
             >
               {currentStep > 1 ? <Check className="w-4 h-4" /> : "۱"}
@@ -634,18 +634,18 @@ export default function CreatePostScene() {
               currentStep === 2
                 ? "bg-slate-900 text-white border-slate-900 shadow-xs"
                 : currentStep > 2
-                ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-                : "bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100"
+                ? "bg-success-subtle text-success border-success/30"
+                : "bg-surface-secondary text-foreground-muted border-border-subtle hover:bg-surface-secondary"
             )}
           >
             <div
               className={cn(
                 "w-7 h-7 rounded-xl flex items-center justify-center text-xs font-black shrink-0",
                 currentStep === 2
-                  ? "bg-primary text-slate-950"
+                  ? "bg-primary text-foreground"
                   : currentStep > 2
                   ? "bg-emerald-600 text-white"
-                  : "bg-slate-200 text-slate-600"
+                  : "bg-slate-200 text-foreground-secondary"
               )}
             >
               {currentStep > 2 ? <Check className="w-4 h-4" /> : "۲"}
@@ -671,15 +671,15 @@ export default function CreatePostScene() {
               "flex items-center gap-2 sm:gap-3 p-3 rounded-2xl text-right transition-all border",
               currentStep === 3
                 ? "bg-slate-900 text-white border-slate-900 shadow-xs"
-                : "bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100"
+                : "bg-surface-secondary text-foreground-muted border-border-subtle hover:bg-surface-secondary"
             )}
           >
             <div
               className={cn(
                 "w-7 h-7 rounded-xl flex items-center justify-center text-xs font-black shrink-0",
                 currentStep === 3
-                  ? "bg-primary text-slate-950"
-                  : "bg-slate-200 text-slate-600"
+                  ? "bg-primary text-foreground"
+                  : "bg-slate-200 text-foreground-secondary"
               )}
             >
               ۳
@@ -696,13 +696,13 @@ export default function CreatePostScene() {
       {currentStep === 1 && (
         <div className="space-y-6">
           {/* 1.1 Publisher Identity Selection */}
-          <div className="bg-white p-5 sm:p-6 rounded-3xl border border-slate-200 shadow-xs space-y-4">
+          <div className="bg-surface p-5 sm:p-6 rounded-3xl border border-border-subtle shadow-xs space-y-4">
             <div>
               <h2 className="text-sm sm:text-base font-black text-brand flex items-center gap-2">
                 <ShieldCheck className="w-4 h-4 text-primary" />
                 <span>۱. انتخاب هویت ناشر (انتشار از طرف کدام صفحه؟)</span>
               </h2>
-              <p className="text-xs text-slate-500 mt-1">
+              <p className="text-xs text-foreground-muted mt-1">
                 مشخص کنید این محتوا در کدام پروفایل رسمی و با چه نشانی به کاربران اکسپلور نمایش داده شود.
               </p>
             </div>
@@ -720,11 +720,11 @@ export default function CreatePostScene() {
                       "p-4 rounded-2xl border text-right transition-all relative flex flex-col justify-between gap-3",
                       isSelected
                         ? "border-primary bg-primary/5 ring-2 ring-primary/20 shadow-xs"
-                        : "border-slate-200 hover:border-slate-300 bg-white"
+                        : "border-border-subtle hover:border-border bg-surface"
                     )}
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-700 shrink-0 font-black text-xs overflow-hidden">
+                      <div className="w-10 h-10 rounded-xl bg-surface-secondary flex items-center justify-center text-foreground-secondary shrink-0 font-black text-xs overflow-hidden">
                         {pub.avatarUrl ? (
                           <img
                             src={getMediaUrl(pub.avatarUrl)}
@@ -734,28 +734,28 @@ export default function CreatePostScene() {
                         ) : pub.type === "PLATFORM" ? (
                           <ShieldCheck className="w-5 h-5 text-brand" />
                         ) : pub.type === "HOST" ? (
-                          <Hotel className="w-5 h-5 text-emerald-600" />
+                          <Hotel className="w-5 h-5 text-success" />
                         ) : (
-                          <Building2 className="w-5 h-5 text-blue-600" />
+                          <Building2 className="w-5 h-5 text-info" />
                         )}
                       </div>
                       <div className="min-w-0">
                         <p className="text-xs font-black text-brand truncate">{pub.name}</p>
-                        <p className="text-[11px] text-slate-500">{pub.label}</p>
+                        <p className="text-[11px] text-foreground-muted">{pub.label}</p>
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between pt-2 border-t border-slate-100">
-                      <span className="text-[10px] font-bold text-slate-400">
+                    <div className="flex items-center justify-between pt-2 border-t border-border-subtle">
+                      <span className="text-[10px] font-bold text-foreground-muted">
                         {pub.type === "PLATFORM" ? "پلتفرم رسمی" : pub.type === "HOST" ? "میزبان اقامتگاه" : "آژانس املاک"}
                       </span>
                       {isSelected ? (
-                        <span className="px-2 py-0.5 rounded-md bg-primary text-slate-950 text-[10px] font-black flex items-center gap-1">
+                        <span className="px-2 py-0.5 rounded-md bg-primary text-foreground text-[10px] font-black flex items-center gap-1">
                           <Check className="w-3 h-3" />
                           <span>انتخاب شده</span>
                         </span>
                       ) : (
-                        <span className="text-[10px] font-bold text-slate-400">انتخاب</span>
+                        <span className="text-[10px] font-bold text-foreground-muted">انتخاب</span>
                       )}
                     </div>
                   </button>
@@ -765,13 +765,13 @@ export default function CreatePostScene() {
           </div>
 
           {/* 1.2 Content Format Selection */}
-          <div className="bg-white p-5 sm:p-6 rounded-3xl border border-slate-200 shadow-xs space-y-4">
+          <div className="bg-surface p-5 sm:p-6 rounded-3xl border border-border-subtle shadow-xs space-y-4">
             <div>
               <h2 className="text-sm sm:text-base font-black text-brand flex items-center gap-2">
                 <Layers className="w-4 h-4 text-primary" />
                 <span>۲. انتخاب فرمت و سبک پست</span>
               </h2>
-              <p className="text-xs text-slate-500 mt-1">
+              <p className="text-xs text-foreground-muted mt-1">
                 قالب مناسب محتوای خود را جهت نمایش جذاب در فید اکسپلور انتخاب کنید.
               </p>
             </div>
@@ -784,8 +784,8 @@ export default function CreatePostScene() {
                 className={cn(
                   "p-5 rounded-3xl border text-right transition-all space-y-4 relative group",
                   postFormat === "instagram"
-                    ? "border-brand bg-slate-50 ring-2 ring-brand/10 shadow-sm"
-                    : "border-slate-200 hover:border-slate-300 bg-white"
+                    ? "border-brand bg-surface-secondary ring-2 ring-brand/10 shadow-sm"
+                    : "border-border-subtle hover:border-border bg-surface"
                 )}
               >
                 <div className="flex items-center justify-between">
@@ -804,12 +804,12 @@ export default function CreatePostScene() {
                   <h3 className="text-sm font-black text-brand">
                     سبک اینستاگرام (چندرسانه‌ای و اسلایدی)
                   </h3>
-                  <p className="text-xs text-slate-600 leading-relaxed">
+                  <p className="text-xs text-foreground-secondary leading-relaxed">
                     مناسب معرفی سریع املاک، تورهای ویدیویی و تصویری، آگهی‌های ویژه و اسلایدهای آموزشی با تصاویر متعدد و کپشن کوتاه.
                   </p>
                 </div>
 
-                <div className="space-y-1.5 pt-2 border-t border-slate-200/60 text-[11px] text-slate-500">
+                <div className="space-y-1.5 pt-2 border-t border-border-subtle/60 text-[11px] text-foreground-muted">
                   <div className="flex items-center gap-1.5">
                     <CheckCircle2 className="w-3.5 h-3.5 text-primary" />
                     <span>پشتیبانی از ۱ تا ۱۰ تصویر باکیفیت در قالب اسلایدر</span>
@@ -832,8 +832,8 @@ export default function CreatePostScene() {
                 className={cn(
                   "p-5 rounded-3xl border text-right transition-all space-y-4 relative group",
                   postFormat === "medium"
-                    ? "border-brand bg-slate-50 ring-2 ring-brand/10 shadow-sm"
-                    : "border-slate-200 hover:border-slate-300 bg-white"
+                    ? "border-brand bg-surface-secondary ring-2 ring-brand/10 shadow-sm"
+                    : "border-border-subtle hover:border-border bg-surface"
                 )}
               >
                 <div className="flex items-center justify-between">
@@ -852,12 +852,12 @@ export default function CreatePostScene() {
                   <h3 className="text-sm font-black text-brand">
                     سبک مدیوم (مقاله و تحلیل تخصصی)
                   </h3>
-                  <p className="text-xs text-slate-600 leading-relaxed">
+                  <p className="text-xs text-foreground-secondary leading-relaxed">
                     مناسب مقالات بلند، تحلیل روند بازار مسکن، راهنماهای جامع خرید و فروش، نکات حقوقی و گزارش‌های پژوهشی.
                   </p>
                 </div>
 
-                <div className="space-y-1.5 pt-2 border-t border-slate-200/60 text-[11px] text-slate-500">
+                <div className="space-y-1.5 pt-2 border-t border-border-subtle/60 text-[11px] text-foreground-muted">
                   <div className="flex items-center gap-1.5">
                     <CheckCircle2 className="w-3.5 h-3.5 text-primary" />
                     <span>تصویر شاخص بزرگ (Hero Cover) و ساختار مقاله تمیز</span>
@@ -892,10 +892,10 @@ export default function CreatePostScene() {
       {/* ── STEP 2: CONTENT EDITOR ──────────────────────────────────────── */}
       {currentStep === 2 && activePublisher && (
         <div className="space-y-6">
-          <div className="flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+          <div className="flex items-center justify-between bg-surface p-4 rounded-2xl border border-border-subtle shadow-xs">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-primary inline-block" />
-              <span className="text-xs font-bold text-slate-700">
+              <span className="text-xs font-bold text-foreground-secondary">
                 قالب فعال: {postFormat === "instagram" ? "اسلایدی و تصویری (اینستاگرام)" : "مقاله تحلیلی و متنی (مدیوم)"}
               </span>
             </div>
@@ -943,11 +943,11 @@ export default function CreatePostScene() {
           )}
 
           {/* Action Bar Step 2 */}
-          <div className="flex items-center justify-between bg-white p-4 rounded-3xl border border-slate-200 shadow-xs">
+          <div className="flex items-center justify-between bg-surface p-4 rounded-3xl border border-border-subtle shadow-xs">
             <button
               type="button"
               onClick={() => setCurrentStep(1)}
-              className="flex items-center gap-1.5 px-5 py-2.5 rounded-2xl text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-all"
+              className="flex items-center gap-1.5 px-5 py-2.5 rounded-2xl text-xs font-bold text-foreground-secondary bg-surface-secondary hover:bg-slate-200 transition-all"
             >
               <ArrowRight className="w-4 h-4" />
               <span>مرحله قبل (انتخاب قالب)</span>
@@ -971,46 +971,46 @@ export default function CreatePostScene() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             {/* Left: Summary & Metadata */}
             <div className="lg:col-span-6 space-y-6">
-              <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-xs space-y-5">
+              <div className="bg-surface p-6 rounded-3xl border border-border-subtle shadow-xs space-y-5">
                 <div>
                   <h2 className="text-base font-black text-brand flex items-center gap-2">
                     <CheckCircle2 className="w-5 h-5 text-primary" />
                     <span>مشخصات و تنظیمات نهایی پست</span>
                   </h2>
-                  <p className="text-xs text-slate-500 mt-1">
+                  <p className="text-xs text-foreground-muted mt-1">
                     قبل از انتشار نهایی، مشخصات را بررسی کنید.
                   </p>
                 </div>
 
                 <div className="space-y-3 divide-y divide-slate-100 text-xs">
                   <div className="flex items-center justify-between pt-2">
-                    <span className="text-slate-500">ناشر محتوا:</span>
+                    <span className="text-foreground-muted">ناشر محتوا:</span>
                     <span className="font-bold text-brand">{activePublisher.name}</span>
                   </div>
 
                   <div className="flex items-center justify-between pt-2">
-                    <span className="text-slate-500">فرمت انتخابی:</span>
+                    <span className="text-foreground-muted">فرمت انتخابی:</span>
                     <span className="font-bold text-brand">
                       {postFormat === "instagram" ? "پست اسلایدی (اینستاگرام)" : "مقاله تفصیلی (مدیوم)"}
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between pt-2">
-                    <span className="text-slate-500">عنوان:</span>
+                    <span className="text-foreground-muted">عنوان:</span>
                     <span className="font-bold text-brand text-left max-w-[200px] truncate">
                       {postFormat === "instagram" ? (igTitle || igCaption.slice(0, 30) || "پست تصویری") : medTitle}
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between pt-2">
-                    <span className="text-slate-500">دسته‌بندی:</span>
+                    <span className="text-foreground-muted">دسته‌بندی:</span>
                     <span className="font-bold text-primary">
                       {postFormat === "instagram" ? igCategory : medCategory}
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between pt-2">
-                    <span className="text-slate-500">تعداد رسانه‌ها:</span>
+                    <span className="text-foreground-muted">تعداد رسانه‌ها:</span>
                     <span className="font-bold text-brand">
                       {postFormat === "instagram"
                         ? `${toPersianDigits(igMedia.length)} تصویر اسلایدی`
@@ -1022,12 +1022,12 @@ export default function CreatePostScene() {
                 </div>
 
                 {/* Direct Action Buttons */}
-                <div className="pt-4 border-t border-slate-100 space-y-3">
+                <div className="pt-4 border-t border-border-subtle space-y-3">
                   <button
                     type="button"
                     disabled={createPostMutation.isPending}
                     onClick={() => handlePublish(true)}
-                    className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-primary text-slate-950 font-black text-sm hover:bg-primary/90 transition-all shadow-md disabled:opacity-50"
+                    className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-primary text-foreground font-black text-sm hover:bg-primary/90 transition-all shadow-md disabled:opacity-50"
                   >
                     {createPostMutation.isPending ? (
                       <>
@@ -1046,7 +1046,7 @@ export default function CreatePostScene() {
                     type="button"
                     disabled={createPostMutation.isPending}
                     onClick={() => handlePublish(false)}
-                    className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-all disabled:opacity-50"
+                    className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-surface-secondary hover:bg-slate-200 text-foreground-secondary font-bold text-xs transition-all disabled:opacity-50"
                   >
                     <Save className="w-4 h-4" />
                     <span>ذخیره به عنوان پیش‌نویس (غیرعمومی)</span>
@@ -1055,7 +1055,7 @@ export default function CreatePostScene() {
                   <button
                     type="button"
                     onClick={() => setCurrentStep(2)}
-                    className="w-full text-center text-xs font-bold text-slate-500 hover:text-slate-800 transition-colors pt-2"
+                    className="w-full text-center text-xs font-bold text-foreground-muted hover:text-foreground transition-colors pt-2"
                   >
                     بازگشت به مرحله ویرایش محتوا
                   </button>
@@ -1065,7 +1065,7 @@ export default function CreatePostScene() {
 
             {/* Right: Live Preview */}
             <div className="lg:col-span-6 space-y-4">
-              <div className="bg-slate-50 p-4 rounded-3xl border border-slate-200">
+              <div className="bg-surface-secondary p-4 rounded-3xl border border-border-subtle">
                 <div className="flex items-center gap-2 mb-3">
                   <Eye className="w-4 h-4 text-brand" />
                   <h3 className="text-xs font-black text-brand">پیش‌نمایش خروجی زنده</h3>
@@ -1073,10 +1073,10 @@ export default function CreatePostScene() {
 
                 {postFormat === "instagram" ? (
                   /* Instagram Card Preview */
-                  <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs space-y-3">
-                    <div className="p-3 flex items-center justify-between border-b border-slate-100">
+                  <div className="bg-surface rounded-2xl border border-border-subtle overflow-hidden shadow-xs space-y-3">
+                    <div className="p-3 flex items-center justify-between border-b border-border-subtle">
                       <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-full bg-slate-100 border border-primary/20 overflow-hidden flex items-center justify-center text-slate-700 text-xs font-bold">
+                        <div className="w-8 h-8 rounded-full bg-surface-secondary border border-primary/20 overflow-hidden flex items-center justify-center text-foreground-secondary text-xs font-bold">
                           {activePublisher.avatarUrl ? (
                             <img
                               src={getMediaUrl(activePublisher.avatarUrl)}
@@ -1102,7 +1102,7 @@ export default function CreatePostScene() {
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-slate-500 text-xs font-bold">
+                        <div className="w-full h-full flex items-center justify-center text-foreground-muted text-xs font-bold">
                           تصویری انتخاب نشده
                         </div>
                       )}
@@ -1115,16 +1115,16 @@ export default function CreatePostScene() {
 
                     <div className="p-3 space-y-1.5">
                       <p className="text-xs font-bold text-brand">{igTitle || "عنوان پست"}</p>
-                      <p className="text-xs text-slate-600 line-clamp-3 leading-relaxed">
+                      <p className="text-xs text-foreground-secondary line-clamp-3 leading-relaxed">
                         {igCaption || "کپشن و توضیحات پست در این بخش قرار می‌گیرد..."}
                       </p>
                     </div>
                   </div>
                 ) : (
                   /* Medium Article Preview */
-                  <div className="bg-white rounded-2xl border border-slate-200 p-5 space-y-4 shadow-xs">
+                  <div className="bg-surface rounded-2xl border border-border-subtle p-5 space-y-4 shadow-xs">
                     {medFeaturedImage && (
-                      <div className="aspect-video w-full rounded-xl overflow-hidden bg-slate-100">
+                      <div className="aspect-video w-full rounded-xl overflow-hidden bg-surface-secondary">
                         <img
                           src={getMediaUrl(medFeaturedImage)}
                           alt="تصویر شاخص"
@@ -1139,11 +1139,11 @@ export default function CreatePostScene() {
                       </h4>
                     </div>
                     {medSummary && (
-                      <p className="text-xs text-slate-600 italic bg-slate-50 p-3 rounded-xl border-r-2 border-primary">
+                      <p className="text-xs text-foreground-secondary italic bg-surface-secondary p-3 rounded-xl border-r-2 border-primary">
                         {medSummary}
                       </p>
                     )}
-                    <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+                    <div className="pt-2 border-t border-border-subtle flex items-center justify-between text-[11px] text-foreground-muted">
                       <span>توسط: {activePublisher.name}</span>
                       <span>زمان مطالعه تخمینی: {toPersianDigits(Math.max(1, Math.ceil((medContent?.length || 0) / 400)))} دقیقه</span>
                     </div>

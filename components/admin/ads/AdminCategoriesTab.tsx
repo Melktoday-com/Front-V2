@@ -318,11 +318,11 @@ export default function AdminCategoriesTab() {
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                 <div>
-                    <h1 className="text-2xl font-black text-slate-900 flex items-center gap-2">
-                        <Layers className="w-7 h-7 text-blue-600" />
+                    <h1 className="text-2xl font-black text-foreground flex items-center gap-2">
+                        <Layers className="w-7 h-7 text-info" />
                         مدیریت دسته‌بندی‌ها و زیردسته‌ها (املاک عادی)
                     </h1>
-                    <p className="text-slate-500 mt-1 text-xs">
+                    <p className="text-foreground-muted mt-1 text-xs">
                         ساختار دسته‌بندی‌ها، مدل‌های قیمت‌گذاری مجاز و ویژگی‌های داینامیک هر زیردسته
                     </p>
                 </div>
@@ -330,9 +330,9 @@ export default function AdminCategoriesTab() {
                 <div className="flex items-center gap-3">
                     <button
                         onClick={() => setIsPriceModelsModalOpen(true)}
-                        className="flex items-center gap-2 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 px-4 py-2.5 rounded-xl font-bold text-xs transition-all shadow-sm"
+                        className="flex items-center gap-2 bg-warning-subtle hover:bg-warning-subtle text-warning border border-warning/30 px-4 py-2.5 rounded-xl font-bold text-xs transition-all shadow-sm"
                     >
-                        <Coins className="w-4 h-4 text-amber-600" />
+                        <Coins className="w-4 h-4 text-warning" />
                         مدیریت الگوهای قیمت‌گذاری
                     </button>
                     <button
@@ -346,15 +346,15 @@ export default function AdminCategoriesTab() {
             </div>
 
             {/* Filters */}
-            <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-6 flex flex-wrap items-center gap-4">
+            <div className="bg-surface p-4 rounded-2xl shadow-sm border border-border-subtle mb-6 flex flex-wrap items-center gap-4">
                 <div className="relative flex-1 min-w-[300px]">
-                    <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
+                    <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground-muted w-5 h-5" />
                     <input
                         type="text"
                         placeholder="جستجو در دسته‌بندی‌ها و زیردسته‌ها (نام یا کلید)..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pr-10 pl-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-xs"
+                        className="w-full pr-10 pl-4 py-2.5 rounded-xl border border-border-subtle focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-xs"
                     />
                 </div>
             </div>
@@ -362,26 +362,26 @@ export default function AdminCategoriesTab() {
             {/* Categories List */}
             <div className="space-y-4">
                 {isLoading ? (
-                    <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-dashed border-slate-200">
+                    <div className="flex flex-col items-center justify-center py-20 bg-surface rounded-3xl border border-dashed border-border-subtle">
                         <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4" />
-                        <p className="text-slate-500 font-medium text-sm">در حال بارگذاری دسته‌بندی‌ها...</p>
+                        <p className="text-foreground-muted font-medium text-sm">در حال بارگذاری دسته‌بندی‌ها...</p>
                     </div>
                 ) : filteredCategories?.length === 0 ? (
-                    <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-slate-200">
-                        <p className="text-slate-400 text-sm">هیچ دسته‌بندی یافت نشد</p>
+                    <div className="text-center py-20 bg-surface rounded-3xl border border-dashed border-border-subtle">
+                        <p className="text-foreground-muted text-sm">هیچ دسته‌بندی یافت نشد</p>
                     </div>
                 ) : (
                     filteredCategories?.map((category) => (
                         <div
                             key={category.id}
-                            className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden transition-all hover:border-blue-200"
+                            className="bg-surface rounded-2xl border border-border-subtle shadow-sm overflow-hidden transition-all hover:border-info/30"
                         >
                             {/* Category Row */}
                             <div className="p-4 flex items-center justify-between">
                                 <div className="flex items-center gap-4">
                                     <button
                                         onClick={() => toggleExpand(category.id)}
-                                        className="p-1 hover:bg-slate-100 rounded-lg transition-colors text-slate-500"
+                                        className="p-1 hover:bg-surface-secondary rounded-lg transition-colors text-foreground-muted"
                                     >
                                         {expandedCategories.includes(category.id) ? (
                                             <ChevronDown className="w-5 h-5" />
@@ -394,30 +394,30 @@ export default function AdminCategoriesTab() {
                                         <img
                                             src={getMediaUrl(category.icon)}
                                             alt=""
-                                            className="w-10 h-10 rounded-xl object-contain bg-slate-100 p-1 border border-slate-200"
+                                            className="w-10 h-10 rounded-xl object-contain bg-surface-secondary p-1 border border-border-subtle"
                                         />
                                     ) : (
-                                        <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+                                        <div className="w-10 h-10 rounded-xl bg-info-subtle text-info flex items-center justify-center font-bold">
                                             <Layers className="w-5 h-5" />
                                         </div>
                                     )}
 
                                     <div>
                                         <div className="flex items-center gap-2">
-                                            <h3 className="font-bold text-slate-900 text-base">{category.displayName}</h3>
-                                            <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-mono uppercase tracking-tighter">
+                                            <h3 className="font-bold text-foreground text-base">{category.displayName}</h3>
+                                            <span className="text-xs bg-surface-secondary text-foreground-secondary px-2 py-0.5 rounded-full font-mono uppercase tracking-tighter">
                                                 {category.key}
                                             </span>
                                             {category.isActive === false && (
-                                                <span className="text-[10px] bg-rose-50 text-rose-600 font-bold px-2 py-0.5 rounded-full">
+                                                <span className="text-[10px] bg-error-subtle text-error font-bold px-2 py-0.5 rounded-full">
                                                     غیرفعال
                                                 </span>
                                             )}
                                         </div>
-                                        <div className="flex items-center gap-3 mt-1 text-xs text-slate-400">
+                                        <div className="flex items-center gap-3 mt-1 text-xs text-foreground-muted">
                                             <span>{category.subcategories?.length || 0} زیردسته</span>
                                             {category.description && (
-                                                <span className="border-r pr-3 border-slate-200 line-clamp-1">
+                                                <span className="border-r pr-3 border-border-subtle line-clamp-1">
                                                     {category.description}
                                                 </span>
                                             )}
@@ -428,14 +428,14 @@ export default function AdminCategoriesTab() {
                                 <div className="flex items-center gap-2">
                                     <button
                                         onClick={() => handleOpenCreateSubcategory(category)}
-                                        className="flex items-center gap-1.5 text-xs font-semibold bg-blue-50 text-blue-600 h-8 px-3 rounded-lg hover:bg-blue-100 transition-colors"
+                                        className="flex items-center gap-1.5 text-xs font-semibold bg-info-subtle text-info h-8 px-3 rounded-lg hover:bg-info-subtle transition-colors"
                                     >
                                         <PlusCircle className="w-4 h-4" />
                                         افزودن زیردسته
                                     </button>
                                     <button
                                         onClick={() => handleOpenEditCategory(category)}
-                                        className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                                        className="p-2 text-foreground-muted hover:text-info hover:bg-info-subtle rounded-lg transition-all"
                                         title="ویرایش دسته‌بندی"
                                     >
                                         <Edit2 className="w-4 h-4" />
@@ -446,7 +446,7 @@ export default function AdminCategoriesTab() {
                                                 archiveCategoryMutation.mutate(category.id);
                                             }
                                         }}
-                                        className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                                        className="p-2 text-foreground-muted hover:text-error hover:bg-error-subtle rounded-lg transition-all"
                                         title="آرشیو دسته‌بندی"
                                     >
                                         <Trash2 className="w-4 h-4" />
@@ -456,39 +456,39 @@ export default function AdminCategoriesTab() {
 
                             {/* Subcategories (Expanded) */}
                             {expandedCategories.includes(category.id) && (
-                                <div className="bg-slate-50/50 border-t border-slate-100 p-4">
+                                <div className="bg-surface-secondary/50 border-t border-border-subtle p-4">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                                         {category.subcategories?.length === 0 ? (
-                                            <p className="text-xs text-slate-400 italic py-3 col-span-full text-center">
+                                            <p className="text-xs text-foreground-muted italic py-3 col-span-full text-center">
                                                 زیردسته‌ای برای این دسته‌بندی تعریف نشده است
                                             </p>
                                         ) : (
                                             category.subcategories.map((sub) => (
                                                 <div
                                                     key={sub.id || sub.key}
-                                                    className="bg-white p-3.5 rounded-xl border border-slate-200 hover:border-blue-200 transition-all shadow-sm flex items-center justify-between"
+                                                    className="bg-surface p-3.5 rounded-xl border border-border-subtle hover:border-info/30 transition-all shadow-sm flex items-center justify-between"
                                                 >
                                                     <div className="flex items-center gap-2.5">
                                                         {sub.icon ? (
                                                             <img
                                                                 src={getMediaUrl(sub.icon)}
                                                                 alt=""
-                                                                className="w-8 h-8 rounded-lg object-contain bg-slate-50 border border-slate-200"
+                                                                className="w-8 h-8 rounded-lg object-contain bg-surface-secondary border border-border-subtle"
                                                             />
                                                         ) : (
-                                                            <div className="w-8 h-8 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center font-bold text-xs">
+                                                            <div className="w-8 h-8 rounded-lg bg-surface-secondary text-foreground-muted flex items-center justify-center font-bold text-xs">
                                                                 <Tag className="w-4 h-4" />
                                                             </div>
                                                         )}
                                                         <div className="flex-1 min-w-0">
                                                             <div className="flex items-center gap-1.5">
-                                                                <span className="text-xs font-bold text-slate-800">{sub.displayName}</span>
-                                                                <span className="text-[9px] font-mono text-slate-400 uppercase tracking-tighter">
+                                                                <span className="text-xs font-bold text-foreground">{sub.displayName}</span>
+                                                                <span className="text-[9px] font-mono text-foreground-muted uppercase tracking-tighter">
                                                                     {sub.key}
                                                                 </span>
                                                             </div>
                                                             {sub.description && (
-                                                                <p className="text-[11px] text-slate-400 line-clamp-1 mt-0.5">
+                                                                <p className="text-[11px] text-foreground-muted line-clamp-1 mt-0.5">
                                                                     {sub.description}
                                                                 </p>
                                                             )}
@@ -497,14 +497,14 @@ export default function AdminCategoriesTab() {
                                                                     sub.priceModels.map(pm => (
                                                                         <span
                                                                             key={pm.id}
-                                                                            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-medium"
+                                                                            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-warning-subtle text-warning border border-warning/30 text-[10px] font-medium"
                                                                         >
                                                                             <Coins className="w-3 h-3 text-amber-500" />
                                                                             {pm.displayName}
                                                                         </span>
                                                                     ))
                                                                 ) : (
-                                                                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-rose-50 text-rose-600 border border-rose-200 text-[10px] font-medium">
+                                                                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-error-subtle text-error border border-error/30 text-[10px] font-medium">
                                                                         ⚠️ بدون مدل قیمت‌گذاری
                                                                     </span>
                                                                 )}
@@ -515,14 +515,14 @@ export default function AdminCategoriesTab() {
                                                     <div className="flex items-center gap-1">
                                                         <button
                                                             onClick={() => handleOpenSubcategoryConfig(category, sub)}
-                                                            className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                                                            className="p-1.5 text-info hover:bg-info-subtle rounded-lg transition-all"
                                                             title="مدیریت مدل‌های قیمت‌گذاری و ویژگی‌های داینامیک"
                                                         >
                                                             <Sliders className="w-4 h-4" />
                                                         </button>
                                                         <button
                                                             onClick={() => handleOpenEditSubcategory(category, sub)}
-                                                            className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                                                            className="p-1.5 text-foreground-muted hover:text-info hover:bg-info-subtle rounded-lg transition-all"
                                                             title="ویرایش اطلاعات زیردسته"
                                                         >
                                                             <Edit2 className="w-4 h-4" />
@@ -533,7 +533,7 @@ export default function AdminCategoriesTab() {
                                                                     archiveSubcategoryMutation.mutate(sub.id);
                                                                 }
                                                             }}
-                                                            className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                                                            className="p-1.5 text-foreground-muted hover:text-error hover:bg-error-subtle rounded-lg transition-all"
                                                             title="آرشیو زیردسته"
                                                         >
                                                             <Archive className="w-4 h-4" />
@@ -553,42 +553,42 @@ export default function AdminCategoriesTab() {
             {/* Create Category Modal */}
             {isCreateCategoryModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl relative overflow-hidden">
-                        <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-                            <h3 className="text-lg font-bold text-slate-900">ایجاد دسته‌بندی جدید</h3>
-                            <button onClick={() => setIsCreateCategoryModalOpen(false)} className="text-slate-400 hover:text-slate-600 transition-colors">
+                    <div className="bg-surface rounded-3xl w-full max-w-md shadow-2xl relative overflow-hidden">
+                        <div className="p-6 border-b border-border-subtle flex items-center justify-between">
+                            <h3 className="text-lg font-bold text-foreground">ایجاد دسته‌بندی جدید</h3>
+                            <button onClick={() => setIsCreateCategoryModalOpen(false)} className="text-foreground-muted hover:text-foreground-secondary transition-colors">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
                         <div className="p-6 space-y-3.5 text-xs">
                             <div>
-                                <label className="block font-bold text-slate-700 mb-1">نام نمایشی (فارسی)</label>
+                                <label className="block font-bold text-foreground-secondary mb-1">نام نمایشی (فارسی)</label>
                                 <input
                                     type="text"
                                     placeholder="مثلاً: املاک مسکونی"
                                     value={categoryForm.displayName}
                                     onChange={(e) => setCategoryForm({ ...categoryForm, displayName: e.target.value })}
-                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                    className="w-full px-3.5 py-2.5 rounded-xl border border-border-subtle focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                                 />
                             </div>
                             <div>
-                                <label className="block font-bold text-slate-700 mb-1">کلید فنی (Key - انگلیسی و بدون فاصله)</label>
+                                <label className="block font-bold text-foreground-secondary mb-1">کلید فنی (Key - انگلیسی و بدون فاصله)</label>
                                 <input
                                     type="text"
                                     placeholder="مثلاً: residential"
                                     value={categoryForm.key}
                                     onChange={(e) => setCategoryForm({ ...categoryForm, key: e.target.value })}
-                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 font-mono focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all uppercase"
+                                    className="w-full px-3.5 py-2.5 rounded-xl border border-border-subtle font-mono focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all uppercase"
                                 />
                             </div>
                             <div>
-                                <label className="block font-bold text-slate-700 mb-1">توضیحات</label>
+                                <label className="block font-bold text-foreground-secondary mb-1">توضیحات</label>
                                 <input
                                     type="text"
                                     placeholder="توضیح اختیاری..."
                                     value={categoryForm.description}
                                     onChange={(e) => setCategoryForm({ ...categoryForm, description: e.target.value })}
-                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                    className="w-full px-3.5 py-2.5 rounded-xl border border-border-subtle focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                                 />
                             </div>
                             <MediaIconUpload
@@ -597,16 +597,16 @@ export default function AdminCategoriesTab() {
                                 label="آیکون دسته‌بندی"
                             />
                             <div>
-                                <label className="block font-bold text-slate-700 mb-1">ترتیب نمایش</label>
+                                <label className="block font-bold text-foreground-secondary mb-1">ترتیب نمایش</label>
                                 <input
                                     type="number"
                                     value={categoryForm.displayOrder}
                                     onChange={(e) => setCategoryForm({ ...categoryForm, displayOrder: Number(e.target.value) })}
-                                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs"
+                                    className="w-full px-3 py-2 rounded-xl border border-border-subtle text-xs"
                                 />
                             </div>
                         </div>
-                        <div className="p-4 bg-slate-50 flex items-center gap-3">
+                        <div className="p-4 bg-surface-secondary flex items-center gap-3">
                             <button
                                 onClick={() => createCategoryMutation.mutate({
                                     key: categoryForm.key.trim().toLowerCase(),
@@ -622,7 +622,7 @@ export default function AdminCategoriesTab() {
                             </button>
                             <button
                                 onClick={() => setIsCreateCategoryModalOpen(false)}
-                                className="px-5 py-2.5 font-bold text-slate-500 hover:bg-slate-200 rounded-xl transition-all text-xs"
+                                className="px-5 py-2.5 font-bold text-foreground-muted hover:bg-slate-200 rounded-xl transition-all text-xs"
                             >
                                 انصراف
                             </button>
@@ -634,39 +634,39 @@ export default function AdminCategoriesTab() {
             {/* Edit Category Modal */}
             {isEditCategoryModalOpen && selectedCategory && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl relative overflow-hidden">
-                        <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-                            <h3 className="text-lg font-bold text-slate-900">ویرایش دسته‌بندی</h3>
-                            <button onClick={() => setIsEditCategoryModalOpen(false)} className="text-slate-400 hover:text-slate-600 transition-colors">
+                    <div className="bg-surface rounded-3xl w-full max-w-md shadow-2xl relative overflow-hidden">
+                        <div className="p-6 border-b border-border-subtle flex items-center justify-between">
+                            <h3 className="text-lg font-bold text-foreground">ویرایش دسته‌بندی</h3>
+                            <button onClick={() => setIsEditCategoryModalOpen(false)} className="text-foreground-muted hover:text-foreground-secondary transition-colors">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
                         <div className="p-6 space-y-3.5 text-xs">
                             <div>
-                                <label className="block font-bold text-slate-700 mb-1">کلید فنی (Key - انگلیسی و بدون فاصله)</label>
+                                <label className="block font-bold text-foreground-secondary mb-1">کلید فنی (Key - انگلیسی و بدون فاصله)</label>
                                 <input
                                     type="text"
                                     value={editCategoryForm.key}
                                     onChange={(e) => setEditCategoryForm({ ...editCategoryForm, key: e.target.value })}
-                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 font-mono text-slate-700 uppercase focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                    className="w-full px-3.5 py-2.5 rounded-xl border border-border-subtle font-mono text-foreground-secondary uppercase focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                                 />
                             </div>
                             <div>
-                                <label className="block font-bold text-slate-700 mb-1">نام نمایشی (فارسی)</label>
+                                <label className="block font-bold text-foreground-secondary mb-1">نام نمایشی (فارسی)</label>
                                 <input
                                     type="text"
                                     value={editCategoryForm.displayName}
                                     onChange={(e) => setEditCategoryForm({ ...editCategoryForm, displayName: e.target.value })}
-                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                    className="w-full px-3.5 py-2.5 rounded-xl border border-border-subtle focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                                 />
                             </div>
                             <div>
-                                <label className="block font-bold text-slate-700 mb-1">توضیحات</label>
+                                <label className="block font-bold text-foreground-secondary mb-1">توضیحات</label>
                                 <input
                                     type="text"
                                     value={editCategoryForm.description}
                                     onChange={(e) => setEditCategoryForm({ ...editCategoryForm, description: e.target.value })}
-                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                    className="w-full px-3.5 py-2.5 rounded-xl border border-border-subtle focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                                 />
                             </div>
                             <MediaIconUpload
@@ -675,12 +675,12 @@ export default function AdminCategoriesTab() {
                                 label="آیکون دسته‌بندی"
                             />
                             <div>
-                                <label className="block font-bold text-slate-700 mb-1">ترتیب نمایش</label>
+                                <label className="block font-bold text-foreground-secondary mb-1">ترتیب نمایش</label>
                                 <input
                                     type="number"
                                     value={editCategoryForm.displayOrder}
                                     onChange={(e) => setEditCategoryForm({ ...editCategoryForm, displayOrder: Number(e.target.value) })}
-                                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs"
+                                    className="w-full px-3 py-2 rounded-xl border border-border-subtle text-xs"
                                 />
                             </div>
                             <div className="pt-2">
@@ -689,13 +689,13 @@ export default function AdminCategoriesTab() {
                                         type="checkbox"
                                         checked={editCategoryForm.isActive}
                                         onChange={(e) => setEditCategoryForm({ ...editCategoryForm, isActive: e.target.checked })}
-                                        className="w-4 h-4 text-blue-600 rounded border-slate-300"
+                                        className="w-4 h-4 text-info rounded border-border"
                                     />
-                                    <span className="font-bold text-slate-700">دسته‌بندی فعال است</span>
+                                    <span className="font-bold text-foreground-secondary">دسته‌بندی فعال است</span>
                                 </label>
                             </div>
                         </div>
-                        <div className="p-4 bg-slate-50 flex items-center gap-3">
+                        <div className="p-4 bg-surface-secondary flex items-center gap-3">
                             <button
                                 onClick={() => updateCategoryMutation.mutate({
                                     id: selectedCategory.id,
@@ -715,7 +715,7 @@ export default function AdminCategoriesTab() {
                             </button>
                             <button
                                 onClick={() => setIsEditCategoryModalOpen(false)}
-                                className="px-5 py-2.5 font-bold text-slate-500 hover:bg-slate-200 rounded-xl transition-all text-xs"
+                                className="px-5 py-2.5 font-bold text-foreground-muted hover:bg-slate-200 rounded-xl transition-all text-xs"
                             >
                                 انصراف
                             </button>
@@ -727,46 +727,46 @@ export default function AdminCategoriesTab() {
             {/* Create Subcategory Modal */}
             {isCreateSubcategoryModalOpen && selectedCategory && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] shadow-2xl relative overflow-hidden flex flex-col">
-                        <div className="p-6 border-b border-slate-100 flex items-center justify-between shrink-0">
-                            <h3 className="text-lg font-bold text-slate-900">
+                    <div className="bg-surface rounded-3xl w-full max-w-2xl max-h-[90vh] shadow-2xl relative overflow-hidden flex flex-col">
+                        <div className="p-6 border-b border-border-subtle flex items-center justify-between shrink-0">
+                            <h3 className="text-lg font-bold text-foreground">
                                 افزودن زیردسته به {selectedCategory.displayName}
                             </h3>
-                            <button onClick={() => setIsCreateSubcategoryModalOpen(false)} className="text-slate-400 hover:text-slate-600 transition-colors">
+                            <button onClick={() => setIsCreateSubcategoryModalOpen(false)} className="text-foreground-muted hover:text-foreground-secondary transition-colors">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
                         <div className="p-6 space-y-4 text-xs overflow-y-auto flex-1">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                                 <div>
-                                    <label className="block font-bold text-slate-700 mb-1">نام نمایشی (فارسی)</label>
+                                    <label className="block font-bold text-foreground-secondary mb-1">نام نمایشی (فارسی)</label>
                                     <input
                                         type="text"
                                         placeholder="مثلاً: آپارتمان"
                                         value={subcategoryForm.displayName}
                                         onChange={(e) => setSubcategoryForm({ ...subcategoryForm, displayName: e.target.value })}
-                                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                        className="w-full px-3.5 py-2.5 rounded-xl border border-border-subtle focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block font-bold text-slate-700 mb-1">کلید فنی زیردسته (Key - انگلیسی)</label>
+                                    <label className="block font-bold text-foreground-secondary mb-1">کلید فنی زیردسته (Key - انگلیسی)</label>
                                     <input
                                         type="text"
                                         placeholder="مثلاً: apartment"
                                         value={subcategoryForm.key}
                                         onChange={(e) => setSubcategoryForm({ ...subcategoryForm, key: e.target.value })}
-                                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 font-mono uppercase focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                        className="w-full px-3.5 py-2.5 rounded-xl border border-border-subtle font-mono uppercase focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                                     />
                                 </div>
                             </div>
                             <div>
-                                <label className="block font-bold text-slate-700 mb-1">توضیحات</label>
+                                <label className="block font-bold text-foreground-secondary mb-1">توضیحات</label>
                                 <input
                                     type="text"
                                     placeholder="توضیح اختیاری..."
                                     value={subcategoryForm.description}
                                     onChange={(e) => setSubcategoryForm({ ...subcategoryForm, description: e.target.value })}
-                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200"
+                                    className="w-full px-3.5 py-2.5 rounded-xl border border-border-subtle"
                                 />
                             </div>
                             <MediaIconUpload
@@ -775,27 +775,27 @@ export default function AdminCategoriesTab() {
                                 label="آیکون زیردسته"
                             />
                             <div>
-                                <label className="block font-bold text-slate-700 mb-1">ترتیب نمایش</label>
+                                <label className="block font-bold text-foreground-secondary mb-1">ترتیب نمایش</label>
                                 <input
                                     type="number"
                                     value={subcategoryForm.displayOrder}
                                     onChange={(e) => setSubcategoryForm({ ...subcategoryForm, displayOrder: Number(e.target.value) })}
-                                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs"
+                                    className="w-full px-3 py-2 rounded-xl border border-border-subtle text-xs"
                                 />
                             </div>
                             <div>
-                                <label className="block font-bold text-slate-700 mb-1 flex items-center justify-between">
+                                <label className="block font-bold text-foreground-secondary mb-1 flex items-center justify-between">
                                     <span className="flex items-center gap-1.5">
-                                        <Coins className="w-3.5 h-3.5 text-amber-600" />
+                                        <Coins className="w-3.5 h-3.5 text-warning" />
                                         مدل‌های قیمت‌گذاری مجاز برای این زیردسته
                                     </span>
-                                    <span className="text-[10px] text-slate-400 font-normal">
+                                    <span className="text-[10px] text-foreground-muted font-normal">
                                         ({selectedPriceModelIds.length} مدل انتخاب شده)
                                     </span>
                                 </label>
-                                <div className="border border-slate-200 rounded-xl p-2 bg-slate-50/50 max-h-36 overflow-y-auto space-y-1.5">
+                                <div className="border border-border-subtle rounded-xl p-2 bg-surface-secondary/50 max-h-36 overflow-y-auto space-y-1.5">
                                     {!availablePriceModels || availablePriceModels.length === 0 ? (
-                                        <div className="text-center py-2 text-slate-400 text-[11px]">هیچ مدل قیمت‌گذاری یافت نشد.</div>
+                                        <div className="text-center py-2 text-foreground-muted text-[11px]">هیچ مدل قیمت‌گذاری یافت نشد.</div>
                                     ) : (
                                         availablePriceModels.map((pm) => {
                                             const isSelected = selectedPriceModelIds.includes(pm.id);
@@ -804,8 +804,8 @@ export default function AdminCategoriesTab() {
                                                     key={pm.id}
                                                     className={`flex items-center justify-between p-2 rounded-lg cursor-pointer border text-xs transition-all ${
                                                         isSelected
-                                                            ? "bg-amber-50/80 border-amber-300 text-amber-900 font-bold"
-                                                            : "bg-white border-slate-200 hover:border-slate-300 text-slate-600"
+                                                            ? "bg-warning-subtle/80 border-amber-300 text-amber-900 font-bold"
+                                                            : "bg-surface border-border-subtle hover:border-border text-foreground-secondary"
                                                     }`}
                                                 >
                                                     <div className="flex items-center gap-2">
@@ -819,23 +819,23 @@ export default function AdminCategoriesTab() {
                                                                     setSelectedPriceModelIds(selectedPriceModelIds.filter(id => id !== pm.id));
                                                                 }
                                                             }}
-                                                            className="w-3.5 h-3.5 text-amber-600 rounded border-slate-300 focus:ring-amber-500"
+                                                            className="w-3.5 h-3.5 text-warning rounded border-border focus:ring-amber-500"
                                                         />
                                                         <span>{pm.displayName}</span>
                                                     </div>
-                                                    <span className="text-[10px] font-mono text-slate-400 uppercase">{pm.key}</span>
+                                                    <span className="text-[10px] font-mono text-foreground-muted uppercase">{pm.key}</span>
                                                 </label>
                                             );
                                         })
                                     )}
                                 </div>
-                                <p className="text-[10px] text-slate-400 mt-1">
+                                <p className="text-[10px] text-foreground-muted mt-1">
                                     هنگام ثبت آگهی در این زیردسته، کاربر فقط می‌تواند از مدل‌های قیمت انتخاب‌شده استفاده کند.
                                 </p>
                             </div>
 
                             {/* Dynamic Key-Value Attributes */}
-                            <div className="pt-2 border-t border-slate-100">
+                            <div className="pt-2 border-t border-border-subtle">
                                 <SubcategoryAttributesEditor
                                     attributes={subcategoryAttributes}
                                     onChange={setSubcategoryAttributes}
@@ -843,7 +843,7 @@ export default function AdminCategoriesTab() {
                                 />
                             </div>
                         </div>
-                        <div className="p-4 bg-slate-50 flex items-center gap-3 shrink-0 border-t border-slate-100">
+                        <div className="p-4 bg-surface-secondary flex items-center gap-3 shrink-0 border-t border-border-subtle">
                             <button
                                 onClick={() => createSubcategoryMutation.mutate({
                                     categoryId: selectedCategory.id,
@@ -864,7 +864,7 @@ export default function AdminCategoriesTab() {
                             </button>
                             <button
                                 onClick={() => setIsCreateSubcategoryModalOpen(false)}
-                                className="px-5 py-2.5 font-bold text-slate-500 hover:bg-slate-200 rounded-xl transition-all text-xs"
+                                className="px-5 py-2.5 font-bold text-foreground-muted hover:bg-slate-200 rounded-xl transition-all text-xs"
                             >
                                 انصراف
                             </button>
@@ -876,39 +876,39 @@ export default function AdminCategoriesTab() {
             {/* Edit Subcategory Modal */}
             {isEditSubcategoryModalOpen && selectedSubcategory && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl relative overflow-hidden">
-                        <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-                            <h3 className="text-lg font-bold text-slate-900">ویرایش زیردسته</h3>
-                            <button onClick={() => setIsEditSubcategoryModalOpen(false)} className="text-slate-400 hover:text-slate-600 transition-colors">
+                    <div className="bg-surface rounded-3xl w-full max-w-md shadow-2xl relative overflow-hidden">
+                        <div className="p-6 border-b border-border-subtle flex items-center justify-between">
+                            <h3 className="text-lg font-bold text-foreground">ویرایش زیردسته</h3>
+                            <button onClick={() => setIsEditSubcategoryModalOpen(false)} className="text-foreground-muted hover:text-foreground-secondary transition-colors">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
                         <div className="p-6 space-y-3.5 text-xs">
                             <div>
-                                <label className="block font-bold text-slate-700 mb-1">کلید فنی زیردسته (Key - انگلیسی و بدون فاصله)</label>
+                                <label className="block font-bold text-foreground-secondary mb-1">کلید فنی زیردسته (Key - انگلیسی و بدون فاصله)</label>
                                 <input
                                     type="text"
                                     value={editSubcategoryForm.key}
                                     onChange={(e) => setEditSubcategoryForm({ ...editSubcategoryForm, key: e.target.value })}
-                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 font-mono text-slate-700 uppercase focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                    className="w-full px-3.5 py-2.5 rounded-xl border border-border-subtle font-mono text-foreground-secondary uppercase focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                                 />
                             </div>
                             <div>
-                                <label className="block font-bold text-slate-700 mb-1">نام نمایشی (فارسی)</label>
+                                <label className="block font-bold text-foreground-secondary mb-1">نام نمایشی (فارسی)</label>
                                 <input
                                     type="text"
                                     value={editSubcategoryForm.displayName}
                                     onChange={(e) => setEditSubcategoryForm({ ...editSubcategoryForm, displayName: e.target.value })}
-                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                    className="w-full px-3.5 py-2.5 rounded-xl border border-border-subtle focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                                 />
                             </div>
                             <div>
-                                <label className="block font-bold text-slate-700 mb-1">توضیحات</label>
+                                <label className="block font-bold text-foreground-secondary mb-1">توضیحات</label>
                                 <input
                                     type="text"
                                     value={editSubcategoryForm.description}
                                     onChange={(e) => setEditSubcategoryForm({ ...editSubcategoryForm, description: e.target.value })}
-                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200"
+                                    className="w-full px-3.5 py-2.5 rounded-xl border border-border-subtle"
                                 />
                             </div>
                             <MediaIconUpload
@@ -917,12 +917,12 @@ export default function AdminCategoriesTab() {
                                 label="آیکون زیردسته"
                             />
                             <div>
-                                <label className="block font-bold text-slate-700 mb-1">ترتیب نمایش</label>
+                                <label className="block font-bold text-foreground-secondary mb-1">ترتیب نمایش</label>
                                 <input
                                     type="number"
                                     value={editSubcategoryForm.displayOrder}
                                     onChange={(e) => setEditSubcategoryForm({ ...editSubcategoryForm, displayOrder: Number(e.target.value) })}
-                                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs"
+                                    className="w-full px-3 py-2 rounded-xl border border-border-subtle text-xs"
                                 />
                             </div>
                             <div className="pt-2">
@@ -931,26 +931,26 @@ export default function AdminCategoriesTab() {
                                         type="checkbox"
                                         checked={editSubcategoryForm.isActive}
                                         onChange={(e) => setEditSubcategoryForm({ ...editSubcategoryForm, isActive: e.target.checked })}
-                                        className="w-4 h-4 text-blue-600 rounded border-slate-300"
+                                        className="w-4 h-4 text-info rounded border-border"
                                     />
-                                    <span className="font-bold text-slate-700">زیردسته فعال است</span>
+                                    <span className="font-bold text-foreground-secondary">زیردسته فعال است</span>
                                 </label>
                             </div>
                             <div>
-                                <label className="block font-bold text-slate-700 mb-1 flex items-center justify-between">
+                                <label className="block font-bold text-foreground-secondary mb-1 flex items-center justify-between">
                                     <span className="flex items-center gap-1.5">
-                                        <Coins className="w-3.5 h-3.5 text-amber-600" />
+                                        <Coins className="w-3.5 h-3.5 text-warning" />
                                         مدل‌های قیمت‌گذاری مجاز برای این زیردسته
                                     </span>
-                                    <span className="text-[10px] text-slate-400 font-normal">
+                                    <span className="text-[10px] text-foreground-muted font-normal">
                                         ({editSelectedPriceModelIds.length} مدل انتخاب شده)
                                     </span>
                                 </label>
-                                <div className="border border-slate-200 rounded-xl p-2 bg-slate-50/50 max-h-36 overflow-y-auto space-y-1.5">
+                                <div className="border border-border-subtle rounded-xl p-2 bg-surface-secondary/50 max-h-36 overflow-y-auto space-y-1.5">
                                     {isLoadingSubPriceModels ? (
-                                        <div className="text-center py-3 text-slate-400 text-xs">در حال بارگذاری مدل‌ها...</div>
+                                        <div className="text-center py-3 text-foreground-muted text-xs">در حال بارگذاری مدل‌ها...</div>
                                     ) : !availablePriceModels || availablePriceModels.length === 0 ? (
-                                        <div className="text-center py-2 text-slate-400 text-[11px]">هیچ مدل قیمت‌گذاری یافت نشد.</div>
+                                        <div className="text-center py-2 text-foreground-muted text-[11px]">هیچ مدل قیمت‌گذاری یافت نشد.</div>
                                     ) : (
                                         availablePriceModels.map((pm) => {
                                             const isSelected = editSelectedPriceModelIds.includes(pm.id);
@@ -959,8 +959,8 @@ export default function AdminCategoriesTab() {
                                                     key={pm.id}
                                                     className={`flex items-center justify-between p-2 rounded-lg cursor-pointer border text-xs transition-all ${
                                                         isSelected
-                                                            ? "bg-amber-50/80 border-amber-300 text-amber-900 font-bold"
-                                                            : "bg-white border-slate-200 hover:border-slate-300 text-slate-600"
+                                                            ? "bg-warning-subtle/80 border-amber-300 text-amber-900 font-bold"
+                                                            : "bg-surface border-border-subtle hover:border-border text-foreground-secondary"
                                                     }`}
                                                 >
                                                     <div className="flex items-center gap-2">
@@ -974,22 +974,22 @@ export default function AdminCategoriesTab() {
                                                                     setEditSelectedPriceModelIds(editSelectedPriceModelIds.filter(id => id !== pm.id));
                                                                 }
                                                             }}
-                                                            className="w-3.5 h-3.5 text-amber-600 rounded border-slate-300 focus:ring-amber-500"
+                                                            className="w-3.5 h-3.5 text-warning rounded border-border focus:ring-amber-500"
                                                         />
                                                         <span>{pm.displayName}</span>
                                                     </div>
-                                                    <span className="text-[10px] font-mono text-slate-400 uppercase">{pm.key}</span>
+                                                    <span className="text-[10px] font-mono text-foreground-muted uppercase">{pm.key}</span>
                                                 </label>
                                             );
                                         })
                                     )}
                                 </div>
-                                <p className="text-[10px] text-slate-400 mt-1">
+                                <p className="text-[10px] text-foreground-muted mt-1">
                                     هنگام ثبت آگهی در این زیردسته، کاربر فقط می‌تواند از مدل‌های قیمت انتخاب‌شده استفاده کند.
                                 </p>
                             </div>
 
-                            <div className="pt-2 border-t border-slate-100">
+                            <div className="pt-2 border-t border-border-subtle">
                                 <button
                                     type="button"
                                     onClick={() => {
@@ -1003,7 +1003,7 @@ export default function AdminCategoriesTab() {
                                 </button>
                             </div>
                         </div>
-                        <div className="p-4 bg-slate-50 flex items-center gap-3">
+                        <div className="p-4 bg-surface-secondary flex items-center gap-3">
                             <button
                                 onClick={() => updateSubcategoryMutation.mutate({
                                     subcategoryId: selectedSubcategory.id,
@@ -1024,7 +1024,7 @@ export default function AdminCategoriesTab() {
                             </button>
                             <button
                                 onClick={() => setIsEditSubcategoryModalOpen(false)}
-                                className="px-5 py-2.5 font-bold text-slate-500 hover:bg-slate-200 rounded-xl transition-all text-xs"
+                                className="px-5 py-2.5 font-bold text-foreground-muted hover:bg-slate-200 rounded-xl transition-all text-xs"
                             >
                                 انصراف
                             </button>

@@ -250,21 +250,21 @@ export default function AdminGeoPage() {
         switch (status) {
             case "PUBLISHED":
                 return (
-                    <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-50 text-green-700 text-xs font-bold border border-green-100">
+                    <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-success-subtle text-success text-xs font-bold border border-success/30">
                         <CheckCircle2 size={12} />
                         فعال
                     </span>
                 );
             case "DRAFT":
                 return (
-                    <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 text-xs font-bold border border-amber-100">
+                    <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-warning-subtle text-warning text-xs font-bold border border-warning/30">
                         <Clock size={12} />
                         پیش‌نویس
                     </span>
                 );
             case "ARCHIVED":
                 return (
-                    <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gray-50 text-gray-700 text-xs font-bold border border-gray-100">
+                    <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-secondary text-foreground-secondary text-xs font-bold border border-border-subtle">
                         <Archive size={12} />
                         غیرفعال
                     </span>
@@ -282,8 +282,8 @@ export default function AdminGeoPage() {
         <div className="space-y-6">
             <div className="flex justify-between items-end">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-800">مدیریت مناطق جغرافیایی</h1>
-                    <p className="text-gray-500 font-medium">پیکربندی و مدیریت وضعیت استان‌ها، شهرها، دهستان‌ها و محله‌ها در سامانه</p>
+                    <h1 className="text-2xl font-bold text-foreground">مدیریت مناطق جغرافیایی</h1>
+                    <p className="text-foreground-muted font-medium">پیکربندی و مدیریت وضعیت استان‌ها، شهرها، دهستان‌ها و محله‌ها در سامانه</p>
                 </div>
                 {zoneType === 'NEIGHBORHOOD' ? (
                     <button
@@ -294,37 +294,37 @@ export default function AdminGeoPage() {
                         افزودن محله / بارگذاری KML
                     </button>
                 ) : (
-                    <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 text-xs font-bold rounded-xl border border-blue-100">
+                    <div className="flex items-center gap-2 px-4 py-2 bg-info-subtle text-info text-xs font-bold rounded-xl border border-info/30">
                         <CheckCircle2 size={16} />
                         اطلاعات رسمی کشور — مدیریت از طریق دکمه‌های فعال/غیرفعال‌سازی
                     </div>
                 )}
             </div>
 
-            <div className="flex flex-wrap gap-4 items-center bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
+            <div className="flex flex-wrap gap-4 items-center bg-surface p-4 rounded-2xl border border-border-subtle shadow-sm">
                 {/* Tabs */}
-                <div className="flex bg-gray-100 p-1 rounded-xl">
+                <div className="flex bg-surface-secondary p-1 rounded-xl">
                     <button
                         onClick={() => { setZoneType("CITY"); setPage(1); }}
-                        className={`px-5 py-2 rounded-lg text-sm font-bold transition-all ${zoneType === "CITY" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+                        className={`px-5 py-2 rounded-lg text-sm font-bold transition-all ${zoneType === "CITY" ? "bg-surface text-info shadow-sm" : "text-foreground-muted hover:text-foreground-secondary"}`}
                     >
                         شهرها
                     </button>
                     <button
                         onClick={() => { setZoneType("PROVINCE"); setPage(1); }}
-                        className={`px-5 py-2 rounded-lg text-sm font-bold transition-all ${zoneType === "PROVINCE" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+                        className={`px-5 py-2 rounded-lg text-sm font-bold transition-all ${zoneType === "PROVINCE" ? "bg-surface text-info shadow-sm" : "text-foreground-muted hover:text-foreground-secondary"}`}
                     >
                         استان‌ها
                     </button>
                     <button
                         onClick={() => { setZoneType("DISTRICT"); setPage(1); }}
-                        className={`px-5 py-2 rounded-lg text-sm font-bold transition-all ${zoneType === "DISTRICT" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+                        className={`px-5 py-2 rounded-lg text-sm font-bold transition-all ${zoneType === "DISTRICT" ? "bg-surface text-info shadow-sm" : "text-foreground-muted hover:text-foreground-secondary"}`}
                     >
                         دهستان‌ها و بخش‌ها
                     </button>
                     <button
                         onClick={() => { setZoneType("NEIGHBORHOOD"); setPage(1); }}
-                        className={`px-5 py-2 rounded-lg text-sm font-bold transition-all ${zoneType === "NEIGHBORHOOD" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+                        className={`px-5 py-2 rounded-lg text-sm font-bold transition-all ${zoneType === "NEIGHBORHOOD" ? "bg-surface text-info shadow-sm" : "text-foreground-muted hover:text-foreground-secondary"}`}
                     >
                         محله‌ها
                     </button>
@@ -332,13 +332,13 @@ export default function AdminGeoPage() {
 
                 {/* Search */}
                 <div className="relative flex-1 min-w-50">
-                    <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                    <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground-muted" size={18} />
                     <input
                         type="text"
                         placeholder="جستجوی نام..."
                         value={searchTerm}
                         onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
-                        className="w-full pr-10 pl-4 py-2 rounded-xl border border-gray-200 outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                        className="w-full pr-10 pl-4 py-2 rounded-xl border border-border-subtle outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                     />
                 </div>
 
@@ -400,30 +400,30 @@ export default function AdminGeoPage() {
                 </div>
             </div>
 
-            <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+            <div className="bg-surface border border-border-subtle rounded-2xl shadow-sm overflow-hidden">
                 <table className="w-full text-right border-collapse">
                     <thead>
-                        <tr className="bg-gray-50 text-gray-600 text-sm uppercase">
-                            <th className="px-6 py-4 font-bold border-b border-gray-100">نام</th>
+                        <tr className="bg-surface-secondary text-foreground-secondary text-sm uppercase">
+                            <th className="px-6 py-4 font-bold border-b border-border-subtle">نام</th>
                             {zoneType !== "PROVINCE" && (
-                                <th className="px-6 py-4 font-bold border-b border-gray-100">استان</th>
+                                <th className="px-6 py-4 font-bold border-b border-border-subtle">استان</th>
                             )}
                             {(zoneType === "DISTRICT" || zoneType === "NEIGHBORHOOD") && (
-                                <th className="px-6 py-4 font-bold border-b border-gray-100">شهر</th>
+                                <th className="px-6 py-4 font-bold border-b border-border-subtle">شهر</th>
                             )}
-                            <th className="px-6 py-4 font-bold border-b border-gray-100 uppercase">
+                            <th className="px-6 py-4 font-bold border-b border-border-subtle uppercase">
                                 کد {zoneType === 'CITY' ? 'شهر' : zoneType === 'PROVINCE' ? 'استان' : zoneType === 'DISTRICT' ? 'دهستان/بخش' : 'محله'}
                             </th>
-                            <th className="px-6 py-4 font-bold border-b border-gray-100 text-center">نوع</th>
-                            <th className="px-6 py-4 font-bold border-b border-gray-100 text-center">وضعیت</th>
-                            <th className="px-6 py-4 font-bold border-b border-gray-100 text-center">عملیات</th>
+                            <th className="px-6 py-4 font-bold border-b border-border-subtle text-center">نوع</th>
+                            <th className="px-6 py-4 font-bold border-b border-border-subtle text-center">وضعیت</th>
+                            <th className="px-6 py-4 font-bold border-b border-border-subtle text-center">عملیات</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
                         {isLoading ? (
                             <tr>
                                 <td colSpan={zoneType === 'PROVINCE' ? 5 : zoneType === 'CITY' ? 6 : 7} className="py-20 text-center">
-                                    <div className="flex flex-col items-center gap-3 text-gray-400">
+                                    <div className="flex flex-col items-center gap-3 text-foreground-muted">
                                         <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
                                         <span>در حال دریافت اطلاعات...</span>
                                     </div>
@@ -431,32 +431,32 @@ export default function AdminGeoPage() {
                             </tr>
                         ) : items.length === 0 ? (
                             <tr>
-                                <td colSpan={zoneType === 'PROVINCE' ? 5 : zoneType === 'CITY' ? 6 : 7} className="py-20 text-center text-gray-400">
+                                <td colSpan={zoneType === 'PROVINCE' ? 5 : zoneType === 'CITY' ? 6 : 7} className="py-20 text-center text-foreground-muted">
                                     موردی یافت نشد.
                                 </td>
                             </tr>
                         ) : (
                             items.map((zone: ProvinceItem | CityItem | ZoneSummary) => (
-                                <tr key={zone.id} className="hover:bg-gray-50/50 transition-colors">
+                                <tr key={zone.id} className="hover:bg-surface-secondary/50 transition-colors">
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-3">
-                                            <div className="bg-blue-50 text-blue-600 p-2 rounded-lg">
+                                            <div className="bg-info-subtle text-info p-2 rounded-lg">
                                                 <MapPin size={16} />
                                             </div>
-                                            <span className="font-bold text-gray-800">{zone.name}</span>
+                                            <span className="font-bold text-foreground">{zone.name}</span>
                                         </div>
                                     </td>
                                     {zoneType !== "PROVINCE" && (
-                                        <td className="px-6 py-4 text-gray-600 font-medium">
+                                        <td className="px-6 py-4 text-foreground-secondary font-medium">
                                             {zone.geoProvinceId != null ? (provincesMap.get(zone.geoProvinceId) || provincesMap.get(String(zone.geoProvinceId)) || "—") : "—"}
                                         </td>
                                     )}
                                     {(zoneType === "DISTRICT" || zoneType === "NEIGHBORHOOD") && (
-                                        <td className="px-6 py-4 text-gray-600 font-medium">
+                                        <td className="px-6 py-4 text-foreground-secondary font-medium">
                                             {(zone.geoCityId != null ? (citiesMap.get(zone.geoCityId) || citiesMap.get(String(zone.geoCityId))) : null) || (zone.parentZoneId != null ? citiesMap.get(zone.parentZoneId) : null) || "—"}
                                         </td>
                                     )}
-                                    <td className="px-6 py-4 font-mono text-sm text-gray-500 uppercase">
+                                    <td className="px-6 py-4 font-mono text-sm text-foreground-muted uppercase">
                                         {zoneType === 'CITY'
                                             ? (zone.geoCityId ?? "—")
                                             : zoneType === 'PROVINCE'
@@ -466,7 +466,7 @@ export default function AdminGeoPage() {
                                             : (zone.id?.substring(0, 8) ?? "—")}
                                     </td>
                                     <td className="px-6 py-4 text-center">
-                                        <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-gray-100 text-gray-700">
+                                        <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-surface-secondary text-foreground-secondary">
                                             {(() => {
                                                 const rawType = zone.type || (zoneType === 'CITY' ? 'CITY' : zoneType === 'PROVINCE' ? 'PROVINCE' : zoneType === 'DISTRICT' ? 'DISTRICT' : 'NEIGHBORHOOD');
                                                 switch (rawType) {
@@ -492,8 +492,8 @@ export default function AdminGeoPage() {
                                                 onClick={() => toggleStatus(zone)}
                                                 disabled={updateStatusMutation.isPending}
                                                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${zone.status === "PUBLISHED"
-                                                    ? "text-red-600 hover:bg-red-50"
-                                                    : "text-green-600 hover:bg-green-50"
+                                                    ? "text-error hover:bg-error-subtle"
+                                                    : "text-success hover:bg-success-subtle"
                                                     }`}
                                             >
                                                 {zone.status === "PUBLISHED" ? (
@@ -517,15 +517,15 @@ export default function AdminGeoPage() {
                 </table>
 
                 {/* Pagination */}
-                <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-between items-center">
-                    <span className="text-sm text-gray-500">
+                <div className="px-6 py-4 bg-surface-secondary border-t border-border-subtle flex justify-between items-center">
+                    <span className="text-sm text-foreground-muted">
                         نمایش {items.length} مورد از {totalItems}
                     </span>
                     <div className="flex items-center gap-2">
                         <button
                             disabled={page === 1}
                             onClick={() => setPage(p => p - 1)}
-                            className="p-2 border border-gray-200 rounded-lg bg-white text-gray-500 hover:text-blue-600 hover:border-blue-200 disabled:opacity-50 transition-all font-bold"
+                            className="p-2 border border-border-subtle rounded-lg bg-surface text-foreground-muted hover:text-info hover:border-info/30 disabled:opacity-50 transition-all font-bold"
                         >
                             <ChevronRight size={18} />
                         </button>
@@ -543,7 +543,7 @@ export default function AdminGeoPage() {
                                         onClick={() => setPage(pageNum)}
                                         className={`w-9 h-9 flex items-center justify-center rounded-lg text-sm font-bold transition-all ${page === pageNum
                                             ? "bg-blue-600 text-white shadow-md shadow-blue-100"
-                                            : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
+                                            : "bg-surface border border-border-subtle text-foreground-secondary hover:bg-surface-secondary"
                                             }`}
                                     >
                                         {pageNum}
@@ -554,7 +554,7 @@ export default function AdminGeoPage() {
                         <button
                             disabled={page === totalPages || totalPages === 0}
                             onClick={() => setPage(p => p + 1)}
-                            className="p-2 border border-gray-200 rounded-lg bg-white text-gray-500 hover:text-blue-600 hover:border-blue-200 disabled:opacity-50 transition-all font-bold"
+                            className="p-2 border border-border-subtle rounded-lg bg-surface text-foreground-muted hover:text-info hover:border-info/30 disabled:opacity-50 transition-all font-bold"
                         >
                             <ChevronLeft size={18} />
                         </button>
@@ -565,31 +565,31 @@ export default function AdminGeoPage() {
             {/* Create Modal */}
             {isCreateModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                    <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200">
-                        <div className="flex justify-between items-center p-6 border-b border-gray-100">
-                            <h2 className="text-xl font-bold text-gray-800">
+                    <div className="bg-surface rounded-3xl w-full max-w-md overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200">
+                        <div className="flex justify-between items-center p-6 border-b border-border-subtle">
+                            <h2 className="text-xl font-bold text-foreground">
                                 افزودن {zoneType === 'CITY' ? 'شهر' : zoneType === 'PROVINCE' ? 'استان' : 'محله'} جدید
                             </h2>
-                            <button onClick={() => setIsCreateModalOpen(false)} className="text-gray-400 hover:text-gray-600">
+                            <button onClick={() => setIsCreateModalOpen(false)} className="text-foreground-muted hover:text-foreground-secondary">
                                 <X size={24} />
                             </button>
                         </div>
                         <form onSubmit={handleCreateZone} className="p-6 space-y-5">
                             {zoneType !== "NEIGHBORHOOD" ? (
                                 <div className="space-y-2">
-                                    <label className="text-sm font-bold text-gray-700">نام</label>
+                                    <label className="text-sm font-bold text-foreground-secondary">نام</label>
                                     <input
                                         type="text"
                                         required
                                         value={newZoneName}
                                         onChange={(e) => setNewZoneName(e.target.value)}
                                         placeholder="مثلاً: تهران، صادقیه، ..."
-                                        className="w-full px-4 py-2.5 rounded-xl border border-gray-200 outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                                        className="w-full px-4 py-2.5 rounded-xl border border-border-subtle outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                                     />
                                 </div>
                             ) : (
                                 <div className="space-y-2">
-                                    <label className="text-sm font-bold text-gray-700">فایل KML محله‌ها</label>
+                                    <label className="text-sm font-bold text-foreground-secondary">فایل KML محله‌ها</label>
                                     <div className="relative group">
                                         <input
                                             type="file"
@@ -601,13 +601,13 @@ export default function AdminGeoPage() {
                                         />
                                         <label
                                             htmlFor="kml-upload"
-                                            className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-200 rounded-2xl hover:border-blue-400 hover:bg-blue-50/50 transition-all cursor-pointer group-hover:scale-[1.01]"
+                                            className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-border-subtle rounded-2xl hover:border-blue-400 hover:bg-info-subtle/50 transition-all cursor-pointer group-hover:scale-[1.01]"
                                         >
-                                            <Upload className="text-gray-400 group-hover:text-blue-500 mb-2" size={24} />
-                                            <span className="text-xs font-bold text-gray-500 group-hover:text-blue-600">
+                                            <Upload className="text-foreground-muted group-hover:text-info mb-2" size={24} />
+                                            <span className="text-xs font-bold text-foreground-muted group-hover:text-info">
                                                 {kmlFile ? kmlFile.name : "برای انتخاب فایل کلیک کنید"}
                                             </span>
-                                            <span className="text-[10px] text-gray-400 mt-1">فرمت‌های مجاز: .kml</span>
+                                            <span className="text-[10px] text-foreground-muted mt-1">فرمت‌های مجاز: .kml</span>
                                         </label>
                                     </div>
                                 </div>
@@ -687,7 +687,7 @@ export default function AdminGeoPage() {
                                 <button
                                     type="button"
                                     onClick={() => setIsCreateModalOpen(false)}
-                                    className="px-6 py-3 rounded-xl font-bold text-gray-500 hover:bg-gray-100 transition-all"
+                                    className="px-6 py-3 rounded-xl font-bold text-foreground-muted hover:bg-surface-secondary transition-all"
                                 >
                                     انصراف
                                 </button>

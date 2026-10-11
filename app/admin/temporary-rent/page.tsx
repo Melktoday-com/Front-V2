@@ -30,17 +30,17 @@ function AdminTemporaryRentContent() {
     return (
         <div className="space-y-6" dir="rtl">
             {/* Page Header */}
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-surface p-6 rounded-3xl border border-border-subtle/80 shadow-xs">
                 <div className="space-y-1">
                     <div className="flex items-center gap-2.5">
-                        <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                        <div className="w-10 h-10 rounded-2xl bg-success-subtle text-success flex items-center justify-center">
                             <Calendar className="w-5 h-5" />
                         </div>
                         <div>
-                            <h1 className="text-xl font-black text-slate-900">
+                            <h1 className="text-xl font-black text-foreground">
                                 مدیریت اجاره موقت و روزانه
                             </h1>
-                            <p className="text-xs font-medium text-slate-500">
+                            <p className="text-xs font-medium text-foreground-muted">
                                 نظارت بر آگهی‌های اقامتگاه، بررسی و تایید، دسته‌بندی‌ها و مدل‌های قیمت‌گذاری
                             </p>
                         </div>
@@ -59,7 +59,7 @@ function AdminTemporaryRentContent() {
                     <Link
                         href="/temporary-rent"
                         target="_blank"
-                        className="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors"
+                        className="inline-flex items-center gap-2 px-4 py-2.5 bg-surface-secondary hover:bg-slate-200 text-foreground-secondary rounded-xl text-xs font-bold transition-colors"
                     >
                         <Home className="w-4 h-4" />
                         <span>مشاهده صفحه اصلی اقامتگاه‌ها</span>
@@ -68,17 +68,17 @@ function AdminTemporaryRentContent() {
             </div>
 
             {/* Main Tabs Navigation */}
-            <div className="flex items-center gap-2 p-1.5 bg-slate-100/80 rounded-2xl border border-slate-200/80 w-fit max-w-full overflow-x-auto">
+            <div className="flex items-center gap-2 p-1.5 bg-surface-secondary/80 rounded-2xl border border-border-subtle/80 w-fit max-w-full overflow-x-auto">
                 <button
                     type="button"
                     onClick={() => handleTabChange("items")}
                     className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black transition-all ${
                         currentTab === "items"
-                            ? "bg-white text-slate-900 shadow-sm ring-1 ring-slate-200"
-                            : "text-slate-600 hover:text-slate-900 hover:bg-white/50"
+                            ? "bg-surface text-foreground shadow-sm ring-1 ring-slate-200"
+                            : "text-foreground-secondary hover:text-foreground hover:bg-surface/50"
                     }`}
                 >
-                    <Home className="w-4 h-4 text-emerald-600" />
+                    <Home className="w-4 h-4 text-success" />
                     <span>اقامتگاه‌ها و آگهی‌ها (آیتم‌ها)</span>
                 </button>
 
@@ -87,11 +87,11 @@ function AdminTemporaryRentContent() {
                     onClick={() => handleTabChange("categories")}
                     className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black transition-all ${
                         currentTab === "categories"
-                            ? "bg-white text-slate-900 shadow-sm ring-1 ring-slate-200"
-                            : "text-slate-600 hover:text-slate-900 hover:bg-white/50"
+                            ? "bg-surface text-foreground shadow-sm ring-1 ring-slate-200"
+                            : "text-foreground-secondary hover:text-foreground hover:bg-surface/50"
                     }`}
                 >
-                    <FolderTree className="w-4 h-4 text-blue-600" />
+                    <FolderTree className="w-4 h-4 text-info" />
                     <span>دسته‌بندی‌ها و ساختار ویژگی‌ها</span>
                 </button>
             </div>
@@ -112,8 +112,8 @@ export default function AdminTemporaryRentPage() {
     return (
         <Suspense
             fallback={
-                <div className="py-20 flex flex-col items-center justify-center gap-3 text-slate-400">
-                    <RefreshCw className="w-6 h-6 animate-spin text-emerald-600" />
+                <div className="py-20 flex flex-col items-center justify-center gap-3 text-foreground-muted">
+                    <RefreshCw className="w-6 h-6 animate-spin text-success" />
                     <span className="text-xs font-bold">در حال بارگذاری بخش مدیریت اجاره موقت...</span>
                 </div>
             }

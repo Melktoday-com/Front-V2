@@ -111,12 +111,12 @@ export function TemporaryRentCard({
         <Link
             href={`/temporary-rent/${id}`}
             className={cn(
-                "group flex flex-col bg-white rounded-2xl overflow-hidden border border-gray-100 hover:shadow-lg transition-all duration-300",
+                "group flex flex-col bg-surface rounded-2xl overflow-hidden border border-border-subtle hover:shadow-lg transition-all duration-300",
                 className
             )}
         >
             {/* Image Slider - Airbnb Style */}
-            <div className="relative aspect-[4/3] w-full overflow-hidden bg-gray-100">
+            <div className="relative aspect-[4/3] w-full overflow-hidden bg-surface-secondary">
                 <Image
                     src={images[currentImageIndex] || "/property-placeholder.svg"}
                     alt={title}
@@ -147,10 +147,10 @@ export function TemporaryRentCard({
                     aria-label="ذخیره اقامتگاه"
                     className={cn(
                         "absolute top-2.5 left-2.5 w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-md shadow-sm z-10 transition-transform active:scale-90",
-                        saved ? "bg-red-500 text-white" : "bg-white/80 hover:bg-white text-gray-700"
+                        saved ? "bg-red-500 text-white" : "bg-surface/80 hover:bg-surface text-foreground-secondary"
                     )}
                 >
-                    <Heart className={cn("w-4 h-4", saved ? "fill-white text-white" : "text-gray-700")} />
+                    <Heart className={cn("w-4 h-4", saved ? "fill-white text-white" : "text-foreground-secondary")} />
                 </button>
 
                 {/* Carousel Chevrons (visible on hover) */}
@@ -159,14 +159,14 @@ export function TemporaryRentCard({
                         <button
                             onClick={handlePrevImage}
                             aria-label="تصویر قبلی"
-                            className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/85 hover:bg-white flex items-center justify-center text-brand shadow-md opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                            className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-surface/85 hover:bg-surface flex items-center justify-center text-brand shadow-md opacity-0 group-hover:opacity-100 transition-opacity z-10"
                         >
                             <ChevronRight className="w-4 h-4" />
                         </button>
                         <button
                             onClick={handleNextImage}
                             aria-label="تصویر بعدی"
-                            className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/85 hover:bg-white flex items-center justify-center text-brand shadow-md opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                            className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-surface/85 hover:bg-surface flex items-center justify-center text-brand shadow-md opacity-0 group-hover:opacity-100 transition-opacity z-10"
                         >
                             <ChevronLeft className="w-4 h-4" />
                         </button>
@@ -182,8 +182,8 @@ export function TemporaryRentCard({
                                 className={cn(
                                     "rounded-full transition-all duration-300",
                                     currentImageIndex === idx
-                                        ? "w-2 h-2 bg-white shadow-xs scale-110"
-                                        : "w-1.5 h-1.5 bg-white/60"
+                                        ? "w-2 h-2 bg-surface shadow-xs scale-110"
+                                        : "w-1.5 h-1.5 bg-surface/60"
                                 )}
                             />
                         ))}
@@ -230,7 +230,7 @@ export function TemporaryRentCard({
                     {/* Publisher Showcase Badge */}
                     {publisher && publisher.type !== 'user' && publisher.name && (
                         <div className="mt-1.5 flex items-center">
-                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-gray-50 border border-gray-200/60 text-[10px] text-text-main font-bold">
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-surface-secondary border border-border-subtle/60 text-[10px] text-text-main font-bold">
                                 {publisher.avatar ? (
                                     <img
                                         src={publisher.avatar}
@@ -248,7 +248,7 @@ export function TemporaryRentCard({
                 </div>
 
                 {/* Price Row (Airbnb style: bold per night) */}
-                <div className="pt-2 border-t border-gray-100 flex items-baseline gap-1">
+                <div className="pt-2 border-t border-border-subtle flex items-baseline gap-1">
                     <span className="text-brand font-black text-sm sm:text-base">
                         {formatPrice(nightlyPrice, "")}
                     </span>

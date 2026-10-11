@@ -112,18 +112,18 @@ export default function HostApplyPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8" dir="rtl">
+    <div className="min-h-screen bg-surface-secondary py-10 px-4 sm:px-6 lg:px-8" dir="rtl">
       <div className="max-w-3xl mx-auto space-y-8">
         {/* Navigation Breadcrumb */}
         <div className="flex items-center justify-between">
           <Link
             href="/temporary-rent"
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-blue-600 transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-foreground-muted hover:text-info transition-colors"
           >
             <ArrowRight className="w-4 h-4" />
             <span>بازگشت به اقامتگاه‌ها</span>
           </Link>
-          <span className="text-xs font-medium text-slate-400">فرم رسمی درخواست میزبانی</span>
+          <span className="text-xs font-medium text-foreground-muted">فرم رسمی درخواست میزبانی</span>
         </div>
 
         {isRestricted && <AccountStatusBanner />}
@@ -131,7 +131,7 @@ export default function HostApplyPage() {
         {/* Hero Section */}
         <div className="bg-gradient-to-br from-emerald-600 to-teal-800 text-white rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden">
           <div className="relative z-10 max-w-xl space-y-3">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-emerald-200 text-xs font-bold">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface/10 backdrop-blur-md text-emerald-200 text-xs font-bold">
               <Sparkles className="w-4 h-4 text-emerald-300" />
               <span>پیوستن به جمع میزبانان معتبر ملک‌تودی</span>
             </div>
@@ -149,33 +149,33 @@ export default function HostApplyPage() {
 
         {/* Features / Guarantees Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-start gap-3">
-            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+          <div className="bg-surface p-4 rounded-2xl border border-border-subtle shadow-sm flex items-start gap-3">
+            <div className="w-9 h-9 rounded-xl bg-success-subtle text-success flex items-center justify-center shrink-0">
               <Home className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-xs font-black text-slate-800">ویترین اختصاصی میزبان</h3>
-              <p className="text-[11px] text-slate-500 mt-0.5">صفحه عمومی با لینک مستقیم به اقامتگاه‌های شما</p>
+              <h3 className="text-xs font-black text-foreground">ویترین اختصاصی میزبان</h3>
+              <p className="text-[11px] text-foreground-muted mt-0.5">صفحه عمومی با لینک مستقیم به اقامتگاه‌های شما</p>
             </div>
           </div>
 
-          <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-start gap-3">
-            <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+          <div className="bg-surface p-4 rounded-2xl border border-border-subtle shadow-sm flex items-start gap-3">
+            <div className="w-9 h-9 rounded-xl bg-info-subtle text-info flex items-center justify-center shrink-0">
               <ShieldCheck className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-xs font-black text-slate-800">احراز هویت معتبر</h3>
-              <p className="text-[11px] text-slate-500 mt-0.5">تطبیق کدملی در سامانه شاهکار و اعطای نشان تایید</p>
+              <h3 className="text-xs font-black text-foreground">احراز هویت معتبر</h3>
+              <p className="text-[11px] text-foreground-muted mt-0.5">تطبیق کدملی در سامانه شاهکار و اعطای نشان تایید</p>
             </div>
           </div>
 
-          <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-start gap-3">
-            <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+          <div className="bg-surface p-4 rounded-2xl border border-border-subtle shadow-sm flex items-start gap-3">
+            <div className="w-9 h-9 rounded-xl bg-warning-subtle text-warning flex items-center justify-center shrink-0">
               <UserCheck className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-xs font-black text-slate-800">ارتباط مستقیم با مهمانان</h3>
-              <p className="text-[11px] text-slate-500 mt-0.5">امکان دنبال‌شدن توسط مسافران و دریافت تماس مستقیم</p>
+              <h3 className="text-xs font-black text-foreground">ارتباط مستقیم با مهمانان</h3>
+              <p className="text-[11px] text-foreground-muted mt-0.5">امکان دنبال‌شدن توسط مسافران و دریافت تماس مستقیم</p>
             </div>
           </div>
         </div>
@@ -185,22 +185,22 @@ export default function HostApplyPage() {
           <div
             className={cn(
               "rounded-2xl p-6 border shadow-sm space-y-4",
-              myApp.status === "PENDING" && "bg-amber-50/70 border-amber-200",
-              myApp.status === "APPROVED" && "bg-emerald-50/70 border-emerald-200",
-              myApp.status === "REJECTED" && "bg-red-50/70 border-red-200"
+              myApp.status === "PENDING" && "bg-warning-subtle/70 border-warning/30",
+              myApp.status === "APPROVED" && "bg-success-subtle/70 border-success/30",
+              myApp.status === "REJECTED" && "bg-error-subtle/70 border-error/30"
             )}
           >
             <div className="flex items-start gap-3">
-              {myApp.status === "PENDING" && <Clock className="w-6 h-6 text-amber-600 shrink-0 mt-0.5" />}
-              {myApp.status === "APPROVED" && <CheckCircle className="w-6 h-6 text-emerald-600 shrink-0 mt-0.5" />}
-              {myApp.status === "REJECTED" && <XCircle className="w-6 h-6 text-red-600 shrink-0 mt-0.5" />}
+              {myApp.status === "PENDING" && <Clock className="w-6 h-6 text-warning shrink-0 mt-0.5" />}
+              {myApp.status === "APPROVED" && <CheckCircle className="w-6 h-6 text-success shrink-0 mt-0.5" />}
+              {myApp.status === "REJECTED" && <XCircle className="w-6 h-6 text-error shrink-0 mt-0.5" />}
               <div className="space-y-1">
-                <h2 className="text-sm font-black text-slate-800">
+                <h2 className="text-sm font-black text-foreground">
                   {myApp.status === "PENDING" && "درخواست میزبانی شما در حال بررسی است"}
                   {myApp.status === "APPROVED" && "درخواست میزبانی شما تایید شده و فعال است"}
                   {myApp.status === "REJECTED" && "درخواست میزبانی شما تایید نشد"}
                 </h2>
-                <p className="text-xs text-slate-600 leading-relaxed font-medium">
+                <p className="text-xs text-foreground-secondary leading-relaxed font-medium">
                   {myApp.status === "PENDING" &&
                     "اطلاعات ارسالی شما در صف بررسی کارشناسان قرار دارد. نتیجه استعلام و بررسی معمولاً ظرف ۲۴ ساعت مشخص می‌شود."}
                   {myApp.status === "APPROVED" &&
@@ -211,7 +211,7 @@ export default function HostApplyPage() {
               </div>
             </div>
 
-            <div className="pt-2 border-t border-slate-200/60 flex flex-wrap gap-3">
+            <div className="pt-2 border-t border-border-subtle/60 flex flex-wrap gap-3">
               {myApp.status === "APPROVED" && (
                 <>
                   <Link
@@ -222,7 +222,7 @@ export default function HostApplyPage() {
                   </Link>
                   <Link
                     href="/profile/temporary-rent/new"
-                    className="px-4 py-2 bg-white border border-emerald-300 text-emerald-700 hover:bg-emerald-50 rounded-xl text-xs font-bold transition-colors"
+                    className="px-4 py-2 bg-surface border border-emerald-300 text-success hover:bg-success-subtle rounded-xl text-xs font-bold transition-colors"
                   >
                     ثبت اقامتگاه جدید
                   </Link>
@@ -243,29 +243,29 @@ export default function HostApplyPage() {
 
         {/* Application Form */}
         {(isReapplying || !myApp || myApp.status === "REJECTED") && (
-          <form onSubmit={handleSubmit} className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-6">
-            <div className="border-b border-slate-100 pb-4">
-              <h2 className="text-base font-black text-slate-800">مشخصات متقاضی و عنوان میزبانی</h2>
-              <p className="text-xs text-slate-500 mt-1">
+          <form onSubmit={handleSubmit} className="bg-surface rounded-3xl p-6 sm:p-8 border border-border-subtle shadow-sm space-y-6">
+            <div className="border-b border-border-subtle pb-4">
+              <h2 className="text-base font-black text-foreground">مشخصات متقاضی و عنوان میزبانی</h2>
+              <p className="text-xs text-foreground-muted mt-1">
                 اطلاعات هویتی با سامانه شاهکار تطبیق داده خواهد شد.
               </p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700">نام و نام خانوادگی متقاضی *</label>
+                <label className="text-xs font-bold text-foreground-secondary">نام و نام خانوادگی متقاضی *</label>
                 <input
                   type="text"
                   required
                   value={formData.fullName}
                   onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                   placeholder="مثال: علی رضایی"
-                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
+                  className="w-full p-3 bg-surface-secondary border border-border-subtle rounded-xl text-xs focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700">کد ملی (۱۰ رقم) *</label>
+                <label className="text-xs font-bold text-foreground-secondary">کد ملی (۱۰ رقم) *</label>
                 <input
                   type="text"
                   required
@@ -273,105 +273,105 @@ export default function HostApplyPage() {
                   value={formData.nationalCode}
                   onChange={(e) => setFormData({ ...formData, nationalCode: e.target.value })}
                   placeholder="مثال: 0012345678"
-                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
+                  className="w-full p-3 bg-surface-secondary border border-border-subtle rounded-xl text-xs font-mono focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700">عنوان یا برند میزبانی *</label>
+                <label className="text-xs font-bold text-foreground-secondary">عنوان یا برند میزبانی *</label>
                 <input
                   type="text"
                   required
                   value={formData.hostName}
                   onChange={(e) => setFormData({ ...formData, hostName: e.target.value })}
                   placeholder="مثال: اقامتگاه‌های ساحلی رضایی"
-                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
+                  className="w-full p-3 bg-surface-secondary border border-border-subtle rounded-xl text-xs focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
                 />
               </div>
 
               {/* City Selection Trigger - Proper Modal */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700">شهر محل اقامتگاه *</label>
+                <label className="text-xs font-bold text-foreground-secondary">شهر محل اقامتگاه *</label>
                 <button
                   type="button"
                   onClick={() => setIsCitySelectorOpen(true)}
-                  className="w-full flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs hover:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-right group"
+                  className="w-full flex items-center justify-between p-3 bg-surface-secondary border border-border-subtle rounded-xl text-xs hover:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-right group"
                 >
                   <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span className={formData.cityId ? "font-bold text-slate-800" : "text-slate-400"}>
+                    <MapPin className="w-4 h-4 text-success shrink-0" />
+                    <span className={formData.cityId ? "font-bold text-foreground" : "text-foreground-muted"}>
                       {selectedCityName || "انتخاب شهر اقامتگاه..."}
                     </span>
                   </div>
-                  <span className="text-[11px] text-emerald-600 font-medium group-hover:underline">
+                  <span className="text-[11px] text-success font-medium group-hover:underline">
                     {formData.cityId ? "تغییر شهر" : "انتخاب"}
                   </span>
                 </button>
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700">شماره همراه معتبر (به نام متقاضی) *</label>
+                <label className="text-xs font-bold text-foreground-secondary">شماره همراه معتبر (به نام متقاضی) *</label>
                 <input
                   type="text"
                   required
                   value={formData.mobileNumber}
                   onChange={(e) => setFormData({ ...formData, mobileNumber: e.target.value })}
                   placeholder="مثال: 09123456789"
-                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
+                  className="w-full p-3 bg-surface-secondary border border-border-subtle rounded-xl text-xs font-mono focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700">تلفن تماس ثابت یا پشتیبان</label>
+                <label className="text-xs font-bold text-foreground-secondary">تلفن تماس ثابت یا پشتیبان</label>
                 <input
                   type="text"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                   placeholder="مثال: 01155223344"
-                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
+                  className="w-full p-3 bg-surface-secondary border border-border-subtle rounded-xl text-xs font-mono focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
                 />
               </div>
 
               <div className="space-y-1.5 sm:col-span-2">
-                <label className="text-xs font-bold text-slate-700">تعداد تقریبی اقامتگاه‌های تحت مدیریت</label>
+                <label className="text-xs font-bold text-foreground-secondary">تعداد تقریبی اقامتگاه‌های تحت مدیریت</label>
                 <input
                   type="number"
                   min={1}
                   value={formData.propertyCount}
                   onChange={(e) => setFormData({ ...formData, propertyCount: parseInt(e.target.value, 10) || 1 })}
-                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
+                  className="w-full p-3 bg-surface-secondary border border-border-subtle rounded-xl text-xs font-mono focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
                 />
               </div>
 
               <div className="space-y-1.5 sm:col-span-2">
-                <label className="text-xs font-bold text-slate-700">آدرس اقامتگاه اصلی یا دفتر میزبان</label>
+                <label className="text-xs font-bold text-foreground-secondary">آدرس اقامتگاه اصلی یا دفتر میزبان</label>
                 <input
                   type="text"
                   value={formData.address}
                   onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                   placeholder="مثال: رامسر، بلوار کازینو، پلاک ۱۰"
-                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
+                  className="w-full p-3 bg-surface-secondary border border-border-subtle rounded-xl text-xs focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
                 />
               </div>
 
               <div className="space-y-1.5 sm:col-span-2">
-                <label className="text-xs font-bold text-slate-700">توضیحات و سوابق میزبانی</label>
+                <label className="text-xs font-bold text-foreground-secondary">توضیحات و سوابق میزبانی</label>
                 <textarea
                   rows={3}
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="توضیحاتی در مورد نوع اقامتگاه‌ها (ویلا، سوئیت، کلبه)، امکانات و تجربه میزبانی شما..."
-                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors resize-none"
+                  className="w-full p-3 bg-surface-secondary border border-border-subtle rounded-xl text-xs focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors resize-none"
                 />
               </div>
             </div>
 
-            <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
+            <div className="pt-4 border-t border-border-subtle flex items-center justify-end gap-3">
               {isReapplying && (
                 <button
                   type="button"
                   onClick={() => setIsReapplying(false)}
-                  className="px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors"
+                  className="px-4 py-3 bg-surface-secondary hover:bg-slate-200 text-foreground-secondary rounded-xl text-xs font-bold transition-colors"
                 >
                   انصراف
                 </button>

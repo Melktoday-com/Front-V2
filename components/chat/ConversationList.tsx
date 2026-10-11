@@ -28,7 +28,7 @@ function ConversationListContent() {
     if (!conversations?.length) {
         return (
             <div className="flex flex-col items-center justify-center p-8 text-center space-y-3 bg-soft-bg/10 rounded-[30px] border border-soft-border border-dashed">
-                <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-secondary shadow-sm">
+                <div className="w-12 h-12 bg-surface rounded-full flex items-center justify-center text-secondary shadow-sm">
                     <MessageSquare className="w-6 h-6 opacity-20" />
                 </div>
                 <div className="text-secondary font-bold text-xs">هنوز پیامی ندارید</div>
@@ -50,7 +50,7 @@ function ConversationListContent() {
                             "flex items-center gap-3 p-3 rounded-2xl transition-all duration-200",
                             activeId === conv.id
                                 ? "bg-brand/5 ring-1 ring-brand/10 shadow-sm"
-                                : "bg-white hover:bg-soft-bg"
+                                : "bg-surface hover:bg-soft-bg"
                         )}
                     >
                         <div className="relative">
@@ -90,10 +90,10 @@ function ConversationListContent() {
                             <div className="flex items-center gap-1.5">
                                 <span className={cn(
                                     "px-1.5 py-0.5 rounded-[4px] text-[8px] font-black uppercase tracking-tighter",
-                                    conv.subjectType === 'AGENCY' ? "bg-amber-100 text-amber-700" :
+                                    conv.subjectType === 'AGENCY' ? "bg-warning-subtle text-warning" :
                                         conv.subjectType === 'SUPPORT' ? "bg-brand/10 text-brand" :
                                             conv.subjectType === 'RENTAL' ? "bg-purple-100 text-purple-700" :
-                                                "bg-blue-100 text-blue-700"
+                                                "bg-info-subtle text-info"
                                 )}>
                                     {conv.subjectType === 'AGENCY' ? 'آژانس' :
                                         conv.subjectType === 'SUPPORT' ? 'پشتیبانی' :

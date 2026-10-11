@@ -142,7 +142,7 @@ export default function AgencyScene() {
     };
 
     return (
-        <div className="min-h-screen bg-white pb-24 lg:pb-10">
+        <div className="min-h-screen bg-surface pb-24 lg:pb-10">
             {/* Top Anchor */}
             <div id="agency-top" />
 
@@ -171,19 +171,19 @@ export default function AgencyScene() {
                             </div>
                             <div className="space-y-1">
                                 <div className="flex items-center gap-2">
-                                    <h3 className="text-sm font-black text-slate-800">
+                                    <h3 className="text-sm font-black text-foreground">
                                         مالک یا میزبان اقامتگاه روزانه هستید؟
                                     </h3>
-                                    <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold">
+                                    <span className="px-2 py-0.5 rounded-full bg-success-subtle text-success text-[10px] font-bold">
                                         میزبانی
                                     </span>
                                 </div>
-                                <p className="text-xs text-slate-500 leading-relaxed font-medium">
+                                <p className="text-xs text-foreground-muted leading-relaxed font-medium">
                                     درخواست میزبانی در ملک‌تودی را ثبت کنید و ویترین اختصاصی خود را دریافت نمایید.
                                 </p>
                             </div>
                         </div>
-                        <div className="flex items-center gap-1 text-xs font-bold text-emerald-600 shrink-0 group-hover:translate-x-[-4px] transition-transform">
+                        <div className="flex items-center gap-1 text-xs font-bold text-success shrink-0 group-hover:translate-x-[-4px] transition-transform">
                             <span>درخواست میزبانی</span>
                             <ArrowLeft className="w-4 h-4" />
                         </div>
@@ -200,19 +200,19 @@ export default function AgencyScene() {
                             </div>
                             <div className="space-y-1">
                                 <div className="flex items-center gap-2">
-                                    <h3 className="text-sm font-black text-slate-800">
+                                    <h3 className="text-sm font-black text-foreground">
                                         مشاور یا مدیر آژانس املاک هستید؟
                                     </h3>
-                                    <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-[10px] font-bold">
+                                    <span className="px-2 py-0.5 rounded-full bg-info-subtle text-info text-[10px] font-bold">
                                         همکاری
                                     </span>
                                 </div>
-                                <p className="text-xs text-slate-500 leading-relaxed font-medium">
+                                <p className="text-xs text-foreground-muted leading-relaxed font-medium">
                                     دفتر املاک خود را ثبت کنید و از ویترین تخصصی مشاورین در شهر خود بهره‌مند شوید.
                                 </p>
                             </div>
                         </div>
-                        <div className="flex items-center gap-1 text-xs font-bold text-blue-600 shrink-0 group-hover:translate-x-[-4px] transition-transform">
+                        <div className="flex items-center gap-1 text-xs font-bold text-info shrink-0 group-hover:translate-x-[-4px] transition-transform">
                             <span>ثبت‌نام آژانس</span>
                             <ArrowLeft className="w-4 h-4" />
                         </div>
@@ -269,7 +269,7 @@ export default function AgencyScene() {
                         {hasNextPage && (agenciesData?.pages.length ?? 0) < 7 && (
                             <div ref={observerTargetRef} className="py-8 flex flex-col items-center justify-center gap-2">
                                 {isFetchingNextPage ? (
-                                    <div className="flex items-center gap-2 text-xs font-bold text-secondary bg-white px-5 py-2.5 rounded-xl shadow-xs border border-gray-100">
+                                    <div className="flex items-center gap-2 text-xs font-bold text-secondary bg-surface px-5 py-2.5 rounded-xl shadow-xs border border-border-subtle">
                                         <Loader2 className="w-4 h-4 animate-spin text-primary" />
                                         <span>در حال بارگذاری بخش بعدی آژانس‌ها...</span>
                                     </div>

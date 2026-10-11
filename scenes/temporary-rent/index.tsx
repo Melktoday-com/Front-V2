@@ -50,7 +50,7 @@ export default function TemporaryRentScene() {
     }, [hits, guestCount]);
 
     return (
-        <div className="min-h-screen bg-white pb-28 lg:pb-10">
+        <div className="min-h-screen bg-surface pb-28 lg:pb-10">
             {/* Warm Header Section (Airbnb vibe) */}
             <div className="bg-gradient-to-b from-orange-50/50 to-transparent p-4 sm:p-6 lg:px-10 lg:pt-8 border-b border-orange-100/50 space-y-5">
                 <PageHeader
@@ -66,7 +66,7 @@ export default function TemporaryRentScene() {
                 {/* Airbnb-style Filter Pill Bar */}
                 <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar text-xs">
                     {/* Guest Filter Buttons */}
-                    <div className="flex items-center gap-1.5 bg-white p-1 rounded-full border border-gray-200 shadow-2xs">
+                    <div className="flex items-center gap-1.5 bg-surface p-1 rounded-full border border-border-subtle shadow-2xs">
                         <Users className="w-3.5 h-3.5 text-orange-500 mr-2" />
                         <span className="text-text-light font-bold text-[11px] ml-1">تعداد مسافر:</span>
                         {[
@@ -85,7 +85,7 @@ export default function TemporaryRentScene() {
                                         "px-2.5 py-1 rounded-full font-bold text-xs transition-colors",
                                         isSelected
                                             ? "bg-brand text-white shadow-xs"
-                                            : "text-text-light hover:bg-gray-100"
+                                            : "text-text-light hover:bg-surface-secondary"
                                     )}
                                 >
                                     {opt.label}
@@ -95,7 +95,7 @@ export default function TemporaryRentScene() {
                     </div>
 
                     {/* Quick Jalali Date Tag info */}
-                    <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-white rounded-full border border-gray-200 text-text-light text-[11px] font-bold shadow-2xs">
+                    <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-surface rounded-full border border-border-subtle text-text-light text-[11px] font-bold shadow-2xs">
                         <Calendar className="w-3.5 h-3.5 text-primary" />
                         <span>تحویل کلید: آنی و هماهنگ با میزبان</span>
                     </div>
@@ -116,7 +116,7 @@ export default function TemporaryRentScene() {
                 {isLoading ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                         {Array.from({ length: 8 }).map((_, i) => (
-                            <div key={i} className="aspect-[4/3] bg-gray-100 animate-pulse rounded-2xl" />
+                            <div key={i} className="aspect-[4/3] bg-surface-secondary animate-pulse rounded-2xl" />
                         ))}
                     </div>
                 ) : error ? (

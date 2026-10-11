@@ -278,16 +278,16 @@ export function MediumPostEditor({
   return (
     <div className="space-y-8">
       {/* ── HEADER BANNER: MEDIUM STYLE GUIDE ──────────────────────── */}
-      <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-emerald-50 via-teal-50 to-cyan-50 border border-emerald-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-emerald-50 via-teal-50 to-cyan-50 border border-success/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-start gap-3">
           <div className="w-10 h-10 rounded-2xl bg-emerald-700 text-white flex items-center justify-center shrink-0 shadow-xs">
             <BookOpen className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-sm font-black text-slate-900">
+            <h3 className="text-sm font-black text-foreground">
               قالب مقاله و گزارش جامع (مشابه مدیوم و ویرگول)
             </h3>
-            <p className="text-xs text-slate-600 mt-0.5 leading-relaxed">
+            <p className="text-xs text-foreground-secondary mt-0.5 leading-relaxed">
               با یک تصویر شاخص، پشتیبانی کامل از فایل‌های Markdown، تیتربندی‌های استاندارد و امکان درج تصاویر نامحدود بین متن.
             </p>
           </div>
@@ -305,22 +305,22 @@ export function MediumPostEditor({
           <button
             type="button"
             onClick={() => mdFileInputRef.current?.click()}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 text-xs font-bold shadow-xs hover:border-emerald-500 transition-all w-full sm:w-auto"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl bg-surface hover:bg-surface-secondary text-foreground border border-border-subtle text-xs font-bold shadow-xs hover:border-emerald-500 transition-all w-full sm:w-auto"
           >
-            <UploadCloud className="w-4 h-4 text-emerald-600" />
+            <UploadCloud className="w-4 h-4 text-success" />
             <span>بارگذاری فایل مارک‌داون (.md)</span>
           </button>
         </div>
       </div>
 
       {/* ── SECTION 1: FEATURED IMAGE (تصویر شاخص) ─────────────────── */}
-      <div className="bg-white p-5 sm:p-6 rounded-3xl border border-slate-200/80 shadow-xs space-y-3">
+      <div className="bg-surface p-5 sm:p-6 rounded-3xl border border-border-subtle/80 shadow-xs space-y-3">
         <div className="flex items-center justify-between">
-          <label className="text-xs font-black text-slate-800 flex items-center gap-1.5">
+          <label className="text-xs font-black text-foreground flex items-center gap-1.5">
             <span>تصویر شاخص مقاله (Featured Cover)</span>
-            <span className="text-red-500">*</span>
+            <span className="text-error">*</span>
           </label>
-          <span className="text-xs text-slate-400 font-medium">نسبت استاندارد ۱۶:۹</span>
+          <span className="text-xs text-foreground-muted font-medium">نسبت استاندارد ۱۶:۹</span>
         </div>
 
         <input
@@ -332,7 +332,7 @@ export function MediumPostEditor({
         />
 
         {featuredImageUrl ? (
-          <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-slate-900 border border-slate-200 shadow-xs group">
+          <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-slate-900 border border-border-subtle shadow-xs group">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={getMediaUrl(featuredImageUrl)}
@@ -343,7 +343,7 @@ export function MediumPostEditor({
               <button
                 type="button"
                 onClick={() => featuredImageInputRef.current?.click()}
-                className="px-4 py-2 rounded-xl bg-white/90 hover:bg-white text-slate-800 text-xs font-bold shadow-md transition-all"
+                className="px-4 py-2 rounded-xl bg-surface/90 hover:bg-surface text-foreground text-xs font-bold shadow-md transition-all"
               >
                 تغییر تصویر شاخص
               </button>
@@ -362,23 +362,23 @@ export function MediumPostEditor({
             type="button"
             onClick={() => featuredImageInputRef.current?.click()}
             disabled={isUploading}
-            className="w-full aspect-video sm:aspect-21/9 rounded-2xl border-2 border-dashed border-slate-200 hover:border-emerald-500 bg-slate-50/60 hover:bg-emerald-50/20 transition-all flex flex-col items-center justify-center gap-2 text-slate-500 group"
+            className="w-full aspect-video sm:aspect-21/9 rounded-2xl border-2 border-dashed border-border-subtle hover:border-emerald-500 bg-surface-secondary/60 hover:bg-success-subtle/20 transition-all flex flex-col items-center justify-center gap-2 text-foreground-muted group"
           >
             {isUploading ? (
               <div className="flex flex-col items-center gap-2">
-                <Loader2 className="w-8 h-8 text-emerald-600 animate-spin" />
-                <span className="text-xs font-bold text-slate-600">در حال آپلود تصویر شاخص...</span>
+                <Loader2 className="w-8 h-8 text-success animate-spin" />
+                <span className="text-xs font-bold text-foreground-secondary">در حال آپلود تصویر شاخص...</span>
               </div>
             ) : (
               <>
-                <div className="w-12 h-12 rounded-2xl bg-slate-100 group-hover:bg-emerald-100 text-slate-400 group-hover:text-emerald-600 flex items-center justify-center transition-colors">
+                <div className="w-12 h-12 rounded-2xl bg-surface-secondary group-hover:bg-success-subtle text-foreground-muted group-hover:text-success flex items-center justify-center transition-colors">
                   <ImagePlus className="w-6 h-6" />
                 </div>
                 <div className="text-center space-y-1">
-                  <span className="text-xs font-black text-slate-700 block">
+                  <span className="text-xs font-black text-foreground-secondary block">
                     انتخاب یا کشیدن تصویر شاخص مقاله
                   </span>
-                  <span className="text-[11px] text-slate-400">
+                  <span className="text-[11px] text-foreground-muted">
                     فرمت‌های JPG, PNG, WebP (حداکثر ۱۰ مگابایت)
                   </span>
                 </div>
@@ -389,12 +389,12 @@ export function MediumPostEditor({
       </div>
 
       {/* ── SECTION 2: METADATA & TITLE ────────────────────────────── */}
-      <div className="bg-white p-5 sm:p-6 rounded-3xl border border-slate-200/80 shadow-xs space-y-5">
+      <div className="bg-surface p-5 sm:p-6 rounded-3xl border border-border-subtle/80 shadow-xs space-y-5">
         {/* Main Title */}
         <div className="space-y-1.5">
-          <label className="text-xs font-black text-slate-800 flex items-center gap-1.5">
+          <label className="text-xs font-black text-foreground flex items-center gap-1.5">
             <span>عنوان اصلی مقاله</span>
-            <span className="text-red-500">*</span>
+            <span className="text-error">*</span>
           </label>
           <input
             type="text"
@@ -402,13 +402,13 @@ export function MediumPostEditor({
             placeholder="مثلاً: تحلیل جامع روند قیمت مسکن در پاییز ۱۴۰۵ و چشم‌انداز سرمایه‌گذاری"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full px-4 py-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-base sm:text-lg font-black text-slate-900 focus:bg-white focus:border-emerald-500 focus:outline-hidden transition-all placeholder:text-slate-400"
+            className="w-full px-4 py-3.5 rounded-2xl bg-surface-secondary border border-border-subtle text-base sm:text-lg font-black text-foreground focus:bg-surface focus:border-emerald-500 focus:outline-hidden transition-all placeholder:text-foreground-muted"
           />
         </div>
 
         {/* Subtitle / Summary */}
         <div className="space-y-1.5">
-          <label className="text-xs font-black text-slate-800 flex items-center gap-1.5">
+          <label className="text-xs font-black text-foreground flex items-center gap-1.5">
             <span>خلاصه / زیرعنوان مقاله (Summary)</span>
           </label>
           <input
@@ -416,18 +416,18 @@ export function MediumPostEditor({
             placeholder="یک یا دو جمله کوتاه و گیرا برای نمایش در کارت‌ها و پیش‌نمایش شبکه‌های اجتماعی..."
             value={summary}
             onChange={(e) => setSummary(e.target.value)}
-            className="w-full px-4 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs sm:text-sm font-medium text-slate-800 focus:bg-white focus:border-emerald-500 focus:outline-hidden transition-all placeholder:text-slate-400"
+            className="w-full px-4 py-2.5 rounded-2xl bg-surface-secondary border border-border-subtle text-xs sm:text-sm font-medium text-foreground focus:bg-surface focus:border-emerald-500 focus:outline-hidden transition-all placeholder:text-foreground-muted"
           />
         </div>
 
         {/* Category & Slug */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
           <div className="space-y-1.5">
-            <label className="text-xs font-black text-slate-800">دسته‌بندی موضوعی مقاله</label>
+            <label className="text-xs font-black text-foreground">دسته‌بندی موضوعی مقاله</label>
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="w-full px-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-800 focus:bg-white focus:border-emerald-500 focus:outline-hidden transition-all"
+              className="w-full px-4 py-3 rounded-2xl bg-surface-secondary border border-border-subtle text-xs font-bold text-foreground focus:bg-surface focus:border-emerald-500 focus:outline-hidden transition-all"
             >
               {MEDIUM_CATEGORIES.map((cat) => (
                 <option key={cat} value={cat}>
@@ -439,11 +439,11 @@ export function MediumPostEditor({
 
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-black text-slate-800">نامک انگلیسی (SEO Slug)</label>
+              <label className="text-xs font-black text-foreground">نامک انگلیسی (SEO Slug)</label>
               <button
                 type="button"
                 onClick={handleAutoSlug}
-                className="text-[11px] text-emerald-600 font-bold hover:underline"
+                className="text-[11px] text-success font-bold hover:underline"
               >
                 تولید خودکار
               </button>
@@ -454,16 +454,16 @@ export function MediumPostEditor({
               placeholder="housing-market-analysis-fall"
               value={slug}
               onChange={(e) => setSlug(e.target.value)}
-              className="w-full px-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs font-mono text-slate-800 focus:bg-white focus:border-emerald-500 focus:outline-hidden transition-all placeholder:text-slate-400"
+              className="w-full px-4 py-3 rounded-2xl bg-surface-secondary border border-border-subtle text-xs font-mono text-foreground focus:bg-surface focus:border-emerald-500 focus:outline-hidden transition-all placeholder:text-foreground-muted"
             />
           </div>
         </div>
       </div>
 
       {/* ── SECTION 3: RICH MARKDOWN EDITOR & LIVE PREVIEW ─────────── */}
-      <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden">
+      <div className="bg-surface rounded-3xl border border-border-subtle/80 shadow-xs overflow-hidden">
         {/* Editor Top Bar & Controls */}
-        <div className="p-4 bg-slate-50/80 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3">
+        <div className="p-4 bg-surface-secondary/80 border-b border-border-subtle flex flex-wrap items-center justify-between gap-3">
           {/* View Switcher Tabs */}
           <div className="flex items-center gap-1 bg-slate-200/60 p-1 rounded-2xl">
             <button
@@ -472,8 +472,8 @@ export function MediumPostEditor({
               className={cn(
                 "flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all",
                 editorTab === "edit"
-                  ? "bg-white text-slate-900 shadow-xs font-black"
-                  : "text-slate-600 hover:text-slate-900"
+                  ? "bg-surface text-foreground shadow-xs font-black"
+                  : "text-foreground-secondary hover:text-foreground"
               )}
             >
               <Edit3 className="w-3.5 h-3.5" />
@@ -485,8 +485,8 @@ export function MediumPostEditor({
               className={cn(
                 "flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all",
                 editorTab === "preview"
-                  ? "bg-white text-slate-900 shadow-xs font-black"
-                  : "text-slate-600 hover:text-slate-900"
+                  ? "bg-surface text-foreground shadow-xs font-black"
+                  : "text-foreground-secondary hover:text-foreground"
               )}
             >
               <Eye className="w-3.5 h-3.5" />
@@ -498,8 +498,8 @@ export function MediumPostEditor({
               className={cn(
                 "hidden lg:flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all",
                 editorTab === "split"
-                  ? "bg-white text-slate-900 shadow-xs font-black"
-                  : "text-slate-600 hover:text-slate-900"
+                  ? "bg-surface text-foreground shadow-xs font-black"
+                  : "text-foreground-secondary hover:text-foreground"
               )}
             >
               <Columns className="w-3.5 h-3.5" />
@@ -508,13 +508,13 @@ export function MediumPostEditor({
           </div>
 
           {/* Reading Time and Word Count */}
-          <div className="flex items-center gap-4 text-xs text-slate-500 font-medium">
+          <div className="flex items-center gap-4 text-xs text-foreground-muted font-medium">
             <span className="flex items-center gap-1">
-              <FileText className="w-3.5 h-3.5 text-slate-400" />
+              <FileText className="w-3.5 h-3.5 text-foreground-muted" />
               <span>{toPersianDigits(readingStats.words)} کلمه</span>
             </span>
             <span>•</span>
-            <span className="flex items-center gap-1 text-emerald-600 font-bold">
+            <span className="flex items-center gap-1 text-success font-bold">
               <Clock className="w-3.5 h-3.5" />
               <span>خواندن حدود {toPersianDigits(readingStats.minutes)} دقیقه</span>
             </span>
@@ -523,7 +523,7 @@ export function MediumPostEditor({
 
         {/* Markdown Toolbar (Shown when in Edit or Split mode) */}
         {(editorTab === "edit" || editorTab === "split") && (
-          <div className="p-3 bg-white border-b border-slate-100 flex flex-wrap items-center gap-1 text-slate-700 select-none">
+          <div className="p-3 bg-surface border-b border-border-subtle flex flex-wrap items-center gap-1 text-foreground-secondary select-none">
             {/* Inline Image Upload Trigger */}
             <input
               ref={inlineImageInputRef}
@@ -536,11 +536,11 @@ export function MediumPostEditor({
               type="button"
               onClick={() => inlineImageInputRef.current?.click()}
               disabled={isInsertingInlineImage}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-black transition-colors"
+              className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-success-subtle hover:bg-success-subtle text-success text-xs font-black transition-colors"
               title="آپلود و درج تصویر بین متن"
             >
               {isInsertingInlineImage ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-600" />
+                <Loader2 className="w-3.5 h-3.5 animate-spin text-success" />
               ) : (
                 <ImagePlus className="w-3.5 h-3.5" />
               )}
@@ -553,7 +553,7 @@ export function MediumPostEditor({
             <button
               type="button"
               onClick={() => insertTextAtCursor("\n## ", "\n", "عنوان بخش")}
-              className="p-1.5 rounded-lg hover:bg-slate-100 text-xs font-black flex items-center gap-0.5"
+              className="p-1.5 rounded-lg hover:bg-surface-secondary text-xs font-black flex items-center gap-0.5"
               title="تیتر اصلی (H2)"
             >
               <Heading1 className="w-4 h-4" />
@@ -561,7 +561,7 @@ export function MediumPostEditor({
             <button
               type="button"
               onClick={() => insertTextAtCursor("\n### ", "\n", "زیرعنوان")}
-              className="p-1.5 rounded-lg hover:bg-slate-100 text-xs font-black flex items-center gap-0.5"
+              className="p-1.5 rounded-lg hover:bg-surface-secondary text-xs font-black flex items-center gap-0.5"
               title="میان‌تیتر (H3)"
             >
               <Heading2 className="w-4 h-4" />
@@ -569,7 +569,7 @@ export function MediumPostEditor({
             <button
               type="button"
               onClick={() => insertTextAtCursor("\n#### ", "\n", "تیتر فرعی")}
-              className="p-1.5 rounded-lg hover:bg-slate-100 text-xs font-black flex items-center gap-0.5"
+              className="p-1.5 rounded-lg hover:bg-surface-secondary text-xs font-black flex items-center gap-0.5"
               title="تیتر کوچک (H4)"
             >
               <Heading3 className="w-4 h-4" />
@@ -581,7 +581,7 @@ export function MediumPostEditor({
             <button
               type="button"
               onClick={() => insertTextAtCursor("**", "**", "متن پررنگ")}
-              className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-700"
+              className="p-1.5 rounded-lg hover:bg-surface-secondary text-foreground-secondary"
               title="ضخیم (Bold)"
             >
               <Bold className="w-4 h-4" />
@@ -589,7 +589,7 @@ export function MediumPostEditor({
             <button
               type="button"
               onClick={() => insertTextAtCursor("*", "*", "متن مورب")}
-              className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-700"
+              className="p-1.5 rounded-lg hover:bg-surface-secondary text-foreground-secondary"
               title="مورب (Italic)"
             >
               <Italic className="w-4 h-4" />
@@ -597,7 +597,7 @@ export function MediumPostEditor({
             <button
               type="button"
               onClick={() => insertTextAtCursor("\n> ", "\n", "نقل‌قول یا نکته مهم")}
-              className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-700"
+              className="p-1.5 rounded-lg hover:bg-surface-secondary text-foreground-secondary"
               title="نقل‌قول (Quote)"
             >
               <Quote className="w-4 h-4" />
@@ -609,7 +609,7 @@ export function MediumPostEditor({
             <button
               type="button"
               onClick={() => insertTextAtCursor("\n- ", "\n", "مورد اول")}
-              className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-700"
+              className="p-1.5 rounded-lg hover:bg-surface-secondary text-foreground-secondary"
               title="لیست نقطه‌ای"
             >
               <List className="w-4 h-4" />
@@ -617,7 +617,7 @@ export function MediumPostEditor({
             <button
               type="button"
               onClick={() => insertTextAtCursor("\n1. ", "\n", "مورد اول")}
-              className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-700"
+              className="p-1.5 rounded-lg hover:bg-surface-secondary text-foreground-secondary"
               title="لیست شماره‌دار"
             >
               <ListOrdered className="w-4 h-4" />
@@ -629,7 +629,7 @@ export function MediumPostEditor({
             <button
               type="button"
               onClick={() => insertTextAtCursor("\n```\n", "\n```\n", "// کد یا داده")}
-              className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-700"
+              className="p-1.5 rounded-lg hover:bg-surface-secondary text-foreground-secondary"
               title="بلوک کد"
             >
               <Code className="w-4 h-4" />
@@ -641,7 +641,7 @@ export function MediumPostEditor({
                   "\n| ستون اول | ستون دوم | ستون سوم |\n| --- | --- | --- |\n| داده ۱ | داده ۲ | داده ۳ |\n"
                 )
               }
-              className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-700"
+              className="p-1.5 rounded-lg hover:bg-surface-secondary text-foreground-secondary"
               title="درج جدول"
             >
               <Table className="w-4 h-4" />
@@ -649,7 +649,7 @@ export function MediumPostEditor({
             <button
               type="button"
               onClick={() => insertTextAtCursor("[عنوان پیوند](", ")", "https://example.com")}
-              className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-700"
+              className="p-1.5 rounded-lg hover:bg-surface-secondary text-foreground-secondary"
               title="درج لینک"
             >
               <Link2 className="w-4 h-4" />
@@ -657,7 +657,7 @@ export function MediumPostEditor({
             <button
               type="button"
               onClick={() => insertTextAtCursor("\n---\n")}
-              className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-700"
+              className="p-1.5 rounded-lg hover:bg-surface-secondary text-foreground-secondary"
               title="خط جداکننده"
             >
               <Minus className="w-4 h-4" />
@@ -666,7 +666,7 @@ export function MediumPostEditor({
         )}
 
         {/* Editor / Preview Content Area */}
-        <div className="p-4 sm:p-6 bg-white min-h-[450px]">
+        <div className="p-4 sm:p-6 bg-surface min-h-[450px]">
           {editorTab === "edit" && (
             <textarea
               ref={textareaRef}
@@ -675,7 +675,7 @@ export function MediumPostEditor({
               placeholder="متن کامل مقاله، تحلیل یا گزارش خود را به صورت مارک‌داون یا متن ساده در اینجا بنویسید... (می‌توانید با دکمه درج عکس بالا، تصاویر را بین بندهای مقاله قرار دهید)"
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              className="w-full h-full p-4 rounded-2xl bg-slate-50/70 border border-slate-200 text-sm sm:text-base text-slate-900 font-normal focus:bg-white focus:border-emerald-500 focus:outline-hidden transition-all leading-loose resize-y placeholder:text-slate-400"
+              className="w-full h-full p-4 rounded-2xl bg-surface-secondary/70 border border-border-subtle text-sm sm:text-base text-foreground font-normal focus:bg-surface focus:border-emerald-500 focus:outline-hidden transition-all leading-loose resize-y placeholder:text-foreground-muted"
             />
           )}
 
@@ -684,28 +684,28 @@ export function MediumPostEditor({
               {/* Medium Article Header Preview */}
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-black text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100">
+                  <span className="text-xs font-black text-success bg-success-subtle px-3 py-1 rounded-full border border-success/30">
                     {category || "مقاله تحلیلی"}
                   </span>
-                  <span className="text-xs text-slate-400 font-medium">
+                  <span className="text-xs text-foreground-muted font-medium">
                     {toPersianDigits(readingStats.minutes)} دقیقه زمان مطالعه
                   </span>
                 </div>
 
-                <h1 className="text-2xl sm:text-4xl font-black text-slate-900 leading-tight">
+                <h1 className="text-2xl sm:text-4xl font-black text-foreground leading-tight">
                   {title || "عنوان اصلی مقاله در اینجا قرار می‌گیرد"}
                 </h1>
 
                 {summary && (
-                  <p className="text-base sm:text-lg text-slate-600 font-medium leading-relaxed">
+                  <p className="text-base sm:text-lg text-foreground-secondary font-medium leading-relaxed">
                     {summary}
                   </p>
                 )}
 
                 {/* Author Info Bar */}
-                <div className="flex items-center justify-between pt-4 border-t border-b border-slate-100 py-3 my-4">
+                <div className="flex items-center justify-between pt-4 border-t border-b border-border-subtle py-3 my-4">
                   <div className="flex items-center gap-3">
-                    <div className="relative w-11 h-11 rounded-full overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
+                    <div className="relative w-11 h-11 rounded-full overflow-hidden bg-surface-secondary border border-border-subtle shrink-0">
                       {publisher.avatarUrl ? (
                         <Image
                           src={getMediaUrl(publisher.avatarUrl)}
@@ -714,33 +714,33 @@ export function MediumPostEditor({
                           className="object-cover"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-slate-100 text-slate-600">
+                        <div className="w-full h-full flex items-center justify-center bg-surface-secondary text-foreground-secondary">
                           {publisher.type === "PLATFORM" && <ShieldCheck className="w-5 h-5 text-primary" />}
-                          {publisher.type === "HOST" && <Hotel className="w-5 h-5 text-emerald-600" />}
-                          {publisher.type === "AGENCY" && <Building2 className="w-5 h-5 text-blue-600" />}
+                          {publisher.type === "HOST" && <Hotel className="w-5 h-5 text-success" />}
+                          {publisher.type === "AGENCY" && <Building2 className="w-5 h-5 text-info" />}
                         </div>
                       )}
                     </div>
                     <div>
                       <div className="flex items-center gap-1.5">
-                        <span className="font-black text-sm text-slate-900">
+                        <span className="font-black text-sm text-foreground">
                           {publisher.name || "نام نویسنده / ناشر"}
                         </span>
                         {publisher.isVerified && (
                           <Verified className="w-3.5 h-3.5 text-primary fill-primary/10" />
                         )}
                       </div>
-                      <p className="text-[11px] text-slate-400">
+                      <p className="text-[11px] text-foreground-muted">
                         منتشر شده در ملک تودی • همین حالا
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 text-slate-400">
-                    <button type="button" className="p-2 hover:text-slate-700 transition-colors">
+                  <div className="flex items-center gap-2 text-foreground-muted">
+                    <button type="button" className="p-2 hover:text-foreground-secondary transition-colors">
                       <Share2 className="w-4 h-4" />
                     </button>
-                    <button type="button" className="p-2 hover:text-slate-700 transition-colors">
+                    <button type="button" className="p-2 hover:text-foreground-secondary transition-colors">
                       <Bookmark className="w-4 h-4" />
                     </button>
                   </div>
@@ -749,7 +749,7 @@ export function MediumPostEditor({
 
               {/* Featured Image Render */}
               {featuredImageUrl && (
-                <div className="relative aspect-video w-full rounded-3xl overflow-hidden bg-slate-100 border border-slate-200 shadow-sm">
+                <div className="relative aspect-video w-full rounded-3xl overflow-hidden bg-surface-secondary border border-border-subtle shadow-sm">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={getMediaUrl(featuredImageUrl)}
@@ -769,20 +769,20 @@ export function MediumPostEditor({
           {editorTab === "split" && (
             <div className="grid grid-cols-2 gap-6 items-start">
               <div className="space-y-2">
-                <span className="text-xs font-bold text-slate-400">متن مارک‌داون (ویرایش):</span>
+                <span className="text-xs font-bold text-foreground-muted">متن مارک‌داون (ویرایش):</span>
                 <textarea
                   ref={textareaRef}
                   rows={20}
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  className="w-full p-4 rounded-2xl bg-slate-50 border border-slate-200 text-sm font-mono text-slate-900 focus:bg-white focus:border-emerald-500 focus:outline-hidden transition-all leading-relaxed resize-y"
+                  className="w-full p-4 rounded-2xl bg-surface-secondary border border-border-subtle text-sm font-mono text-foreground focus:bg-surface focus:border-emerald-500 focus:outline-hidden transition-all leading-relaxed resize-y"
                 />
               </div>
 
-              <div className="space-y-2 border-r border-slate-200 pr-6 overflow-y-auto max-h-[700px]">
-                <span className="text-xs font-bold text-slate-400">پیش‌نمایش خروجی زنده:</span>
+              <div className="space-y-2 border-r border-border-subtle pr-6 overflow-y-auto max-h-[700px]">
+                <span className="text-xs font-bold text-foreground-muted">پیش‌نمایش خروجی زنده:</span>
                 {featuredImageUrl && (
-                  <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-slate-100 border border-slate-200 mb-4">
+                  <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-surface-secondary border border-border-subtle mb-4">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={getMediaUrl(featuredImageUrl)}

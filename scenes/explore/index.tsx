@@ -56,7 +56,7 @@ function ExplorePostCard({
   return (
     <div
       ref={observerRef}
-      className="group relative aspect-square rounded-2xl overflow-hidden bg-slate-900 border border-slate-200/80 shadow-2xs hover:shadow-md transition-all duration-300"
+      className="group relative aspect-square rounded-2xl overflow-hidden bg-slate-900 border border-border-subtle/80 shadow-2xs hover:shadow-md transition-all duration-300"
     >
       <Link href={`/posts/${encodeURIComponent(post.slug || post.id)}`} className="block w-full h-full">
         {/* Main Cover Image */}
@@ -119,7 +119,7 @@ function ExplorePostCard({
                 <Heart
                   className={cn(
                     "w-3.5 h-3.5",
-                    post.hasLiked ? "text-red-500 fill-red-500" : ""
+                    post.hasLiked ? "text-error fill-red-500" : ""
                   )}
                 />
                 <span>{toPersianDigits(post.likeCount || 0)}</span>
@@ -298,24 +298,24 @@ export default function ExploreScene() {
 
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <form onSubmit={handleSearchSubmit} className="relative flex-1">
-          <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground-muted" />
           <input
             type="text"
             placeholder="جستجو در تصاویر، مقالات، تحلیل‌ها و اخبار ملکی..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pr-11 pl-22 py-3 rounded-2xl
-               bg-slate-50 border border-slate-200 text-xs 
-               sm:text-sm text-slate-800 focus:bg-white
+               bg-surface-secondary border border-border-subtle text-xs 
+               sm:text-sm text-foreground focus:bg-surface
                 focus:border-primary focus:outline-hidden 
                 transition-all placeholder:text-[11px] 
-                sm:placeholder:text-xs placeholder:text-slate-400"
+                sm:placeholder:text-xs placeholder:text-foreground-muted"
           />
           {searchQuery && (
             <button
               type="button"
               onClick={handleClearSearch}
-              className="absolute left-20 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-200 transition-colors"
+              className="absolute left-20 top-1/2 -translate-y-1/2 p-1 text-foreground-muted hover:text-foreground-secondary rounded-full hover:bg-slate-200 transition-colors"
               title="پاک کردن جستجو"
             >
               <X className="w-3.5 h-3.5" />
@@ -347,13 +347,13 @@ export default function ExploreScene() {
           {Array.from({ length: 8 }).map((_, idx) => (
             <div
               key={idx}
-              className="aspect-square rounded-2xl bg-slate-100 animate-pulse border border-slate-200/60"
+              className="aspect-square rounded-2xl bg-surface-secondary animate-pulse border border-border-subtle/60"
             />
           ))}
         </div>
       ) : isError ? (
-        <div className="bg-white p-8 rounded-3xl border border-slate-200 text-center space-y-4">
-          <p className="text-xs font-bold text-red-600">خطا در دریافت فید کاوش.</p>
+        <div className="bg-surface p-8 rounded-3xl border border-border-subtle text-center space-y-4">
+          <p className="text-xs font-bold text-error">خطا در دریافت فید کاوش.</p>
           <button
             type="button"
             onClick={() => refetch()}
@@ -363,15 +363,15 @@ export default function ExploreScene() {
           </button>
         </div>
       ) : allLoadedPosts.length === 0 ? (
-        <div className="bg-white p-12 rounded-3xl border border-slate-200 text-center space-y-3">
+        <div className="bg-surface p-12 rounded-3xl border border-border-subtle text-center space-y-3">
           <Grid className="w-10 h-10 text-slate-300 mx-auto" />
           <p className="text-sm font-black text-brand">پستی با این مشخصات یافت نشد</p>
-          <p className="text-xs text-slate-400">می‌توانید عبارت جستجو را تغییر داده یا بررسی کنید.</p>
+          <p className="text-xs text-foreground-muted">می‌توانید عبارت جستجو را تغییر داده یا بررسی کنید.</p>
           {activeSearch && (
             <button
               type="button"
               onClick={handleClearSearch}
-              className="mt-2 px-4 py-2 bg-slate-100 text-brand text-xs font-bold rounded-xl hover:bg-slate-200 transition-colors"
+              className="mt-2 px-4 py-2 bg-surface-secondary text-brand text-xs font-bold rounded-xl hover:bg-slate-200 transition-colors"
             >
               پاک کردن جستجو
             </button>
@@ -413,7 +413,7 @@ export default function ExploreScene() {
               className="col-span-full py-8 flex flex-col items-center justify-center gap-2"
             >
               {isFetchingNextPage ? (
-                <div className="flex items-center gap-2 text-xs font-bold text-secondary bg-white px-5 py-2.5 rounded-xl shadow-xs border border-gray-100">
+                <div className="flex items-center gap-2 text-xs font-bold text-secondary bg-surface px-5 py-2.5 rounded-xl shadow-xs border border-border-subtle">
                   <Loader2 className="w-4 h-4 animate-spin text-primary" />
                   <span>در حال بارگذاری بخش بعدی پست‌ها...</span>
                 </div>

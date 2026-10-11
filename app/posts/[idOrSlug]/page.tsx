@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
 export default async function SinglePostPage({ params }: PostPageProps) {
   const { idOrSlug } = await params;
   return (
-    <Suspense fallback={<div className="p-12 text-center text-slate-400 font-bold text-sm">در حال بارگذاری محتوای پست...</div>}>
+    <Suspense fallback={<div className="p-12 text-center text-foreground-muted font-bold text-sm">در حال بارگذاری محتوای پست...</div>}>
       <SinglePostScene idOrSlug={idOrSlug} />
     </Suspense>
   );

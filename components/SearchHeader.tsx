@@ -140,7 +140,7 @@ export function SearchHeader({ isInitialOpen }: SearchHeaderProps) {
             <div className="flex justify-between items-center">
                 <button
                     onClick={() => setIsSelectorOpen(true)}
-                    className="flex items-center gap-2 sm:gap-2.5 bg-white px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-full border border-soft-border group hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300"
+                    className="flex items-center gap-2 sm:gap-2.5 bg-surface px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-full border border-soft-border group hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300"
                 >
                     <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-soft-bg flex items-center justify-center group-hover:bg-primary/10 transition-colors">
                         <MapPin className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-primary" />
@@ -161,7 +161,7 @@ export function SearchHeader({ isInitialOpen }: SearchHeaderProps) {
                                 href="/profile/chat"
                                 aria-label="پیام‌ها و گفت‌وگوها"
                                 title="پیام‌ها و گفت‌وگوها"
-                                className="p-2 sm:p-2.5 bg-white rounded-full border border-soft-border text-brand hover:text-primary hover:border-primary/30 transition-all relative shadow-sm hover:shadow-md flex items-center justify-center"
+                                className="p-2 sm:p-2.5 bg-surface rounded-full border border-soft-border text-brand hover:text-primary hover:border-primary/30 transition-all relative shadow-sm hover:shadow-md flex items-center justify-center"
                             >
                                 <MessageSquare className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
                                 {unreadChatCount > 0 && (
@@ -176,7 +176,7 @@ export function SearchHeader({ isInitialOpen }: SearchHeaderProps) {
                                 href="/notifications"
                                 aria-label="اعلان‌های سیستم"
                                 title="اعلان‌های سیستم"
-                                className="p-2 sm:p-2.5 bg-white rounded-full border border-soft-border text-brand hover:text-primary hover:border-primary/30 transition-all relative shadow-sm hover:shadow-md flex items-center justify-center"
+                                className="p-2 sm:p-2.5 bg-surface rounded-full border border-soft-border text-brand hover:text-primary hover:border-primary/30 transition-all relative shadow-sm hover:shadow-md flex items-center justify-center"
                             >
                                 <Bell className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
                                 {unreadNotificationsCount > 0 && (
@@ -191,7 +191,7 @@ export function SearchHeader({ isInitialOpen }: SearchHeaderProps) {
                                 href="/profile"
                                 aria-label="حساب کاربری"
                                 title="حساب کاربری"
-                                className="p-2 sm:p-2.5 bg-white rounded-full border border-soft-border text-brand hover:text-primary hover:border-primary/30 transition-all relative shadow-sm hover:shadow-md flex items-center justify-center"
+                                className="p-2 sm:p-2.5 bg-surface rounded-full border border-soft-border text-brand hover:text-primary hover:border-primary/30 transition-all relative shadow-sm hover:shadow-md flex items-center justify-center"
                             >
                                 <User className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
                             </Link>
@@ -201,7 +201,7 @@ export function SearchHeader({ isInitialOpen }: SearchHeaderProps) {
                         <Link href={"/auth"}>
                             <Button
                                 variant="outline"
-                                className="h-10 sm:h-11 px-3.5 sm:px-5 rounded-full flex items-center gap-1.5 sm:gap-2 border-soft-border bg-white shadow-sm hover:shadow-md hover:border-primary/30 transition-all text-xs sm:text-sm font-black"
+                                className="h-10 sm:h-11 px-3.5 sm:px-5 rounded-full flex items-center gap-1.5 sm:gap-2 border-soft-border bg-surface shadow-sm hover:shadow-md hover:border-primary/30 transition-all text-xs sm:text-sm font-black"
                             >
                                 <User className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
                                 <span>{"ورود / ثبت‌نام"}</span>
@@ -234,7 +234,7 @@ export function SearchHeader({ isInitialOpen }: SearchHeaderProps) {
                             }}
                             onFocus={() => setIsSearching(true)}
                             placeholder={placeholderText}
-                            className="w-full bg-white border border-soft-border/80 sm:border-2 sm:border-soft-border/50 rounded-2xl sm:rounded-[20px] py-3 sm:py-4 pr-11 sm:pr-14 pl-20 sm:pl-24 text-sm sm:text-base lg:text-lg font-medium sm:font-bold text-brand focus:ring-4 sm:focus:ring-8 focus:ring-primary/5 focus:border-primary/40 outline-none transition-all placeholder:text-secondary/50 placeholder:font-normal placeholder:text-xs sm:placeholder:text-sm lg:placeholder:text-base shadow-md sm:shadow-xl shadow-brand/5 hover:border-soft-border"
+                            className="w-full bg-surface border border-soft-border/80 sm:border-2 sm:border-soft-border/50 rounded-2xl sm:rounded-[20px] py-3 sm:py-4 pr-11 sm:pr-14 pl-20 sm:pl-24 text-sm sm:text-base lg:text-lg font-medium sm:font-bold text-brand focus:ring-4 sm:focus:ring-8 focus:ring-primary/5 focus:border-primary/40 outline-none transition-all placeholder:text-secondary/50 placeholder:font-normal placeholder:text-xs sm:placeholder:text-sm lg:placeholder:text-base shadow-md sm:shadow-xl shadow-brand/5 hover:border-soft-border"
                         />
                         <div className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 flex items-center gap-1 sm:gap-2">
                             {searchQuery && (
@@ -264,7 +264,7 @@ export function SearchHeader({ isInitialOpen }: SearchHeaderProps) {
                     {isSearching && searchQuery.trim().length > 1 && (
                         <>
                             <div className="fixed inset-0 z-[-1]" onClick={() => setIsSearching(false)} />
-                            <div className="absolute top-full left-0 right-0 mt-2 sm:mt-3 bg-white/98 backdrop-blur-2xl border border-soft-border rounded-2xl sm:rounded-[25px] shadow-[0_20px_50px_-10px_rgba(0,0,0,0.15)] p-3 sm:p-4 animate-in fade-in slide-in-from-top-4 duration-300 max-h-[75vh] sm:max-h-[520px] overflow-y-auto">
+                            <div className="absolute top-full left-0 right-0 mt-2 sm:mt-3 bg-surface/98 backdrop-blur-2xl border border-soft-border rounded-2xl sm:rounded-[25px] shadow-[0_20px_50px_-10px_rgba(0,0,0,0.15)] p-3 sm:p-4 animate-in fade-in slide-in-from-top-4 duration-300 max-h-[75vh] sm:max-h-[520px] overflow-y-auto">
                                 {/* Autocomplete suggestion pills */}
                                 {suggestions && suggestions.length > 0 && (
                                     <div className="mb-3 pb-2.5 sm:mb-3.5 sm:pb-3 border-b border-soft-border/60">
@@ -519,7 +519,7 @@ export function SearchHeader({ isInitialOpen }: SearchHeaderProps) {
                                             <div className="space-y-1.5 pt-2 border-t border-soft-border/40">
                                                 <div className="flex items-center justify-between px-2 text-xs font-black text-secondary">
                                                     <span className="flex items-center gap-1.5">
-                                                        <BookOpen className="w-3.5 h-3.5 text-amber-600" />
+                                                        <BookOpen className="w-3.5 h-3.5 text-warning" />
                                                         مطالب، اخبار و تحلیل‌های ملکی
                                                     </span>
                                                     <Link
@@ -540,7 +540,7 @@ export function SearchHeader({ isInitialOpen }: SearchHeaderProps) {
                                                             className="flex items-center justify-between p-2 sm:p-2.5 hover:bg-soft-bg rounded-xl transition-all group"
                                                         >
                                                             <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                                                                <div className="w-8 h-8 sm:w-9 sm:h-9 bg-amber-50 text-amber-600 rounded-lg flex items-center justify-center shrink-0 group-hover:bg-amber-600 group-hover:text-white transition-colors">
+                                                                <div className="w-8 h-8 sm:w-9 sm:h-9 bg-warning-subtle text-warning rounded-lg flex items-center justify-center shrink-0 group-hover:bg-amber-600 group-hover:text-white transition-colors">
                                                                     <BookOpen className="w-4 h-4" />
                                                                 </div>
                                                                 <div className="flex flex-col text-right min-w-0">

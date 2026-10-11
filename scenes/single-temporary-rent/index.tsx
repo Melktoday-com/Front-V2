@@ -230,12 +230,12 @@ export default function ResidenceDetailScene() {
     const renderBookingCard = (isMobile = false) => (
         <div
             className={cn(
-                "bg-white p-6 rounded-3xl border border-gray-100 space-y-5",
+                "bg-surface p-6 rounded-3xl border border-border-subtle space-y-5",
                 isMobile ? "shadow-sm" : "sticky top-6 shadow-xl"
             )}
         >
             {/* Price display */}
-            <div className="flex items-baseline justify-between border-b border-gray-100 pb-4">
+            <div className="flex items-baseline justify-between border-b border-border-subtle pb-4">
                 <div className="flex items-baseline gap-1">
                     <span className="text-2xl font-black text-brand">
                         {formatPrice(nightlyPrice, "")}
@@ -252,7 +252,7 @@ export default function ResidenceDetailScene() {
             {/* Nights Selector */}
             <div className="space-y-2">
                 <label className="block text-xs font-bold text-brand">مدت اقامت (تعداد شب)</label>
-                <div className="flex items-center justify-between p-3 rounded-2xl border border-gray-200 bg-gray-50">
+                <div className="flex items-center justify-between p-3 rounded-2xl border border-border-subtle bg-surface-secondary">
                     <span className="text-xs font-bold text-brand">
                         {toPersianDigits(nights)} شب
                     </span>
@@ -260,14 +260,14 @@ export default function ResidenceDetailScene() {
                         <button
                             type="button"
                             onClick={() => setNights(Math.max(1, nights - 1))}
-                            className="w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center text-text-main hover:bg-gray-100 active:scale-95 transition-transform"
+                            className="w-8 h-8 rounded-full bg-surface border border-border-subtle flex items-center justify-center text-text-main hover:bg-surface-secondary active:scale-95 transition-transform"
                         >
                             <Minus className="w-3.5 h-3.5" />
                         </button>
                         <button
                             type="button"
                             onClick={() => setNights(nights + 1)}
-                            className="w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center text-text-main hover:bg-gray-100 active:scale-95 transition-transform"
+                            className="w-8 h-8 rounded-full bg-surface border border-border-subtle flex items-center justify-center text-text-main hover:bg-surface-secondary active:scale-95 transition-transform"
                         >
                             <Plus className="w-3.5 h-3.5" />
                         </button>
@@ -276,16 +276,16 @@ export default function ResidenceDetailScene() {
             </div>
 
             {/* Price Breakdown */}
-            <div className="space-y-2.5 text-xs text-text-light border-t border-gray-100 pt-4">
+            <div className="space-y-2.5 text-xs text-text-light border-t border-border-subtle pt-4">
                 <div className="flex justify-between">
                     <span>{formatPrice(nightlyPrice, "")} تومان × {toPersianDigits(nights)} شب</span>
                     <span className="font-bold text-brand">{formatPrice(totalPrice, "")} تومان</span>
                 </div>
                 <div className="flex justify-between">
                     <span>کارمزد خدمات</span>
-                    <span className="text-green-600 font-bold">رایگان</span>
+                    <span className="text-success font-bold">رایگان</span>
                 </div>
-                <div className="flex justify-between border-t border-gray-100 pt-3 text-sm font-black text-brand">
+                <div className="flex justify-between border-t border-border-subtle pt-3 text-sm font-black text-brand">
                     <span>مجموع کل</span>
                     <span>{formatPrice(totalPrice)}</span>
                 </div>
@@ -293,8 +293,8 @@ export default function ResidenceDetailScene() {
 
             {isOwner ? (
                 <div className={cn("space-y-3", isMobile && "hidden")}>
-                    <div className="p-3.5 bg-amber-50/70 border border-amber-200/80 rounded-2xl flex items-center gap-2.5 text-xs font-bold text-amber-950">
-                        <ShieldCheck className="w-4 h-4 text-amber-600 shrink-0" />
+                    <div className="p-3.5 bg-warning-subtle/70 border border-warning/30/80 rounded-2xl flex items-center gap-2.5 text-xs font-bold text-amber-950">
+                        <ShieldCheck className="w-4 h-4 text-warning shrink-0" />
                         <span>این اقامتگاه توسط شما ثبت شده است.</span>
                     </div>
 
@@ -311,14 +311,14 @@ export default function ResidenceDetailScene() {
 
                     {/* Already promoted indicator */}
                     {isPublished && isPromoted && (
-                        <div className="flex items-center justify-center gap-2 w-full py-3 bg-amber-50 border border-amber-200 text-amber-800 font-black text-xs rounded-2xl shadow-xs">
-                            <Sparkles className="w-4 h-4 text-amber-600" />
+                        <div className="flex items-center justify-center gap-2 w-full py-3 bg-warning-subtle border border-warning/30 text-warning font-black text-xs rounded-2xl shadow-xs">
+                            <Sparkles className="w-4 h-4 text-warning" />
                             <span>اقامتگاه شما ارتقا یافته است (فوری / ویژه)</span>
                         </div>
                     )}
 
                     {!isPublished && (
-                        <div className="p-2.5 bg-gray-50 border border-gray-200 text-gray-600 text-xs text-center rounded-xl font-medium">
+                        <div className="p-2.5 bg-surface-secondary border border-border-subtle text-foreground-secondary text-xs text-center rounded-xl font-medium">
                             {residence?.status === 'PENDING_APPROVAL'
                                 ? "اقامتگاه در انتظار تایید کارشناسان است"
                                 : "اقامتگاه در حالت فعال نمی‌باشد"}
@@ -349,9 +349,9 @@ export default function ResidenceDetailScene() {
                         <button
                             onClick={handleOpenContact}
                             disabled={isLoadingContact}
-                            className="w-full py-3 bg-gray-50 hover:bg-gray-100 text-brand font-bold text-xs rounded-2xl border border-gray-200 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+                            className="w-full py-3 bg-surface-secondary hover:bg-surface-secondary text-brand font-bold text-xs rounded-2xl border border-border-subtle transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
                         >
-                            <Phone className="w-4 h-4 text-emerald-600" />
+                            <Phone className="w-4 h-4 text-success" />
                             <span>{isLoadingContact ? "در حال دریافت..." : "اطلاعات تماس با میزبان"}</span>
                         </button>
                     </div>
@@ -378,7 +378,7 @@ export default function ResidenceDetailScene() {
                 <div className="flex items-center gap-2">
                     <button
                         onClick={handleShare}
-                        className="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-text-main transition-colors"
+                        className="w-10 h-10 rounded-full bg-surface-secondary hover:bg-gray-200 flex items-center justify-center text-text-main transition-colors"
                         title="اشتراک‌گذاری"
                     >
                         <Share2 className="w-4 h-4" />
@@ -387,7 +387,7 @@ export default function ResidenceDetailScene() {
                         onClick={handleToggleSave}
                         className={cn(
                             "w-10 h-10 rounded-full flex items-center justify-center transition-colors active:scale-95",
-                            saved ? "bg-red-500 text-white" : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+                            saved ? "bg-red-500 text-white" : "bg-surface-secondary hover:bg-gray-200 text-foreground-secondary"
                         )}
                         title={saved ? "حذف از نشان‌شده‌ها" : "نشان کردن اقامتگاه"}
                         aria-label="نشان کردن اقامتگاه"
@@ -424,7 +424,7 @@ export default function ResidenceDetailScene() {
 
             {/* Gallery Grid (Airbnb Style) */}
             <section className="space-y-3">
-                <div className="relative w-full aspect-[16/10] sm:aspect-[16/8] rounded-3xl overflow-hidden bg-gray-100 shadow-md">
+                <div className="relative w-full aspect-[16/10] sm:aspect-[16/8] rounded-3xl overflow-hidden bg-surface-secondary shadow-md">
                     {activeMedia.isVideo ? (
                         <video
                             src={activeMedia.url}
@@ -482,16 +482,16 @@ export default function ResidenceDetailScene() {
                 {/* Right / Main Column (2 cols) */}
                 <div className="lg:col-span-2 space-y-8">
                     {/* Key Specs Pills */}
-                    <div className="flex flex-wrap items-center gap-3 py-4 border-y border-gray-100 text-xs font-bold text-brand">
+                    <div className="flex flex-wrap items-center gap-3 py-4 border-y border-border-subtle text-xs font-bold text-brand">
                         <div className="flex items-center gap-2 bg-orange-50/60 text-orange-950 px-4 py-2.5 rounded-full border border-orange-100">
                             <Users className="w-4 h-4 text-orange-600" />
                             <span>ظرفیت تا {toPersianDigits(residence.maxGuests || residence.guestCapacity || 2)} نفر</span>
                         </div>
-                        <div className="flex items-center gap-2 bg-gray-50 px-4 py-2.5 rounded-full border border-gray-100 text-text-light">
+                        <div className="flex items-center gap-2 bg-surface-secondary px-4 py-2.5 rounded-full border border-border-subtle text-text-light">
                             <Bed className="w-4 h-4 text-primary" />
                             <span>{toPersianDigits(residence.attributes?.rooms ? String(residence.attributes.rooms) : 1)} اتاق خواب</span>
                         </div>
-                        <div className="flex items-center gap-2 bg-gray-50 px-4 py-2.5 rounded-full border border-gray-100 text-text-light">
+                        <div className="flex items-center gap-2 bg-surface-secondary px-4 py-2.5 rounded-full border border-border-subtle text-text-light">
                             <Bath className="w-4 h-4 text-primary" />
                             <span>{toPersianDigits(residence.attributes?.bathrooms ? String(residence.attributes.bathrooms) : 1)} سرویس بهداشتی</span>
                         </div>
@@ -504,7 +504,7 @@ export default function ResidenceDetailScene() {
                                 hostShowcaseUrl ? (
                                     <Link
                                         href={hostShowcaseUrl}
-                                        className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-white shadow-xs shrink-0 bg-gray-100 hover:ring-2 hover:ring-orange-400 transition-all cursor-pointer"
+                                        className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-white shadow-xs shrink-0 bg-surface-secondary hover:ring-2 hover:ring-orange-400 transition-all cursor-pointer"
                                         title={`مشاهده ویترین ${hostName}`}
                                     >
                                         <Image
@@ -515,7 +515,7 @@ export default function ResidenceDetailScene() {
                                         />
                                     </Link>
                                 ) : (
-                                    <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-white shadow-xs shrink-0 bg-gray-100">
+                                    <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-white shadow-xs shrink-0 bg-surface-secondary">
                                         <Image
                                             src={getMediaUrl(hostAvatar)}
                                             alt={hostName}
@@ -564,7 +564,7 @@ export default function ResidenceDetailScene() {
                             {hostShowcaseUrl && (
                                 <Link
                                     href={hostShowcaseUrl}
-                                    className="flex items-center gap-1.5 px-3.5 py-2 bg-white rounded-xl border border-orange-200 text-xs font-bold text-orange-950 hover:bg-orange-50 shadow-xs transition-colors cursor-pointer"
+                                    className="flex items-center gap-1.5 px-3.5 py-2 bg-surface rounded-xl border border-orange-200 text-xs font-bold text-orange-950 hover:bg-orange-50 shadow-xs transition-colors cursor-pointer"
                                 >
                                     <span>مشاهده ویترین میزبان</span>
                                     <ChevronLeft className="w-4 h-4 text-orange-600" />
@@ -576,7 +576,7 @@ export default function ResidenceDetailScene() {
                     {/* Description */}
                     <div className="space-y-3">
                         <h2 className="text-lg font-black text-brand">درباره این اقامتگاه</h2>
-                        <div className="bg-gray-50/60 p-5 rounded-2xl border border-gray-100 text-sm text-text-main leading-relaxed whitespace-pre-line">
+                        <div className="bg-surface-secondary/60 p-5 rounded-2xl border border-border-subtle text-sm text-text-main leading-relaxed whitespace-pre-line">
                             {residence.description || "توضیحاتی برای این اقامتگاه ثبت نشده است."}
                         </div>
                     </div>
@@ -585,27 +585,27 @@ export default function ResidenceDetailScene() {
                     <div className="space-y-4">
                         <h2 className="text-lg font-black text-brand">امکانات اقامتگاه</h2>
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs font-bold">
-                            <div className="flex items-center gap-2.5 p-3.5 rounded-2xl bg-gray-50 border border-gray-100 text-text-main">
+                            <div className="flex items-center gap-2.5 p-3.5 rounded-2xl bg-surface-secondary border border-border-subtle text-text-main">
                                 <Wifi className="w-4 h-4 text-primary shrink-0" />
                                 <span>اینترنت وای‌فای</span>
                             </div>
-                            <div className="flex items-center gap-2.5 p-3.5 rounded-2xl bg-gray-50 border border-gray-100 text-text-main">
+                            <div className="flex items-center gap-2.5 p-3.5 rounded-2xl bg-surface-secondary border border-border-subtle text-text-main">
                                 <Wind className="w-4 h-4 text-primary shrink-0" />
                                 <span>سیستم سرمایش و گرمایش</span>
                             </div>
-                            <div className="flex items-center gap-2.5 p-3.5 rounded-2xl bg-gray-50 border border-gray-100 text-text-main">
+                            <div className="flex items-center gap-2.5 p-3.5 rounded-2xl bg-surface-secondary border border-border-subtle text-text-main">
                                 <Utensils className="w-4 h-4 text-primary shrink-0" />
                                 <span>وسایل پخت و پز آشپزخانه</span>
                             </div>
-                            <div className="flex items-center gap-2.5 p-3.5 rounded-2xl bg-gray-50 border border-gray-100 text-text-main">
+                            <div className="flex items-center gap-2.5 p-3.5 rounded-2xl bg-surface-secondary border border-border-subtle text-text-main">
                                 <Tv className="w-4 h-4 text-primary shrink-0" />
                                 <span>تلویزیون</span>
                             </div>
-                            <div className="flex items-center gap-2.5 p-3.5 rounded-2xl bg-gray-50 border border-gray-100 text-text-main">
+                            <div className="flex items-center gap-2.5 p-3.5 rounded-2xl bg-surface-secondary border border-border-subtle text-text-main">
                                 <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
                                 <span>پارکینگ اختصاصی</span>
                             </div>
-                            <div className="flex items-center gap-2.5 p-3.5 rounded-2xl bg-gray-50 border border-gray-100 text-text-main">
+                            <div className="flex items-center gap-2.5 p-3.5 rounded-2xl bg-surface-secondary border border-border-subtle text-text-main">
                                 <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
                                 <span>ملحفه و روبالشتی بهداشتی</span>
                             </div>
@@ -643,7 +643,7 @@ export default function ResidenceDetailScene() {
                     {hasCoords && (
                         <div className="space-y-3">
                             <h2 className="text-lg font-black text-brand">موقعیت اقامتگاه روی نقشه</h2>
-                            <div className="h-64 rounded-3xl overflow-hidden border border-gray-100 shadow-xs">
+                            <div className="h-64 rounded-3xl overflow-hidden border border-border-subtle shadow-xs">
                                 <Map
                                     ads={[]}
                                     center={[lat, lng]}
@@ -665,7 +665,7 @@ export default function ResidenceDetailScene() {
 
             {/* Similar Residences Section */}
             {similarResidences?.items && similarResidences.items.filter((r) => r.id !== id).length > 0 && (
-                <section className="mt-16 pt-8 border-t border-gray-100">
+                <section className="mt-16 pt-8 border-t border-border-subtle">
                     <h2 className="text-xl font-black text-brand mb-6">اقامتگاه‌های مشابه در این منطقه</h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                         {similarResidences.items
@@ -687,7 +687,7 @@ export default function ResidenceDetailScene() {
             )}
 
             {/* Sticky Mobile Reservation Bar (Airbnb Mobile Pattern) */}
-            <div className="fixed bottom-0 left-0 right-0 p-3.5 bg-white/95 backdrop-blur-xl border-t border-gray-200/70 flex items-center justify-between gap-3 z-40 lg:hidden shadow-2xl">
+            <div className="fixed bottom-0 left-0 right-0 p-3.5 bg-surface/95 backdrop-blur-xl border-t border-border-subtle/70 flex items-center justify-between gap-3 z-40 lg:hidden shadow-2xl">
                 <div className="flex flex-col min-w-0">
                     <div className="flex items-baseline gap-1">
                         <span className="text-base font-black text-brand">{formatPrice(nightlyPrice, "")}</span>
@@ -708,8 +708,8 @@ export default function ResidenceDetailScene() {
                                 </button>
                             )}
                             {isPublished && isPromoted && (
-                                <span className="flex items-center gap-1 px-2.5 py-2 bg-amber-100 text-amber-800 rounded-xl text-xs font-bold">
-                                    <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                                <span className="flex items-center gap-1 px-2.5 py-2 bg-warning-subtle text-warning rounded-xl text-xs font-bold">
+                                    <Sparkles className="w-3.5 h-3.5 text-warning" />
                                     <span>ارتقا یافته</span>
                                 </span>
                             )}
@@ -725,10 +725,10 @@ export default function ResidenceDetailScene() {
                             <button
                                 onClick={handleOpenContact}
                                 disabled={isLoadingContact}
-                                className="p-2.5 bg-gray-100 hover:bg-gray-200 text-brand rounded-xl border border-gray-200 transition-all flex items-center justify-center cursor-pointer"
+                                className="p-2.5 bg-surface-secondary hover:bg-gray-200 text-brand rounded-xl border border-border-subtle transition-all flex items-center justify-center cursor-pointer"
                                 title="تماس با میزبان"
                             >
-                                <Phone className="w-4 h-4 text-emerald-600" />
+                                <Phone className="w-4 h-4 text-success" />
                             </button>
                             <button
                                 onClick={handleChat}
@@ -754,11 +754,11 @@ export default function ResidenceDetailScene() {
                         className="fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity"
                         onClick={() => setIsContactModalOpen(false)}
                     />
-                    <div className="relative z-10 w-full md:max-w-md bg-white rounded-t-3xl md:rounded-3xl p-6 shadow-2xl transition-all max-h-[90vh] overflow-y-auto">
+                    <div className="relative z-10 w-full md:max-w-md bg-surface rounded-t-3xl md:rounded-3xl p-6 shadow-2xl transition-all max-h-[90vh] overflow-y-auto">
                         <div className="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-4 md:hidden" />
-                        <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-5">
+                        <div className="flex items-center justify-between pb-4 border-b border-border-subtle mb-5">
                             <div className="flex items-center gap-2">
-                                <div className="p-2 bg-emerald-500/10 text-emerald-600 rounded-xl">
+                                <div className="p-2 bg-emerald-500/10 text-success rounded-xl">
                                     <Phone className="w-5 h-5" />
                                 </div>
                                 <div>
@@ -770,7 +770,7 @@ export default function ResidenceDetailScene() {
                             </div>
                             <button
                                 onClick={() => setIsContactModalOpen(false)}
-                                className="p-1.5 text-gray-400 hover:text-gray-700 rounded-xl hover:bg-gray-50 transition cursor-pointer"
+                                className="p-1.5 text-foreground-muted hover:text-foreground-secondary rounded-xl hover:bg-surface-secondary transition cursor-pointer"
                             >
                                 <X className="w-5 h-5" />
                             </button>
@@ -778,8 +778,8 @@ export default function ResidenceDetailScene() {
 
                         {!contactInfo?.phoneNumber ? (
                             <div className="space-y-4">
-                                <div className="p-4 bg-amber-50/70 border border-amber-200/80 rounded-2xl flex items-start gap-3">
-                                    <ShieldAlert className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                                <div className="p-4 bg-warning-subtle/70 border border-warning/30/80 rounded-2xl flex items-start gap-3">
+                                    <ShieldAlert className="w-5 h-5 text-warning shrink-0 mt-0.5" />
                                     <div className="text-xs">
                                         <h5 className="font-black text-amber-950 mb-1">شماره تماس مخفی شده است</h5>
                                         <p className="text-amber-900/80 leading-relaxed">
@@ -801,7 +801,7 @@ export default function ResidenceDetailScene() {
                             </div>
                         ) : (
                             <div className="space-y-4">
-                                <div className="p-4 bg-gray-50 border border-gray-100 rounded-2xl flex items-center justify-between">
+                                <div className="p-4 bg-surface-secondary border border-border-subtle rounded-2xl flex items-center justify-between">
                                     <div>
                                         <span className="text-[11px] text-text-light block mb-0.5">شماره تماس مستقیم:</span>
                                         <span className="text-lg font-black text-brand tracking-widest font-mono" dir="ltr">
@@ -815,7 +815,7 @@ export default function ResidenceDetailScene() {
                                                 toast.success("شماره تماس در کلیپ‌بورد کپی شد");
                                             }
                                         }}
-                                        className="p-2.5 bg-white border border-gray-200 text-brand rounded-xl hover:bg-gray-50 transition shadow-xs cursor-pointer"
+                                        className="p-2.5 bg-surface border border-border-subtle text-brand rounded-xl hover:bg-surface-secondary transition shadow-xs cursor-pointer"
                                         title="کپی شماره"
                                     >
                                         <Copy className="w-4 h-4" />
@@ -835,7 +835,7 @@ export default function ResidenceDetailScene() {
                                             setIsContactModalOpen(false);
                                             handleChat();
                                         }}
-                                        className="flex-1 py-3 border border-gray-200 hover:bg-gray-50 text-brand font-bold text-xs rounded-2xl transition flex items-center justify-center gap-2 cursor-pointer"
+                                        className="flex-1 py-3 border border-border-subtle hover:bg-surface-secondary text-brand font-bold text-xs rounded-2xl transition flex items-center justify-center gap-2 cursor-pointer"
                                     >
                                         <MessageCircle className="w-4 h-4" />
                                         <span>ارسال پیام آنلاین</span>

@@ -72,7 +72,7 @@ export default function MediaIconUpload({
 
     return (
         <div className="space-y-1.5 text-xs">
-            <label className="block font-bold text-slate-700">{label}</label>
+            <label className="block font-bold text-foreground-secondary">{label}</label>
 
             {/* Hidden file input */}
             <input
@@ -86,9 +86,9 @@ export default function MediaIconUpload({
 
             {/* Preview or Upload Area */}
             {value ? (
-                <div className="flex items-center justify-between p-2.5 bg-slate-50/80 border border-slate-200 rounded-2xl hover:border-slate-300 transition-all">
+                <div className="flex items-center justify-between p-2.5 bg-surface-secondary/80 border border-border-subtle rounded-2xl hover:border-border transition-all">
                     <div className="flex items-center gap-3 min-w-0">
-                        <div className="w-12 h-12 rounded-xl bg-white border border-slate-200 p-1 flex items-center justify-center shrink-0 shadow-xs overflow-hidden">
+                        <div className="w-12 h-12 rounded-xl bg-surface border border-border-subtle p-1 flex items-center justify-center shrink-0 shadow-xs overflow-hidden">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                                 src={fullImageUrl}
@@ -100,10 +100,10 @@ export default function MediaIconUpload({
                             />
                         </div>
                         <div className="min-w-0 text-right">
-                            <span className="font-bold text-slate-800 block text-xs truncate">
+                            <span className="font-bold text-foreground block text-xs truncate">
                                 آیکون آپلود شده
                             </span>
-                            <span className="text-[10px] font-mono text-slate-400 block truncate" dir="ltr">
+                            <span className="text-[10px] font-mono text-foreground-muted block truncate" dir="ltr">
                                 {value}
                             </span>
                         </div>
@@ -114,11 +114,11 @@ export default function MediaIconUpload({
                             type="button"
                             onClick={() => fileInputRef.current?.click()}
                             disabled={disabled || isUploading}
-                            className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all border border-slate-200 hover:border-blue-200 bg-white"
+                            className="p-2 text-foreground-secondary hover:text-info hover:bg-info-subtle rounded-xl transition-all border border-border-subtle hover:border-info/30 bg-surface"
                             title="تغییر فایل آیکون"
                         >
                             {isUploading ? (
-                                <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+                                <Loader2 className="w-4 h-4 animate-spin text-info" />
                             ) : (
                                 <RefreshCw className="w-4 h-4" />
                             )}
@@ -127,7 +127,7 @@ export default function MediaIconUpload({
                             type="button"
                             onClick={handleRemove}
                             disabled={disabled || isUploading}
-                            className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all border border-slate-200 hover:border-red-200 bg-white"
+                            className="p-2 text-foreground-muted hover:text-error hover:bg-error-subtle rounded-xl transition-all border border-border-subtle hover:border-error/30 bg-surface"
                             title="حذف آیکون"
                         >
                             <Trash2 className="w-4 h-4" />
@@ -139,25 +139,25 @@ export default function MediaIconUpload({
                     onClick={() => !isUploading && !disabled && fileInputRef.current?.click()}
                     className={`flex flex-col items-center justify-center p-4 border-2 border-dashed rounded-2xl cursor-pointer transition-all ${
                         isUploading
-                            ? 'bg-blue-50/50 border-blue-300 pointer-events-none'
-                            : 'bg-slate-50/60 hover:bg-slate-100/60 border-slate-200 hover:border-blue-400'
+                            ? 'bg-info-subtle/50 border-blue-300 pointer-events-none'
+                            : 'bg-surface-secondary/60 hover:bg-surface-secondary/60 border-border-subtle hover:border-blue-400'
                     }`}
                 >
                     {isUploading ? (
-                        <div className="flex flex-col items-center gap-2 text-blue-600">
+                        <div className="flex flex-col items-center gap-2 text-info">
                             <Loader2 className="w-6 h-6 animate-spin" />
                             <span className="text-xs font-bold">در حال آپلود...</span>
                         </div>
                     ) : (
                         <div className="flex flex-col items-center gap-1.5 text-center">
-                            <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                            <div className="w-9 h-9 rounded-xl bg-info-subtle text-info flex items-center justify-center">
                                 <ImagePlus className="w-5 h-5" />
                             </div>
                             <div>
-                                <span className="text-xs font-bold text-slate-700 block">
+                                <span className="text-xs font-bold text-foreground-secondary block">
                                     کلیک برای آپلود آیکون
                                 </span>
-                                <span className="text-[10px] text-slate-400 block mt-0.5">
+                                <span className="text-[10px] text-foreground-muted block mt-0.5">
                                     فرمت‌های مجاز: SVG, PNG, WebP, JPG (حداکثر ۵ مگابایت)
                                 </span>
                             </div>
@@ -167,7 +167,7 @@ export default function MediaIconUpload({
             )}
 
             {helperText && (
-                <p className="text-[10px] text-slate-400 mt-1">{helperText}</p>
+                <p className="text-[10px] text-foreground-muted mt-1">{helperText}</p>
             )}
         </div>
     );

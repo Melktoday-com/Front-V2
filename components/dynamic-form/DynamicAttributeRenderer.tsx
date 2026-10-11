@@ -63,7 +63,7 @@ export const DynamicAttributeRenderer: React.FC<DynamicAttributeRendererProps> =
                                     <div className="flex items-center justify-between mb-1.5">
                                         <label className="text-xs font-bold text-brand">
                                             {attr.label}
-                                            {attr.required && <span className="text-red-500 mr-1">*</span>}
+                                            {attr.required && <span className="text-error mr-1">*</span>}
                                         </label>
                                     </div>
                                     <input
@@ -76,8 +76,8 @@ export const DynamicAttributeRenderer: React.FC<DynamicAttributeRendererProps> =
                                             const v = e.target.value;
                                             onChange(attr.key, v === "" ? "" : Number(v));
                                         }}
-                                        className={`w-full p-3 text-sm bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-primary outline-hidden transition-all ${
-                                            err ? "border-red-500 bg-red-50/20" : "border-gray-200"
+                                        className={`w-full p-3 text-sm bg-surface-secondary border rounded-xl focus:bg-surface focus:ring-2 focus:ring-primary outline-hidden transition-all ${
+                                            err ? "border-red-500 bg-error-subtle/20" : "border-border-subtle"
                                         }`}
                                     />
                                     {attr.description && (
@@ -86,7 +86,7 @@ export const DynamicAttributeRenderer: React.FC<DynamicAttributeRendererProps> =
                                         </p>
                                     )}
                                     {err && (
-                                        <p className="text-xs text-red-500 mt-1 font-bold">
+                                        <p className="text-xs text-error mt-1 font-bold">
                                             {err}
                                         </p>
                                     )}
@@ -100,7 +100,7 @@ export const DynamicAttributeRenderer: React.FC<DynamicAttributeRendererProps> =
                                 <div className="flex items-center justify-between mb-1.5">
                                     <label className="text-xs font-bold text-brand">
                                         {attr.label}
-                                        {attr.required && <span className="text-red-500 mr-1">*</span>}
+                                        {attr.required && <span className="text-error mr-1">*</span>}
                                     </label>
                                 </div>
                                 <input
@@ -110,8 +110,8 @@ export const DynamicAttributeRenderer: React.FC<DynamicAttributeRendererProps> =
                                     value={typeof val === "number" || typeof val === "string" ? val : ""}
                                     placeholder={attr.label}
                                     onChange={(e) => onChange(attr.key, e.target.value)}
-                                    className={`w-full p-3 text-sm bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-primary outline-hidden transition-all ${
-                                        err ? "border-red-500 bg-red-50/20" : "border-gray-200"
+                                    className={`w-full p-3 text-sm bg-surface-secondary border rounded-xl focus:bg-surface focus:ring-2 focus:ring-primary outline-hidden transition-all ${
+                                        err ? "border-red-500 bg-error-subtle/20" : "border-border-subtle"
                                     }`}
                                 />
                                 {attr.description && (
@@ -120,7 +120,7 @@ export const DynamicAttributeRenderer: React.FC<DynamicAttributeRendererProps> =
                                     </p>
                                 )}
                                 {err && (
-                                    <p className="text-xs text-red-500 mt-1 font-bold">
+                                    <p className="text-xs text-error mt-1 font-bold">
                                         {err}
                                     </p>
                                 )}
@@ -144,14 +144,14 @@ export const DynamicAttributeRenderer: React.FC<DynamicAttributeRendererProps> =
                                     className={`flex items-center gap-2.5 p-3 rounded-xl border cursor-pointer select-none transition-all ${
                                         isChecked
                                             ? "border-primary bg-primary/5 text-primary font-bold shadow-xs"
-                                            : "border-gray-200 bg-gray-50/50 hover:bg-gray-100/70 text-brand"
+                                            : "border-border-subtle bg-surface-secondary/50 hover:bg-surface-secondary/70 text-brand"
                                     }`}
                                 >
                                     <input
                                         type="checkbox"
                                         checked={isChecked}
                                         onChange={(e) => onChange(attr.key, e.target.checked)}
-                                        className="w-4 h-4 text-primary border-gray-300 rounded-md focus:ring-primary focus:ring-2 cursor-pointer"
+                                        className="w-4 h-4 text-primary border-border rounded-md focus:ring-primary focus:ring-2 cursor-pointer"
                                     />
                                     <span className="text-xs truncate">{attr.label}</span>
                                 </label>

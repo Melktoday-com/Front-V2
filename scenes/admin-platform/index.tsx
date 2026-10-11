@@ -189,7 +189,7 @@ export default function AdminPlatformScene() {
       </div>
 
       {/* Profile & Social Settings Form */}
-      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-soft-border shadow-sm space-y-6">
+      <div className="bg-surface rounded-3xl p-6 sm:p-8 border border-soft-border shadow-sm space-y-6">
         <h2 className="text-base font-black text-brand flex items-center gap-2">
           <Sparkles className="w-5 h-5 text-primary" />
           مشخصات و شبکه‌های اجتماعی رسمی
@@ -203,7 +203,7 @@ export default function AdminPlatformScene() {
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full p-3.5 border border-soft-border rounded-xl bg-soft-bg text-sm font-bold text-brand focus:bg-white outline-none focus:ring-2 focus:ring-primary/20"
+                className="w-full p-3.5 border border-soft-border rounded-xl bg-soft-bg text-sm font-bold text-brand focus:bg-surface outline-none focus:ring-2 focus:ring-primary/20"
               />
             </div>
             <div>
@@ -212,7 +212,7 @@ export default function AdminPlatformScene() {
                 type="text"
                 value={subtitle}
                 onChange={(e) => setSubtitle(e.target.value)}
-                className="w-full p-3.5 border border-soft-border rounded-xl bg-soft-bg text-sm font-bold text-brand focus:bg-white outline-none focus:ring-2 focus:ring-primary/20"
+                className="w-full p-3.5 border border-soft-border rounded-xl bg-soft-bg text-sm font-bold text-brand focus:bg-surface outline-none focus:ring-2 focus:ring-primary/20"
               />
             </div>
           </div>
@@ -223,7 +223,7 @@ export default function AdminPlatformScene() {
               rows={3}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full p-3.5 border border-soft-border rounded-xl bg-soft-bg text-sm font-medium text-brand focus:bg-white outline-none focus:ring-2 focus:ring-primary/20 leading-relaxed"
+              className="w-full p-3.5 border border-soft-border rounded-xl bg-soft-bg text-sm font-medium text-brand focus:bg-surface outline-none focus:ring-2 focus:ring-primary/20 leading-relaxed"
             />
           </div>
 
@@ -235,7 +235,7 @@ export default function AdminPlatformScene() {
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 dir="ltr"
-                className="w-full p-3.5 border border-soft-border rounded-xl bg-soft-bg text-sm font-bold text-brand focus:bg-white outline-none"
+                className="w-full p-3.5 border border-soft-border rounded-xl bg-soft-bg text-sm font-bold text-brand focus:bg-surface outline-none"
               />
             </div>
             <div>
@@ -245,7 +245,7 @@ export default function AdminPlatformScene() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 dir="ltr"
-                className="w-full p-3.5 border border-soft-border rounded-xl bg-soft-bg text-sm font-bold text-brand focus:bg-white outline-none"
+                className="w-full p-3.5 border border-soft-border rounded-xl bg-soft-bg text-sm font-bold text-brand focus:bg-surface outline-none"
               />
             </div>
             <div>
@@ -255,7 +255,7 @@ export default function AdminPlatformScene() {
                 value={website}
                 onChange={(e) => setWebsite(e.target.value)}
                 dir="ltr"
-                className="w-full p-3.5 border border-soft-border rounded-xl bg-soft-bg text-sm font-bold text-brand focus:bg-white outline-none"
+                className="w-full p-3.5 border border-soft-border rounded-xl bg-soft-bg text-sm font-bold text-brand focus:bg-surface outline-none"
               />
             </div>
           </div>
@@ -266,7 +266,7 @@ export default function AdminPlatformScene() {
               type="text"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              className="w-full p-3.5 border border-soft-border rounded-xl bg-soft-bg text-sm font-bold text-brand focus:bg-white outline-none"
+              className="w-full p-3.5 border border-soft-border rounded-xl bg-soft-bg text-sm font-bold text-brand focus:bg-surface outline-none"
             />
           </div>
 
@@ -282,7 +282,7 @@ export default function AdminPlatformScene() {
                   value={instagram}
                   onChange={(e) => setInstagram(e.target.value)}
                   dir="ltr"
-                  className="w-full p-3 border border-soft-border rounded-xl bg-soft-bg text-xs font-bold text-brand focus:bg-white outline-none"
+                  className="w-full p-3 border border-soft-border rounded-xl bg-soft-bg text-xs font-bold text-brand focus:bg-surface outline-none"
                 />
               </div>
               <div>
@@ -293,18 +293,18 @@ export default function AdminPlatformScene() {
                   value={telegram}
                   onChange={(e) => setTelegram(e.target.value)}
                   dir="ltr"
-                  className="w-full p-3 border border-soft-border rounded-xl bg-soft-bg text-xs font-bold text-brand focus:bg-white outline-none"
+                  className="w-full p-3 border border-soft-border rounded-xl bg-soft-bg text-xs font-bold text-brand focus:bg-surface outline-none"
                 />
               </div>
               <div>
-                <label className="block text-[11px] font-bold text-emerald-600 mb-1">واتساپ پشتیبانی</label>
+                <label className="block text-[11px] font-bold text-success mb-1">واتساپ پشتیبانی</label>
                 <input
                   type="text"
                   placeholder="https://wa.me/..."
                   value={whatsapp}
                   onChange={(e) => setWhatsapp(e.target.value)}
                   dir="ltr"
-                  className="w-full p-3 border border-soft-border rounded-xl bg-soft-bg text-xs font-bold text-brand focus:bg-white outline-none"
+                  className="w-full p-3 border border-soft-border rounded-xl bg-soft-bg text-xs font-bold text-brand focus:bg-surface outline-none"
                 />
               </div>
             </div>
@@ -323,7 +323,7 @@ export default function AdminPlatformScene() {
       </div>
 
       {/* Posts Section */}
-      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-soft-border shadow-sm space-y-6">
+      <div className="bg-surface rounded-3xl p-6 sm:p-8 border border-soft-border shadow-sm space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h2 className="text-base font-black text-brand flex items-center gap-2">
@@ -358,7 +358,7 @@ export default function AdminPlatformScene() {
               className={cn(
                 "px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors",
                 postStatusFilter === "all"
-                  ? "bg-white text-brand shadow-sm"
+                  ? "bg-surface text-brand shadow-sm"
                   : "text-secondary hover:text-brand"
               )}
             >
@@ -373,8 +373,8 @@ export default function AdminPlatformScene() {
               className={cn(
                 "px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors",
                 postStatusFilter === "published"
-                  ? "bg-white text-emerald-700 shadow-sm"
-                  : "text-secondary hover:text-emerald-700"
+                  ? "bg-surface text-success shadow-sm"
+                  : "text-secondary hover:text-success"
               )}
             >
               منتشر شده
@@ -388,8 +388,8 @@ export default function AdminPlatformScene() {
               className={cn(
                 "px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors",
                 postStatusFilter === "draft"
-                  ? "bg-white text-amber-700 shadow-sm"
-                  : "text-secondary hover:text-amber-700"
+                  ? "bg-surface text-warning shadow-sm"
+                  : "text-secondary hover:text-warning"
               )}
             >
               پیش‌نویس
@@ -407,7 +407,7 @@ export default function AdminPlatformScene() {
                 setPostSearch(e.target.value);
                 setPostPage(1);
               }}
-              className="w-full pr-10 pl-8 py-2 border border-soft-border rounded-xl bg-soft-bg text-xs font-bold text-brand focus:bg-white outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+              className="w-full pr-10 pl-8 py-2 border border-soft-border rounded-xl bg-soft-bg text-xs font-bold text-brand focus:bg-surface outline-none focus:ring-2 focus:ring-primary/20 transition-all"
             />
             {postSearch && (
               <button
@@ -470,12 +470,12 @@ export default function AdminPlatformScene() {
                         {post.category || "اطلاعیه"}
                       </span>
                       {post.isPublished ? (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-success bg-success-subtle px-2 py-0.5 rounded-md border border-success/30">
                           <CheckCircle2 className="w-3 h-3" />
                           منتشر شده
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-warning bg-warning-subtle px-2 py-0.5 rounded-md border border-warning/30">
                           <Clock className="w-3 h-3" />
                           پیش‌نویس
                         </span>
@@ -520,8 +520,8 @@ export default function AdminPlatformScene() {
                       className={cn(
                         "h-8 px-2.5 rounded-xl text-xs gap-1.5 font-bold transition-colors",
                         post.isPublished
-                          ? "hover:bg-amber-50 hover:text-amber-700 hover:border-amber-300"
-                          : "hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300"
+                          ? "hover:bg-warning-subtle hover:text-warning hover:border-amber-300"
+                          : "hover:bg-success-subtle hover:text-success hover:border-emerald-300"
                       )}
                       title={post.isPublished ? "تبدیل به پیش‌نویس" : "انتشار فوری"}
                     >
@@ -529,12 +529,12 @@ export default function AdminPlatformScene() {
                         <Loader2 className="w-3.5 h-3.5 animate-spin" />
                       ) : post.isPublished ? (
                         <>
-                          <EyeOff className="w-3.5 h-3.5 text-amber-600" />
+                          <EyeOff className="w-3.5 h-3.5 text-warning" />
                           <span>پیش‌نویس شود</span>
                         </>
                       ) : (
                         <>
-                          <Eye className="w-3.5 h-3.5 text-emerald-600" />
+                          <Eye className="w-3.5 h-3.5 text-success" />
                           <span>انتشار</span>
                         </>
                       )}
@@ -548,11 +548,11 @@ export default function AdminPlatformScene() {
                       size="sm"
                       disabled={deletingPostId === post.id}
                       onClick={() => handleDeletePost(post)}
-                      className="h-8 px-2.5 rounded-xl text-xs gap-1.5 font-bold text-red-600 border-red-200 hover:bg-red-50 transition-colors"
+                      className="h-8 px-2.5 rounded-xl text-xs gap-1.5 font-bold text-error border-error/30 hover:bg-error-subtle transition-colors"
                       title="حذف دائمی پست"
                     >
                       {deletingPostId === post.id ? (
-                        <Loader2 className="w-3.5 h-3.5 animate-spin text-red-600" />
+                        <Loader2 className="w-3.5 h-3.5 animate-spin text-error" />
                       ) : (
                         <>
                           <Trash2 className="w-3.5 h-3.5" />

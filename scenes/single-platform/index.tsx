@@ -122,7 +122,7 @@ export default function SinglePlatformScene() {
       {/* Main Container */}
       <div className="max-w-5xl mx-auto px-4 -mt-16 sm:-mt-20 relative z-10 space-y-6">
         {/* Platform Identity Card */}
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-soft-border shadow-sm space-y-6">
+        <div className="bg-surface rounded-3xl p-6 sm:p-8 border border-soft-border shadow-sm space-y-6">
           <div className="flex flex-col sm:flex-row items-center sm:items-end justify-between gap-6">
             <div className="flex flex-col sm:flex-row items-center gap-5 text-center sm:text-right">
               {/* Logo */}
@@ -142,7 +142,7 @@ export default function SinglePlatformScene() {
                   <h1 className="text-xl sm:text-2xl font-black text-brand">
                     {about?.title || "ملک تودی | MelkToday"}
                   </h1>
-                  <span className="flex items-center gap-1 text-[11px] font-black text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-lg border border-blue-100">
+                  <span className="flex items-center gap-1 text-[11px] font-black text-info bg-info-subtle px-2.5 py-0.5 rounded-lg border border-info/30">
                     <BadgeCheck className="w-3.5 h-3.5 fill-blue-600 text-white" />
                     صفحه رسمی پلتفرم
                   </span>
@@ -184,7 +184,7 @@ export default function SinglePlatformScene() {
                 disabled={toggleFollowMutation.isPending}
                 className={cn(
                   "w-full sm:w-auto h-11 px-8 rounded-2xl font-bold text-xs transition-all cursor-pointer",
-                  header?.isFollowing && "border-secondary/30 text-secondary hover:bg-red-50 hover:text-red-500 hover:border-red-200"
+                  header?.isFollowing && "border-secondary/30 text-secondary hover:bg-error-subtle hover:text-error hover:border-error/30"
                 )}
               >
                 {header?.isFollowing ? "دنبال می‌کنید" : "+ دنبال کردن رسمی"}
@@ -223,7 +223,7 @@ export default function SinglePlatformScene() {
                   href={about.socialMedia.whatsapp}
                   target="_blank"
                   rel="noreferrer"
-                  className="px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 hover:bg-emerald-100 transition-colors text-xs font-bold flex items-center gap-1.5"
+                  className="px-3 py-1.5 rounded-xl bg-success-subtle text-success border border-success/30 hover:bg-success-subtle transition-colors text-xs font-bold flex items-center gap-1.5"
                 >
                   <Phone className="w-3.5 h-3.5" />
                   واتساپ
@@ -245,7 +245,7 @@ export default function SinglePlatformScene() {
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex border-b border-soft-border gap-6 sm:gap-10 text-sm font-bold bg-white px-6 rounded-2xl border">
+        <div className="flex border-b border-soft-border gap-6 sm:gap-10 text-sm font-bold bg-surface px-6 rounded-2xl border">
           <button
             onClick={() => setActiveTab("posts")}
             className={cn(
@@ -286,7 +286,7 @@ export default function SinglePlatformScene() {
                 در حال بارگذاری اطلاعیه‌های رسمی...
               </div>
             ) : postsData?.items?.length === 0 ? (
-              <div className="text-center py-16 bg-white rounded-3xl border border-soft-border space-y-2">
+              <div className="text-center py-16 bg-surface rounded-3xl border border-soft-border space-y-2">
                 <Calendar className="w-10 h-10 text-secondary/30 mx-auto" />
                 <p className="text-sm font-bold text-brand">هنوز اطلاعیه‌ای ثبت نشده است</p>
               </div>
@@ -296,7 +296,7 @@ export default function SinglePlatformScene() {
                   <article
                     key={post.id}
                     onClick={() => setSelectedPost(post)}
-                    className="bg-white rounded-3xl p-6 border border-soft-border hover:border-primary/30 transition-all cursor-pointer space-y-4 group"
+                    className="bg-surface rounded-3xl p-6 border border-soft-border hover:border-primary/30 transition-all cursor-pointer space-y-4 group"
                   >
                     {(() => {
                       const firstMedia = post.mediaIds?.[0];
@@ -335,10 +335,10 @@ export default function SinglePlatformScene() {
                         }}
                         className={cn(
                           "flex items-center gap-1.5 font-bold p-1 rounded-lg transition-colors",
-                          post.hasLiked ? "text-rose-500" : "hover:text-rose-500"
+                          post.hasLiked ? "text-error" : "hover:text-error"
                         )}
                       >
-                        <Heart className={cn("w-4 h-4", post.hasLiked && "fill-rose-500 text-rose-500")} />
+                        <Heart className={cn("w-4 h-4", post.hasLiked && "fill-rose-500 text-error")} />
                         {toPersianDigits(post.likeCount || 0)}
                       </button>
                     </div>
@@ -356,7 +356,7 @@ export default function SinglePlatformScene() {
                 در حال بارگذاری آگهی‌ها...
               </div>
             ) : adsData?.items?.length === 0 ? (
-              <div className="text-center py-16 bg-white rounded-3xl border border-soft-border space-y-2">
+              <div className="text-center py-16 bg-surface rounded-3xl border border-soft-border space-y-2">
                 <Home className="w-10 h-10 text-secondary/30 mx-auto" />
                 <p className="text-sm font-bold text-brand">هنوز آگهی ویژه‌ای اضافه نشده است</p>
               </div>
@@ -366,7 +366,7 @@ export default function SinglePlatformScene() {
                   <Link
                     key={ad.id}
                     href={`/ads/${ad.id}`}
-                    className="bg-white rounded-3xl overflow-hidden border border-soft-border hover:shadow-lg transition-all group flex flex-col"
+                    className="bg-surface rounded-3xl overflow-hidden border border-soft-border hover:shadow-lg transition-all group flex flex-col"
                   >
                     <div className="relative h-48 w-full bg-soft-bg overflow-hidden">
                       {ad.mediaIds?.[0] ? (
@@ -396,7 +396,7 @@ export default function SinglePlatformScene() {
         )}
 
         {activeTab === "about" && (
-          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-soft-border space-y-8">
+          <div className="bg-surface rounded-3xl p-6 sm:p-8 border border-soft-border space-y-8">
             <div>
               <h3 className="text-base font-black text-brand mb-2">درباره سامانه ملک تودی</h3>
               <p className="text-sm text-secondary font-medium leading-relaxed whitespace-pre-line">
@@ -463,7 +463,7 @@ export default function SinglePlatformScene() {
       {/* Post Reader Modal */}
       {selectedPost && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in">
-          <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8 space-y-6 relative border border-soft-border shadow-2xl">
+          <div className="bg-surface rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8 space-y-6 relative border border-soft-border shadow-2xl">
             <button
               onClick={() => setSelectedPost(null)}
               className="absolute top-6 left-6 p-2 rounded-full bg-soft-bg hover:bg-soft-border transition-colors"

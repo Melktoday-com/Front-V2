@@ -251,7 +251,7 @@ export default function SingleAdScene() {
                 <div className="flex items-center gap-2">
                     <button
                         onClick={handleShare}
-                        className="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-text-main transition-colors"
+                        className="w-10 h-10 rounded-full bg-surface-secondary hover:bg-gray-200 flex items-center justify-center text-text-main transition-colors"
                         title="اشتراک‌گذاری"
                     >
                         <Share2 className="w-4 h-4" />
@@ -260,7 +260,7 @@ export default function SingleAdScene() {
                         onClick={handleToggleSave}
                         className={cn(
                             "w-10 h-10 rounded-full flex items-center justify-center transition-colors active:scale-95",
-                            saved ? "bg-red-500 text-white" : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+                            saved ? "bg-red-500 text-white" : "bg-surface-secondary hover:bg-gray-200 text-foreground-secondary"
                         )}
                         title={saved ? "حذف از نشان‌شده‌ها" : "نشان کردن آگهی"}
                         aria-label="نشان کردن آگهی"
@@ -272,7 +272,7 @@ export default function SingleAdScene() {
 
             {/* Gallery Section */}
             <section className="space-y-3">
-                <div className="relative w-full aspect-[16/10] sm:aspect-[16/8] rounded-3xl overflow-hidden bg-gray-100 shadow-md">
+                <div className="relative w-full aspect-[16/10] sm:aspect-[16/8] rounded-3xl overflow-hidden bg-surface-secondary shadow-md">
                     {activeMedia.isVideo ? (
                         <video
                             src={activeMedia.url}
@@ -338,7 +338,7 @@ export default function SingleAdScene() {
                 {/* Right / Main column (2 cols) */}
                 <div className="lg:col-span-2 space-y-6">
                     {/* Title & Price Header */}
-                    <div className="border-b border-gray-100 pb-6">
+                    <div className="border-b border-border-subtle pb-6">
                         <div className="flex flex-col gap-2">
                             <span className="text-2xl sm:text-3xl font-black text-brand leading-tight">
                                 {priceMain}
@@ -380,7 +380,7 @@ export default function SingleAdScene() {
                     {(categoryTitle || subcategoryTitle) && (
                         <div className="flex flex-wrap items-center gap-2">
                             {categoryTitle && (
-                                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 rounded-xl border border-gray-100 text-xs">
+                                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-secondary rounded-xl border border-border-subtle text-xs">
                                     <span className="text-text-light">دسته اصلی:</span>
                                     <span className="font-bold text-brand">{categoryTitle}</span>
                                 </div>
@@ -395,7 +395,7 @@ export default function SingleAdScene() {
                     )}
 
                     {/* Key Specs Row (Zillow style) */}
-                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 bg-gray-50/70 p-4 rounded-2xl border border-gray-100">
+                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 bg-surface-secondary/70 p-4 rounded-2xl border border-border-subtle">
                         {area && (
                             <div className="flex flex-col items-center justify-center p-2 text-center">
                                 <Maximize2 className="w-5 h-5 text-text-light mb-1" />
@@ -435,28 +435,28 @@ export default function SingleAdScene() {
                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                                 <div className={cn(
                                     "flex items-center gap-2 p-3 rounded-xl border text-xs font-bold",
-                                    hasElevator ? "bg-green-50/50 border-green-200 text-green-700" : "bg-gray-50 border-gray-100 text-gray-400"
+                                    hasElevator ? "bg-success-subtle/50 border-success/30 text-success" : "bg-surface-secondary border-border-subtle text-foreground-muted"
                                 )}>
                                     <CheckCircle2 className="w-4 h-4" />
                                     <span>آسانسور</span>
                                 </div>
                                 <div className={cn(
                                     "flex items-center gap-2 p-3 rounded-xl border text-xs font-bold",
-                                    hasParking ? "bg-green-50/50 border-green-200 text-green-700" : "bg-gray-50 border-gray-100 text-gray-400"
+                                    hasParking ? "bg-success-subtle/50 border-success/30 text-success" : "bg-surface-secondary border-border-subtle text-foreground-muted"
                                 )}>
                                     <CheckCircle2 className="w-4 h-4" />
                                     <span>پارکینگ</span>
                                 </div>
                                 <div className={cn(
                                     "flex items-center gap-2 p-3 rounded-xl border text-xs font-bold",
-                                    hasStorage ? "bg-green-50/50 border-green-200 text-green-700" : "bg-gray-50 border-gray-100 text-gray-400"
+                                    hasStorage ? "bg-success-subtle/50 border-success/30 text-success" : "bg-surface-secondary border-border-subtle text-foreground-muted"
                                 )}>
                                     <CheckCircle2 className="w-4 h-4" />
                                     <span>انباری</span>
                                 </div>
                                 <div className={cn(
                                     "flex items-center gap-2 p-3 rounded-xl border text-xs font-bold",
-                                    hasBalcony ? "bg-green-50/50 border-green-200 text-green-700" : "bg-gray-50 border-gray-100 text-gray-400"
+                                    hasBalcony ? "bg-success-subtle/50 border-success/30 text-success" : "bg-surface-secondary border-border-subtle text-foreground-muted"
                                 )}>
                                     <CheckCircle2 className="w-4 h-4" />
                                     <span>بالکن</span>
@@ -468,7 +468,7 @@ export default function SingleAdScene() {
                     {/* Description */}
                     <div className="space-y-3">
                         <h2 className="text-base font-black text-brand">توضیحات</h2>
-                        <div className="bg-gray-50/60 p-5 rounded-2xl border border-gray-100 text-sm text-text-main leading-relaxed whitespace-pre-line">
+                        <div className="bg-surface-secondary/60 p-5 rounded-2xl border border-border-subtle text-sm text-text-main leading-relaxed whitespace-pre-line">
                             {ad.description || "توضیحاتی برای این آگهی ثبت نشده است."}
                         </div>
                     </div>
@@ -477,7 +477,7 @@ export default function SingleAdScene() {
                     {hasCoords && (
                         <div className="space-y-3">
                             <h2 className="text-base font-black text-brand">موقعیت روی نقشه</h2>
-                            <div className="h-64 rounded-2xl overflow-hidden border border-gray-100 shadow-xs">
+                            <div className="h-64 rounded-2xl overflow-hidden border border-border-subtle shadow-xs">
                                 <Map
                                     ads={[ad]}
                                     center={[lat, lng]}
@@ -490,8 +490,8 @@ export default function SingleAdScene() {
 
                 {/* Left column (Desktop Contact Card & Actions) */}
                 <div className="space-y-6">
-                    <div className="sticky top-6 bg-white p-6 rounded-3xl border border-gray-100 shadow-lg space-y-5">
-                        <h3 className="font-black text-brand text-base border-b border-gray-100 pb-3">
+                    <div className="sticky top-6 bg-surface p-6 rounded-3xl border border-border-subtle shadow-lg space-y-5">
+                        <h3 className="font-black text-brand text-base border-b border-border-subtle pb-3">
                             اطلاعات تماس آگهی‌دهنده
                         </h3>
 
@@ -501,7 +501,7 @@ export default function SingleAdScene() {
                                 <img
                                     src={ad.publisher.avatar}
                                     alt={ad.publisher.name}
-                                    className="w-12 h-12 rounded-full object-cover border border-gray-100 shadow-xs shrink-0"
+                                    className="w-12 h-12 rounded-full object-cover border border-border-subtle shadow-xs shrink-0"
                                 />
                             ) : (
                                 <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center font-black text-lg shrink-0">
@@ -538,18 +538,18 @@ export default function SingleAdScene() {
                         {ad.publisher && ad.publisher.type !== "user" && ad.publisher.slug && (
                             <button
                                 onClick={() => router.push(ad.publisher!.type === "host" ? `/host/${ad.publisher!.slug}` : `/agency/showcase/${ad.publisher!.slug}`)}
-                                className="w-full py-2.5 px-3 rounded-xl border border-gray-200/80 hover:bg-gray-50 text-xs font-bold text-brand flex items-center justify-between transition-colors cursor-pointer"
+                                className="w-full py-2.5 px-3 rounded-xl border border-border-subtle/80 hover:bg-surface-secondary text-xs font-bold text-brand flex items-center justify-between transition-colors cursor-pointer"
                             >
                                 <span>{ad.publisher.type === "host" ? "مشاهده پروفایل و سایر اقامتگاه‌ها" : "مشاهده ویترین و آگهی‌های آژانس"}</span>
-                                <ChevronLeft className="w-4 h-4 text-gray-400" />
+                                <ChevronLeft className="w-4 h-4 text-foreground-muted" />
                             </button>
                         )}
 
                         <div className="space-y-3 pt-2">
                             {isOwner ? (
                                 <>
-                                    <div className="p-3.5 bg-amber-50/70 border border-amber-200/80 rounded-2xl flex items-center gap-2.5 text-xs font-bold text-amber-950">
-                                        <ShieldCheck className="w-4 h-4 text-amber-600 shrink-0" />
+                                    <div className="p-3.5 bg-warning-subtle/70 border border-warning/30/80 rounded-2xl flex items-center gap-2.5 text-xs font-bold text-amber-950">
+                                        <ShieldCheck className="w-4 h-4 text-warning shrink-0" />
                                         <span>این آگهی توسط شما ثبت شده است.</span>
                                     </div>
 
@@ -566,15 +566,15 @@ export default function SingleAdScene() {
 
                                     {/* Already promoted indicator */}
                                     {isPublished && isPromoted && (
-                                        <div className="flex items-center justify-center gap-2 w-full py-3 bg-amber-50 border border-amber-200 text-amber-800 font-black text-xs rounded-2xl shadow-xs">
-                                            <Sparkles className="w-4 h-4 text-amber-600" />
+                                        <div className="flex items-center justify-center gap-2 w-full py-3 bg-warning-subtle border border-warning/30 text-warning font-black text-xs rounded-2xl shadow-xs">
+                                            <Sparkles className="w-4 h-4 text-warning" />
                                             <span>آگهی شما ارتقا یافته است (فوری / ویژه)</span>
                                         </div>
                                     )}
 
                                     {/* Not published notice */}
                                     {!isPublished && (
-                                        <div className="p-2.5 bg-gray-50 border border-gray-200 text-gray-600 text-xs text-center rounded-xl font-medium">
+                                        <div className="p-2.5 bg-surface-secondary border border-border-subtle text-foreground-secondary text-xs text-center rounded-xl font-medium">
                                             {ad?.status === AdStatus.PENDING_APPROVAL
                                                 ? "آگهی در انتظار بررسی و تایید کارشناسان است"
                                                 : "آگهی در حالت فعال نمی‌باشد"}
@@ -628,7 +628,7 @@ export default function SingleAdScene() {
 
             {/* Similar Ads Section */}
             {similarAds?.items && similarAds.items.filter((a) => a.adId !== id).length > 0 && (
-                <section className="mt-14 pt-8 border-t border-gray-100">
+                <section className="mt-14 pt-8 border-t border-border-subtle">
                     <h2 className="text-xl font-black text-brand mb-6">آگهی‌های مشابه در این شهر</h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                         {similarAds.items
@@ -656,7 +656,7 @@ export default function SingleAdScene() {
             )}
 
             {/* Sticky Mobile Bottom Bar (Zillow mobile pattern) */}
-            <div className="fixed bottom-0 left-0 right-0 p-3.5 bg-white/95 backdrop-blur-xl border-t border-gray-200/70 flex items-center justify-between gap-3 z-40 lg:hidden shadow-2xl">
+            <div className="fixed bottom-0 left-0 right-0 p-3.5 bg-surface/95 backdrop-blur-xl border-t border-border-subtle/70 flex items-center justify-between gap-3 z-40 lg:hidden shadow-2xl">
                 <div className="flex flex-col min-w-0 flex-1">
                     <span className="text-[11px] text-text-light font-bold">قیمت</span>
                     <span className="text-sm font-black text-brand truncate">{priceMain}</span>
@@ -674,8 +674,8 @@ export default function SingleAdScene() {
                                 </button>
                             )}
                             {isPublished && isPromoted && (
-                                <span className="flex items-center gap-1 px-2.5 py-2 bg-amber-100 text-amber-800 rounded-xl text-xs font-bold">
-                                    <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                                <span className="flex items-center gap-1 px-2.5 py-2 bg-warning-subtle text-warning rounded-xl text-xs font-bold">
+                                    <Sparkles className="w-3.5 h-3.5 text-warning" />
                                     <span>ارتقا یافته</span>
                                 </span>
                             )}
@@ -719,8 +719,8 @@ export default function SingleAdScene() {
                     />
 
                     {/* Responsive Container */}
-                    <div className="relative z-10 w-full md:max-w-md bg-white rounded-t-3xl md:rounded-3xl p-6 shadow-2xl transition-all max-h-[85vh] overflow-y-auto">
-                        <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-5">
+                    <div className="relative z-10 w-full md:max-w-md bg-surface rounded-t-3xl md:rounded-3xl p-6 shadow-2xl transition-all max-h-[85vh] overflow-y-auto">
+                        <div className="flex items-center justify-between pb-4 border-b border-border-subtle mb-5">
                             <div className="flex items-center gap-2">
                                 <div className="p-2 bg-primary/10 text-primary rounded-xl">
                                     <Phone className="w-4 h-4" />
@@ -729,7 +729,7 @@ export default function SingleAdScene() {
                             </div>
                             <button
                                 onClick={() => setIsContactModalOpen(false)}
-                                className="p-1.5 text-gray-400 hover:text-gray-700 rounded-xl hover:bg-gray-50 transition cursor-pointer"
+                                className="p-1.5 text-foreground-muted hover:text-foreground-secondary rounded-xl hover:bg-surface-secondary transition cursor-pointer"
                             >
                                 <X className="w-5 h-5" />
                             </button>
@@ -737,7 +737,7 @@ export default function SingleAdScene() {
 
                         {!isLoggedIn ? (
                             <div className="text-center py-4 space-y-4">
-                                <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center mx-auto">
+                                <div className="w-12 h-12 bg-warning-subtle text-warning rounded-2xl flex items-center justify-center mx-auto">
                                     <Lock className="w-6 h-6" />
                                 </div>
                                 <div>
@@ -755,8 +755,8 @@ export default function SingleAdScene() {
                             </div>
                         ) : contact?.phoneHidden || (!contact?.phoneNumber && !contact?.mobileNumber) ? (
                             <div className="space-y-4">
-                                <div className="p-4 bg-amber-50/70 border border-amber-200/80 rounded-2xl flex items-start gap-3">
-                                    <ShieldAlert className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                                <div className="p-4 bg-warning-subtle/70 border border-warning/30/80 rounded-2xl flex items-start gap-3">
+                                    <ShieldAlert className="w-5 h-5 text-warning shrink-0 mt-0.5" />
                                     <div className="text-xs">
                                         <h5 className="font-black text-amber-950 mb-1">شماره تماس مخفی شده است</h5>
                                         <p className="text-amber-900/80 leading-relaxed">
@@ -783,7 +783,7 @@ export default function SingleAdScene() {
                                     const phoneNum = contact?.phoneNumber || contact?.mobileNumber || "";
                                     return (
                                         <>
-                                            <div className="p-4 bg-gray-50 border border-gray-100 rounded-2xl flex items-center justify-between">
+                                            <div className="p-4 bg-surface-secondary border border-border-subtle rounded-2xl flex items-center justify-between">
                                                 <div>
                                                     <span className="text-[11px] text-text-light block mb-0.5">شماره تماس مستقیم:</span>
                                                     <span className="text-lg font-black text-brand tracking-widest font-mono" dir="ltr">
@@ -797,7 +797,7 @@ export default function SingleAdScene() {
                                                             toast.success("شماره تماس کپی شد");
                                                         }
                                                     }}
-                                                    className="p-2.5 bg-white border border-gray-200 hover:bg-gray-100 rounded-xl text-gray-600 transition shadow-xs cursor-pointer"
+                                                    className="p-2.5 bg-surface border border-border-subtle hover:bg-surface-secondary rounded-xl text-foreground-secondary transition shadow-xs cursor-pointer"
                                                     title="کپی شماره"
                                                 >
                                                     <Copy className="w-4 h-4" />

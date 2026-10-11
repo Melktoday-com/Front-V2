@@ -52,7 +52,7 @@ export function NeighborhoodDrawer({
             {/* Drawer — slides up from bottom on mobile, appears as right sidebar on lg+ */}
             <div
                 className={cn(
-                    "fixed z-50 bg-white shadow-2xl transition-transform duration-300 ease-out",
+                    "fixed z-50 bg-surface shadow-2xl transition-transform duration-300 ease-out",
                     // Mobile: bottom sheet
                     "bottom-0 left-0 right-0 rounded-t-3xl max-h-[80vh] flex flex-col",
                     // Desktop: right panel (RTL → right = near search)
@@ -72,7 +72,7 @@ export function NeighborhoodDrawer({
                 </div>
 
                 {/* Header */}
-                <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 shrink-0">
+                <div className="flex items-center justify-between px-5 py-4 border-b border-border-subtle shrink-0">
                     <div className="flex items-center gap-2">
                         <MapPin className="w-4 h-4 text-primary" />
                         <span className="font-bold text-brand text-sm">انتخاب محله</span>
@@ -87,7 +87,7 @@ export function NeighborhoodDrawer({
                             <button
                                 type="button"
                                 onClick={onClear}
-                                className="text-xs text-red-500 font-semibold hover:text-red-600 transition-colors"
+                                className="text-xs text-error font-semibold hover:text-error transition-colors"
                             >
                                 پاک کردن همه
                             </button>
@@ -144,7 +144,7 @@ export function NeighborhoodDrawer({
                                                     "w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all",
                                                     isSelected
                                                         ? "border-primary bg-primary"
-                                                        : "border-gray-300"
+                                                        : "border-border"
                                                 )}
                                             >
                                                 {isSelected && (
@@ -161,7 +161,7 @@ export function NeighborhoodDrawer({
 
                 {/* Footer action */}
                 {selectedCount > 0 && (
-                    <div className="px-4 pb-5 pt-2 border-t border-gray-100 shrink-0">
+                    <div className="px-4 pb-5 pt-2 border-t border-border-subtle shrink-0">
                         <button
                             type="button"
                             onClick={onClose}

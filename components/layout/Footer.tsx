@@ -61,7 +61,7 @@ export function Footer() {
               کرده‌ایم تا خریداران، مستأجران، مالکان و مشاورین بتوانند آگاهانه‌تر تصمیم‌گیری کنند.
             </p>
 
-            <div className="p-3.5 rounded-2xl bg-white/[0.04] border border-white/10 flex items-center justify-between gap-3">
+            <div className="p-3.5 rounded-2xl bg-surface/[0.04] border border-white/10 flex items-center justify-between gap-3">
               <div className="flex items-center gap-2 text-xs font-bold text-primary-foreground/90">
                 <CheckCircle2 className="w-4 h-4 text-accent shrink-0" />
                 <span>ملک تودی؛ جایی برای پیدا کردن ملک مناسب</span>
@@ -85,7 +85,7 @@ export function Footer() {
               </Link>
               <Link
                 href="/ads"
-                className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/15 text-white font-bold text-xs sm:text-sm py-2.5 px-4 rounded-xl transition-all"
+                className="inline-flex items-center gap-2 bg-surface/10 hover:bg-surface/15 text-white font-bold text-xs sm:text-sm py-2.5 px-4 rounded-xl transition-all"
               >
                 <Compass className="w-4 h-4 text-primary" />
                 <span>کاوش در املاک</span>
@@ -194,7 +194,7 @@ export function Footer() {
 
             <div className="space-y-3">
               {/* Phone 1: Landline */}
-              <div className="p-3 rounded-2xl bg-white/[0.04] border border-white/10 hover:border-primary/40 transition-all flex items-center justify-between group">
+              <div className="p-3 rounded-2xl bg-surface/[0.04] border border-white/10 hover:border-primary/40 transition-all flex items-center justify-between group">
                 <div className="flex items-center gap-2.5">
                   <div className="w-8 h-8 rounded-xl bg-primary/20 flex items-center justify-center text-primary shrink-0">
                     <Phone className="w-4 h-4" />
@@ -213,7 +213,7 @@ export function Footer() {
                 <button
                   onClick={() => handleCopy("05191001717", "شماره تلفن دفتر")}
                   title="کپی شماره"
-                  className="p-1.5 rounded-lg text-white/40 hover:text-white hover:bg-white/10 transition-colors"
+                  className="p-1.5 rounded-lg text-white/40 hover:text-white hover:bg-surface/10 transition-colors"
                 >
                   {copiedText === "شماره تلفن دفتر" ? (
                     <Check className="w-4 h-4 text-primary" />
@@ -224,7 +224,7 @@ export function Footer() {
               </div>
 
               {/* Phone 2: Mobile / Support */}
-              <div className="p-3 rounded-2xl bg-white/[0.04] border border-white/10 hover:border-primary/40 transition-all flex items-center justify-between group">
+              <div className="p-3 rounded-2xl bg-surface/[0.04] border border-white/10 hover:border-primary/40 transition-all flex items-center justify-between group">
                 <div className="flex items-center gap-2.5">
                   <div className="w-8 h-8 rounded-xl bg-primary/20 flex items-center justify-center text-primary shrink-0">
                     <Smartphone className="w-4 h-4" />
@@ -243,7 +243,7 @@ export function Footer() {
                 <button
                   onClick={() => handleCopy("09199173417", "شماره همراه پشتیبانی")}
                   title="کپی شماره"
-                  className="p-1.5 rounded-lg text-white/40 hover:text-white hover:bg-white/10 transition-colors"
+                  className="p-1.5 rounded-lg text-white/40 hover:text-white hover:bg-surface/10 transition-colors"
                 >
                   {copiedText === "شماره همراه پشتیبانی" ? (
                     <Check className="w-4 h-4 text-primary" />
@@ -254,7 +254,7 @@ export function Footer() {
               </div>
 
               {/* Address */}
-              <div className="p-3 rounded-2xl bg-white/[0.04] border border-white/10 space-y-2">
+              <div className="p-3 rounded-2xl bg-surface/[0.04] border border-white/10 space-y-2">
                 <div className="flex items-start gap-2.5">
                   <div className="w-8 h-8 rounded-xl bg-accent/20 flex items-center justify-center text-accent shrink-0 mt-0.5">
                     <MapPin className="w-4 h-4" />
@@ -319,7 +319,7 @@ export function Footer() {
               aria-label="بازگشت به ابتدای صفحه"
             >
               <span>بازگشت به بالا</span>
-              <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-accent group-hover:text-accent-foreground transition-all">
+              <div className="w-6 h-6 rounded-full bg-surface/10 flex items-center justify-center group-hover:bg-accent group-hover:text-accent-foreground transition-all">
                 <ArrowUp className="w-3.5 h-3.5" />
               </div>
             </button>

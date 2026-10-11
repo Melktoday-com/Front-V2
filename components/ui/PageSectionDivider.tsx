@@ -25,7 +25,7 @@ export function PageSectionDivider({
             className={`col-span-full py-5 my-2 flex items-center gap-3 animate-in fade-in duration-300 ${className || ""}`}
         >
             <div className="h-px bg-gray-200/80 flex-1" />
-            <div className="flex items-center gap-2 bg-white px-4 py-1.5 rounded-full border border-gray-200/80 shadow-2xs text-xs">
+            <div className="flex items-center gap-2 bg-surface px-4 py-1.5 rounded-full border border-border-subtle/80 shadow-2xs text-xs">
                 <Layers className="w-3.5 h-3.5 text-primary" />
                 <span className="text-secondary font-medium">بخش / صفحه</span>
                 <span className="text-brand font-black text-sm">{toPersianDigits(page)}</span>

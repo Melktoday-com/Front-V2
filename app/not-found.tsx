@@ -31,7 +31,7 @@ export default function NotFound() {
             <div className="flex flex-wrap items-center justify-center gap-3 w-full max-w-md">
                 <button
                     onClick={handleBack}
-                    className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl border border-soft-border bg-white text-brand font-bold text-sm hover:bg-soft-bg transition-colors shadow-xs"
+                    className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl border border-soft-border bg-surface text-brand font-bold text-sm hover:bg-soft-bg transition-colors shadow-xs"
                 >
                     <Undo2 className="w-4 h-4" />
                     <span>صفحه قبلی</span>

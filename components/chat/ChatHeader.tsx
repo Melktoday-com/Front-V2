@@ -18,7 +18,7 @@ export function ChatHeader() {
     ];
 
     return (
-        <header className="h-16 md:h-18 bg-white border-b border-soft-border flex items-center justify-between px-4 md:px-8 shrink-0 z-70 sticky top-0" dir="rtl">
+        <header className="h-16 md:h-18 bg-surface border-b border-soft-border flex items-center justify-between px-4 md:px-8 shrink-0 z-70 sticky top-0" dir="rtl">
             <div className="flex items-center gap-4 md:gap-10">
                 <Link href="/" className="flex items-center gap-2">
                     <div className="w-9 h-9 bg-brand rounded-xl flex items-center justify-center shadow-lg shadow-brand/20">

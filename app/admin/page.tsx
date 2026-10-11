@@ -48,11 +48,11 @@ const StatsCard = ({
     href,
 }: StatsCardProps) => {
     const cardContent = (
-        <div className="bg-white p-6 rounded-2xl border border-soft-border shadow-xs flex items-start justify-between hover:shadow-md transition-all group">
+        <div className="bg-surface p-6 rounded-2xl border border-soft-border shadow-xs flex items-start justify-between hover:shadow-md transition-all group">
             <div className="space-y-1 min-w-0 flex-1">
                 <p className="text-xs font-bold text-secondary mb-1 truncate">{title}</p>
                 {isLoading ? (
-                    <div className="h-8 w-24 bg-gray-100 animate-pulse rounded-lg my-1" />
+                    <div className="h-8 w-24 bg-surface-secondary animate-pulse rounded-lg my-1" />
                 ) : (
                     <h3 className="text-2xl font-black text-brand tracking-tight">{value}</h3>
                 )}
@@ -91,7 +91,7 @@ function QuickActionLink({ href, title, description, icon: Icon, badgeCount }: Q
     return (
         <Link
             href={href}
-            className="group bg-white p-4 rounded-2xl border border-soft-border hover:border-primary/50 hover:shadow-md transition-all relative block"
+            className="group bg-surface p-4 rounded-2xl border border-soft-border hover:border-primary/50 hover:shadow-md transition-all relative block"
         >
             <div className="flex items-start gap-4">
                 <div className="p-2.5 bg-soft-bg text-secondary group-hover:bg-primary/10 group-hover:text-primary rounded-xl transition-colors shrink-0">
@@ -221,7 +221,7 @@ export default function AdminDashboard() {
                     type="button"
                     onClick={handleRefresh}
                     disabled={isRefreshing}
-                    className="self-start sm:self-auto flex items-center gap-2 text-xs font-bold text-secondary hover:text-brand bg-white hover:bg-soft-bg border border-soft-border px-4 py-2.5 rounded-xl transition-all shadow-xs"
+                    className="self-start sm:self-auto flex items-center gap-2 text-xs font-bold text-secondary hover:text-brand bg-surface hover:bg-soft-bg border border-soft-border px-4 py-2.5 rounded-xl transition-all shadow-xs"
                 >
                     <RefreshCw className={cn("w-3.5 h-3.5", isRefreshing && "animate-spin text-primary")} />
                     <span>بروزرسانی آمار</span>
@@ -234,7 +234,7 @@ export default function AdminDashboard() {
                     title="کاربران جدید (امروز)"
                     value={toPersianDigits(newUsersToday)}
                     icon={Users}
-                    color="bg-blue-50 text-blue-600"
+                    color="bg-info-subtle text-info"
                     description={
                         totalUsers > 0
                             ? `${toPersianDigits(totalUsers)} کاربر کل سیستم`
@@ -248,7 +248,7 @@ export default function AdminDashboard() {
                     title="آگهی‌های در انتظار تایید"
                     value={toPersianDigits(pendingAdsCount)}
                     icon={Clock}
-                    color={pendingAdsCount > 0 ? "bg-amber-50 text-amber-600" : "bg-gray-50 text-gray-400"}
+                    color={pendingAdsCount > 0 ? "bg-warning-subtle text-warning" : "bg-surface-secondary text-foreground-muted"}
                     description={
                         pendingAdsCount > 0
                             ? `${toPersianDigits(pendingAdsCount)} آگهی نیاز به بررسی`
@@ -262,7 +262,7 @@ export default function AdminDashboard() {
                     title="گزارش‌های بررسی نشده"
                     value={toPersianDigits(pendingReportsCount)}
                     icon={AlertTriangle}
-                    color={pendingReportsCount > 0 ? "bg-red-50 text-red-600" : "bg-gray-50 text-gray-400"}
+                    color={pendingReportsCount > 0 ? "bg-error-subtle text-error" : "bg-surface-secondary text-foreground-muted"}
                     description={
                         pendingReportsCount > 0
                             ? `${toPersianDigits(pendingReportsCount)} گزارش تخلف نیازمند بررسی`
@@ -280,7 +280,7 @@ export default function AdminDashboard() {
                             : "۰ ریال"
                     }
                     icon={Wallet}
-                    color={todayPaymentsAmount > 0 ? "bg-green-50 text-green-600" : "bg-gray-50 text-gray-400"}
+                    color={todayPaymentsAmount > 0 ? "bg-success-subtle text-success" : "bg-surface-secondary text-foreground-muted"}
                     description={
                         todayPaymentsCount > 0
                             ? `${toPersianDigits(todayPaymentsCount)} تراکنش موفق امروز`
@@ -361,8 +361,8 @@ export default function AdminDashboard() {
             </div>
 
             {/* System Health Status */}
-            <div className="bg-white rounded-2xl border border-soft-border p-6 sm:p-8 flex flex-col items-center justify-center text-center shadow-xs">
-                <div className="w-14 h-14 bg-green-50 text-green-600 rounded-full flex items-center justify-center mb-3">
+            <div className="bg-surface rounded-2xl border border-soft-border p-6 sm:p-8 flex flex-col items-center justify-center text-center shadow-xs">
+                <div className="w-14 h-14 bg-success-subtle text-success rounded-full flex items-center justify-center mb-3">
                     <Check size={28} />
                 </div>
                 <h3 className="font-black text-brand text-base sm:text-lg">وضعیت سرورها و سرویس‌ها: عملیاتی</h3>

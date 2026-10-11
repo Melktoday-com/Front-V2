@@ -97,14 +97,14 @@ export default function WalletScene() {
                             <CreditCard className="w-4 h-4 text-primary" />
                             <span>موجودی در دسترس</span>
                         </div>
-                        <span className="text-[10px] font-bold bg-white/10 px-2.5 py-1 rounded-full text-white/80">
+                        <span className="text-[10px] font-bold bg-surface/10 px-2.5 py-1 rounded-full text-white/80">
                             ملک‌تودی پی
                         </span>
                     </div>
 
                     <div>
                         {isLoadingBalance ? (
-                            <div className="h-10 w-40 bg-white/20 animate-pulse rounded-xl" />
+                            <div className="h-10 w-40 bg-surface/20 animate-pulse rounded-xl" />
                         ) : (
                             <div className="flex items-baseline gap-2">
                                 <span className="text-3xl sm:text-4xl font-black tracking-tight">
@@ -145,14 +145,14 @@ export default function WalletScene() {
                         return (
                             <div className="space-y-3">
                                 {[1, 2, 3].map((i) => (
-                                    <div key={i} className="h-18 bg-gray-100 rounded-2xl animate-pulse" />
+                                    <div key={i} className="h-18 bg-surface-secondary rounded-2xl animate-pulse" />
                                 ))}
                             </div>
                         );
                     }
                     if (txList.length === 0) {
                         return (
-                            <div className="py-16 text-center bg-gray-50 rounded-3xl border border-dashed border-gray-200">
+                            <div className="py-16 text-center bg-surface-secondary rounded-3xl border border-dashed border-border-subtle">
                                 <Wallet className="w-10 h-10 text-gray-300 mx-auto mb-2" />
                                 <p className="text-xs font-bold text-text-light">هنوز تراکنشی در حساب شما ثبت نشده است.</p>
                             </div>
@@ -167,15 +167,15 @@ export default function WalletScene() {
                             return (
                                 <div
                                     key={tx.id}
-                                    className="p-4 bg-white rounded-2xl border border-gray-100 flex items-center justify-between shadow-2xs hover:shadow-xs transition-shadow"
+                                    className="p-4 bg-surface rounded-2xl border border-border-subtle flex items-center justify-between shadow-2xs hover:shadow-xs transition-shadow"
                                 >
                                     <div className="flex items-center gap-3">
                                         <div
                                             className={cn(
                                                 "w-10 h-10 rounded-xl flex items-center justify-center shrink-0",
                                                 isDeposit
-                                                    ? "bg-green-50 text-green-600"
-                                                    : "bg-red-50 text-red-600"
+                                                    ? "bg-success-subtle text-success"
+                                                    : "bg-error-subtle text-error"
                                             )}
                                         >
                                             {isDeposit ? (
@@ -196,7 +196,7 @@ export default function WalletScene() {
                                         <span
                                             className={cn(
                                                 "text-xs font-black block",
-                                                isDeposit ? "text-green-600" : "text-red-600"
+                                                isDeposit ? "text-success" : "text-error"
                                             )}
                                         >
                                             {isDeposit ? "+" : "-"} {formatCurrency(tx.amount)} تومان
@@ -205,8 +205,8 @@ export default function WalletScene() {
                                             className={cn(
                                                 "text-[9px] font-bold px-2 py-0.5 rounded-full inline-block mt-0.5",
                                                 isSuccess
-                                                    ? "bg-green-50 text-green-700"
-                                                    : "bg-amber-50 text-amber-700"
+                                                    ? "bg-success-subtle text-success"
+                                                    : "bg-warning-subtle text-warning"
                                             )}
                                         >
                                             {isSuccess ? "موفق" : "در انتظار"}
@@ -223,12 +223,12 @@ export default function WalletScene() {
             {/* Charge Modal */}
             {isChargeModalOpen && (
                 <div role="dialog" aria-modal="true" aria-label="افزایش موجودی کیف پول" className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in">
-                    <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-6 border border-gray-100">
-                        <div className="flex justify-between items-center border-b border-gray-100 pb-3">
+                    <div className="bg-surface rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-6 border border-border-subtle">
+                        <div className="flex justify-between items-center border-b border-border-subtle pb-3">
                             <h3 className="font-black text-brand text-base">افزایش موجودی کیف پول</h3>
                             <button
                                 onClick={() => setIsChargeModalOpen(false)}
-                                className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-text-light hover:bg-gray-200"
+                                className="w-8 h-8 rounded-full bg-surface-secondary flex items-center justify-center text-text-light hover:bg-gray-200"
                             >
                                 <X className="w-4 h-4" />
                             </button>
@@ -252,7 +252,7 @@ export default function WalletScene() {
                                                 "py-3 rounded-2xl border text-xs font-black transition-all",
                                                 isSelected
                                                     ? "bg-primary text-white border-primary shadow-xs"
-                                                    : "bg-gray-50 border-gray-200 text-text-light hover:bg-gray-100"
+                                                    : "bg-surface-secondary border-border-subtle text-text-light hover:bg-surface-secondary"
                                             )}
                                         >
                                             {opt.label} تومان
@@ -273,12 +273,12 @@ export default function WalletScene() {
                                     setCustomAmount(e.target.value);
                                     setSelectedAmount(0);
                                 }}
-                                className="w-full p-3.5 border border-gray-200 rounded-2xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-primary outline-hidden text-sm font-bold"
+                                className="w-full p-3.5 border border-border-subtle rounded-2xl bg-surface-secondary focus:bg-surface focus:ring-2 focus:ring-primary outline-hidden text-sm font-bold"
                             />
                         </div>
 
-                        <div className="p-3 bg-blue-50/70 rounded-2xl border border-blue-100 flex items-center gap-2 text-xs text-blue-900 font-medium">
-                            <ShieldCheck className="w-4 h-4 text-blue-600 shrink-0" />
+                        <div className="p-3 bg-info-subtle/70 rounded-2xl border border-info/30 flex items-center gap-2 text-xs text-foreground font-medium">
+                            <ShieldCheck className="w-4 h-4 text-info shrink-0" />
                             <span>پرداخت امن از طریق درگاه پرداخت بانکی شاپرک</span>
                         </div>
 

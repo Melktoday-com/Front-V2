@@ -24,8 +24,8 @@ export function AccountStatusBanner({
             className={cn(
                 "rounded-2xl p-4 border transition-all shadow-sm",
                 isBanned
-                    ? "bg-rose-50 border-rose-200 text-rose-900"
-                    : "bg-amber-50 border-amber-200 text-amber-900",
+                    ? "bg-error-subtle border-error/30 text-rose-900"
+                    : "bg-warning-subtle border-warning/30 text-amber-900",
                 className
             )}
         >
@@ -33,7 +33,7 @@ export function AccountStatusBanner({
                 <div
                     className={cn(
                         "p-2 rounded-xl shrink-0 mt-0.5",
-                        isBanned ? "bg-rose-100 text-rose-700" : "bg-amber-100 text-amber-700"
+                        isBanned ? "bg-error-subtle text-error" : "bg-warning-subtle text-warning"
                     )}
                 >
                     {isBanned ? <XCircle className="w-5 h-5" /> : <ShieldAlert className="w-5 h-5" />}

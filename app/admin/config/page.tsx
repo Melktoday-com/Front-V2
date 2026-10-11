@@ -150,8 +150,8 @@ function TariffEditorCard({ tariff, canManage, onUpdate, isUpdating }: TariffEdi
 
     return (
         <div
-            className={`bg-white rounded-2xl border p-5 transition-all shadow-sm flex flex-col justify-between ${
-                isEnabled ? "border-gray-200" : "border-gray-200 bg-gray-50/70 opacity-80"
+            className={`bg-surface rounded-2xl border p-5 transition-all shadow-sm flex flex-col justify-between ${
+                isEnabled ? "border-border-subtle" : "border-border-subtle bg-surface-secondary/70 opacity-80"
             }`}
         >
             <div>
@@ -160,15 +160,15 @@ function TariffEditorCard({ tariff, canManage, onUpdate, isUpdating }: TariffEdi
                         <div
                             className={`p-2.5 rounded-xl ${
                                 meta.category === "TEMP_RENT"
-                                    ? "bg-amber-50 text-amber-600"
-                                    : "bg-blue-50 text-blue-600"
+                                    ? "bg-warning-subtle text-warning"
+                                    : "bg-info-subtle text-info"
                             }`}
                         >
                             <Icon size={20} />
                         </div>
                         <div>
-                            <h4 className="font-bold text-sm text-gray-900">{meta.title}</h4>
-                            <span className="text-[10px] font-mono text-gray-400">{tariff.key}</span>
+                            <h4 className="font-bold text-sm text-foreground">{meta.title}</h4>
+                            <span className="text-[10px] font-mono text-foreground-muted">{tariff.key}</span>
                         </div>
                     </div>
                     <button
@@ -181,8 +181,8 @@ function TariffEditorCard({ tariff, canManage, onUpdate, isUpdating }: TariffEdi
                         title={isEnabled ? "فعال" : "غیرفعال"}
                         className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold transition-all ${
                             isEnabled
-                                ? "bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100"
-                                : "bg-gray-100 text-gray-500 border border-gray-300 hover:bg-gray-200"
+                                ? "bg-success-subtle text-success border border-success/30 hover:bg-success-subtle"
+                                : "bg-surface-secondary text-foreground-muted border border-border hover:bg-gray-200"
                         }`}
                     >
                         <span
@@ -194,14 +194,14 @@ function TariffEditorCard({ tariff, canManage, onUpdate, isUpdating }: TariffEdi
                     </button>
                 </div>
 
-                <p className="text-xs text-gray-500 mb-4 leading-relaxed min-h-[36px]">
+                <p className="text-xs text-foreground-muted mb-4 leading-relaxed min-h-[36px]">
                     {meta.desc}
                 </p>
 
-                <div className="space-y-1.5 mb-4 bg-gray-50 p-3.5 rounded-xl border border-gray-100">
-                    <div className="flex justify-between items-center text-xs font-bold text-gray-700">
+                <div className="space-y-1.5 mb-4 bg-surface-secondary p-3.5 rounded-xl border border-border-subtle">
+                    <div className="flex justify-between items-center text-xs font-bold text-foreground-secondary">
                         <span>مبلغ تعرفه (ریال):</span>
-                        <span className="text-blue-700">{formatRialToToman(amount)}</span>
+                        <span className="text-info">{formatRialToToman(amount)}</span>
                     </div>
                     <input
                         type="text"
@@ -211,14 +211,14 @@ function TariffEditorCard({ tariff, canManage, onUpdate, isUpdating }: TariffEdi
                             setDirty(true);
                         }}
                         disabled={!canManage}
-                        className="w-full p-2.5 rounded-lg border border-gray-300 font-mono text-sm focus:ring-2 focus:ring-blue-500 outline-none text-left bg-white"
+                        className="w-full p-2.5 rounded-lg border border-border font-mono text-sm focus:ring-2 focus:ring-blue-500 outline-none text-left bg-surface"
                         placeholder="مبلغ به ریال"
                     />
                 </div>
             </div>
 
-            <div className="flex justify-between items-center pt-3 border-t border-gray-100">
-                <span className="text-[10px] text-gray-400">
+            <div className="flex justify-between items-center pt-3 border-t border-border-subtle">
+                <span className="text-[10px] text-foreground-muted">
                     {tariff.updatedAt
                         ? `بروزرسانی: ${new Date(tariff.updatedAt).toLocaleDateString("fa-IR")}`
                         : "تعرفه پایه سیستمی"}
@@ -688,24 +688,24 @@ export default function AdminConfigPage() {
     return (
         <div className="space-y-6 pb-12" dir="rtl">
             {/* Page Header */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-surface p-6 rounded-2xl border border-border-subtle shadow-sm">
                 <div>
                     <div className="flex items-center gap-2 mb-1">
-                        <span className="p-2 bg-blue-50 text-blue-600 rounded-xl">
+                        <span className="p-2 bg-info-subtle text-info rounded-xl">
                             <Settings size={24} />
                         </span>
-                        <h1 className="text-2xl font-black text-gray-900 tracking-tight">
+                        <h1 className="text-2xl font-black text-foreground tracking-tight">
                             مدیریت پلن‌های اشتراک و بسته‌های خوش‌آمدگویی
                         </h1>
                     </div>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-foreground-muted">
                         پیکربندی داینامیک ظرفیت‌ها، نشان‌ها، تعرفه‌ها و بسته‌های تشویقی ورود برای نقش‌های سیستم
                     </p>
                 </div>
 
                 <div className="flex items-center gap-3">
                     {!canManageConfig && !permissionsLoading && (
-                        <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-50 text-amber-700 rounded-lg text-xs font-medium border border-amber-200">
+                        <div className="flex items-center gap-2 px-3 py-1.5 bg-warning-subtle text-warning rounded-lg text-xs font-medium border border-warning/30">
                             <Lock size={14} />
                             فقط مشاهده (نیاز به مجوز config.manage)
                         </div>
@@ -732,18 +732,18 @@ export default function AdminConfigPage() {
             </div>
 
             {/* Navigation Tabs */}
-            <div className="flex items-center gap-2 border-b border-gray-200 pb-1">
+            <div className="flex items-center gap-2 border-b border-border-subtle pb-1">
                 <button
                     onClick={() => setActiveTab("plans")}
                     className={`flex items-center gap-2.5 px-5 py-3 rounded-xl text-sm font-bold transition-all relative ${
                         activeTab === "plans"
-                            ? "bg-white text-blue-600 shadow-sm border border-gray-200"
-                            : "text-gray-600 hover:text-gray-900 hover:bg-gray-100/60"
+                            ? "bg-surface text-info shadow-sm border border-border-subtle"
+                            : "text-foreground-secondary hover:text-foreground hover:bg-surface-secondary/60"
                     }`}
                 >
                     <Layers size={18} />
                     <span>پلن‌های اشتراک</span>
-                    <span className="px-2 py-0.5 rounded-full text-xs bg-blue-50 text-blue-700 font-mono font-bold">
+                    <span className="px-2 py-0.5 rounded-full text-xs bg-info-subtle text-info font-mono font-bold">
                         {toPersianDigits(plans.length)}
                     </span>
                 </button>
@@ -752,13 +752,13 @@ export default function AdminConfigPage() {
                     onClick={() => setActiveTab("welcome")}
                     className={`flex items-center gap-2.5 px-5 py-3 rounded-xl text-sm font-bold transition-all relative ${
                         activeTab === "welcome"
-                            ? "bg-white text-blue-600 shadow-sm border border-gray-200"
-                            : "text-gray-600 hover:text-gray-900 hover:bg-gray-100/60"
+                            ? "bg-surface text-info shadow-sm border border-border-subtle"
+                            : "text-foreground-secondary hover:text-foreground hover:bg-surface-secondary/60"
                     }`}
                 >
                     <Package size={18} />
                     <span>بسته‌های خوش‌آمدگویی</span>
-                    <span className="px-2 py-0.5 rounded-full text-xs bg-emerald-50 text-emerald-700 font-mono font-bold">
+                    <span className="px-2 py-0.5 rounded-full text-xs bg-success-subtle text-success font-mono font-bold">
                         {toPersianDigits(packages.length)}
                     </span>
                 </button>
@@ -767,8 +767,8 @@ export default function AdminConfigPage() {
                     onClick={() => setActiveTab("limits")}
                     className={`flex items-center gap-2.5 px-5 py-3 rounded-xl text-sm font-bold transition-all relative ${
                         activeTab === "limits"
-                            ? "bg-white text-blue-600 shadow-sm border border-gray-200"
-                            : "text-gray-600 hover:text-gray-900 hover:bg-gray-100/60"
+                            ? "bg-surface text-info shadow-sm border border-border-subtle"
+                            : "text-foreground-secondary hover:text-foreground hover:bg-surface-secondary/60"
                     }`}
                 >
                     <ShieldCheck size={18} />
@@ -779,13 +779,13 @@ export default function AdminConfigPage() {
                     onClick={() => setActiveTab("tariffs")}
                     className={`flex items-center gap-2.5 px-5 py-3 rounded-xl text-sm font-bold transition-all relative ${
                         activeTab === "tariffs"
-                            ? "bg-white text-blue-600 shadow-sm border border-gray-200"
-                            : "text-gray-600 hover:text-gray-900 hover:bg-gray-100/60"
+                            ? "bg-surface text-info shadow-sm border border-border-subtle"
+                            : "text-foreground-secondary hover:text-foreground hover:bg-surface-secondary/60"
                     }`}
                 >
                     <Coins size={18} />
                     <span>تعرفه‌های ۶گانه سیستم</span>
-                    <span className="px-2 py-0.5 rounded-full text-xs bg-amber-50 text-amber-700 font-mono font-bold">
+                    <span className="px-2 py-0.5 rounded-full text-xs bg-warning-subtle text-warning font-mono font-bold">
                         {toPersianDigits(tariffs.length || 6)}
                     </span>
                 </button>
@@ -795,9 +795,9 @@ export default function AdminConfigPage() {
             {activeTab === "plans" && (
                 <div className="space-y-6">
                     {/* Role Filter & Counter Bar */}
-                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-xl border border-gray-200">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-surface p-4 rounded-xl border border-border-subtle">
                         <div className="flex items-center gap-2">
-                            <span className="text-xs font-bold text-gray-500 ml-2 flex items-center gap-1">
+                            <span className="text-xs font-bold text-foreground-muted ml-2 flex items-center gap-1">
                                 <Filter size={14} /> فیلتر نقش:
                             </span>
                             <button
@@ -805,7 +805,7 @@ export default function AdminConfigPage() {
                                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
                                     planRoleFilter === "ALL"
                                         ? "bg-blue-600 text-white"
-                                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                                        : "bg-surface-secondary text-foreground-secondary hover:bg-gray-200"
                                 }`}
                             >
                                 همه نقش‌ها ({toPersianDigits(plans.length)})
@@ -815,7 +815,7 @@ export default function AdminConfigPage() {
                                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
                                     planRoleFilter === "agent"
                                         ? "bg-blue-600 text-white"
-                                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                                        : "bg-surface-secondary text-foreground-secondary hover:bg-gray-200"
                                 }`}
                             >
                                 مشاوران و آژانس‌ها ({toPersianDigits(plans.filter((p) => p.targetRole === "agent").length)})
@@ -825,7 +825,7 @@ export default function AdminConfigPage() {
                                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
                                     planRoleFilter === "landlord"
                                         ? "bg-blue-600 text-white"
-                                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                                        : "bg-surface-secondary text-foreground-secondary hover:bg-gray-200"
                                 }`}
                             >
                                 میزبانان اقامتگاه ({toPersianDigits(plans.filter((p) => p.targetRole === "landlord").length)})
@@ -835,7 +835,7 @@ export default function AdminConfigPage() {
                         <button
                             onClick={() => refetchPlans()}
                             disabled={plansLoading}
-                            className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-800 transition-colors"
+                            className="flex items-center gap-1.5 text-xs text-foreground-muted hover:text-foreground transition-colors"
                         >
                             <RefreshCcw size={14} className={plansLoading ? "animate-spin" : ""} />
                             به‌روزرسانی فهرست
@@ -846,20 +846,20 @@ export default function AdminConfigPage() {
                     {plansLoading ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {[1, 2, 3].map((i) => (
-                                <div key={i} className="h-64 bg-gray-100 rounded-2xl animate-pulse" />
+                                <div key={i} className="h-64 bg-surface-secondary rounded-2xl animate-pulse" />
                             ))}
                         </div>
                     ) : plansError ? (
-                        <div className="p-8 bg-red-50 rounded-2xl border border-red-200 text-center text-red-700">
-                            <AlertCircle size={36} className="mx-auto mb-2 text-red-500" />
+                        <div className="p-8 bg-error-subtle rounded-2xl border border-error/30 text-center text-error">
+                            <AlertCircle size={36} className="mx-auto mb-2 text-error" />
                             <p className="font-bold">خطا در دریافت فهرست پلن‌های اشتراک</p>
-                            <p className="text-xs mt-1 text-red-600">لطفاً اتصال اینترنت خود را بررسی و دوباره تلاش نمایید.</p>
+                            <p className="text-xs mt-1 text-error">لطفاً اتصال اینترنت خود را بررسی و دوباره تلاش نمایید.</p>
                         </div>
                     ) : filteredPlans.length === 0 ? (
-                        <div className="p-12 bg-white rounded-2xl border border-dashed border-gray-300 text-center text-gray-500">
+                        <div className="p-12 bg-surface rounded-2xl border border-dashed border-border text-center text-foreground-muted">
                             <Package size={44} className="mx-auto mb-3 text-gray-300" />
-                            <h3 className="font-bold text-gray-700">هیچ پلنی در این دسته یافت نشد</h3>
-                            <p className="text-xs text-gray-400 mt-1">با کلیک روی «افزودن پلن جدید»، اولین پلن را تعریف کنید.</p>
+                            <h3 className="font-bold text-foreground-secondary">هیچ پلنی در این دسته یافت نشد</h3>
+                            <p className="text-xs text-foreground-muted mt-1">با کلیک روی «افزودن پلن جدید»، اولین پلن را تعریف کنید.</p>
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -872,8 +872,8 @@ export default function AdminConfigPage() {
                                 return (
                                     <div
                                         key={plan.id}
-                                        className={`bg-white rounded-2xl border transition-all hover:shadow-md flex flex-col justify-between ${
-                                            plan.isActive ? "border-gray-200" : "border-gray-200 bg-gray-50/60 opacity-80"
+                                        className={`bg-surface rounded-2xl border transition-all hover:shadow-md flex flex-col justify-between ${
+                                            plan.isActive ? "border-border-subtle" : "border-border-subtle bg-surface-secondary/60 opacity-80"
                                         }`}
                                     >
                                         <div className="p-6 space-y-4">
@@ -885,17 +885,17 @@ export default function AdminConfigPage() {
                                                             className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
                                                                 isAgent
                                                                     ? "bg-purple-50 text-purple-700 border border-purple-200"
-                                                                    : "bg-blue-50 text-blue-700 border border-blue-200"
+                                                                    : "bg-info-subtle text-info border border-info/30"
                                                             }`}
                                                         >
                                                             {isAgent ? <Building2 size={12} /> : <Home size={12} />}
                                                             {isAgent ? "مشاور / آژانس" : "میزبان اقامتگاه"}
                                                         </span>
-                                                        <span className="text-[10px] font-mono text-gray-400">
+                                                        <span className="text-[10px] font-mono text-foreground-muted">
                                                             ترتیب: {toPersianDigits(plan.sortOrder)}
                                                         </span>
                                                     </div>
-                                                    <h3 className="text-lg font-black text-gray-900">{plan.name}</h3>
+                                                    <h3 className="text-lg font-black text-foreground">{plan.name}</h3>
                                                 </div>
 
                                                 {/* Active Badge / Toggle */}
@@ -905,8 +905,8 @@ export default function AdminConfigPage() {
                                                     title={plan.isActive ? "کلیک برای غیرفعال‌سازی" : "کلیک برای فعال‌سازی"}
                                                     className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold transition-all ${
                                                         plan.isActive
-                                                            ? "bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100"
-                                                            : "bg-gray-100 text-gray-500 border border-gray-300 hover:bg-gray-200"
+                                                            ? "bg-success-subtle text-success border border-success/30 hover:bg-success-subtle"
+                                                            : "bg-surface-secondary text-foreground-muted border border-border hover:bg-gray-200"
                                                     }`}
                                                 >
                                                     <span
@@ -920,7 +920,7 @@ export default function AdminConfigPage() {
 
                                             {/* Description */}
                                             {plan.description && (
-                                                <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">
+                                                <p className="text-xs text-foreground-muted line-clamp-2 leading-relaxed">
                                                     {plan.description}
                                                 </p>
                                             )}
@@ -949,20 +949,20 @@ export default function AdminConfigPage() {
                                             )}
 
                                             {/* Price & Duration */}
-                                            <div className="bg-gray-50 p-3.5 rounded-xl border border-gray-100 flex items-center justify-between">
+                                            <div className="bg-surface-secondary p-3.5 rounded-xl border border-border-subtle flex items-center justify-between">
                                                 <div>
-                                                    <span className="text-xs text-gray-400 block mb-0.5">تعرفه پلن</span>
-                                                    <span className="text-base font-black text-gray-900">
+                                                    <span className="text-xs text-foreground-muted block mb-0.5">تعرفه پلن</span>
+                                                    <span className="text-base font-black text-foreground">
                                                         {formatRialToToman(plan.priceIrr)}
                                                     </span>
-                                                    <span className="text-[10px] text-gray-400 block">
+                                                    <span className="text-[10px] text-foreground-muted block">
                                                         {formatRials(plan.priceIrr)}
                                                     </span>
                                                 </div>
                                                 <div className="text-left">
-                                                    <span className="text-xs text-gray-400 block mb-0.5">مدت اعتبار</span>
-                                                    <span className="inline-flex items-center gap-1 text-sm font-bold text-gray-700">
-                                                        <Clock size={14} className="text-gray-400" />
+                                                    <span className="text-xs text-foreground-muted block mb-0.5">مدت اعتبار</span>
+                                                    <span className="inline-flex items-center gap-1 text-sm font-bold text-foreground-secondary">
+                                                        <Clock size={14} className="text-foreground-muted" />
                                                         {toPersianDigits(plan.durationDays)} روز
                                                     </span>
                                                 </div>
@@ -970,27 +970,27 @@ export default function AdminConfigPage() {
 
                                             {/* Entitlements Grid */}
                                             <div className="grid grid-cols-2 gap-2 text-xs">
-                                                <div className="bg-gray-50/70 p-2.5 rounded-lg border border-gray-100 flex items-center justify-between">
-                                                    <span className="text-gray-500">ثبت آگهی عادی</span>
-                                                    <span className="font-bold text-gray-800 font-mono">
+                                                <div className="bg-surface-secondary/70 p-2.5 rounded-lg border border-border-subtle flex items-center justify-between">
+                                                    <span className="text-foreground-muted">ثبت آگهی عادی</span>
+                                                    <span className="font-bold text-foreground font-mono">
                                                         {toPersianDigits(plan.publicationQuota)}
                                                     </span>
                                                 </div>
-                                                <div className="bg-gray-50/70 p-2.5 rounded-lg border border-gray-100 flex items-center justify-between">
-                                                    <span className="text-gray-500">اجاره موقت/روزانه</span>
-                                                    <span className="font-bold text-gray-800 font-mono">
+                                                <div className="bg-surface-secondary/70 p-2.5 rounded-lg border border-border-subtle flex items-center justify-between">
+                                                    <span className="text-foreground-muted">اجاره موقت/روزانه</span>
+                                                    <span className="font-bold text-foreground font-mono">
                                                         {toPersianDigits(plan.tempRentQuota)}
                                                     </span>
                                                 </div>
-                                                <div className="bg-gray-50/70 p-2.5 rounded-lg border border-gray-100 flex items-center justify-between">
-                                                    <span className="text-amber-600 font-medium">ارتقای فوری</span>
-                                                    <span className="font-bold text-amber-700 font-mono">
+                                                <div className="bg-surface-secondary/70 p-2.5 rounded-lg border border-border-subtle flex items-center justify-between">
+                                                    <span className="text-warning font-medium">ارتقای فوری</span>
+                                                    <span className="font-bold text-warning font-mono">
                                                         {toPersianDigits(plan.urgentQuota)}
                                                     </span>
                                                 </div>
-                                                <div className="bg-gray-50/70 p-2.5 rounded-lg border border-gray-100 flex items-center justify-between">
-                                                    <span className="text-blue-600 font-medium">نردبان آگهی</span>
-                                                    <span className="font-bold text-blue-700 font-mono">
+                                                <div className="bg-surface-secondary/70 p-2.5 rounded-lg border border-border-subtle flex items-center justify-between">
+                                                    <span className="text-info font-medium">نردبان آگهی</span>
+                                                    <span className="font-bold text-info font-mono">
                                                         {toPersianDigits(plan.ladderQuota)}
                                                     </span>
                                                 </div>
@@ -998,11 +998,11 @@ export default function AdminConfigPage() {
                                         </div>
 
                                         {/* Actions Footer */}
-                                        <div className="p-4 bg-gray-50/80 border-t border-gray-100 rounded-b-2xl flex justify-end">
+                                        <div className="p-4 bg-surface-secondary/80 border-t border-border-subtle rounded-b-2xl flex justify-end">
                                             <button
                                                 onClick={() => openEditPlanModal(plan)}
                                                 disabled={!canManageConfig}
-                                                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                                                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-foreground-secondary bg-surface border border-border rounded-lg hover:bg-surface-secondary transition-colors"
                                             >
                                                 <Edit3 size={14} />
                                                 ویرایش پلن
@@ -1020,10 +1020,10 @@ export default function AdminConfigPage() {
             {activeTab === "welcome" && (
                 <div className="space-y-6">
                     {/* Welcome Packages Info Box */}
-                    <div className="p-5 bg-blue-50 rounded-2xl border border-blue-200 flex gap-4 text-blue-900">
-                        <Info size={28} className="text-blue-600 shrink-0 mt-0.5" />
+                    <div className="p-5 bg-info-subtle rounded-2xl border border-info/30 flex gap-4 text-foreground">
+                        <Info size={28} className="text-info shrink-0 mt-0.5" />
                         <div className="text-xs leading-relaxed space-y-1">
-                            <h4 className="font-black text-sm text-blue-950">قوانین بسته‌های خوش‌آمدگویی (Welcome Package):</h4>
+                            <h4 className="font-black text-sm text-foreground">قوانین بسته‌های خوش‌آمدگویی (Welcome Package):</h4>
                             <p>
                                 • <strong>کاربران عادی (Regular User):</strong> فاقد اشتراک هستند. بسته خوش‌آمدگویی این نقش صرفاً شامل اعتبار هدیه نقدی کیف پول (Wallet Bonus) است و هزینه‌های ثبت آگهی طبق تعرفه از کیف پول کسر می‌گردد.
                             </p>
@@ -1040,14 +1040,14 @@ export default function AdminConfigPage() {
                     {packagesLoading ? (
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             {[1, 2, 3].map((i) => (
-                                <div key={i} className="h-64 bg-gray-100 rounded-2xl animate-pulse" />
+                                <div key={i} className="h-64 bg-surface-secondary rounded-2xl animate-pulse" />
                             ))}
                         </div>
                     ) : packagesError ? (
-                        <div className="p-8 bg-red-50 rounded-2xl border border-red-200 text-center text-red-700">
-                            <AlertCircle size={36} className="mx-auto mb-2 text-red-500" />
+                        <div className="p-8 bg-error-subtle rounded-2xl border border-error/30 text-center text-error">
+                            <AlertCircle size={36} className="mx-auto mb-2 text-error" />
                             <p className="font-bold">خطا در دریافت فهرست بسته‌های خوش‌آمدگویی</p>
-                            <p className="text-xs mt-1 text-red-600">لطفاً مجدداً تلاش کنید.</p>
+                            <p className="text-xs mt-1 text-error">لطفاً مجدداً تلاش کنید.</p>
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -1058,7 +1058,7 @@ export default function AdminConfigPage() {
                                 return (
                                     <div
                                         key={pkg.id}
-                                        className="bg-white rounded-2xl border border-gray-200 shadow-sm flex flex-col justify-between overflow-hidden"
+                                        className="bg-surface rounded-2xl border border-border-subtle shadow-sm flex flex-col justify-between overflow-hidden"
                                     >
                                         <div className="p-6 space-y-4">
                                             {/* Role & Status */}
@@ -1066,10 +1066,10 @@ export default function AdminConfigPage() {
                                                 <span
                                                     className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold ${
                                                         isUser
-                                                            ? "bg-amber-50 text-amber-700 border border-amber-200"
+                                                            ? "bg-warning-subtle text-warning border border-warning/30"
                                                             : isAgent
                                                             ? "bg-purple-50 text-purple-700 border border-purple-200"
-                                                            : "bg-blue-50 text-blue-700 border border-blue-200"
+                                                            : "bg-info-subtle text-info border border-info/30"
                                                     }`}
                                                 >
                                                     {isUser ? <User size={14} /> : isAgent ? <Building2 size={14} /> : <Home size={14} />}
@@ -1086,8 +1086,8 @@ export default function AdminConfigPage() {
                                                     title={pkg.isActive ? "کلیک برای غیرفعال‌سازی" : "کلیک برای فعال‌سازی"}
                                                     className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold transition-all ${
                                                         pkg.isActive
-                                                            ? "bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100"
-                                                            : "bg-gray-100 text-gray-500 border border-gray-300 hover:bg-gray-200"
+                                                            ? "bg-success-subtle text-success border border-success/30 hover:bg-success-subtle"
+                                                            : "bg-surface-secondary text-foreground-muted border border-border hover:bg-gray-200"
                                                     }`}
                                                 >
                                                     <span
@@ -1100,8 +1100,8 @@ export default function AdminConfigPage() {
                                             </div>
 
                                             <div>
-                                                <h3 className="text-lg font-black text-gray-900">{pkg.title}</h3>
-                                                <p className="text-xs text-gray-400 mt-0.5">
+                                                <h3 className="text-lg font-black text-foreground">{pkg.title}</h3>
+                                                <p className="text-xs text-foreground-muted mt-0.5">
                                                     شناسه بسته: <span className="font-mono">{pkg.id.slice(0, 8)}...</span>
                                                 </p>
                                             </div>
@@ -1109,64 +1109,64 @@ export default function AdminConfigPage() {
                                             {/* Role Details */}
                                             {isUser ? (
                                                 <div className="space-y-3 pt-2">
-                                                    <div className="bg-amber-50/80 p-4 rounded-xl border border-amber-200 space-y-1">
-                                                        <span className="text-xs text-amber-800 font-medium block">
+                                                    <div className="bg-warning-subtle/80 p-4 rounded-xl border border-warning/30 space-y-1">
+                                                        <span className="text-xs text-warning font-medium block">
                                                             اعتبار هدیه مستقیم به کیف پول:
                                                         </span>
                                                         <div className="text-xl font-black text-amber-900">
                                                             {formatRialToToman(pkg.walletBonusIrr)}
                                                         </div>
-                                                        <div className="text-[11px] text-amber-700 font-mono">
+                                                        <div className="text-[11px] text-warning font-mono">
                                                             {formatRials(pkg.walletBonusIrr)}
                                                         </div>
                                                     </div>
 
-                                                    <div className="p-3 bg-gray-50 rounded-xl border border-gray-100 text-xs text-gray-500 flex items-center gap-2">
-                                                        <ShieldCheck size={16} className="text-gray-400 shrink-0" />
+                                                    <div className="p-3 bg-surface-secondary rounded-xl border border-border-subtle text-xs text-foreground-muted flex items-center gap-2">
+                                                        <ShieldCheck size={16} className="text-foreground-muted shrink-0" />
                                                         <span>کاربران عادی هزینه هر آگهی را از این اعتبار پرداخت خواهند کرد.</span>
                                                     </div>
                                                 </div>
                                             ) : (
                                                 <div className="space-y-3 pt-2">
                                                     {Number(pkg.walletBonusIrr) > 0 && (
-                                                        <div className="bg-emerald-50 p-3 rounded-xl border border-emerald-200 flex items-center justify-between text-xs">
-                                                            <span className="text-emerald-800 font-medium">شارژ هدیه کیف پول:</span>
+                                                        <div className="bg-success-subtle p-3 rounded-xl border border-success/30 flex items-center justify-between text-xs">
+                                                            <span className="text-success font-medium">شارژ هدیه کیف پول:</span>
                                                             <span className="font-bold text-emerald-900">
                                                                 {formatRialToToman(pkg.walletBonusIrr)}
                                                             </span>
                                                         </div>
                                                     )}
 
-                                                    <div className="bg-gray-50 p-3.5 rounded-xl border border-gray-100 space-y-2">
-                                                        <div className="flex justify-between items-center text-xs text-gray-500 pb-2 border-b border-gray-200">
+                                                    <div className="bg-surface-secondary p-3.5 rounded-xl border border-border-subtle space-y-2">
+                                                        <div className="flex justify-between items-center text-xs text-foreground-muted pb-2 border-b border-border-subtle">
                                                             <span>مدت اعتبار بسته:</span>
-                                                            <span className="font-bold text-gray-800">
+                                                            <span className="font-bold text-foreground">
                                                                 {toPersianDigits(pkg.durationDays)} روز
                                                             </span>
                                                         </div>
 
                                                         <div className="grid grid-cols-2 gap-2 text-xs pt-1">
                                                             <div className="flex justify-between items-center">
-                                                                <span className="text-gray-500">ثبت آگهی:</span>
-                                                                <span className="font-bold text-gray-800 font-mono">
+                                                                <span className="text-foreground-muted">ثبت آگهی:</span>
+                                                                <span className="font-bold text-foreground font-mono">
                                                                     {toPersianDigits(pkg.publicationQuota)}
                                                                 </span>
                                                             </div>
                                                             <div className="flex justify-between items-center">
-                                                                <span className="text-gray-500">اجاره روزانه:</span>
-                                                                <span className="font-bold text-gray-800 font-mono">
+                                                                <span className="text-foreground-muted">اجاره روزانه:</span>
+                                                                <span className="font-bold text-foreground font-mono">
                                                                     {toPersianDigits(pkg.tempRentQuota)}
                                                                 </span>
                                                             </div>
                                                             <div className="flex justify-between items-center">
-                                                                <span className="text-amber-600">فوری:</span>
-                                                                <span className="font-bold text-amber-700 font-mono">
+                                                                <span className="text-warning">فوری:</span>
+                                                                <span className="font-bold text-warning font-mono">
                                                                     {toPersianDigits(pkg.urgentQuota)}
                                                                 </span>
                                                             </div>
                                                             <div className="flex justify-between items-center">
-                                                                <span className="text-blue-600">نردبان:</span>
-                                                                <span className="font-bold text-blue-700 font-mono">
+                                                                <span className="text-info">نردبان:</span>
+                                                                <span className="font-bold text-info font-mono">
                                                                     {toPersianDigits(pkg.ladderQuota)}
                                                                 </span>
                                                             </div>
@@ -1177,11 +1177,11 @@ export default function AdminConfigPage() {
                                         </div>
 
                                         {/* Action Button */}
-                                        <div className="p-4 bg-gray-50/80 border-t border-gray-100 rounded-b-2xl flex justify-end">
+                                        <div className="p-4 bg-surface-secondary/80 border-t border-border-subtle rounded-b-2xl flex justify-end">
                                             <button
                                                 onClick={() => openEditPackageModal(pkg)}
                                                 disabled={!canManageConfig}
-                                                className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                                                className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-foreground-secondary bg-surface border border-border rounded-lg hover:bg-surface-secondary transition-colors"
                                             >
                                                 <Edit3 size={14} />
                                                 ویرایش بسته خوش‌آمدگویی
@@ -1203,8 +1203,8 @@ export default function AdminConfigPage() {
                             onClick={() => setSelectedLegacyPlan("FREE")}
                             className={`w-full text-right p-3.5 rounded-xl flex items-center gap-3 transition-colors ${
                                 selectedLegacyPlan === "FREE"
-                                    ? "bg-blue-50 text-blue-600 font-bold border border-blue-200"
-                                    : "hover:bg-gray-50 text-gray-600 border border-transparent"
+                                    ? "bg-info-subtle text-info font-bold border border-info/30"
+                                    : "hover:bg-surface-secondary text-foreground-secondary border border-transparent"
                             }`}
                         >
                             <ShieldCheck size={20} />
@@ -1214,15 +1214,15 @@ export default function AdminConfigPage() {
                             onClick={() => setSelectedLegacyPlan("PRO")}
                             className={`w-full text-right p-3.5 rounded-xl flex items-center gap-3 transition-colors ${
                                 selectedLegacyPlan === "PRO"
-                                    ? "bg-blue-50 text-blue-600 font-bold border border-blue-200"
-                                    : "hover:bg-gray-50 text-gray-600 border border-transparent"
+                                    ? "bg-info-subtle text-info font-bold border border-info/30"
+                                    : "hover:bg-surface-secondary text-foreground-secondary border border-transparent"
                             }`}
                         >
                             <Zap size={20} />
                             پلن پیشرفته (PRO)
                         </button>
 
-                        <div className="mt-8 p-4 bg-amber-50 rounded-xl border border-amber-200 flex gap-3 text-amber-700">
+                        <div className="mt-8 p-4 bg-warning-subtle rounded-xl border border-warning/30 flex gap-3 text-warning">
                             <Info size={22} className="shrink-0 mt-0.5" />
                             <p className="text-xs leading-relaxed">
                                 تنظیمات این بخش مربوط به سیستم احراز محدودیت‌های پایه سرویس است.
@@ -1230,10 +1230,10 @@ export default function AdminConfigPage() {
                         </div>
                     </div>
 
-                    <div className="lg:col-span-3 bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-6">
+                    <div className="lg:col-span-3 bg-surface rounded-2xl border border-border-subtle shadow-sm p-6 space-y-6">
                         <div className="flex justify-between items-center border-b pb-4">
-                            <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-                                <Settings size={20} className="text-blue-600" />
+                            <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+                                <Settings size={20} className="text-info" />
                                 پیکربندی محدودیت‌های پلن {selectedLegacyPlan}
                             </h2>
                             <button
@@ -1252,7 +1252,7 @@ export default function AdminConfigPage() {
                         </div>
 
                         <div className="space-y-2 max-w-xs">
-                            <label className="block text-sm font-medium text-gray-700">حداکثر آگهی‌های فعال</label>
+                            <label className="block text-sm font-medium text-foreground-secondary">حداکثر آگهی‌های فعال</label>
                             <input
                                 type="number"
                                 value={legacyLimits[selectedLegacyPlan].maxActiveListings ?? 0}
@@ -1265,15 +1265,15 @@ export default function AdminConfigPage() {
                                         },
                                     }))
                                 }
-                                className="w-full p-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none font-mono"
+                                className="w-full p-2.5 rounded-lg border border-border focus:ring-2 focus:ring-blue-500 outline-none font-mono"
                             />
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
-                            <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 flex items-center justify-between">
+                            <div className="p-4 bg-surface-secondary rounded-xl border border-border-subtle flex items-center justify-between">
                                 <div>
-                                    <span className="text-sm font-bold text-gray-800 block">دسترسی به تحلیل و آمار</span>
-                                    <span className="text-xs text-gray-400">نمایش نمودارهای بازدید آگهی</span>
+                                    <span className="text-sm font-bold text-foreground block">دسترسی به تحلیل و آمار</span>
+                                    <span className="text-xs text-foreground-muted">نمایش نمودارهای بازدید آگهی</span>
                                 </div>
                                 <input
                                     type="checkbox"
@@ -1291,10 +1291,10 @@ export default function AdminConfigPage() {
                                 />
                             </div>
 
-                            <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 flex items-center justify-between">
+                            <div className="p-4 bg-surface-secondary rounded-xl border border-border-subtle flex items-center justify-between">
                                 <div>
-                                    <span className="text-sm font-bold text-gray-800 block">رتبه‌بندی اولویت‌دار</span>
-                                    <span className="text-xs text-gray-400">نمایش بالاتر در فهرست نتایج</span>
+                                    <span className="text-sm font-bold text-foreground block">رتبه‌بندی اولویت‌دار</span>
+                                    <span className="text-xs text-foreground-muted">نمایش بالاتر در فهرست نتایج</span>
                                 </div>
                                 <input
                                     type="checkbox"
@@ -1312,10 +1312,10 @@ export default function AdminConfigPage() {
                                 />
                             </div>
 
-                            <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 flex items-center justify-between">
+                            <div className="p-4 bg-surface-secondary rounded-xl border border-border-subtle flex items-center justify-between">
                                 <div>
-                                    <span className="text-sm font-bold text-gray-800 block">نشان حرفه‌ای (Pro)</span>
-                                    <span className="text-xs text-gray-400">نمایش نشان در کارت‌ها</span>
+                                    <span className="text-sm font-bold text-foreground block">نشان حرفه‌ای (Pro)</span>
+                                    <span className="text-xs text-foreground-muted">نمایش نشان در کارت‌ها</span>
                                 </div>
                                 <input
                                     type="checkbox"
@@ -1333,10 +1333,10 @@ export default function AdminConfigPage() {
                                 />
                             </div>
 
-                            <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 flex items-center justify-between">
+                            <div className="p-4 bg-surface-secondary rounded-xl border border-border-subtle flex items-center justify-between">
                                 <div>
-                                    <span className="text-sm font-bold text-gray-800 block">امکان بوست / ارتقا</span>
-                                    <span className="text-xs text-gray-400">قابلیت اعمال نردبان و ارتقا</span>
+                                    <span className="text-sm font-bold text-foreground block">امکان بوست / ارتقا</span>
+                                    <span className="text-xs text-foreground-muted">قابلیت اعمال نردبان و ارتقا</span>
                                 </div>
                                 <input
                                     type="checkbox"
@@ -1362,8 +1362,8 @@ export default function AdminConfigPage() {
             {activeTab === "tariffs" && (
                 <div className="space-y-6">
                     {/* Information Box */}
-                    <div className="p-5 bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl border border-amber-200 flex gap-4 text-amber-900">
-                        <Coins size={28} className="text-amber-600 shrink-0 mt-0.5" />
+                    <div className="p-5 bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl border border-warning/30 flex gap-4 text-amber-900">
+                        <Coins size={28} className="text-warning shrink-0 mt-0.5" />
                         <div className="text-xs leading-relaxed space-y-1">
                             <h4 className="font-black text-sm text-amber-950">
                                 تعرفه‌های شش‌گانه مستقل پلتفرم (Platform Monetary Tariffs):
@@ -1380,14 +1380,14 @@ export default function AdminConfigPage() {
                         </div>
                     </div>
 
-                    <div className="flex justify-between items-center bg-white p-4 rounded-xl border border-gray-200">
-                        <span className="text-xs font-bold text-gray-600">
+                    <div className="flex justify-between items-center bg-surface p-4 rounded-xl border border-border-subtle">
+                        <span className="text-xs font-bold text-foreground-secondary">
                             فهرست نرخ‌گذاری خدمات فعال پلتفرم ملک‌تودی
                         </span>
                         <button
                             onClick={() => refetchTariffs()}
                             disabled={tariffsLoading}
-                            className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-800 transition-colors"
+                            className="flex items-center gap-1.5 text-xs text-foreground-muted hover:text-foreground transition-colors"
                         >
                             <RefreshCcw size={14} className={tariffsLoading ? "animate-spin" : ""} />
                             به‌روزرسانی تعرفه‌ها
@@ -1397,22 +1397,22 @@ export default function AdminConfigPage() {
                     {tariffsLoading ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {[1, 2, 3, 4, 5, 6].map((i) => (
-                                <div key={i} className="h-64 bg-gray-100 rounded-2xl animate-pulse" />
+                                <div key={i} className="h-64 bg-surface-secondary rounded-2xl animate-pulse" />
                             ))}
                         </div>
                     ) : tariffsError ? (
-                        <div className="p-8 bg-red-50 rounded-2xl border border-red-200 text-center text-red-700">
-                            <AlertCircle size={36} className="mx-auto mb-2 text-red-500" />
+                        <div className="p-8 bg-error-subtle rounded-2xl border border-error/30 text-center text-error">
+                            <AlertCircle size={36} className="mx-auto mb-2 text-error" />
                             <p className="font-bold">خطا در دریافت فهرست تعرفه‌ها</p>
-                            <p className="text-xs mt-1 text-red-600">لطفاً اتصال اینترنت خود را بررسی و دوباره تلاش نمایید.</p>
+                            <p className="text-xs mt-1 text-error">لطفاً اتصال اینترنت خود را بررسی و دوباره تلاش نمایید.</p>
                         </div>
                     ) : (
                         <div className="space-y-8">
                             {/* Section 1: Normal Listing Tariffs */}
                             <div className="space-y-4">
-                                <div className="flex items-center gap-2 pb-2 border-b border-gray-200">
-                                    <Building2 className="w-5 h-5 text-blue-600" />
-                                    <h3 className="font-black text-base text-gray-900">
+                                <div className="flex items-center gap-2 pb-2 border-b border-border-subtle">
+                                    <Building2 className="w-5 h-5 text-info" />
+                                    <h3 className="font-black text-base text-foreground">
                                         تعرفه‌های آگهی‌های ملکی عادی (خرید، فروش، رهن و اجاره)
                                     </h3>
                                 </div>
@@ -1433,9 +1433,9 @@ export default function AdminConfigPage() {
 
                             {/* Section 2: Temporary Rental Tariffs */}
                             <div className="space-y-4">
-                                <div className="flex items-center gap-2 pb-2 border-b border-gray-200">
-                                    <Home className="w-5 h-5 text-amber-600" />
-                                    <h3 className="font-black text-base text-gray-900">
+                                <div className="flex items-center gap-2 pb-2 border-b border-border-subtle">
+                                    <Home className="w-5 h-5 text-warning" />
+                                    <h3 className="font-black text-base text-foreground">
                                         تعرفه‌های اقامتگاه‌های اجاره روزانه و موقت
                                     </h3>
                                 </div>
@@ -1461,20 +1461,20 @@ export default function AdminConfigPage() {
             {/* MODAL: CREATE / EDIT SUBSCRIPTION PLAN */}
             {isPlanModalOpen && (
                 <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-                    <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-gray-100 my-8 space-y-6">
+                    <div className="bg-surface rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-border-subtle my-8 space-y-6">
                         {/* Modal Header */}
                         <div className="flex justify-between items-center border-b pb-4">
                             <div>
-                                <h3 className="text-xl font-black text-gray-900">
+                                <h3 className="text-xl font-black text-foreground">
                                     {editingPlanId ? "ویرایش پلن اشتراک" : "افزودن پلن اشتراک جدید"}
                                 </h3>
-                                <p className="text-xs text-gray-500 mt-0.5">
+                                <p className="text-xs text-foreground-muted mt-0.5">
                                     تنظیم سهمیه‌ها، قیمت، مدت و نشان‌های اختصاصی پلن
                                 </p>
                             </div>
                             <button
                                 onClick={() => setIsPlanModalOpen(false)}
-                                className="p-2 text-gray-400 hover:text-gray-700 rounded-full hover:bg-gray-100 transition-colors"
+                                className="p-2 text-foreground-muted hover:text-foreground-secondary rounded-full hover:bg-surface-secondary transition-colors"
                             >
                                 <X size={20} />
                             </button>
@@ -1484,36 +1484,36 @@ export default function AdminConfigPage() {
                         <form onSubmit={handleSavePlan} className="space-y-6">
                             {/* Base Information */}
                             <div className="space-y-4">
-                                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">اطلاعات پایه</h4>
+                                <h4 className="text-xs font-bold text-foreground-muted uppercase tracking-wider">اطلاعات پایه</h4>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div className="space-y-1.5">
-                                        <label className="text-xs font-bold text-gray-700">نام پلن *</label>
+                                        <label className="text-xs font-bold text-foreground-secondary">نام پلن *</label>
                                         <input
                                             type="text"
                                             required
                                             value={planForm.name}
                                             onChange={(e) => setPlanForm({ ...planForm, name: e.target.value })}
                                             placeholder="مثال: طرح حرفه‌ای مشاور املاک"
-                                            className="w-full p-3 rounded-xl border border-gray-300 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                            className="w-full p-3 rounded-xl border border-border text-sm focus:ring-2 focus:ring-blue-500 outline-none"
                                         />
                                     </div>
 
                                     {!editingPlanId && (
                                         <div className="space-y-1.5">
-                                            <label className="text-xs font-bold text-gray-700">شناسه انگلیسی (slug) *</label>
+                                            <label className="text-xs font-bold text-foreground-secondary">شناسه انگلیسی (slug) *</label>
                                             <input
                                                 type="text"
                                                 required
                                                 value={planForm.slug}
                                                 onChange={(e) => setPlanForm({ ...planForm, slug: e.target.value })}
                                                 placeholder="مثال: agent-pro"
-                                                className="w-full p-3 rounded-xl border border-gray-300 text-sm font-mono focus:ring-2 focus:ring-blue-500 outline-none"
+                                                className="w-full p-3 rounded-xl border border-border text-sm font-mono focus:ring-2 focus:ring-blue-500 outline-none"
                                             />
                                         </div>
                                     )}
 
                                     <div className="space-y-1.5">
-                                        <label className="text-xs font-bold text-gray-700">نقش هدف *</label>
+                                        <label className="text-xs font-bold text-foreground-secondary">نقش هدف *</label>
                                         <select
                                             value={planForm.targetRole}
                                             onChange={(e) =>
@@ -1522,18 +1522,18 @@ export default function AdminConfigPage() {
                                                     targetRole: e.target.value as SubscriptionTargetRole,
                                                 })
                                             }
-                                            className="w-full p-3 rounded-xl border border-gray-300 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                            className="w-full p-3 rounded-xl border border-border text-sm focus:ring-2 focus:ring-blue-500 outline-none"
                                         >
                                             <option value="agent">مشاور / آژانس املاک (Agent)</option>
                                             <option value="landlord">میزبان اقامتگاه (Landlord)</option>
                                         </select>
-                                        <p className="text-[11px] text-gray-400">
+                                        <p className="text-[11px] text-foreground-muted">
                                             * طبق قوانین کسب‌وکار، کاربران عادی فاقد اشتراک هستند.
                                         </p>
                                     </div>
 
                                     <div className="space-y-1.5">
-                                        <label className="text-xs font-bold text-gray-700">مدت زمان اعتبار (روز) *</label>
+                                        <label className="text-xs font-bold text-foreground-secondary">مدت زمان اعتبار (روز) *</label>
                                         <input
                                             type="number"
                                             required
@@ -1542,52 +1542,52 @@ export default function AdminConfigPage() {
                                             onChange={(e) =>
                                                 setPlanForm({ ...planForm, durationDays: parseInt(e.target.value) || 30 })
                                             }
-                                            className="w-full p-3 rounded-xl border border-gray-300 text-sm font-mono focus:ring-2 focus:ring-blue-500 outline-none"
+                                            className="w-full p-3 rounded-xl border border-border text-sm font-mono focus:ring-2 focus:ring-blue-500 outline-none"
                                         />
                                     </div>
                                 </div>
 
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-bold text-gray-700">توضیحات پلن</label>
+                                    <label className="text-xs font-bold text-foreground-secondary">توضیحات پلن</label>
                                     <textarea
                                         rows={2}
                                         value={planForm.description}
                                         onChange={(e) => setPlanForm({ ...planForm, description: e.target.value })}
                                         placeholder="توضیح کوتاه درباره مزایا و ویژگی‌های این طرح..."
-                                        className="w-full p-3 rounded-xl border border-gray-300 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                        className="w-full p-3 rounded-xl border border-border text-sm focus:ring-2 focus:ring-blue-500 outline-none"
                                     />
                                 </div>
                             </div>
 
                             {/* Financial & Pricing */}
                             <div className="space-y-3 pt-2">
-                                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">تعرفه و قیمت‌گذاری</h4>
+                                <h4 className="text-xs font-bold text-foreground-muted uppercase tracking-wider">تعرفه و قیمت‌گذاری</h4>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div className="space-y-1.5">
-                                        <label className="text-xs font-bold text-gray-700">قیمت به ریال *</label>
+                                        <label className="text-xs font-bold text-foreground-secondary">قیمت به ریال *</label>
                                         <input
                                             type="text"
                                             required
                                             value={planForm.priceIrr}
                                             onChange={(e) => setPlanForm({ ...planForm, priceIrr: e.target.value })}
                                             placeholder="مثال: 2500000"
-                                            className="w-full p-3 rounded-xl border border-gray-300 text-sm font-mono focus:ring-2 focus:ring-blue-500 outline-none"
+                                            className="w-full p-3 rounded-xl border border-border text-sm font-mono focus:ring-2 focus:ring-blue-500 outline-none"
                                         />
-                                        <div className="flex items-center justify-between text-xs text-blue-700 bg-blue-50 p-2 rounded-lg font-bold">
+                                        <div className="flex items-center justify-between text-xs text-info bg-info-subtle p-2 rounded-lg font-bold">
                                             <span>معادل به تومان:</span>
                                             <span>{formatRialToToman(planForm.priceIrr)}</span>
                                         </div>
                                     </div>
 
                                     <div className="space-y-1.5">
-                                        <label className="text-xs font-bold text-gray-700">ترتیب نمایش</label>
+                                        <label className="text-xs font-bold text-foreground-secondary">ترتیب نمایش</label>
                                         <input
                                             type="number"
                                             value={planForm.sortOrder}
                                             onChange={(e) =>
                                                 setPlanForm({ ...planForm, sortOrder: parseInt(e.target.value) || 0 })
                                             }
-                                            className="w-full p-3 rounded-xl border border-gray-300 text-sm font-mono focus:ring-2 focus:ring-blue-500 outline-none"
+                                            className="w-full p-3 rounded-xl border border-border text-sm font-mono focus:ring-2 focus:ring-blue-500 outline-none"
                                         />
                                     </div>
                                 </div>
@@ -1595,12 +1595,12 @@ export default function AdminConfigPage() {
 
                             {/* Quotas & Entitlements */}
                             <div className="space-y-3 pt-2">
-                                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                                <h4 className="text-xs font-bold text-foreground-muted uppercase tracking-wider">
                                     سهمیه‌ها و ظرفیت‌های پلن (Entitlements)
                                 </h4>
                                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                                     <div className="space-y-1">
-                                        <label className="text-xs font-medium text-gray-700">ثبت آگهی عادی</label>
+                                        <label className="text-xs font-medium text-foreground-secondary">ثبت آگهی عادی</label>
                                         <input
                                             type="number"
                                             min={0}
@@ -1608,12 +1608,12 @@ export default function AdminConfigPage() {
                                             onChange={(e) =>
                                                 setPlanForm({ ...planForm, publicationQuota: parseInt(e.target.value) || 0 })
                                             }
-                                            className="w-full p-2.5 rounded-xl border border-gray-300 text-sm font-mono focus:ring-2 focus:ring-blue-500 outline-none"
+                                            className="w-full p-2.5 rounded-xl border border-border text-sm font-mono focus:ring-2 focus:ring-blue-500 outline-none"
                                         />
                                     </div>
 
                                     <div className="space-y-1">
-                                        <label className="text-xs font-medium text-gray-700">اجاره موقت/روزانه</label>
+                                        <label className="text-xs font-medium text-foreground-secondary">اجاره موقت/روزانه</label>
                                         <input
                                             type="number"
                                             min={0}
@@ -1621,12 +1621,12 @@ export default function AdminConfigPage() {
                                             onChange={(e) =>
                                                 setPlanForm({ ...planForm, tempRentQuota: parseInt(e.target.value) || 0 })
                                             }
-                                            className="w-full p-2.5 rounded-xl border border-gray-300 text-sm font-mono focus:ring-2 focus:ring-blue-500 outline-none"
+                                            className="w-full p-2.5 rounded-xl border border-border text-sm font-mono focus:ring-2 focus:ring-blue-500 outline-none"
                                         />
                                     </div>
 
                                     <div className="space-y-1">
-                                        <label className="text-xs font-medium text-amber-700">ارتقای فوری</label>
+                                        <label className="text-xs font-medium text-warning">ارتقای فوری</label>
                                         <input
                                             type="number"
                                             min={0}
@@ -1639,7 +1639,7 @@ export default function AdminConfigPage() {
                                     </div>
 
                                     <div className="space-y-1">
-                                        <label className="text-xs font-medium text-blue-700">نردبان آگهی</label>
+                                        <label className="text-xs font-medium text-info">نردبان آگهی</label>
                                         <input
                                             type="number"
                                             min={0}
@@ -1655,28 +1655,28 @@ export default function AdminConfigPage() {
 
                             {/* Dynamic Badge & Tick */}
                             <div className="space-y-3 pt-2">
-                                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                                <h4 className="text-xs font-bold text-foreground-muted uppercase tracking-wider">
                                     نشان و تیک اختصاصی داینامیک
                                 </h4>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div className="space-y-1.5">
-                                        <label className="text-xs font-bold text-gray-700">عنوان نشان / تیک</label>
+                                        <label className="text-xs font-bold text-foreground-secondary">عنوان نشان / تیک</label>
                                         <input
                                             type="text"
                                             value={planForm.badgeName}
                                             onChange={(e) => setPlanForm({ ...planForm, badgeName: e.target.value })}
                                             placeholder="مثال: مشاور منتخب، سوپر میزبان طلایی"
-                                            className="w-full p-3 rounded-xl border border-gray-300 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                            className="w-full p-3 rounded-xl border border-border text-sm focus:ring-2 focus:ring-blue-500 outline-none"
                                         />
                                     </div>
 
                                     <div className="space-y-1.5">
-                                        <label className="text-xs font-bold text-gray-700">انتخاب آیکون نشان</label>
+                                        <label className="text-xs font-bold text-foreground-secondary">انتخاب آیکون نشان</label>
                                         <div className="flex items-center gap-2">
                                             <select
                                                 value={planForm.badgeIcon}
                                                 onChange={(e) => setPlanForm({ ...planForm, badgeIcon: e.target.value })}
-                                                className="w-full p-3 rounded-xl border border-gray-300 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                                className="w-full p-3 rounded-xl border border-border text-sm focus:ring-2 focus:ring-blue-500 outline-none"
                                             >
                                                 {AVAILABLE_BADGE_ICONS.map((icon) => (
                                                     <option key={icon.id} value={icon.id}>
@@ -1684,14 +1684,14 @@ export default function AdminConfigPage() {
                                                     </option>
                                                 ))}
                                             </select>
-                                            <div className="p-3 bg-gray-100 rounded-xl">
-                                                <DynamicBadgeIcon iconName={planForm.badgeIcon} className="w-5 h-5 text-gray-700" />
+                                            <div className="p-3 bg-surface-secondary rounded-xl">
+                                                <DynamicBadgeIcon iconName={planForm.badgeIcon} className="w-5 h-5 text-foreground-secondary" />
                                             </div>
                                         </div>
                                     </div>
 
                                     <div className="space-y-1.5">
-                                        <label className="text-xs font-bold text-gray-700">تم رنگی نشان</label>
+                                        <label className="text-xs font-bold text-foreground-secondary">تم رنگی نشان</label>
                                         <div className="flex items-center gap-2">
                                             {AVAILABLE_COLORS.map((color) => (
                                                 <button
@@ -1717,23 +1717,23 @@ export default function AdminConfigPage() {
                                     </div>
 
                                     <div className="space-y-1.5">
-                                        <label className="text-xs font-bold text-gray-700">متن راهنمای نشان (توضیح)</label>
+                                        <label className="text-xs font-bold text-foreground-secondary">متن راهنمای نشان (توضیح)</label>
                                         <input
                                             type="text"
                                             value={planForm.badgeTooltip}
                                             onChange={(e) => setPlanForm({ ...planForm, badgeTooltip: e.target.value })}
                                             placeholder="توضیح کوتاه نشان..."
-                                            className="w-full p-3 rounded-xl border border-gray-300 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                            className="w-full p-3 rounded-xl border border-border text-sm focus:ring-2 focus:ring-blue-500 outline-none"
                                         />
                                     </div>
                                 </div>
                             </div>
 
                             {/* Active Switch */}
-                            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                            <div className="flex items-center justify-between p-4 bg-surface-secondary rounded-2xl border border-border-subtle">
                                 <div>
-                                    <span className="text-sm font-bold text-gray-800 block">وضعیت فعال‌سازی پلن</span>
-                                    <span className="text-xs text-gray-400">
+                                    <span className="text-sm font-bold text-foreground block">وضعیت فعال‌سازی پلن</span>
+                                    <span className="text-xs text-foreground-muted">
                                         در صورت غیرفعال بودن، این پلن برای کاربران نمایش داده نمی‌شود.
                                     </span>
                                 </div>
@@ -1750,7 +1750,7 @@ export default function AdminConfigPage() {
                                 <button
                                     type="button"
                                     onClick={() => setIsPlanModalOpen(false)}
-                                    className="px-5 py-2.5 text-sm font-bold text-gray-600 hover:bg-gray-100 rounded-xl transition-colors"
+                                    className="px-5 py-2.5 text-sm font-bold text-foreground-secondary hover:bg-surface-secondary rounded-xl transition-colors"
                                 >
                                     انصراف
                                 </button>
@@ -1771,13 +1771,13 @@ export default function AdminConfigPage() {
             {/* MODAL: EDIT WELCOME PACKAGE */}
             {isPackageModalOpen && (
                 <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-                    <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-gray-100 my-8 space-y-6">
+                    <div className="bg-surface rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-border-subtle my-8 space-y-6">
                         <div className="flex justify-between items-center border-b pb-4">
                             <div>
-                                <h3 className="text-xl font-black text-gray-900">
+                                <h3 className="text-xl font-black text-foreground">
                                     {editingPackageId ? "ویرایش بسته خوش‌آمدگویی" : "افزودن بسته خوش‌آمدگویی جدید"}
                                 </h3>
-                                <p className="text-xs text-gray-500 mt-0.5">
+                                <p className="text-xs text-foreground-muted mt-0.5">
                                     {editingPackageId ? (
                                         <>نقش هدف: <strong className="font-mono">{packageForm.targetRole}</strong></>
                                     ) : (
@@ -1787,7 +1787,7 @@ export default function AdminConfigPage() {
                             </div>
                             <button
                                 onClick={() => setIsPackageModalOpen(false)}
-                                className="p-2 text-gray-400 hover:text-gray-700 rounded-full hover:bg-gray-100 transition-colors"
+                                className="p-2 text-foreground-muted hover:text-foreground-secondary rounded-full hover:bg-surface-secondary transition-colors"
                             >
                                 <X size={20} />
                             </button>
@@ -1796,11 +1796,11 @@ export default function AdminConfigPage() {
                         <form onSubmit={handleSavePackage} className="space-y-5">
                             {!editingPackageId && (
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-bold text-gray-700">نقش هدف بسته *</label>
+                                    <label className="text-xs font-bold text-foreground-secondary">نقش هدف بسته *</label>
                                     <select
                                         value={packageForm.targetRole}
                                         onChange={(e) => setPackageForm({ ...packageForm, targetRole: e.target.value })}
-                                        className="w-full p-3 rounded-xl border border-gray-300 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                        className="w-full p-3 rounded-xl border border-border text-sm focus:ring-2 focus:ring-blue-500 outline-none"
                                     >
                                         <option value="user">کاربر عادی (user) - هدیه کیف پول</option>
                                         <option value="landlord">میزبان اقامتگاه (landlord) - سهمیه‌های آغازین</option>
@@ -1810,20 +1810,20 @@ export default function AdminConfigPage() {
                             )}
 
                             <div className="space-y-1.5">
-                                <label className="text-xs font-bold text-gray-700">عنوان بسته *</label>
+                                <label className="text-xs font-bold text-foreground-secondary">عنوان بسته *</label>
                                 <input
                                     type="text"
                                     required
                                     value={packageForm.title}
                                     onChange={(e) => setPackageForm({ ...packageForm, title: e.target.value })}
-                                    className="w-full p-3 rounded-xl border border-gray-300 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                    className="w-full p-3 rounded-xl border border-border text-sm focus:ring-2 focus:ring-blue-500 outline-none"
                                 />
                             </div>
 
                             {/* If User -> Wallet Bonus Only */}
                             {packageForm.targetRole === "user" ? (
-                                <div className="space-y-3 bg-amber-50 p-4 rounded-2xl border border-amber-200">
-                                    <div className="flex items-center gap-2 text-amber-800 text-xs font-bold">
+                                <div className="space-y-3 bg-warning-subtle p-4 rounded-2xl border border-warning/30">
+                                    <div className="flex items-center gap-2 text-warning text-xs font-bold">
                                         <Coins size={16} />
                                         اعتبار هدیه نقدی کیف پول (IRR)
                                     </div>
@@ -1832,13 +1832,13 @@ export default function AdminConfigPage() {
                                         required
                                         value={packageForm.walletBonusIrr}
                                         onChange={(e) => setPackageForm({ ...packageForm, walletBonusIrr: e.target.value })}
-                                        className="w-full p-3 rounded-xl border border-amber-300 text-sm font-mono focus:ring-2 focus:ring-amber-500 outline-none bg-white"
+                                        className="w-full p-3 rounded-xl border border-amber-300 text-sm font-mono focus:ring-2 focus:ring-amber-500 outline-none bg-surface"
                                     />
                                     <div className="flex items-center justify-between text-xs text-amber-900 font-bold pt-1">
                                         <span>معادل به تومان:</span>
                                         <span>{formatRialToToman(packageForm.walletBonusIrr)}</span>
                                     </div>
-                                    <p className="text-[11px] text-amber-700 leading-relaxed pt-1">
+                                    <p className="text-[11px] text-warning leading-relaxed pt-1">
                                         کاربران عادی فاقد اشتراک هستند و این هدیه نقدی در اولین ثبت‌نام به‌صورت خودکار به کیف پول آن‌ها شارژ خواهد شد.
                                     </p>
                                 </div>
@@ -1847,7 +1847,7 @@ export default function AdminConfigPage() {
                                 <div className="space-y-4">
                                     <div className="grid grid-cols-2 gap-3">
                                         <div className="space-y-1">
-                                            <label className="text-xs font-medium text-gray-700">ثبت آگهی عادی</label>
+                                            <label className="text-xs font-medium text-foreground-secondary">ثبت آگهی عادی</label>
                                             <input
                                                 type="number"
                                                 min={0}
@@ -1858,12 +1858,12 @@ export default function AdminConfigPage() {
                                                         publicationQuota: parseInt(e.target.value) || 0,
                                                     })
                                                 }
-                                                className="w-full p-2.5 rounded-xl border border-gray-300 text-sm font-mono focus:ring-2 focus:ring-blue-500 outline-none"
+                                                className="w-full p-2.5 rounded-xl border border-border text-sm font-mono focus:ring-2 focus:ring-blue-500 outline-none"
                                             />
                                         </div>
 
                                         <div className="space-y-1">
-                                            <label className="text-xs font-medium text-gray-700">اجاره روزانه</label>
+                                            <label className="text-xs font-medium text-foreground-secondary">اجاره روزانه</label>
                                             <input
                                                 type="number"
                                                 min={0}
@@ -1874,12 +1874,12 @@ export default function AdminConfigPage() {
                                                         tempRentQuota: parseInt(e.target.value) || 0,
                                                     })
                                                 }
-                                                className="w-full p-2.5 rounded-xl border border-gray-300 text-sm font-mono focus:ring-2 focus:ring-blue-500 outline-none"
+                                                className="w-full p-2.5 rounded-xl border border-border text-sm font-mono focus:ring-2 focus:ring-blue-500 outline-none"
                                             />
                                         </div>
 
                                         <div className="space-y-1">
-                                            <label className="text-xs font-medium text-amber-700">فوری</label>
+                                            <label className="text-xs font-medium text-warning">فوری</label>
                                             <input
                                                 type="number"
                                                 min={0}
@@ -1895,7 +1895,7 @@ export default function AdminConfigPage() {
                                         </div>
 
                                         <div className="space-y-1">
-                                            <label className="text-xs font-medium text-blue-700">نردبان</label>
+                                            <label className="text-xs font-medium text-info">نردبان</label>
                                             <input
                                                 type="number"
                                                 min={0}
@@ -1913,7 +1913,7 @@ export default function AdminConfigPage() {
 
                                     <div className="grid grid-cols-2 gap-3">
                                         <div className="space-y-1">
-                                            <label className="text-xs font-medium text-gray-700">مدت اعتبار (روز)</label>
+                                            <label className="text-xs font-medium text-foreground-secondary">مدت اعتبار (روز)</label>
                                             <input
                                                 type="number"
                                                 min={1}
@@ -1924,12 +1924,12 @@ export default function AdminConfigPage() {
                                                         durationDays: parseInt(e.target.value) || 30,
                                                     })
                                                 }
-                                                className="w-full p-2.5 rounded-xl border border-gray-300 text-sm font-mono focus:ring-2 focus:ring-blue-500 outline-none"
+                                                className="w-full p-2.5 rounded-xl border border-border text-sm font-mono focus:ring-2 focus:ring-blue-500 outline-none"
                                             />
                                         </div>
 
                                         <div className="space-y-1">
-                                            <label className="text-xs font-medium text-gray-700">هدیه نقدی ریال (اختیاری)</label>
+                                            <label className="text-xs font-medium text-foreground-secondary">هدیه نقدی ریال (اختیاری)</label>
                                             <input
                                                 type="text"
                                                 value={packageForm.walletBonusIrr}
@@ -1939,7 +1939,7 @@ export default function AdminConfigPage() {
                                                         walletBonusIrr: e.target.value,
                                                     })
                                                 }
-                                                className="w-full p-2.5 rounded-xl border border-gray-300 text-sm font-mono focus:ring-2 focus:ring-blue-500 outline-none"
+                                                className="w-full p-2.5 rounded-xl border border-border text-sm font-mono focus:ring-2 focus:ring-blue-500 outline-none"
                                             />
                                         </div>
                                     </div>
@@ -1947,8 +1947,8 @@ export default function AdminConfigPage() {
                             )}
 
                             {/* Active Switch */}
-                            <div className="flex items-center justify-between p-3.5 bg-gray-50 rounded-xl border border-gray-100">
-                                <span className="text-xs font-bold text-gray-800">وضعیت فعال بودن بسته</span>
+                            <div className="flex items-center justify-between p-3.5 bg-surface-secondary rounded-xl border border-border-subtle">
+                                <span className="text-xs font-bold text-foreground">وضعیت فعال بودن بسته</span>
                                 <input
                                     type="checkbox"
                                     checked={packageForm.isActive}
@@ -1961,7 +1961,7 @@ export default function AdminConfigPage() {
                                 <button
                                     type="button"
                                     onClick={() => setIsPackageModalOpen(false)}
-                                    className="px-4 py-2 text-xs font-bold text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                                    className="px-4 py-2 text-xs font-bold text-foreground-secondary hover:bg-surface-secondary rounded-lg transition-colors"
                                 >
                                     انصراف
                                 </button>

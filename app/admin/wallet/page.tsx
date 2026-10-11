@@ -396,9 +396,9 @@ function AdminWalletDashboard() {
     if (!canManageWallet) {
         return (
             <div className="p-8 md:p-16 flex items-center justify-center min-h-[60vh]">
-                <div className="bg-white border border-red-200 rounded-3xl p-8 max-w-md w-full text-center shadow-sm space-y-4">
-                    <ShieldAlert className="w-16 h-16 text-red-500 mx-auto" />
-                    <h2 className="text-xl font-black text-slate-800">عدم دسترسی به بخش مالی</h2>
+                <div className="bg-surface border border-error/30 rounded-3xl p-8 max-w-md w-full text-center shadow-sm space-y-4">
+                    <ShieldAlert className="w-16 h-16 text-error mx-auto" />
+                    <h2 className="text-xl font-black text-foreground">عدم دسترسی به بخش مالی</h2>
                     <p className="text-sm text-secondary leading-relaxed">
                         مشاهده و مدیریت کیف پول‌های مالی و تراکنش‌ها منحصراً در اختیار سوپر ادمین و مدیران دارای مجوز اختصاصی مالی است.
                     </p>
@@ -410,15 +410,15 @@ function AdminWalletDashboard() {
     return (
         <div className="space-y-8 max-w-7xl mx-auto pb-16" dir="rtl">
             {/* ── Top Header ──────────────────────────────────────────────── */}
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white border border-soft-border p-6 rounded-3xl shadow-sm">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-surface border border-soft-border p-6 rounded-3xl shadow-sm">
                 <div className="flex items-center gap-4">
                     <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
                         <Wallet className="w-8 h-8" />
                     </div>
                     <div>
                         <div className="flex items-center gap-3">
-                            <h1 className="text-2xl font-black text-slate-900">مدیریت مالی و امور کیف پول</h1>
-                            <span className="px-3 py-1 rounded-full text-xs font-black bg-blue-50 text-blue-700 border border-blue-200">
+                            <h1 className="text-2xl font-black text-foreground">مدیریت مالی و امور کیف پول</h1>
+                            <span className="px-3 py-1 rounded-full text-xs font-black bg-info-subtle text-info border border-info/30">
                                 حسابداری جامع
                             </span>
                         </div>
@@ -436,7 +436,7 @@ function AdminWalletDashboard() {
                             if (activeTab === "users") refetchUsers();
                             toast.success("اطلاعات مالی بروزرسانی شد");
                         }}
-                        className="flex items-center gap-2 px-4 py-2.5 rounded-2xl border border-soft-border text-slate-700 hover:bg-slate-50 transition text-xs font-bold"
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-2xl border border-soft-border text-foreground-secondary hover:bg-surface-secondary transition text-xs font-bold"
                     >
                         <RefreshCw className={`w-4 h-4 ${isTxFetching || isUsersFetching ? "animate-spin" : ""}`} />
                         <span>بروزرسانی</span>
@@ -473,75 +473,75 @@ function AdminWalletDashboard() {
                                 معادل: {formatRialToToman(summaryData?.totalSystemLiquidity)}
                             </p>
                         </div>
-                        <div className="p-3 bg-white/10 rounded-2xl backdrop-blur-md">
+                        <div className="p-3 bg-surface/10 rounded-2xl backdrop-blur-md">
                             <Landmark className="w-6 h-6 text-white" />
                         </div>
                     </div>
                     <div className="mt-4 pt-4 border-t border-white/15 flex items-center justify-between text-xs text-blue-100">
                         <span>کیف‌های دارای اعتبار:</span>
-                        <span className="font-bold bg-white/20 px-2 py-0.5 rounded-lg">
+                        <span className="font-bold bg-surface/20 px-2 py-0.5 rounded-lg">
                             {toPersianDigits(summaryData?.activeWalletsCount ?? 0)} از {toPersianDigits(summaryData?.totalWalletsCount ?? 0)}
                         </span>
                     </div>
                 </div>
 
                 {/* 2. Total Inflow / Credits */}
-                <div className="bg-white border border-soft-border rounded-3xl p-6 shadow-sm flex flex-col justify-between relative overflow-hidden group hover:border-emerald-300 transition">
+                <div className="bg-surface border border-soft-border rounded-3xl p-6 shadow-sm flex flex-col justify-between relative overflow-hidden group hover:border-emerald-300 transition">
                     <div className="flex items-start justify-between">
                         <div>
                             <span className="text-xs font-bold text-secondary block">کل واریزی‌ها (بستانکار)</span>
-                            <h3 className="text-2xl font-black text-emerald-600 mt-2 tracking-tight">
+                            <h3 className="text-2xl font-black text-success mt-2 tracking-tight">
                                 + {formatRials(summaryData?.totalCreditsAmount)}
                             </h3>
-                            <p className="text-xs text-slate-500 mt-1 font-medium">
+                            <p className="text-xs text-foreground-muted mt-1 font-medium">
                                 {formatRialToToman(summaryData?.totalCreditsAmount)}
                             </p>
                         </div>
-                        <div className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl">
+                        <div className="p-3 bg-success-subtle text-success rounded-2xl">
                             <TrendingUp className="w-6 h-6" />
                         </div>
                     </div>
-                    <div className="mt-4 pt-4 border-t border-soft-border flex items-center justify-between text-xs text-slate-600">
+                    <div className="mt-4 pt-4 border-t border-soft-border flex items-center justify-between text-xs text-foreground-secondary">
                         <span>واریزی امروز:</span>
-                        <span className="font-bold text-emerald-700">
+                        <span className="font-bold text-success">
                             + {formatRials(summaryData?.todayCredits)}
                         </span>
                     </div>
                 </div>
 
                 {/* 3. Total Outflow / Debits */}
-                <div className="bg-white border border-soft-border rounded-3xl p-6 shadow-sm flex flex-col justify-between relative overflow-hidden group hover:border-rose-300 transition">
+                <div className="bg-surface border border-soft-border rounded-3xl p-6 shadow-sm flex flex-col justify-between relative overflow-hidden group hover:border-rose-300 transition">
                     <div className="flex items-start justify-between">
                         <div>
                             <span className="text-xs font-bold text-secondary block">کل مصارف سامانه (بدهکار)</span>
-                            <h3 className="text-2xl font-black text-rose-600 mt-2 tracking-tight">
+                            <h3 className="text-2xl font-black text-error mt-2 tracking-tight">
                                 - {formatRials(summaryData?.totalDebitsAmount)}
                             </h3>
-                            <p className="text-xs text-slate-500 mt-1 font-medium">
+                            <p className="text-xs text-foreground-muted mt-1 font-medium">
                                 {formatRialToToman(summaryData?.totalDebitsAmount)}
                             </p>
                         </div>
-                        <div className="p-3 bg-rose-50 text-rose-600 rounded-2xl">
+                        <div className="p-3 bg-error-subtle text-error rounded-2xl">
                             <TrendingDown className="w-6 h-6" />
                         </div>
                     </div>
-                    <div className="mt-4 pt-4 border-t border-soft-border flex items-center justify-between text-xs text-slate-600">
+                    <div className="mt-4 pt-4 border-t border-soft-border flex items-center justify-between text-xs text-foreground-secondary">
                         <span>مصارف امروز:</span>
-                        <span className="font-bold text-rose-700">
+                        <span className="font-bold text-error">
                             - {formatRials(summaryData?.todayDebits)}
                         </span>
                     </div>
                 </div>
 
                 {/* 4. Total Gifts & Adjustments */}
-                <div className="bg-white border border-soft-border rounded-3xl p-6 shadow-sm flex flex-col justify-between relative overflow-hidden group hover:border-purple-300 transition">
+                <div className="bg-surface border border-soft-border rounded-3xl p-6 shadow-sm flex flex-col justify-between relative overflow-hidden group hover:border-purple-300 transition">
                     <div className="flex items-start justify-between">
                         <div>
                             <span className="text-xs font-bold text-secondary block">اعتبارات هدیه و تعدیل مدیر</span>
                             <h3 className="text-2xl font-black text-purple-600 mt-2 tracking-tight">
                                 {formatRials(summaryData?.totalGiftsAmount)}
                             </h3>
-                            <p className="text-xs text-slate-500 mt-1 font-medium">
+                            <p className="text-xs text-foreground-muted mt-1 font-medium">
                                 {formatRialToToman(summaryData?.totalGiftsAmount)}
                             </p>
                         </div>
@@ -549,9 +549,9 @@ function AdminWalletDashboard() {
                             <Gift className="w-6 h-6" />
                         </div>
                     </div>
-                    <div className="mt-4 pt-4 border-t border-soft-border flex items-center justify-between text-xs text-slate-600">
+                    <div className="mt-4 pt-4 border-t border-soft-border flex items-center justify-between text-xs text-foreground-secondary">
                         <span>کل تراکنش‌های موفق:</span>
-                        <span className="font-bold text-slate-800">
+                        <span className="font-bold text-foreground">
                             {toPersianDigits(summaryData?.totalCompletedTransactions ?? 0)} فقره
                         </span>
                     </div>
@@ -559,20 +559,20 @@ function AdminWalletDashboard() {
             </div>
 
             {/* ── Main Tab Navigation Bar ──────────────────────────────────── */}
-            <div className="bg-white border border-soft-border p-2 rounded-2xl flex items-center gap-2 shadow-sm">
+            <div className="bg-surface border border-soft-border p-2 rounded-2xl flex items-center gap-2 shadow-sm">
                 <button
                     onClick={() => setActiveTab("transactions")}
                     className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-xs font-black transition-all ${
                         activeTab === "transactions"
                             ? "bg-slate-900 text-white shadow-md"
-                            : "text-slate-600 hover:bg-slate-50"
+                            : "text-foreground-secondary hover:bg-surface-secondary"
                     }`}
                 >
                     <FileText className="w-4 h-4" />
                     <span>دفتر کل تراکنش‌ها</span>
                     {txData?.total !== undefined && (
                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                            activeTab === "transactions" ? "bg-white/20 text-white" : "bg-slate-100 text-slate-600"
+                            activeTab === "transactions" ? "bg-surface/20 text-white" : "bg-surface-secondary text-foreground-secondary"
                         }`}>
                             {toPersianDigits(txData.total)}
                         </span>
@@ -584,14 +584,14 @@ function AdminWalletDashboard() {
                     className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-xs font-black transition-all ${
                         activeTab === "users"
                             ? "bg-slate-900 text-white shadow-md"
-                            : "text-slate-600 hover:bg-slate-50"
+                            : "text-foreground-secondary hover:bg-surface-secondary"
                     }`}
                 >
                     <Users className="w-4 h-4" />
                     <span>موجودی و حساب‌های کاربران</span>
                     {usersData?.total !== undefined && (
                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                            activeTab === "users" ? "bg-white/20 text-white" : "bg-slate-100 text-slate-600"
+                            activeTab === "users" ? "bg-surface/20 text-white" : "bg-surface-secondary text-foreground-secondary"
                         }`}>
                             {toPersianDigits(usersData.total)}
                         </span>
@@ -603,7 +603,7 @@ function AdminWalletDashboard() {
                     className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-xs font-black transition-all ${
                         activeTab === "manual-operation"
                             ? "bg-primary text-white shadow-md"
-                            : "text-slate-600 hover:bg-slate-50"
+                            : "text-foreground-secondary hover:bg-surface-secondary"
                     }`}
                 >
                     <PlusCircle className="w-4 h-4" />
@@ -617,9 +617,9 @@ function AdminWalletDashboard() {
             {activeTab === "transactions" && (
                 <div className="space-y-6">
                     {/* Filter Console */}
-                    <div className="bg-white border border-soft-border p-6 rounded-3xl shadow-sm space-y-4">
+                    <div className="bg-surface border border-soft-border p-6 rounded-3xl shadow-sm space-y-4">
                         <div className="flex items-center justify-between border-b border-soft-border pb-4">
-                            <div className="flex items-center gap-2 text-slate-800 font-bold text-sm">
+                            <div className="flex items-center gap-2 text-foreground font-bold text-sm">
                                 <SlidersHorizontal className="w-4 h-4 text-primary" />
                                 <span>فیلترهای پیشرفته حسابداری و جستجو</span>
                             </div>
@@ -636,7 +636,7 @@ function AdminWalletDashboard() {
                                     setTxSort("createdAt_DESC");
                                     setTxPage(1);
                                 }}
-                                className="text-xs text-rose-600 hover:text-rose-700 font-bold flex items-center gap-1"
+                                className="text-xs text-error hover:text-error font-bold flex items-center gap-1"
                             >
                                 <X className="w-3.5 h-3.5" />
                                 <span>پاکسازی فیلترها</span>
@@ -646,7 +646,7 @@ function AdminWalletDashboard() {
                         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
                             {/* Search Input */}
                             <div className="space-y-1.5 lg:col-span-2">
-                                <label className="text-xs font-bold text-slate-600">جستجوی هوشمند</label>
+                                <label className="text-xs font-bold text-foreground-secondary">جستجوی هوشمند</label>
                                 <div className="relative">
                                     <input
                                         type="text"
@@ -656,22 +656,22 @@ function AdminWalletDashboard() {
                                             setTxPage(1);
                                         }}
                                         placeholder="شماره موبایل، نام کاربر، شناسه تراکنش، کد رهگیری، بابت..."
-                                        className="w-full pl-4 pr-10 py-2.5 bg-slate-50 border border-soft-border rounded-xl text-xs font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition"
+                                        className="w-full pl-4 pr-10 py-2.5 bg-surface-secondary border border-soft-border rounded-xl text-xs font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition"
                                     />
-                                    <Search className="w-4 h-4 text-slate-400 absolute right-3 top-3" />
+                                    <Search className="w-4 h-4 text-foreground-muted absolute right-3 top-3" />
                                 </div>
                             </div>
 
                             {/* Type Filter */}
                             <div className="space-y-1.5">
-                                <label className="text-xs font-bold text-slate-600">نوع تراکنش</label>
+                                <label className="text-xs font-bold text-foreground-secondary">نوع تراکنش</label>
                                 <select
                                     value={txType}
                                     onChange={(e) => {
                                         setTxType(e.target.value);
                                         setTxPage(1);
                                     }}
-                                    className="w-full px-3 py-2.5 bg-slate-50 border border-soft-border rounded-xl text-xs font-bold text-slate-700 outline-none"
+                                    className="w-full px-3 py-2.5 bg-surface-secondary border border-soft-border rounded-xl text-xs font-bold text-foreground-secondary outline-none"
                                 >
                                     <option value="ALL">همه انواع تراکنش</option>
                                     <option value="credit">واریز (بستانکار / +)</option>
@@ -683,14 +683,14 @@ function AdminWalletDashboard() {
 
                             {/* Status Filter */}
                             <div className="space-y-1.5">
-                                <label className="text-xs font-bold text-slate-600">وضعیت سند</label>
+                                <label className="text-xs font-bold text-foreground-secondary">وضعیت سند</label>
                                 <select
                                     value={txStatus}
                                     onChange={(e) => {
                                         setTxStatus(e.target.value);
                                         setTxPage(1);
                                     }}
-                                    className="w-full px-3 py-2.5 bg-slate-50 border border-soft-border rounded-xl text-xs font-bold text-slate-700 outline-none"
+                                    className="w-full px-3 py-2.5 bg-surface-secondary border border-soft-border rounded-xl text-xs font-bold text-foreground-secondary outline-none"
                                 >
                                     <option value="ALL">همه وضعیت‌ها</option>
                                     <option value="completed">تکمیل شده (موفق)</option>
@@ -702,14 +702,14 @@ function AdminWalletDashboard() {
 
                             {/* Channel Filter */}
                             <div className="space-y-1.5">
-                                <label className="text-xs font-bold text-slate-600">کانال / مبدا تراکنش</label>
+                                <label className="text-xs font-bold text-foreground-secondary">کانال / مبدا تراکنش</label>
                                 <select
                                     value={txChannel}
                                     onChange={(e) => {
                                         setTxChannel(e.target.value);
                                         setTxPage(1);
                                     }}
-                                    className="w-full px-3 py-2.5 bg-slate-50 border border-soft-border rounded-xl text-xs font-bold text-slate-700 outline-none"
+                                    className="w-full px-3 py-2.5 bg-surface-secondary border border-soft-border rounded-xl text-xs font-bold text-foreground-secondary outline-none"
                                 >
                                     <option value="ALL">همه کانال‌ها</option>
                                     <option value="GATEWAY">درگاه آنلاین شتاب (جیبیت)</option>
@@ -721,14 +721,14 @@ function AdminWalletDashboard() {
 
                             {/* Date Preset */}
                             <div className="space-y-1.5">
-                                <label className="text-xs font-bold text-slate-600">بازه زمانی</label>
+                                <label className="text-xs font-bold text-foreground-secondary">بازه زمانی</label>
                                 <select
                                     value={txDatePreset}
                                     onChange={(e) => {
                                         setTxDatePreset(e.target.value);
                                         setTxPage(1);
                                     }}
-                                    className="w-full px-3 py-2.5 bg-slate-50 border border-soft-border rounded-xl text-xs font-bold text-slate-700 outline-none"
+                                    className="w-full px-3 py-2.5 bg-surface-secondary border border-soft-border rounded-xl text-xs font-bold text-foreground-secondary outline-none"
                                 >
                                     <option value="ALL">همه زمان‌ها</option>
                                     <option value="TODAY">فقط امروز</option>
@@ -739,7 +739,7 @@ function AdminWalletDashboard() {
 
                             {/* Min Amount */}
                             <div className="space-y-1.5">
-                                <label className="text-xs font-bold text-slate-600">حداقل مبلغ (ریال)</label>
+                                <label className="text-xs font-bold text-foreground-secondary">حداقل مبلغ (ریال)</label>
                                 <input
                                     type="text"
                                     value={minAmount}
@@ -748,17 +748,17 @@ function AdminWalletDashboard() {
                                         setTxPage(1);
                                     }}
                                     placeholder="مثلا: 100000"
-                                    className="w-full px-3 py-2.5 bg-slate-50 border border-soft-border rounded-xl text-xs font-medium outline-none"
+                                    className="w-full px-3 py-2.5 bg-surface-secondary border border-soft-border rounded-xl text-xs font-medium outline-none"
                                 />
                             </div>
 
                             {/* Sort Filter */}
                             <div className="space-y-1.5">
-                                <label className="text-xs font-bold text-slate-600">مرتب‌سازی</label>
+                                <label className="text-xs font-bold text-foreground-secondary">مرتب‌سازی</label>
                                 <select
                                     value={txSort}
                                     onChange={(e) => setTxSort(e.target.value)}
-                                    className="w-full px-3 py-2.5 bg-slate-50 border border-soft-border rounded-xl text-xs font-bold text-slate-700 outline-none"
+                                    className="w-full px-3 py-2.5 bg-surface-secondary border border-soft-border rounded-xl text-xs font-bold text-foreground-secondary outline-none"
                                 >
                                     <option value="createdAt_DESC">جدیدترین تراکنش‌ها</option>
                                     <option value="createdAt_ASC">قدیمی‌ترین تراکنش‌ها</option>
@@ -770,16 +770,16 @@ function AdminWalletDashboard() {
 
                         {/* Filter Summary Banner */}
                         {txData && (
-                            <div className="pt-3 border-t border-soft-border flex flex-wrap items-center justify-between gap-4 text-xs font-bold text-slate-700">
+                            <div className="pt-3 border-t border-soft-border flex flex-wrap items-center justify-between gap-4 text-xs font-bold text-foreground-secondary">
                                 <div>
                                     تعداد یافته‌ها: <span className="text-primary font-black">{toPersianDigits(txData.total)}</span> رکورد
                                 </div>
                                 <div className="flex items-center gap-6">
-                                    <div className="flex items-center gap-1.5 text-emerald-700">
+                                    <div className="flex items-center gap-1.5 text-success">
                                         <span>مجموع بستانکار فیلترشده:</span>
                                         <span>+ {formatRials(txData.filteredTotalCredit)}</span>
                                     </div>
-                                    <div className="flex items-center gap-1.5 text-rose-700">
+                                    <div className="flex items-center gap-1.5 text-error">
                                         <span>مجموع بدهکار فیلترشده:</span>
                                         <span>- {formatRials(txData.filteredTotalDebit)}</span>
                                     </div>
@@ -789,11 +789,11 @@ function AdminWalletDashboard() {
                     </div>
 
                     {/* Transactions Table */}
-                    <div className="bg-white border border-soft-border rounded-3xl shadow-sm overflow-hidden">
+                    <div className="bg-surface border border-soft-border rounded-3xl shadow-sm overflow-hidden">
                         <div className="overflow-x-auto">
                             <table className="w-full text-right text-xs">
                                 <thead>
-                                    <tr className="bg-slate-50 border-b border-soft-border text-secondary font-black">
+                                    <tr className="bg-surface-secondary border-b border-soft-border text-secondary font-black">
                                         <th className="py-4 px-6">تاریخ و زمان</th>
                                         <th className="py-4 px-6">کاربر طرف حساب</th>
                                         <th className="py-4 px-6">کانال / مبدا</th>
@@ -804,7 +804,7 @@ function AdminWalletDashboard() {
                                         <th className="py-4 px-6 text-center">مشاهده سند</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-soft-border font-medium text-slate-700">
+                                <tbody className="divide-y divide-soft-border font-medium text-foreground-secondary">
                                     {isTxLoading ? (
                                         <tr>
                                             <td colSpan={8} className="py-12 text-center text-secondary">
@@ -823,14 +823,14 @@ function AdminWalletDashboard() {
                                         txData.items.map((tx) => {
                                             const isCredit = tx.type === "credit";
                                             return (
-                                                <tr key={tx.id} className="hover:bg-slate-50/80 transition">
+                                                <tr key={tx.id} className="hover:bg-surface-secondary/80 transition">
                                                     {/* Date */}
                                                     <td className="py-4 px-6">
                                                         <div className="flex flex-col">
-                                                            <span className="font-bold text-slate-800">
+                                                            <span className="font-bold text-foreground">
                                                                 {formatPersianDate(tx.createdAt)}
                                                             </span>
-                                                            <span className="text-[10px] text-slate-400 font-mono mt-0.5">
+                                                            <span className="text-[10px] text-foreground-muted font-mono mt-0.5">
                                                                 {tx.id.slice(0, 8)}...
                                                             </span>
                                                         </div>
@@ -842,11 +842,11 @@ function AdminWalletDashboard() {
                                                             onClick={() => setDetailDrawerUserId(tx.userId)}
                                                             className="text-right group flex flex-col"
                                                         >
-                                                            <span className="font-bold text-slate-900 group-hover:text-primary transition flex items-center gap-1">
+                                                            <span className="font-bold text-foreground group-hover:text-primary transition flex items-center gap-1">
                                                                 {tx.userFullName}
                                                                 <Eye className="w-3 h-3 opacity-0 group-hover:opacity-100 transition" />
                                                             </span>
-                                                            <span className="text-[11px] text-slate-500 font-mono" dir="ltr">
+                                                            <span className="text-[11px] text-foreground-muted font-mono" dir="ltr">
                                                                 {toPersianDigits(tx.userMobile)}
                                                             </span>
                                                         </button>
@@ -861,19 +861,19 @@ function AdminWalletDashboard() {
                                                             </span>
                                                         )}
                                                         {tx.channel === "ADMIN_MANUAL" && (
-                                                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-[10px] font-black bg-amber-50 text-amber-700 border border-amber-200">
+                                                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-[10px] font-black bg-warning-subtle text-warning border border-warning/30">
                                                                 <ShieldCheck className="w-3 h-3" />
                                                                 تعدیل دستی
                                                             </span>
                                                         )}
                                                         {tx.channel === "GATEWAY" && (
-                                                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-[10px] font-black bg-blue-50 text-blue-700 border border-blue-200">
+                                                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-[10px] font-black bg-info-subtle text-info border border-info/30">
                                                                 <CreditCard className="w-3 h-3" />
                                                                 درگاه آنلاین
                                                             </span>
                                                         )}
                                                         {tx.channel === "SYSTEM" && (
-                                                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-[10px] font-black bg-slate-100 text-slate-700 border border-slate-200">
+                                                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-[10px] font-black bg-surface-secondary text-foreground-secondary border border-border-subtle">
                                                                 <Activity className="w-3 h-3" />
                                                                 سیستمی
                                                             </span>
@@ -884,7 +884,7 @@ function AdminWalletDashboard() {
                                                     <td className="py-4 px-6">
                                                         <div className="flex flex-col">
                                                             <span className={`font-black text-sm flex items-center gap-1 ${
-                                                                isCredit ? "text-emerald-600" : "text-rose-600"
+                                                                isCredit ? "text-success" : "text-error"
                                                             }`}>
                                                                 {isCredit ? (
                                                                     <ArrowUpRight className="w-4 h-4 shrink-0" />
@@ -893,7 +893,7 @@ function AdminWalletDashboard() {
                                                                 )}
                                                                 {isCredit ? "+" : "-"} {formatRials(tx.amount)}
                                                             </span>
-                                                            <span className="text-[10px] text-slate-400 font-bold">
+                                                            <span className="text-[10px] text-foreground-muted font-bold">
                                                                 {formatRialToToman(tx.amount)}
                                                             </span>
                                                         </div>
@@ -901,7 +901,7 @@ function AdminWalletDashboard() {
 
                                                     {/* Reason */}
                                                     <td className="py-4 px-6 max-w-xs truncate" title={tx.reason}>
-                                                        <span className="text-slate-700 text-xs">
+                                                        <span className="text-foreground-secondary text-xs">
                                                             {tx.reason || "—"}
                                                         </span>
                                                     </td>
@@ -909,19 +909,19 @@ function AdminWalletDashboard() {
                                                     {/* Status */}
                                                     <td className="py-4 px-6">
                                                         {tx.status === "completed" && (
-                                                            <span className="inline-flex items-center gap-1 text-emerald-700 font-bold text-xs">
+                                                            <span className="inline-flex items-center gap-1 text-success font-bold text-xs">
                                                                 <CheckCircle2 className="w-3.5 h-3.5" />
                                                                 موفق
                                                             </span>
                                                         )}
                                                         {tx.status === "pending" && (
-                                                            <span className="inline-flex items-center gap-1 text-amber-600 font-bold text-xs">
+                                                            <span className="inline-flex items-center gap-1 text-warning font-bold text-xs">
                                                                 <Clock className="w-3.5 h-3.5 animate-pulse" />
                                                                 در انتظار
                                                             </span>
                                                         )}
                                                         {tx.status === "failed" && (
-                                                            <span className="inline-flex items-center gap-1 text-rose-600 font-bold text-xs">
+                                                            <span className="inline-flex items-center gap-1 text-error font-bold text-xs">
                                                                 <XCircle className="w-3.5 h-3.5" />
                                                                 ناموفق
                                                             </span>
@@ -931,11 +931,11 @@ function AdminWalletDashboard() {
                                                     {/* Admin Info */}
                                                     <td className="py-4 px-6">
                                                         {tx.adminFullName ? (
-                                                            <span className="text-xs font-bold text-slate-800 bg-slate-100 px-2 py-1 rounded-lg">
+                                                            <span className="text-xs font-bold text-foreground bg-surface-secondary px-2 py-1 rounded-lg">
                                                                 {tx.adminFullName}
                                                             </span>
                                                         ) : (
-                                                            <span className="text-slate-400 text-xs">—</span>
+                                                            <span className="text-foreground-muted text-xs">—</span>
                                                         )}
                                                     </td>
 
@@ -943,7 +943,7 @@ function AdminWalletDashboard() {
                                                     <td className="py-4 px-6 text-center">
                                                         <button
                                                             onClick={() => setSelectedTx(tx)}
-                                                            className="p-2 rounded-xl border border-soft-border hover:bg-slate-100 text-slate-700 transition"
+                                                            className="p-2 rounded-xl border border-soft-border hover:bg-surface-secondary text-foreground-secondary transition"
                                                             title="مشاهده سند تراکنش"
                                                         >
                                                             <Eye className="w-4 h-4" />
@@ -959,7 +959,7 @@ function AdminWalletDashboard() {
 
                         {/* Pagination */}
                         {txData && txData.totalPages > 1 && (
-                            <div className="p-4 border-t border-soft-border flex items-center justify-between text-xs font-bold text-slate-600">
+                            <div className="p-4 border-t border-soft-border flex items-center justify-between text-xs font-bold text-foreground-secondary">
                                 <div>
                                     صفحه {toPersianDigits(txPage)} از {toPersianDigits(txData.totalPages)}
                                 </div>
@@ -967,14 +967,14 @@ function AdminWalletDashboard() {
                                     <button
                                         disabled={txPage <= 1}
                                         onClick={() => setTxPage((p) => Math.max(1, p - 1))}
-                                        className="p-2 rounded-xl border border-soft-border disabled:opacity-40 hover:bg-slate-50 transition"
+                                        className="p-2 rounded-xl border border-soft-border disabled:opacity-40 hover:bg-surface-secondary transition"
                                     >
                                         <ChevronRight className="w-4 h-4" />
                                     </button>
                                     <button
                                         disabled={txPage >= txData.totalPages}
                                         onClick={() => setTxPage((p) => p + 1)}
-                                        className="p-2 rounded-xl border border-soft-border disabled:opacity-40 hover:bg-slate-50 transition"
+                                        className="p-2 rounded-xl border border-soft-border disabled:opacity-40 hover:bg-surface-secondary transition"
                                     >
                                         <ChevronLeft className="w-4 h-4" />
                                     </button>
@@ -991,11 +991,11 @@ function AdminWalletDashboard() {
             {activeTab === "users" && (
                 <div className="space-y-6">
                     {/* User Search & Filter Bar */}
-                    <div className="bg-white border border-soft-border p-6 rounded-3xl shadow-sm space-y-4">
+                    <div className="bg-surface border border-soft-border p-6 rounded-3xl shadow-sm space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
                             {/* Search */}
                             <div className="space-y-1.5 md:col-span-2">
-                                <label className="text-xs font-bold text-slate-600">جستجوی کاربر</label>
+                                <label className="text-xs font-bold text-foreground-secondary">جستجوی کاربر</label>
                                 <div className="relative">
                                     <input
                                         type="text"
@@ -1005,19 +1005,19 @@ function AdminWalletDashboard() {
                                             setUserPage(1);
                                         }}
                                         placeholder="شماره موبایل، نام و نام خانوادگی، یا شناسه کاربری..."
-                                        className="w-full pl-4 pr-10 py-2.5 bg-slate-50 border border-soft-border rounded-xl text-xs font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition"
+                                        className="w-full pl-4 pr-10 py-2.5 bg-surface-secondary border border-soft-border rounded-xl text-xs font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition"
                                     />
-                                    <Search className="w-4 h-4 text-slate-400 absolute right-3 top-3" />
+                                    <Search className="w-4 h-4 text-foreground-muted absolute right-3 top-3" />
                                 </div>
                             </div>
 
                             {/* Sort */}
                             <div className="space-y-1.5">
-                                <label className="text-xs font-bold text-slate-600">مرتب‌سازی موجودی</label>
+                                <label className="text-xs font-bold text-foreground-secondary">مرتب‌سازی موجودی</label>
                                 <select
                                     value={userSort}
                                     onChange={(e) => setUserSort(e.target.value)}
-                                    className="w-full px-3 py-2.5 bg-slate-50 border border-soft-border rounded-xl text-xs font-bold text-slate-700 outline-none"
+                                    className="w-full px-3 py-2.5 bg-surface-secondary border border-soft-border rounded-xl text-xs font-bold text-foreground-secondary outline-none"
                                 >
                                     <option value="balance_DESC">بیشترین موجودی کیف پول</option>
                                     <option value="balance_ASC">کمترین موجودی کیف پول</option>
@@ -1028,7 +1028,7 @@ function AdminWalletDashboard() {
 
                             {/* Checkboxes */}
                             <div className="flex items-center gap-4 py-2">
-                                <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-slate-700">
+                                <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-foreground-secondary">
                                     <input
                                         type="checkbox"
                                         checked={userHasBalanceOnly}
@@ -1036,12 +1036,12 @@ function AdminWalletDashboard() {
                                             setUserHasBalanceOnly(e.target.checked);
                                             setUserPage(1);
                                         }}
-                                        className="rounded border-slate-300 text-primary focus:ring-primary w-4 h-4"
+                                        className="rounded border-border text-primary focus:ring-primary w-4 h-4"
                                     />
                                     <span>فقط دارای موجودی (&gt; ۰)</span>
                                 </label>
 
-                                <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-slate-700">
+                                <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-foreground-secondary">
                                     <input
                                         type="checkbox"
                                         checked={userFrozenOnly}
@@ -1049,7 +1049,7 @@ function AdminWalletDashboard() {
                                             setUserFrozenOnly(e.target.checked);
                                             setUserPage(1);
                                         }}
-                                        className="rounded border-slate-300 text-rose-600 focus:ring-rose-500 w-4 h-4"
+                                        className="rounded border-border text-error focus:ring-rose-500 w-4 h-4"
                                     />
                                     <span>مسدود شده‌ها</span>
                                 </label>
@@ -1058,11 +1058,11 @@ function AdminWalletDashboard() {
                     </div>
 
                     {/* Users Table */}
-                    <div className="bg-white border border-soft-border rounded-3xl shadow-sm overflow-hidden">
+                    <div className="bg-surface border border-soft-border rounded-3xl shadow-sm overflow-hidden">
                         <div className="overflow-x-auto">
                             <table className="w-full text-right text-xs">
                                 <thead>
-                                    <tr className="bg-slate-50 border-b border-soft-border text-secondary font-black">
+                                    <tr className="bg-surface-secondary border-b border-soft-border text-secondary font-black">
                                         <th className="py-4 px-6">کاربر</th>
                                         <th className="py-4 px-6">موجودی کیف پول</th>
                                         <th className="py-4 px-6">وضعیت کیف</th>
@@ -1072,7 +1072,7 @@ function AdminWalletDashboard() {
                                         <th className="py-4 px-6 text-center">عملیات مالی</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-soft-border font-medium text-slate-700">
+                                <tbody className="divide-y divide-soft-border font-medium text-foreground-secondary">
                                     {isUsersLoading ? (
                                         <tr>
                                             <td colSpan={7} className="py-12 text-center text-secondary">
@@ -1091,23 +1091,23 @@ function AdminWalletDashboard() {
                                         usersData.items.map((u) => {
                                             const hasPositiveBalance = parseFloat(u.balance) > 0;
                                             return (
-                                                <tr key={u.userId} className="hover:bg-slate-50/80 transition">
+                                                <tr key={u.userId} className="hover:bg-surface-secondary/80 transition">
                                                     {/* User Info */}
                                                     <td className="py-4 px-6">
                                                         <div className="flex items-center gap-3">
-                                                            <div className="w-10 h-10 rounded-2xl bg-slate-100 flex items-center justify-center font-black text-slate-700 text-sm shrink-0">
+                                                            <div className="w-10 h-10 rounded-2xl bg-surface-secondary flex items-center justify-center font-black text-foreground-secondary text-sm shrink-0">
                                                                 {u.fullName.charAt(0)}
                                                             </div>
                                                             <div>
-                                                                <div className="font-bold text-slate-900 flex items-center gap-2">
+                                                                <div className="font-bold text-foreground flex items-center gap-2">
                                                                     <span>{u.fullName}</span>
                                                                     {u.kycStatus === "Verified" && (
-                                                                        <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                                                        <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-success-subtle text-success border border-success/30">
                                                                             احراز هویت
                                                                         </span>
                                                                     )}
                                                                 </div>
-                                                                <span className="text-[11px] text-slate-500 font-mono block mt-0.5" dir="ltr">
+                                                                <span className="text-[11px] text-foreground-muted font-mono block mt-0.5" dir="ltr">
                                                                     {toPersianDigits(u.mobileNumber)}
                                                                 </span>
                                                             </div>
@@ -1118,7 +1118,7 @@ function AdminWalletDashboard() {
                                                     <td className="py-4 px-6">
                                                         <div className="flex flex-col">
                                                             <span className={`text-sm font-black ${
-                                                                hasPositiveBalance ? "text-slate-900" : "text-slate-400"
+                                                                hasPositiveBalance ? "text-foreground" : "text-foreground-muted"
                                                             }`}>
                                                                 {formatRials(u.balance)}
                                                             </span>
@@ -1131,12 +1131,12 @@ function AdminWalletDashboard() {
                                                     {/* Wallet Status */}
                                                     <td className="py-4 px-6">
                                                         {u.isFrozen ? (
-                                                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-[10px] font-black bg-rose-50 text-rose-700 border border-rose-200">
+                                                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-[10px] font-black bg-error-subtle text-error border border-error/30">
                                                                 <Lock className="w-3 h-3" />
                                                                 مسدود شده
                                                             </span>
                                                         ) : (
-                                                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-[10px] font-black bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-[10px] font-black bg-success-subtle text-success border border-success/30">
                                                                 <CheckCircle2 className="w-3 h-3" />
                                                                 فعال
                                                             </span>
@@ -1146,10 +1146,10 @@ function AdminWalletDashboard() {
                                                     {/* Turnover */}
                                                     <td className="py-4 px-6">
                                                         <div className="flex flex-col gap-0.5 text-[11px]">
-                                                            <span className="text-emerald-700 font-bold">
+                                                            <span className="text-success font-bold">
                                                                 + {formatRials(u.totalDeposited)}
                                                             </span>
-                                                            <span className="text-rose-700 font-bold">
+                                                            <span className="text-error font-bold">
                                                                 - {formatRials(u.totalSpent)}
                                                             </span>
                                                         </div>
@@ -1157,14 +1157,14 @@ function AdminWalletDashboard() {
 
                                                     {/* Transactions Count */}
                                                     <td className="py-4 px-6">
-                                                        <span className="font-bold text-slate-800">
+                                                        <span className="font-bold text-foreground">
                                                             {toPersianDigits(u.transactionsCount)} تراکنش
                                                         </span>
                                                     </td>
 
                                                     {/* Last Activity */}
                                                     <td className="py-4 px-6">
-                                                        <span className="text-slate-500 text-[11px]">
+                                                        <span className="text-foreground-muted text-[11px]">
                                                             {formatPersianDate(u.lastTransactionAt)}
                                                         </span>
                                                     </td>
@@ -1184,7 +1184,7 @@ function AdminWalletDashboard() {
 
                                                             <button
                                                                 onClick={() => handleOpenQuickCharge(u, "CREDIT")}
-                                                                className="px-2.5 py-1.5 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 transition text-xs font-bold"
+                                                                className="px-2.5 py-1.5 rounded-xl bg-surface-secondary text-foreground-secondary hover:bg-slate-200 transition text-xs font-bold"
                                                                 title="شارژ / کسر دستی"
                                                             >
                                                                 <span>تعدیل</span>
@@ -1193,7 +1193,7 @@ function AdminWalletDashboard() {
                                                             {/* Detail Drawer */}
                                                             <button
                                                                 onClick={() => setDetailDrawerUserId(u.userId)}
-                                                                className="p-1.5 rounded-xl border border-soft-border hover:bg-slate-100 text-slate-700 transition"
+                                                                className="p-1.5 rounded-xl border border-soft-border hover:bg-surface-secondary text-foreground-secondary transition"
                                                                 title="ریزگردش و سوابق مالی"
                                                             >
                                                                 <Eye className="w-4 h-4" />
@@ -1204,8 +1204,8 @@ function AdminWalletDashboard() {
                                                                 onClick={() => setFreezeModalUser(u)}
                                                                 className={`p-1.5 rounded-xl transition ${
                                                                     u.isFrozen
-                                                                        ? "bg-rose-100 text-rose-700 hover:bg-rose-200"
-                                                                        : "border border-soft-border text-slate-500 hover:text-rose-600"
+                                                                        ? "bg-error-subtle text-error hover:bg-rose-200"
+                                                                        : "border border-soft-border text-foreground-muted hover:text-error"
                                                                 }`}
                                                                 title={u.isFrozen ? "رفع مسدودیت" : "مسدود کردن کیف پول"}
                                                             >
@@ -1227,7 +1227,7 @@ function AdminWalletDashboard() {
 
                         {/* Pagination */}
                         {usersData && usersData.totalPages > 1 && (
-                            <div className="p-4 border-t border-soft-border flex items-center justify-between text-xs font-bold text-slate-600">
+                            <div className="p-4 border-t border-soft-border flex items-center justify-between text-xs font-bold text-foreground-secondary">
                                 <div>
                                     صفحه {toPersianDigits(userPage)} از {toPersianDigits(usersData.totalPages)}
                                 </div>
@@ -1235,14 +1235,14 @@ function AdminWalletDashboard() {
                                     <button
                                         disabled={userPage <= 1}
                                         onClick={() => setUserPage((p) => Math.max(1, p - 1))}
-                                        className="p-2 rounded-xl border border-soft-border disabled:opacity-40 hover:bg-slate-50 transition"
+                                        className="p-2 rounded-xl border border-soft-border disabled:opacity-40 hover:bg-surface-secondary transition"
                                     >
                                         <ChevronRight className="w-4 h-4" />
                                     </button>
                                     <button
                                         disabled={userPage >= usersData.totalPages}
                                         onClick={() => setUserPage((p) => p + 1)}
-                                        className="p-2 rounded-xl border border-soft-border disabled:opacity-40 hover:bg-slate-50 transition"
+                                        className="p-2 rounded-xl border border-soft-border disabled:opacity-40 hover:bg-surface-secondary transition"
                                     >
                                         <ChevronLeft className="w-4 h-4" />
                                     </button>
@@ -1258,14 +1258,14 @@ function AdminWalletDashboard() {
             ══════════════════════════════════════════════════════════════════ */}
             {activeTab === "manual-operation" && (
                 <div className="max-w-3xl mx-auto space-y-6">
-                    <div className="bg-white border border-soft-border rounded-3xl shadow-sm overflow-hidden">
-                        <div className="p-6 border-b border-soft-border bg-slate-50 flex items-center justify-between">
+                    <div className="bg-surface border border-soft-border rounded-3xl shadow-sm overflow-hidden">
+                        <div className="p-6 border-b border-soft-border bg-surface-secondary flex items-center justify-between">
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
                                     <PlusCircle className="w-6 h-6" />
                                 </div>
                                 <div>
-                                    <h3 className="font-bold text-slate-900 text-base">عملیات شارژ و تعدیل مستقیم حساب</h3>
+                                    <h3 className="font-bold text-foreground text-base">عملیات شارژ و تعدیل مستقیم حساب</h3>
                                     <p className="text-xs text-secondary font-medium">افزایش، کاهش یا اهدای اعتبار به هر کاربر پلتفرم</p>
                                 </div>
                             </div>
@@ -1274,7 +1274,7 @@ function AdminWalletDashboard() {
                         <div className="p-8 space-y-6">
                             {/* 1. Select Operation Type */}
                             <div className="space-y-2">
-                                <label className="text-xs font-black text-slate-700">نوع عملیات مالی</label>
+                                <label className="text-xs font-black text-foreground-secondary">نوع عملیات مالی</label>
                                 <div className="grid grid-cols-3 gap-3">
                                     <button
                                         type="button"
@@ -1282,7 +1282,7 @@ function AdminWalletDashboard() {
                                         className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all text-xs font-black ${
                                             operationType === "GIFT"
                                                 ? "bg-purple-50 border-purple-500 text-purple-700 shadow-sm"
-                                                : "border-soft-border text-slate-600 hover:bg-slate-50"
+                                                : "border-soft-border text-foreground-secondary hover:bg-surface-secondary"
                                         }`}
                                     >
                                         <Gift className="w-6 h-6 text-purple-600" />
@@ -1294,11 +1294,11 @@ function AdminWalletDashboard() {
                                         onClick={() => setOperationType("CREDIT")}
                                         className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all text-xs font-black ${
                                             operationType === "CREDIT"
-                                                ? "bg-emerald-50 border-emerald-500 text-emerald-700 shadow-sm"
-                                                : "border-soft-border text-slate-600 hover:bg-slate-50"
+                                                ? "bg-success-subtle border-emerald-500 text-success shadow-sm"
+                                                : "border-soft-border text-foreground-secondary hover:bg-surface-secondary"
                                         }`}
                                     >
-                                        <ArrowUpRight className="w-6 h-6 text-emerald-600" />
+                                        <ArrowUpRight className="w-6 h-6 text-success" />
                                         <span>واریز دستی (بستانکار)</span>
                                     </button>
 
@@ -1307,25 +1307,25 @@ function AdminWalletDashboard() {
                                         onClick={() => setOperationType("DEBIT")}
                                         className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all text-xs font-black ${
                                             operationType === "DEBIT"
-                                                ? "bg-rose-50 border-rose-500 text-rose-700 shadow-sm"
-                                                : "border-soft-border text-slate-600 hover:bg-slate-50"
+                                                ? "bg-error-subtle border-rose-500 text-error shadow-sm"
+                                                : "border-soft-border text-foreground-secondary hover:bg-surface-secondary"
                                         }`}
                                     >
-                                        <ArrowDownLeft className="w-6 h-6 text-rose-600" />
+                                        <ArrowDownLeft className="w-6 h-6 text-error" />
                                         <span>برداشت دستی (بدهکار)</span>
                                     </button>
                                 </div>
                             </div>
 
                             {/* 2. Target User Selection (Live Autocomplete & Rich Card) */}
-                            <div className="space-y-3 bg-slate-50 p-5 rounded-2xl border border-soft-border">
+                            <div className="space-y-3 bg-surface-secondary p-5 rounded-2xl border border-soft-border">
                                 <div className="flex items-center justify-between">
-                                    <label className="text-xs font-black text-slate-700 flex items-center gap-1.5">
+                                    <label className="text-xs font-black text-foreground-secondary flex items-center gap-1.5">
                                         <User className="w-4 h-4 text-primary" />
                                         <span>انتخاب کاربر طرف حساب</span>
                                     </label>
                                     {targetUserSelected && (
-                                        <span className="text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full flex items-center gap-1 text-[11px] font-bold">
+                                        <span className="text-success bg-success-subtle border border-success/30 px-2.5 py-0.5 rounded-full flex items-center gap-1 text-[11px] font-bold">
                                             <CheckCircle2 className="w-3.5 h-3.5" />
                                             کاربر انتخاب شده
                                         </span>
@@ -1334,16 +1334,16 @@ function AdminWalletDashboard() {
 
                                 {targetUserSelected ? (
                                     /* Selected User Card */
-                                    <div className="bg-white p-4 rounded-2xl border-2 border-emerald-400/80 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                    <div className="bg-surface p-4 rounded-2xl border-2 border-emerald-400/80 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                         <div className="flex items-center gap-3">
                                             <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center font-black text-base shadow-sm shrink-0">
                                                 {targetUserSelected.fullName.charAt(0) || "ک"}
                                             </div>
                                             <div>
                                                 <div className="flex items-center gap-2">
-                                                    <h4 className="font-black text-slate-900 text-sm">{targetUserSelected.fullName}</h4>
+                                                    <h4 className="font-black text-foreground text-sm">{targetUserSelected.fullName}</h4>
                                                 </div>
-                                                <span className="text-xs text-slate-500 font-mono block mt-0.5" dir="ltr">
+                                                <span className="text-xs text-foreground-muted font-mono block mt-0.5" dir="ltr">
                                                     {toPersianDigits(targetUserSelected.mobileNumber)}
                                                 </span>
                                             </div>
@@ -1351,16 +1351,16 @@ function AdminWalletDashboard() {
 
                                         <div className="flex items-center gap-2 self-end sm:self-center">
                                             {targetUserSelected.balance !== undefined && (
-                                                <div className="text-left bg-slate-50 px-3 py-1.5 rounded-xl border border-soft-border">
-                                                    <span className="text-[10px] text-slate-400 block font-bold">موجودی فعلی:</span>
-                                                    <span className="text-xs font-black text-emerald-700">{formatRials(targetUserSelected.balance)}</span>
+                                                <div className="text-left bg-surface-secondary px-3 py-1.5 rounded-xl border border-soft-border">
+                                                    <span className="text-[10px] text-foreground-muted block font-bold">موجودی فعلی:</span>
+                                                    <span className="text-xs font-black text-success">{formatRials(targetUserSelected.balance)}</span>
                                                 </div>
                                             )}
 
                                             <button
                                                 type="button"
                                                 onClick={() => setDetailDrawerUserId(targetUserSelected.id)}
-                                                className="p-2 rounded-xl border border-soft-border hover:bg-slate-100 text-slate-600 transition"
+                                                className="p-2 rounded-xl border border-soft-border hover:bg-surface-secondary text-foreground-secondary transition"
                                                 title="مشاهده پرونده مالی و تراکنش‌ها"
                                             >
                                                 <Eye className="w-4 h-4" />
@@ -1374,7 +1374,7 @@ function AdminWalletDashboard() {
                                                     setUserSearchTerm("");
                                                     setIsSearchDropdownOpen(true);
                                                 }}
-                                                className="px-3 py-2 rounded-xl bg-slate-100 hover:bg-rose-50 hover:text-rose-600 text-slate-600 text-xs font-bold transition flex items-center gap-1"
+                                                className="px-3 py-2 rounded-xl bg-surface-secondary hover:bg-error-subtle hover:text-error text-foreground-secondary text-xs font-bold transition flex items-center gap-1"
                                             >
                                                 <X className="w-3.5 h-3.5" />
                                                 <span>تغییر کاربر</span>
@@ -1394,9 +1394,9 @@ function AdminWalletDashboard() {
                                                 }}
                                                 onFocus={() => setIsSearchDropdownOpen(true)}
                                                 placeholder="جستجوی کاربر با نام یا شماره موبایل (مثلا: ۰۹۱۲ یا رضایی)..."
-                                                className="w-full pl-10 pr-10 py-3.5 bg-white border border-soft-border rounded-2xl text-xs font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition shadow-sm"
+                                                className="w-full pl-10 pr-10 py-3.5 bg-surface border border-soft-border rounded-2xl text-xs font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition shadow-sm"
                                             />
-                                            <Search className="w-4 h-4 text-slate-400 absolute right-3.5 top-4" />
+                                            <Search className="w-4 h-4 text-foreground-muted absolute right-3.5 top-4" />
                                             {userSearchTerm && (
                                                 <button
                                                     type="button"
@@ -1404,7 +1404,7 @@ function AdminWalletDashboard() {
                                                         setUserSearchTerm("");
                                                         setIsSearchDropdownOpen(false);
                                                     }}
-                                                    className="absolute left-3.5 top-3.5 p-1 text-slate-400 hover:text-slate-600 rounded-lg"
+                                                    className="absolute left-3.5 top-3.5 p-1 text-foreground-muted hover:text-foreground-secondary rounded-lg"
                                                 >
                                                     <X className="w-4 h-4" />
                                                 </button>
@@ -1413,14 +1413,14 @@ function AdminWalletDashboard() {
 
                                         {/* Autocomplete Dropdown */}
                                         {isSearchDropdownOpen && userSearchTerm.trim().length >= 2 && (
-                                            <div className="absolute z-30 top-full mt-1 right-0 left-0 bg-white border border-soft-border rounded-2xl shadow-xl overflow-hidden divide-y divide-soft-border max-h-72 overflow-y-auto animate-in fade-in zoom-in-95 duration-150">
+                                            <div className="absolute z-30 top-full mt-1 right-0 left-0 bg-surface border border-soft-border rounded-2xl shadow-xl overflow-hidden divide-y divide-soft-border max-h-72 overflow-y-auto animate-in fade-in zoom-in-95 duration-150">
                                                 {isSearchingUsers ? (
-                                                    <div className="p-4 text-center text-xs text-slate-500 flex items-center justify-center gap-2">
+                                                    <div className="p-4 text-center text-xs text-foreground-muted flex items-center justify-center gap-2">
                                                         <RefreshCw className="w-4 h-4 animate-spin text-primary" />
                                                         <span>در حال جستجوی کاربران...</span>
                                                     </div>
                                                 ) : !searchedUsersData?.items || searchedUsersData.items.length === 0 ? (
-                                                    <div className="p-6 text-center text-xs text-slate-500 space-y-1">
+                                                    <div className="p-6 text-center text-xs text-foreground-muted space-y-1">
                                                         <Users className="w-6 h-6 text-slate-300 mx-auto" />
                                                         <p className="font-bold">کاربری با این مشخصات یافت نشد</p>
                                                     </div>
@@ -1443,27 +1443,27 @@ function AdminWalletDashboard() {
                                                             className="w-full p-3.5 text-right hover:bg-primary/5 transition flex items-center justify-between group"
                                                         >
                                                             <div className="flex items-center gap-3">
-                                                                <div className="w-9 h-9 rounded-xl bg-slate-100 group-hover:bg-primary/10 group-hover:text-primary transition flex items-center justify-center font-bold text-slate-700 text-xs">
+                                                                <div className="w-9 h-9 rounded-xl bg-surface-secondary group-hover:bg-primary/10 group-hover:text-primary transition flex items-center justify-center font-bold text-foreground-secondary text-xs">
                                                                     {u.fullName.charAt(0)}
                                                                 </div>
                                                                 <div>
-                                                                    <div className="font-bold text-slate-900 text-xs flex items-center gap-1.5">
+                                                                    <div className="font-bold text-foreground text-xs flex items-center gap-1.5">
                                                                         <span>{u.fullName}</span>
                                                                         {u.kycStatus === "Verified" && (
-                                                                            <span className="px-1.5 py-0.2 rounded text-[8px] font-black bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                                                            <span className="px-1.5 py-0.2 rounded text-[8px] font-black bg-success-subtle text-success border border-success/30">
                                                                                 تایید هویت
                                                                             </span>
                                                                         )}
                                                                     </div>
-                                                                    <span className="text-[11px] text-slate-500 font-mono block mt-0.5" dir="ltr">
+                                                                    <span className="text-[11px] text-foreground-muted font-mono block mt-0.5" dir="ltr">
                                                                         {toPersianDigits(u.mobileNumber)}
                                                                     </span>
                                                                 </div>
                                                             </div>
 
                                                             <div className="text-left">
-                                                                <span className="text-[10px] text-slate-400 block font-bold">موجودی:</span>
-                                                                <span className="text-xs font-black text-slate-800 group-hover:text-primary transition">
+                                                                <span className="text-[10px] text-foreground-muted block font-bold">موجودی:</span>
+                                                                <span className="text-xs font-black text-foreground group-hover:text-primary transition">
                                                                     {formatRials(u.balance)}
                                                                 </span>
                                                             </div>
@@ -1474,7 +1474,7 @@ function AdminWalletDashboard() {
                                         )}
 
                                         {/* Quick Helper / Shortcut to Users Tab */}
-                                        <div className="flex items-center justify-between pt-1 text-[11px] text-slate-500">
+                                        <div className="flex items-center justify-between pt-1 text-[11px] text-foreground-muted">
                                             <span>کاربر مورد نظر را از کادر بالا جستجو و انتخاب نمایید.</span>
                                             <button
                                                 type="button"
@@ -1491,13 +1491,13 @@ function AdminWalletDashboard() {
 
                             {/* 3. Amount & Quick Presets */}
                             <div className="space-y-2">
-                                <label className="text-xs font-black text-slate-700">مبلغ تراکنش (ریال)</label>
+                                <label className="text-xs font-black text-foreground-secondary">مبلغ تراکنش (ریال)</label>
                                 <input
                                     type="text"
                                     value={manualAmount ? formatCurrency(parseInt(manualAmount.replace(/[^\d]/g, ""), 10) || 0) : ""}
                                     onChange={(e) => setManualAmount(e.target.value.replace(/[^\d]/g, ""))}
                                     placeholder="مبلغ را به ریال وارد کنید"
-                                    className="w-full px-4 py-3 bg-white border border-soft-border rounded-xl text-base font-black text-slate-900 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition"
+                                    className="w-full px-4 py-3 bg-surface border border-soft-border rounded-xl text-base font-black text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition"
                                 />
 
                                 {/* Quick Presets */}
@@ -1507,7 +1507,7 @@ function AdminWalletDashboard() {
                                             key={preset}
                                             type="button"
                                             onClick={() => setManualAmount(String(preset))}
-                                            className="px-3 py-1.5 rounded-lg border border-soft-border text-[11px] font-bold text-slate-600 hover:bg-slate-100 transition"
+                                            className="px-3 py-1.5 rounded-lg border border-soft-border text-[11px] font-bold text-foreground-secondary hover:bg-surface-secondary transition"
                                         >
                                             {formatRialToToman(preset)}
                                         </button>
@@ -1515,7 +1515,7 @@ function AdminWalletDashboard() {
                                 </div>
 
                                 {manualAmount && (
-                                    <div className="bg-blue-50 border border-blue-200 p-3 rounded-xl flex items-center justify-between text-xs font-bold text-blue-900 mt-2">
+                                    <div className="bg-info-subtle border border-info/30 p-3 rounded-xl flex items-center justify-between text-xs font-bold text-foreground mt-2">
                                         <span>معادل به تومان:</span>
                                         <span className="text-sm font-black">{formatRialToToman(manualAmount)}</span>
                                     </div>
@@ -1524,19 +1524,19 @@ function AdminWalletDashboard() {
 
                             {/* 4. Note / Reason */}
                             <div className="space-y-2">
-                                <label className="text-xs font-black text-slate-700">شرح / دلیل تراکنش (ثبت در دفتر حسابداری)</label>
+                                <label className="text-xs font-black text-foreground-secondary">شرح / دلیل تراکنش (ثبت در دفتر حسابداری)</label>
                                 <input
                                     type="text"
                                     value={manualNote}
                                     onChange={(e) => setManualNote(e.target.value)}
                                     placeholder="علت اعمال این تراکنش (مثلا: هدیه ثبت‌نام ویژه، اصلاح سند مالی شماره ...)"
-                                    className="w-full px-4 py-3 bg-white border border-soft-border rounded-xl text-xs font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition"
+                                    className="w-full px-4 py-3 bg-surface border border-soft-border rounded-xl text-xs font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition"
                                 />
                             </div>
 
                             {/* Warning Box */}
-                            <div className="bg-amber-50 rounded-2xl p-4 flex items-start gap-3 text-amber-800 text-xs border border-amber-200">
-                                <Info className="shrink-0 mt-0.5 text-amber-600" size={18} />
+                            <div className="bg-warning-subtle rounded-2xl p-4 flex items-start gap-3 text-warning text-xs border border-warning/30">
+                                <Info className="shrink-0 mt-0.5 text-warning" size={18} />
                                 <p className="leading-relaxed">
                                     تراکنش‌های ثبت شده توسط مدیر مستقیماً روی مانده حساب کاربر اعمال می‌شوند و به عنوان سند حسابداری با شناسه مدیر ثبت می‌گردند.
                                     در صورت عدم وجود کیف پول قبلی برای کاربر، کیف پول به صورت خودکار ایجاد و شارژ می‌گردد.
@@ -1572,49 +1572,49 @@ function AdminWalletDashboard() {
             ══════════════════════════════════════════════════════════════════ */}
             {confirmModalOpen && (
                 <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-                    <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-6 animate-in fade-in zoom-in-95 duration-200">
+                    <div className="bg-surface rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-6 animate-in fade-in zoom-in-95 duration-200">
                         <div className="flex items-center justify-between border-b border-soft-border pb-4">
-                            <h3 className="text-base font-black text-slate-900">تایید نهایی عملیات مالی</h3>
+                            <h3 className="text-base font-black text-foreground">تایید نهایی عملیات مالی</h3>
                             <button
                                 onClick={() => setConfirmModalOpen(false)}
-                                className="p-1 rounded-lg text-slate-400 hover:text-slate-600"
+                                className="p-1 rounded-lg text-foreground-muted hover:text-foreground-secondary"
                             >
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
 
                         <div className="space-y-3 text-xs">
-                            <div className="bg-slate-50 p-4 rounded-2xl space-y-2 border border-soft-border">
+                            <div className="bg-surface-secondary p-4 rounded-2xl space-y-2 border border-soft-border">
                                 <div className="flex justify-between">
-                                    <span className="text-slate-500">نوع عملیات:</span>
-                                    <span className="font-bold text-slate-900">
+                                    <span className="text-foreground-muted">نوع عملیات:</span>
+                                    <span className="font-bold text-foreground">
                                         {operationType === "GIFT" && "شارژ هدیه مدیریت"}
                                         {operationType === "CREDIT" && "واریز دستی (بستانکار)"}
                                         {operationType === "DEBIT" && "برداشت دستی (بدهکار)"}
                                     </span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span className="text-slate-500">کاربر مقصد:</span>
-                                    <span className="font-bold text-slate-900">
+                                    <span className="text-foreground-muted">کاربر مقصد:</span>
+                                    <span className="font-bold text-foreground">
                                         {targetUserSelected?.fullName || targetUserId}
                                     </span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span className="text-slate-500">مبلغ ریالی:</span>
+                                    <span className="text-foreground-muted">مبلغ ریالی:</span>
                                     <span className="font-black text-sm text-primary">
                                         {formatRials(manualAmount)}
                                     </span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span className="text-slate-500">معادل تومان:</span>
-                                    <span className="font-bold text-slate-700">
+                                    <span className="text-foreground-muted">معادل تومان:</span>
+                                    <span className="font-bold text-foreground-secondary">
                                         {formatRialToToman(manualAmount)}
                                     </span>
                                 </div>
                                 {manualNote && (
-                                    <div className="flex justify-between border-t border-slate-200 pt-2">
-                                        <span className="text-slate-500">شرح سند:</span>
-                                        <span className="text-slate-700 max-w-[200px] truncate">{manualNote}</span>
+                                    <div className="flex justify-between border-t border-border-subtle pt-2">
+                                        <span className="text-foreground-muted">شرح سند:</span>
+                                        <span className="text-foreground-secondary max-w-[200px] truncate">{manualNote}</span>
                                     </div>
                                 )}
                             </div>
@@ -1624,7 +1624,7 @@ function AdminWalletDashboard() {
                             <button
                                 type="button"
                                 onClick={() => setConfirmModalOpen(false)}
-                                className="flex-1 py-3 rounded-xl border border-soft-border font-bold text-xs text-slate-700 hover:bg-slate-50 transition"
+                                className="flex-1 py-3 rounded-xl border border-soft-border font-bold text-xs text-foreground-secondary hover:bg-surface-secondary transition"
                             >
                                 انصراف
                             </button>
@@ -1651,15 +1651,15 @@ function AdminWalletDashboard() {
             ══════════════════════════════════════════════════════════════════ */}
             {selectedTx && (
                 <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-                    <div className="bg-white rounded-3xl p-6 max-w-lg w-full shadow-2xl space-y-6 animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
+                    <div className="bg-surface rounded-3xl p-6 max-w-lg w-full shadow-2xl space-y-6 animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
                         <div className="flex items-center justify-between border-b border-soft-border pb-4">
-                            <div className="flex items-center gap-2 text-slate-900 font-bold">
+                            <div className="flex items-center gap-2 text-foreground font-bold">
                                 <FileText className="w-5 h-5 text-primary" />
                                 <span>رسید رسمی و اطلاعات تراکنش</span>
                             </div>
                             <button
                                 onClick={() => setSelectedTx(null)}
-                                className="p-1 rounded-lg text-slate-400 hover:text-slate-600"
+                                className="p-1 rounded-lg text-foreground-muted hover:text-foreground-secondary"
                             >
                                 <X className="w-5 h-5" />
                             </button>
@@ -1667,65 +1667,65 @@ function AdminWalletDashboard() {
 
                         <div className="space-y-4 text-xs">
                             {/* Receipt Card */}
-                            <div className="bg-slate-50 p-5 rounded-2xl border border-soft-border space-y-3">
-                                <div className="flex items-center justify-between border-b border-slate-200 pb-3">
-                                    <span className="text-slate-500">مبلغ تراکنش:</span>
+                            <div className="bg-surface-secondary p-5 rounded-2xl border border-soft-border space-y-3">
+                                <div className="flex items-center justify-between border-b border-border-subtle pb-3">
+                                    <span className="text-foreground-muted">مبلغ تراکنش:</span>
                                     <div className="text-left">
                                         <span className={`text-lg font-black block ${
-                                            selectedTx.type === "credit" ? "text-emerald-600" : "text-rose-600"
+                                            selectedTx.type === "credit" ? "text-success" : "text-error"
                                         }`}>
                                             {selectedTx.type === "credit" ? "+" : "-"} {formatRials(selectedTx.amount)}
                                         </span>
-                                        <span className="text-[11px] text-slate-500 font-bold">
+                                        <span className="text-[11px] text-foreground-muted font-bold">
                                             {formatRialToToman(selectedTx.amount)}
                                         </span>
                                     </div>
                                 </div>
 
                                 <div className="flex justify-between">
-                                    <span className="text-slate-500">شناسه تراکنش (ID):</span>
-                                    <div className="flex items-center gap-1 font-mono text-slate-800">
+                                    <span className="text-foreground-muted">شناسه تراکنش (ID):</span>
+                                    <div className="flex items-center gap-1 font-mono text-foreground">
                                         <span>{selectedTx.id}</span>
                                         <button onClick={() => handleCopy(selectedTx.id, "tx-id")}>
-                                            {copiedKey === "tx-id" ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-slate-400" />}
+                                            {copiedKey === "tx-id" ? <Check className="w-3.5 h-3.5 text-success" /> : <Copy className="w-3.5 h-3.5 text-foreground-muted" />}
                                         </button>
                                     </div>
                                 </div>
 
                                 <div className="flex justify-between">
-                                    <span className="text-slate-500">کلید یکتایی (Idempotency Key):</span>
-                                    <span className="font-mono text-slate-700 truncate max-w-[220px]" title={selectedTx.idempotencyKey}>
+                                    <span className="text-foreground-muted">کلید یکتایی (Idempotency Key):</span>
+                                    <span className="font-mono text-foreground-secondary truncate max-w-[220px]" title={selectedTx.idempotencyKey}>
                                         {selectedTx.idempotencyKey}
                                     </span>
                                 </div>
 
                                 <div className="flex justify-between">
-                                    <span className="text-slate-500">تاریخ و زمان ثبت:</span>
-                                    <span className="font-bold text-slate-800">{formatPersianDate(selectedTx.createdAt)}</span>
+                                    <span className="text-foreground-muted">تاریخ و زمان ثبت:</span>
+                                    <span className="font-bold text-foreground">{formatPersianDate(selectedTx.createdAt)}</span>
                                 </div>
 
                                 <div className="flex justify-between">
-                                    <span className="text-slate-500">وضعیت سند:</span>
-                                    <span className="font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                                    <span className="text-foreground-muted">وضعیت سند:</span>
+                                    <span className="font-bold text-success bg-success-subtle px-2 py-0.5 rounded-md border border-success/30">
                                         {selectedTx.status === "completed" ? "تکمیل شده / موفق" : selectedTx.status}
                                     </span>
                                 </div>
 
                                 <div className="flex justify-between">
-                                    <span className="text-slate-500">کانال پردازش:</span>
-                                    <span className="font-bold text-slate-800">{selectedTx.channel}</span>
+                                    <span className="text-foreground-muted">کانال پردازش:</span>
+                                    <span className="font-bold text-foreground">{selectedTx.channel}</span>
                                 </div>
 
                                 <div className="flex justify-between">
-                                    <span className="text-slate-500">بابت / شرح:</span>
-                                    <span className="font-bold text-slate-800">{selectedTx.reason || "—"}</span>
+                                    <span className="text-foreground-muted">بابت / شرح:</span>
+                                    <span className="font-bold text-foreground">{selectedTx.reason || "—"}</span>
                                 </div>
                             </div>
 
                             {/* User Info */}
-                            <div className="bg-blue-50/50 p-4 rounded-2xl border border-blue-100 space-y-3">
+                            <div className="bg-info-subtle/50 p-4 rounded-2xl border border-info/30 space-y-3">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-xs font-bold text-blue-900 block">مشخصات کاربر طرف حساب</span>
+                                    <span className="text-xs font-bold text-foreground block">مشخصات کاربر طرف حساب</span>
                                     <div className="flex items-center gap-1.5">
                                         <button
                                             type="button"
@@ -1733,7 +1733,7 @@ function AdminWalletDashboard() {
                                                 setDetailDrawerUserId(selectedTx.userId);
                                                 setSelectedTx(null);
                                             }}
-                                            className="px-2.5 py-1 rounded-lg bg-white border border-blue-200 text-blue-800 hover:bg-blue-100 transition text-[10px] font-bold flex items-center gap-1"
+                                            className="px-2.5 py-1 rounded-lg bg-surface border border-info/30 text-blue-800 hover:bg-info-subtle transition text-[10px] font-bold flex items-center gap-1"
                                         >
                                             <Eye className="w-3 h-3" />
                                             <span>پرونده مالی</span>
@@ -1759,12 +1759,12 @@ function AdminWalletDashboard() {
                                     </div>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span className="text-slate-500">نام کاربر:</span>
-                                    <span className="font-bold text-slate-900">{selectedTx.userFullName}</span>
+                                    <span className="text-foreground-muted">نام کاربر:</span>
+                                    <span className="font-bold text-foreground">{selectedTx.userFullName}</span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span className="text-slate-500">شماره تماس:</span>
-                                    <span className="font-mono font-bold text-slate-800">{toPersianDigits(selectedTx.userMobile)}</span>
+                                    <span className="text-foreground-muted">شماره تماس:</span>
+                                    <span className="font-mono font-bold text-foreground">{toPersianDigits(selectedTx.userMobile)}</span>
                                 </div>
                             </div>
 
@@ -1773,13 +1773,13 @@ function AdminWalletDashboard() {
                                 <div className="bg-purple-50/50 p-4 rounded-2xl border border-purple-100 space-y-2">
                                     <span className="text-xs font-bold text-purple-900 block">مدیر اقدام‌کننده</span>
                                     <div className="flex justify-between">
-                                        <span className="text-slate-500">نام مدیر:</span>
-                                        <span className="font-bold text-slate-900">{selectedTx.adminFullName}</span>
+                                        <span className="text-foreground-muted">نام مدیر:</span>
+                                        <span className="font-bold text-foreground">{selectedTx.adminFullName}</span>
                                     </div>
                                     {selectedTx.adminMobile && (
                                         <div className="flex justify-between">
-                                            <span className="text-slate-500">موبایل مدیر:</span>
-                                            <span className="font-mono text-slate-800">{toPersianDigits(selectedTx.adminMobile)}</span>
+                                            <span className="text-foreground-muted">موبایل مدیر:</span>
+                                            <span className="font-mono text-foreground">{toPersianDigits(selectedTx.adminMobile)}</span>
                                         </div>
                                     )}
                                 </div>
@@ -1788,7 +1788,7 @@ function AdminWalletDashboard() {
                             {/* Metadata JSON */}
                             {selectedTx.metadata && Object.keys(selectedTx.metadata).length > 0 && (
                                 <div className="space-y-1.5">
-                                    <span className="text-xs font-bold text-slate-600">متادیتای سیستمی (JSON):</span>
+                                    <span className="text-xs font-bold text-foreground-secondary">متادیتای سیستمی (JSON):</span>
                                     <pre className="bg-slate-900 text-emerald-400 p-3 rounded-xl text-[11px] font-mono overflow-x-auto max-h-36">
                                         {JSON.stringify(selectedTx.metadata, null, 2)}
                                     </pre>
@@ -1813,25 +1813,25 @@ function AdminWalletDashboard() {
             ══════════════════════════════════════════════════════════════════ */}
             {detailDrawerUserId && (
                 <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex justify-end">
-                    <div className="bg-white w-full max-w-2xl h-full shadow-2xl flex flex-col animate-in slide-in-from-left duration-300">
+                    <div className="bg-surface w-full max-w-2xl h-full shadow-2xl flex flex-col animate-in slide-in-from-left duration-300">
                         {/* Drawer Header */}
-                        <div className="p-6 border-b border-soft-border flex items-center justify-between bg-slate-50">
+                        <div className="p-6 border-b border-soft-border flex items-center justify-between bg-surface-secondary">
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary font-bold">
                                     <Wallet className="w-5 h-5" />
                                 </div>
                                 <div>
-                                    <h3 className="font-bold text-slate-900 text-base">
+                                    <h3 className="font-bold text-foreground text-base">
                                         پرونده مالی: {userDetailData?.user.fullName || "در حال دریافت..."}
                                     </h3>
-                                    <p className="text-xs text-slate-500 font-mono mt-0.5" dir="ltr">
+                                    <p className="text-xs text-foreground-muted font-mono mt-0.5" dir="ltr">
                                         {toPersianDigits(userDetailData?.user.mobileNumber || "")}
                                     </p>
                                 </div>
                             </div>
                             <button
                                 onClick={() => setDetailDrawerUserId(null)}
-                                className="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-200 transition"
+                                className="p-2 rounded-xl text-foreground-muted hover:text-foreground-secondary hover:bg-slate-200 transition"
                             >
                                 <X className="w-5 h-5" />
                             </button>
@@ -1845,7 +1845,7 @@ function AdminWalletDashboard() {
                                     در حال دریافت پرونده مالی کاربر...
                                 </div>
                             ) : !userDetailData ? (
-                                <div className="text-center py-12 text-slate-400">اطلاعاتی یافت نشد</div>
+                                <div className="text-center py-12 text-foreground-muted">اطلاعاتی یافت نشد</div>
                             ) : (
                                 <>
                                     {/* User Balance Cards */}
@@ -1860,12 +1860,12 @@ function AdminWalletDashboard() {
                                             </span>
                                         </div>
 
-                                        <div className="bg-slate-50 border border-soft-border p-4 rounded-2xl space-y-1">
-                                            <span className="text-[10px] text-slate-500 font-bold block">مجموع کل واریزها</span>
-                                            <h4 className="text-xl font-black text-slate-800">
+                                        <div className="bg-surface-secondary border border-soft-border p-4 rounded-2xl space-y-1">
+                                            <span className="text-[10px] text-foreground-muted font-bold block">مجموع کل واریزها</span>
+                                            <h4 className="text-xl font-black text-foreground">
                                                 {formatRials(userDetailData.stats.totalDeposited)}
                                             </h4>
-                                            <span className="text-[10px] text-slate-500 block">
+                                            <span className="text-[10px] text-foreground-muted block">
                                                 کل مصارف: {formatRials(userDetailData.stats.totalSpent)}
                                             </span>
                                         </div>
@@ -1905,7 +1905,7 @@ function AdminWalletDashboard() {
                                                 setDetailDrawerUserId(null);
                                                 setActiveTab("manual-operation");
                                             }}
-                                            className="flex-1 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-bold hover:bg-slate-200 transition flex items-center justify-center gap-1.5"
+                                            className="flex-1 py-2.5 rounded-xl bg-surface-secondary text-foreground-secondary font-bold hover:bg-slate-200 transition flex items-center justify-center gap-1.5"
                                         >
                                             <ArrowUpRight className="w-4 h-4" />
                                             <span>تعدیل دستی موجودی</span>
@@ -1920,7 +1920,7 @@ function AdminWalletDashboard() {
                                             setDetailDrawerUserId(null);
                                             setActiveTab("transactions");
                                         }}
-                                        className="w-full py-2.5 rounded-xl border border-soft-border hover:bg-slate-50 text-slate-700 font-bold transition flex items-center justify-center gap-1.5 text-xs"
+                                        className="w-full py-2.5 rounded-xl border border-soft-border hover:bg-surface-secondary text-foreground-secondary font-bold transition flex items-center justify-center gap-1.5 text-xs"
                                     >
                                         <FileText className="w-4 h-4 text-primary" />
                                         <span>مشاهده تمام تراکنش‌های این کاربر در دفتر کل</span>
@@ -1928,31 +1928,31 @@ function AdminWalletDashboard() {
 
                                     {/* Recent User Transactions */}
                                     <div className="space-y-3">
-                                        <h4 className="font-black text-slate-900 text-sm">آخرین تراکنش‌های ثبت شده کاربر</h4>
+                                        <h4 className="font-black text-foreground text-sm">آخرین تراکنش‌های ثبت شده کاربر</h4>
                                         <div className="border border-soft-border rounded-2xl overflow-hidden divide-y divide-soft-border">
                                             {userDetailData.recentTransactions.length === 0 ? (
-                                                <div className="p-6 text-center text-slate-400">تراکنشی برای این کاربر ثبت نشده است</div>
+                                                <div className="p-6 text-center text-foreground-muted">تراکنشی برای این کاربر ثبت نشده است</div>
                                             ) : (
                                                 userDetailData.recentTransactions.map((tx) => (
-                                                    <div key={tx.id} className="p-3.5 flex items-center justify-between hover:bg-slate-50 transition">
+                                                    <div key={tx.id} className="p-3.5 flex items-center justify-between hover:bg-surface-secondary transition">
                                                         <div className="flex items-center gap-3">
                                                             <div className={`p-2 rounded-xl ${
-                                                                tx.type === "credit" ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"
+                                                                tx.type === "credit" ? "bg-success-subtle text-success" : "bg-error-subtle text-error"
                                                             }`}>
                                                                 {tx.type === "credit" ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownLeft className="w-4 h-4" />}
                                                             </div>
                                                             <div>
-                                                                <span className="font-bold text-slate-800 block">{tx.reason || "تراکنش مالی"}</span>
-                                                                <span className="text-[10px] text-slate-400">{formatPersianDate(tx.createdAt)}</span>
+                                                                <span className="font-bold text-foreground block">{tx.reason || "تراکنش مالی"}</span>
+                                                                <span className="text-[10px] text-foreground-muted">{formatPersianDate(tx.createdAt)}</span>
                                                             </div>
                                                         </div>
                                                         <div className="text-left">
                                                             <span className={`font-black text-xs block ${
-                                                                tx.type === "credit" ? "text-emerald-600" : "text-rose-600"
+                                                                tx.type === "credit" ? "text-success" : "text-error"
                                                             }`}>
                                                                 {tx.type === "credit" ? "+" : "-"} {formatRials(tx.amount)}
                                                             </span>
-                                                            <span className="text-[10px] text-slate-400">{formatRialToToman(tx.amount)}</span>
+                                                            <span className="text-[10px] text-foreground-muted">{formatRialToToman(tx.amount)}</span>
                                                         </div>
                                                     </div>
                                                 ))
@@ -1971,35 +1971,35 @@ function AdminWalletDashboard() {
             ══════════════════════════════════════════════════════════════════ */}
             {freezeModalUser && (
                 <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-                    <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-6 animate-in fade-in zoom-in-95 duration-200">
+                    <div className="bg-surface rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-6 animate-in fade-in zoom-in-95 duration-200">
                         <div className="flex items-center justify-between border-b border-soft-border pb-4">
-                            <div className="flex items-center gap-2 font-bold text-slate-900">
-                                {freezeModalUser.isFrozen ? <Unlock className="w-5 h-5 text-emerald-600" /> : <Lock className="w-5 h-5 text-rose-600" />}
+                            <div className="flex items-center gap-2 font-bold text-foreground">
+                                {freezeModalUser.isFrozen ? <Unlock className="w-5 h-5 text-success" /> : <Lock className="w-5 h-5 text-error" />}
                                 <span>{freezeModalUser.isFrozen ? "رفع مسدودیت کیف پول" : "مسدودسازی کیف پول"}</span>
                             </div>
                             <button
                                 onClick={() => setFreezeModalUser(null)}
-                                className="p-1 rounded-lg text-slate-400 hover:text-slate-600"
+                                className="p-1 rounded-lg text-foreground-muted hover:text-foreground-secondary"
                             >
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
 
                         <div className="space-y-4 text-xs">
-                            <p className="text-slate-600 leading-relaxed">
+                            <p className="text-foreground-secondary leading-relaxed">
                                 {freezeModalUser.isFrozen
                                     ? `آیا از فعال‌سازی مجدد و رفع مسدودیت کیف پول کاربر ${freezeModalUser.fullName} اطمینان دارید؟`
                                     : `با مسدودسازی کیف پول کاربر ${freezeModalUser.fullName}، امکان واریز و برداشت وجه تا زمان رفع مسدودیت متوقف خواهد شد.`}
                             </p>
 
                             <div className="space-y-1.5">
-                                <label className="text-xs font-bold text-slate-700">علت مسدودسازی / رفع مسدودیت (اختیاری)</label>
+                                <label className="text-xs font-bold text-foreground-secondary">علت مسدودسازی / رفع مسدودیت (اختیاری)</label>
                                 <input
                                     type="text"
                                     value={freezeReason}
                                     onChange={(e) => setFreezeReason(e.target.value)}
                                     placeholder="مثلا: استعلام تخلف، درخواست کاربر و..."
-                                    className="w-full px-4 py-2.5 bg-slate-50 border border-soft-border rounded-xl text-xs outline-none"
+                                    className="w-full px-4 py-2.5 bg-surface-secondary border border-soft-border rounded-xl text-xs outline-none"
                                 />
                             </div>
                         </div>
@@ -2008,7 +2008,7 @@ function AdminWalletDashboard() {
                             <button
                                 type="button"
                                 onClick={() => setFreezeModalUser(null)}
-                                className="flex-1 py-2.5 rounded-xl border border-soft-border font-bold text-xs text-slate-700 hover:bg-slate-50 transition"
+                                className="flex-1 py-2.5 rounded-xl border border-soft-border font-bold text-xs text-foreground-secondary hover:bg-surface-secondary transition"
                             >
                                 انصراف
                             </button>
@@ -2039,7 +2039,7 @@ function AdminWalletDashboard() {
 
 export default function AdminWalletPage() {
     return (
-        <Suspense fallback={<div className="p-12 text-center text-gray-400 font-bold">در حال بارگذاری داشبورد مالی...</div>}>
+        <Suspense fallback={<div className="p-12 text-center text-foreground-muted font-bold">در حال بارگذاری داشبورد مالی...</div>}>
             <AdminWalletDashboard />
         </Suspense>
     );

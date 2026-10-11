@@ -48,8 +48,8 @@ export default function CreateAgencyScene() {
     };
 
     return (
-        <div className="min-h-screen bg-white pb-28 lg:pb-10">
-            <header className="bg-white border-b border-soft-border sticky top-0 z-10 px-6 py-4 flex items-center gap-3">
+        <div className="min-h-screen bg-surface pb-28 lg:pb-10">
+            <header className="bg-surface border-b border-soft-border sticky top-0 z-10 px-6 py-4 flex items-center gap-3">
                 <button onClick={handleBack} className="p-2 hover:bg-soft-bg rounded-xl transition-colors">
                     <ChevronLeft className="w-6 h-6 text-brand rotate-180" />
                 </button>
@@ -66,10 +66,10 @@ export default function CreateAgencyScene() {
                     <h2 className="text-2xl font-black text-brand">اطلاعات آژانس خود را وارد کنید</h2>
                     <p className="text-secondary text-sm">با ایجاد پروفایل آژانس، اعتبار بیشتری نزد مشتریان کسب خواهید کرد.</p>
 
-                    <div className="p-4 bg-blue-50 border border-blue-200/80 rounded-2xl flex items-center justify-between gap-3 text-right">
+                    <div className="p-4 bg-info-subtle border border-info/30/80 rounded-2xl flex items-center justify-between gap-3 text-right">
                         <div>
-                            <span className="text-xs font-black text-blue-900 block">ثبت‌نام رسمی مشاورین و دفاتر املاک (استعلام جیبیت)</span>
-                            <span className="text-[11px] text-blue-700">دارای نشان تأییدیه رسمی و احراز هویت اصناف یا شاهکار</span>
+                            <span className="text-xs font-black text-foreground block">ثبت‌نام رسمی مشاورین و دفاتر املاک (استعلام جیبیت)</span>
+                            <span className="text-[11px] text-info">دارای نشان تأییدیه رسمی و احراز هویت اصناف یا شاهکار</span>
                         </div>
                         <button
                             type="button"

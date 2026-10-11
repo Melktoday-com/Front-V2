@@ -27,7 +27,7 @@ export const ReviewStars = ({ rating, size = 12, className, showText = false, co
                 ))}
             </div>
             {showText && (
-                <span className="text-[10px] font-medium text-gray-500 mt-0.5">
+                <span className="text-[10px] font-medium text-foreground-muted mt-0.5">
                     {numRating > 0 ? numRating.toFixed(1) : "بدون امتیاز"}
                     {count !== undefined && count > 0 && ` (${count})`}
                 </span>

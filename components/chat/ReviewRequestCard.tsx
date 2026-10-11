@@ -101,15 +101,15 @@ export function ReviewRequestCard({
     // If viewer is the agent/landlord who sent the request
     if (isMine) {
         return (
-            <div className="w-full max-w-sm bg-gradient-to-br from-amber-50/50 via-white to-white rounded-3xl border border-amber-200/70 p-4 sm:p-5 shadow-xs space-y-3 text-right font-medium my-1">
-                <div className="flex items-center justify-between gap-2 border-b border-amber-100 pb-2.5">
-                    <div className="flex items-center gap-2 text-amber-800">
-                        <div className="p-1.5 rounded-xl bg-amber-100 text-amber-700">
+            <div className="w-full max-w-sm bg-gradient-to-br from-amber-50/50 via-white to-white rounded-3xl border border-warning/30/70 p-4 sm:p-5 shadow-xs space-y-3 text-right font-medium my-1">
+                <div className="flex items-center justify-between gap-2 border-b border-warning/30 pb-2.5">
+                    <div className="flex items-center gap-2 text-warning">
+                        <div className="p-1.5 rounded-xl bg-warning-subtle text-warning">
                             <Sparkles className="w-4 h-4" />
                         </div>
                         <span className="text-xs font-black">درخواست ثبت نظر و فیدبک</span>
                     </div>
-                    <span className="text-[10px] font-bold text-amber-700 bg-amber-100/80 px-2 py-0.5 rounded-md">
+                    <span className="text-[10px] font-bold text-warning bg-warning-subtle/80 px-2 py-0.5 rounded-md">
                         ارسال‌شده
                     </span>
                 </div>
@@ -129,15 +129,15 @@ export function ReviewRequestCard({
     // If client has already submitted the review
     if (isSubmitted) {
         return (
-            <div className="w-full max-w-sm bg-emerald-50/40 rounded-3xl border border-emerald-200/80 p-4 sm:p-5 shadow-xs space-y-3 text-right font-medium my-1">
-                <div className="flex items-center justify-between gap-2 border-b border-emerald-100 pb-2.5">
-                    <div className="flex items-center gap-2 text-emerald-800">
-                        <div className="p-1.5 rounded-xl bg-emerald-100 text-emerald-700">
+            <div className="w-full max-w-sm bg-success-subtle/40 rounded-3xl border border-success/30/80 p-4 sm:p-5 shadow-xs space-y-3 text-right font-medium my-1">
+                <div className="flex items-center justify-between gap-2 border-b border-success/30 pb-2.5">
+                    <div className="flex items-center gap-2 text-success">
+                        <div className="p-1.5 rounded-xl bg-success-subtle text-success">
                             <CheckCircle2 className="w-4 h-4" />
                         </div>
                         <span className="text-xs font-black">نظر شما ثبت شد</span>
                     </div>
-                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md">
+                    <span className="text-[10px] font-bold text-success bg-success-subtle px-2 py-0.5 rounded-md">
                         ثبت نهایی
                     </span>
                 </div>
@@ -166,16 +166,16 @@ export function ReviewRequestCard({
 
     // Active review submission card for client
     return (
-        <div className="w-full max-w-sm bg-white rounded-3xl border border-amber-200/90 p-4 sm:p-5 shadow-sm space-y-3.5 text-right font-medium my-1">
+        <div className="w-full max-w-sm bg-surface rounded-3xl border border-warning/30/90 p-4 sm:p-5 shadow-sm space-y-3.5 text-right font-medium my-1">
             {/* Header */}
             <div className="flex items-center justify-between gap-2 border-b border-soft-border pb-2.5">
-                <div className="flex items-center gap-2 text-amber-800">
-                    <div className="p-1.5 rounded-xl bg-amber-100 text-amber-700">
+                <div className="flex items-center gap-2 text-warning">
+                    <div className="p-1.5 rounded-xl bg-warning-subtle text-warning">
                         <Star className="w-4 h-4 fill-amber-500 text-amber-500" />
                     </div>
                     <span className="text-xs font-black">ثبت نظر و امتیاز عملکرد</span>
                 </div>
-                <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
+                <span className="text-[10px] font-bold text-warning bg-warning-subtle px-2 py-0.5 rounded-md border border-warning/30">
                     ویترین {targetTitle}
                 </span>
             </div>
@@ -187,7 +187,7 @@ export function ReviewRequestCard({
 
             <form onSubmit={handleSubmit} className="space-y-3 pt-1">
                 {/* 5-Star interactive selector */}
-                <div className="flex flex-col items-center justify-center gap-1.5 py-1 bg-amber-50/40 rounded-2xl border border-amber-100/80 p-2.5">
+                <div className="flex flex-col items-center justify-center gap-1.5 py-1 bg-warning-subtle/40 rounded-2xl border border-warning/30/80 p-2.5">
                     <span className="text-[11px] font-bold text-amber-900">
                         امتیاز شما به عملکرد کارشناس:
                     </span>

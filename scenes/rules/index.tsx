@@ -95,11 +95,11 @@ export default function RulesScene() {
 
         <div className="relative z-10 max-w-3xl space-y-4">
           <div className="flex flex-wrap items-center gap-2.5">
-            <span className="inline-flex items-center gap-1.5 bg-white/10 backdrop-blur-md border border-white/15 px-3 py-1 rounded-full text-xs font-black text-primary">
+            <span className="inline-flex items-center gap-1.5 bg-surface/10 backdrop-blur-md border border-white/15 px-3 py-1 rounded-full text-xs font-black text-primary">
               <Shield className="w-3.5 h-3.5" />
               <span>سند حقوقی و رسمی</span>
             </span>
-            <span className="inline-flex items-center gap-1.5 bg-white/10 backdrop-blur-md border border-white/15 px-3 py-1 rounded-full text-xs font-medium text-white/80">
+            <span className="inline-flex items-center gap-1.5 bg-surface/10 backdrop-blur-md border border-white/15 px-3 py-1 rounded-full text-xs font-medium text-white/80">
               <Clock className="w-3.5 h-3.5 text-primary" />
               <span>آخرین به‌روزرسانی: {toPersianDigits("01/07/1405")}</span>
             </span>
@@ -119,7 +119,7 @@ export default function RulesScene() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
         {/* Sidebar: Table of Contents (Desktop Sticky) */}
         <aside className="lg:col-span-4 hidden lg:block sticky top-24 space-y-4">
-          <div className="bg-white rounded-3xl p-5 border border-soft-border shadow-sm space-y-4">
+          <div className="bg-surface rounded-3xl p-5 border border-soft-border shadow-sm space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 font-black text-brand text-sm">
                 <FileCheck2 className="w-4 h-4 text-primary" />
@@ -185,7 +185,7 @@ export default function RulesScene() {
         {/* Main Content Column */}
         <main className="lg:col-span-8 space-y-6">
           {/* Quick jump menu for mobile/tablet */}
-          <div className="lg:hidden bg-white p-4 rounded-2xl border border-soft-border shadow-sm space-y-2">
+          <div className="lg:hidden bg-surface p-4 rounded-2xl border border-soft-border shadow-sm space-y-2">
             <span className="text-xs font-bold text-brand block mb-1 flex items-center gap-1.5">
               <FileSpreadsheet className="w-3.5 h-3.5 text-primary" />
               <span>دسترسی سریع به بخش‌ها:</span>
@@ -206,7 +206,7 @@ export default function RulesScene() {
           {/* Section: Intro */}
           <section
             id="intro"
-            className="bg-white rounded-3xl p-6 sm:p-8 border border-soft-border shadow-sm space-y-4"
+            className="bg-surface rounded-3xl p-6 sm:p-8 border border-soft-border shadow-sm space-y-4"
           >
             <div className="flex items-center gap-3">
               <div className="w-2.5 h-7 bg-primary rounded-full" />
@@ -227,7 +227,7 @@ export default function RulesScene() {
               </p>
 
               <div className="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/20 text-amber-900 flex items-start gap-3">
-                <Info className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                <Info className="w-5 h-5 text-warning shrink-0 mt-0.5" />
                 <div className="space-y-1 text-xs sm:text-sm">
                   <span className="font-bold block">تاریخ و نحوه اجرای مقررات:</span>
                   <p className="leading-relaxed">
@@ -245,7 +245,7 @@ export default function RulesScene() {
           {/* Section: Article 1 */}
           <section
             id="article-1"
-            className="bg-white rounded-3xl p-6 sm:p-8 border border-soft-border shadow-sm space-y-4"
+            className="bg-surface rounded-3xl p-6 sm:p-8 border border-soft-border shadow-sm space-y-4"
           >
             <div className="flex items-center gap-3">
               <div className="w-2.5 h-7 bg-primary rounded-full" />
@@ -268,12 +268,12 @@ export default function RulesScene() {
                 شناخته می‌شود. بدین معنا که صرفاً بستری برخط برای انتشار آگهی‌های کاربران و تسهیل برقراری ارتباط میان خریداران، فروشندگان و ارائه‌دهندگان فراهم می‌کند.
               </p>
 
-              <div className="p-4 rounded-2xl bg-blue-500/5 border border-blue-500/20 text-blue-950 space-y-2">
-                <div className="flex items-center gap-2 font-bold text-xs sm:text-sm text-blue-900">
-                  <ShieldCheck className="w-4 h-4 text-blue-600 shrink-0" />
+              <div className="p-4 rounded-2xl bg-blue-500/5 border border-blue-500/20 text-foreground space-y-2">
+                <div className="flex items-center gap-2 font-bold text-xs sm:text-sm text-foreground">
+                  <ShieldCheck className="w-4 h-4 text-info shrink-0" />
                   <span>نقش پلتفرم و استقلال معاملات</span>
                 </div>
-                <p className="text-xs sm:text-sm leading-relaxed text-blue-900/90">
+                <p className="text-xs sm:text-sm leading-relaxed text-foreground/90">
                   کاربران محتوای آگهی‌های خود را شخصاً ایجاد و منتشر می‌کنند و مسئولیت ملک تودی محدود به ارائه‌ی فضا در سامانه‌ی رایانه‌ای خود بوده و زیرساخت میزبانی، جست‌وجو و خدمات تکمیلی مرتبط را فراهم می‌سازد. در نتیجه، مسئولیت محتوا و اطلاعات درج شده در هر آگهی با کاربری است که آن را منتشر کرده است و هرگونه معامله یا قراردادی که در نتیجه انتشار آگهی‌ها میان کاربران منعقد می‌شود، مستقیماً بین همان کاربران است؛ ملک تودی هیچ‌گونه نفعی در معاملات ندارد و طرف قرارداد، نماینده، کارگزار یا ضامن هیچ‌یک از طرفین این معاملات نیست.
                 </p>
               </div>
@@ -283,7 +283,7 @@ export default function RulesScene() {
           {/* Section: Article 2 */}
           <section
             id="article-2"
-            className="bg-white rounded-3xl p-6 sm:p-8 border border-soft-border shadow-sm space-y-4"
+            className="bg-surface rounded-3xl p-6 sm:p-8 border border-soft-border shadow-sm space-y-4"
           >
             <div className="flex items-center gap-3">
               <div className="w-2.5 h-7 bg-primary rounded-full" />
@@ -379,7 +379,7 @@ export default function RulesScene() {
           {/* Section: Article 3 */}
           <section
             id="article-3"
-            className="bg-white rounded-3xl p-6 sm:p-8 border border-soft-border shadow-sm space-y-6"
+            className="bg-surface rounded-3xl p-6 sm:p-8 border border-soft-border shadow-sm space-y-6"
           >
             <div className="flex items-center gap-3">
               <div className="w-2.5 h-7 bg-primary rounded-full" />
@@ -445,7 +445,7 @@ export default function RulesScene() {
                   "تصاویر یا ویدئوهای حاوی متن، توضیحات، نام کسب‌وکار یا هرگونه عبارت تبلیغاتی",
                   "هرگونه محتوای تصویری مغایر با حقوق مالکیت فکری ملک تودی یا اشخاص ثالث",
                 ].map((item, idx) => (
-                  <div key={idx} className="flex items-start gap-2 bg-white p-2.5 rounded-xl border border-soft-border">
+                  <div key={idx} className="flex items-start gap-2 bg-surface p-2.5 rounded-xl border border-soft-border">
                     <span className="w-1.5 h-1.5 rounded-full bg-status-error mt-1.5 shrink-0" />
                     <span>{item}</span>
                   </div>
@@ -517,7 +517,7 @@ export default function RulesScene() {
           {/* Section: Article 4 */}
           <section
             id="article-4"
-            className="bg-white rounded-3xl p-6 sm:p-8 border border-soft-border shadow-sm space-y-4"
+            className="bg-surface rounded-3xl p-6 sm:p-8 border border-soft-border shadow-sm space-y-4"
           >
             <div className="flex items-center gap-3">
               <div className="w-2.5 h-7 bg-primary rounded-full" />
@@ -610,7 +610,7 @@ export default function RulesScene() {
           {/* Section: Article 5 */}
           <section
             id="article-5"
-            className="bg-white rounded-3xl p-6 sm:p-8 border border-soft-border shadow-sm space-y-4"
+            className="bg-surface rounded-3xl p-6 sm:p-8 border border-soft-border shadow-sm space-y-4"
           >
             <div className="flex items-center gap-3">
               <div className="w-2.5 h-7 bg-primary rounded-full" />
@@ -698,7 +698,7 @@ export default function RulesScene() {
           {/* Section: Article 6 */}
           <section
             id="article-6"
-            className="bg-white rounded-3xl p-6 sm:p-8 border border-soft-border shadow-sm space-y-4"
+            className="bg-surface rounded-3xl p-6 sm:p-8 border border-soft-border shadow-sm space-y-4"
           >
             <div className="flex items-center gap-3">
               <div className="w-2.5 h-7 bg-primary rounded-full" />
@@ -790,7 +790,7 @@ export default function RulesScene() {
           {/* Section: Article 7 */}
           <section
             id="article-7"
-            className="bg-white rounded-3xl p-6 sm:p-8 border border-soft-border shadow-sm space-y-4"
+            className="bg-surface rounded-3xl p-6 sm:p-8 border border-soft-border shadow-sm space-y-4"
           >
             <div className="flex items-center gap-3">
               <div className="w-2.5 h-7 bg-primary rounded-full" />
@@ -816,7 +816,7 @@ export default function RulesScene() {
           {/* Section: Article 8 */}
           <section
             id="article-8"
-            className="bg-white rounded-3xl p-6 sm:p-8 border border-soft-border shadow-sm space-y-4"
+            className="bg-surface rounded-3xl p-6 sm:p-8 border border-soft-border shadow-sm space-y-4"
           >
             <div className="flex items-center gap-3">
               <div className="w-2.5 h-7 bg-primary rounded-full" />
@@ -838,7 +838,7 @@ export default function RulesScene() {
           {/* Section: Article 9 */}
           <section
             id="article-9"
-            className="bg-white rounded-3xl p-6 sm:p-8 border border-soft-border shadow-sm space-y-4"
+            className="bg-surface rounded-3xl p-6 sm:p-8 border border-soft-border shadow-sm space-y-4"
           >
             <div className="flex items-center gap-3">
               <div className="w-2.5 h-7 bg-primary rounded-full" />
@@ -874,7 +874,7 @@ export default function RulesScene() {
           {/* Section: Article 10 */}
           <section
             id="article-10"
-            className="bg-white rounded-3xl p-6 sm:p-8 border border-soft-border shadow-sm space-y-6"
+            className="bg-surface rounded-3xl p-6 sm:p-8 border border-soft-border shadow-sm space-y-6"
           >
             <div className="flex items-center gap-3">
               <div className="w-2.5 h-7 bg-primary rounded-full" />
@@ -908,7 +908,7 @@ export default function RulesScene() {
                   </div>
                   <button
                     onClick={() => handleCopy("02191003417", "tel-teh", "تلفن پشتیبانی")}
-                    className="p-2 rounded-xl bg-white hover:bg-soft-border text-secondary transition-colors"
+                    className="p-2 rounded-xl bg-surface hover:bg-soft-border text-secondary transition-colors"
                   >
                     {copiedKey === "tel-teh" ? (
                       <Check className="w-3.5 h-3.5 text-primary" />
@@ -936,7 +936,7 @@ export default function RulesScene() {
                   </div>
                   <button
                     onClick={() => handleCopy("09199173417", "tel-mob", "تلفن همراه")}
-                    className="p-2 rounded-xl bg-white hover:bg-soft-border text-secondary transition-colors"
+                    className="p-2 rounded-xl bg-surface hover:bg-soft-border text-secondary transition-colors"
                   >
                     {copiedKey === "tel-mob" ? (
                       <Check className="w-3.5 h-3.5 text-primary" />
@@ -961,7 +961,7 @@ export default function RulesScene() {
                     <span
                       key={num}
                       dir="ltr"
-                      className="px-3.5 py-1.5 rounded-xl bg-white/10 border border-white/20 text-xs sm:text-sm font-black text-primary tracking-widest"
+                      className="px-3.5 py-1.5 rounded-xl bg-surface/10 border border-white/20 text-xs sm:text-sm font-black text-primary tracking-widest"
                     >
                       {toPersianDigits(num)}
                     </span>
@@ -982,7 +982,7 @@ export default function RulesScene() {
             <div className="flex items-center gap-2 shrink-0">
               <Link
                 href="/about"
-                className="px-4 py-2.5 rounded-xl bg-white border border-soft-border text-xs font-bold text-brand hover:bg-soft-border transition-colors"
+                className="px-4 py-2.5 rounded-xl bg-surface border border-soft-border text-xs font-bold text-brand hover:bg-soft-border transition-colors"
               >
                 درباره ما
               </Link>

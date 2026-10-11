@@ -13,7 +13,7 @@ export function NotificationEmptyState({
     onResetFilter,
 }: NotificationEmptyStateProps) {
     return (
-        <div className="flex flex-col items-center justify-center text-center p-12 bg-white rounded-3xl border border-soft-border/70 shadow-sm space-y-4">
+        <div className="flex flex-col items-center justify-center text-center p-12 bg-surface rounded-3xl border border-soft-border/70 shadow-sm space-y-4">
             <div className="w-16 h-16 rounded-3xl bg-soft-bg flex items-center justify-center text-secondary">
                 <BellOff className="w-8 h-8 opacity-60" />
             </div>

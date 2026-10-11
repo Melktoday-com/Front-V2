@@ -136,7 +136,7 @@ export default function SingleHostScene({ idOrSlug }: SingleHostSceneProps) {
   if (error || !header) {
     return (
       <div className="min-h-screen bg-soft-bg flex items-center justify-center p-4 text-center">
-        <div className="bg-white p-8 rounded-3xl max-w-md w-full border border-soft-border space-y-4 shadow-sm">
+        <div className="bg-surface p-8 rounded-3xl max-w-md w-full border border-soft-border space-y-4 shadow-sm">
           <Home className="w-12 h-12 text-secondary/40 mx-auto" />
           <h2 className="text-lg font-black text-brand">صفحه میزبان یافت نشد</h2>
           <p className="text-xs text-secondary">ممکن است نشانی را اشتباه وارد کرده باشید یا این صفحه غیرفعال شده باشد.</p>
@@ -179,7 +179,7 @@ export default function SingleHostScene({ idOrSlug }: SingleHostSceneProps) {
       {/* Main Container */}
       <div className="max-w-5xl mx-auto px-4 -mt-16 sm:-mt-20 relative z-10 space-y-6">
         {/* Host Identity Card */}
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-soft-border shadow-sm space-y-6">
+        <div className="bg-surface rounded-3xl p-6 sm:p-8 border border-soft-border shadow-sm space-y-6">
           <div className="flex flex-col sm:flex-row items-center sm:items-end justify-between gap-6">
             <div className="flex flex-col sm:flex-row items-center gap-5 text-center sm:text-right">
               {/* Avatar */}
@@ -198,7 +198,7 @@ export default function SingleHostScene({ idOrSlug }: SingleHostSceneProps) {
                 <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
                   <h1 className="text-xl sm:text-2xl font-black text-brand">{header.title}</h1>
                   {header.isVerified && (
-                    <span className="flex items-center gap-1 text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-100">
+                    <span className="flex items-center gap-1 text-[11px] font-bold text-success bg-success-subtle px-2 py-0.5 rounded-lg border border-success/30">
                       <BadgeCheck className="w-3.5 h-3.5" />
                       میزبان تاییدشده
                     </span>
@@ -245,7 +245,7 @@ export default function SingleHostScene({ idOrSlug }: SingleHostSceneProps) {
                 disabled={toggleFollowMutation.isPending}
                 className={cn(
                   "flex-1 sm:flex-none h-11 px-6 rounded-2xl font-bold text-xs transition-all",
-                  header.isFollowing && "border-secondary/30 text-secondary hover:bg-red-50 hover:text-red-500 hover:border-red-200"
+                  header.isFollowing && "border-secondary/30 text-secondary hover:bg-error-subtle hover:text-error hover:border-error/30"
                 )}
               >
                 {header.isFollowing ? "دنبال می‌کنید" : "+ دنبال کردن"}
@@ -255,7 +255,7 @@ export default function SingleHostScene({ idOrSlug }: SingleHostSceneProps) {
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex border-b border-soft-border gap-6 sm:gap-10 text-sm font-bold bg-white px-6 rounded-2xl border overflow-x-auto no-scrollbar">
+        <div className="flex border-b border-soft-border gap-6 sm:gap-10 text-sm font-bold bg-surface px-6 rounded-2xl border overflow-x-auto no-scrollbar">
           <button
             onClick={() => setActiveTab("rentals")}
             className={cn(
@@ -308,7 +308,7 @@ export default function SingleHostScene({ idOrSlug }: SingleHostSceneProps) {
                 در حال بارگذاری لیست اقامتگاه‌ها...
               </div>
             ) : rentalsData?.items?.length === 0 ? (
-              <div className="text-center py-16 bg-white rounded-3xl border border-soft-border space-y-2">
+              <div className="text-center py-16 bg-surface rounded-3xl border border-soft-border space-y-2">
                 <Home className="w-10 h-10 text-secondary/30 mx-auto" />
                 <p className="text-sm font-bold text-brand">هنوز اقامتگاهی منتشر نشده است</p>
                 <p className="text-xs text-secondary">اقامتگاه‌های جدید این میزبان به زودی اضافه خواهند شد.</p>
@@ -322,7 +322,7 @@ export default function SingleHostScene({ idOrSlug }: SingleHostSceneProps) {
                     <Link
                       key={rental.id}
                       href={`/temporary-rent/${rental.id}`}
-                      className="bg-white rounded-3xl overflow-hidden border border-soft-border hover:shadow-lg transition-all group flex flex-col"
+                      className="bg-surface rounded-3xl overflow-hidden border border-soft-border hover:shadow-lg transition-all group flex flex-col"
                     >
                       <div className="relative h-48 w-full bg-soft-bg overflow-hidden">
                         {media ? (
@@ -370,11 +370,11 @@ export default function SingleHostScene({ idOrSlug }: SingleHostSceneProps) {
             {isLoadingAds ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 {Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="h-64 bg-slate-100 animate-pulse rounded-3xl" />
+                  <div key={i} className="h-64 bg-surface-secondary animate-pulse rounded-3xl" />
                 ))}
               </div>
             ) : ads.length === 0 ? (
-              <div className="text-center py-16 bg-white rounded-3xl border border-soft-border space-y-2">
+              <div className="text-center py-16 bg-surface rounded-3xl border border-soft-border space-y-2">
                 <Building2 className="w-10 h-10 text-secondary/30 mx-auto" />
                 <p className="text-sm font-bold text-brand">هنوز آگهی‌ای از این میزبان ثبت نشده است</p>
               </div>
@@ -419,13 +419,13 @@ export default function SingleHostScene({ idOrSlug }: SingleHostSceneProps) {
         {activeTab === "posts" && (
           <div className="space-y-6">
             {isHostOwner && (
-              <div className="flex items-center justify-between p-4 sm:p-5 bg-gradient-to-l from-emerald-50 to-teal-50 border border-emerald-200/80 rounded-3xl shadow-xs">
+              <div className="flex items-center justify-between p-4 sm:p-5 bg-gradient-to-l from-emerald-50 to-teal-50 border border-success/30/80 rounded-3xl shadow-xs">
                 <div className="space-y-0.5">
                   <h4 className="text-xs sm:text-sm font-black text-emerald-900 flex items-center gap-1.5">
-                    <Sparkles className="w-4 h-4 text-emerald-600" />
+                    <Sparkles className="w-4 h-4 text-success" />
                     <span>استودیو انتشار محتوای اقامتگاه</span>
                   </h4>
-                  <p className="text-[11px] text-emerald-700 font-medium">
+                  <p className="text-[11px] text-success font-medium">
                     پست‌های اسلایدی جدید و مقالات معرفی جاذبه‌ها را در صفحه عمومی خود منتشر نمایید.
                   </p>
                 </div>
@@ -444,7 +444,7 @@ export default function SingleHostScene({ idOrSlug }: SingleHostSceneProps) {
                 در حال بارگذاری پست‌ها...
               </div>
             ) : postsData?.items?.length === 0 ? (
-              <div className="text-center py-16 bg-white rounded-3xl border border-soft-border space-y-3">
+              <div className="text-center py-16 bg-surface rounded-3xl border border-soft-border space-y-3">
                 <Calendar className="w-10 h-10 text-secondary/30 mx-auto" />
                 <p className="text-sm font-bold text-brand">هنوز مطلبی منتشر نشده است</p>
                 {isHostOwner && (
@@ -463,7 +463,7 @@ export default function SingleHostScene({ idOrSlug }: SingleHostSceneProps) {
                   <article
                     key={post.id}
                     onClick={() => setSelectedPost(post)}
-                    className="bg-white rounded-3xl p-6 border border-soft-border hover:border-primary/30 transition-all cursor-pointer space-y-4 group"
+                    className="bg-surface rounded-3xl p-6 border border-soft-border hover:border-primary/30 transition-all cursor-pointer space-y-4 group"
                   >
                     {(() => {
                       const firstMedia = post.mediaIds?.[0];
@@ -502,10 +502,10 @@ export default function SingleHostScene({ idOrSlug }: SingleHostSceneProps) {
                         }}
                         className={cn(
                           "flex items-center gap-1.5 font-bold p-1 rounded-lg transition-colors",
-                          post.hasLiked ? "text-rose-500" : "hover:text-rose-500"
+                          post.hasLiked ? "text-error" : "hover:text-error"
                         )}
                       >
-                        <Heart className={cn("w-4 h-4", post.hasLiked && "fill-rose-500 text-rose-500")} />
+                        <Heart className={cn("w-4 h-4", post.hasLiked && "fill-rose-500 text-error")} />
                         {toPersianDigits(post.likeCount || 0)}
                       </button>
                     </div>
@@ -517,7 +517,7 @@ export default function SingleHostScene({ idOrSlug }: SingleHostSceneProps) {
         )}
 
         {activeTab === "about" && (
-          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-soft-border space-y-6">
+          <div className="bg-surface rounded-3xl p-6 sm:p-8 border border-soft-border space-y-6">
             <div>
               <h3 className="text-base font-black text-brand mb-2">درباره میزبان</h3>
               <p className="text-sm text-secondary font-medium leading-relaxed whitespace-pre-line">
@@ -541,7 +541,7 @@ export default function SingleHostScene({ idOrSlug }: SingleHostSceneProps) {
       {/* Post Modal */}
       {selectedPost && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in">
-          <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8 space-y-6 relative border border-soft-border shadow-2xl">
+          <div className="bg-surface rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8 space-y-6 relative border border-soft-border shadow-2xl">
             <button
               onClick={() => setSelectedPost(null)}
               className="absolute top-6 left-6 p-2 rounded-full bg-soft-bg hover:bg-soft-border transition-colors"

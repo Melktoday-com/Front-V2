@@ -84,7 +84,7 @@ export default function FavoritesPage() {
         return (
             <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
                 <div className="w-8 h-8 border-4 border-brand border-t-transparent rounded-full animate-spin" />
-                <p className="text-sm text-gray-500 font-medium">در حال بررسی ورود...</p>
+                <p className="text-sm text-foreground-muted font-medium">در حال بررسی ورود...</p>
             </div>
         );
     }
@@ -97,7 +97,7 @@ export default function FavoritesPage() {
                 </div>
                 <div className="space-y-2">
                     <h2 className="text-2xl font-black text-brand">ورود به حساب کاربری</h2>
-                    <p className="text-sm text-gray-500 font-medium leading-relaxed">
+                    <p className="text-sm text-foreground-muted font-medium leading-relaxed">
                         برای مشاهده آگهی‌های ذخیره‌شده و پست‌های پسندیده‌شده، لطفاً ابتدا وارد حساب کاربری خود شوید.
                     </p>
                 </div>
@@ -116,7 +116,7 @@ export default function FavoritesPage() {
         return (
             <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
                 <div className="w-8 h-8 border-4 border-brand border-t-transparent rounded-full animate-spin" />
-                <p className="text-sm text-gray-500 font-medium">در حال بارگذاری موارد مورد علاقه...</p>
+                <p className="text-sm text-foreground-muted font-medium">در حال بارگذاری موارد مورد علاقه...</p>
             </div>
         );
     }
@@ -125,13 +125,13 @@ export default function FavoritesPage() {
         <div className="max-w-5xl mx-auto px-4 py-8 pb-28 lg:pb-12">
             <header className="mb-6">
                 <h1 className="text-2xl font-black text-brand mb-2">علاقه‌مندی‌ها و نشان‌شده‌ها</h1>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-foreground-muted">
                     آگهی‌ها و اقامتگاه‌های ذخیره‌شده و پست‌هایی که پسندیده‌اید.
                 </p>
             </header>
 
             {/* Filter Tabs */}
-            <div className="flex items-center gap-2 mb-8 border-b border-gray-100 pb-3 overflow-x-auto no-scrollbar">
+            <div className="flex items-center gap-2 mb-8 border-b border-border-subtle pb-3 overflow-x-auto no-scrollbar">
                 {TABS.map((tab) => {
                     const Icon = tab.icon;
                     const isActive = selectedTab === tab.id;
@@ -153,7 +153,7 @@ export default function FavoritesPage() {
                                 "flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0",
                                 isActive
                                     ? "bg-brand text-white shadow-xs"
-                                    : "bg-gray-50 text-gray-600 hover:bg-gray-100"
+                                    : "bg-surface-secondary text-foreground-secondary hover:bg-surface-secondary"
                             )}
                         >
                             <Icon className="w-4 h-4" />
@@ -162,7 +162,7 @@ export default function FavoritesPage() {
                                 <span
                                     className={cn(
                                         "px-1.5 py-0.5 rounded-full text-[10px] font-bold",
-                                        isActive ? "bg-white/20 text-white" : "bg-gray-200 text-gray-700"
+                                        isActive ? "bg-surface/20 text-white" : "bg-gray-200 text-foreground-secondary"
                                     )}
                                 >
                                     {toPersianDigits(count)}
@@ -175,12 +175,12 @@ export default function FavoritesPage() {
 
             {/* Empty State */}
             {!hasAnyContent ? (
-                <div className="flex flex-col items-center justify-center min-h-[350px] gap-6 px-4 text-center bg-gray-50/50 rounded-3xl border border-gray-100/80 p-8">
-                    <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-xs border border-gray-100">
+                <div className="flex flex-col items-center justify-center min-h-[350px] gap-6 px-4 text-center bg-surface-secondary/50 rounded-3xl border border-border-subtle/80 p-8">
+                    <div className="w-20 h-20 bg-surface rounded-full flex items-center justify-center shadow-xs border border-border-subtle">
                         <Heart className="w-10 h-10 text-gray-300" />
                     </div>
                     <div>
-                        <h2 className="text-base sm:text-lg font-bold text-gray-900 mb-2">
+                        <h2 className="text-base sm:text-lg font-bold text-foreground mb-2">
                             {selectedTab === 'ALL'
                                 ? 'هنوز موردی ذخیره یا پسند نکرده‌اید'
                                 : selectedTab === 'AD'
@@ -189,7 +189,7 @@ export default function FavoritesPage() {
                                 ? 'هیچ اقامتگاه موقتی ذخیره نشده است'
                                 : 'هیچ پستی را پسند نکرده‌اید'}
                         </h2>
-                        <p className="text-xs sm:text-sm text-gray-500 max-w-sm leading-relaxed">
+                        <p className="text-xs sm:text-sm text-foreground-muted max-w-sm leading-relaxed">
                             {selectedTab === 'POST'
                                 ? 'با کلیک روی آیکون قلب در مقالات و فید کاوش، محتواهای مفید را پسند کنید تا اینجا ذخیره شوند.'
                                 : 'با کلیک روی آیکون قلب در کارت‌های آگهی، موارد دلخواهتان را نشان کنید تا در این بخش سریع به آنها دسترسی داشته باشید.'}
@@ -203,10 +203,10 @@ export default function FavoritesPage() {
                         <section className="space-y-4">
                             {selectedTab === 'ALL' && likedPosts.length > 0 && (
                                 <div className="flex items-center justify-between">
-                                    <h2 className="text-base font-bold text-gray-800 flex items-center gap-2">
+                                    <h2 className="text-base font-bold text-foreground flex items-center gap-2">
                                         <Bookmark className="w-4 h-4 text-brand" />
                                         آگهی‌ها و اقامتگاه‌های نشان‌شده
-                                        <span className="text-xs text-gray-400 font-normal">
+                                        <span className="text-xs text-foreground-muted font-normal">
                                             ({toPersianDigits(filteredFavorites.length)})
                                         </span>
                                     </h2>
@@ -228,7 +228,7 @@ export default function FavoritesPage() {
                                                 rooms={typeof item.details?.rooms === 'number' ? item.details.rooms : undefined}
                                                 isSaved={true}
                                                 onToggleSave={(id) => toggleSaveTempMutation.mutateAsync(id)}
-                                                className="bg-white rounded-2xl border border-gray-100 shadow-xs hover:shadow-md transition-shadow"
+                                                className="bg-surface rounded-2xl border border-border-subtle shadow-xs hover:shadow-md transition-shadow"
                                             />
                                         );
                                     }
@@ -243,7 +243,7 @@ export default function FavoritesPage() {
                                             category={item.details?.category || 'آگهی'}
                                             location={item.subtitle || 'نامشخص'}
                                             variant="responsive"
-                                            className="bg-white rounded-2xl border border-gray-100 shadow-xs hover:shadow-md transition-shadow"
+                                            className="bg-surface rounded-2xl border border-border-subtle shadow-xs hover:shadow-md transition-shadow"
                                             isSaved={true}
                                             onToggleSave={(id) => toggleSaveAdMutation.mutateAsync(id)}
                                         />
@@ -257,11 +257,11 @@ export default function FavoritesPage() {
                     {(selectedTab === 'ALL' || selectedTab === 'POST') && likedPosts.length > 0 && (
                         <section className="space-y-4">
                             {selectedTab === 'ALL' && filteredFavorites.length > 0 && (
-                                <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                                    <h2 className="text-base font-bold text-gray-800 flex items-center gap-2">
-                                        <Heart className="w-4 h-4 text-red-500 fill-red-500" />
+                                <div className="flex items-center justify-between pt-4 border-t border-border-subtle">
+                                    <h2 className="text-base font-bold text-foreground flex items-center gap-2">
+                                        <Heart className="w-4 h-4 text-error fill-red-500" />
                                         پست‌های پسندیده‌شده
-                                        <span className="text-xs text-gray-400 font-normal">
+                                        <span className="text-xs text-foreground-muted font-normal">
                                             ({toPersianDigits(likedPosts.length)})
                                         </span>
                                     </h2>
@@ -308,14 +308,14 @@ export default function FavoritesPage() {
                     onClick={() => setReadingPost(null)}
                 >
                     <div
-                        className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 space-y-6 shadow-2xl relative border border-gray-100 my-6 max-h-[90vh] overflow-y-auto"
+                        className="bg-surface rounded-3xl max-w-2xl w-full p-6 sm:p-8 space-y-6 shadow-2xl relative border border-border-subtle my-6 max-h-[90vh] overflow-y-auto"
                         onClick={(e) => e.stopPropagation()}
                     >
                         {/* Close button */}
                         <button
                             type="button"
                             onClick={() => setReadingPost(null)}
-                            className="absolute top-5 left-5 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 transition-colors"
+                            className="absolute top-5 left-5 w-8 h-8 rounded-full bg-surface-secondary hover:bg-gray-200 flex items-center justify-center text-foreground-secondary transition-colors"
                         >
                             <X className="w-5 h-5" />
                         </button>
@@ -325,7 +325,7 @@ export default function FavoritesPage() {
                             <span className="px-3 py-1 rounded-full text-xs font-bold bg-brand/10 text-brand">
                                 {readingPost.category || 'پست تخصصی'}
                             </span>
-                            <span className="text-xs text-gray-400">
+                            <span className="text-xs text-foreground-muted">
                                 {readingPost.publisher?.name || (
                                     readingPost.publisherType === 'PLATFORM'
                                         ? 'ملک‌تودی رسمی'
@@ -337,13 +337,13 @@ export default function FavoritesPage() {
                         </div>
 
                         {/* Title */}
-                        <h2 className="text-xl sm:text-2xl font-black text-gray-900 leading-snug">
+                        <h2 className="text-xl sm:text-2xl font-black text-foreground leading-snug">
                             {readingPost.title}
                         </h2>
 
                         {/* Summary */}
                         {readingPost.summary && (
-                            <div className="p-4 bg-gray-50 rounded-2xl text-gray-600 text-sm leading-relaxed border-r-4 border-brand">
+                            <div className="p-4 bg-surface-secondary rounded-2xl text-foreground-secondary text-sm leading-relaxed border-r-4 border-brand">
                                 {readingPost.summary}
                             </div>
                         )}
@@ -361,7 +361,7 @@ export default function FavoritesPage() {
 
                                         if (isVideo) {
                                             return (
-                                                <div key={i} className="relative aspect-video w-full rounded-2xl overflow-hidden bg-slate-950 border border-gray-200">
+                                                <div key={i} className="relative aspect-video w-full rounded-2xl overflow-hidden bg-slate-950 border border-border-subtle">
                                                     <video
                                                         src={url}
                                                         poster={poster}
@@ -374,7 +374,7 @@ export default function FavoritesPage() {
                                         }
 
                                         return (
-                                            <div key={i} className="relative aspect-video w-full rounded-2xl overflow-hidden bg-gray-100 border border-gray-200">
+                                            <div key={i} className="relative aspect-video w-full rounded-2xl overflow-hidden bg-surface-secondary border border-border-subtle">
                                                 <Image
                                                     src={url}
                                                     alt={`تصویر ${i + 1}`}
@@ -389,12 +389,12 @@ export default function FavoritesPage() {
                         })()}
 
                         {/* Content */}
-                        <div className="text-gray-700 text-sm sm:text-base leading-loose whitespace-pre-line font-normal space-y-3">
+                        <div className="text-foreground-secondary text-sm sm:text-base leading-loose whitespace-pre-line font-normal space-y-3">
                             {readingPost.content}
                         </div>
 
                         {/* Stats & Actions Footer */}
-                        <div className="pt-4 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
+                        <div className="pt-4 border-t border-border-subtle flex items-center justify-between text-xs text-foreground-muted">
                             <div className="flex items-center gap-4">
                                 <button
                                     type="button"
@@ -416,7 +416,7 @@ export default function FavoritesPage() {
                                         "flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold transition-all active:scale-95",
                                         readingPost.hasLiked
                                             ? "bg-red-500 text-white shadow-xs"
-                                            : "bg-red-50 text-red-600 hover:bg-red-100"
+                                            : "bg-error-subtle text-error hover:bg-error-subtle"
                                     )}
                                     aria-label={readingPost.hasLiked ? "حذف پسند" : "پسندیدن"}
                                 >
@@ -425,13 +425,13 @@ export default function FavoritesPage() {
                                             "w-4 h-4",
                                             readingPost.hasLiked
                                                 ? "fill-white text-white"
-                                                : "fill-red-500 text-red-500"
+                                                : "fill-red-500 text-error"
                                         )}
                                     />
                                     <span>{toPersianDigits(readingPost.likeCount || 0)} پسند</span>
                                 </button>
 
-                                <span className="flex items-center gap-1 text-gray-400">
+                                <span className="flex items-center gap-1 text-foreground-muted">
                                     <Eye className="w-4 h-4" />
                                     <span>{toPersianDigits(readingPost.viewCount || 0)} بازدید</span>
                                 </span>
@@ -440,7 +440,7 @@ export default function FavoritesPage() {
                             <button
                                 type="button"
                                 onClick={() => handleSharePost(readingPost)}
-                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold transition-all"
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface-secondary hover:bg-gray-200 text-foreground-secondary font-bold transition-all"
                             >
                                 <Share2 className="w-3.5 h-3.5" />
                                 <span>اشتراک‌گذاری</span>

@@ -122,10 +122,10 @@ export default function AdminHostsPage() {
   return (
     <div className="space-y-8" dir="rtl">
       {/* Page Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-soft-border shadow-xs">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-surface p-6 rounded-3xl border border-soft-border shadow-xs">
         <div className="space-y-1">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-2xl bg-warning-subtle text-warning flex items-center justify-center">
               <Home className="w-6 h-6" />
             </div>
             <div>
@@ -142,7 +142,7 @@ export default function AdminHostsPage() {
         <button
           onClick={() => refetch()}
           disabled={isFetching}
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-soft-bg hover:bg-slate-100 text-secondary rounded-xl text-xs font-bold transition-all self-start md:self-auto"
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-soft-bg hover:bg-surface-secondary text-secondary rounded-xl text-xs font-bold transition-all self-start md:self-auto"
         >
           <RefreshCw className={`w-4 h-4 ${isFetching ? "animate-spin text-brand" : ""}`} />
           <span>به‌روزرسانی</span>
@@ -151,57 +151,57 @@ export default function AdminHostsPage() {
 
       {/* KPI Counters */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <div className="bg-white p-5 rounded-2xl border border-soft-border flex items-center justify-between">
+        <div className="bg-surface p-5 rounded-2xl border border-soft-border flex items-center justify-between">
           <div>
             <p className="text-xs text-secondary font-bold">کل متقاضیان</p>
             <p className="text-2xl font-black text-brand mt-1">
               {toPersianDigits(applications.length)}
             </p>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-info-subtle text-info flex items-center justify-center">
             <User className="w-5 h-5" />
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-soft-border flex items-center justify-between">
+        <div className="bg-surface p-5 rounded-2xl border border-soft-border flex items-center justify-between">
           <div>
             <p className="text-xs text-secondary font-bold">در انتظار بررسی</p>
-            <p className="text-2xl font-black text-amber-600 mt-1">
+            <p className="text-2xl font-black text-warning mt-1">
               {toPersianDigits(pendingCount)}
             </p>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-warning-subtle text-warning flex items-center justify-center">
             <Clock className="w-5 h-5" />
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-soft-border flex items-center justify-between">
+        <div className="bg-surface p-5 rounded-2xl border border-soft-border flex items-center justify-between">
           <div>
             <p className="text-xs text-secondary font-bold">تأیید شده</p>
-            <p className="text-2xl font-black text-emerald-600 mt-1">
+            <p className="text-2xl font-black text-success mt-1">
               {toPersianDigits(approvedCount)}
             </p>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-success-subtle text-success flex items-center justify-center">
             <CheckCircle2 className="w-5 h-5" />
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-soft-border flex items-center justify-between">
+        <div className="bg-surface p-5 rounded-2xl border border-soft-border flex items-center justify-between">
           <div>
             <p className="text-xs text-secondary font-bold">رد شده</p>
-            <p className="text-2xl font-black text-rose-600 mt-1">
+            <p className="text-2xl font-black text-error mt-1">
               {toPersianDigits(rejectedCount)}
             </p>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-error-subtle text-error flex items-center justify-center">
             <XCircle className="w-5 h-5" />
           </div>
         </div>
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="bg-white p-4 rounded-2xl border border-soft-border flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className="bg-surface p-4 rounded-2xl border border-soft-border flex flex-col md:flex-row items-center justify-between gap-4">
         {/* Status Tabs */}
         <div className="flex items-center gap-1.5 p-1 bg-soft-bg rounded-xl w-full md:w-auto overflow-x-auto">
           {[
@@ -215,7 +215,7 @@ export default function AdminHostsPage() {
               onClick={() => setStatusFilter(tab.key)}
               className={`px-4 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
                 statusFilter === tab.key
-                  ? "bg-white text-brand shadow-xs"
+                  ? "bg-surface text-brand shadow-xs"
                   : "text-secondary hover:text-brand"
               }`}
             >
@@ -232,19 +232,19 @@ export default function AdminHostsPage() {
             placeholder="جستجو با نام، کد ملی یا شماره همراه..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-3 pr-10 py-2 bg-soft-bg border border-transparent focus:border-soft-border focus:bg-white rounded-xl text-xs text-brand font-medium outline-none transition-all placeholder:text-secondary/50"
+            className="w-full pl-3 pr-10 py-2 bg-soft-bg border border-transparent focus:border-soft-border focus:bg-surface rounded-xl text-xs text-brand font-medium outline-none transition-all placeholder:text-secondary/50"
           />
         </div>
       </div>
 
       {/* Applications List */}
       {isLoading ? (
-        <div className="bg-white p-12 rounded-3xl border border-soft-border text-center">
+        <div className="bg-surface p-12 rounded-3xl border border-soft-border text-center">
           <RefreshCw className="w-8 h-8 text-primary animate-spin mx-auto mb-3" />
           <p className="text-xs text-secondary font-bold">در حال دریافت لیست درخواست‌ها...</p>
         </div>
       ) : filteredApps.length === 0 ? (
-        <div className="bg-white p-12 rounded-3xl border border-soft-border text-center">
+        <div className="bg-surface p-12 rounded-3xl border border-soft-border text-center">
           <AlertCircle className="w-10 h-10 text-secondary/30 mx-auto mb-3" />
           <p className="text-sm text-secondary font-bold">هیچ درخواستی با مشخصات انتخاب‌شده یافت نشد.</p>
         </div>
@@ -253,7 +253,7 @@ export default function AdminHostsPage() {
           {filteredApps.map((app) => (
             <div
               key={app.id}
-              className="bg-white p-6 rounded-3xl border border-soft-border hover:shadow-md transition-all flex flex-col justify-between space-y-4"
+              className="bg-surface p-6 rounded-3xl border border-soft-border hover:shadow-md transition-all flex flex-col justify-between space-y-4"
             >
               <div className="space-y-3">
                 <div className="flex items-start justify-between gap-2">
@@ -268,10 +268,10 @@ export default function AdminHostsPage() {
                   <span
                     className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-black ${
                       app.status === "APPROVED"
-                        ? "bg-emerald-50 text-emerald-700"
+                        ? "bg-success-subtle text-success"
                         : app.status === "REJECTED"
-                        ? "bg-rose-50 text-rose-700"
-                        : "bg-amber-50 text-amber-700"
+                        ? "bg-error-subtle text-error"
+                        : "bg-warning-subtle text-warning"
                     }`}
                   >
                     {app.status === "APPROVED"
@@ -311,7 +311,7 @@ export default function AdminHostsPage() {
                   )}
 
                   {app.rejectionReason && (
-                    <div className="p-2.5 rounded-xl bg-rose-50 text-rose-800 text-[11px] font-medium leading-relaxed">
+                    <div className="p-2.5 rounded-xl bg-error-subtle text-error text-[11px] font-medium leading-relaxed">
                       <strong>دلیل رد:</strong> {app.rejectionReason}
                     </div>
                   )}
@@ -322,7 +322,7 @@ export default function AdminHostsPage() {
               <div className="pt-3 border-t border-soft-border flex items-center gap-2">
                 <button
                   onClick={() => setSelectedApp(app)}
-                  className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 bg-soft-bg hover:bg-slate-100 text-secondary rounded-xl text-xs font-bold transition-colors"
+                  className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 bg-soft-bg hover:bg-surface-secondary text-secondary rounded-xl text-xs font-bold transition-colors"
                 >
                   <Eye className="w-3.5 h-3.5" />
                   <span>مشاهده کامل</span>
@@ -346,7 +346,7 @@ export default function AdminHostsPage() {
                         setAdminNote("");
                       }}
                       disabled={reviewMutation.isPending}
-                      className="inline-flex items-center justify-center gap-1 py-2 px-3 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl text-xs font-bold transition-colors"
+                      className="inline-flex items-center justify-center gap-1 py-2 px-3 bg-error-subtle hover:bg-error-subtle text-error rounded-xl text-xs font-bold transition-colors"
                       title="رد درخواست"
                     >
                       <XCircle className="w-3.5 h-3.5" />
@@ -363,10 +363,10 @@ export default function AdminHostsPage() {
       {/* Detail Modal */}
       {selectedApp && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 space-y-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+          <div className="bg-surface rounded-3xl max-w-lg w-full p-6 space-y-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between border-b border-soft-border pb-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-warning-subtle text-warning flex items-center justify-center">
                   <Home className="w-5 h-5" />
                 </div>
                 <div>
@@ -428,7 +428,7 @@ export default function AdminHostsPage() {
             <div className="flex items-center justify-end gap-3 pt-4 border-t border-soft-border">
               <button
                 onClick={() => setSelectedApp(null)}
-                className="px-4 py-2 bg-soft-bg hover:bg-slate-100 text-secondary rounded-xl text-xs font-bold transition-colors"
+                className="px-4 py-2 bg-soft-bg hover:bg-surface-secondary text-secondary rounded-xl text-xs font-bold transition-colors"
               >
                 بستن
               </button>
@@ -440,7 +440,7 @@ export default function AdminHostsPage() {
                       setSelectedApp(null);
                       setRejectModalApp(app);
                     }}
-                    className="px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl text-xs font-bold transition-colors"
+                    className="px-4 py-2 bg-error-subtle hover:bg-error-subtle text-error rounded-xl text-xs font-bold transition-colors"
                   >
                     رد درخواست
                   </button>
@@ -464,11 +464,11 @@ export default function AdminHostsPage() {
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
           <form
             onSubmit={handleRejectSubmit}
-            className="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl animate-in fade-in zoom-in-95 duration-200"
+            className="bg-surface rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl animate-in fade-in zoom-in-95 duration-200"
           >
             <div className="flex items-center justify-between border-b border-soft-border pb-3">
-              <h3 className="text-sm font-black text-rose-700 flex items-center gap-2">
-                <XCircle className="w-5 h-5 text-rose-600" />
+              <h3 className="text-sm font-black text-error flex items-center gap-2">
+                <XCircle className="w-5 h-5 text-error" />
                 رد درخواست میزبانی
               </h3>
               <button
@@ -491,14 +491,14 @@ export default function AdminHostsPage() {
               value={adminNote}
               onChange={(e) => setAdminNote(e.target.value)}
               placeholder="مثال: تصویر کارت ملی ناخواناست / مدارک گردشگری نیاز به به‌روزرسانی دارد..."
-              className="w-full p-3 bg-soft-bg border border-soft-border rounded-2xl text-xs text-brand outline-none focus:bg-white focus:border-rose-300 transition-all resize-none"
+              className="w-full p-3 bg-soft-bg border border-soft-border rounded-2xl text-xs text-brand outline-none focus:bg-surface focus:border-rose-300 transition-all resize-none"
             />
 
             <div className="flex items-center justify-end gap-2 pt-2">
               <button
                 type="button"
                 onClick={() => setRejectModalApp(null)}
-                className="px-4 py-2 bg-soft-bg hover:bg-slate-100 text-secondary rounded-xl text-xs font-bold transition-colors"
+                className="px-4 py-2 bg-soft-bg hover:bg-surface-secondary text-secondary rounded-xl text-xs font-bold transition-colors"
               >
                 انصراف
               </button>

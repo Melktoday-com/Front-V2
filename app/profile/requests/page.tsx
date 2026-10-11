@@ -80,7 +80,7 @@ export default function UserRequestsPage() {
     return (
         <div className="max-w-4xl mx-auto px-4 pt-8 pb-36 lg:pb-8 space-y-6" dir="rtl">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-soft-border shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-surface p-6 rounded-3xl border border-soft-border shadow-xs">
                 <div className="flex items-center gap-3.5">
                     <Link
                         href="/profile"
@@ -115,7 +115,7 @@ export default function UserRequestsPage() {
                     onClick={() => setActiveTab("ALL")}
                     className={`px-4 py-2 rounded-xl transition-all ${
                         activeTab === "ALL"
-                            ? "bg-white text-brand shadow-xs font-black"
+                            ? "bg-surface text-brand shadow-xs font-black"
                             : "text-secondary hover:text-brand"
                     }`}
                 >
@@ -125,7 +125,7 @@ export default function UserRequestsPage() {
                     onClick={() => setActiveTab("AGENCY")}
                     className={`px-4 py-2 rounded-xl transition-all ${
                         activeTab === "AGENCY"
-                            ? "bg-white text-brand shadow-xs font-black"
+                            ? "bg-surface text-brand shadow-xs font-black"
                             : "text-secondary hover:text-brand"
                     }`}
                 >
@@ -135,7 +135,7 @@ export default function UserRequestsPage() {
                     onClick={() => setActiveTab("HOST")}
                     className={`px-4 py-2 rounded-xl transition-all ${
                         activeTab === "HOST"
-                            ? "bg-white text-brand shadow-xs font-black"
+                            ? "bg-surface text-brand shadow-xs font-black"
                             : "text-secondary hover:text-brand"
                     }`}
                 >
@@ -151,7 +151,7 @@ export default function UserRequestsPage() {
                 </div>
             ) : !hasAnyRequests ? (
                 /* Empty State */
-                <div className="bg-white rounded-3xl p-10 border border-soft-border text-center space-y-6 shadow-xs">
+                <div className="bg-surface rounded-3xl p-10 border border-soft-border text-center space-y-6 shadow-xs">
                     <div className="w-16 h-16 rounded-3xl bg-soft-bg text-secondary/40 flex items-center justify-center mx-auto">
                         <FileText className="w-8 h-8" />
                     </div>
@@ -174,7 +174,7 @@ export default function UserRequestsPage() {
                             href="/host/apply"
                             className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 bg-soft-bg text-brand hover:bg-soft-border/50 border border-soft-border rounded-2xl text-xs font-bold transition"
                         >
-                            <Home className="w-4 h-4 text-emerald-600" />
+                            <Home className="w-4 h-4 text-success" />
                             <span>ثبت درخواست میزبانی اقامتگاه</span>
                         </Link>
                     </div>
@@ -184,10 +184,10 @@ export default function UserRequestsPage() {
                 <div className="space-y-4">
                     {/* Agency Application Card */}
                     {(activeTab === "ALL" || activeTab === "AGENCY") && agencyApp && (
-                        <div className="bg-white rounded-3xl border border-soft-border p-6 shadow-xs space-y-5">
+                        <div className="bg-surface rounded-3xl border border-soft-border p-6 shadow-xs space-y-5">
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-soft-border pb-4">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100">
+                                    <div className="w-12 h-12 rounded-2xl bg-info-subtle text-info flex items-center justify-center border border-info/30">
                                         <Building2 className="w-6 h-6" />
                                     </div>
                                     <div>
@@ -209,19 +209,19 @@ export default function UserRequestsPage() {
                                 {/* Status Badge */}
                                 <div>
                                     {agencyApp.status === "PENDING" && (
-                                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-warning-subtle text-warning border border-warning/30">
                                             <Clock className="w-4 h-4" />
                                             <span>در انتظار بررسی مدیریت</span>
                                         </span>
                                     )}
                                     {agencyApp.status === "APPROVED" && (
-                                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-success-subtle text-success border border-success/30">
                                             <CheckCircle2 className="w-4 h-4" />
                                             <span>تایید شده</span>
                                         </span>
                                     )}
                                     {agencyApp.status === "REJECTED" && (
-                                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-red-50 text-red-700 border border-red-200">
+                                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-error-subtle text-error border border-error/30">
                                             <XCircle className="w-4 h-4" />
                                             <span>رد شده</span>
                                         </span>
@@ -259,16 +259,16 @@ export default function UserRequestsPage() {
 
                             {/* Rejection Alert Box */}
                             {agencyApp.status === "REJECTED" && (
-                                <div className="bg-red-50/80 border border-red-200 rounded-2xl p-4 space-y-2">
-                                    <div className="flex items-center gap-2 text-red-700 font-bold text-xs">
+                                <div className="bg-error-subtle/80 border border-error/30 rounded-2xl p-4 space-y-2">
+                                    <div className="flex items-center gap-2 text-error font-bold text-xs">
                                         <ShieldAlert className="w-4 h-4" />
                                         <span>علت رد درخواست توسط مدیریت:</span>
                                     </div>
-                                    <p className="text-xs text-red-800 leading-relaxed font-medium">
+                                    <p className="text-xs text-error leading-relaxed font-medium">
                                         {agencyApp.rejectionReason || "اطلاعات یا مدارک ارسالی با ضوابط سامانه تطابق نداشت."}
                                     </p>
                                     {agencyApp.adminNote && (
-                                        <p className="text-[11px] text-red-600 bg-white/70 p-2 rounded-lg border border-red-100">
+                                        <p className="text-[11px] text-error bg-surface/70 p-2 rounded-lg border border-error/30">
                                             یادداشت مدیر: {agencyApp.adminNote}
                                         </p>
                                     )}
@@ -310,10 +310,10 @@ export default function UserRequestsPage() {
 
                     {/* Host Application Card */}
                     {(activeTab === "ALL" || activeTab === "HOST") && hostApp && (
-                        <div className="bg-white rounded-3xl border border-soft-border p-6 shadow-xs space-y-5">
+                        <div className="bg-surface rounded-3xl border border-soft-border p-6 shadow-xs space-y-5">
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-soft-border pb-4">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100">
+                                    <div className="w-12 h-12 rounded-2xl bg-success-subtle text-success flex items-center justify-center border border-success/30">
                                         <Home className="w-6 h-6" />
                                     </div>
                                     <div>
@@ -332,19 +332,19 @@ export default function UserRequestsPage() {
                                 {/* Status Badge */}
                                 <div>
                                     {hostApp.status === "PENDING" && (
-                                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-warning-subtle text-warning border border-warning/30">
                                             <Clock className="w-4 h-4" />
                                             <span>در انتظار بررسی مدیریت</span>
                                         </span>
                                     )}
                                     {hostApp.status === "APPROVED" && (
-                                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-success-subtle text-success border border-success/30">
                                             <CheckCircle2 className="w-4 h-4" />
                                             <span>تایید شده</span>
                                         </span>
                                     )}
                                     {hostApp.status === "REJECTED" && (
-                                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-red-50 text-red-700 border border-red-200">
+                                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-error-subtle text-error border border-error/30">
                                             <XCircle className="w-4 h-4" />
                                             <span>رد شده</span>
                                         </span>
@@ -384,16 +384,16 @@ export default function UserRequestsPage() {
 
                             {/* Rejection Alert Box */}
                             {hostApp.status === "REJECTED" && (
-                                <div className="bg-red-50/80 border border-red-200 rounded-2xl p-4 space-y-2">
-                                    <div className="flex items-center gap-2 text-red-700 font-bold text-xs">
+                                <div className="bg-error-subtle/80 border border-error/30 rounded-2xl p-4 space-y-2">
+                                    <div className="flex items-center gap-2 text-error font-bold text-xs">
                                         <ShieldAlert className="w-4 h-4" />
                                         <span>علت رد درخواست میزبانی:</span>
                                     </div>
-                                    <p className="text-xs text-red-800 leading-relaxed font-medium">
+                                    <p className="text-xs text-error leading-relaxed font-medium">
                                         {hostApp.rejectionReason || "اطلاعات اقامتگاه با ضوابط سامانه میزبانی همخوانی نداشت."}
                                     </p>
                                     {hostApp.adminNote && (
-                                        <p className="text-[11px] text-red-600 bg-white/70 p-2 rounded-lg border border-red-100">
+                                        <p className="text-[11px] text-error bg-surface/70 p-2 rounded-lg border border-error/30">
                                             یادداشت مدیر: {hostApp.adminNote}
                                         </p>
                                     )}

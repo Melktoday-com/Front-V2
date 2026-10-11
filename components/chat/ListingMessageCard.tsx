@@ -45,7 +45,7 @@ export function ListingMessageCard({ metadata, mediaIds }: ListingMessageCardPro
     }
 
     const cardContent = (
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 p-3 bg-white rounded-2xl border border-soft-border/80 hover:border-brand/30 shadow-xs transition-all text-right group max-w-sm">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 p-3 bg-surface rounded-2xl border border-soft-border/80 hover:border-brand/30 shadow-xs transition-all text-right group max-w-sm">
             {/* Image Thumbnail */}
             <div className="relative w-full sm:w-20 h-24 sm:h-20 rounded-xl bg-soft-bg overflow-hidden shrink-0 border border-soft-border flex items-center justify-center">
                 {imageUrl ? (

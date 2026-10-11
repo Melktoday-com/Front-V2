@@ -438,9 +438,9 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
     const selectedZoneIds = useMemo(() => selectedZones.map((z) => z.id), [selectedZones]);
 
     return (
-        <div className="h-screen bg-white flex flex-col overflow-hidden">
+        <div className="h-screen bg-surface flex flex-col overflow-hidden">
             {/* Header & Filter Section */}
-            <div className="flex-none p-4 sm:p-6 lg:px-10 lg:pt-8 lg:pb-2 space-y-3 border-b border-gray-100">
+            <div className="flex-none p-4 sm:p-6 lg:px-10 lg:pt-8 lg:pb-2 space-y-3 border-b border-border-subtle">
                 <PageHeader
                     title="جستجوی املاک"
                     searchPlaceholder="نام منطقه، محله یا نوع ملک..."
@@ -477,7 +477,7 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
                         <button
                             type="button"
                             onClick={() => setSelectedZones([])}
-                            className="text-[11px] text-secondary hover:text-red-500 font-semibold transition-colors cursor-pointer"
+                            className="text-[11px] text-secondary hover:text-error font-semibold transition-colors cursor-pointer"
                         >
                             پاک کردن همه
                         </button>
@@ -511,7 +511,7 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
                                     e.stopPropagation();
                                     handleCategorySelect("");
                                 }}
-                                className="hover:bg-white/20 p-0.5 rounded-full transition-colors cursor-pointer mr-0.5"
+                                className="hover:bg-surface/20 p-0.5 rounded-full transition-colors cursor-pointer mr-0.5"
                                 title="حذف فیلتر دسته‌بندی"
                             >
                                 <X className="w-3 h-3" />
@@ -536,7 +536,7 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
                             <MapPin className="w-3.5 h-3.5 shrink-0" />
                             <span>نواحی</span>
                             {selectedZones.length > 0 && (
-                                <span className="bg-white/30 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full leading-none">
+                                <span className="bg-surface/30 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full leading-none">
                                     {selectedZones.length}
                                 </span>
                             )}
@@ -715,7 +715,7 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
                                     className="col-span-full py-8 flex flex-col items-center justify-center gap-2"
                                 >
                                     {isFetchingNextPage ? (
-                                        <div className="flex items-center gap-2 text-xs font-bold text-secondary bg-white px-5 py-2.5 rounded-xl shadow-xs border border-gray-100">
+                                        <div className="flex items-center gap-2 text-xs font-bold text-secondary bg-surface px-5 py-2.5 rounded-xl shadow-xs border border-border-subtle">
                                             <Loader2 className="w-4 h-4 animate-spin text-primary" />
                                             <span>در حال بارگذاری بخش بعدی آگهی‌ها...</span>
                                         </div>
@@ -748,7 +748,7 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
                 {/* Map Section */}
                 <div
                     className={cn(
-                        "relative flex-1 lg:flex-[1.4] h-full overflow-hidden rounded-2xl border border-gray-100 shadow-xs animate-in fade-in duration-150",
+                        "relative flex-1 lg:flex-[1.4] h-full overflow-hidden rounded-2xl border border-border-subtle shadow-xs animate-in fade-in duration-150",
                         viewMode === "list" ? "hidden" : "block"
                     )}
                 >

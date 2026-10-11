@@ -244,6 +244,126 @@
   --color-status-success: var(--success);
   --color-status-info: var(--info);
 
+  /* =========================================================================
+     CENTRALIZED THEME OVERRIDES FOR STATIC TAILWIND COLOR FAMILIES
+     Binds all default utility names to the brand palette and accessible tokens,
+     completely eliminating unbranded static colors across the application.
+     ========================================================================= */
+  /* Blue -> Info / Primary Brand Navy derivatives */
+  --color-blue-50: var(--info-subtle);
+  --color-blue-100: var(--info-subtle);
+  --color-blue-200: var(--feedback-info-border);
+  --color-blue-300: var(--feedback-info-border);
+  --color-blue-400: var(--brand-navy-light);
+  --color-blue-500: var(--brand-navy);
+  --color-blue-600: var(--info);
+  --color-blue-700: var(--brand-navy-dark);
+  --color-blue-800: var(--brand-navy-dark);
+  --color-blue-900: var(--brand-navy-dark);
+  --color-blue-950: var(--brand-navy-dark);
+
+  /* Emerald & Green -> Success */
+  --color-emerald-50: var(--success-subtle);
+  --color-emerald-100: var(--success-subtle);
+  --color-emerald-200: var(--feedback-success-border);
+  --color-emerald-300: var(--feedback-success-border);
+  --color-emerald-500: var(--success);
+  --color-emerald-600: var(--success);
+  --color-emerald-700: var(--success);
+  --color-emerald-800: var(--success);
+  --color-green-50: var(--success-subtle);
+  --color-green-100: var(--success-subtle);
+  --color-green-200: var(--feedback-success-border);
+  --color-green-500: var(--success);
+  --color-green-600: var(--success);
+  --color-green-700: var(--success);
+
+  /* Amber & Yellow -> Warning / Warm Apricot Accent */
+  --color-amber-50: var(--warning-subtle);
+  --color-amber-100: var(--warning-subtle);
+  --color-amber-200: var(--feedback-warning-border);
+  --color-amber-300: var(--feedback-warning-border);
+  --color-amber-400: var(--brand-apricot);
+  --color-amber-500: var(--warning);
+  --color-amber-600: var(--warning);
+  --color-amber-700: var(--warning);
+  --color-amber-800: var(--warning);
+  --color-amber-900: var(--warning);
+  --color-yellow-50: var(--warning-subtle);
+  --color-yellow-100: var(--warning-subtle);
+  --color-yellow-200: var(--feedback-warning-border);
+  --color-yellow-400: var(--brand-apricot);
+  --color-yellow-500: var(--warning);
+  --color-yellow-600: var(--warning);
+
+  /* Orange -> Warm Apricot derivatives */
+  --color-orange-50: var(--brand-apricot-subtle);
+  --color-orange-100: var(--brand-apricot-subtle);
+  --color-orange-200: var(--brand-apricot-hover);
+  --color-orange-400: var(--brand-apricot);
+  --color-orange-500: var(--brand-apricot-hover);
+  --color-orange-600: var(--brand-apricot-dark);
+
+  /* Red & Rose -> Error */
+  --color-red-50: var(--error-subtle);
+  --color-red-100: var(--error-subtle);
+  --color-red-200: var(--feedback-error-border);
+  --color-red-300: var(--feedback-error-border);
+  --color-red-500: var(--error);
+  --color-red-600: var(--error);
+  --color-red-700: var(--error);
+  --color-red-800: var(--error);
+  --color-rose-50: var(--error-subtle);
+  --color-rose-100: var(--error-subtle);
+  --color-rose-200: var(--feedback-error-border);
+  --color-rose-500: var(--error);
+  --color-rose-600: var(--error);
+  --color-rose-700: var(--error);
+
+  /* Indigo & Purple -> Brand Navy & Accent derivatives */
+  --color-indigo-50: var(--info-subtle);
+  --color-indigo-100: var(--info-subtle);
+  --color-indigo-500: var(--brand-navy);
+  --color-indigo-600: var(--brand-navy);
+  --color-indigo-700: var(--brand-navy-dark);
+  --color-purple-50: var(--brand-apricot-subtle);
+  --color-purple-100: var(--brand-apricot-subtle);
+  --color-purple-500: var(--brand-apricot-dark);
+  --color-purple-600: var(--brand-apricot-dark);
+
+  /* Slate, Gray, Zinc -> Warm Brand Neutrals */
+  --color-slate-50: var(--brand-beige-subtle);
+  --color-slate-100: var(--brand-beige-subtle);
+  --color-slate-200: var(--brand-beige-border);
+  --color-slate-300: var(--brand-beige);
+  --color-slate-400: var(--brand-navy-muted);
+  --color-slate-500: var(--brand-navy-muted);
+  --color-slate-600: var(--brand-navy-light);
+  --color-slate-700: var(--brand-navy);
+  --color-slate-800: var(--brand-navy-dark);
+  --color-slate-900: var(--brand-navy-dark);
+  --color-slate-950: var(--brand-navy-dark);
+  --color-gray-50: var(--brand-beige-subtle);
+  --color-gray-100: var(--brand-beige-subtle);
+  --color-gray-200: var(--brand-beige-border);
+  --color-gray-300: var(--brand-beige);
+  --color-gray-400: var(--brand-navy-muted);
+  --color-gray-500: var(--brand-navy-muted);
+  --color-gray-600: var(--brand-navy-light);
+  --color-gray-700: var(--brand-navy);
+  --color-gray-800: var(--brand-navy-dark);
+  --color-gray-900: var(--brand-navy-dark);
+  --color-zinc-50: var(--brand-beige-subtle);
+  --color-zinc-100: var(--brand-beige-subtle);
+  --color-zinc-200: var(--brand-beige-border);
+  --color-zinc-300: var(--brand-beige);
+  --color-zinc-400: var(--brand-navy-muted);
+  --color-zinc-500: var(--brand-navy-muted);
+  --color-zinc-600: var(--brand-navy-light);
+  --color-zinc-700: var(--brand-navy);
+  --color-zinc-800: var(--brand-navy-dark);
+  --color-zinc-900: var(--brand-navy-dark);
+
   /* Radius & shape tokens */
   --radius-xs: var(--radius-xs);
   --radius-sm: var(--radius-sm);

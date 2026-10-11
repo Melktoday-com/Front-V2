@@ -42,12 +42,12 @@ interface AdminAdDetailModalProps {
 }
 
 const statusConfig: Record<string, { label: string; bg: string; text: string }> = {
-    [AdStatus.DRAFT]: { label: "پیش‌نویس", bg: "bg-slate-100", text: "text-slate-600" },
-    [AdStatus.PENDING_APPROVAL]: { label: "در انتظار بررسی", bg: "bg-amber-100", text: "text-amber-700" },
-    [AdStatus.PUBLISHED]: { label: "منتشر شده", bg: "bg-emerald-100", text: "text-emerald-700" },
-    [AdStatus.ARCHIVED]: { label: "آرشیو شده", bg: "bg-zinc-100", text: "text-zinc-600" },
-    [AdStatus.REJECTED]: { label: "رد شده", bg: "bg-rose-100", text: "text-rose-700" },
-    [AdStatus.DELETED]: { label: "حذف شده", bg: "bg-red-100", text: "text-red-700" },
+    [AdStatus.DRAFT]: { label: "پیش‌نویس", bg: "bg-surface-secondary", text: "text-foreground-secondary" },
+    [AdStatus.PENDING_APPROVAL]: { label: "در انتظار بررسی", bg: "bg-warning-subtle", text: "text-warning" },
+    [AdStatus.PUBLISHED]: { label: "منتشر شده", bg: "bg-success-subtle", text: "text-success" },
+    [AdStatus.ARCHIVED]: { label: "آرشیو شده", bg: "bg-surface-secondary", text: "text-foreground-secondary" },
+    [AdStatus.REJECTED]: { label: "رد شده", bg: "bg-error-subtle", text: "text-error" },
+    [AdStatus.DELETED]: { label: "حذف شده", bg: "bg-error-subtle", text: "text-error" },
 };
 
 const pricingKeyLabels: Record<string, string> = {
@@ -112,25 +112,25 @@ export default function AdminAdDetailModal({
     const activeMedia = mediaItems[activeImageIndex] || mediaItems[0];
     const statusInfo = statusConfig[ad?.status || ""] || {
         label: ad?.status || "نامشخص",
-        bg: "bg-slate-100",
-        text: "text-slate-600",
+        bg: "bg-surface-secondary",
+        text: "text-foreground-secondary",
     };
 
     return (
         <div role="dialog" aria-modal="true" aria-label="جزئیات آگهی" className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
             <div
-                className="bg-white rounded-3xl w-full max-w-4xl max-h-[90vh] shadow-2xl overflow-hidden flex flex-col border border-slate-200"
+                className="bg-surface rounded-3xl w-full max-w-4xl max-h-[90vh] shadow-2xl overflow-hidden flex flex-col border border-border-subtle"
                 dir="rtl"
             >
                 {/* Header */}
-                <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 shrink-0">
+                <div className="p-5 border-b border-border-subtle flex items-center justify-between bg-surface-secondary/50 shrink-0">
                     <div className="flex items-center gap-3 min-w-0">
-                        <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                        <div className="w-10 h-10 rounded-2xl bg-info-subtle text-info flex items-center justify-center shrink-0">
                             <Building2 className="w-5 h-5" />
                         </div>
                         <div className="min-w-0">
                             <div className="flex items-center gap-2">
-                                <h3 className="text-base font-black text-slate-900 truncate">
+                                <h3 className="text-base font-black text-foreground truncate">
                                     {ad?.title || "جزئیات آگهی ملک"}
                                 </h3>
                                 <span
@@ -139,12 +139,12 @@ export default function AdminAdDetailModal({
                                     {statusInfo.label}
                                 </span>
                             </div>
-                            <div className="flex items-center gap-1 text-xs text-slate-400 font-mono mt-0.5">
+                            <div className="flex items-center gap-1 text-xs text-foreground-muted font-mono mt-0.5">
                                 <span>ID: {adId}</span>
                                 <button
                                     type="button"
                                     onClick={handleCopyId}
-                                    className="hover:text-slate-700 p-0.5 transition-colors"
+                                    className="hover:text-foreground-secondary p-0.5 transition-colors"
                                     title="کپی شناسه"
                                 >
                                     <Copy className="w-3.5 h-3.5" />
@@ -156,7 +156,7 @@ export default function AdminAdDetailModal({
                     <button
                         type="button"
                         onClick={onClose}
-                        className="w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-700 transition-colors shrink-0"
+                        className="w-9 h-9 rounded-xl bg-surface border border-border-subtle flex items-center justify-center text-foreground-muted hover:text-foreground-secondary transition-colors shrink-0"
                     >
                         <X className="w-5 h-5" />
                     </button>
@@ -166,13 +166,13 @@ export default function AdminAdDetailModal({
                 <div className="flex-1 overflow-y-auto p-6 space-y-6">
                     {isLoading ? (
                         <div className="py-20 flex flex-col items-center justify-center gap-3">
-                            <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-                            <span className="text-sm font-bold text-slate-500">
+                            <Loader2 className="w-8 h-8 animate-spin text-info" />
+                            <span className="text-sm font-bold text-foreground-muted">
                                 در حال دریافت اطلاعات کامل آگهی...
                             </span>
                         </div>
                     ) : !ad ? (
-                        <div className="py-20 text-center text-slate-400 font-bold">
+                        <div className="py-20 text-center text-foreground-muted font-bold">
                             اطلاعاتی برای این آگهی یافت نشد.
                         </div>
                     ) : (
@@ -180,7 +180,7 @@ export default function AdminAdDetailModal({
                             {/* Images Gallery */}
                             {mediaItems.length > 0 ? (
                                 <div className="space-y-3">
-                                    <div className="relative w-full h-64 sm:h-80 rounded-2xl overflow-hidden bg-slate-100 border border-slate-200">
+                                    <div className="relative w-full h-64 sm:h-80 rounded-2xl overflow-hidden bg-surface-secondary border border-border-subtle">
                                         {activeMedia.isVideo ? (
                                             <video
                                                 src={activeMedia.url}
@@ -240,7 +240,7 @@ export default function AdminAdDetailModal({
                                     )}
                                 </div>
                             ) : (
-                                <div className="w-full h-44 rounded-2xl bg-slate-50 border border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-400 gap-2">
+                                <div className="w-full h-44 rounded-2xl bg-surface-secondary border border-dashed border-border-subtle flex flex-col items-center justify-center text-foreground-muted gap-2">
                                     <ImageIcon className="w-8 h-8 opacity-40" />
                                     <span className="text-xs font-bold">تصویری برای این آگهی بارگذاری نشده است</span>
                                 </div>
@@ -248,7 +248,7 @@ export default function AdminAdDetailModal({
 
                             {/* Financial / Pricing Details Grid */}
                             <div className="space-y-2.5">
-                                <h4 className="text-xs font-black text-slate-700 uppercase tracking-wider">
+                                <h4 className="text-xs font-black text-foreground-secondary uppercase tracking-wider">
                                     اطلاعات قیمت و شرایط مالی
                                 </h4>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
@@ -256,23 +256,23 @@ export default function AdminAdDetailModal({
                                         Object.entries(ad.pricing).map(([k, val]) => (
                                             <div
                                                 key={k}
-                                                className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-1"
+                                                className="p-4 bg-surface-secondary rounded-2xl border border-border-subtle space-y-1"
                                             >
-                                                <span className="text-xs text-slate-400 font-bold block">
+                                                <span className="text-xs text-foreground-muted font-bold block">
                                                     {pricingKeyLabels[k] || k}
                                                 </span>
-                                                <span className="text-base font-black text-emerald-600">
+                                                <span className="text-base font-black text-success">
                                                     {typeof val === "number" ? formatPrice(val, "") : String(val)}
                                                 </span>
-                                                <span className="text-[10px] text-slate-400 font-bold mr-1">
+                                                <span className="text-[10px] text-foreground-muted font-bold mr-1">
                                                     تومان
                                                 </span>
                                             </div>
                                         ))
                                     ) : (
-                                        <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                                            <span className="text-xs text-slate-400 font-bold block">قیمت</span>
-                                            <span className="text-sm font-black text-slate-700">توافقی</span>
+                                        <div className="p-4 bg-surface-secondary rounded-2xl border border-border-subtle">
+                                            <span className="text-xs text-foreground-muted font-bold block">قیمت</span>
+                                            <span className="text-sm font-black text-foreground-secondary">توافقی</span>
                                         </div>
                                     )}
                                 </div>
@@ -280,44 +280,44 @@ export default function AdminAdDetailModal({
 
                             {/* Core Specs Grid */}
                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-1">
-                                    <span className="text-xs text-slate-400 font-bold block">دسته‌بندی</span>
-                                    <span className="text-xs font-black text-slate-800 truncate block">
+                                <div className="p-4 bg-surface-secondary rounded-2xl border border-border-subtle space-y-1">
+                                    <span className="text-xs text-foreground-muted font-bold block">دسته‌بندی</span>
+                                    <span className="text-xs font-black text-foreground truncate block">
                                         {getCategoryPathLabel(ad.categoryPath?.categoryKey, ad.categoryPath?.subcategoryKey)}
                                     </span>
-                                    <span className="text-[10px] text-slate-400 block truncate" title={`کلید: ${ad.categoryPath?.categoryKey} / ${ad.categoryPath?.subcategoryKey}`}>
+                                    <span className="text-[10px] text-foreground-muted block truncate" title={`کلید: ${ad.categoryPath?.categoryKey} / ${ad.categoryPath?.subcategoryKey}`}>
                                         مدل: {ad.categoryPath?.businessModelKey}
                                     </span>
                                 </div>
 
-                                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-1">
-                                    <span className="text-xs text-slate-400 font-bold block">شهر و مختصات</span>
-                                    <span className="text-xs font-black text-slate-800 truncate block">
+                                <div className="p-4 bg-surface-secondary rounded-2xl border border-border-subtle space-y-1">
+                                    <span className="text-xs text-foreground-muted font-bold block">شهر و مختصات</span>
+                                    <span className="text-xs font-black text-foreground truncate block">
                                         شهر: {getCityName(ad.cityId)}
                                     </span>
-                                    <span className="text-[10px] text-slate-400 block font-mono">
+                                    <span className="text-[10px] text-foreground-muted block font-mono">
                                         {ad.location?.latitude && ad.location?.longitude
                                             ? `${ad.location.latitude.toFixed(3)}, ${ad.location.longitude.toFixed(3)}`
                                             : "بدون مختصات"}
                                     </span>
                                 </div>
 
-                                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-1">
-                                    <span className="text-xs text-slate-400 font-bold block">تاریخ ثبت</span>
-                                    <span className="text-xs font-bold text-slate-700 block">
+                                <div className="p-4 bg-surface-secondary rounded-2xl border border-border-subtle space-y-1">
+                                    <span className="text-xs text-foreground-muted font-bold block">تاریخ ثبت</span>
+                                    <span className="text-xs font-bold text-foreground-secondary block">
                                         {new Date(ad.createdAt).toLocaleDateString("fa-IR")}
                                     </span>
-                                    <span className="text-[10px] text-slate-400 block">
+                                    <span className="text-[10px] text-foreground-muted block">
                                         ساعت: {new Date(ad.createdAt).toLocaleTimeString("fa-IR", { hour: "2-digit", minute: "2-digit" })}
                                     </span>
                                 </div>
 
-                                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-1">
-                                    <span className="text-xs text-slate-400 font-bold block">وضعیت نمایش</span>
-                                    <span className="text-xs font-bold text-slate-700 block">
+                                <div className="p-4 bg-surface-secondary rounded-2xl border border-border-subtle space-y-1">
+                                    <span className="text-xs text-foreground-muted font-bold block">وضعیت نمایش</span>
+                                    <span className="text-xs font-bold text-foreground-secondary block">
                                         {ad.isFeatured ? "⭐ آگهی ویژه (Featured)" : "عادی"}
                                     </span>
-                                    <span className="text-[10px] text-slate-400 block">
+                                    <span className="text-[10px] text-foreground-muted block">
                                         نسخه ساختار: {ad.categoryPath?.attributeSchemaVersion ?? 1}
                                     </span>
                                 </div>
@@ -326,10 +326,10 @@ export default function AdminAdDetailModal({
                             {/* Description */}
                             {ad.description && (
                                 <div className="space-y-2">
-                                    <h4 className="text-xs font-black text-slate-700 uppercase tracking-wider">
+                                    <h4 className="text-xs font-black text-foreground-secondary uppercase tracking-wider">
                                         توضیحات آگهی
                                     </h4>
-                                    <p className="text-xs sm:text-sm text-slate-600 leading-relaxed bg-slate-50 p-4 rounded-2xl border border-slate-100 whitespace-pre-line">
+                                    <p className="text-xs sm:text-sm text-foreground-secondary leading-relaxed bg-surface-secondary p-4 rounded-2xl border border-border-subtle whitespace-pre-line">
                                         {ad.description}
                                     </p>
                                 </div>
@@ -338,7 +338,7 @@ export default function AdminAdDetailModal({
                             {/* Dynamic Attributes Grid */}
                             {ad.attributes && Object.keys(ad.attributes).length > 0 && (
                                 <div className="space-y-2.5">
-                                    <h4 className="text-xs font-black text-slate-700 uppercase tracking-wider">
+                                    <h4 className="text-xs font-black text-foreground-secondary uppercase tracking-wider">
                                         مشخصات و ویژگی‌های ملک
                                     </h4>
                                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -353,10 +353,10 @@ export default function AdminAdDetailModal({
                                             return (
                                                 <div
                                                     key={key}
-                                                    className="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-xl text-xs"
+                                                    className="flex items-center justify-between p-3 bg-surface border border-border-subtle rounded-xl text-xs"
                                                 >
-                                                    <span className="font-bold text-slate-500">{key}:</span>
-                                                    <span className="font-black text-slate-800">
+                                                    <span className="font-bold text-foreground-muted">{key}:</span>
+                                                    <span className="font-black text-foreground">
                                                         {toPersianDigits(displayVal)}
                                                     </span>
                                                 </div>
@@ -367,17 +367,17 @@ export default function AdminAdDetailModal({
                             )}
 
                             {/* Host / Owner Information */}
-                            <div className="p-4 bg-blue-50/50 border border-blue-100 rounded-2xl space-y-3">
+                            <div className="p-4 bg-info-subtle/50 border border-info/30 rounded-2xl space-y-3">
                                 <div className="flex items-center justify-between flex-wrap gap-2">
                                     <div className="flex items-center gap-2.5">
-                                        <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center">
+                                        <div className="w-8 h-8 rounded-full bg-info-subtle text-info flex items-center justify-center">
                                             <User className="w-4 h-4" />
                                         </div>
                                         <div>
-                                            <span className="text-xs font-bold text-slate-700 block">
+                                            <span className="text-xs font-bold text-foreground-secondary block">
                                                 شناسه آگهی‌دهنده:
                                             </span>
-                                            <span className="text-xs font-mono text-slate-500 font-bold">
+                                            <span className="text-xs font-mono text-foreground-muted font-bold">
                                                 {ad.ownerId}
                                             </span>
                                         </div>
@@ -398,15 +398,15 @@ export default function AdminAdDetailModal({
                                             <span>استعلام شماره تماس مالک</span>
                                         </button>
                                     ) : (
-                                        <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-xl border border-blue-200">
+                                        <div className="flex items-center gap-3 bg-surface px-4 py-2 rounded-xl border border-info/30">
                                             <div className="flex items-center gap-1.5">
-                                                <Phone className="w-4 h-4 text-blue-600" />
-                                                <span className="text-xs font-black text-slate-800 font-mono" dir="ltr">
+                                                <Phone className="w-4 h-4 text-info" />
+                                                <span className="text-xs font-black text-foreground font-mono" dir="ltr">
                                                     {contactInfo.mobileNumber}
                                                 </span>
                                             </div>
                                             {contactInfo.email && (
-                                                <div className="flex items-center gap-1 text-slate-500 text-xs border-r border-slate-200 pr-3">
+                                                <div className="flex items-center gap-1 text-foreground-muted text-xs border-r border-border-subtle pr-3">
                                                     <Mail className="w-3.5 h-3.5" />
                                                     <span>{contactInfo.email}</span>
                                                 </div>
@@ -420,12 +420,12 @@ export default function AdminAdDetailModal({
                 </div>
 
                 {/* Footer Actions */}
-                <div className="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-3 shrink-0">
+                <div className="p-4 bg-surface-secondary border-t border-border-subtle flex items-center justify-between gap-3 shrink-0">
                     <div className="flex items-center gap-2">
                         <Link
                             href={`/ads/${adId}`}
                             target="_blank"
-                            className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors shadow-2xs"
+                            className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-surface hover:bg-surface-secondary border border-border-subtle text-foreground-secondary rounded-xl text-xs font-bold transition-colors shadow-2xs"
                         >
                             <ExternalLink className="w-4 h-4" />
                             <span>مشاهده صفحه عمومی آگهی</span>
@@ -451,7 +451,7 @@ export default function AdminAdDetailModal({
                             <button
                                 type="button"
                                 onClick={() => onOpenReject(adId, ad?.title || "")}
-                                className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-600 rounded-xl text-xs font-bold transition-colors"
+                                className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-error-subtle hover:bg-error-subtle border border-error/30 text-error rounded-xl text-xs font-bold transition-colors"
                             >
                                 <AlertCircle className="w-4 h-4" />
                                 <span>رد آگهی</span>
@@ -462,7 +462,7 @@ export default function AdminAdDetailModal({
                     <button
                         type="button"
                         onClick={onClose}
-                        className="px-5 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs rounded-xl transition-colors"
+                        className="px-5 py-2.5 bg-slate-200 hover:bg-slate-300 text-foreground-secondary font-bold text-xs rounded-xl transition-colors"
                     >
                         بستن
                     </button>

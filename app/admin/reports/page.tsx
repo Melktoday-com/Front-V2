@@ -26,18 +26,18 @@ export default function AdminReportsPage() {
         onError: () => toast.error("خطا در ثبت تغییرات")
     });
 
-    if (isLoading) return <div className="text-center py-20 text-gray-400">در حال بارگزاری گزارش‌ها...</div>;
+    if (isLoading) return <div className="text-center py-20 text-foreground-muted">در حال بارگزاری گزارش‌ها...</div>;
 
     return (
         <div className="space-y-6">
             <div>
-                <h1 className="text-2xl font-bold text-gray-800">گزارش‌های تخلف</h1>
-                <p className="text-gray-500 font-medium">بررسی و مدیریت گزارش‌های ثبت شده توسط کاربران</p>
+                <h1 className="text-2xl font-bold text-foreground">گزارش‌های تخلف</h1>
+                <p className="text-foreground-muted font-medium">بررسی و مدیریت گزارش‌های ثبت شده توسط کاربران</p>
             </div>
 
-            <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+            <div className="bg-surface border border-border-subtle rounded-2xl shadow-sm overflow-hidden">
                 <table className="w-full text-right">
-                    <thead className="bg-gray-50 border-b border-gray-100 uppercase text-xs font-bold text-gray-500">
+                    <thead className="bg-surface-secondary border-b border-border-subtle uppercase text-xs font-bold text-foreground-muted">
                         <tr>
                             <th className="px-6 py-4">محتوا / هدف</th>
                             <th className="px-6 py-4">علت گزارش</th>
@@ -49,7 +49,7 @@ export default function AdminReportsPage() {
                     <tbody className="divide-y divide-gray-100">
                         {!reports || reports.length === 0 ? (
                             <tr>
-                                <td colSpan={5} className="px-6 py-20 text-center text-gray-400">
+                                <td colSpan={5} className="px-6 py-20 text-center text-foreground-muted">
                                     <div className="flex flex-col items-center gap-3">
                                         <AlertOctagon size={48} className="text-gray-200" />
                                         <span>هیچ گزارش تخلف جدیدی یافت نشد.</span>
@@ -57,28 +57,28 @@ export default function AdminReportsPage() {
                                 </td>
                             </tr>
                         ) : reports.map((report: AdminReport) => (
-                            <tr key={report.id} className="hover:bg-gray-50 transition-colors">
+                            <tr key={report.id} className="hover:bg-surface-secondary transition-colors">
                                 <td className="px-6 py-4">
                                     <div className="flex flex-col">
-                                        <span className="text-sm font-semibold text-gray-800">
+                                        <span className="text-sm font-semibold text-foreground">
                                             {report.targetType === ReportTargetType.LISTING ? "آگهی" : report.targetType === ReportTargetType.USER ? "کاربر" : report.targetType}
                                         </span>
-                                        <span className="text-xs text-gray-400 font-mono mt-1">{report.targetId}</span>
+                                        <span className="text-xs text-foreground-muted font-mono mt-1">{report.targetId}</span>
                                     </div>
                                 </td>
                                 <td className="px-6 py-4">
-                                    <span className="text-sm text-gray-700">{report.reason}</span>
+                                    <span className="text-sm text-foreground-secondary">{report.reason}</span>
                                 </td>
                                 <td className="px-6 py-4">
-                                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                                    <div className="flex items-center gap-2 text-xs text-foreground-muted">
                                         <Clock size={12} />
                                         {formatDistanceToNow(new Date(report.createdAt), { addSuffix: true })}
                                     </div>
                                 </td>
                                 <td className="px-6 py-4">
-                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${report.status === ReportStatus.PENDING ? "bg-amber-100 text-amber-800" :
-                                        report.status === ReportStatus.RESOLVED ? "bg-green-100 text-green-800" :
-                                            "bg-gray-100 text-gray-800"
+                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${report.status === ReportStatus.PENDING ? "bg-warning-subtle text-warning" :
+                                        report.status === ReportStatus.RESOLVED ? "bg-success-subtle text-success" :
+                                            "bg-surface-secondary text-foreground"
                                         }`}>
                                         {report.status === ReportStatus.PENDING ? "در حال بررسی" :
                                             report.status === ReportStatus.RESOLVED ? "حل شده" : "رد شده"}
@@ -90,14 +90,14 @@ export default function AdminReportsPage() {
                                             <>
                                                 <button
                                                     onClick={() => moderateMutation.mutate({ id: report.id, action: "RESOLVE" })}
-                                                    className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                                                    className="p-2 text-success hover:bg-success-subtle rounded-lg transition-colors"
                                                     title="حل شده / جریمه"
                                                 >
                                                     <CheckCircle size={18} />
                                                 </button>
                                                 <button
                                                     onClick={() => moderateMutation.mutate({ id: report.id, action: "DISMISS" })}
-                                                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                    className="p-2 text-error hover:bg-error-subtle rounded-lg transition-colors"
                                                     title="رد گزارش / بی‌مورد"
                                                 >
                                                     <XCircle size={18} />
@@ -113,7 +113,7 @@ export default function AdminReportsPage() {
                                                 }
                                             }}
                                             title="مشاهده مورد گزارش شده"
-                                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                            className="p-2 text-info hover:bg-info-subtle rounded-lg transition-colors"
                                         >
                                             <ExternalLink size={18} />
                                         </button>

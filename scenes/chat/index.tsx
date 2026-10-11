@@ -14,10 +14,10 @@ function ChatContent() {
     const router = useRouter();
 
     return (
-        <div className="flex flex-row h-full w-full overflow-hidden bg-white" dir="rtl">
+        <div className="flex flex-row h-full w-full overflow-hidden bg-surface" dir="rtl">
             {/* Sidebar (Right Side in RTL) */}
             <div className={cn(
-                "flex flex-col border-l border-soft-border bg-white h-full md:w-75 lg:w-85 shrink-0 overflow-hidden",
+                "flex flex-col border-l border-soft-border bg-surface h-full md:w-75 lg:w-85 shrink-0 overflow-hidden",
                 conversationId ? "hidden md:flex" : "flex w-full md:w-75 lg:w-85"
             )}>
                 <header className="px-5 py-4 border-b border-soft-border flex items-center justify-between shrink-0">
@@ -45,7 +45,7 @@ function ChatContent() {
                     </div>
                 ) : (
                     <div className="flex-1 flex flex-col items-center justify-center text-center p-10 space-y-4">
-                        <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-sm text-primary">
+                        <div className="w-20 h-20 bg-surface rounded-full flex items-center justify-center shadow-sm text-primary">
                             <MessageSquare className="w-10 h-10" />
                         </div>
                         <div className="space-y-2">
@@ -63,10 +63,10 @@ function ChatContent() {
 
 export function ChatScene() {
     return (
-        <div className="chat-page-content fixed inset-0 z-40 flex flex-col bg-white overflow-hidden" dir="rtl">
+        <div className="chat-page-content fixed inset-0 z-40 flex flex-col bg-surface overflow-hidden" dir="rtl">
             <ChatHeader />
             <div className="flex-1 w-full h-full flex flex-col overflow-hidden">
-                <div className="flex-1 bg-white flex flex-col overflow-hidden">
+                <div className="flex-1 bg-surface flex flex-col overflow-hidden">
                     <Suspense fallback={
                         <div className="flex-1 flex items-center justify-center h-full text-brand">
                             <div className="w-12 h-12 border-4 border-current border-t-transparent rounded-full animate-spin" />

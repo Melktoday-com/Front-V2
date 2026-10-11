@@ -112,16 +112,16 @@ export default function AdminAgenciesPage() {
     return (
         <div className="space-y-6" dir="rtl">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-surface p-6 rounded-3xl border border-border-subtle/80 shadow-xs">
                 <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-2xl bg-info-subtle text-info flex items-center justify-center">
                         <Building2 className="w-6 h-6" />
                     </div>
                     <div>
-                        <h1 className="text-xl font-black text-slate-900">
+                        <h1 className="text-xl font-black text-foreground">
                             مدیریت دفاتر املاک و مشاوران
                         </h1>
-                        <p className="text-xs font-medium text-slate-500 mt-0.5">
+                        <p className="text-xs font-medium text-foreground-muted mt-0.5">
                             بررسی درخواست‌های عضویت، احراز هویت با جیبیت، و نظارت بر ویترین دفاتر و مشاورین
                         </p>
                     </div>
@@ -134,26 +134,26 @@ export default function AdminAgenciesPage() {
                             if (currentTab === "applications") refetchApps();
                             else refetchAgencies();
                         }}
-                        className="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors"
+                        className="inline-flex items-center gap-2 px-4 py-2.5 bg-surface-secondary hover:bg-slate-200 text-foreground-secondary rounded-xl text-xs font-bold transition-colors"
                     >
-                        <RefreshCw className={`w-4 h-4 ${isAppsFetching || isAgenciesFetching ? "animate-spin text-blue-600" : ""}`} />
+                        <RefreshCw className={`w-4 h-4 ${isAppsFetching || isAgenciesFetching ? "animate-spin text-info" : ""}`} />
                         <span>بروزرسانی</span>
                     </button>
                 </div>
             </div>
 
             {/* Navigation Tabs */}
-            <div className="flex items-center gap-2 p-1.5 bg-slate-100/80 rounded-2xl border border-slate-200/80 w-fit max-w-full">
+            <div className="flex items-center gap-2 p-1.5 bg-surface-secondary/80 rounded-2xl border border-border-subtle/80 w-fit max-w-full">
                 <button
                     type="button"
                     onClick={() => setCurrentTab("applications")}
                     className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black transition-all ${
                         currentTab === "applications"
-                            ? "bg-white text-slate-900 shadow-sm ring-1 ring-slate-200"
-                            : "text-slate-600 hover:text-slate-900 hover:bg-white/50"
+                            ? "bg-surface text-foreground shadow-sm ring-1 ring-slate-200"
+                            : "text-foreground-secondary hover:text-foreground hover:bg-surface/50"
                     }`}
                 >
-                    <UserCheck className="w-4 h-4 text-blue-600" />
+                    <UserCheck className="w-4 h-4 text-info" />
                     <span>درخواست‌های عضویت ({applications.length})</span>
                 </button>
 
@@ -162,8 +162,8 @@ export default function AdminAgenciesPage() {
                     onClick={() => setCurrentTab("agencies")}
                     className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black transition-all ${
                         currentTab === "agencies"
-                            ? "bg-white text-slate-900 shadow-sm ring-1 ring-slate-200"
-                            : "text-slate-600 hover:text-slate-900 hover:bg-white/50"
+                            ? "bg-surface text-foreground shadow-sm ring-1 ring-slate-200"
+                            : "text-foreground-secondary hover:text-foreground hover:bg-surface/50"
                     }`}
                 >
                     <Briefcase className="w-4 h-4 text-indigo-600" />
@@ -175,9 +175,9 @@ export default function AdminAgenciesPage() {
             {currentTab === "applications" && (
                 <div className="space-y-4">
                     {/* Filters Bar */}
-                    <div className="flex flex-wrap items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
+                    <div className="flex flex-wrap items-center justify-between gap-4 bg-surface p-4 rounded-2xl border border-border-subtle/80 shadow-xs">
                         <div className="flex flex-wrap items-center gap-2">
-                            <span className="text-xs font-bold text-slate-500 ml-1">وضعیت:</span>
+                            <span className="text-xs font-bold text-foreground-muted ml-1">وضعیت:</span>
                             {["ALL", "PENDING", "APPROVED", "REJECTED"].map((st) => (
                                 <button
                                     key={st}
@@ -186,7 +186,7 @@ export default function AdminAgenciesPage() {
                                     className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
                                         appStatus === st
                                             ? "bg-blue-600 text-white"
-                                            : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                                            : "bg-surface-secondary text-foreground-secondary hover:bg-slate-200"
                                     }`}
                                 >
                                     {st === "ALL" && "همه"}
@@ -198,7 +198,7 @@ export default function AdminAgenciesPage() {
                         </div>
 
                         <div className="flex items-center gap-2">
-                            <span className="text-xs font-bold text-slate-500 ml-1">نوع:</span>
+                            <span className="text-xs font-bold text-foreground-muted ml-1">نوع:</span>
                             {["ALL", "CONSULTANT", "AGENCY"].map((tp) => (
                                 <button
                                     key={tp}
@@ -207,7 +207,7 @@ export default function AdminAgenciesPage() {
                                     className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
                                         appType === tp
                                             ? "bg-slate-800 text-white"
-                                            : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                                            : "bg-surface-secondary text-foreground-secondary hover:bg-slate-200"
                                     }`}
                                 >
                                     {tp === "ALL" && "همه"}
@@ -220,21 +220,21 @@ export default function AdminAgenciesPage() {
 
                     {/* Table */}
                     {isAppsLoading ? (
-                        <div className="bg-white p-12 rounded-3xl border border-slate-200/80 text-center">
-                            <RefreshCw className="w-8 h-8 text-blue-600 animate-spin mx-auto mb-3" />
-                            <p className="text-sm font-bold text-slate-600">در حال دریافت درخواست‌ها...</p>
+                        <div className="bg-surface p-12 rounded-3xl border border-border-subtle/80 text-center">
+                            <RefreshCw className="w-8 h-8 text-info animate-spin mx-auto mb-3" />
+                            <p className="text-sm font-bold text-foreground-secondary">در حال دریافت درخواست‌ها...</p>
                         </div>
                     ) : applications.length === 0 ? (
-                        <div className="bg-white rounded-3xl border border-slate-200/80 p-16 text-center">
-                            <Clock className="w-12 h-12 text-slate-400 mx-auto mb-3" />
-                            <h3 className="text-base font-bold text-slate-800">هیچ درخواستی با این فیلتر یافت نشد</h3>
-                            <p className="text-xs text-slate-500 mt-1">درخواست‌های جدید کاربران برای تبدیل شدن به مشاور یا دفتر املاک در اینجا نمایش داده می‌شوند.</p>
+                        <div className="bg-surface rounded-3xl border border-border-subtle/80 p-16 text-center">
+                            <Clock className="w-12 h-12 text-foreground-muted mx-auto mb-3" />
+                            <h3 className="text-base font-bold text-foreground">هیچ درخواستی با این فیلتر یافت نشد</h3>
+                            <p className="text-xs text-foreground-muted mt-1">درخواست‌های جدید کاربران برای تبدیل شدن به مشاور یا دفتر املاک در اینجا نمایش داده می‌شوند.</p>
                         </div>
                     ) : (
-                        <div className="bg-white rounded-3xl border border-slate-200/80 overflow-hidden shadow-xs">
+                        <div className="bg-surface rounded-3xl border border-border-subtle/80 overflow-hidden shadow-xs">
                             <div className="overflow-x-auto">
                                 <table className="w-full text-right text-xs">
-                                    <thead className="bg-slate-50/80 border-b border-slate-100 text-slate-500 font-bold">
+                                    <thead className="bg-surface-secondary/80 border-b border-border-subtle text-foreground-muted font-bold">
                                         <tr>
                                             <th className="py-4 px-6">نام متقاضی / املاک</th>
                                             <th className="py-4 px-6">نوع عامل</th>
@@ -245,30 +245,30 @@ export default function AdminAgenciesPage() {
                                             <th className="py-4 px-6 text-left">عملیات</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-slate-100 text-slate-700">
+                                    <tbody className="divide-y divide-slate-100 text-foreground-secondary">
                                         {applications.map((app) => (
-                                            <tr key={app.id} className="hover:bg-slate-50/50 transition-colors">
+                                            <tr key={app.id} className="hover:bg-surface-secondary/50 transition-colors">
                                                 <td className="py-4 px-6">
-                                                    <div className="font-bold text-slate-900">{app.fullName}</div>
+                                                    <div className="font-bold text-foreground">{app.fullName}</div>
                                                     {app.agencyName && (
-                                                        <div className="text-[11px] text-blue-600 font-medium">{app.agencyName}</div>
+                                                        <div className="text-[11px] text-info font-medium">{app.agencyName}</div>
                                                     )}
                                                 </td>
                                                 <td className="py-4 px-6">
                                                     <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold ${
                                                         app.agentType === "AGENCY"
                                                             ? "bg-purple-50 text-purple-700"
-                                                            : "bg-blue-50 text-blue-700"
+                                                            : "bg-info-subtle text-info"
                                                     }`}>
                                                         {app.agentType === "AGENCY" ? <Building2 className="w-3 h-3" /> : <Award className="w-3 h-3" />}
                                                         <span>{app.agentType === "AGENCY" ? "دفتر املاک" : "مشاور املاک"}</span>
                                                     </span>
                                                 </td>
-                                                <td className="py-4 px-6 font-mono text-slate-600">
+                                                <td className="py-4 px-6 font-mono text-foreground-secondary">
                                                     <div>کدملی: {app.nationalCode}</div>
-                                                    {app.guildCode && <div className="text-[11px] text-slate-400">صنفی: {app.guildCode}</div>}
+                                                    {app.guildCode && <div className="text-[11px] text-foreground-muted">صنفی: {app.guildCode}</div>}
                                                 </td>
-                                                <td className="py-4 px-6 text-slate-600 font-mono">
+                                                <td className="py-4 px-6 text-foreground-secondary font-mono">
                                                     {app.phone || "-"}
                                                 </td>
                                                 <td className="py-4 px-6">
@@ -276,12 +276,12 @@ export default function AdminAgenciesPage() {
                                                         const kyc = app.kycDetails || app.jibitVerificationData;
                                                         if (kyc?.matched !== undefined) {
                                                             return kyc.matched ? (
-                                                                <span className="inline-flex items-center gap-1 text-emerald-600 font-bold text-[11px]">
+                                                                <span className="inline-flex items-center gap-1 text-success font-bold text-[11px]">
                                                                     <CheckCircle className="w-3.5 h-3.5" />
                                                                     <span>تطابق شاهکار تأیید</span>
                                                                 </span>
                                                             ) : (
-                                                                <span className="inline-flex items-center gap-1 text-rose-600 font-bold text-[11px]">
+                                                                <span className="inline-flex items-center gap-1 text-error font-bold text-[11px]">
                                                                     <XCircle className="w-3.5 h-3.5" />
                                                                     <span>عدم تطابق کدملی</span>
                                                                 </span>
@@ -289,30 +289,30 @@ export default function AdminAgenciesPage() {
                                                         }
                                                         if (kyc?.corporation) {
                                                             return (
-                                                                <span className="inline-flex items-center gap-1 text-emerald-600 font-bold text-[11px]">
+                                                                <span className="inline-flex items-center gap-1 text-success font-bold text-[11px]">
                                                                     <CheckCircle className="w-3.5 h-3.5" />
                                                                     <span>اصناف استعلام شد</span>
                                                                 </span>
                                                             );
                                                         }
-                                                        return <span className="text-slate-400 text-[11px]">-</span>;
+                                                        return <span className="text-foreground-muted text-[11px]">-</span>;
                                                     })()}
                                                 </td>
                                                 <td className="py-4 px-6">
                                                     {app.status === "PENDING" && (
-                                                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-amber-50 text-amber-700 font-bold text-[11px]">
+                                                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-warning-subtle text-warning font-bold text-[11px]">
                                                             <Clock className="w-3 h-3" />
                                                             <span>در انتظار بررسی</span>
                                                         </span>
                                                     )}
                                                     {app.status === "APPROVED" && (
-                                                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-700 font-bold text-[11px]">
+                                                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-success-subtle text-success font-bold text-[11px]">
                                                             <CheckCircle className="w-3 h-3" />
                                                             <span>تأیید شده</span>
                                                         </span>
                                                     )}
                                                     {app.status === "REJECTED" && (
-                                                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-rose-50 text-rose-700 font-bold text-[11px]">
+                                                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-error-subtle text-error font-bold text-[11px]">
                                                             <XCircle className="w-3 h-3" />
                                                             <span>رد شده</span>
                                                         </span>
@@ -325,7 +325,7 @@ export default function AdminAgenciesPage() {
                                                             setSelectedApp(app);
                                                             setAdminNote(app.adminNote || "");
                                                         }}
-                                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-xs font-bold transition-colors"
+                                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-surface-secondary hover:bg-slate-200 text-foreground rounded-lg text-xs font-bold transition-colors"
                                                     >
                                                         <Eye className="w-3.5 h-3.5" />
                                                         <span>بررسی کامل</span>
@@ -345,20 +345,20 @@ export default function AdminAgenciesPage() {
             {currentTab === "agencies" && (
                 <div className="space-y-4">
                     {/* Search & Filters */}
-                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-surface p-4 rounded-2xl border border-border-subtle/80 shadow-xs">
                         <div className="relative w-full sm:w-80">
-                            <Search className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2" />
+                            <Search className="w-4 h-4 text-foreground-muted absolute right-3 top-1/2 -translate-y-1/2" />
                             <input
                                 type="text"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 placeholder="جستجو بر اساس نام، شماره یا کد صنفی..."
-                                className="w-full pl-3 pr-9 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                                className="w-full pl-3 pr-9 py-2 bg-surface-secondary border border-border-subtle rounded-xl text-xs focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                             />
                         </div>
 
                         <div className="flex items-center gap-2 w-full sm:w-auto">
-                            <span className="text-xs font-bold text-slate-500">نوع:</span>
+                            <span className="text-xs font-bold text-foreground-muted">نوع:</span>
                             {["ALL", "AGENCY", "CONSULTANT"].map((tp) => (
                                 <button
                                     key={tp}
@@ -367,7 +367,7 @@ export default function AdminAgenciesPage() {
                                     className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
                                         agencyTypeFilter === tp
                                             ? "bg-blue-600 text-white"
-                                            : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                                            : "bg-surface-secondary text-foreground-secondary hover:bg-slate-200"
                                     }`}
                                 >
                                     {tp === "ALL" && "همه"}
@@ -380,21 +380,21 @@ export default function AdminAgenciesPage() {
 
                     {/* Agencies Table */}
                     {isAgenciesLoading ? (
-                        <div className="bg-white p-12 rounded-3xl border border-slate-200/80 text-center">
-                            <RefreshCw className="w-8 h-8 text-blue-600 animate-spin mx-auto mb-3" />
-                            <p className="text-sm font-bold text-slate-600">در حال دریافت لیست املاک...</p>
+                        <div className="bg-surface p-12 rounded-3xl border border-border-subtle/80 text-center">
+                            <RefreshCw className="w-8 h-8 text-info animate-spin mx-auto mb-3" />
+                            <p className="text-sm font-bold text-foreground-secondary">در حال دریافت لیست املاک...</p>
                         </div>
                     ) : agencies.length === 0 ? (
-                        <div className="bg-white rounded-3xl border border-slate-200/80 p-16 text-center">
-                            <Briefcase className="w-12 h-12 text-slate-400 mx-auto mb-3" />
-                            <h3 className="text-base font-bold text-slate-800">هیچ املاکی یافت نشد</h3>
-                            <p className="text-xs text-slate-500 mt-1">دفاتر و مشاورین املاک تأیید شده در این بخش فهرست می‌شوند.</p>
+                        <div className="bg-surface rounded-3xl border border-border-subtle/80 p-16 text-center">
+                            <Briefcase className="w-12 h-12 text-foreground-muted mx-auto mb-3" />
+                            <h3 className="text-base font-bold text-foreground">هیچ املاکی یافت نشد</h3>
+                            <p className="text-xs text-foreground-muted mt-1">دفاتر و مشاورین املاک تأیید شده در این بخش فهرست می‌شوند.</p>
                         </div>
                     ) : (
-                        <div className="bg-white rounded-3xl border border-slate-200/80 overflow-hidden shadow-xs">
+                        <div className="bg-surface rounded-3xl border border-border-subtle/80 overflow-hidden shadow-xs">
                             <div className="overflow-x-auto">
                                 <table className="w-full text-right text-xs">
-                                    <thead className="bg-slate-50/80 border-b border-slate-100 text-slate-500 font-bold">
+                                    <thead className="bg-surface-secondary/80 border-b border-border-subtle text-foreground-muted font-bold">
                                         <tr>
                                             <th className="py-4 px-6">عنوان املاک / مشاور</th>
                                             <th className="py-4 px-6">نوع عامل</th>
@@ -405,12 +405,12 @@ export default function AdminAgenciesPage() {
                                             <th className="py-4 px-6 text-left">عملیات</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-slate-100 text-slate-700">
+                                    <tbody className="divide-y divide-slate-100 text-foreground-secondary">
                                         {agencies.map((agency: AgencyFull) => (
-                                            <tr key={agency.id} className="hover:bg-slate-50/50 transition-colors">
+                                            <tr key={agency.id} className="hover:bg-surface-secondary/50 transition-colors">
                                                 <td className="py-4 px-6">
                                                     <div className="flex items-center gap-3">
-                                                        <div className="w-9 h-9 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-slate-600 shrink-0 overflow-hidden">
+                                                        <div className="w-9 h-9 rounded-xl bg-surface-secondary border border-border-subtle flex items-center justify-center font-bold text-foreground-secondary shrink-0 overflow-hidden">
                                                             {agency.logoUrl ? (
                                                                 <img src={getMediaUrl(agency.logoUrl)} alt={agency.agencyName} className="w-full h-full object-cover" />
                                                             ) : (
@@ -418,8 +418,8 @@ export default function AdminAgenciesPage() {
                                                             )}
                                                         </div>
                                                         <div>
-                                                            <div className="font-bold text-slate-900">{agency.agencyName}</div>
-                                                            {agency.slug && <div className="text-[11px] text-slate-400 font-mono">@{agency.slug}</div>}
+                                                            <div className="font-bold text-foreground">{agency.agencyName}</div>
+                                                            {agency.slug && <div className="text-[11px] text-foreground-muted font-mono">@{agency.slug}</div>}
                                                         </div>
                                                     </div>
                                                 </td>
@@ -427,22 +427,22 @@ export default function AdminAgenciesPage() {
                                                     <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold ${
                                                         agency.agencyType === "AGENCY"
                                                             ? "bg-purple-50 text-purple-700"
-                                                            : "bg-blue-50 text-blue-700"
+                                                            : "bg-info-subtle text-info"
                                                     }`}>
                                                         {agency.agencyType === "AGENCY" ? "دفتر املاک" : "مشاور املاک"}
                                                     </span>
                                                 </td>
-                                                <td className="py-4 px-6 font-mono text-slate-500">
+                                                <td className="py-4 px-6 font-mono text-foreground-muted">
                                                     {agency.guildCode ? `صنف: ${agency.guildCode}` : agency.nationalCode ? `ملی: ${agency.nationalCode}` : "-"}
                                                 </td>
-                                                <td className="py-4 px-6 text-slate-600 font-mono">
+                                                <td className="py-4 px-6 text-foreground-secondary font-mono">
                                                     {agency.mobile || agency.phone || "-"}
                                                 </td>
                                                 <td className="py-4 px-6">
                                                     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold ${
                                                         agency.verificationStatus === "VERIFIED"
-                                                            ? "bg-emerald-50 text-emerald-700"
-                                                            : "bg-amber-50 text-amber-700"
+                                                            ? "bg-success-subtle text-success"
+                                                            : "bg-warning-subtle text-warning"
                                                     }`}>
                                                         {agency.verificationStatus === "VERIFIED" ? "تأیید رسمی" : "در انتظار تأیید"}
                                                     </span>
@@ -454,11 +454,11 @@ export default function AdminAgenciesPage() {
                                                         disabled={toggleActiveMutation.isPending}
                                                         className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold transition-colors ${
                                                             agency.isActive
-                                                                ? "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
-                                                                : "bg-rose-50 text-rose-700 hover:bg-rose-100"
+                                                                ? "bg-success-subtle text-success hover:bg-success-subtle"
+                                                                : "bg-error-subtle text-error hover:bg-error-subtle"
                                                         }`}
                                                     >
-                                                        {agency.isActive ? <ToggleRight className="w-4 h-4 text-emerald-600" /> : <ToggleLeft className="w-4 h-4 text-rose-600" />}
+                                                        {agency.isActive ? <ToggleRight className="w-4 h-4 text-success" /> : <ToggleLeft className="w-4 h-4 text-error" />}
                                                         <span>{agency.isActive ? "فعال" : "معلق"}</span>
                                                     </button>
                                                 </td>
@@ -466,7 +466,7 @@ export default function AdminAgenciesPage() {
                                                     <Link
                                                         href={`/agency/showcase/${agency.slug || agency.id}`}
                                                         target="_blank"
-                                                        className="inline-flex items-center gap-1 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold transition-colors"
+                                                        className="inline-flex items-center gap-1 px-3 py-1.5 bg-surface-secondary hover:bg-slate-200 text-foreground-secondary rounded-lg text-xs font-bold transition-colors"
                                                     >
                                                         <ExternalLink className="w-3.5 h-3.5" />
                                                         <span>مشاهده ویترین</span>
@@ -485,18 +485,18 @@ export default function AdminAgenciesPage() {
             {/* Application Detail & Review Modal */}
             {selectedApp && (
                 <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-                    <div className="bg-white rounded-3xl max-w-2xl w-full p-6 space-y-6 shadow-2xl border border-slate-100 my-8">
+                    <div className="bg-surface rounded-3xl max-w-2xl w-full p-6 space-y-6 shadow-2xl border border-border-subtle my-8">
                         {/* Modal Header */}
-                        <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                        <div className="flex items-center justify-between border-b border-border-subtle pb-4">
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+                                <div className="w-10 h-10 rounded-2xl bg-info-subtle text-info flex items-center justify-center font-bold">
                                     <FileCheck2 className="w-5 h-5" />
                                 </div>
                                 <div>
-                                    <h3 className="text-base font-black text-slate-900">
+                                    <h3 className="text-base font-black text-foreground">
                                         بررسی درخواست عضویت {selectedApp.agentType === "AGENCY" ? "دفتر املاک" : "مشاور املاک"}
                                     </h3>
-                                    <p className="text-xs text-slate-500 font-medium">
+                                    <p className="text-xs text-foreground-muted font-medium">
                                         ثبت شده در {new Date(selectedApp.createdAt).toLocaleDateString("fa-IR")}
                                     </p>
                                 </div>
@@ -504,7 +504,7 @@ export default function AdminAgenciesPage() {
                             <button
                                 type="button"
                                 onClick={() => setSelectedApp(null)}
-                                className="w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 flex items-center justify-center font-bold"
+                                className="w-8 h-8 rounded-full bg-surface-secondary text-foreground-muted hover:bg-slate-200 flex items-center justify-center font-bold"
                             >
                                 ✕
                             </button>
@@ -512,65 +512,65 @@ export default function AdminAgenciesPage() {
 
                         {/* Details Grid */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                            <div className="p-3 bg-slate-50 rounded-xl space-y-1">
-                                <span className="text-slate-400 font-bold block">نام متقاضی:</span>
-                                <span className="font-bold text-slate-900 text-sm">{selectedApp.fullName}</span>
+                            <div className="p-3 bg-surface-secondary rounded-xl space-y-1">
+                                <span className="text-foreground-muted font-bold block">نام متقاضی:</span>
+                                <span className="font-bold text-foreground text-sm">{selectedApp.fullName}</span>
                             </div>
 
-                            <div className="p-3 bg-slate-50 rounded-xl space-y-1">
-                                <span className="text-slate-400 font-bold block">نام دفتر املاک:</span>
-                                <span className="font-bold text-slate-900 text-sm">{selectedApp.agencyName || "-"}</span>
+                            <div className="p-3 bg-surface-secondary rounded-xl space-y-1">
+                                <span className="text-foreground-muted font-bold block">نام دفتر املاک:</span>
+                                <span className="font-bold text-foreground text-sm">{selectedApp.agencyName || "-"}</span>
                             </div>
 
-                            <div className="p-3 bg-slate-50 rounded-xl space-y-1">
-                                <span className="text-slate-400 font-bold block">کد ملی:</span>
-                                <span className="font-mono font-bold text-slate-900">{selectedApp.nationalCode}</span>
+                            <div className="p-3 bg-surface-secondary rounded-xl space-y-1">
+                                <span className="text-foreground-muted font-bold block">کد ملی:</span>
+                                <span className="font-mono font-bold text-foreground">{selectedApp.nationalCode}</span>
                             </div>
 
-                            <div className="p-3 bg-slate-50 rounded-xl space-y-1">
-                                <span className="text-slate-400 font-bold block">شناسه صنفی اصناف:</span>
-                                <span className="font-mono font-bold text-slate-900">{selectedApp.guildCode || "-"}</span>
+                            <div className="p-3 bg-surface-secondary rounded-xl space-y-1">
+                                <span className="text-foreground-muted font-bold block">شناسه صنفی اصناف:</span>
+                                <span className="font-mono font-bold text-foreground">{selectedApp.guildCode || "-"}</span>
                             </div>
 
-                            <div className="p-3 bg-slate-50 rounded-xl space-y-1">
-                                <span className="text-slate-400 font-bold block">شماره پروانه کسب:</span>
-                                <span className="font-mono font-bold text-slate-900">{selectedApp.licenseNumber || "-"}</span>
+                            <div className="p-3 bg-surface-secondary rounded-xl space-y-1">
+                                <span className="text-foreground-muted font-bold block">شماره پروانه کسب:</span>
+                                <span className="font-mono font-bold text-foreground">{selectedApp.licenseNumber || "-"}</span>
                             </div>
 
-                            <div className="p-3 bg-slate-50 rounded-xl space-y-1">
-                                <span className="text-slate-400 font-bold block">شماره تماس:</span>
-                                <span className="font-mono font-bold text-slate-900">{selectedApp.phone || "-"}</span>
+                            <div className="p-3 bg-surface-secondary rounded-xl space-y-1">
+                                <span className="text-foreground-muted font-bold block">شماره تماس:</span>
+                                <span className="font-mono font-bold text-foreground">{selectedApp.phone || "-"}</span>
                             </div>
 
-                            <div className="p-3 bg-slate-50 rounded-xl space-y-1 md:col-span-2">
-                                <span className="text-slate-400 font-bold block">آدرس:</span>
-                                <span className="text-slate-800">{selectedApp.address || "-"}</span>
+                            <div className="p-3 bg-surface-secondary rounded-xl space-y-1 md:col-span-2">
+                                <span className="text-foreground-muted font-bold block">آدرس:</span>
+                                <span className="text-foreground">{selectedApp.address || "-"}</span>
                             </div>
 
                             {selectedApp.description && (
-                                <div className="p-3 bg-slate-50 rounded-xl space-y-1 md:col-span-2">
-                                    <span className="text-slate-400 font-bold block">توضیحات و بیوگرافی:</span>
-                                    <p className="text-slate-700 leading-relaxed">{selectedApp.description}</p>
+                                <div className="p-3 bg-surface-secondary rounded-xl space-y-1 md:col-span-2">
+                                    <span className="text-foreground-muted font-bold block">توضیحات و بیوگرافی:</span>
+                                    <p className="text-foreground-secondary leading-relaxed">{selectedApp.description}</p>
                                 </div>
                             )}
                         </div>
 
                         {/* Jibit Verification Banner */}
-                        <div className="p-4 bg-blue-50/60 border border-blue-100 rounded-2xl space-y-2">
-                            <div className="flex items-center gap-2 text-blue-900 font-bold text-xs">
-                                <ShieldAlert className="w-4 h-4 text-blue-600" />
+                        <div className="p-4 bg-info-subtle/60 border border-info/30 rounded-2xl space-y-2">
+                            <div className="flex items-center gap-2 text-foreground font-bold text-xs">
+                                <ShieldAlert className="w-4 h-4 text-info" />
                                 <span>نتیجه استعلام احراز هویت هوشمند (سرویس جیبیت):</span>
                             </div>
-                            <pre className="text-[11px] font-mono bg-white p-3 rounded-xl border border-blue-100/80 text-slate-700 overflow-x-auto">
+                            <pre className="text-[11px] font-mono bg-surface p-3 rounded-xl border border-info/30/80 text-foreground-secondary overflow-x-auto">
                                 {JSON.stringify(selectedApp.kycDetails || selectedApp.jibitVerificationData || { message: "اطلاعات استعلام ثبت نشده است" }, null, 2)}
                             </pre>
                         </div>
 
                         {/* Review Action Section */}
                         {selectedApp.status === "PENDING" && (
-                            <div className="space-y-4 pt-2 border-t border-slate-100">
+                            <div className="space-y-4 pt-2 border-t border-border-subtle">
                                 <div>
-                                    <label className="text-xs font-bold text-slate-700 block mb-1.5">
+                                    <label className="text-xs font-bold text-foreground-secondary block mb-1.5">
                                         یادداشت ادمین (در صورت رد شدن، برای متقاضی نمایش داده می‌شود):
                                     </label>
                                     <textarea
@@ -578,7 +578,7 @@ export default function AdminAgenciesPage() {
                                         onChange={(e) => setAdminNote(e.target.value)}
                                         rows={3}
                                         placeholder="توضیحات تکمیلی یا علت رد درخواست..."
-                                        className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                                        className="w-full p-3 bg-surface-secondary border border-border-subtle rounded-xl text-xs focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                                     />
                                 </div>
 

@@ -27,7 +27,7 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
   return (
     <div
       className={cn(
-        "prose-persian space-y-4 text-slate-800 leading-loose text-sm sm:text-base font-normal tracking-normal select-text",
+        "prose-persian space-y-4 text-foreground leading-loose text-sm sm:text-base font-normal tracking-normal select-text",
         className
       )}
       dir="rtl"
@@ -38,7 +38,7 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
             return (
               <h1
                 key={idx}
-                className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 pt-6 pb-2 border-b border-slate-100 mt-6 mb-3 leading-tight"
+                className="text-xl sm:text-2xl lg:text-3xl font-black text-foreground pt-6 pb-2 border-b border-border-subtle mt-6 mb-3 leading-tight"
               >
                 {renderInlineFormatting(block.text)}
               </h1>
@@ -47,7 +47,7 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
             return (
               <h2
                 key={idx}
-                className="text-lg sm:text-xl lg:text-2xl font-black text-slate-900 pt-5 pb-1 mt-5 mb-2 leading-snug flex items-center gap-2"
+                className="text-lg sm:text-xl lg:text-2xl font-black text-foreground pt-5 pb-1 mt-5 mb-2 leading-snug flex items-center gap-2"
               >
                 <span className="w-1.5 h-6 bg-primary rounded-full inline-block shrink-0" />
                 <span>{renderInlineFormatting(block.text)}</span>
@@ -57,7 +57,7 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
             return (
               <h3
                 key={idx}
-                className="text-base sm:text-lg font-bold text-slate-900 pt-4 mt-4 mb-2 leading-snug"
+                className="text-base sm:text-lg font-bold text-foreground pt-4 mt-4 mb-2 leading-snug"
               >
                 {renderInlineFormatting(block.text)}
               </h3>
@@ -66,7 +66,7 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
             return (
               <h4
                 key={idx}
-                className="text-sm sm:text-base font-bold text-slate-800 pt-3 mt-3 mb-1"
+                className="text-sm sm:text-base font-bold text-foreground pt-3 mt-3 mb-1"
               >
                 {renderInlineFormatting(block.text)}
               </h4>
@@ -75,7 +75,7 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
             return (
               <blockquote
                 key={idx}
-                className="p-4 sm:p-5 my-4 bg-slate-50 border-r-4 border-primary rounded-2xl text-slate-700 italic font-medium leading-relaxed shadow-xs"
+                className="p-4 sm:p-5 my-4 bg-surface-secondary border-r-4 border-primary rounded-2xl text-foreground-secondary italic font-medium leading-relaxed shadow-xs"
               >
                 <p>{renderInlineFormatting(block.text)}</p>
               </blockquote>
@@ -85,7 +85,7 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
             const fullUrl = rawUrl ? getMediaUrl(rawUrl) : "";
             return (
               <figure key={idx} className="my-6 space-y-2">
-                <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-slate-100 border border-slate-200/80 shadow-xs">
+                <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-surface-secondary border border-border-subtle/80 shadow-xs">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={fullUrl}
@@ -98,7 +98,7 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
                   />
                 </div>
                 {block.alt && block.alt.trim() !== "" && (
-                  <figcaption className="text-center text-xs text-slate-500 font-medium pt-1">
+                  <figcaption className="text-center text-xs text-foreground-muted font-medium pt-1">
                     {block.alt}
                   </figcaption>
                 )}
@@ -107,7 +107,7 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
           }
           case "ul":
             return (
-              <ul key={idx} className="space-y-2 my-3 list-disc pr-6 text-slate-700">
+              <ul key={idx} className="space-y-2 my-3 list-disc pr-6 text-foreground-secondary">
                 {block.items.map((item, itemIdx) => (
                   <li key={itemIdx} className="leading-relaxed">
                     {renderInlineFormatting(item)}
@@ -117,7 +117,7 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
             );
           case "ol":
             return (
-              <ol key={idx} className="space-y-2 my-3 list-decimal pr-6 text-slate-700">
+              <ol key={idx} className="space-y-2 my-3 list-decimal pr-6 text-foreground-secondary">
                 {block.items.map((item, itemIdx) => (
                   <li key={itemIdx} className="leading-relaxed">
                     {renderInlineFormatting(item)}
@@ -129,7 +129,7 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
             return (
               <div key={idx} className="my-4 rounded-2xl bg-slate-900 text-slate-100 p-4 font-mono text-xs overflow-x-auto dir-ltr text-left">
                 {block.lang && (
-                  <div className="text-[10px] text-slate-400 font-sans uppercase mb-2 border-b border-slate-800 pb-1">
+                  <div className="text-[10px] text-foreground-muted font-sans uppercase mb-2 border-b border-slate-800 pb-1">
                     {block.lang}
                   </div>
                 )}
@@ -137,13 +137,13 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
               </div>
             );
           case "hr":
-            return <hr key={idx} className="my-8 border-t border-slate-200" />;
+            return <hr key={idx} className="my-8 border-t border-border-subtle" />;
           case "table":
             return (
-              <div key={idx} className="my-5 overflow-x-auto rounded-2xl border border-slate-200">
+              <div key={idx} className="my-5 overflow-x-auto rounded-2xl border border-border-subtle">
                 <table className="w-full text-right text-xs sm:text-sm">
                   {block.headers.length > 0 && (
-                    <thead className="bg-slate-100 border-b border-slate-200 text-slate-800 font-bold">
+                    <thead className="bg-surface-secondary border-b border-border-subtle text-foreground font-bold">
                       <tr>
                         {block.headers.map((h, hIdx) => (
                           <th key={hIdx} className="p-3">
@@ -153,11 +153,11 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
                       </tr>
                     </thead>
                   )}
-                  <tbody className="divide-y divide-slate-100 bg-white">
+                  <tbody className="divide-y divide-slate-100 bg-surface">
                     {block.rows.map((row, rIdx) => (
-                      <tr key={rIdx} className="hover:bg-slate-50 transition-colors">
+                      <tr key={rIdx} className="hover:bg-surface-secondary transition-colors">
                         {row.map((cell, cIdx) => (
-                          <td key={cIdx} className="p-3 text-slate-700">
+                          <td key={cIdx} className="p-3 text-foreground-secondary">
                             {renderInlineFormatting(cell)}
                           </td>
                         ))}
@@ -170,7 +170,7 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
           case "p":
           default:
             return (
-              <p key={idx} className="leading-loose text-slate-700">
+              <p key={idx} className="leading-loose text-foreground-secondary">
                 {renderInlineFormatting(block.text)}
               </p>
             );
@@ -388,7 +388,7 @@ function renderInlineFormatting(text: string): React.ReactNode[] {
             <img
               src={fullUrl}
               alt={imgMatch[1]}
-              className="rounded-xl max-h-96 mx-auto object-cover border border-slate-200"
+              className="rounded-xl max-h-96 mx-auto object-cover border border-border-subtle"
             />
           </span>
         );
@@ -419,7 +419,7 @@ function renderInlineFormatting(text: string): React.ReactNode[] {
     else if (matchedStr.startsWith("**") || matchedStr.startsWith("__")) {
       const inner = matchedStr.slice(2, -2);
       tokens.push(
-        <strong key={keyIndex++} className="font-black text-slate-900">
+        <strong key={keyIndex++} className="font-black text-foreground">
           {inner}
         </strong>
       );
@@ -430,7 +430,7 @@ function renderInlineFormatting(text: string): React.ReactNode[] {
       tokens.push(
         <code
           key={keyIndex++}
-          className="px-1.5 py-0.5 rounded-md bg-slate-100 text-primary font-mono text-xs dir-ltr inline-block mx-0.5 border border-slate-200/60"
+          className="px-1.5 py-0.5 rounded-md bg-surface-secondary text-primary font-mono text-xs dir-ltr inline-block mx-0.5 border border-border-subtle/60"
         >
           {inner}
         </code>
@@ -440,7 +440,7 @@ function renderInlineFormatting(text: string): React.ReactNode[] {
     else if (matchedStr.startsWith("~~")) {
       const inner = matchedStr.slice(2, -2);
       tokens.push(
-        <del key={keyIndex++} className="line-through text-slate-400">
+        <del key={keyIndex++} className="line-through text-foreground-muted">
           {inner}
         </del>
       );
@@ -449,7 +449,7 @@ function renderInlineFormatting(text: string): React.ReactNode[] {
     else if (matchedStr.startsWith("*") || matchedStr.startsWith("_")) {
       const inner = matchedStr.slice(1, -1);
       tokens.push(
-        <em key={keyIndex++} className="italic text-slate-800">
+        <em key={keyIndex++} className="italic text-foreground">
           {inner}
         </em>
       );

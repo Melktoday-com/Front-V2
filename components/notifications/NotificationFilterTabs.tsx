@@ -23,7 +23,7 @@ export function NotificationFilterTabs({
                 className={cn(
                     "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all",
                     !onlyUnread
-                        ? "bg-white text-brand shadow-sm"
+                        ? "bg-surface text-brand shadow-sm"
                         : "text-secondary hover:text-brand"
                 )}
             >
@@ -32,7 +32,7 @@ export function NotificationFilterTabs({
                     <span
                         className={cn(
                             "px-2 py-0.5 rounded-full text-[11px] font-bold",
-                            !onlyUnread ? "bg-soft-bg text-brand" : "bg-white/60 text-secondary"
+                            !onlyUnread ? "bg-soft-bg text-brand" : "bg-surface/60 text-secondary"
                         )}
                     >
                         {toPersianDigits(totalCount)}
@@ -46,7 +46,7 @@ export function NotificationFilterTabs({
                 className={cn(
                     "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all",
                     onlyUnread
-                        ? "bg-white text-primary shadow-sm"
+                        ? "bg-surface text-primary shadow-sm"
                         : "text-secondary hover:text-brand"
                 )}
             >

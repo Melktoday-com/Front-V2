@@ -42,13 +42,13 @@ export default function AdminCampaignsPage() {
     return (
         <div className="space-y-6">
             <div>
-                <h1 className="text-2xl font-bold text-gray-800">بررسی کمپین‌های تبلیغاتی</h1>
-                <p className="text-gray-500">مدیریت بنرها و کمپین‌های ویژه صاحبان کسب‌وکار</p>
+                <h1 className="text-2xl font-bold text-foreground">بررسی کمپین‌های تبلیغاتی</h1>
+                <p className="text-foreground-muted">مدیریت بنرها و کمپین‌های ویژه صاحبان کسب‌وکار</p>
             </div>
 
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+            <div className="bg-surface rounded-xl border border-border-subtle shadow-sm overflow-hidden">
                 <table className="w-full text-right">
-                    <thead className="bg-gray-50 text-gray-600 text-sm">
+                    <thead className="bg-surface-secondary text-foreground-secondary text-sm">
                         <tr>
                             <th className="px-6 py-4 font-semibold">عنوان کمپین</th>
                             <th className="px-6 py-4 font-semibold">شناسه اسپانسر</th>
@@ -61,24 +61,24 @@ export default function AdminCampaignsPage() {
                         {isLoading ? (
                             <tr><td colSpan={5} className="p-10 text-center">در حال بارگزاری...</td></tr>
                         ) : !data || data.items.length === 0 ? (
-                            <tr><td colSpan={5} className="p-10 text-center text-gray-400">هیچ کمپین در انتظار بررسی یافت نشد</td></tr>
+                            <tr><td colSpan={5} className="p-10 text-center text-foreground-muted">هیچ کمپین در انتظار بررسی یافت نشد</td></tr>
                         ) : data.items.map((camp: CampaignSummary) => (
-                            <tr key={camp.campaignId} className="hover:bg-gray-50 transition-colors text-sm">
+                            <tr key={camp.campaignId} className="hover:bg-surface-secondary transition-colors text-sm">
                                 <td className="px-6 py-4">
                                     <div className="flex items-center gap-2">
-                                        <Megaphone size={16} className="text-blue-500" />
-                                        <span className="font-medium text-gray-800">{camp.title}</span>
+                                        <Megaphone size={16} className="text-info" />
+                                        <span className="font-medium text-foreground">{camp.title}</span>
                                     </div>
                                 </td>
-                                <td className="px-6 py-4 text-gray-600">
+                                <td className="px-6 py-4 text-foreground-secondary">
                                     {camp.sponsorId}
                                 </td>
                                 <td className="px-6 py-4">
-                                    <span className="bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full border border-amber-100 text-xs">
+                                    <span className="bg-warning-subtle text-warning px-2 py-0.5 rounded-full border border-warning/30 text-xs">
                                         {camp.status}
                                     </span>
                                 </td>
-                                <td className="px-6 py-4 text-gray-500">
+                                <td className="px-6 py-4 text-foreground-muted">
                                     {new Date(camp.createdAt).toLocaleDateString("fa-IR")}
                                 </td>
                                 <td className="px-6 py-4">

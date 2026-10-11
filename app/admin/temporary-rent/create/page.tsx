@@ -9,7 +9,7 @@ export default function AdminCreateTemporaryRentPage() {
         <Suspense
             fallback={
                 <div className="flex items-center justify-center min-h-[50vh]">
-                    <Loader2 className="w-8 h-8 text-emerald-600 animate-spin" />
+                    <Loader2 className="w-8 h-8 text-success animate-spin" />
                 </div>
             }
         >

@@ -118,14 +118,14 @@ export function PromotionModal({
             />
 
             {/* Modal / Drawer Container: Drawer on mobile, Dialog on desktop */}
-            <div className="relative z-10 w-full md:max-w-md bg-white rounded-t-3xl md:rounded-3xl p-6 shadow-2xl transition-all max-h-[90vh] overflow-y-auto">
+            <div className="relative z-10 w-full md:max-w-md bg-surface rounded-t-3xl md:rounded-3xl p-6 shadow-2xl transition-all max-h-[90vh] overflow-y-auto">
                 {/* Mobile Drawer Pull Handle */}
                 <div className="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-4 md:hidden" />
 
                 {/* Header */}
-                <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-5">
+                <div className="flex items-center justify-between pb-4 border-b border-border-subtle mb-5">
                     <div className="flex items-center gap-2">
-                        <div className="p-2 bg-amber-500/10 text-amber-600 rounded-xl">
+                        <div className="p-2 bg-amber-500/10 text-warning rounded-xl">
                             <Sparkles className="w-5 h-5" />
                         </div>
                         <div>
@@ -137,7 +137,7 @@ export function PromotionModal({
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-1.5 text-gray-400 hover:text-gray-700 rounded-xl hover:bg-gray-50 transition cursor-pointer"
+                        className="p-1.5 text-foreground-muted hover:text-foreground-secondary rounded-xl hover:bg-surface-secondary transition cursor-pointer"
                     >
                         <X className="w-5 h-5" />
                     </button>
@@ -150,11 +150,11 @@ export function PromotionModal({
                         onClick={() => setSelectedType("URGENT_TAG")}
                         className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex items-start gap-3.5 ${
                             selectedType === "URGENT_TAG"
-                                ? "border-rose-500 bg-rose-50/30"
-                                : "border-gray-100 hover:border-gray-200 bg-white"
+                                ? "border-rose-500 bg-error-subtle/30"
+                                : "border-border-subtle hover:border-border-subtle bg-surface"
                         }`}
                     >
-                        <div className="p-2.5 bg-rose-100 text-rose-600 rounded-xl shrink-0 mt-0.5">
+                        <div className="p-2.5 bg-error-subtle text-error rounded-xl shrink-0 mt-0.5">
                             <Zap className="w-5 h-5" />
                         </div>
                         <div className="flex-1 min-w-0">
@@ -162,11 +162,11 @@ export function PromotionModal({
                                 <h4 className="font-black text-brand text-sm">نشان فوری</h4>
                                 {urgentQuota > 0 ? (
                                     <div className="flex items-center gap-1.5">
-                                        <span className="text-xs line-through text-gray-400">
+                                        <span className="text-xs line-through text-foreground-muted">
                                             {formatCurrency(urgentPriceTomans)} تومان
                                         </span>
-                                        <span className="text-xs text-emerald-600 font-bold">رایگان</span>
-                                        <span className="text-[10px] font-black bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
+                                        <span className="text-xs text-success font-bold">رایگان</span>
+                                        <span className="text-[10px] font-black bg-success-subtle text-success px-2 py-0.5 rounded-full">
                                             سهمیه: {toPersianDigits(urgentQuota)} عدد
                                         </span>
                                     </div>
@@ -180,7 +180,7 @@ export function PromotionModal({
                                         {formatCurrency(urgentPriceTomans)} تومان
                                     </span>
                                 ) : (
-                                    <span className="text-xs font-bold text-rose-500">
+                                    <span className="text-xs font-bold text-error">
                                         تعرفه نامشخص
                                     </span>
                                 )}
@@ -196,11 +196,11 @@ export function PromotionModal({
                         onClick={() => setSelectedType("LADDER")}
                         className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex items-start gap-3.5 ${
                             selectedType === "LADDER"
-                                ? "border-amber-500 bg-amber-50/30"
-                                : "border-gray-100 hover:border-gray-200 bg-white"
+                                ? "border-amber-500 bg-warning-subtle/30"
+                                : "border-border-subtle hover:border-border-subtle bg-surface"
                         }`}
                     >
-                        <div className="p-2.5 bg-amber-100 text-amber-600 rounded-xl shrink-0 mt-0.5">
+                        <div className="p-2.5 bg-warning-subtle text-warning rounded-xl shrink-0 mt-0.5">
                             <TrendingUp className="w-5 h-5" />
                         </div>
                         <div className="flex-1 min-w-0">
@@ -208,11 +208,11 @@ export function PromotionModal({
                                 <h4 className="font-black text-brand text-sm">نردبان</h4>
                                 {ladderQuota > 0 ? (
                                     <div className="flex items-center gap-1.5">
-                                        <span className="text-xs line-through text-gray-400">
+                                        <span className="text-xs line-through text-foreground-muted">
                                             {formatCurrency(ladderPriceTomans)} تومان
                                         </span>
-                                        <span className="text-xs text-emerald-600 font-bold">رایگان</span>
-                                        <span className="text-[10px] font-black bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
+                                        <span className="text-xs text-success font-bold">رایگان</span>
+                                        <span className="text-[10px] font-black bg-success-subtle text-success px-2 py-0.5 rounded-full">
                                             سهمیه: {toPersianDigits(ladderQuota)} عدد
                                         </span>
                                     </div>
@@ -226,7 +226,7 @@ export function PromotionModal({
                                         {formatCurrency(ladderPriceTomans)} تومان
                                     </span>
                                 ) : (
-                                    <span className="text-xs font-bold text-rose-500">
+                                    <span className="text-xs font-bold text-error">
                                         تعرفه نامشخص
                                     </span>
                                 )}
@@ -244,10 +244,10 @@ export function PromotionModal({
                         <span className="text-text-light font-medium">وضعیت پرداخت:</span>
                         {isQuotaAvailable ? (
                             <div className="flex items-center gap-2">
-                                <span className="text-xs line-through text-gray-400">
+                                <span className="text-xs line-through text-foreground-muted">
                                     {formatCurrency(activePriceTomans)} تومان
                                 </span>
-                                <span className="text-emerald-700 font-black flex items-center gap-1">
+                                <span className="text-success font-black flex items-center gap-1">
                                     <CheckCircle2 className="w-3.5 h-3.5" />
                                     رایگان (مصرف ۱ سهمیه اشتراک)
                                 </span>
@@ -264,14 +264,14 @@ export function PromotionModal({
                                 </span>
                             </div>
                         ) : (
-                            <span className="text-xs font-bold text-rose-500">
+                            <span className="text-xs font-bold text-error">
                                 تعرفه نامشخص
                             </span>
                         )}
                     </div>
 
                     {!isQuotaAvailable && (
-                        <div className="flex items-center justify-between text-[11px] pt-2 border-t border-gray-200/50">
+                        <div className="flex items-center justify-between text-[11px] pt-2 border-t border-border-subtle/50">
                             <span className="text-text-light">موجودی کیف پول شما:</span>
                             <span className="font-bold text-brand">
                                 {formatCurrency(Math.round(currentBalanceRials / 10))} تومان
@@ -282,15 +282,15 @@ export function PromotionModal({
 
                 {/* Alerts */}
                 {!isQuotaAvailable && !isPricingLoadingCombined && !isTariffConfigured ? (
-                    <div className="p-3.5 bg-rose-50 border border-rose-200/80 rounded-2xl flex items-start gap-2.5 mb-5">
-                        <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                    <div className="p-3.5 bg-error-subtle border border-error/30/80 rounded-2xl flex items-start gap-2.5 mb-5">
+                        <AlertCircle className="w-4 h-4 text-error shrink-0 mt-0.5" />
                         <div className="text-xs text-rose-900 leading-relaxed">
                             تعرفه این نوع ارتقا در حال حاضر فعال یا تنظیم نشده است.
                         </div>
                     </div>
                 ) : !isBalanceSufficient ? (
-                    <div className="p-3.5 bg-rose-50 border border-rose-200/80 rounded-2xl flex items-start gap-2.5 mb-5">
-                        <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                    <div className="p-3.5 bg-error-subtle border border-error/30/80 rounded-2xl flex items-start gap-2.5 mb-5">
+                        <AlertCircle className="w-4 h-4 text-error shrink-0 mt-0.5" />
                         <div className="text-xs text-rose-900 leading-relaxed">
                             موجودی کیف پول شما برای این عملیات کافی نیست. لطفاً ابتدا کیف پول خود را شارژ فرمایید.
                         </div>
@@ -302,7 +302,7 @@ export function PromotionModal({
                     {!isQuotaAvailable && !isTariffConfigured ? (
                         <button
                             disabled
-                            className="flex-1 py-3 bg-gray-200 text-gray-500 font-bold text-xs rounded-2xl shadow-sm cursor-not-allowed"
+                            className="flex-1 py-3 bg-gray-200 text-foreground-muted font-bold text-xs rounded-2xl shadow-sm cursor-not-allowed"
                         >
                             تعرفه غیرفعال است
                         </button>
@@ -334,7 +334,7 @@ export function PromotionModal({
                     )}
                     <button
                         onClick={onClose}
-                        className="py-3 px-5 border border-gray-200 hover:bg-gray-50 text-text-light font-bold text-xs rounded-2xl transition cursor-pointer"
+                        className="py-3 px-5 border border-border-subtle hover:bg-surface-secondary text-text-light font-bold text-xs rounded-2xl transition cursor-pointer"
                     >
                         انصراف
                     </button>

@@ -350,7 +350,7 @@ export default function AgencyPanelScene() {
                                         {agency.agencyName || agency.name}
                                     </h1>
                                     {agency.verificationStatus === "VERIFIED" && (
-                                        <BadgeCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+                                        <BadgeCheck className="w-4 h-4 text-success shrink-0" />
                                     )}
                                 </div>
                                 <span className="text-[10px] text-secondary font-medium hidden md:block">
@@ -369,7 +369,7 @@ export default function AgencyPanelScene() {
                             title="کپی آدرس ویترین"
                             aria-label="کپی آدرس ویترین"
                         >
-                            {copiedLink ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
+                            {copiedLink ? <Check className="w-4 h-4 text-success" /> : <Copy className="w-4 h-4" />}
                             <span className="hidden sm:inline">{copiedLink ? "کپی شد" : "کپی لینک"}</span>
                         </button>
 
@@ -448,13 +448,13 @@ export default function AgencyPanelScene() {
                                         {agency.agencyType === "AGENCY" ? "دفتر املاک" : "مشاور املاک"}
                                     </span>
                                     {agency.verificationStatus === "VERIFIED" ? (
-                                        <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 border border-emerald-500/20 flex items-center gap-1">
-                                            <ShieldCheck className="w-3 h-3 text-emerald-600" />
+                                        <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-success border border-emerald-500/20 flex items-center gap-1">
+                                            <ShieldCheck className="w-3 h-3 text-success" />
                                             <span>تأیید هویت رسمی</span>
                                         </span>
                                     ) : (
-                                        <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-700 border border-amber-500/20 flex items-center gap-1">
-                                            <Clock className="w-3 h-3 text-amber-600" />
+                                        <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-warning border border-amber-500/20 flex items-center gap-1">
+                                            <Clock className="w-3 h-3 text-warning" />
                                             <span>در انتظار مدارک</span>
                                         </span>
                                     )}
@@ -542,7 +542,7 @@ export default function AgencyPanelScene() {
                                 <span>وضعیت ویترین</span>
                                 <span className="w-2 h-2 rounded-full bg-emerald-500" />
                             </span>
-                            <div className="text-base sm:text-lg font-black text-emerald-700">
+                            <div className="text-base sm:text-lg font-black text-success">
                                 {agency.isActive ? "فعال و آنلاین" : "معلق"}
                             </div>
                         </div>
@@ -646,7 +646,7 @@ export default function AgencyPanelScene() {
                                         className={cn(
                                             "w-full px-3.5 py-2.5 rounded-xl text-xs sm:text-sm text-brand transition-all",
                                             isEditing
-                                                ? "bg-white border border-soft-border/80 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                                                ? "bg-surface border border-soft-border/80 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                                                 : "bg-soft-bg/40 border border-soft-border/50 text-secondary cursor-not-allowed"
                                         )}
                                         placeholder="مثال: املاک مدرن ونک"
@@ -672,7 +672,7 @@ export default function AgencyPanelScene() {
                                         className={cn(
                                             "w-full px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-mono text-brand transition-all text-left",
                                             isEditing
-                                                ? "bg-white border border-soft-border/80 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                                                ? "bg-surface border border-soft-border/80 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                                                 : "bg-soft-bg/40 border border-soft-border/50 text-secondary cursor-not-allowed"
                                         )}
                                     />
@@ -689,7 +689,7 @@ export default function AgencyPanelScene() {
                                         className={cn(
                                             "w-full px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-mono text-brand transition-all",
                                             isEditing
-                                                ? "bg-white border border-soft-border/80 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                                                ? "bg-surface border border-soft-border/80 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                                                 : "bg-soft-bg/40 border border-soft-border/50 text-secondary cursor-not-allowed"
                                         )}
                                     />
@@ -706,7 +706,7 @@ export default function AgencyPanelScene() {
                                         className={cn(
                                             "w-full px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-mono text-brand transition-all",
                                             isEditing
-                                                ? "bg-white border border-soft-border/80 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                                                ? "bg-surface border border-soft-border/80 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                                                 : "bg-soft-bg/40 border border-soft-border/50 text-secondary cursor-not-allowed"
                                         )}
                                     />
@@ -723,7 +723,7 @@ export default function AgencyPanelScene() {
                                         className={cn(
                                             "w-full p-3 rounded-xl text-xs sm:text-sm text-brand transition-all leading-relaxed",
                                             isEditing
-                                                ? "bg-white border border-soft-border/80 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                                                ? "bg-surface border border-soft-border/80 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                                                 : "bg-soft-bg/40 border border-soft-border/50 text-secondary cursor-not-allowed"
                                         )}
                                     />
@@ -770,7 +770,7 @@ export default function AgencyPanelScene() {
                             isEditing ? "border-primary/40 ring-1 ring-primary/20" : "border-soft-border/70"
                         )}>
                             <h3 className="text-sm font-black text-brand flex items-center gap-2">
-                                <Phone className="w-4 h-4 text-emerald-600" />
+                                <Phone className="w-4 h-4 text-success" />
                                 <span>راه‌های ارتباطی و شبکه‌های اجتماعی</span>
                             </h3>
 
@@ -790,7 +790,7 @@ export default function AgencyPanelScene() {
                                         className={cn(
                                             "w-full px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-mono text-brand transition-all text-left",
                                             isEditing
-                                                ? "bg-white border border-soft-border/80 focus:outline-none focus:ring-2 focus:ring-primary/20 text-left"
+                                                ? "bg-surface border border-soft-border/80 focus:outline-none focus:ring-2 focus:ring-primary/20 text-left"
                                                 : "bg-soft-bg/40 border border-soft-border/50 text-secondary cursor-not-allowed"
                                         )}
                                     />
@@ -811,7 +811,7 @@ export default function AgencyPanelScene() {
                                         className={cn(
                                             "w-full px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-mono text-brand transition-all text-left",
                                             isEditing
-                                                ? "bg-white border border-soft-border/80 focus:outline-none focus:ring-2 focus:ring-primary/20 text-left"
+                                                ? "bg-surface border border-soft-border/80 focus:outline-none focus:ring-2 focus:ring-primary/20 text-left"
                                                 : "bg-soft-bg/40 border border-soft-border/50 text-secondary cursor-not-allowed"
                                         )}
                                     />
@@ -819,7 +819,7 @@ export default function AgencyPanelScene() {
 
                                 <div className="space-y-1.5">
                                     <label className="text-xs font-bold text-brand block flex items-center gap-1.5">
-                                        <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
+                                        <MessageCircle className="w-3.5 h-3.5 text-success" />
                                         <span>واتساپ</span>
                                     </label>
                                     <input
@@ -832,7 +832,7 @@ export default function AgencyPanelScene() {
                                         className={cn(
                                             "w-full px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-mono text-brand transition-all text-left",
                                             isEditing
-                                                ? "bg-white border border-soft-border/80 focus:outline-none focus:ring-2 focus:ring-primary/20 text-left"
+                                                ? "bg-surface border border-soft-border/80 focus:outline-none focus:ring-2 focus:ring-primary/20 text-left"
                                                 : "bg-soft-bg/40 border border-soft-border/50 text-secondary cursor-not-allowed"
                                         )}
                                     />
@@ -853,7 +853,7 @@ export default function AgencyPanelScene() {
                                         className={cn(
                                             "w-full px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-mono text-brand transition-all text-left",
                                             isEditing
-                                                ? "bg-white border border-soft-border/80 focus:outline-none focus:ring-2 focus:ring-primary/20 text-left"
+                                                ? "bg-surface border border-soft-border/80 focus:outline-none focus:ring-2 focus:ring-primary/20 text-left"
                                                 : "bg-soft-bg/40 border border-soft-border/50 text-secondary cursor-not-allowed"
                                         )}
                                     />
@@ -874,7 +874,7 @@ export default function AgencyPanelScene() {
                                         className={cn(
                                             "w-full px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-mono text-brand transition-all text-left",
                                             isEditing
-                                                ? "bg-white border border-soft-border/80 focus:outline-none focus:ring-2 focus:ring-primary/20 text-left"
+                                                ? "bg-surface border border-soft-border/80 focus:outline-none focus:ring-2 focus:ring-primary/20 text-left"
                                                 : "bg-soft-bg/40 border border-soft-border/50 text-secondary cursor-not-allowed"
                                         )}
                                     />
@@ -895,7 +895,7 @@ export default function AgencyPanelScene() {
                                         className={cn(
                                             "w-full px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-mono text-brand transition-all text-left",
                                             isEditing
-                                                ? "bg-white border border-soft-border/80 focus:outline-none focus:ring-2 focus:ring-primary/20 text-left"
+                                                ? "bg-surface border border-soft-border/80 focus:outline-none focus:ring-2 focus:ring-primary/20 text-left"
                                                 : "bg-soft-bg/40 border border-soft-border/50 text-secondary cursor-not-allowed"
                                         )}
                                     />
@@ -925,7 +925,7 @@ export default function AgencyPanelScene() {
                                         className={cn(
                                             "w-full px-3.5 py-2.5 rounded-xl text-xs sm:text-sm text-brand transition-all",
                                             isEditing
-                                                ? "bg-white border border-soft-border/80 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                                ? "bg-surface border border-soft-border/80 focus:outline-none focus:ring-2 focus:ring-primary/20"
                                                 : "bg-soft-bg/40 border border-soft-border/50 text-secondary cursor-not-allowed"
                                         )}
                                     />
@@ -942,7 +942,7 @@ export default function AgencyPanelScene() {
                                         className={cn(
                                             "w-full px-3.5 py-2.5 rounded-xl text-xs sm:text-sm text-brand transition-all",
                                             isEditing
-                                                ? "bg-white border border-soft-border/80 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                                ? "bg-surface border border-soft-border/80 focus:outline-none focus:ring-2 focus:ring-primary/20"
                                                 : "bg-soft-bg/40 border border-soft-border/50 text-secondary cursor-not-allowed"
                                         )}
                                     />
@@ -960,7 +960,7 @@ export default function AgencyPanelScene() {
                                         className={cn(
                                             "w-full px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-mono text-brand transition-all text-left",
                                             isEditing
-                                                ? "bg-white border border-soft-border/80 focus:outline-none focus:ring-2 focus:ring-primary/20 text-left"
+                                                ? "bg-surface border border-soft-border/80 focus:outline-none focus:ring-2 focus:ring-primary/20 text-left"
                                                 : "bg-soft-bg/40 border border-soft-border/50 text-secondary cursor-not-allowed"
                                         )}
                                     />
@@ -1074,7 +1074,7 @@ export default function AgencyPanelScene() {
                                                 className={cn(
                                                     "text-[10px] font-bold px-2 py-0.5 rounded-full",
                                                     post.isPublished
-                                                        ? "bg-emerald-500/10 text-emerald-700"
+                                                        ? "bg-emerald-500/10 text-success"
                                                         : "bg-soft-bg text-secondary"
                                                 )}
                                             >

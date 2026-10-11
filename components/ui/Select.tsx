@@ -138,8 +138,8 @@ export function Select<T extends string | number = string>({
     // Variant base classes for the trigger
     const variantStyles = {
         soft: "bg-soft-bg border-soft-border text-brand hover:bg-soft-bg/80 focus:ring-2 focus:ring-primary/20 focus:border-primary/50",
-        white: "bg-white border-soft-border text-brand hover:border-primary/40 focus:ring-2 focus:ring-primary/20 focus:border-primary/50 shadow-xs",
-        outline: "bg-transparent border-gray-200 text-brand hover:border-brand/40 focus:ring-2 focus:ring-brand/10 focus:border-brand",
+        white: "bg-surface border-soft-border text-brand hover:border-primary/40 focus:ring-2 focus:ring-primary/20 focus:border-primary/50 shadow-xs",
+        outline: "bg-transparent border-border-subtle text-brand hover:border-brand/40 focus:ring-2 focus:ring-brand/10 focus:border-brand",
     };
 
     // Size styles
@@ -169,7 +169,7 @@ export function Select<T extends string | number = string>({
                         "w-full border flex items-center justify-between text-right font-bold transition-all duration-200 outline-none cursor-pointer select-none",
                         variantStyles[variant],
                         sizeStyles[size],
-                        disabled && "opacity-50 cursor-not-allowed pointer-events-none bg-gray-100",
+                        disabled && "opacity-50 cursor-not-allowed pointer-events-none bg-surface-secondary",
                         error && "border-red-500 focus:ring-red-200",
                         triggerClassName
                     )}
@@ -217,13 +217,13 @@ export function Select<T extends string | number = string>({
                     <div
                         role="listbox"
                         className={cn(
-                            "absolute top-full right-0 left-0 mt-2 z-50 bg-white border border-soft-border rounded-2xl shadow-xl shadow-brand/10 overflow-hidden animate-in fade-in zoom-in-95 duration-150",
+                            "absolute top-full right-0 left-0 mt-2 z-50 bg-surface border border-soft-border rounded-2xl shadow-xl shadow-brand/10 overflow-hidden animate-in fade-in zoom-in-95 duration-150",
                             dropdownClassName
                         )}
                     >
                         {/* Search Bar */}
                         {searchable && (
-                            <div className="p-2 border-b border-soft-border bg-gray-50/50">
+                            <div className="p-2 border-b border-soft-border bg-surface-secondary/50">
                                 <div className="relative">
                                     <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-secondary" />
                                     <input
@@ -232,7 +232,7 @@ export function Select<T extends string | number = string>({
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
                                         placeholder={searchPlaceholder}
-                                        className="w-full bg-white border border-soft-border rounded-xl py-2 pr-9 pl-3 text-xs font-bold text-brand focus:ring-2 focus:ring-primary/20 outline-none placeholder:text-secondary/40"
+                                        className="w-full bg-surface border border-soft-border rounded-xl py-2 pr-9 pl-3 text-xs font-bold text-brand focus:ring-2 focus:ring-primary/20 outline-none placeholder:text-secondary/40"
                                     />
                                 </div>
                             </div>
@@ -288,7 +288,7 @@ export function Select<T extends string | number = string>({
 
             {/* Helper or Error Message */}
             {error ? (
-                <p className="text-[11px] text-red-500 font-bold pr-1">{error}</p>
+                <p className="text-[11px] text-error font-bold pr-1">{error}</p>
             ) : helperText ? (
                 <p className="text-[11px] text-secondary font-medium pr-1">{helperText}</p>
             ) : null}

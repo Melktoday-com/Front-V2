@@ -76,7 +76,7 @@ export function Slider({
                         aria-label="اسلاید قبلی"
                         onClick={() => swiperRef.current?.slidePrev()}
                         className={cn(
-                            "absolute right-2 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white/90 backdrop-blur-md shadow-md border border-slate-200/80 flex items-center justify-center text-slate-700 hover:text-primary hover:bg-white hover:scale-105 transition-all opacity-0 group-hover/slider:opacity-100 disabled:opacity-0 pointer-events-auto cursor-pointer",
+                            "absolute right-2 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-surface/90 backdrop-blur-md shadow-md border border-border-subtle/80 flex items-center justify-center text-foreground-secondary hover:text-primary hover:bg-surface hover:scale-105 transition-all opacity-0 group-hover/slider:opacity-100 disabled:opacity-0 pointer-events-auto cursor-pointer",
                             isBeginning && "hidden"
                         )}
                         disabled={isBeginning}
@@ -88,7 +88,7 @@ export function Slider({
                         aria-label="اسلاید بعدی"
                         onClick={() => swiperRef.current?.slideNext()}
                         className={cn(
-                            "absolute left-2 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white/90 backdrop-blur-md shadow-md border border-slate-200/80 flex items-center justify-center text-slate-700 hover:text-primary hover:bg-white hover:scale-105 transition-all opacity-0 group-hover/slider:opacity-100 disabled:opacity-0 pointer-events-auto cursor-pointer",
+                            "absolute left-2 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-surface/90 backdrop-blur-md shadow-md border border-border-subtle/80 flex items-center justify-center text-foreground-secondary hover:text-primary hover:bg-surface hover:scale-105 transition-all opacity-0 group-hover/slider:opacity-100 disabled:opacity-0 pointer-events-auto cursor-pointer",
                             isEnd && "hidden"
                         )}
                         disabled={isEnd}

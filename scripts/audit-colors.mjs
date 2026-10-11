@@ -39,13 +39,13 @@ if (tokenErrors > 0) {
 
 // 2. Scan project files
 const SCAN_EXTENSIONS = new Set(['.tsx', '.ts', '.css', '.svg', '.json', '.js', '.mjs']);
-const IGNORED_DIRS = new Set(['.git', '.next', 'node_modules', 'playwright-report', 'test-results', 'docs']);
+const IGNORED_DIRS = new Set(['.git', '.next', 'node_modules', 'playwright-report', 'test-results', 'docs', 'scratch']);
 
 // Regex patterns for detecting hardcoded color violations outside the token source
 const HEX_COLOR_REGEX = /#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{3,4})\b/g;
 const RGB_HSL_REGEX = /\b(?:rgb|rgba|hsl|hsla|hwb)\s*\([^)]+\)/g;
 const ARBITRARY_TAILWIND_COLOR = /(?:bg|text|border|ring|fill|stroke|from|via|to)-\[(?:#[0-9a-fA-F]{3,8}|rgba?\([^)]+\)|hsla?\([^)]+\))\]/g;
-const INLINE_COLOR_STYLE = /style=\{\{[^}]*(?:color|background|backgroundColor|borderColor|fill|stroke)\s*:\s*["'][^"']+["'][^}]*\}\}/gi;
+const HARDCODED_BG_WHITE = /(?<=(?:^|[^a-zA-Z0-9_\-]))bg-white(?=(?:[^a-zA-Z0-9_\-]|$))/g;
 const SVG_HARDCODED_FILL_STROKE = /(?:fill|stroke|stop-color)=["']#(?:[0-9a-fA-F]{3,8})["']/gi;
 
 function isAllowedHex(match, line, filePath) {
@@ -83,8 +83,8 @@ function scanFile(filePath) {
   if (path.resolve(filePath) === CENTRAL_TOKEN_SOURCE) {
     return;
   }
-  // Ignore this audit script itself and contrast audit script
-  if (relPath.startsWith('scripts/audit-')) {
+  // Ignore audit and migration helper scripts
+  if (relPath.startsWith('scripts/audit-') || relPath.startsWith('scripts/migrate-')) {
     return;
   }
 
@@ -138,7 +138,21 @@ function scanFile(filePath) {
       }
     }
 
-    // 4. SVG fill/stroke Check
+    // 4. Hardcoded bg-white Check
+    const bgWhiteMatches = line.match(HARDCODED_BG_WHITE);
+    if (bgWhiteMatches) {
+      for (const bgw of bgWhiteMatches) {
+        violations.push({
+          file: relPath,
+          line: lineNum,
+          type: 'Hardcoded bg-white Utility (must use bg-surface)',
+          match: bgw,
+          snippet: line.trim(),
+        });
+      }
+    }
+
+    // 5. SVG fill/stroke Check
     if (filePath.endsWith('.svg')) {
       const svgMatches = line.match(SVG_HARDCODED_FILL_STROKE);
       if (svgMatches) {

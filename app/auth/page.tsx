@@ -104,7 +104,7 @@ function AuthContent() {
                   dir="ltr"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="w-full bg-soft-bg border-2 border-transparent focus:border-primary/20 rounded-2xl p-4 text-brand font-bold placeholder:text-text-light/30 focus:bg-white outline-none transition-all"
+                  className="w-full bg-soft-bg border-2 border-transparent focus:border-primary/20 rounded-2xl p-4 text-brand font-bold placeholder:text-text-light/30 focus:bg-surface outline-none transition-all"
                   required
                 />
               </div>
@@ -165,7 +165,7 @@ function AuthContent() {
                   dir="ltr"
                   value={otp}
                   onChange={(e) => setOtp(e.target.value)}
-                  className="w-full bg-soft-bg border-2 border-transparent focus:border-primary/20 rounded-2xl p-4 text-brand text-center text-2xl tracking-[0.5em] font-black placeholder:text-text-light/30 focus:bg-white outline-none transition-all"
+                  className="w-full bg-soft-bg border-2 border-transparent focus:border-primary/20 rounded-2xl p-4 text-brand text-center text-2xl tracking-[0.5em] font-black placeholder:text-text-light/30 focus:bg-surface outline-none transition-all"
                   required
                 />
               </div>
@@ -187,7 +187,7 @@ function AuthContent() {
 
 export default function Auth() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-white flex items-center justify-center font-bold text-brand">در حال بارگذاری...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-surface flex items-center justify-center font-bold text-brand">در حال بارگذاری...</div>}>
       <AuthContent />
     </Suspense>
   );

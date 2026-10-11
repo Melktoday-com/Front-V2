@@ -66,7 +66,7 @@ export default function AboutScene() {
       title: "شفافیت و صداقت اطلاعات",
       desc: "در ملک تودی اطلاعات دقیق، جزئیات معتبر و قیمت‌گذاری‌های شفاف ارائه می‌شود تا با دیدی باز تصمیم بگیرید.",
       icon: ShieldCheck,
-      color: "from-emerald-500/10 to-emerald-500/5 text-emerald-600 border-emerald-200/50",
+      color: "from-emerald-500/10 to-emerald-500/5 text-success border-success/30/50",
     },
     {
       title: "ساده‌تر و سریع‌تر",
@@ -78,13 +78,13 @@ export default function AboutScene() {
       title: "بستر یکپارچه و جامع",
       desc: "پوشش همه‌جانبه معاملات شامل خرید، فروش، رهن، اجاره بلندمدت و اقامتگاه‌های روزانه در یک پلتفرم واحد.",
       icon: Layers,
-      color: "from-blue-500/10 to-blue-500/5 text-blue-600 border-blue-200/50",
+      color: "from-blue-500/10 to-blue-500/5 text-info border-info/30/50",
     },
     {
       title: "ارتباط مستقیم و موثر",
       desc: "پل ارتباطی حرفه‌ای و امن میان خریداران، مستأجران، مالکان و مشاوران و آژانس‌های املاک برتر بازار.",
       icon: HeartHandshake,
-      color: "from-amber-500/10 to-amber-500/5 text-amber-600 border-amber-200/50",
+      color: "from-amber-500/10 to-amber-500/5 text-warning border-warning/30/50",
     },
   ];
 
@@ -130,7 +130,7 @@ export default function AboutScene() {
         <div className="absolute -bottom-24 -right-24 w-72 h-72 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10 max-w-3xl space-y-6">
-          <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/15 px-3.5 py-1.5 rounded-full text-xs font-black text-primary">
+          <div className="inline-flex items-center gap-2 bg-surface/10 backdrop-blur-md border border-white/15 px-3.5 py-1.5 rounded-full text-xs font-black text-primary">
             <Sparkles className="w-4 h-4" />
             <span>درباره پلتفرم ملک تودی</span>
           </div>
@@ -153,7 +153,7 @@ export default function AboutScene() {
             </Link>
             <Link
               href="/ads/submit"
-              className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white font-black text-sm px-6 py-3.5 rounded-2xl border border-white/15 transition-all active:scale-95"
+              className="inline-flex items-center gap-2 bg-surface/10 hover:bg-surface/20 text-white font-black text-sm px-6 py-3.5 rounded-2xl border border-white/15 transition-all active:scale-95"
             >
               <PlusCircle className="w-4 h-4 text-primary" />
               <span>ثبت آگهی</span>
@@ -164,7 +164,7 @@ export default function AboutScene() {
 
       {/* Main Narrative Section: Story & Vision */}
       <section className="space-y-6">
-        <div className="bg-white rounded-3xl p-6 sm:p-10 border border-soft-border shadow-sm space-y-6">
+        <div className="bg-surface rounded-3xl p-6 sm:p-10 border border-soft-border shadow-sm space-y-6">
           <div className="flex items-center gap-3">
             <div className="w-2.5 h-7 bg-primary rounded-full" />
             <h2 className="text-xl sm:text-2xl font-black text-brand tracking-tight">
@@ -222,7 +222,7 @@ export default function AboutScene() {
                 val.color
               )}
             >
-              <div className="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center">
+              <div className="w-12 h-12 rounded-2xl bg-surface shadow-sm flex items-center justify-center">
                 <val.icon className="w-6 h-6" />
               </div>
               <h3 className="text-base sm:text-lg font-black text-brand">{val.title}</h3>
@@ -252,7 +252,7 @@ export default function AboutScene() {
           {userGroups.map((group, idx) => (
             <div
               key={idx}
-              className="bg-white p-5 rounded-3xl border border-soft-border hover:border-primary/40 transition-all shadow-sm space-y-3 flex flex-col justify-between"
+              className="bg-surface p-5 rounded-3xl border border-soft-border hover:border-primary/40 transition-all shadow-sm space-y-3 flex flex-col justify-between"
             >
               <div className="space-y-3">
                 <div className="w-10 h-10 rounded-2xl bg-soft-bg text-brand flex items-center justify-center font-bold">
@@ -286,7 +286,7 @@ export default function AboutScene() {
           {contactNumbers.map((item) => (
             <div
               key={item.key}
-              className="bg-white p-6 rounded-3xl border border-soft-border shadow-sm flex flex-col justify-between space-y-4 hover:border-primary/40 transition-all"
+              className="bg-surface p-6 rounded-3xl border border-soft-border shadow-sm flex flex-col justify-between space-y-4 hover:border-primary/40 transition-all"
             >
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
@@ -332,7 +332,7 @@ export default function AboutScene() {
           ))}
 
           {/* Address Card */}
-          <div className="bg-white p-6 rounded-3xl border border-soft-border shadow-sm flex flex-col justify-between space-y-4 md:col-span-2 hover:border-primary/40 transition-all">
+          <div className="bg-surface p-6 rounded-3xl border border-soft-border shadow-sm flex flex-col justify-between space-y-4 md:col-span-2 hover:border-primary/40 transition-all">
             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
               <div className="flex items-start gap-3.5">
                 <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5">
@@ -415,7 +415,7 @@ export default function AboutScene() {
           </Link>
           <Link
             href="/ads/submit"
-            className="bg-white/10 hover:bg-white/20 text-white font-black text-xs sm:text-sm px-6 py-3.5 rounded-2xl border border-white/20 transition-all active:scale-95"
+            className="bg-surface/10 hover:bg-surface/20 text-white font-black text-xs sm:text-sm px-6 py-3.5 rounded-2xl border border-white/20 transition-all active:scale-95"
           >
             ثبت رایگان ملک
           </Link>

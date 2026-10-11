@@ -90,13 +90,13 @@ export default function AdminUsersPage() {
     return (
         <div className="space-y-6">
             <div>
-                <h1 className="text-2xl font-bold text-gray-800">مدیریت کاربران</h1>
-                <p className="text-gray-500">مشاهده، بررسی و مدیریت دسترسی‌های کاربران سیستم</p>
+                <h1 className="text-2xl font-bold text-foreground">مدیریت کاربران</h1>
+                <p className="text-foreground-muted">مشاهده، بررسی و مدیریت دسترسی‌های کاربران سیستم</p>
             </div>
 
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+            <div className="bg-surface rounded-xl border border-border-subtle shadow-sm overflow-hidden">
                 <table className="w-full text-right">
-                    <thead className="bg-gray-50 text-gray-600 text-sm">
+                    <thead className="bg-surface-secondary text-foreground-secondary text-sm">
                         <tr>
                             <th className="px-6 py-4 font-semibold">نام و نام خانوادگی</th>
                             <th className="px-6 py-4 font-semibold">شماره تماس</th>
@@ -110,17 +110,17 @@ export default function AdminUsersPage() {
                         {isLoading ? (
                             <tr><td colSpan={6} className="p-10 text-center">در حال بارگزاری...</td></tr>
                         ) : data?.items.map((user: AdminUser) => (
-                            <tr key={user.id} className="hover:bg-gray-50 transition-colors text-sm">
-                                <td className="px-6 py-4 font-medium text-gray-800">
+                            <tr key={user.id} className="hover:bg-surface-secondary transition-colors text-sm">
+                                <td className="px-6 py-4 font-medium text-foreground">
                                     {user.firstName ? `${user.firstName} ${user.lastName}` : "بدون نام"}
                                 </td>
-                                <td className="px-6 py-4 text-gray-600 font-mono" dir="ltr">
+                                <td className="px-6 py-4 text-foreground-secondary font-mono" dir="ltr">
                                     {user.mobileNumber}
                                 </td>
                                 <td className="px-6 py-4">
                                     <div className="flex gap-1 flex-wrap">
                                         {user.roles.map((role: string) => (
-                                            <span key={role} className="bg-blue-50 text-blue-600 text-[10px] px-2 py-0.5 rounded-full border border-blue-100">
+                                            <span key={role} className="bg-info-subtle text-info text-[10px] px-2 py-0.5 rounded-full border border-info/30">
                                                 {role}
                                             </span>
                                         ))}
@@ -128,17 +128,17 @@ export default function AdminUsersPage() {
                                 </td>
                                 <td className="px-6 py-4">
                                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                        user.status === UserStatus.ACTIVE ? "bg-green-100 text-green-800" :
-                                        user.status === UserStatus.BLOCKED ? "bg-red-100 text-red-800" :
-                                        user.status === UserStatus.SUSPENDED ? "bg-amber-100 text-amber-800" :
-                                        "bg-gray-100 text-gray-800"
+                                        user.status === UserStatus.ACTIVE ? "bg-success-subtle text-success" :
+                                        user.status === UserStatus.BLOCKED ? "bg-error-subtle text-error" :
+                                        user.status === UserStatus.SUSPENDED ? "bg-warning-subtle text-warning" :
+                                        "bg-surface-secondary text-foreground"
                                     }`}>
                                         {user.status === UserStatus.ACTIVE ? "فعال" :
                                          user.status === UserStatus.BLOCKED ? "مسدود" :
                                          user.status === UserStatus.SUSPENDED ? "معلق" : "غیرفعال"}
                                     </span>
                                 </td>
-                                <td className="px-6 py-4 text-gray-500">
+                                <td className="px-6 py-4 text-foreground-muted">
                                     {new Date(user.createdAt).toLocaleDateString("fa-IR")}
                                 </td>
                                 <td className="px-6 py-4">
@@ -146,13 +146,13 @@ export default function AdminUsersPage() {
                                         <button
                                             onClick={() => router.push(`/admin/wallet?userId=${user.id}`)}
                                             title="شارژ یا کسر کیف پول"
-                                            className="p-1.5 text-gray-600 hover:bg-gray-100 rounded-md"
+                                            className="p-1.5 text-foreground-secondary hover:bg-surface-secondary rounded-md"
                                         >
                                             <WalletIcon size={16} />
                                         </button>
                                         <button
                                             title="تاریخچه مدیریت"
-                                            className="p-1.5 text-gray-600 hover:bg-gray-100 rounded-md"
+                                            className="p-1.5 text-foreground-secondary hover:bg-surface-secondary rounded-md"
                                         >
                                             <History size={16} />
                                         </button>
@@ -162,14 +162,14 @@ export default function AdminUsersPage() {
                                                 <button
                                                     onClick={() => handleSuspend(user.id)}
                                                     title="تعلیق موقت"
-                                                    className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-md"
+                                                    className="p-1.5 text-warning hover:bg-warning-subtle rounded-md"
                                                 >
                                                     <Clock size={16} />
                                                 </button>
                                                 <button
                                                     onClick={() => handleBan(user.id)}
                                                     title="مسدود کردن"
-                                                    className="p-1.5 text-red-600 hover:bg-red-50 rounded-md"
+                                                    className="p-1.5 text-error hover:bg-error-subtle rounded-md"
                                                 >
                                                     <UserX size={16} />
                                                 </button>
@@ -179,14 +179,14 @@ export default function AdminUsersPage() {
                                                 <button
                                                     onClick={() => handleReinstate(user.id)}
                                                     title="لغو تعلیق"
-                                                    className="p-1.5 text-green-600 hover:bg-green-50 rounded-md"
+                                                    className="p-1.5 text-success hover:bg-success-subtle rounded-md"
                                                 >
                                                     <ShieldCheck size={16} />
                                                 </button>
                                                 <button
                                                     onClick={() => handleBan(user.id)}
                                                     title="مسدود کردن"
-                                                    className="p-1.5 text-red-600 hover:bg-red-50 rounded-md"
+                                                    className="p-1.5 text-error hover:bg-error-subtle rounded-md"
                                                 >
                                                     <UserX size={16} />
                                                 </button>
@@ -195,7 +195,7 @@ export default function AdminUsersPage() {
                                             <button
                                                 onClick={() => handleUnban(user.id)}
                                                 title="رفع محدودیت"
-                                                className="p-1.5 text-green-600 hover:bg-green-50 rounded-md"
+                                                className="p-1.5 text-success hover:bg-success-subtle rounded-md"
                                             >
                                                 <ShieldCheck size={16} />
                                             </button>
@@ -208,19 +208,19 @@ export default function AdminUsersPage() {
                 </table>
 
                 {/* Pagination (Simplified) */}
-                <div className="p-4 bg-gray-50 border-t border-gray-100 flex justify-between items-center text-sm">
+                <div className="p-4 bg-surface-secondary border-t border-border-subtle flex justify-between items-center text-sm">
                     <button
                         disabled={page === 1}
                         onClick={() => setPage(p => p - 1)}
-                        className="px-3 py-1 bg-white border border-gray-200 rounded-md disabled:opacity-50"
+                        className="px-3 py-1 bg-surface border border-border-subtle rounded-md disabled:opacity-50"
                     >
                         قبلی
                     </button>
-                    <span className="text-gray-600">صفحه {page}</span>
+                    <span className="text-foreground-secondary">صفحه {page}</span>
                     <button
                         disabled={!data || data.items.length < 10}
                         onClick={() => setPage(p => p + 1)}
-                        className="px-3 py-1 bg-white border border-gray-200 rounded-md disabled:opacity-50"
+                        className="px-3 py-1 bg-surface border border-border-subtle rounded-md disabled:opacity-50"
                     >
                         بعدی
                     </button>

@@ -45,7 +45,7 @@ export default function CategoryFilter({
                 {[1, 2, 3, 4, 5, 6].map((i) => (
                     <div
                         key={i}
-                        className="shrink-0 w-24 h-10 bg-zinc-100/80 animate-pulse rounded-full"
+                        className="shrink-0 w-24 h-10 bg-surface-secondary/80 animate-pulse rounded-full"
                     />
                 ))}
             </div>
@@ -89,7 +89,7 @@ export default function CategoryFilter({
                         "rounded-full px-4 py-1.5 sm:py-2 flex items-center gap-1.5 shrink-0 text-xs font-bold transition-all active:scale-95 cursor-pointer border",
                         !selectedCategoryKey
                             ? "bg-brand text-white border-brand shadow-xs"
-                            : "bg-soft-bg text-secondary border-soft-border hover:bg-white hover:text-brand hover:border-gray-200"
+                            : "bg-soft-bg text-secondary border-soft-border hover:bg-surface hover:text-brand hover:border-border-subtle"
                     )}
                 >
                     <span>همه املاک</span>
@@ -108,7 +108,7 @@ export default function CategoryFilter({
                                 "rounded-full px-3.5 py-1.5 sm:py-2 flex items-center gap-2 shrink-0 text-xs font-bold transition-all active:scale-95 cursor-pointer border",
                                 isSelected
                                     ? "bg-primary text-white border-primary shadow-xs shadow-primary/25"
-                                    : "bg-soft-bg text-secondary border-soft-border hover:bg-white hover:text-brand hover:border-gray-200"
+                                    : "bg-soft-bg text-secondary border-soft-border hover:bg-surface hover:text-brand hover:border-border-subtle"
                             )}
                         >
                             {category.icon && (
@@ -127,7 +127,7 @@ export default function CategoryFilter({
 
             {/* Subcategories Row (revealed when selected category has subcategories) */}
             {activeFilterCategory && activeFilterCategory.subcategories && activeFilterCategory.subcategories.length > 0 && (
-                <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-1.5 pb-1 border-t border-gray-100 animate-in fade-in slide-in-from-top-1 duration-200">
+                <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-1.5 pb-1 border-t border-border-subtle animate-in fade-in slide-in-from-top-1 duration-200">
                     <span className="text-[11px] font-bold text-text-light shrink-0 ml-1">
                         زیردسته:
                     </span>
@@ -140,7 +140,7 @@ export default function CategoryFilter({
                             "rounded-full px-3 py-1 text-xs font-bold transition-all shrink-0 active:scale-95 cursor-pointer border",
                             !selectedSubcategoryKey
                                 ? "bg-zinc-900 text-white border-zinc-900 shadow-xs"
-                                : "bg-zinc-100 text-zinc-600 border-transparent hover:bg-zinc-200 hover:text-brand"
+                                : "bg-surface-secondary text-foreground-secondary border-transparent hover:bg-zinc-200 hover:text-brand"
                         )}
                     >
                         همه
@@ -159,7 +159,7 @@ export default function CategoryFilter({
                                     "rounded-full px-3 py-1 flex items-center gap-1.5 text-xs font-bold transition-all shrink-0 active:scale-95 cursor-pointer border",
                                     isSubSelected
                                         ? "bg-primary text-white border-primary shadow-xs shadow-primary/20"
-                                        : "bg-white border-zinc-200 text-zinc-700 hover:border-zinc-300 hover:bg-zinc-50 hover:text-brand"
+                                        : "bg-surface border-border-subtle text-foreground-secondary hover:border-border hover:bg-surface-secondary hover:text-brand"
                                 )}
                             >
                                 {sub.icon && (
@@ -181,7 +181,7 @@ export default function CategoryFilter({
                             type="button"
                             onClick={() => onSelectSubcategory?.("")}
                             aria-label="حذف فیلتر زیردسته"
-                            className="p-1 rounded-full text-zinc-400 hover:text-red-500 hover:bg-zinc-100 transition-colors shrink-0 ml-1 cursor-pointer"
+                            className="p-1 rounded-full text-foreground-muted hover:text-error hover:bg-surface-secondary transition-colors shrink-0 ml-1 cursor-pointer"
                         >
                             <X className="w-3.5 h-3.5" />
                         </button>

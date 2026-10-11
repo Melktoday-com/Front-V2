@@ -406,7 +406,7 @@ export function TicketFloatingWidget() {
                     aria-modal="true"
                     aria-labelledby={titleId}
                     tabIndex={-1}
-                    className="fixed inset-0 sm:inset-auto sm:bottom-8 sm:left-8 w-full sm:w-[440px] h-full h-[100dvh] sm:h-[620px] sm:max-h-[92vh] bg-white rounded-none sm:rounded-3xl shadow-2xl border-0 sm:border border-soft-border/80 flex flex-col z-50 overflow-hidden outline-none animate-in fade-in sm:slide-in-from-bottom-6 duration-300 overscroll-contain"
+                    className="fixed inset-0 sm:inset-auto sm:bottom-8 sm:left-8 w-full sm:w-[440px] h-full h-[100dvh] sm:h-[620px] sm:max-h-[92vh] bg-surface rounded-none sm:rounded-3xl shadow-2xl border-0 sm:border border-soft-border/80 flex flex-col z-50 overflow-hidden outline-none animate-in fade-in sm:slide-in-from-bottom-6 duration-300 overscroll-contain"
                     dir="rtl"
                 >
                     {/* Header */}
@@ -416,13 +416,13 @@ export function TicketFloatingWidget() {
                                 <button
                                     type="button"
                                     onClick={() => setActiveTab("history")}
-                                    className="p-1.5 rounded-xl hover:bg-white/10 text-white/80 hover:text-white transition-colors"
+                                    className="p-1.5 rounded-xl hover:bg-surface/10 text-white/80 hover:text-white transition-colors"
                                     aria-label="بازگشت به لیست تیکت‌ها"
                                 >
                                     <ArrowLeft className="w-5 h-5" />
                                 </button>
                             )}
-                            <div className="w-9 h-9 rounded-2xl bg-white/10 flex items-center justify-center text-primary">
+                            <div className="w-9 h-9 rounded-2xl bg-surface/10 flex items-center justify-center text-primary">
                                 <LifeBuoy className="w-5 h-5" />
                             </div>
                             <div>
@@ -441,7 +441,7 @@ export function TicketFloatingWidget() {
                             <button
                                 type="button"
                                 onClick={handleCloseWidget}
-                                className="p-2 rounded-2xl hover:bg-white/15 text-white/80 hover:text-white transition-colors"
+                                className="p-2 rounded-2xl hover:bg-surface/15 text-white/80 hover:text-white transition-colors"
                                 aria-label="بستن پنجره پشتیبانی"
                             >
                                 <X className="w-5 h-5" />
@@ -458,7 +458,7 @@ export function TicketFloatingWidget() {
                                 className={cn(
                                     "flex-1 py-2 px-3 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2",
                                     activeTab === "history"
-                                        ? "bg-white text-brand shadow-sm font-black"
+                                        ? "bg-surface text-brand shadow-sm font-black"
                                         : "text-secondary hover:text-brand"
                                 )}
                             >
@@ -476,7 +476,7 @@ export function TicketFloatingWidget() {
                                 className={cn(
                                     "flex-1 py-2 px-3 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2",
                                     activeTab === "new"
-                                        ? "bg-white text-brand shadow-sm font-black"
+                                        ? "bg-surface text-brand shadow-sm font-black"
                                         : "text-secondary hover:text-brand"
                                 )}
                             >
@@ -487,7 +487,7 @@ export function TicketFloatingWidget() {
                     )}
 
                     {/* Content Area */}
-                    <div className="flex-1 overflow-y-auto p-4 bg-white flex flex-col overscroll-contain">
+                    <div className="flex-1 overflow-y-auto p-4 bg-surface flex flex-col overscroll-contain">
                         {!isAuthenticated ? (
                             <div className="flex flex-col items-center justify-center py-12 px-4 text-center gap-4 flex-1">
                                 <div className="w-16 h-16 rounded-3xl bg-primary/10 text-primary flex items-center justify-center">
@@ -623,7 +623,7 @@ export function TicketFloatingWidget() {
                                                     <span>در حال دریافت موضوعات...</span>
                                                 </div>
                                             ) : isTopicsError ? (
-                                                <div className="p-3 bg-red-50 border border-red-200 rounded-2xl flex items-center justify-between text-xs text-red-600">
+                                                <div className="p-3 bg-error-subtle border border-error/30 rounded-2xl flex items-center justify-between text-xs text-error">
                                                     <span>خطا در دریافت موضوعات</span>
                                                     <button
                                                         type="button"
@@ -649,7 +649,7 @@ export function TicketFloatingWidget() {
                                                                     "p-2.5 rounded-2xl border text-right transition-all flex items-center gap-2 text-xs font-bold",
                                                                     isSelected
                                                                         ? "border-primary bg-primary/10 text-primary font-black shadow-xs"
-                                                                        : "border-soft-border/80 bg-white text-brand hover:border-soft-border hover:bg-soft-bg/50"
+                                                                        : "border-soft-border/80 bg-surface text-brand hover:border-soft-border hover:bg-soft-bg/50"
                                                                 )}
                                                             >
                                                                 <Tag
@@ -705,7 +705,7 @@ export function TicketFloatingWidget() {
                                         </div>
 
                                         {formError && (
-                                            <div className="p-3 bg-red-50 border border-red-200 rounded-2xl flex items-center gap-2 text-xs text-red-600 font-bold">
+                                            <div className="p-3 bg-error-subtle border border-error/30 rounded-2xl flex items-center gap-2 text-xs text-error font-bold">
                                                 <AlertCircle className="w-4 h-4 shrink-0" />
                                                 <span>{formError}</span>
                                             </div>
@@ -819,8 +819,8 @@ export function TicketFloatingWidget() {
                                         {/* Closed Ticket Notice or Reply Composer */}
                                         {currentTicket?.status === TicketStatus.CLOSED ||
                                             currentTicket?.status === TicketStatus.RESOLVED ? (
-                                            <div className="p-3 bg-gray-100 border border-gray-200 rounded-2xl text-center text-xs text-secondary font-bold flex items-center justify-center gap-2 mt-2">
-                                                <Lock className="w-4 h-4 text-gray-500" />
+                                            <div className="p-3 bg-surface-secondary border border-border-subtle rounded-2xl text-center text-xs text-secondary font-bold flex items-center justify-center gap-2 mt-2">
+                                                <Lock className="w-4 h-4 text-foreground-muted" />
                                                 <span>
                                                     این تیکت بسته شده است و امکان ارسال پاسخ جدید وجود ندارد.
                                                 </span>

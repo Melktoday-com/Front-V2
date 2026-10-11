@@ -161,12 +161,12 @@ export default function NotificationsScene() {
                             onClick={handleMarkAllAsRead}
                             disabled={markAllAsReadMutation.isPending}
                             title="علامت‌گذاری همه به عنوان خوانده‌شده"
-                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/80 rounded-xl hover:bg-emerald-100/70 active:scale-95 transition-all disabled:opacity-50"
+                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-success bg-success-subtle border border-success/30/80 rounded-xl hover:bg-success-subtle/70 active:scale-95 transition-all disabled:opacity-50"
                         >
                             {markAllAsReadMutation.isPending ? (
-                                <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-600" />
+                                <Loader2 className="w-3.5 h-3.5 animate-spin text-success" />
                             ) : (
-                                <CheckCheck className="w-3.5 h-3.5 text-emerald-600" />
+                                <CheckCheck className="w-3.5 h-3.5 text-success" />
                             )}
                             <span className="hidden sm:inline">خواندن همه</span>
                         </button>
@@ -179,7 +179,7 @@ export default function NotificationsScene() {
                         disabled={isFetching}
                         title="بروزرسانی"
                         aria-label="بروزرسانی لیست اعلان‌ها"
-                        className="p-2 text-secondary hover:text-brand bg-white rounded-xl border border-soft-border/70 hover:shadow-sm transition-all disabled:opacity-50"
+                        className="p-2 text-secondary hover:text-brand bg-surface rounded-xl border border-soft-border/70 hover:shadow-sm transition-all disabled:opacity-50"
                     >
                         <RotateCw className={`w-4 h-4 ${isFetching ? "animate-spin text-primary" : ""}`} />
                     </button>
@@ -200,7 +200,7 @@ export default function NotificationsScene() {
                         type="button"
                         onClick={handleMarkAllAsRead}
                         disabled={markAllAsReadMutation.isPending}
-                        className="sm:hidden flex items-center gap-1 text-xs font-bold text-emerald-600 hover:text-emerald-700"
+                        className="sm:hidden flex items-center gap-1 text-xs font-bold text-success hover:text-success"
                     >
                         <CheckCheck className="w-3.5 h-3.5" />
                         <span>خواندن همه ({toPersianDigits(unreadCount)})</span>

@@ -53,30 +53,30 @@ const STATUS_CONFIG: Record<
 > = {
     [AdStatus.PUBLISHED]: {
         label: "منتشر شده",
-        bg: "bg-emerald-50/95",
-        text: "text-emerald-700",
-        border: "border-emerald-200/80",
+        bg: "bg-success-subtle/95",
+        text: "text-success",
+        border: "border-success/30/80",
         dot: "bg-emerald-500",
     },
     [AdStatus.PENDING_APPROVAL]: {
         label: "در حال بررسی",
-        bg: "bg-amber-50/95",
-        text: "text-amber-700",
-        border: "border-amber-200/80",
+        bg: "bg-warning-subtle/95",
+        text: "text-warning",
+        border: "border-warning/30/80",
         dot: "bg-amber-500 animate-pulse",
     },
     [AdStatus.DRAFT]: {
         label: "پیش‌نویس",
-        bg: "bg-slate-50/95",
-        text: "text-slate-700",
-        border: "border-slate-200",
+        bg: "bg-surface-secondary/95",
+        text: "text-foreground-secondary",
+        border: "border-border-subtle",
         dot: "bg-slate-400",
     },
     [AdStatus.REJECTED]: {
         label: "رد شده",
-        bg: "bg-rose-50/95",
-        text: "text-rose-700",
-        border: "border-rose-200/80",
+        bg: "bg-error-subtle/95",
+        text: "text-error",
+        border: "border-error/30/80",
         dot: "bg-rose-500",
     },
     [AdStatus.ARCHIVED]: {
@@ -88,9 +88,9 @@ const STATUS_CONFIG: Record<
     },
     [AdStatus.DELETED]: {
         label: "حذف شده",
-        bg: "bg-gray-50/95",
-        text: "text-gray-400",
-        border: "border-gray-200",
+        bg: "bg-surface-secondary/95",
+        text: "text-foreground-muted",
+        border: "border-border-subtle",
         dot: "bg-gray-400",
     },
 };
@@ -201,9 +201,9 @@ function MyAdCard({
     const categoryBadge = getCategoryBadge(ad);
 
     return (
-        <div className="group flex flex-col h-full bg-white rounded-2xl border border-gray-100 hover:border-gray-200/90 shadow-xs hover:shadow-md transition-all duration-300 overflow-hidden">
+        <div className="group flex flex-col h-full bg-surface rounded-2xl border border-border-subtle hover:border-border-subtle/90 shadow-xs hover:shadow-md transition-all duration-300 overflow-hidden">
             {/* Image Container */}
-            <div className="relative aspect-[16/10] sm:aspect-[4/3] w-full overflow-hidden bg-gray-50">
+            <div className="relative aspect-[16/10] sm:aspect-[4/3] w-full overflow-hidden bg-surface-secondary">
                 <Image
                     src={imgSrc}
                     alt={ad.title || "ملک"}
@@ -232,7 +232,7 @@ function MyAdCard({
                 <button
                     onClick={() => window.open(`/ads/${ad.adId}`, "_blank")}
                     title="مشاهده آگهی در صفحه جدید"
-                    className="absolute top-2.5 left-2.5 z-10 w-8 h-8 rounded-full bg-white/85 hover:bg-white text-brand/80 hover:text-brand shadow-xs flex items-center justify-center backdrop-blur-md transition-all active:scale-95"
+                    className="absolute top-2.5 left-2.5 z-10 w-8 h-8 rounded-full bg-surface/85 hover:bg-surface text-brand/80 hover:text-brand shadow-xs flex items-center justify-center backdrop-blur-md transition-all active:scale-95"
                 >
                     <ExternalLink className="w-4 h-4" />
                 </button>
@@ -277,7 +277,7 @@ function MyAdCard({
                 </div>
 
                 {/* Action Bar Footer */}
-                <div className="border-t border-gray-100/90 pt-3 mt-4 flex items-center justify-between gap-2">
+                <div className="border-t border-border-subtle/90 pt-3 mt-4 flex items-center justify-between gap-2">
                     {/* Primary Action Button */}
                     <div className="flex items-center gap-2">
                         {(ad.status === AdStatus.DRAFT || ad.status === AdStatus.REJECTED) && (
@@ -306,7 +306,7 @@ function MyAdCard({
                         )}
 
                         {ad.status === AdStatus.PUBLISHED && ad.isFeatured && (
-                            <span className="bg-amber-50 text-amber-700 border border-amber-200/80 font-bold text-xs px-2.5 py-1.5 rounded-xl flex items-center gap-1">
+                            <span className="bg-warning-subtle text-warning border border-warning/30/80 font-bold text-xs px-2.5 py-1.5 rounded-xl flex items-center gap-1">
                                 <Sparkles className="w-3.5 h-3.5 text-amber-500" />
                                 <span>ارتقا یافته</span>
                             </span>
@@ -345,7 +345,7 @@ function MyAdCard({
                             <button
                                 onClick={() => onArchive(ad)}
                                 title="بایگانی کردن آگهی"
-                                className="p-2 text-secondary hover:text-amber-600 hover:bg-amber-50 rounded-xl transition-colors"
+                                className="p-2 text-secondary hover:text-warning hover:bg-warning-subtle rounded-xl transition-colors"
                             >
                                 <Archive className="w-4 h-4" />
                             </button>
@@ -355,7 +355,7 @@ function MyAdCard({
                             <button
                                 onClick={() => onDelete(ad)}
                                 title="حذف آگهی"
-                                className="p-2 text-secondary hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors"
+                                className="p-2 text-secondary hover:text-error hover:bg-error-subtle rounded-xl transition-colors"
                             >
                                 <Trash2 className="w-4 h-4" />
                             </button>
@@ -532,14 +532,14 @@ export default function MyAdsScene() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50/50 pb-28 lg:pb-10">
+        <div className="min-h-screen bg-surface-secondary/50 pb-28 lg:pb-10">
             {/* Header */}
-            <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-gray-100 shadow-2xs">
+            <header className="sticky top-0 z-30 bg-surface/90 backdrop-blur-md border-b border-border-subtle shadow-2xs">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
                         <button
                             onClick={handleBack}
-                            className="p-2 rounded-xl text-brand hover:bg-gray-100 transition-colors"
+                            className="p-2 rounded-xl text-brand hover:bg-surface-secondary transition-colors"
                             aria-label="بازگشت"
                         >
                             <ChevronRight className="w-5 h-5" />
@@ -591,14 +591,14 @@ export default function MyAdsScene() {
                                             "px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5",
                                             isActive
                                                 ? "bg-brand text-white shadow-xs"
-                                                : "bg-white text-secondary hover:bg-gray-100 border border-gray-200/60"
+                                                : "bg-surface text-secondary hover:bg-surface-secondary border border-border-subtle/60"
                                         )}
                                     >
                                         <span>{tab.label}</span>
                                         <span
                                             className={cn(
                                                 "text-[10px] px-1.5 py-0.2 rounded-full",
-                                                isActive ? "bg-white/20 text-white" : "bg-gray-100 text-secondary"
+                                                isActive ? "bg-surface/20 text-white" : "bg-surface-secondary text-secondary"
                                             )}
                                         >
                                             {toPersianDigits(count)}
@@ -624,19 +624,19 @@ export default function MyAdsScene() {
                         {Array.from({ length: 6 }).map((_, i) => (
                             <div
                                 key={i}
-                                className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-xs animate-pulse"
+                                className="bg-surface rounded-2xl border border-border-subtle overflow-hidden shadow-xs animate-pulse"
                             >
-                                <div className="aspect-[16/10] sm:aspect-[4/3] bg-gray-100 w-full" />
+                                <div className="aspect-[16/10] sm:aspect-[4/3] bg-surface-secondary w-full" />
                                 <div className="p-4 space-y-3">
-                                    <div className="h-5 bg-gray-100 rounded-md w-1/3" />
-                                    <div className="h-4 bg-gray-100 rounded-md w-3/4" />
+                                    <div className="h-5 bg-surface-secondary rounded-md w-1/3" />
+                                    <div className="h-4 bg-surface-secondary rounded-md w-3/4" />
                                     <div className="flex justify-between pt-2">
-                                        <div className="h-3 bg-gray-100 rounded-md w-1/4" />
-                                        <div className="h-3 bg-gray-100 rounded-md w-1/4" />
+                                        <div className="h-3 bg-surface-secondary rounded-md w-1/4" />
+                                        <div className="h-3 bg-surface-secondary rounded-md w-1/4" />
                                     </div>
-                                    <div className="border-t border-gray-100 pt-3 flex justify-between">
-                                        <div className="h-8 bg-gray-100 rounded-xl w-1/3" />
-                                        <div className="h-8 bg-gray-100 rounded-xl w-1/4" />
+                                    <div className="border-t border-border-subtle pt-3 flex justify-between">
+                                        <div className="h-8 bg-surface-secondary rounded-xl w-1/3" />
+                                        <div className="h-8 bg-surface-secondary rounded-xl w-1/4" />
                                     </div>
                                 </div>
                             </div>
@@ -645,7 +645,7 @@ export default function MyAdsScene() {
                 ) : allLoadedAds.length === 0 ? (
                     activeFilter === "ALL" ? (
                         /* Completely Empty State */
-                        <div className="text-center py-20 bg-white rounded-3xl border border-gray-100 p-8 shadow-xs max-w-lg mx-auto">
+                        <div className="text-center py-20 bg-surface rounded-3xl border border-border-subtle p-8 shadow-xs max-w-lg mx-auto">
                             <div className="w-16 h-16 rounded-3xl bg-primary/10 text-primary flex items-center justify-center mx-auto mb-4">
                                 <Building2 className="w-8 h-8" />
                             </div>
@@ -663,7 +663,7 @@ export default function MyAdsScene() {
                         </div>
                     ) : (
                         /* Empty Filter State */
-                        <div className="text-center py-16 bg-white rounded-3xl border border-dashed border-gray-200 p-8 max-w-md mx-auto">
+                        <div className="text-center py-16 bg-surface rounded-3xl border border-dashed border-border-subtle p-8 max-w-md mx-auto">
                             <AlertCircle className="w-12 h-12 text-secondary/40 mx-auto mb-3" />
                             <h3 className="text-brand font-bold text-base mb-1">
                                 هیچ آگهی‌ای با وضعیت «{FILTER_TABS.find((t) => t.key === activeFilter)?.label}» یافت نشد
@@ -695,7 +695,7 @@ export default function MyAdsScene() {
                                             className="col-span-full py-5 my-2 flex items-center gap-3 animate-in fade-in duration-300"
                                         >
                                             <div className="h-px bg-gray-200/80 flex-1" />
-                                            <div className="flex items-center gap-2 bg-white px-4 py-1.5 rounded-full border border-gray-200/80 shadow-2xs text-xs">
+                                            <div className="flex items-center gap-2 bg-surface px-4 py-1.5 rounded-full border border-border-subtle/80 shadow-2xs text-xs">
                                                 <Layers className="w-3.5 h-3.5 text-primary" />
                                                 <span className="text-secondary font-medium">بخش / صفحه</span>
                                                 <span className="text-brand font-black text-sm">{toPersianDigits(page.page)}</span>
@@ -726,7 +726,7 @@ export default function MyAdsScene() {
                         {hasNextPage && (data?.pages.length ?? 0) < 7 && (
                             <div ref={observerTargetRef} className="col-span-full py-8 flex flex-col items-center justify-center gap-2">
                                 {isFetchingNextPage ? (
-                                    <div className="flex items-center gap-2 text-xs font-bold text-secondary bg-white px-5 py-2.5 rounded-xl shadow-xs border border-gray-100">
+                                    <div className="flex items-center gap-2 text-xs font-bold text-secondary bg-surface px-5 py-2.5 rounded-xl shadow-xs border border-border-subtle">
                                         <Loader2 className="w-4 h-4 animate-spin text-primary" />
                                         <span>در حال بارگذاری بخش بعدی آگهی‌ها...</span>
                                     </div>
@@ -740,7 +740,7 @@ export default function MyAdsScene() {
 
                 {/* Pagination Controls at the End */}
                 {!isLoading && allLoadedAds.length > 0 && totalPages > 1 && isBatchFinished && (
-                    <div className="mt-12 bg-white rounded-3xl p-5 sm:p-6 border border-gray-100 shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
+                    <div className="mt-12 bg-surface rounded-3xl p-5 sm:p-6 border border-border-subtle shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
                         <div className="text-xs text-secondary font-medium text-center md:text-right">
                             نمایش صفحه <span className="font-bold text-brand">{toPersianDigits(startPage)}</span> تا{" "}
                             <span className="font-bold text-brand">{toPersianDigits(lastLoadedPage)}</span> از{" "}
@@ -754,7 +754,7 @@ export default function MyAdsScene() {
                                 type="button"
                                 onClick={handlePrevPage}
                                 disabled={startPage <= 1}
-                                className="px-3 py-2 bg-gray-50 hover:bg-gray-100 text-brand rounded-xl font-bold text-xs flex items-center gap-1 border border-gray-200/60 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                className="px-3 py-2 bg-surface-secondary hover:bg-surface-secondary text-brand rounded-xl font-bold text-xs flex items-center gap-1 border border-border-subtle/60 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                             >
                                 <ChevronRight className="w-4 h-4" />
                                 <span>صفحه قبل</span>
@@ -783,7 +783,7 @@ export default function MyAdsScene() {
                                                 ? "bg-brand text-white shadow-xs font-black"
                                                 : isCurrentLoaded
                                                 ? "bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20"
-                                                : "bg-gray-50 hover:bg-gray-100 text-secondary border border-gray-200/60"
+                                                : "bg-surface-secondary hover:bg-surface-secondary text-secondary border border-border-subtle/60"
                                         )}
                                         title={isCurrentLoaded ? `اسکرول به بخش صفحه ${item}` : `رفتن به صفحه ${item}`}
                                     >
@@ -796,7 +796,7 @@ export default function MyAdsScene() {
                                 type="button"
                                 onClick={handleNextPage}
                                 disabled={lastLoadedPage >= totalPages}
-                                className="px-3 py-2 bg-gray-50 hover:bg-gray-100 text-brand rounded-xl font-bold text-xs flex items-center gap-1 border border-gray-200/60 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                className="px-3 py-2 bg-surface-secondary hover:bg-surface-secondary text-brand rounded-xl font-bold text-xs flex items-center gap-1 border border-border-subtle/60 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                             >
                                 <span>صفحه بعد</span>
                                 <ChevronLeft className="w-4 h-4" />
@@ -807,7 +807,7 @@ export default function MyAdsScene() {
                         <button
                             type="button"
                             onClick={() => document.getElementById("my-ads-top")?.scrollIntoView({ behavior: "smooth" })}
-                            className="hidden lg:flex items-center gap-1 text-xs font-bold text-secondary hover:text-brand transition-colors p-2 rounded-xl hover:bg-gray-50"
+                            className="hidden lg:flex items-center gap-1 text-xs font-bold text-secondary hover:text-brand transition-colors p-2 rounded-xl hover:bg-surface-secondary"
                         >
                             <ArrowUp className="w-3.5 h-3.5" />
                             <span>بازگشت به بالا</span>
@@ -819,8 +819,8 @@ export default function MyAdsScene() {
             {/* Delete Confirmation Modal */}
             {deleteTarget && (
                 <div role="dialog" aria-modal="true" aria-label="حذف دائمی آگهی" className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200">
-                    <div className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-gray-100 animate-in zoom-in-95 duration-200">
-                        <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mb-4">
+                    <div className="bg-surface rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-border-subtle animate-in zoom-in-95 duration-200">
+                        <div className="w-12 h-12 rounded-2xl bg-error-subtle text-error flex items-center justify-center mb-4">
                             <Trash2 className="w-6 h-6" />
                         </div>
                         <h3 className="text-brand font-black text-lg mb-2">حذف دائمی آگهی</h3>
@@ -831,7 +831,7 @@ export default function MyAdsScene() {
                             <button
                                 onClick={() => setDeleteTarget(null)}
                                 disabled={deleteMutation.isPending}
-                                className="flex-1 py-2.5 px-4 rounded-xl border border-gray-200 text-secondary font-bold text-sm hover:bg-gray-50 transition-colors disabled:opacity-50"
+                                className="flex-1 py-2.5 px-4 rounded-xl border border-border-subtle text-secondary font-bold text-sm hover:bg-surface-secondary transition-colors disabled:opacity-50"
                             >
                                 انصراف
                             </button>
@@ -854,8 +854,8 @@ export default function MyAdsScene() {
             {/* Archive Confirmation Modal */}
             {archiveTarget && (
                 <div role="dialog" aria-modal="true" aria-label="بایگانی کردن آگهی" className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200">
-                    <div className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-gray-100 animate-in zoom-in-95 duration-200">
-                        <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mb-4">
+                    <div className="bg-surface rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-border-subtle animate-in zoom-in-95 duration-200">
+                        <div className="w-12 h-12 rounded-2xl bg-warning-subtle text-warning flex items-center justify-center mb-4">
                             <Archive className="w-6 h-6" />
                         </div>
                         <h3 className="text-brand font-black text-lg mb-2">بایگانی کردن آگهی</h3>
@@ -866,7 +866,7 @@ export default function MyAdsScene() {
                             <button
                                 onClick={() => setArchiveTarget(null)}
                                 disabled={archiveMutation.isPending}
-                                className="flex-1 py-2.5 px-4 rounded-xl border border-gray-200 text-secondary font-bold text-sm hover:bg-gray-50 transition-colors disabled:opacity-50"
+                                className="flex-1 py-2.5 px-4 rounded-xl border border-border-subtle text-secondary font-bold text-sm hover:bg-surface-secondary transition-colors disabled:opacity-50"
                             >
                                 انصراف
                             </button>

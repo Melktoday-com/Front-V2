@@ -175,7 +175,7 @@ export default function ProfileScene() {
     }
 
     return (
-        <div className="min-h-screen bg-white pb-24 lg:pb-10">
+        <div className="min-h-screen bg-surface pb-24 lg:pb-10">
             <div className="p-6 lg:p-10 space-y-6 max-w-2xl mx-auto">
                 {/* Account Status Alert if Suspended or Banned */}
                 <AccountStatusBanner showNotificationLink={true} />
@@ -191,7 +191,7 @@ export default function ProfileScene() {
                             onChange={handleAvatarChange}
                         />
                         <div className="relative group shrink-0">
-                            <div className="w-18 h-18 rounded-full bg-white border-2 border-soft-border flex items-center justify-center overflow-hidden shadow-xs">
+                            <div className="w-18 h-18 rounded-full bg-surface border-2 border-soft-border flex items-center justify-center overflow-hidden shadow-xs">
                                 {profile?.avatarUrl ? (
                                     <img
                                         src={getMediaUrl(profile.avatarUrl)}
@@ -231,7 +231,7 @@ export default function ProfileScene() {
                                 {isRestricted && (
                                     <span className={cn(
                                         "px-2 py-0.5 rounded-lg text-[10px] font-black",
-                                        isBanned ? "bg-rose-100 text-rose-700" : "bg-amber-100 text-amber-700"
+                                        isBanned ? "bg-error-subtle text-error" : "bg-warning-subtle text-warning"
                                     )}>
                                         وضعیت: {statusLabel}
                                     </span>
@@ -263,7 +263,7 @@ export default function ProfileScene() {
                                                 "px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5",
                                                 isActive
                                                     ? "bg-brand text-white shadow-sm ring-2 ring-brand/20 cursor-default"
-                                                    : "bg-white text-secondary hover:text-brand border border-soft-border hover:border-brand/40 active:scale-95"
+                                                    : "bg-surface text-secondary hover:text-brand border border-soft-border hover:border-brand/40 active:scale-95"
                                             )}
                                         >
                                             {isActive && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />}
@@ -283,7 +283,7 @@ export default function ProfileScene() {
                                     <Phone className="w-4 h-4 text-secondary" />
                                     شماره موبایل
                                 </label>
-                                <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
+                                <span className="inline-flex items-center gap-1 text-[11px] font-bold text-success bg-success-subtle px-2.5 py-1 rounded-lg border border-success/30">
                                     <CheckCircle2 className="w-3.5 h-3.5" />
                                     تایید شده با پیامک
                                 </span>
@@ -296,7 +296,7 @@ export default function ProfileScene() {
                                     readOnly
                                     disabled
                                     dir="ltr"
-                                    className="w-full bg-slate-100/80 border border-soft-border rounded-2xl py-3 px-4 text-sm font-black text-brand cursor-not-allowed outline-none select-all"
+                                    className="w-full bg-surface-secondary/80 border border-soft-border rounded-2xl py-3 px-4 text-sm font-black text-brand cursor-not-allowed outline-none select-all"
                                 />
 
                             </div>
@@ -311,7 +311,7 @@ export default function ProfileScene() {
                                 type="text"
                                 value={firstName}
                                 onChange={(e) => setFirstName(e.target.value)}
-                                className="w-full bg-white border border-soft-border rounded-2xl py-3 px-4 text-sm font-bold text-brand focus:ring-2 focus:ring-primary/20 outline-none"
+                                className="w-full bg-surface border border-soft-border rounded-2xl py-3 px-4 text-sm font-bold text-brand focus:ring-2 focus:ring-primary/20 outline-none"
                                 placeholder="وارد کنید..."
                             />
                         </div>
@@ -323,7 +323,7 @@ export default function ProfileScene() {
                                 type="text"
                                 value={lastName}
                                 onChange={(e) => setLastName(e.target.value)}
-                                className="w-full bg-white border border-soft-border rounded-2xl py-3 px-4 text-sm font-bold text-brand focus:ring-2 focus:ring-primary/20 outline-none"
+                                className="w-full bg-surface border border-soft-border rounded-2xl py-3 px-4 text-sm font-bold text-brand focus:ring-2 focus:ring-primary/20 outline-none"
                                 placeholder="وارد کنید..."
                             />
                         </div>
@@ -381,13 +381,13 @@ export default function ProfileScene() {
                                     <Link
                                         href={`/agency/showcase/${myAgency.slug || myAgency.id}`}
                                         target="_blank"
-                                        className="flex items-center justify-between px-4 py-3 rounded-2xl bg-slate-50 hover:bg-slate-100 text-xs font-bold text-slate-700 transition-colors border border-slate-200/80 group"
+                                        className="flex items-center justify-between px-4 py-3 rounded-2xl bg-surface-secondary hover:bg-surface-secondary text-xs font-bold text-foreground-secondary transition-colors border border-border-subtle/80 group"
                                     >
                                         <div className="flex items-center gap-2">
-                                            <ExternalLink className="w-4 h-4 text-blue-600" />
+                                            <ExternalLink className="w-4 h-4 text-info" />
                                             <span>ویترین عمومی آژانس</span>
                                         </div>
-                                        <span className="text-[11px] text-slate-400 font-medium group-hover:text-blue-600 transition-colors">&larr;</span>
+                                        <span className="text-[11px] text-foreground-muted font-medium group-hover:text-info transition-colors">&larr;</span>
                                     </Link>
                                 )}
                             </div>
@@ -424,25 +424,25 @@ export default function ProfileScene() {
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                 <Link
                                     href="/posts/create"
-                                    className="flex items-center justify-between px-4 py-3 rounded-2xl bg-emerald-50 hover:bg-emerald-100 text-xs font-black text-emerald-800 transition-colors border border-emerald-200/80 group"
+                                    className="flex items-center justify-between px-4 py-3 rounded-2xl bg-success-subtle hover:bg-success-subtle text-xs font-black text-success transition-colors border border-success/30/80 group"
                                 >
                                     <div className="flex items-center gap-2">
-                                        <Sparkles className="w-4 h-4 text-emerald-600" />
+                                        <Sparkles className="w-4 h-4 text-success" />
                                         <span>استودیو انتشار پست اقامتگاه</span>
                                     </div>
-                                    <span className="text-[11px] text-emerald-600 font-bold">&larr;</span>
+                                    <span className="text-[11px] text-success font-bold">&larr;</span>
                                 </Link>
                                 {hostProfile && (
                                     <Link
                                         href={`/host/${hostProfile.slug || hostProfile.id || hostProfile.userId}`}
                                         target="_blank"
-                                        className="flex items-center justify-between px-4 py-3 rounded-2xl bg-slate-50 hover:bg-slate-100 text-xs font-bold text-slate-700 transition-colors border border-slate-200/80 group"
+                                        className="flex items-center justify-between px-4 py-3 rounded-2xl bg-surface-secondary hover:bg-surface-secondary text-xs font-bold text-foreground-secondary transition-colors border border-border-subtle/80 group"
                                     >
                                         <div className="flex items-center gap-2">
-                                            <ExternalLink className="w-4 h-4 text-emerald-600" />
+                                            <ExternalLink className="w-4 h-4 text-success" />
                                             <span>صفحه عمومی میزبان</span>
                                         </div>
-                                        <span className="text-[11px] text-slate-400 font-medium group-hover:text-emerald-600 transition-colors">&larr;</span>
+                                        <span className="text-[11px] text-foreground-muted font-medium group-hover:text-success transition-colors">&larr;</span>
                                     </Link>
                                 )}
                             </div>
@@ -576,9 +576,9 @@ export default function ProfileScene() {
                         <div className="flex items-center gap-2">
                             <span className={cn(
                                 "text-[10px] px-2 py-1 rounded-full font-bold",
-                                profile?.kycStatus === 'verified' ? "bg-green-50 text-green-600" :
+                                profile?.kycStatus === 'verified' ? "bg-success-subtle text-success" :
                                     profile?.kycStatus === 'pending' || profile?.kycStatus === 'in_progress' ? "bg-orange-50 text-orange-600" :
-                                        "bg-red-50 text-red-500"
+                                        "bg-error-subtle text-error"
                             )}>
                                 {profile?.kycStatus === 'verified' ? "تایید شده" :
                                     profile?.kycStatus === 'pending' || profile?.kycStatus === 'in_progress' ? "در انتظار تایید" : "تایید نشده"}
@@ -589,11 +589,11 @@ export default function ProfileScene() {
 
                     <button
                         onClick={logout}
-                        className="w-full flex items-center justify-between p-5 bg-red-50 rounded-2xl border border-red-100 hover:bg-red-100 transition-colors"
+                        className="w-full flex items-center justify-between p-5 bg-error-subtle rounded-2xl border border-error/30 hover:bg-error-subtle transition-colors"
                     >
                         <div className="flex items-center gap-3">
-                            <LogOut className="w-5 h-5 text-red-500" />
-                            <span className="text-red-500 font-bold text-sm">
+                            <LogOut className="w-5 h-5 text-error" />
+                            <span className="text-error font-bold text-sm">
                                 خروج از حساب
                             </span>
                         </div>
@@ -604,15 +604,15 @@ export default function ProfileScene() {
             {/* KYC Verification Modal */}
             {isKycModalOpen && (
                 <div role="dialog" aria-modal="true" aria-label="احراز هویت هوشمند" className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in">
-                    <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-5 border border-gray-100">
-                        <div className="flex justify-between items-center border-b border-gray-100 pb-3">
+                    <div className="bg-surface rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-5 border border-border-subtle">
+                        <div className="flex justify-between items-center border-b border-border-subtle pb-3">
                             <h3 className="font-black text-brand text-base flex items-center gap-2">
                                 <ShieldCheck className="w-5 h-5 text-primary" />
                                 <span>احراز هویت هوشمند (سامانه شاهکار)</span>
                             </h3>
                             <button
                                 onClick={() => setIsKycModalOpen(false)}
-                                className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-text-light hover:bg-gray-200"
+                                className="w-8 h-8 rounded-full bg-surface-secondary flex items-center justify-center text-text-light hover:bg-gray-200"
                             >
                                 <X className="w-4 h-4" />
                             </button>
@@ -632,7 +632,7 @@ export default function ProfileScene() {
                                     dir="ltr"
                                     value={nationalCode}
                                     onChange={(e) => setNationalCode(e.target.value.replace(/\D/g, ""))}
-                                    className="w-full p-3.5 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-primary outline-hidden text-center text-base tracking-widest font-black"
+                                    className="w-full p-3.5 border border-border-subtle rounded-xl bg-surface-secondary focus:bg-surface focus:ring-2 focus:ring-primary outline-hidden text-center text-base tracking-widest font-black"
                                 />
                             </div>
 
@@ -644,7 +644,7 @@ export default function ProfileScene() {
                                     dir="ltr"
                                     value={birthDate}
                                     onChange={(e) => setBirthDate(e.target.value)}
-                                    className="w-full p-3.5 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-primary outline-hidden text-center text-base tracking-wider font-bold"
+                                    className="w-full p-3.5 border border-border-subtle rounded-xl bg-surface-secondary focus:bg-surface focus:ring-2 focus:ring-primary outline-hidden text-center text-base tracking-wider font-bold"
                                 />
                             </div>
                         </div>
@@ -653,7 +653,7 @@ export default function ProfileScene() {
                             <button
                                 type="button"
                                 onClick={() => setIsKycModalOpen(false)}
-                                className="flex-1 py-3 rounded-xl border border-gray-200 font-bold text-xs text-text-light hover:bg-gray-50"
+                                className="flex-1 py-3 rounded-xl border border-border-subtle font-bold text-xs text-text-light hover:bg-surface-secondary"
                             >
                                 انصراف
                             </button>

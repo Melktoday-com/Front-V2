@@ -43,13 +43,13 @@ export default function AdminPromotionsPage() {
     return (
         <div className="space-y-6">
             <div>
-                <h1 className="text-2xl font-bold text-gray-800">بررسی درخواست‌های ارتقا (Promotions)</h1>
-                <p className="text-gray-500">مدیریت و تایید آگهی‌های نردبان شده، پین شده و فوری</p>
+                <h1 className="text-2xl font-bold text-foreground">بررسی درخواست‌های ارتقا (Promotions)</h1>
+                <p className="text-foreground-muted">مدیریت و تایید آگهی‌های نردبان شده، پین شده و فوری</p>
             </div>
 
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+            <div className="bg-surface rounded-xl border border-border-subtle shadow-sm overflow-hidden">
                 <table className="w-full text-right">
-                    <thead className="bg-gray-50 text-gray-600 text-sm">
+                    <thead className="bg-surface-secondary text-foreground-secondary text-sm">
                         <tr>
                             <th className="px-6 py-4 font-semibold">شناسه آگهی</th>
                             <th className="px-6 py-4 font-semibold">نوع ارتقا</th>
@@ -63,13 +63,13 @@ export default function AdminPromotionsPage() {
                         {isLoading ? (
                             <tr><td colSpan={6} className="p-10 text-center">در حال بارگزاری...</td></tr>
                         ) : !data || data.items.length === 0 ? (
-                            <tr><td colSpan={6} className="p-10 text-center text-gray-400">هیچ درخواست در انتظاری یافت نشد</td></tr>
+                            <tr><td colSpan={6} className="p-10 text-center text-foreground-muted">هیچ درخواست در انتظاری یافت نشد</td></tr>
                         ) : data.items.map((promo: PromotionSummary) => (
-                            <tr key={promo.promotionId} className="hover:bg-gray-50 transition-colors text-sm">
-                                <td className="px-6 py-4 font-mono text-gray-600">
+                            <tr key={promo.promotionId} className="hover:bg-surface-secondary transition-colors text-sm">
+                                <td className="px-6 py-4 font-mono text-foreground-secondary">
                                     <div className="flex items-center gap-2">
                                         <span>{promo.listingId.slice(0, 8)}...</span>
-                                        <a href={`/ads/${promo.listingId}`} target="_blank" className="text-blue-500 hover:text-blue-700">
+                                        <a href={`/ads/${promo.listingId}`} target="_blank" className="text-info hover:text-info">
                                             <ExternalLink size={14} />
                                         </a>
                                     </div>
@@ -79,27 +79,27 @@ export default function AdminPromotionsPage() {
                                         {promo.promotionType}
                                     </span>
                                 </td>
-                                <td className="px-6 py-4 text-gray-700">
+                                <td className="px-6 py-4 text-foreground-secondary">
                                     {promo.durationDays} روز
                                 </td>
-                                <td className="px-6 py-4 font-medium text-gray-800">
+                                <td className="px-6 py-4 font-medium text-foreground">
                                     {Number(promo.pricePaidRials).toLocaleString()} ریال
                                 </td>
-                                <td className="px-6 py-4 text-gray-500">
+                                <td className="px-6 py-4 text-foreground-muted">
                                     {new Date(promo.requestedAt).toLocaleDateString("fa-IR")}
                                 </td>
                                 <td className="px-6 py-4">
                                     <div className="flex justify-center gap-2">
                                         <button
                                             onClick={() => handleApprove(promo.promotionId)}
-                                            className="p-1.5 text-green-600 hover:bg-green-50 rounded-md border border-green-100"
+                                            className="p-1.5 text-success hover:bg-success-subtle rounded-md border border-success/30"
                                             title="تایید"
                                         >
                                             <Check size={18} />
                                         </button>
                                         <button
                                             onClick={() => handleReject(promo.promotionId)}
-                                            className="p-1.5 text-red-600 hover:bg-red-50 rounded-md border border-red-100"
+                                            className="p-1.5 text-error hover:bg-error-subtle rounded-md border border-error/30"
                                             title="رد درخواست"
                                         >
                                             <X size={18} />

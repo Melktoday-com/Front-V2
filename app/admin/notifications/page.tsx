@@ -61,16 +61,16 @@ const AUDIENCE_OPTIONS: {
         label: "همه کاربران",
         icon: Users,
         description: "ارسال همگانی به تمام کاربران ثبت‌نام شده و فعال",
-        badgeBg: "bg-blue-50 border-blue-200",
-        badgeText: "text-blue-700",
+        badgeBg: "bg-info-subtle border-info/30",
+        badgeText: "text-info",
     },
     {
         id: BroadcastAudience.SINGLE_USER,
         label: "کاربر اختصاصی",
         icon: User,
         description: "ارسال اختصاصی به یک کاربر خاص با جستجوی شماره همراه",
-        badgeBg: "bg-rose-50 border-rose-200",
-        badgeText: "text-rose-700",
+        badgeBg: "bg-error-subtle border-error/30",
+        badgeText: "text-error",
     },
     {
         id: BroadcastAudience.AGENTS,
@@ -85,16 +85,16 @@ const AUDIENCE_OPTIONS: {
         label: "خریداران",
         icon: ShoppingCart,
         description: "کاربران با جستجوها و فعالیت‌های خرید ملک",
-        badgeBg: "bg-emerald-50 border-emerald-200",
-        badgeText: "text-emerald-700",
+        badgeBg: "bg-success-subtle border-success/30",
+        badgeText: "text-success",
     },
     {
         id: BroadcastAudience.SELLERS,
         label: "فروشندگان",
         icon: Store,
         description: "کاربران ثبت‌کننده آگهی‌های فروش ملک",
-        badgeBg: "bg-amber-50 border-amber-200",
-        badgeText: "text-amber-700",
+        badgeBg: "bg-warning-subtle border-warning/30",
+        badgeText: "text-warning",
     },
     {
         id: BroadcastAudience.TENANTS,
@@ -122,23 +122,23 @@ function getAudienceConfig(audience: string) {
         label: audience || "همه کاربران",
         icon: Users,
         description: "عمومی",
-        badgeBg: "bg-slate-50 border-slate-200",
-        badgeText: "text-slate-700",
+        badgeBg: "bg-surface-secondary border-border-subtle",
+        badgeText: "text-foreground-secondary",
     };
 }
 
 function getUserStatusBadge(status?: string) {
     const s = status?.toLowerCase();
     if (s === "active") {
-        return { label: "فعال", bg: "bg-emerald-50 border-emerald-200 text-emerald-700" };
+        return { label: "فعال", bg: "bg-success-subtle border-success/30 text-success" };
     }
     if (s === "suspended") {
-        return { label: "تعلیق شده", bg: "bg-amber-50 border-amber-200 text-amber-700" };
+        return { label: "تعلیق شده", bg: "bg-warning-subtle border-warning/30 text-warning" };
     }
     if (s === "blocked") {
-        return { label: "مسدود / بن", bg: "bg-rose-50 border-rose-200 text-rose-700" };
+        return { label: "مسدود / بن", bg: "bg-error-subtle border-error/30 text-error" };
     }
-    return { label: status || "نامشخص", bg: "bg-slate-50 border-slate-200 text-slate-700" };
+    return { label: status || "نامشخص", bg: "bg-surface-secondary border-border-subtle text-foreground-secondary" };
 }
 
 function formatPersianDate(dateString?: string | Date | null): string {
@@ -334,9 +334,9 @@ export default function AdminNotificationsPage() {
 
     if (!permissionsLoading && !canManageNotifications) {
         return (
-            <div className="bg-white border border-red-200 rounded-3xl p-12 text-center max-w-lg mx-auto shadow-sm space-y-4">
-                <ShieldAlert className="w-16 h-16 text-red-500 mx-auto" />
-                <h2 className="text-xl font-black text-slate-800">عدم دسترسی</h2>
+            <div className="bg-surface border border-error/30 rounded-3xl p-12 text-center max-w-lg mx-auto shadow-sm space-y-4">
+                <ShieldAlert className="w-16 h-16 text-error mx-auto" />
+                <h2 className="text-xl font-black text-foreground">عدم دسترسی</h2>
                 <p className="text-sm text-secondary leading-relaxed">
                     شما دسترسی لازم برای مدیریت و ارسال اعلان‌ها را ندارید. جهت دریافت
                     دسترسی با مدیر ارشد سیستم هماهنگ فرمایید.
@@ -350,7 +350,7 @@ export default function AdminNotificationsPage() {
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl lg:text-3xl font-black text-slate-900 flex items-center gap-3">
+                    <h1 className="text-2xl lg:text-3xl font-black text-foreground flex items-center gap-3">
                         <span className="p-2.5 bg-indigo-50 text-indigo-600 rounded-2xl border border-indigo-100 shadow-sm">
                             <Bell className="w-6 h-6" />
                         </span>
@@ -363,14 +363,14 @@ export default function AdminNotificationsPage() {
                 </div>
 
                 {/* Tab Switcher */}
-                <div className="flex bg-slate-100/80 p-1.5 rounded-2xl border border-slate-200/80 w-fit self-start md:self-auto">
+                <div className="flex bg-surface-secondary/80 p-1.5 rounded-2xl border border-border-subtle/80 w-fit self-start md:self-auto">
                     <button
                         type="button"
                         onClick={() => setActiveTab("history")}
                         className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 ${
                             activeTab === "history"
-                                ? "bg-white text-indigo-700 shadow-sm shadow-slate-200"
-                                : "text-slate-600 hover:text-slate-900"
+                                ? "bg-surface text-indigo-700 shadow-sm shadow-slate-200"
+                                : "text-foreground-secondary hover:text-foreground"
                         }`}
                     >
                         <Clock size={18} />
@@ -388,7 +388,7 @@ export default function AdminNotificationsPage() {
                         className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 ${
                             activeTab === "send"
                                 ? "bg-indigo-600 text-white shadow-md shadow-indigo-200"
-                                : "text-slate-600 hover:text-slate-900"
+                                : "text-foreground-secondary hover:text-foreground"
                         }`}
                     >
                         <Send size={18} />
@@ -402,49 +402,49 @@ export default function AdminNotificationsPage() {
                 <div className="space-y-6">
                     {/* KPI Stats Cards */}
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div className="bg-white border border-slate-200/90 rounded-3xl p-6 shadow-sm flex items-center gap-4">
+                        <div className="bg-surface border border-border-subtle/90 rounded-3xl p-6 shadow-sm flex items-center gap-4">
                             <div className="p-3.5 bg-indigo-50 text-indigo-600 rounded-2xl border border-indigo-100">
                                 <Layers size={26} />
                             </div>
                             <div>
-                                <span className="text-xs font-bold text-slate-500 block">
+                                <span className="text-xs font-bold text-foreground-muted block">
                                     مجموع کل اعلان‌های ثبت‌شده
                                 </span>
-                                <span className="text-2xl font-black text-slate-900">
+                                <span className="text-2xl font-black text-foreground">
                                     {toPersianDigits(totalItems)}
-                                    <span className="text-xs font-normal text-slate-500 mr-1.5">
+                                    <span className="text-xs font-normal text-foreground-muted mr-1.5">
                                         اعلان
                                     </span>
                                 </span>
                             </div>
                         </div>
 
-                        <div className="bg-white border border-slate-200/90 rounded-3xl p-6 shadow-sm flex items-center gap-4">
-                            <div className="p-3.5 bg-emerald-50 text-emerald-600 rounded-2xl border border-emerald-100">
+                        <div className="bg-surface border border-border-subtle/90 rounded-3xl p-6 shadow-sm flex items-center gap-4">
+                            <div className="p-3.5 bg-success-subtle text-success rounded-2xl border border-success/30">
                                 <UserCheck size={26} />
                             </div>
                             <div>
-                                <span className="text-xs font-bold text-slate-500 block">
+                                <span className="text-xs font-bold text-foreground-muted block">
                                     دریافت‌کنندگان (در این صفحه)
                                 </span>
-                                <span className="text-2xl font-black text-slate-900">
+                                <span className="text-2xl font-black text-foreground">
                                     {toPersianDigits(totalReach)}
-                                    <span className="text-xs font-normal text-slate-500 mr-1.5">
+                                    <span className="text-xs font-normal text-foreground-muted mr-1.5">
                                         کاربر
                                     </span>
                                 </span>
                             </div>
                         </div>
 
-                        <div className="bg-white border border-slate-200/90 rounded-3xl p-6 shadow-sm flex items-center gap-4">
-                            <div className="p-3.5 bg-blue-50 text-blue-600 rounded-2xl border border-blue-100">
+                        <div className="bg-surface border border-border-subtle/90 rounded-3xl p-6 shadow-sm flex items-center gap-4">
+                            <div className="p-3.5 bg-info-subtle text-info rounded-2xl border border-info/30">
                                 <Clock size={26} />
                             </div>
                             <div>
-                                <span className="text-xs font-bold text-slate-500 block">
+                                <span className="text-xs font-bold text-foreground-muted block">
                                     وضعیت سیستم ارسال
                                 </span>
-                                <span className="text-sm font-black text-emerald-600 flex items-center gap-1.5 mt-1">
+                                <span className="text-sm font-black text-success flex items-center gap-1.5 mt-1">
                                     <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
                                     فعال و برخط
                                 </span>
@@ -453,12 +453,12 @@ export default function AdminNotificationsPage() {
                     </div>
 
                     {/* Filter & Search Bar */}
-                    <div className="bg-white border border-slate-200/90 rounded-3xl p-5 shadow-sm space-y-4">
+                    <div className="bg-surface border border-border-subtle/90 rounded-3xl p-5 shadow-sm space-y-4">
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                             {/* Search Input */}
                             <div className="relative flex-1">
                                 <Search
-                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-foreground-muted"
                                     size={18}
                                 />
                                 <input
@@ -469,7 +469,7 @@ export default function AdminNotificationsPage() {
                                         setCurrentPage(1);
                                     }}
                                     placeholder="جستجو در عنوان، متن اعلان، یا نام و شماره مدیر..."
-                                    className="w-full pl-10 pr-11 py-3 rounded-2xl border border-slate-200 bg-slate-50/50 text-sm font-medium focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                                    className="w-full pl-10 pr-11 py-3 rounded-2xl border border-border-subtle bg-surface-secondary/50 text-sm font-medium focus:bg-surface focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
                                 />
                                 {searchQuery && (
                                     <button
@@ -478,7 +478,7 @@ export default function AdminNotificationsPage() {
                                             setSearchQuery("");
                                             setCurrentPage(1);
                                         }}
-                                        className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1"
+                                        className="absolute left-3.5 top-1/2 -translate-y-1/2 text-foreground-muted hover:text-foreground-secondary p-1"
                                     >
                                         <X size={16} />
                                     </button>
@@ -487,15 +487,15 @@ export default function AdminNotificationsPage() {
 
                             {/* Audience Filter & Refresh */}
                             <div className="flex items-center gap-3">
-                                <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-2xl px-3 py-1.5">
-                                    <Filter size={16} className="text-slate-400 shrink-0" />
+                                <div className="flex items-center gap-2 bg-surface-secondary border border-border-subtle rounded-2xl px-3 py-1.5">
+                                    <Filter size={16} className="text-foreground-muted shrink-0" />
                                     <select
                                         value={audienceFilter}
                                         onChange={(e) => {
                                             setAudienceFilter(e.target.value);
                                             setCurrentPage(1);
                                         }}
-                                        className="bg-transparent text-sm font-bold text-slate-700 outline-none cursor-pointer py-1.5"
+                                        className="bg-transparent text-sm font-bold text-foreground-secondary outline-none cursor-pointer py-1.5"
                                     >
                                         <option value="ALL_TYPES">همه گروه‌های مخاطب</option>
                                         <option value="ALL">همه کاربران (عمومی)</option>
@@ -513,7 +513,7 @@ export default function AdminNotificationsPage() {
                                     onClick={() => refetchHistory()}
                                     disabled={isHistoryFetching}
                                     title="بروزرسانی داده‌ها"
-                                    className="p-3 rounded-2xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 transition-all disabled:opacity-50"
+                                    className="p-3 rounded-2xl border border-border-subtle bg-surface-secondary hover:bg-surface-secondary text-foreground-secondary transition-all disabled:opacity-50"
                                 >
                                     <RefreshCw
                                         size={18}
@@ -534,13 +534,13 @@ export default function AdminNotificationsPage() {
                     </div>
 
                     {/* Notification History Table */}
-                    <div className="bg-white border border-slate-200/90 rounded-3xl shadow-sm overflow-hidden">
+                    <div className="bg-surface border border-border-subtle/90 rounded-3xl shadow-sm overflow-hidden">
                         {isHistoryLoading ? (
                             <div className="p-8 space-y-4">
                                 {[1, 2, 3, 4, 5].map((i) => (
                                     <div
                                         key={i}
-                                        className="h-20 bg-slate-100/80 rounded-2xl animate-pulse"
+                                        className="h-20 bg-surface-secondary/80 rounded-2xl animate-pulse"
                                     />
                                 ))}
                             </div>
@@ -549,7 +549,7 @@ export default function AdminNotificationsPage() {
                                 <div className="w-16 h-16 bg-indigo-50 text-indigo-400 rounded-3xl flex items-center justify-center mx-auto border border-indigo-100">
                                     <Bell size={32} />
                                 </div>
-                                <h3 className="text-lg font-black text-slate-800">
+                                <h3 className="text-lg font-black text-foreground">
                                     هیچ اعلانی یافت نشد
                                 </h3>
                                 <p className="text-sm text-secondary max-w-sm mx-auto">
@@ -570,7 +570,7 @@ export default function AdminNotificationsPage() {
                             <div className="overflow-x-auto">
                                 <table className="w-full text-right border-collapse">
                                     <thead>
-                                        <tr className="border-b border-slate-100 bg-slate-50/70 text-xs font-black text-slate-500">
+                                        <tr className="border-b border-border-subtle bg-surface-secondary/70 text-xs font-black text-foreground-muted">
                                             <th className="py-4 px-6">عنوان و متن اعلان</th>
                                             <th className="py-4 px-6">مدیر ارسال‌کننده</th>
                                             <th className="py-4 px-6">گروه مخاطبان</th>
@@ -595,7 +595,7 @@ export default function AdminNotificationsPage() {
                                                     {/* Title & Body */}
                                                     <td className="py-4 px-6 max-w-xs md:max-w-md">
                                                         <div className="space-y-1">
-                                                            <div className="font-black text-slate-900 flex items-center gap-2">
+                                                            <div className="font-black text-foreground flex items-center gap-2">
                                                                 <span className="p-1 rounded-lg bg-indigo-50 text-indigo-600">
                                                                     <Bell size={14} />
                                                                 </span>
@@ -614,7 +614,7 @@ export default function AdminNotificationsPage() {
                                                                 className={`w-9 h-9 rounded-2xl flex items-center justify-center font-black text-xs shadow-sm ${
                                                                     isSuper
                                                                         ? "bg-purple-100 text-purple-700 border border-purple-200"
-                                                                        : "bg-blue-100 text-blue-700 border border-blue-200"
+                                                                        : "bg-info-subtle text-info border border-info/30"
                                                                 }`}
                                                             >
                                                                 {item.adminName
@@ -623,14 +623,14 @@ export default function AdminNotificationsPage() {
                                                             </div>
                                                             <div>
                                                                 <div className="flex items-center gap-2">
-                                                                    <span className="font-bold text-slate-900 text-xs">
+                                                                    <span className="font-bold text-foreground text-xs">
                                                                         {item.adminName || "مدیر سیستم"}
                                                                     </span>
                                                                     <span
                                                                         className={`text-[10px] px-2 py-0.5 rounded-md font-bold flex items-center gap-1 ${
                                                                             isSuper
                                                                                 ? "bg-purple-50 text-purple-700 border border-purple-200"
-                                                                                : "bg-slate-100 text-slate-600 border border-slate-200"
+                                                                                : "bg-surface-secondary text-foreground-secondary border border-border-subtle"
                                                                         }`}
                                                                     >
                                                                         {isSuper ? (
@@ -644,7 +644,7 @@ export default function AdminNotificationsPage() {
                                                                     </span>
                                                                 </div>
                                                                 {item.adminPhone && (
-                                                                    <span className="text-[11px] text-slate-500 font-medium flex items-center gap-1 mt-0.5">
+                                                                    <span className="text-[11px] text-foreground-muted font-medium flex items-center gap-1 mt-0.5">
                                                                         <Phone size={10} />
                                                                         {toPersianDigits(item.adminPhone)}
                                                                     </span>
@@ -665,12 +665,12 @@ export default function AdminNotificationsPage() {
 
                                                     {/* Recipient Count */}
                                                     <td className="py-4 px-6 whitespace-nowrap">
-                                                        <div className="flex items-center gap-1.5 text-slate-800 font-black">
+                                                        <div className="flex items-center gap-1.5 text-foreground font-black">
                                                             <Users size={16} className="text-indigo-500" />
                                                             <span>
                                                                 {toPersianDigits(item.recipientCount)}
                                                             </span>
-                                                            <span className="text-xs font-normal text-slate-500">
+                                                            <span className="text-xs font-normal text-foreground-muted">
                                                                 کاربر
                                                             </span>
                                                         </div>
@@ -679,11 +679,11 @@ export default function AdminNotificationsPage() {
                                                     {/* Created At */}
                                                     <td className="py-4 px-6 whitespace-nowrap">
                                                         <div className="space-y-0.5">
-                                                            <div className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                                                                <Calendar size={12} className="text-slate-400" />
+                                                            <div className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                                                                <Calendar size={12} className="text-foreground-muted" />
                                                                 {formatPersianDate(item.createdAt)}
                                                             </div>
-                                                            <span className="text-[11px] text-slate-400 block pr-4">
+                                                            <span className="text-[11px] text-foreground-muted block pr-4">
                                                                 {getRelativeTimeString(item.createdAt)}
                                                             </span>
                                                         </div>
@@ -699,7 +699,7 @@ export default function AdminNotificationsPage() {
                                                                     setIsDetailsModalOpen(true);
                                                                 }}
                                                                 title="مشاهده جزئیات کامل"
-                                                                className="p-2 rounded-xl text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 border border-transparent hover:border-indigo-100 transition-all"
+                                                                className="p-2 rounded-xl text-foreground-muted hover:text-indigo-600 hover:bg-indigo-50 border border-transparent hover:border-indigo-100 transition-all"
                                                             >
                                                                 <Eye size={17} />
                                                             </button>
@@ -713,10 +713,10 @@ export default function AdminNotificationsPage() {
                                                                     )
                                                                 }
                                                                 title="کپی متن اعلان"
-                                                                className="p-2 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-100 border border-transparent hover:border-slate-200 transition-all"
+                                                                className="p-2 rounded-xl text-foreground-muted hover:text-foreground hover:bg-surface-secondary border border-transparent hover:border-border-subtle transition-all"
                                                             >
                                                                 {copiedId === item.id ? (
-                                                                    <Check size={17} className="text-emerald-600" />
+                                                                    <Check size={17} className="text-success" />
                                                                 ) : (
                                                                     <Copy size={17} />
                                                                 )}
@@ -742,28 +742,28 @@ export default function AdminNotificationsPage() {
 
                         {/* Pagination Bar */}
                         {totalPages > 1 && (
-                            <div className="p-4 sm:p-6 border-t border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row items-center justify-between gap-4">
-                                <div className="text-xs font-bold text-slate-500 flex items-center gap-3">
+                            <div className="p-4 sm:p-6 border-t border-border-subtle bg-surface-secondary/50 flex flex-col sm:flex-row items-center justify-between gap-4">
+                                <div className="text-xs font-bold text-foreground-muted flex items-center gap-3">
                                     <span>
                                         نمایش{" "}
-                                        <span className="text-slate-900 font-black">
+                                        <span className="text-foreground font-black">
                                             {toPersianDigits((currentPage - 1) * pageSize + 1)}
                                         </span>{" "}
                                         تا{" "}
-                                        <span className="text-slate-900 font-black">
+                                        <span className="text-foreground font-black">
                                             {toPersianDigits(
                                                 Math.min(currentPage * pageSize, totalItems)
                                             )}
                                         </span>{" "}
                                         از مجموع{" "}
-                                        <span className="text-slate-900 font-black">
+                                        <span className="text-foreground font-black">
                                             {toPersianDigits(totalItems)}
                                         </span>{" "}
                                         اعلان
                                     </span>
 
                                     {/* Page size selector */}
-                                    <div className="flex items-center gap-1 mr-4 bg-white border border-slate-200 rounded-xl px-2 py-1">
+                                    <div className="flex items-center gap-1 mr-4 bg-surface border border-border-subtle rounded-xl px-2 py-1">
                                         <span className="text-[11px]">تعداد:</span>
                                         <select
                                             value={pageSize}
@@ -786,7 +786,7 @@ export default function AdminNotificationsPage() {
                                         type="button"
                                         onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                                         disabled={currentPage === 1}
-                                        className="p-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                                        className="p-2.5 rounded-xl border border-border-subtle bg-surface hover:bg-surface-secondary text-foreground-secondary disabled:opacity-40 disabled:cursor-not-allowed transition"
                                     >
                                         <ChevronRight size={16} />
                                     </button>
@@ -797,7 +797,7 @@ export default function AdminNotificationsPage() {
                                             return (
                                                 <span
                                                     key={`dots-${idx}`}
-                                                    className="px-2 text-slate-400 text-xs font-black"
+                                                    className="px-2 text-foreground-muted text-xs font-black"
                                                 >
                                                     ...
                                                 </span>
@@ -813,7 +813,7 @@ export default function AdminNotificationsPage() {
                                                 className={`w-9 h-9 rounded-xl text-xs font-black transition-all ${
                                                     isCurrent
                                                         ? "bg-indigo-600 text-white shadow-md shadow-indigo-100"
-                                                        : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50"
+                                                        : "bg-surface border border-border-subtle text-foreground-secondary hover:bg-surface-secondary"
                                                 }`}
                                             >
                                                 {toPersianDigits(pageNumber)}
@@ -828,7 +828,7 @@ export default function AdminNotificationsPage() {
                                             setCurrentPage((p) => Math.min(totalPages, p + 1))
                                         }
                                         disabled={currentPage === totalPages}
-                                        className="p-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                                        className="p-2.5 rounded-xl border border-border-subtle bg-surface hover:bg-surface-secondary text-foreground-secondary disabled:opacity-40 disabled:cursor-not-allowed transition"
                                     >
                                         <ChevronLeft size={16} />
                                     </button>
@@ -844,7 +844,7 @@ export default function AdminNotificationsPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                     {/* Left Form: 8 cols */}
                     <div className="lg:col-span-8 space-y-6">
-                        <div className="bg-white border border-slate-200/90 rounded-3xl shadow-sm overflow-hidden">
+                        <div className="bg-surface border border-border-subtle/90 rounded-3xl shadow-sm overflow-hidden">
                             {/* Card Header Banner */}
                             <div className="bg-gradient-to-l from-indigo-600 via-indigo-700 to-blue-700 p-8 text-white relative overflow-hidden">
                                 <div className="relative z-10 flex items-center justify-between">
@@ -855,7 +855,7 @@ export default function AdminNotificationsPage() {
                                             کاربران
                                         </p>
                                     </div>
-                                    <div className="bg-white/20 p-4 rounded-2xl backdrop-blur-md">
+                                    <div className="bg-surface/20 p-4 rounded-2xl backdrop-blur-md">
                                         <Sparkles size={28} className="text-white" />
                                     </div>
                                 </div>
@@ -864,7 +864,7 @@ export default function AdminNotificationsPage() {
                             <form onSubmit={handleSend} className="p-8 space-y-6">
                                 {/* Audience Selection */}
                                 <div className="space-y-3">
-                                    <label className="text-sm font-bold text-slate-800 block">
+                                    <label className="text-sm font-bold text-foreground block">
                                         انتخاب گروه مخاطبان هدف
                                     </label>
                                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -879,7 +879,7 @@ export default function AdminNotificationsPage() {
                                                     className={`flex flex-col items-start text-right p-4 rounded-2xl border transition-all ${
                                                         isSelected
                                                             ? "bg-indigo-50/80 border-indigo-300 text-indigo-900 ring-2 ring-indigo-200 shadow-sm"
-                                                            : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
+                                                            : "bg-surface border-border-subtle text-foreground-secondary hover:bg-surface-secondary"
                                                     }`}
                                                 >
                                                     <div className="flex items-center justify-between w-full mb-2">
@@ -887,7 +887,7 @@ export default function AdminNotificationsPage() {
                                                             className={`p-2 rounded-xl ${
                                                                 isSelected
                                                                     ? "bg-indigo-600 text-white"
-                                                                    : "bg-slate-100 text-slate-600"
+                                                                    : "bg-surface-secondary text-foreground-secondary"
                                                             }`}
                                                         >
                                                             <Icon size={18} />
@@ -902,7 +902,7 @@ export default function AdminNotificationsPage() {
                                                     <span className="text-xs font-black block">
                                                         {item.label}
                                                     </span>
-                                                    <span className="text-[10px] text-slate-400 font-medium line-clamp-1 mt-0.5">
+                                                    <span className="text-[10px] text-foreground-muted font-medium line-clamp-1 mt-0.5">
                                                         {item.description}
                                                     </span>
                                                 </button>
@@ -913,14 +913,14 @@ export default function AdminNotificationsPage() {
 
                                 {/* Single User Target Selector */}
                                 {audience === BroadcastAudience.SINGLE_USER && (
-                                    <div className="p-5 bg-rose-50/50 border border-rose-200/80 rounded-2xl space-y-4 animate-in fade-in duration-200">
+                                    <div className="p-5 bg-error-subtle/50 border border-error/30/80 rounded-2xl space-y-4 animate-in fade-in duration-200">
                                         <div className="flex items-center justify-between">
-                                            <label className="text-sm font-bold text-slate-800 flex items-center gap-2">
-                                                <User size={16} className="text-rose-600" />
+                                            <label className="text-sm font-bold text-foreground flex items-center gap-2">
+                                                <User size={16} className="text-error" />
                                                 <span>جستجو و انتخاب کاربر هدف</span>
                                             </label>
                                             {selectedTargetUser && (
-                                                <span className="text-xs text-rose-700 font-bold bg-rose-100/80 px-2.5 py-0.5 rounded-full">
+                                                <span className="text-xs text-error font-bold bg-error-subtle/80 px-2.5 py-0.5 rounded-full">
                                                     کاربر انتخاب شد
                                                 </span>
                                             )}
@@ -928,14 +928,14 @@ export default function AdminNotificationsPage() {
 
                                         {selectedTargetUser ? (
                                             /* Selected User Card */
-                                            <div className="bg-white border border-rose-200 rounded-2xl p-4 flex items-center justify-between shadow-sm">
+                                            <div className="bg-surface border border-error/30 rounded-2xl p-4 flex items-center justify-between shadow-sm">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="w-11 h-11 rounded-2xl bg-rose-100 text-rose-700 flex items-center justify-center font-black text-sm border border-rose-200">
+                                                    <div className="w-11 h-11 rounded-2xl bg-error-subtle text-error flex items-center justify-center font-black text-sm border border-error/30">
                                                         {selectedTargetUser.firstName?.charAt(0) || "ک"}
                                                     </div>
                                                     <div>
                                                         <div className="flex items-center gap-2">
-                                                            <span className="font-bold text-slate-900 text-sm">
+                                                            <span className="font-bold text-foreground text-sm">
                                                                 {selectedTargetUser.firstName || selectedTargetUser.lastName
                                                                     ? `${selectedTargetUser.firstName || ""} ${selectedTargetUser.lastName || ""}`.trim()
                                                                     : "کاربر بدون نام"}
@@ -951,8 +951,8 @@ export default function AdminNotificationsPage() {
                                                                 );
                                                             })()}
                                                         </div>
-                                                        <div className="text-xs text-slate-500 font-medium flex items-center gap-1.5 mt-1">
-                                                            <Phone size={12} className="text-slate-400" />
+                                                        <div className="text-xs text-foreground-muted font-medium flex items-center gap-1.5 mt-1">
+                                                            <Phone size={12} className="text-foreground-muted" />
                                                             <span dir="ltr">
                                                                 {toPersianDigits(selectedTargetUser.mobileNumber)}
                                                             </span>
@@ -966,7 +966,7 @@ export default function AdminNotificationsPage() {
                                                         setSelectedTargetUser(null);
                                                         setTargetUserSearch("");
                                                     }}
-                                                    className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-100 transition"
+                                                    className="p-2 rounded-xl text-foreground-muted hover:text-error hover:bg-error-subtle border border-transparent hover:border-error/30 transition"
                                                     title="تغییر کاربر"
                                                 >
                                                     <X size={18} />
@@ -977,7 +977,7 @@ export default function AdminNotificationsPage() {
                                             <div className="relative">
                                                 <div className="relative">
                                                     <Search
-                                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"
+                                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-foreground-muted"
                                                         size={18}
                                                     />
                                                     <input
@@ -989,22 +989,22 @@ export default function AdminNotificationsPage() {
                                                         }}
                                                         onFocus={() => setIsUserDropdownOpen(true)}
                                                         placeholder="شماره موبایل کاربر (مثال: 0912...)، نام یا شناسه را جستجو کنید..."
-                                                        className="w-full pl-10 pr-11 py-3.5 rounded-2xl border border-slate-200 bg-white text-sm font-medium focus:ring-2 focus:ring-rose-500 outline-none transition-all"
+                                                        className="w-full pl-10 pr-11 py-3.5 rounded-2xl border border-border-subtle bg-surface text-sm font-medium focus:ring-2 focus:ring-rose-500 outline-none transition-all"
                                                     />
                                                     {isUsersFetching && (
                                                         <Loader2
                                                             size={18}
-                                                            className="absolute left-4 top-1/2 -translate-y-1/2 text-rose-500 animate-spin"
+                                                            className="absolute left-4 top-1/2 -translate-y-1/2 text-error animate-spin"
                                                         />
                                                     )}
                                                 </div>
 
                                                 {/* Dropdown Results */}
                                                 {isUserDropdownOpen && targetUserSearch.trim().length >= 1 && (
-                                                    <div className="absolute z-20 top-full mt-2 w-full bg-white border border-slate-200 rounded-2xl shadow-xl max-h-60 overflow-y-auto divide-y divide-slate-100">
+                                                    <div className="absolute z-20 top-full mt-2 w-full bg-surface border border-border-subtle rounded-2xl shadow-xl max-h-60 overflow-y-auto divide-y divide-slate-100">
                                                         {isUsersLoading ? (
-                                                            <div className="p-4 text-center text-xs text-slate-400 flex items-center justify-center gap-2">
-                                                                <Loader2 size={16} className="animate-spin text-rose-500" />
+                                                            <div className="p-4 text-center text-xs text-foreground-muted flex items-center justify-center gap-2">
+                                                                <Loader2 size={16} className="animate-spin text-error" />
                                                                 <span>در حال جستجوی کاربران...</span>
                                                             </div>
                                                         ) : usersData?.items && usersData.items.length > 0 ? (
@@ -1018,19 +1018,19 @@ export default function AdminNotificationsPage() {
                                                                             setSelectedTargetUser(user);
                                                                             setIsUserDropdownOpen(false);
                                                                         }}
-                                                                        className="w-full p-3.5 flex items-center justify-between text-right hover:bg-rose-50/50 transition-colors"
+                                                                        className="w-full p-3.5 flex items-center justify-between text-right hover:bg-error-subtle/50 transition-colors"
                                                                     >
                                                                         <div className="flex items-center gap-3">
-                                                                            <div className="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center font-bold text-xs">
+                                                                            <div className="w-8 h-8 rounded-xl bg-surface-secondary text-foreground-secondary flex items-center justify-center font-bold text-xs">
                                                                                 {user.firstName?.charAt(0) || "ک"}
                                                                             </div>
                                                                             <div>
-                                                                                <div className="font-bold text-xs text-slate-900">
+                                                                                <div className="font-bold text-xs text-foreground">
                                                                                     {user.firstName || user.lastName
                                                                                         ? `${user.firstName || ""} ${user.lastName || ""}`.trim()
                                                                                         : "کاربر بدون نام"}
                                                                                 </div>
-                                                                                <div className="text-[11px] text-slate-500 font-medium mt-0.5">
+                                                                                <div className="text-[11px] text-foreground-muted font-medium mt-0.5">
                                                                                     {toPersianDigits(user.mobileNumber)}
                                                                                 </div>
                                                                             </div>
@@ -1044,7 +1044,7 @@ export default function AdminNotificationsPage() {
                                                                 );
                                                             })
                                                         ) : (
-                                                            <div className="p-4 text-center text-xs text-slate-400">
+                                                            <div className="p-4 text-center text-xs text-foreground-muted">
                                                                 کاربری با مشخصات وارد شده یافت نشد
                                                             </div>
                                                         )}
@@ -1058,10 +1058,10 @@ export default function AdminNotificationsPage() {
                                 {/* Title Input */}
                                 <div className="space-y-2">
                                     <div className="flex items-center justify-between">
-                                        <label className="text-sm font-bold text-slate-800">
+                                        <label className="text-sm font-bold text-foreground">
                                             عنوان اطلاعیه
                                         </label>
-                                        <span className="text-[11px] text-slate-400 font-medium">
+                                        <span className="text-[11px] text-foreground-muted font-medium">
                                             {toPersianDigits(title.length)} / ۱۰۰ نویسه
                                         </span>
                                     </div>
@@ -1071,17 +1071,17 @@ export default function AdminNotificationsPage() {
                                         value={title}
                                         onChange={(e) => setTitle(e.target.value)}
                                         placeholder="مثلاً: به‌روزرسانی قوانین و شرایط پلتفرم ملک‌تودی"
-                                        className="w-full px-5 py-3.5 rounded-2xl border border-slate-200 outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50/40 focus:bg-white transition-all font-bold text-sm"
+                                        className="w-full px-5 py-3.5 rounded-2xl border border-border-subtle outline-none focus:ring-2 focus:ring-indigo-500 bg-surface-secondary/40 focus:bg-surface transition-all font-bold text-sm"
                                     />
                                 </div>
 
                                 {/* Body Textarea */}
                                 <div className="space-y-2">
                                     <div className="flex items-center justify-between">
-                                        <label className="text-sm font-bold text-slate-800">
+                                        <label className="text-sm font-bold text-foreground">
                                             متن پیام
                                         </label>
-                                        <span className="text-[11px] text-slate-400 font-medium">
+                                        <span className="text-[11px] text-foreground-muted font-medium">
                                             {toPersianDigits(body.length)} / ۵۰۰ نویسه
                                         </span>
                                     </div>
@@ -1091,13 +1091,13 @@ export default function AdminNotificationsPage() {
                                         onChange={(e) => setBody(e.target.value)}
                                         rows={6}
                                         placeholder="متن پیام اطلاعیه را بنویسید..."
-                                        className="w-full px-5 py-4 rounded-2xl border border-slate-200 outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50/40 focus:bg-white transition-all font-medium text-sm resize-none leading-relaxed"
+                                        className="w-full px-5 py-4 rounded-2xl border border-border-subtle outline-none focus:ring-2 focus:ring-indigo-500 bg-surface-secondary/40 focus:bg-surface transition-all font-medium text-sm resize-none leading-relaxed"
                                     />
                                 </div>
 
                                 {/* Info Alert */}
-                                <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex gap-3 text-amber-800 text-xs leading-relaxed font-medium">
-                                    <Info className="shrink-0 mt-0.5 text-amber-600" size={18} />
+                                <div className="bg-warning-subtle border border-warning/30 rounded-2xl p-4 flex gap-3 text-warning text-xs leading-relaxed font-medium">
+                                    <Info className="shrink-0 mt-0.5 text-warning" size={18} />
                                     <p>
                                         این پیام بلافاصله پس از فشردن دکمه ارسال، برای تمام کاربران
                                         گروه هدف فرستاده شده و در تاریخچه ثبت خواهد شد. امکان لغو پس
@@ -1113,7 +1113,7 @@ export default function AdminNotificationsPage() {
                                             setTitle("");
                                             setBody("");
                                         }}
-                                        className="px-6 py-3.5 rounded-2xl border border-slate-200 text-slate-600 hover:bg-slate-50 text-xs font-bold transition"
+                                        className="px-6 py-3.5 rounded-2xl border border-border-subtle text-foreground-secondary hover:bg-surface-secondary text-xs font-bold transition"
                                     >
                                         پاک کردن فرم
                                     </button>
@@ -1141,8 +1141,8 @@ export default function AdminNotificationsPage() {
 
                     {/* Right Column: Live Mobile Preview (4 cols) */}
                     <div className="lg:col-span-4 space-y-6">
-                        <div className="bg-white border border-slate-200/90 rounded-3xl p-6 shadow-sm space-y-4 sticky top-24">
-                            <div className="flex items-center gap-2 text-slate-800 font-bold text-sm">
+                        <div className="bg-surface border border-border-subtle/90 rounded-3xl p-6 shadow-sm space-y-4 sticky top-24">
+                            <div className="flex items-center gap-2 text-foreground font-bold text-sm">
                                 <Smartphone size={18} className="text-indigo-600" />
                                 <span>پیش‌نمایش زنده در گوشی کاربر</span>
                             </div>
@@ -1156,28 +1156,28 @@ export default function AdminNotificationsPage() {
                                 <div className="w-24 h-4 bg-slate-800 rounded-full mx-auto mb-4" />
 
                                 {/* Phone Screen */}
-                                <div className="bg-slate-100 rounded-3xl p-4 min-h-[320px] flex flex-col justify-start space-y-3">
+                                <div className="bg-surface-secondary rounded-3xl p-4 min-h-[320px] flex flex-col justify-start space-y-3">
                                     {/* Push Notification Banner */}
-                                    <div className="bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-md border border-slate-200/60 space-y-2">
+                                    <div className="bg-surface/95 backdrop-blur-md rounded-2xl p-4 shadow-md border border-border-subtle/60 space-y-2">
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-2">
                                                 <div className="w-5 h-5 rounded-lg bg-indigo-600 text-white flex items-center justify-center text-[9px] font-black">
                                                     M
                                                 </div>
-                                                <span className="text-[11px] font-black text-slate-900">
+                                                <span className="text-[11px] font-black text-foreground">
                                                     ملک‌تودی
                                                 </span>
                                             </div>
-                                            <span className="text-[10px] text-slate-400 font-medium">
+                                            <span className="text-[10px] text-foreground-muted font-medium">
                                                 اکنون
                                             </span>
                                         </div>
 
                                         <div className="space-y-1 text-right">
-                                            <h4 className="text-xs font-black text-slate-900 line-clamp-1">
+                                            <h4 className="text-xs font-black text-foreground line-clamp-1">
                                                 {title || "عنوان اعلان شما در اینجا نمایش داده می‌شود"}
                                             </h4>
-                                            <p className="text-[11px] text-slate-600 leading-relaxed line-clamp-3">
+                                            <p className="text-[11px] text-foreground-secondary leading-relaxed line-clamp-3">
                                                 {body ||
                                                     "متن پیام شما در قالب اعلان پوش به این صورت برای کاربران به نمایش درمی‌آید..."}
                                             </p>
@@ -1185,17 +1185,17 @@ export default function AdminNotificationsPage() {
                                     </div>
 
                                     {/* In-app Notification Card Preview */}
-                                    <div className="bg-white rounded-2xl p-3.5 border border-slate-200/70 shadow-sm space-y-1.5 mt-2">
-                                        <div className="flex items-center justify-between text-[10px] text-slate-400">
+                                    <div className="bg-surface rounded-2xl p-3.5 border border-border-subtle/70 shadow-sm space-y-1.5 mt-2">
+                                        <div className="flex items-center justify-between text-[10px] text-foreground-muted">
                                             <span className="font-bold text-indigo-600">
                                                 پیام سیستمی
                                             </span>
                                             <span>چند لحظه پیش</span>
                                         </div>
-                                        <div className="font-bold text-xs text-slate-900">
+                                        <div className="font-bold text-xs text-foreground">
                                             {title || "عنوان پیام"}
                                         </div>
-                                        <div className="text-[10px] text-slate-500 line-clamp-2">
+                                        <div className="text-[10px] text-foreground-muted line-clamp-2">
                                             {body || "متن پیام در پنل اعلان‌های کاربری..."}
                                         </div>
                                     </div>
@@ -1210,20 +1210,20 @@ export default function AdminNotificationsPage() {
             {isDetailsModalOpen && selectedNotification && (
                 <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
                     <div
-                        className="bg-white rounded-3xl max-w-xl w-full border border-slate-200 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+                        className="bg-surface rounded-3xl max-w-xl w-full border border-border-subtle shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200"
                         dir="rtl"
                     >
                         {/* Modal Header */}
-                        <div className="p-6 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+                        <div className="p-6 bg-surface-secondary border-b border-border-subtle flex items-center justify-between">
                             <div className="flex items-center gap-3">
                                 <div className="p-2.5 bg-indigo-50 text-indigo-600 rounded-2xl border border-indigo-100">
                                     <Bell size={20} />
                                 </div>
                                 <div>
-                                    <h3 className="font-black text-slate-900 text-base">
+                                    <h3 className="font-black text-foreground text-base">
                                         جزئیات اعلان ارسالی
                                     </h3>
-                                    <p className="text-xs text-slate-500">
+                                    <p className="text-xs text-foreground-muted">
                                         اطلاعات کامل فرستنده و محتوای ارسال شده
                                     </p>
                                 </div>
@@ -1231,7 +1231,7 @@ export default function AdminNotificationsPage() {
                             <button
                                 type="button"
                                 onClick={() => setIsDetailsModalOpen(false)}
-                                className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition"
+                                className="p-2 rounded-xl text-foreground-muted hover:text-foreground-secondary hover:bg-slate-200/60 transition"
                             >
                                 <X size={20} />
                             </button>
@@ -1240,14 +1240,14 @@ export default function AdminNotificationsPage() {
                         {/* Modal Body */}
                         <div className="p-6 space-y-5">
                             {/* Sender Info Card */}
-                            <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 flex items-center justify-between">
+                            <div className="bg-surface-secondary border border-border-subtle/80 rounded-2xl p-4 flex items-center justify-between">
                                 <div className="flex items-center gap-3">
                                     <div className="w-10 h-10 rounded-2xl bg-indigo-100 text-indigo-700 flex items-center justify-center font-black text-sm">
                                         {selectedNotification.adminName?.charAt(0) || "م"}
                                     </div>
                                     <div>
                                         <div className="flex items-center gap-2">
-                                            <span className="font-bold text-slate-900 text-sm">
+                                            <span className="font-bold text-foreground text-sm">
                                                 {selectedNotification.adminName || "مدیر سیستم"}
                                             </span>
                                             <span className="text-[10px] px-2 py-0.5 rounded-md font-bold bg-indigo-50 text-indigo-700 border border-indigo-100">
@@ -1255,7 +1255,7 @@ export default function AdminNotificationsPage() {
                                             </span>
                                         </div>
                                         {selectedNotification.adminPhone && (
-                                            <span className="text-xs text-slate-500 font-medium">
+                                            <span className="text-xs text-foreground-muted font-medium">
                                                 {toPersianDigits(selectedNotification.adminPhone)}
                                             </span>
                                         )}
@@ -1263,8 +1263,8 @@ export default function AdminNotificationsPage() {
                                 </div>
 
                                 <div className="text-left text-xs space-y-0.5">
-                                    <span className="text-slate-400 block font-medium">زمان ارسال</span>
-                                    <span className="font-bold text-slate-800">
+                                    <span className="text-foreground-muted block font-medium">زمان ارسال</span>
+                                    <span className="font-bold text-foreground">
                                         {formatPersianDate(selectedNotification.createdAt)}
                                     </span>
                                 </div>
@@ -1272,20 +1272,20 @@ export default function AdminNotificationsPage() {
 
                             {/* Meta Grid */}
                             <div className="grid grid-cols-2 gap-3">
-                                <div className="p-3.5 bg-slate-50 border border-slate-200/70 rounded-2xl space-y-1">
-                                    <span className="text-[11px] text-slate-400 font-bold block">
+                                <div className="p-3.5 bg-surface-secondary border border-border-subtle/70 rounded-2xl space-y-1">
+                                    <span className="text-[11px] text-foreground-muted font-bold block">
                                         گروه مخاطبان
                                     </span>
-                                    <span className="text-xs font-black text-slate-900">
+                                    <span className="text-xs font-black text-foreground">
                                         {getAudienceConfig(selectedNotification.audience).label}
                                     </span>
                                 </div>
 
-                                <div className="p-3.5 bg-slate-50 border border-slate-200/70 rounded-2xl space-y-1">
-                                    <span className="text-[11px] text-slate-400 font-bold block">
+                                <div className="p-3.5 bg-surface-secondary border border-border-subtle/70 rounded-2xl space-y-1">
+                                    <span className="text-[11px] text-foreground-muted font-bold block">
                                         تعداد دریافت‌کنندگان
                                     </span>
-                                    <span className="text-xs font-black text-slate-900">
+                                    <span className="text-xs font-black text-foreground">
                                         {toPersianDigits(selectedNotification.recipientCount)} کاربر
                                     </span>
                                 </div>
@@ -1293,26 +1293,26 @@ export default function AdminNotificationsPage() {
 
                             {/* Message Content */}
                             <div className="space-y-2">
-                                <label className="text-xs font-black text-slate-500 block">
+                                <label className="text-xs font-black text-foreground-muted block">
                                     عنوان اعلان
                                 </label>
-                                <div className="p-3.5 bg-white border border-slate-200 rounded-2xl font-bold text-sm text-slate-900">
+                                <div className="p-3.5 bg-surface border border-border-subtle rounded-2xl font-bold text-sm text-foreground">
                                     {selectedNotification.title}
                                 </div>
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-xs font-black text-slate-500 block">
+                                <label className="text-xs font-black text-foreground-muted block">
                                     متن پیام
                                 </label>
-                                <div className="p-4 bg-white border border-slate-200 rounded-2xl font-medium text-sm text-slate-800 leading-relaxed max-h-48 overflow-y-auto whitespace-pre-wrap">
+                                <div className="p-4 bg-surface border border-border-subtle rounded-2xl font-medium text-sm text-foreground leading-relaxed max-h-48 overflow-y-auto whitespace-pre-wrap">
                                     {selectedNotification.body}
                                 </div>
                             </div>
                         </div>
 
                         {/* Modal Footer */}
-                        <div className="p-6 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-3">
+                        <div className="p-6 bg-surface-secondary border-t border-border-subtle flex items-center justify-between gap-3">
                             <button
                                 type="button"
                                 onClick={() =>
@@ -1321,7 +1321,7 @@ export default function AdminNotificationsPage() {
                                         selectedNotification.id
                                     )
                                 }
-                                className="px-5 py-2.5 rounded-2xl border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 text-xs font-bold flex items-center gap-2 transition"
+                                className="px-5 py-2.5 rounded-2xl border border-border-subtle bg-surface hover:bg-surface-secondary text-foreground-secondary text-xs font-bold flex items-center gap-2 transition"
                             >
                                 <Copy size={16} />
                                 <span>کپی متن</span>

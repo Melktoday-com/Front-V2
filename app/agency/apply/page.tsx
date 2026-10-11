@@ -163,26 +163,26 @@ export default function AgencyApplyPage() {
     const cities = citiesData?.items || citiesData?.cities || [];
 
     return (
-        <div className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8" dir="rtl">
+        <div className="min-h-screen bg-surface-secondary py-10 px-4 sm:px-6 lg:px-8" dir="rtl">
             <div className="max-w-3xl mx-auto space-y-8">
                 {/* Top Header */}
-                <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="bg-surface p-6 sm:p-8 rounded-3xl border border-border-subtle/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="space-y-1">
-                        <div className="flex items-center gap-2 text-blue-600 text-xs font-black">
+                        <div className="flex items-center gap-2 text-info text-xs font-black">
                             <ShieldCheck className="w-4 h-4" />
                             <span>سامانه هوشمند احراز هویت مشاوران و دفاتر املاک</span>
                         </div>
-                        <h1 className="text-xl sm:text-2xl font-black text-slate-900">
+                        <h1 className="text-xl sm:text-2xl font-black text-foreground">
                             درخواست ارتقا به حساب کارشناس یا دفتر املاک
                         </h1>
-                        <p className="text-xs text-slate-500 font-medium leading-relaxed">
+                        <p className="text-xs text-foreground-muted font-medium leading-relaxed">
                             با عضویت در ملک‌تودی، صاحب صفحه اختصاصی ویترین املاک خود شوید، آگهی و پست منتشر کنید و مستقیماً از کاربران پیام بگیرید.
                         </p>
                     </div>
 
                     <Link
                         href="/"
-                        className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors shrink-0 w-fit"
+                        className="inline-flex items-center gap-1.5 px-4 py-2 bg-surface-secondary hover:bg-slate-200 text-foreground-secondary rounded-xl text-xs font-bold transition-colors shrink-0 w-fit"
                     >
                         <span>صفحه اصلی</span>
                         <ArrowRight className="w-3.5 h-3.5 rotate-180" />
@@ -191,40 +191,40 @@ export default function AgencyApplyPage() {
 
                 {/* Status Box if User Already Applied */}
                 {!isAppLoading && myApp && !isReapplying && (
-                    <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-xs space-y-6">
-                        <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+                    <div className="bg-surface p-6 sm:p-8 rounded-3xl border border-border-subtle/80 shadow-xs space-y-6">
+                        <div className="flex items-center gap-3 border-b border-border-subtle pb-4">
                             {myApp.status === "PENDING" && (
-                                <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
+                                <div className="w-12 h-12 rounded-2xl bg-warning-subtle text-warning flex items-center justify-center font-bold">
                                     <Clock className="w-6 h-6" />
                                 </div>
                             )}
                             {myApp.status === "APPROVED" && (
-                                <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+                                <div className="w-12 h-12 rounded-2xl bg-success-subtle text-success flex items-center justify-center font-bold">
                                     <CheckCircle className="w-6 h-6" />
                                 </div>
                             )}
                             {myApp.status === "REJECTED" && (
-                                <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center font-bold">
+                                <div className="w-12 h-12 rounded-2xl bg-error-subtle text-error flex items-center justify-center font-bold">
                                     <XCircle className="w-6 h-6" />
                                 </div>
                             )}
 
                             <div>
-                                <h3 className="text-base font-black text-slate-900">
+                                <h3 className="text-base font-black text-foreground">
                                     وضعیت آخرین درخواست شما:{" "}
                                     <span className={
                                         myApp.status === "PENDING"
-                                            ? "text-amber-600"
+                                            ? "text-warning"
                                             : myApp.status === "APPROVED"
-                                            ? "text-emerald-600"
-                                            : "text-rose-600"
+                                            ? "text-success"
+                                            : "text-error"
                                     }>
                                         {myApp.status === "PENDING" && "در انتظار بررسی توسط مدیریت"}
                                         {myApp.status === "APPROVED" && "تأیید شده و حساب شما ارتقا یافت"}
                                         {myApp.status === "REJECTED" && "رد شده"}
                                     </span>
                                 </h3>
-                                <p className="text-xs text-slate-500 font-medium">
+                                <p className="text-xs text-foreground-muted font-medium">
                                     ثبت شده برای: {myApp.agentType === "AGENCY" ? "دفتر املاک" : "مشاور املاک"} در تاریخ{" "}
                                     {new Date(myApp.createdAt).toLocaleDateString("fa-IR")}
                                 </p>
@@ -233,31 +233,31 @@ export default function AgencyApplyPage() {
 
                         {/* Details summary */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-                            <div className="p-3 bg-slate-50 rounded-xl space-y-1">
-                                <span className="text-slate-400 font-bold block">نام متقاضی:</span>
-                                <span className="font-bold text-slate-900">{myApp.fullName}</span>
+                            <div className="p-3 bg-surface-secondary rounded-xl space-y-1">
+                                <span className="text-foreground-muted font-bold block">نام متقاضی:</span>
+                                <span className="font-bold text-foreground">{myApp.fullName}</span>
                             </div>
                             {myApp.agencyName && (
-                                <div className="p-3 bg-slate-50 rounded-xl space-y-1">
-                                    <span className="text-slate-400 font-bold block">نام دفتر املاک:</span>
-                                    <span className="font-bold text-slate-900">{myApp.agencyName}</span>
+                                <div className="p-3 bg-surface-secondary rounded-xl space-y-1">
+                                    <span className="text-foreground-muted font-bold block">نام دفتر املاک:</span>
+                                    <span className="font-bold text-foreground">{myApp.agencyName}</span>
                                 </div>
                             )}
-                            <div className="p-3 bg-slate-50 rounded-xl space-y-1">
-                                <span className="text-slate-400 font-bold block">کد ملی:</span>
-                                <span className="font-mono font-bold text-slate-900">{myApp.nationalCode}</span>
+                            <div className="p-3 bg-surface-secondary rounded-xl space-y-1">
+                                <span className="text-foreground-muted font-bold block">کد ملی:</span>
+                                <span className="font-mono font-bold text-foreground">{myApp.nationalCode}</span>
                             </div>
                             {myApp.guildCode && (
-                                <div className="p-3 bg-slate-50 rounded-xl space-y-1">
-                                    <span className="text-slate-400 font-bold block">شناسه صنفی:</span>
-                                    <span className="font-mono font-bold text-slate-900">{myApp.guildCode}</span>
+                                <div className="p-3 bg-surface-secondary rounded-xl space-y-1">
+                                    <span className="text-foreground-muted font-bold block">شناسه صنفی:</span>
+                                    <span className="font-mono font-bold text-foreground">{myApp.guildCode}</span>
                                 </div>
                             )}
                         </div>
 
                         {/* Admin note if rejected */}
                         {myApp.status === "REJECTED" && myApp.adminNote && (
-                            <div className="p-4 bg-rose-50 border border-rose-100 rounded-2xl space-y-1 text-xs text-rose-900">
+                            <div className="p-4 bg-error-subtle border border-error/30 rounded-2xl space-y-1 text-xs text-rose-900">
                                 <span className="font-black block">علت رد درخواست توسط مدیریت:</span>
                                 <p className="leading-relaxed">{myApp.adminNote}</p>
                             </div>
@@ -281,7 +281,7 @@ export default function AgencyApplyPage() {
                                     ارسال مجدد درخواست با اطلاعات اصلاح‌شده
                                 </button>
                             ) : (
-                                <div className="text-xs font-medium text-slate-500 flex items-center gap-1.5">
+                                <div className="text-xs font-medium text-foreground-muted flex items-center gap-1.5">
                                     <Info className="w-4 h-4 text-amber-500" />
                                     <span>درخواست شما در اسرع وقت بررسی خواهد شد. برای پیگیری نیازی به ارسال مجدد نیست.</span>
                                 </div>
@@ -292,10 +292,10 @@ export default function AgencyApplyPage() {
 
                 {/* Application Form */}
                 {(!myApp || isReapplying) && (
-                    <form onSubmit={handleSubmit} className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-xs space-y-6">
+                    <form onSubmit={handleSubmit} className="bg-surface p-6 sm:p-8 rounded-3xl border border-border-subtle/80 shadow-xs space-y-6">
                         {/* Step 1: Select Agent Type */}
                         <div className="space-y-3">
-                            <label className="text-xs font-black text-slate-700 block">
+                            <label className="text-xs font-black text-foreground-secondary block">
                                 انتخاب نوع نقش درخواستی:
                             </label>
 
@@ -304,22 +304,22 @@ export default function AgencyApplyPage() {
                                     onClick={() => setAgentType("CONSULTANT")}
                                     className={`p-5 rounded-2xl border-2 cursor-pointer transition-all space-y-2 ${
                                         agentType === "CONSULTANT"
-                                            ? "border-blue-600 bg-blue-50/40 shadow-xs"
-                                            : "border-slate-200 hover:border-slate-300 bg-white"
+                                            ? "border-blue-600 bg-info-subtle/40 shadow-xs"
+                                            : "border-border-subtle hover:border-border bg-surface"
                                     }`}
                                 >
                                     <div className="flex items-center justify-between">
-                                        <div className="w-10 h-10 rounded-xl bg-blue-100/70 text-blue-700 flex items-center justify-center font-bold">
+                                        <div className="w-10 h-10 rounded-xl bg-info-subtle/70 text-info flex items-center justify-center font-bold">
                                             <Award className="w-5 h-5" />
                                         </div>
                                         <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                                            agentType === "CONSULTANT" ? "border-blue-600 bg-blue-600" : "border-slate-300"
+                                            agentType === "CONSULTANT" ? "border-blue-600 bg-blue-600" : "border-border"
                                         }`}>
-                                            {agentType === "CONSULTANT" && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
+                                            {agentType === "CONSULTANT" && <span className="w-1.5 h-1.5 rounded-full bg-surface" />}
                                         </span>
                                     </div>
-                                    <h3 className="text-sm font-black text-slate-900">مشاور املاک مستقل</h3>
-                                    <p className="text-[11px] text-slate-500 leading-relaxed font-medium">
+                                    <h3 className="text-sm font-black text-foreground">مشاور املاک مستقل</h3>
+                                    <p className="text-[11px] text-foreground-muted leading-relaxed font-medium">
                                         مخصوص کارشناسان و مشاورین ملکی بدون نیاز به دفتر فیزیکی. احراز هویت با تطبیق کدملی و سامانه شاهکار جیبیت انجام می‌پذیرد.
                                     </p>
                                 </div>
@@ -329,7 +329,7 @@ export default function AgencyApplyPage() {
                                     className={`p-5 rounded-2xl border-2 cursor-pointer transition-all space-y-2 ${
                                         agentType === "AGENCY"
                                             ? "border-purple-600 bg-purple-50/40 shadow-xs"
-                                            : "border-slate-200 hover:border-slate-300 bg-white"
+                                            : "border-border-subtle hover:border-border bg-surface"
                                     }`}
                                 >
                                     <div className="flex items-center justify-between">
@@ -337,13 +337,13 @@ export default function AgencyApplyPage() {
                                             <Building2 className="w-5 h-5" />
                                         </div>
                                         <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                                            agentType === "AGENCY" ? "border-purple-600 bg-purple-600" : "border-slate-300"
+                                            agentType === "AGENCY" ? "border-purple-600 bg-purple-600" : "border-border"
                                         }`}>
-                                            {agentType === "AGENCY" && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
+                                            {agentType === "AGENCY" && <span className="w-1.5 h-1.5 rounded-full bg-surface" />}
                                         </span>
                                     </div>
-                                    <h3 className="text-sm font-black text-slate-900">دفتر / آژانس معاملات ملکی</h3>
-                                    <p className="text-[11px] text-slate-500 leading-relaxed font-medium">
+                                    <h3 className="text-sm font-black text-foreground">دفتر / آژانس معاملات ملکی</h3>
+                                    <p className="text-[11px] text-foreground-muted leading-relaxed font-medium">
                                         مخصوص بنگاه‌ها و دفاتر رسمی دارای پروانه کسب. احراز هویت با شناسه صنفی ۱۰ رقمی اصناف جیبیت صورت می‌گیرد.
                                     </p>
                                 </div>
@@ -353,38 +353,38 @@ export default function AgencyApplyPage() {
                         {/* Step 2: Form Inputs */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-1.5">
-                                <label className="text-xs font-bold text-slate-700">نام *</label>
+                                <label className="text-xs font-bold text-foreground-secondary">نام *</label>
                                 <input
                                     type="text"
                                     value={formData.firstName}
                                     onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                                     placeholder="مثال: علی"
-                                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                                    className="w-full p-3 bg-surface-secondary border border-border-subtle rounded-xl text-xs focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                                     required
                                 />
                             </div>
 
                             <div className="space-y-1.5">
-                                <label className="text-xs font-bold text-slate-700">نام خانوادگی *</label>
+                                <label className="text-xs font-bold text-foreground-secondary">نام خانوادگی *</label>
                                 <input
                                     type="text"
                                     value={formData.lastName}
                                     onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
                                     placeholder="مثال: احمدی"
-                                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                                    className="w-full p-3 bg-surface-secondary border border-border-subtle rounded-xl text-xs focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                                     required
                                 />
                             </div>
 
                             <div className="space-y-1.5">
-                                <label className="text-xs font-bold text-slate-700">کد ملی ۱۰ رقمی *</label>
+                                <label className="text-xs font-bold text-foreground-secondary">کد ملی ۱۰ رقمی *</label>
                                 <input
                                     type="text"
                                     maxLength={10}
                                     value={formData.nationalCode}
                                     onChange={(e) => setFormData({ ...formData, nationalCode: e.target.value.replace(/\D/g, "") })}
                                     placeholder="کد ملی ۱۰ رقمی منطبق با سیم‌کارت"
-                                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                                    className="w-full p-3 bg-surface-secondary border border-border-subtle rounded-xl text-xs font-mono focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                                     required
                                 />
                             </div>
@@ -392,112 +392,112 @@ export default function AgencyApplyPage() {
                             {agentType === "AGENCY" && (
                                 <>
                                     <div className="space-y-1.5">
-                                        <label className="text-xs font-bold text-slate-700">نام دفتر املاک *</label>
+                                        <label className="text-xs font-bold text-foreground-secondary">نام دفتر املاک *</label>
                                         <input
                                             type="text"
                                             value={formData.agencyName}
                                             onChange={(e) => setFormData({ ...formData, agencyName: e.target.value })}
                                             placeholder="مثال: املاک رویال نیاوران"
-                                            className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                                            className="w-full p-3 bg-surface-secondary border border-border-subtle rounded-xl text-xs focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                                             required
                                         />
                                     </div>
 
                                     <div className="space-y-1.5">
-                                        <label className="text-xs font-bold text-slate-700">شناسه صنفی ۱۰ رقمی اصناف *</label>
+                                        <label className="text-xs font-bold text-foreground-secondary">شناسه صنفی ۱۰ رقمی اصناف *</label>
                                         <input
                                             type="text"
                                             maxLength={10}
                                             value={formData.guildCode}
                                             onChange={(e) => setFormData({ ...formData, guildCode: e.target.value.replace(/\D/g, "") })}
                                             placeholder="شناسه ۱۰ رقمی پروانه کسب اصناف"
-                                            className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                                            className="w-full p-3 bg-surface-secondary border border-border-subtle rounded-xl text-xs font-mono focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                                             required
                                         />
                                     </div>
 
                                     <div className="space-y-1.5">
-                                        <label className="text-xs font-bold text-slate-700">شماره پروانه کسب (اختیاری)</label>
+                                        <label className="text-xs font-bold text-foreground-secondary">شماره پروانه کسب (اختیاری)</label>
                                         <input
                                             type="text"
                                             value={formData.licenseNumber}
                                             onChange={(e) => setFormData({ ...formData, licenseNumber: e.target.value })}
                                             placeholder="شماره مجوز ثبت اتحادیه"
-                                            className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                                            className="w-full p-3 bg-surface-secondary border border-border-subtle rounded-xl text-xs font-mono focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                                         />
                                     </div>
                                 </>
                             )}
 
                             <div className="space-y-1.5">
-                                <label className="text-xs font-bold text-slate-700">شهر محل فعالیت *</label>
+                                <label className="text-xs font-bold text-foreground-secondary">شهر محل فعالیت *</label>
                                 <button
                                     type="button"
                                     onClick={() => setIsCitySelectorOpen(true)}
-                                    className="w-full flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs hover:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-right group"
+                                    className="w-full flex items-center justify-between p-3 bg-surface-secondary border border-border-subtle rounded-xl text-xs hover:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-right group"
                                 >
                                     <div className="flex items-center gap-2">
-                                        <MapPin className="w-4 h-4 text-blue-600 shrink-0" />
-                                        <span className={formData.cityId ? "font-bold text-slate-800" : "text-slate-400"}>
+                                        <MapPin className="w-4 h-4 text-info shrink-0" />
+                                        <span className={formData.cityId ? "font-bold text-foreground" : "text-foreground-muted"}>
                                             {selectedCityName || "انتخاب شهر محل فعالیت..."}
                                         </span>
                                     </div>
-                                    <span className="text-[11px] text-blue-600 font-medium group-hover:underline">
+                                    <span className="text-[11px] text-info font-medium group-hover:underline">
                                         {formData.cityId ? "تغییر شهر" : "انتخاب"}
                                     </span>
                                 </button>
                             </div>
 
                             <div className="space-y-1.5">
-                                <label className="text-xs font-bold text-slate-700">شماره تماس مستقیم</label>
+                                <label className="text-xs font-bold text-foreground-secondary">شماره تماس مستقیم</label>
                                 <input
                                     type="text"
                                     value={formData.phone}
                                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                                     placeholder="تلفن ثابت یا همراه پشتیبان"
-                                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                                    className="w-full p-3 bg-surface-secondary border border-border-subtle rounded-xl text-xs font-mono focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                                 />
                             </div>
 
                             <div className="space-y-1.5">
-                                <label className="text-xs font-bold text-slate-700">سابقه فعالیت ملکی (سال)</label>
+                                <label className="text-xs font-bold text-foreground-secondary">سابقه فعالیت ملکی (سال)</label>
                                 <input
                                     type="number"
                                     min={0}
                                     max={60}
                                     value={formData.experienceYears}
                                     onChange={(e) => setFormData({ ...formData, experienceYears: Number(e.target.value) })}
-                                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                                    className="w-full p-3 bg-surface-secondary border border-border-subtle rounded-xl text-xs focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                                 />
                             </div>
 
                             <div className="space-y-1.5 sm:col-span-2">
-                                <label className="text-xs font-bold text-slate-700">آدرس دقیق {agentType === "AGENCY" ? "دفتر املاک" : "محل استقرار"}</label>
+                                <label className="text-xs font-bold text-foreground-secondary">آدرس دقیق {agentType === "AGENCY" ? "دفتر املاک" : "محل استقرار"}</label>
                                 <input
                                     type="text"
                                     value={formData.address}
                                     onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                                     placeholder="استان، شهر، خیابان، پلاک، طبقه و واحد..."
-                                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                                    className="w-full p-3 bg-surface-secondary border border-border-subtle rounded-xl text-xs focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                                 />
                             </div>
 
                             <div className="space-y-1.5 sm:col-span-2">
-                                <label className="text-xs font-bold text-slate-700">بیوگرافی، تخصص‌ها یا توضیحات تکمیلی</label>
+                                <label className="text-xs font-bold text-foreground-secondary">بیوگرافی، تخصص‌ها یا توضیحات تکمیلی</label>
                                 <textarea
                                     value={formData.description}
                                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                     rows={3}
                                     placeholder="توضیحاتی پیرامون مناطق تخصصی فعالیت، پروژه‌ها و سوابق کاری..."
-                                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                                    className="w-full p-3 bg-surface-secondary border border-border-subtle rounded-xl text-xs focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                                 />
                             </div>
                         </div>
 
                         {/* KYC Notice Box */}
-                        <div className="p-4 bg-blue-50/60 border border-blue-100 rounded-2xl flex items-start gap-3">
-                            <Info className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
-                            <div className="text-xs text-blue-900 leading-relaxed">
+                        <div className="p-4 bg-info-subtle/60 border border-info/30 rounded-2xl flex items-start gap-3">
+                            <Info className="w-5 h-5 text-info shrink-0 mt-0.5" />
+                            <div className="text-xs text-foreground leading-relaxed">
                                 <span className="font-black block mb-0.5">احراز هویت هوشمند از طریق درگاه جیبیت (Jibit):</span>
                                 {agentType === "CONSULTANT" ? (
                                     <span>
@@ -517,7 +517,7 @@ export default function AgencyApplyPage() {
                                 <button
                                     type="button"
                                     onClick={() => setIsReapplying(false)}
-                                    className="py-3 px-5 border border-slate-200 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50"
+                                    className="py-3 px-5 border border-border-subtle rounded-xl text-xs font-bold text-foreground-secondary hover:bg-surface-secondary"
                                 >
                                     انصراف
                                 </button>

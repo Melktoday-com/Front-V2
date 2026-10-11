@@ -82,14 +82,14 @@ export function CategoryTreeDialog({
     const content = (
         <div className="flex flex-col h-full max-h-[80vh] md:max-h-[70vh]">
             {/* Header */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 shrink-0">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-border-subtle shrink-0">
                 <h2 className="text-base font-black text-brand">انتخاب دسته‌بندی</h2>
                 <div className="flex items-center gap-2">
                     {(selectedCategoryKey || selectedSubcategoryKey) && (
                         <button
                             type="button"
                             onClick={handleClearAll}
-                            className="text-xs text-red-500 font-bold hover:text-red-600 transition-colors px-2 py-1 rounded-lg hover:bg-red-50 cursor-pointer"
+                            className="text-xs text-error font-bold hover:text-error transition-colors px-2 py-1 rounded-lg hover:bg-error-subtle cursor-pointer"
                         >
                             پاک کردن
                         </button>
@@ -116,7 +116,7 @@ export function CategoryTreeDialog({
                         "w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-xs font-bold transition-all cursor-pointer",
                         !selectedCategoryKey && !selectedSubcategoryKey
                             ? "bg-primary/10 text-primary border border-primary/20"
-                            : "bg-white hover:bg-soft-bg text-secondary border border-transparent"
+                            : "bg-surface hover:bg-soft-bg text-secondary border border-transparent"
                     )}
                 >
                     <span className="text-right">همه املاک</span>
@@ -139,7 +139,7 @@ export function CategoryTreeDialog({
                                 "rounded-xl border transition-colors overflow-hidden",
                                 isCategoryActive
                                     ? "border-primary/30 bg-primary/[0.02]"
-                                    : "border-gray-100 bg-white"
+                                    : "border-border-subtle bg-surface"
                             )}
                         >
                             {/* Category Header Row */}
@@ -189,7 +189,7 @@ export function CategoryTreeDialog({
 
                             {/* Subcategories Accordion Content (Nested under this category) */}
                             {hasChildren && isExpanded && (
-                                <div className="border-t border-gray-100 bg-soft-bg/40 px-3 py-2 space-y-1 animate-in fade-in slide-in-from-top-2 duration-150">
+                                <div className="border-t border-border-subtle bg-soft-bg/40 px-3 py-2 space-y-1 animate-in fade-in slide-in-from-top-2 duration-150">
                                     {/* "مشاهده همه [دسته‌بندی]" Option */}
                                     <button
                                         type="button"
@@ -198,7 +198,7 @@ export function CategoryTreeDialog({
                                             "w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer",
                                             isParentSelected
                                                 ? "bg-primary text-white shadow-xs"
-                                                : "text-secondary hover:text-brand hover:bg-white"
+                                                : "text-secondary hover:text-brand hover:bg-surface"
                                         )}
                                     >
                                         <span>مشاهده همه {cat.displayName}</span>
@@ -223,7 +223,7 @@ export function CategoryTreeDialog({
                                                     "w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer",
                                                     isSubActive
                                                         ? "bg-primary text-white shadow-xs"
-                                                        : "text-secondary hover:text-brand hover:bg-white"
+                                                        : "text-secondary hover:text-brand hover:bg-surface"
                                                 )}
                                             >
                                                 <div className="flex items-center gap-2 min-w-0">
@@ -270,7 +270,7 @@ export function CategoryTreeDialog({
                     onClick={onClose}
                 />
                 {/* Panel */}
-                <div className="relative bg-white rounded-2xl shadow-2xl w-[440px] max-h-[75vh] flex flex-col overflow-hidden z-10 animate-in fade-in zoom-in-95 duration-200">
+                <div className="relative bg-surface rounded-2xl shadow-2xl w-[440px] max-h-[75vh] flex flex-col overflow-hidden z-10 animate-in fade-in zoom-in-95 duration-200">
                     {content}
                 </div>
             </div>
@@ -288,7 +288,7 @@ export function CategoryTreeDialog({
                     onClick={onClose}
                 />
                 {/* Drawer */}
-                <div className="relative bg-white rounded-t-2xl shadow-2xl flex flex-col max-h-[80vh] animate-in slide-in-from-bottom duration-300 z-10">
+                <div className="relative bg-surface rounded-t-2xl shadow-2xl flex flex-col max-h-[80vh] animate-in slide-in-from-bottom duration-300 z-10">
                     {/* Handle */}
                     <div className="flex justify-center pt-2 pb-1 shrink-0">
                         <div className="w-10 h-1 bg-gray-200 rounded-full" />

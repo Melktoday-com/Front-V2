@@ -110,12 +110,12 @@ export function LikedPostCard({
         <article
             onClick={onClick}
             className={cn(
-                "group relative flex flex-col bg-white rounded-2xl border border-gray-100 shadow-xs hover:shadow-md transition-all duration-300 overflow-hidden cursor-pointer",
+                "group relative flex flex-col bg-surface rounded-2xl border border-border-subtle shadow-xs hover:shadow-md transition-all duration-300 overflow-hidden cursor-pointer",
                 className
             )}
         >
             {/* Cover Image & Overlays */}
-            <div className="relative aspect-[16/10] w-full overflow-hidden bg-gray-100">
+            <div className="relative aspect-[16/10] w-full overflow-hidden bg-surface-secondary">
                 <Image
                     src={displayImage}
                     alt={title}
@@ -128,11 +128,11 @@ export function LikedPostCard({
                 {/* Top Actions: Category Badge & Like Button */}
                 <div className="absolute top-3 inset-x-3 flex items-center justify-between z-10 pointer-events-none">
                     {category ? (
-                        <span className="pointer-events-auto px-2.5 py-1 rounded-full text-xs font-bold bg-white/90 backdrop-blur-xs text-gray-800 shadow-xs">
+                        <span className="pointer-events-auto px-2.5 py-1 rounded-full text-xs font-bold bg-surface/90 backdrop-blur-xs text-foreground shadow-xs">
                             {category}
                         </span>
                     ) : (
-                        <span className="pointer-events-auto px-2.5 py-1 rounded-full text-xs font-bold bg-white/90 backdrop-blur-xs text-brand shadow-xs flex items-center gap-1">
+                        <span className="pointer-events-auto px-2.5 py-1 rounded-full text-xs font-bold bg-surface/90 backdrop-blur-xs text-brand shadow-xs flex items-center gap-1">
                             <Sparkles className="w-3 h-3 text-brand" />
                             پست تخصصی
                         </span>
@@ -147,7 +147,7 @@ export function LikedPostCard({
                             "pointer-events-auto w-9 h-9 rounded-full flex items-center justify-center transition-all duration-300 shadow-sm active:scale-90",
                             isLikedState
                                 ? "bg-red-500 text-white shadow-red-500/25"
-                                : "bg-white/90 backdrop-blur-xs text-gray-600 hover:text-red-500"
+                                : "bg-surface/90 backdrop-blur-xs text-foreground-secondary hover:text-error"
                         )}
                     >
                         <Heart
@@ -161,7 +161,7 @@ export function LikedPostCard({
 
                 {/* Bottom Overlay: Publisher info badge */}
                 <div className="absolute bottom-3 right-3 left-3 flex items-center gap-2 text-white pointer-events-none z-10">
-                    <div className="w-7 h-7 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center overflow-hidden border border-white/40">
+                    <div className="w-7 h-7 rounded-full bg-surface/20 backdrop-blur-md flex items-center justify-center overflow-hidden border border-white/40">
                         {publisherLogo ? (
                             <Image
                                 src={getMediaUrl(publisherLogo)}
@@ -192,29 +192,29 @@ export function LikedPostCard({
             {/* Content Body */}
             <div className="flex-1 p-4 flex flex-col justify-between gap-3">
                 <div className="space-y-1.5">
-                    <h3 className="text-sm sm:text-base font-bold text-gray-900 group-hover:text-brand transition-colors line-clamp-2 leading-relaxed">
+                    <h3 className="text-sm sm:text-base font-bold text-foreground group-hover:text-brand transition-colors line-clamp-2 leading-relaxed">
                         {title}
                     </h3>
-                    <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">
+                    <p className="text-xs text-foreground-muted line-clamp-2 leading-relaxed">
                         {summary || content}
                     </p>
                 </div>
 
                 {/* Footer Metrics */}
-                <div className="pt-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-400">
+                <div className="pt-3 border-t border-border-subtle flex items-center justify-between text-xs text-foreground-muted">
                     <div className="flex items-center gap-3">
-                        <span className="flex items-center gap-1 font-medium text-gray-500">
-                            <Heart className={cn("w-3.5 h-3.5", isLikedState ? "text-red-500 fill-red-500" : "text-gray-400")} />
+                        <span className="flex items-center gap-1 font-medium text-foreground-muted">
+                            <Heart className={cn("w-3.5 h-3.5", isLikedState ? "text-error fill-red-500" : "text-foreground-muted")} />
                             <span>{toPersianDigits(currentLikeCount)}</span>
                         </span>
-                        <span className="flex items-center gap-1 font-medium text-gray-400">
+                        <span className="flex items-center gap-1 font-medium text-foreground-muted">
                             <Eye className="w-3.5 h-3.5" />
                             <span>{toPersianDigits(viewCount)}</span>
                         </span>
                     </div>
 
                     {createdAt && (
-                        <time className="text-[11px] text-gray-400">
+                        <time className="text-[11px] text-foreground-muted">
                             {toPersianDigits(new Date(createdAt).toLocaleDateString('fa-IR'))}
                         </time>
                     )}

@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function ExplorePage() {
     return (
-        <Suspense fallback={<div className="p-8 text-center text-slate-400">در حال بارگذاری کاوش...</div>}>
+        <Suspense fallback={<div className="p-8 text-center text-foreground-muted">در حال بارگذاری کاوش...</div>}>
             <ExploreScene />
         </Suspense>
     );

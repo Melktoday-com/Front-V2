@@ -38,7 +38,7 @@ export function PaginationControls({
     return (
         <div
             className={cn(
-                "mt-10 bg-white rounded-3xl p-5 sm:p-6 border border-gray-100 shadow-xs flex flex-col md:flex-row items-center justify-between gap-4",
+                "mt-10 bg-surface rounded-3xl p-5 sm:p-6 border border-border-subtle shadow-xs flex flex-col md:flex-row items-center justify-between gap-4",
                 className
             )}
         >
@@ -55,7 +55,7 @@ export function PaginationControls({
                     type="button"
                     onClick={onPrevPage}
                     disabled={startPage <= 1}
-                    className="px-3 py-2 bg-gray-50 hover:bg-gray-100 text-brand rounded-xl font-bold text-xs flex items-center gap-1 border border-gray-200/60 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="px-3 py-2 bg-surface-secondary hover:bg-surface-secondary text-brand rounded-xl font-bold text-xs flex items-center gap-1 border border-border-subtle/60 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                     <ChevronRight className="w-4 h-4" />
                     <span>صفحه قبل</span>
@@ -84,7 +84,7 @@ export function PaginationControls({
                                     ? "bg-brand text-white shadow-xs font-black"
                                     : isCurrentLoaded
                                     ? "bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20"
-                                    : "bg-gray-50 hover:bg-gray-100 text-secondary border border-gray-200/60"
+                                    : "bg-surface-secondary hover:bg-surface-secondary text-secondary border border-border-subtle/60"
                             )}
                             title={isCurrentLoaded ? `اسکرول به بخش صفحه ${item}` : `رفتن به صفحه ${item}`}
                         >
@@ -97,7 +97,7 @@ export function PaginationControls({
                     type="button"
                     onClick={onNextPage}
                     disabled={lastLoadedPage >= totalPages}
-                    className="px-3 py-2 bg-gray-50 hover:bg-gray-100 text-brand rounded-xl font-bold text-xs flex items-center gap-1 border border-gray-200/60 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="px-3 py-2 bg-surface-secondary hover:bg-surface-secondary text-brand rounded-xl font-bold text-xs flex items-center gap-1 border border-border-subtle/60 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                     <span>صفحه بعد</span>
                     <ChevronLeft className="w-4 h-4" />
@@ -109,7 +109,7 @@ export function PaginationControls({
                 <button
                     type="button"
                     onClick={onScrollToTop}
-                    className="hidden lg:flex items-center gap-1 text-xs font-bold text-secondary hover:text-brand transition-colors p-2 rounded-xl hover:bg-gray-50"
+                    className="hidden lg:flex items-center gap-1 text-xs font-bold text-secondary hover:text-brand transition-colors p-2 rounded-xl hover:bg-surface-secondary"
                 >
                     <ArrowUp className="w-3.5 h-3.5" />
                     <span>بازگشت به بالا</span>

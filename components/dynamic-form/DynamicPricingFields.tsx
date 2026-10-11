@@ -47,12 +47,12 @@ export const DynamicPricingFields: React.FC<DynamicPricingFieldsProps> = ({
 
     return (
         <div className="space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-gray-100">
+            <div className="flex items-center justify-between pb-2 border-b border-border-subtle">
                 <h3 className="text-sm font-bold text-brand">
                     اطلاعات مالی — {priceModel.displayName}
                 </h3>
                 {priceModel.currency && (
-                    <span className="text-[11px] font-bold text-text-light bg-gray-100 px-2.5 py-1 rounded-lg">
+                    <span className="text-[11px] font-bold text-text-light bg-surface-secondary px-2.5 py-1 rounded-lg">
                         واحد پول: {priceModel.currency === "TOMAN" ? "تومان" : priceModel.currency}
                     </span>
                 )}
@@ -71,7 +71,7 @@ export const DynamicPricingFields: React.FC<DynamicPricingFieldsProps> = ({
                         return (
                             <div
                                 key={field.key}
-                                className="col-span-1 md:col-span-2 flex items-center justify-between p-3.5 bg-gray-50/80 border border-gray-200 rounded-xl"
+                                className="col-span-1 md:col-span-2 flex items-center justify-between p-3.5 bg-surface-secondary/80 border border-border-subtle rounded-xl"
                             >
                                 <div>
                                     <label
@@ -79,7 +79,7 @@ export const DynamicPricingFields: React.FC<DynamicPricingFieldsProps> = ({
                                         className="text-xs font-bold text-brand block cursor-pointer"
                                     >
                                         {field.label}
-                                        {field.required && <span className="text-red-500 mr-1">*</span>}
+                                        {field.required && <span className="text-error mr-1">*</span>}
                                     </label>
                                     {field.helpText && (
                                         <p className="text-[11px] text-text-light mt-0.5">
@@ -92,7 +92,7 @@ export const DynamicPricingFields: React.FC<DynamicPricingFieldsProps> = ({
                                     type="checkbox"
                                     checked={Boolean(rawVal)}
                                     onChange={(e) => onChange(field.key, e.target.checked)}
-                                    className="w-5 h-5 text-primary border-gray-300 rounded-md focus:ring-primary focus:ring-2 cursor-pointer"
+                                    className="w-5 h-5 text-primary border-border rounded-md focus:ring-primary focus:ring-2 cursor-pointer"
                                 />
                             </div>
                         );
@@ -110,7 +110,7 @@ export const DynamicPricingFields: React.FC<DynamicPricingFieldsProps> = ({
                             <div className="flex items-center justify-between mb-1.5">
                                 <label className="text-xs font-bold text-brand">
                                     {field.label}
-                                    {field.required && <span className="text-red-500 mr-1">*</span>}
+                                    {field.required && <span className="text-error mr-1">*</span>}
                                 </label>
                                 {field.unit && (
                                     <span className="text-[11px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-md">
@@ -124,8 +124,8 @@ export const DynamicPricingFields: React.FC<DynamicPricingFieldsProps> = ({
                                     <select
                                         value={typeof rawVal === "boolean" ? "" : (rawVal ?? "")}
                                         onChange={(e) => onChange(field.key, e.target.value)}
-                                        className={`w-full p-3 text-sm bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-primary outline-hidden transition-all ${
-                                            errors[field.key] ? "border-red-500 bg-red-50/20" : "border-gray-200"
+                                        className={`w-full p-3 text-sm bg-surface-secondary border rounded-xl focus:bg-surface focus:ring-2 focus:ring-primary outline-hidden transition-all ${
+                                            errors[field.key] ? "border-red-500 bg-error-subtle/20" : "border-border-subtle"
                                         }`}
                                     >
                                         <option value="">انتخاب کنید...</option>
@@ -145,8 +145,8 @@ export const DynamicPricingFields: React.FC<DynamicPricingFieldsProps> = ({
                                             const v = e.target.value;
                                             onChange(field.key, field.fieldType === "NUMBER" ? (v === "" ? "" : Number(v)) : v);
                                         }}
-                                        className={`w-full p-3 text-sm bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-primary outline-hidden transition-all ${
-                                            errors[field.key] ? "border-red-500 bg-red-50/20" : "border-gray-200"
+                                        className={`w-full p-3 text-sm bg-surface-secondary border rounded-xl focus:bg-surface focus:ring-2 focus:ring-primary outline-hidden transition-all ${
+                                            errors[field.key] ? "border-red-500 bg-error-subtle/20" : "border-border-subtle"
                                         }`}
                                     />
                                 )}
@@ -154,7 +154,7 @@ export const DynamicPricingFields: React.FC<DynamicPricingFieldsProps> = ({
 
                             {/* Live Persian price word preview */}
                             {persianPreview && (
-                                <p className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg mt-1 inline-block">
+                                <p className="text-[11px] font-bold text-success bg-success-subtle px-2.5 py-1 rounded-lg mt-1 inline-block">
                                     معادل: {persianPreview}
                                 </p>
                             )}
@@ -166,7 +166,7 @@ export const DynamicPricingFields: React.FC<DynamicPricingFieldsProps> = ({
                             )}
 
                             {errors[field.key] && (
-                                <p className="text-xs text-red-500 mt-1 font-bold">
+                                <p className="text-xs text-error mt-1 font-bold">
                                     {errors[field.key]}
                                 </p>
                             )}

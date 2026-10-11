@@ -197,10 +197,10 @@ export default function AdminsManagementPage() {
     if (!permissionsLoading && !isSuperAdmin) {
         return (
             <div className="p-8 max-w-4xl mx-auto text-center" dir="rtl">
-                <div className="bg-red-50 border border-red-200 rounded-3xl p-8 shadow-sm">
-                    <ShieldAlert className="w-16 h-16 text-red-500 mx-auto mb-4" />
-                    <h2 className="text-xl font-black text-red-800 mb-2">عدم دسترسی به بخش مدیریت مدیران</h2>
-                    <p className="text-sm text-red-600 leading-relaxed">
+                <div className="bg-error-subtle border border-error/30 rounded-3xl p-8 shadow-sm">
+                    <ShieldAlert className="w-16 h-16 text-error mx-auto mb-4" />
+                    <h2 className="text-xl font-black text-error mb-2">عدم دسترسی به بخش مدیریت مدیران</h2>
+                    <p className="text-sm text-error leading-relaxed">
                         این بخش منحصراً در اختیار «مدیر ارشد» (Super Admin) پلتفرم است و سایر مدیران به مدیریت سطوح دسترسی مدیران دسترسی ندارند.
                     </p>
                 </div>
@@ -211,13 +211,13 @@ export default function AdminsManagementPage() {
     return (
         <div className="p-6 md:p-10 max-w-7xl mx-auto space-y-8" dir="rtl">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-soft-border shadow-sm">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-surface p-6 rounded-3xl border border-soft-border shadow-sm">
                 <div className="flex items-center gap-4">
                     <div className="w-14 h-14 rounded-2xl bg-indigo-50 border border-indigo-200 flex items-center justify-center text-indigo-600">
                         <ShieldCheck className="w-8 h-8" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-black text-slate-800 tracking-tight">مدیریت مدیران و سطوح دسترسی</h1>
+                        <h1 className="text-2xl font-black text-foreground tracking-tight">مدیریت مدیران و سطوح دسترسی</h1>
                         <p className="text-sm text-secondary mt-1">
                             تعریف مدیر جدید، انتساب و ویرایش دسترسی‌های دانه‌ای (Granular Permissions)
                         </p>
@@ -246,36 +246,36 @@ export default function AdminsManagementPage() {
 
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white p-6 rounded-3xl border border-soft-border shadow-sm flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                <div className="bg-surface p-6 rounded-3xl border border-soft-border shadow-sm flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-2xl bg-info-subtle text-info flex items-center justify-center">
                         <Users className="w-6 h-6" />
                     </div>
                     <div>
-                        <div className="text-2xl font-black text-slate-800">
+                        <div className="text-2xl font-black text-foreground">
                             {toPersianDigits(adminsData?.total || 0)}
                         </div>
                         <div className="text-xs font-bold text-secondary mt-0.5">تعداد مدیران فعال</div>
                     </div>
                 </div>
 
-                <div className="bg-white p-6 rounded-3xl border border-soft-border shadow-sm flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                <div className="bg-surface p-6 rounded-3xl border border-soft-border shadow-sm flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-2xl bg-success-subtle text-success flex items-center justify-center">
                         <Key className="w-6 h-6" />
                     </div>
                     <div>
-                        <div className="text-2xl font-black text-slate-800">
+                        <div className="text-2xl font-black text-foreground">
                             {toPersianDigits(availablePermissions.length)}
                         </div>
                         <div className="text-xs font-bold text-secondary mt-0.5">دسترسی‌های سیستمی تعریف‌شده</div>
                     </div>
                 </div>
 
-                <div className="bg-white p-6 rounded-3xl border border-soft-border shadow-sm flex items-center gap-4">
+                <div className="bg-surface p-6 rounded-3xl border border-soft-border shadow-sm flex items-center gap-4">
                     <div className="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center">
                         <Lock className="w-6 h-6" />
                     </div>
                     <div>
-                        <div className="text-2xl font-black text-slate-800">
+                        <div className="text-2xl font-black text-foreground">
                             {isSuperAdmin ? "مدیر ارشد" : "مدیر سیستم"}
                         </div>
                         <div className="text-xs font-bold text-secondary mt-0.5">نقش کاربری شما</div>
@@ -284,7 +284,7 @@ export default function AdminsManagementPage() {
             </div>
 
             {/* Search Bar */}
-            <div className="bg-white p-4 rounded-3xl border border-soft-border shadow-sm">
+            <div className="bg-surface p-4 rounded-3xl border border-soft-border shadow-sm">
                 <div className="relative">
                     <Search className="w-5 h-5 absolute right-4 top-1/2 -translate-y-1/2 text-secondary" />
                     <input
@@ -292,13 +292,13 @@ export default function AdminsManagementPage() {
                         placeholder="جستجو با شماره موبایل یا نام مدیر..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pr-12 pl-4 py-3 bg-soft-bg rounded-2xl text-sm border-none focus:ring-2 focus:ring-primary/20 text-slate-800 placeholder:text-secondary/60"
+                        className="w-full pr-12 pl-4 py-3 bg-soft-bg rounded-2xl text-sm border-none focus:ring-2 focus:ring-primary/20 text-foreground placeholder:text-secondary/60"
                     />
                 </div>
             </div>
 
             {/* Admins Table */}
-            <div className="bg-white rounded-3xl border border-soft-border shadow-sm overflow-hidden">
+            <div className="bg-surface rounded-3xl border border-soft-border shadow-sm overflow-hidden">
                 {isAdminsLoading ? (
                     <div className="p-16 text-center text-secondary flex flex-col items-center gap-3">
                         <RefreshCw className="w-8 h-8 animate-spin text-primary" />
@@ -325,7 +325,7 @@ export default function AdminsManagementPage() {
                             const permCount = admin.permissions?.length || 0;
 
                             return (
-                                <div key={admin.userId} className="p-6 transition hover:bg-slate-50/50">
+                                <div key={admin.userId} className="p-6 transition hover:bg-surface-secondary/50">
                                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                                         <div className="flex items-start gap-4">
                                             <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-black text-base border border-indigo-100 flex-shrink-0">
@@ -333,11 +333,11 @@ export default function AdminsManagementPage() {
                                             </div>
                                             <div className="space-y-1">
                                                 <div className="flex items-center gap-2">
-                                                    <span className="font-bold text-slate-800 text-base">{fullName}</span>
+                                                    <span className="font-bold text-foreground text-base">{fullName}</span>
                                                     <span className="px-2 py-0.5 rounded-lg text-[10px] font-black bg-indigo-50 text-indigo-700 border border-indigo-200">
                                                         مدیر سیستم
                                                     </span>
-                                                    <span className="px-2 py-0.5 rounded-lg text-[10px] font-black bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                                    <span className="px-2 py-0.5 rounded-lg text-[10px] font-black bg-success-subtle text-success border border-success/30">
                                                         فعال
                                                     </span>
                                                 </div>
@@ -367,7 +367,7 @@ export default function AdminsManagementPage() {
                                         <div className="flex items-center gap-2 self-end md:self-center">
                                             <button
                                                 onClick={() => setExpandedAdminId(isExpanded ? null : admin.userId)}
-                                                className="px-3 py-2 text-xs font-bold text-secondary hover:text-slate-800 rounded-xl hover:bg-soft-bg border border-soft-border flex items-center gap-1 transition"
+                                                className="px-3 py-2 text-xs font-bold text-secondary hover:text-foreground rounded-xl hover:bg-soft-bg border border-soft-border flex items-center gap-1 transition"
                                             >
                                                 <span>مشاهده دسترسی‌ها</span>
                                                 {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -383,7 +383,7 @@ export default function AdminsManagementPage() {
 
                                             <button
                                                 onClick={() => handleOpenRevokeModal(admin)}
-                                                className="px-3 py-2 text-xs font-bold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 rounded-xl border border-red-200 flex items-center gap-1.5 transition"
+                                                className="px-3 py-2 text-xs font-bold text-error hover:text-error bg-error-subtle hover:bg-error-subtle rounded-xl border border-error/30 flex items-center gap-1.5 transition"
                                             >
                                                 <UserX className="w-3.5 h-3.5" />
                                                 <span>عزل مدیر</span>
@@ -394,11 +394,11 @@ export default function AdminsManagementPage() {
                                     {/* Expanded Permissions Detail */}
                                     {isExpanded && (
                                         <div className="mt-4 pt-4 border-t border-soft-border">
-                                            <div className="text-xs font-bold text-slate-700 mb-3">
+                                            <div className="text-xs font-bold text-foreground-secondary mb-3">
                                                 فهرست دسترسی‌های فعال این مدیر:
                                             </div>
                                             {permCount === 0 ? (
-                                                <div className="text-xs text-amber-600 bg-amber-50 p-3 rounded-xl border border-amber-200">
+                                                <div className="text-xs text-warning bg-warning-subtle p-3 rounded-xl border border-warning/30">
                                                     این مدیر در حال حاضر هیچ دسترسی فعالی ندارد و تمام عملیات مدیریتی برای وی مسدود است.
                                                 </div>
                                             ) : (
@@ -408,10 +408,10 @@ export default function AdminsManagementPage() {
                                                         return (
                                                             <span
                                                                 key={pKey}
-                                                                className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200 flex items-center gap-1"
+                                                                className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-surface-secondary text-foreground-secondary border border-border-subtle flex items-center gap-1"
                                                                 title={def?.description || pKey}
                                                             >
-                                                                <Check className="w-3 h-3 text-emerald-600" />
+                                                                <Check className="w-3 h-3 text-success" />
                                                                 <span>{def?.label || pKey}</span>
                                                             </span>
                                                         );
@@ -430,17 +430,17 @@ export default function AdminsManagementPage() {
             {/* Create Admin Modal */}
             {isCreateModalOpen && (
                 <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-                    <div className="bg-white rounded-3xl max-w-2xl w-full p-6 md:p-8 space-y-6 max-h-[90vh] flex flex-col shadow-2xl">
+                    <div className="bg-surface rounded-3xl max-w-2xl w-full p-6 md:p-8 space-y-6 max-h-[90vh] flex flex-col shadow-2xl">
                         <div className="flex items-center justify-between border-b border-soft-border pb-4">
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
                                     <UserPlus className="w-5 h-5" />
                                 </div>
-                                <h3 className="text-lg font-black text-slate-800">تعریف مدیر جدید در سیستم</h3>
+                                <h3 className="text-lg font-black text-foreground">تعریف مدیر جدید در سیستم</h3>
                             </div>
                             <button
                                 onClick={() => setIsCreateModalOpen(false)}
-                                className="p-2 text-secondary hover:text-slate-800 rounded-xl"
+                                className="p-2 text-secondary hover:text-foreground rounded-xl"
                             >
                                 <X className="w-5 h-5" />
                             </button>
@@ -450,8 +450,8 @@ export default function AdminsManagementPage() {
                             {/* Inputs */}
                             <div className="space-y-4">
                                 <div>
-                                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                                        شماره موبایل مدیر <span className="text-red-500">*</span>
+                                    <label className="block text-xs font-bold text-foreground-secondary mb-1.5">
+                                        شماره موبایل مدیر <span className="text-error">*</span>
                                     </label>
                                     <input
                                         type="text"
@@ -459,7 +459,7 @@ export default function AdminsManagementPage() {
                                         value={createPhone}
                                         onChange={(e) => setCreatePhone(e.target.value)}
                                         dir="ltr"
-                                        className="w-full px-4 py-3 bg-soft-bg rounded-2xl text-sm border-none focus:ring-2 focus:ring-primary/20 text-slate-800 font-bold"
+                                        className="w-full px-4 py-3 bg-soft-bg rounded-2xl text-sm border-none focus:ring-2 focus:ring-primary/20 text-foreground font-bold"
                                     />
                                     <p className="text-[11px] text-secondary mt-1">
                                         در صورت وجود کاربر در سیستم، دسترسی مدیریت به وی اختصاص داده می‌شود؛ در غیر این صورت حساب جدید ایجاد خواهد شد.
@@ -468,23 +468,23 @@ export default function AdminsManagementPage() {
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-xs font-bold text-slate-700 mb-1.5">نام</label>
+                                        <label className="block text-xs font-bold text-foreground-secondary mb-1.5">نام</label>
                                         <input
                                             type="text"
                                             placeholder="نام مدیر"
                                             value={createFirstName}
                                             onChange={(e) => setCreateFirstName(e.target.value)}
-                                            className="w-full px-4 py-3 bg-soft-bg rounded-2xl text-sm border-none focus:ring-2 focus:ring-primary/20 text-slate-800"
+                                            className="w-full px-4 py-3 bg-soft-bg rounded-2xl text-sm border-none focus:ring-2 focus:ring-primary/20 text-foreground"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-bold text-slate-700 mb-1.5">نام خانوادگی</label>
+                                        <label className="block text-xs font-bold text-foreground-secondary mb-1.5">نام خانوادگی</label>
                                         <input
                                             type="text"
                                             placeholder="نام خانوادگی مدیر"
                                             value={createLastName}
                                             onChange={(e) => setCreateLastName(e.target.value)}
-                                            className="w-full px-4 py-3 bg-soft-bg rounded-2xl text-sm border-none focus:ring-2 focus:ring-primary/20 text-slate-800"
+                                            className="w-full px-4 py-3 bg-soft-bg rounded-2xl text-sm border-none focus:ring-2 focus:ring-primary/20 text-foreground"
                                         />
                                     </div>
                                 </div>
@@ -494,7 +494,7 @@ export default function AdminsManagementPage() {
                             <div className="space-y-4 pt-2 border-t border-soft-border">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <h4 className="text-sm font-black text-slate-800">تعیین دسترسی‌های مجاز</h4>
+                                        <h4 className="text-sm font-black text-foreground">تعیین دسترسی‌های مجاز</h4>
                                         <p className="text-xs text-secondary mt-0.5">
                                             دسترسی‌های مدنظر را بر اساس بخش‌های کاری انتخاب کنید.
                                         </p>
@@ -510,10 +510,10 @@ export default function AdminsManagementPage() {
                                         return (
                                             <div
                                                 key={category}
-                                                className="border border-soft-border rounded-2xl p-4 bg-slate-50/50 space-y-3"
+                                                className="border border-soft-border rounded-2xl p-4 bg-surface-secondary/50 space-y-3"
                                             >
                                                 <div className="flex items-center justify-between border-b border-soft-border pb-2.5">
-                                                    <span className="text-xs font-black text-slate-800">{category}</span>
+                                                    <span className="text-xs font-black text-foreground">{category}</span>
                                                     <button
                                                         type="button"
                                                         onClick={() => toggleCategoryAll(perms)}
@@ -531,8 +531,8 @@ export default function AdminsManagementPage() {
                                                                 key={p.key}
                                                                 className={`flex items-start gap-2.5 p-2 rounded-xl cursor-pointer transition border ${
                                                                     isChecked
-                                                                        ? "bg-white border-indigo-300 shadow-sm"
-                                                                        : "bg-transparent border-transparent hover:bg-white/80"
+                                                                        ? "bg-surface border-indigo-300 shadow-sm"
+                                                                        : "bg-transparent border-transparent hover:bg-surface/80"
                                                                 }`}
                                                             >
                                                                 <input
@@ -542,7 +542,7 @@ export default function AdminsManagementPage() {
                                                                     className="mt-0.5 rounded text-indigo-600 focus:ring-indigo-500 h-4 w-4"
                                                                 />
                                                                 <div className="space-y-0.5">
-                                                                    <div className="text-xs font-bold text-slate-800">
+                                                                    <div className="text-xs font-bold text-foreground">
                                                                         {p.label}
                                                                     </div>
                                                                     <div className="text-[10px] text-secondary">
@@ -563,7 +563,7 @@ export default function AdminsManagementPage() {
                         <div className="flex items-center justify-end gap-3 pt-4 border-t border-soft-border">
                             <button
                                 onClick={() => setIsCreateModalOpen(false)}
-                                className="px-5 py-2.5 text-xs font-bold text-secondary hover:text-slate-800 rounded-xl hover:bg-soft-bg"
+                                className="px-5 py-2.5 text-xs font-bold text-secondary hover:text-foreground rounded-xl hover:bg-soft-bg"
                             >
                                 انصراف
                             </button>
@@ -590,14 +590,14 @@ export default function AdminsManagementPage() {
             {/* Edit Admin Permissions Modal */}
             {isEditModalOpen && selectedAdmin && (
                 <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-                    <div className="bg-white rounded-3xl max-w-2xl w-full p-6 md:p-8 space-y-6 max-h-[90vh] flex flex-col shadow-2xl">
+                    <div className="bg-surface rounded-3xl max-w-2xl w-full p-6 md:p-8 space-y-6 max-h-[90vh] flex flex-col shadow-2xl">
                         <div className="flex items-center justify-between border-b border-soft-border pb-4">
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
                                     <Key className="w-5 h-5" />
                                 </div>
                                 <div>
-                                    <h3 className="text-lg font-black text-slate-800">ویرایش دسترسی‌های مدیر</h3>
+                                    <h3 className="text-lg font-black text-foreground">ویرایش دسترسی‌های مدیر</h3>
                                     <p className="text-xs text-secondary">
                                         {[selectedAdmin.firstName, selectedAdmin.lastName].filter(Boolean).join(" ") ||
                                             selectedAdmin.phoneNumber}
@@ -606,7 +606,7 @@ export default function AdminsManagementPage() {
                             </div>
                             <button
                                 onClick={() => setIsEditModalOpen(false)}
-                                className="p-2 text-secondary hover:text-slate-800 rounded-xl"
+                                className="p-2 text-secondary hover:text-foreground rounded-xl"
                             >
                                 <X className="w-5 h-5" />
                             </button>
@@ -614,7 +614,7 @@ export default function AdminsManagementPage() {
 
                         <div className="flex-1 overflow-y-auto space-y-4 pr-1 pl-1">
                             <div className="flex items-center justify-between">
-                                <span className="text-xs font-bold text-slate-700">
+                                <span className="text-xs font-bold text-foreground-secondary">
                                     دسترسی‌های فعال فعلی: {toPersianDigits(selectedPermissions.length)} مورد
                                 </span>
                             </div>
@@ -625,10 +625,10 @@ export default function AdminsManagementPage() {
                                     return (
                                         <div
                                             key={category}
-                                            className="border border-soft-border rounded-2xl p-4 bg-slate-50/50 space-y-3"
+                                            className="border border-soft-border rounded-2xl p-4 bg-surface-secondary/50 space-y-3"
                                         >
                                             <div className="flex items-center justify-between border-b border-soft-border pb-2.5">
-                                                <span className="text-xs font-black text-slate-800">{category}</span>
+                                                <span className="text-xs font-black text-foreground">{category}</span>
                                                 <button
                                                     type="button"
                                                     onClick={() => toggleCategoryAll(perms)}
@@ -646,8 +646,8 @@ export default function AdminsManagementPage() {
                                                             key={p.key}
                                                             className={`flex items-start gap-2.5 p-2 rounded-xl cursor-pointer transition border ${
                                                                 isChecked
-                                                                    ? "bg-white border-indigo-300 shadow-sm"
-                                                                    : "bg-transparent border-transparent hover:bg-white/80"
+                                                                    ? "bg-surface border-indigo-300 shadow-sm"
+                                                                    : "bg-transparent border-transparent hover:bg-surface/80"
                                                             }`}
                                                         >
                                                             <input
@@ -657,7 +657,7 @@ export default function AdminsManagementPage() {
                                                                 className="mt-0.5 rounded text-indigo-600 focus:ring-indigo-500 h-4 w-4"
                                                             />
                                                             <div className="space-y-0.5">
-                                                                <div className="text-xs font-bold text-slate-800">
+                                                                <div className="text-xs font-bold text-foreground">
                                                                     {p.label}
                                                                 </div>
                                                                 <div className="text-[10px] text-secondary">
@@ -677,7 +677,7 @@ export default function AdminsManagementPage() {
                         <div className="flex items-center justify-end gap-3 pt-4 border-t border-soft-border">
                             <button
                                 onClick={() => setIsEditModalOpen(false)}
-                                className="px-5 py-2.5 text-xs font-bold text-secondary hover:text-slate-800 rounded-xl hover:bg-soft-bg"
+                                className="px-5 py-2.5 text-xs font-bold text-secondary hover:text-foreground rounded-xl hover:bg-soft-bg"
                             >
                                 انصراف
                             </button>
@@ -704,13 +704,13 @@ export default function AdminsManagementPage() {
             {/* Revoke Admin Confirmation Modal */}
             {isRevokeModalOpen && selectedAdmin && (
                 <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-                    <div className="bg-white rounded-3xl max-w-md w-full p-6 space-y-6 shadow-2xl">
-                        <div className="flex items-center gap-3 text-red-600">
-                            <div className="w-12 h-12 rounded-2xl bg-red-50 flex items-center justify-center border border-red-100 flex-shrink-0">
+                    <div className="bg-surface rounded-3xl max-w-md w-full p-6 space-y-6 shadow-2xl">
+                        <div className="flex items-center gap-3 text-error">
+                            <div className="w-12 h-12 rounded-2xl bg-error-subtle flex items-center justify-center border border-error/30 flex-shrink-0">
                                 <UserX className="w-6 h-6" />
                             </div>
                             <div>
-                                <h3 className="text-base font-black text-slate-800">عزل دسترسی مدیر</h3>
+                                <h3 className="text-base font-black text-foreground">عزل دسترسی مدیر</h3>
                                 <p className="text-xs text-secondary mt-0.5">
                                     {[selectedAdmin.firstName, selectedAdmin.lastName].filter(Boolean).join(" ") ||
                                         selectedAdmin.phoneNumber}
@@ -718,12 +718,12 @@ export default function AdminsManagementPage() {
                             </div>
                         </div>
 
-                        <p className="text-xs text-slate-600 leading-relaxed">
+                        <p className="text-xs text-foreground-secondary leading-relaxed">
                             آیا از لغو نقش و دسترسی‌های مدیریت این کاربر اطمینان دارید؟ با این کار، کاربر به یک کاربر عادی تبدیل شده و دسترسی وی به پنل مدیریت فوراً قطع خواهد شد.
                         </p>
 
                         <div>
-                            <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                            <label className="block text-xs font-bold text-foreground-secondary mb-1.5">
                                 دلیل عزل (اختیاری جهت ثبت در تاریخچه):
                             </label>
                             <input
@@ -731,14 +731,14 @@ export default function AdminsManagementPage() {
                                 placeholder="مثال: تغییر مسئولیت، پایان همکاری..."
                                 value={revokeReason}
                                 onChange={(e) => setRevokeReason(e.target.value)}
-                                className="w-full px-4 py-3 bg-soft-bg rounded-2xl text-xs border-none focus:ring-2 focus:ring-red-500/20 text-slate-800"
+                                className="w-full px-4 py-3 bg-soft-bg rounded-2xl text-xs border-none focus:ring-2 focus:ring-red-500/20 text-foreground"
                             />
                         </div>
 
                         <div className="flex items-center justify-end gap-3 pt-2">
                             <button
                                 onClick={() => setIsRevokeModalOpen(false)}
-                                className="px-5 py-2.5 text-xs font-bold text-secondary hover:text-slate-800 rounded-xl hover:bg-soft-bg"
+                                className="px-5 py-2.5 text-xs font-bold text-secondary hover:text-foreground rounded-xl hover:bg-soft-bg"
                             >
                                 انصراف
                             </button>

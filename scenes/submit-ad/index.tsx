@@ -602,8 +602,8 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
     if (!adminMode && isRestricted) {
         return (
             <div className="min-h-[70vh] flex items-center justify-center p-4">
-                <div className="max-w-md w-full bg-white rounded-3xl p-6 sm:p-8 border border-soft-border shadow-md text-center space-y-5">
-                    <div className="w-16 h-16 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center mx-auto">
+                <div className="max-w-md w-full bg-surface rounded-3xl p-6 sm:p-8 border border-soft-border shadow-md text-center space-y-5">
+                    <div className="w-16 h-16 bg-error-subtle text-error rounded-2xl flex items-center justify-center mx-auto">
                         <ShieldAlert className="w-8 h-8" />
                     </div>
                     <div className="space-y-2">
@@ -644,7 +644,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
     }
 
     return (
-        <div className="min-h-screen bg-gray-50/50 py-8 px-4 sm:px-6 lg:px-8 pb-32 lg:pb-12">
+        <div className="min-h-screen bg-surface-secondary/50 py-8 px-4 sm:px-6 lg:px-8 pb-32 lg:pb-12">
             <div className="max-w-3xl mx-auto">
                 <header className="mb-6 flex items-start justify-between">
                     <div>
@@ -664,14 +664,14 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                 </header>
 
                 {/* Mobile Compact Step Indicator */}
-                <div className="sm:hidden mb-6 bg-white p-4 rounded-2xl border border-gray-100 shadow-xs">
+                <div className="sm:hidden mb-6 bg-surface p-4 rounded-2xl border border-border-subtle shadow-xs">
                     <div className="flex justify-between items-center text-xs font-bold text-brand mb-2">
                         <span>
                             مرحله {toPersianDigits(currentStepIndex + 1)} از {toPersianDigits(STEPS_CONFIG.length)}:
                         </span>
                         <span className="text-primary">{STEPS_CONFIG[currentStepIndex].label}</span>
                     </div>
-                    <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
+                    <div className="w-full bg-surface-secondary h-2 rounded-full overflow-hidden">
                         <div
                             className="bg-primary h-full transition-all duration-300 rounded-full"
                             style={{ width: `${((currentStepIndex + 1) / STEPS_CONFIG.length) * 100}%` }}
@@ -695,7 +695,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                                     ? "bg-primary text-white ring-4 ring-primary/20"
                                                     : isCompleted
                                                         ? "bg-brand text-white"
-                                                        : "bg-gray-200 text-gray-500"
+                                                        : "bg-gray-200 text-foreground-muted"
                                             )}
                                         >
                                             <s.icon className="h-5 w-5" />
@@ -724,7 +724,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                 </nav>
 
                 {/* Form Card Content */}
-                <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 sm:p-8 min-h-[480px] flex flex-col justify-between">
+                <div className="bg-surface rounded-3xl shadow-sm border border-border-subtle p-6 sm:p-8 min-h-[480px] flex flex-col justify-between">
                     <div>
                         {/* 1. CATEGORY */}
                         {step === "CATEGORY" && (
@@ -744,7 +744,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                 <div className="grid grid-cols-1 gap-5">
                                     <div>
                                         <label className="block text-xs font-bold text-brand mb-2">
-                                            شهر ملک <span className="text-red-500">*</span>
+                                            شهر ملک <span className="text-error">*</span>
                                         </label>
                                         <button
                                             type="button"
@@ -752,7 +752,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                             className="w-full flex items-center justify-between p-3.5 sm:p-4 bg-soft-bg hover:bg-soft-bg/80 border border-soft-border hover:border-primary/50 rounded-2xl transition-all group text-right focus:outline-none focus:ring-2 focus:ring-primary/20"
                                         >
                                             <div className="flex items-center gap-3 min-w-0">
-                                                <div className="w-10 h-10 rounded-xl bg-white border border-soft-border flex items-center justify-center group-hover:border-primary/30 group-hover:text-primary transition-colors text-brand shrink-0">
+                                                <div className="w-10 h-10 rounded-xl bg-surface border border-soft-border flex items-center justify-center group-hover:border-primary/30 group-hover:text-primary transition-colors text-brand shrink-0">
                                                     <MapPin className="w-5 h-5 text-primary" />
                                                 </div>
                                                 <div className="min-w-0 text-right">
@@ -773,7 +773,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
 
                                     <div>
                                         <label className="block text-xs font-bold text-brand mb-2">
-                                            دسته‌بندی اصلی <span className="text-red-500">*</span>
+                                            دسته‌بندی اصلی <span className="text-error">*</span>
                                         </label>
                                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                                             {categories?.map((cat) => {
@@ -801,7 +801,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                                             "p-4 border rounded-2xl text-right transition-all flex flex-col justify-between min-h-[70px]",
                                                             isSelected
                                                                 ? "border-primary bg-primary/10 text-brand font-bold shadow-xs"
-                                                                : "border-gray-200 hover:border-primary/40 text-text-light bg-white"
+                                                                : "border-border-subtle hover:border-primary/40 text-text-light bg-surface"
                                                         )}
                                                     >
                                                         <div className="flex items-center gap-2.5">
@@ -809,7 +809,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                                                 <img
                                                                     src={getMediaUrl(cat.icon)}
                                                                     alt=""
-                                                                    className="w-7 h-7 object-contain rounded-lg p-0.5 bg-gray-50 border border-gray-100 shrink-0"
+                                                                    className="w-7 h-7 object-contain rounded-lg p-0.5 bg-surface-secondary border border-border-subtle shrink-0"
                                                                 />
                                                             )}
                                                             <span className="block text-sm font-black">{cat.displayName}</span>
@@ -870,7 +870,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                                     {subcatConfig.allowedPriceModels.length > 1 ? (
                                                         <div>
                                                             <label className="block text-xs font-bold text-brand mb-2">
-                                                                نوع معامله <span className="text-red-500">*</span>
+                                                                نوع معامله <span className="text-error">*</span>
                                                             </label>
                                                             <div className="flex flex-wrap gap-2.5">
                                                                 {subcatConfig.allowedPriceModels.map((pm) => {
@@ -897,7 +897,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                                                                 "px-4 py-2.5 rounded-xl border text-xs font-bold transition-all flex items-center gap-2",
                                                                                 isSelected
                                                                                     ? "border-primary bg-primary text-white shadow-xs"
-                                                                                    : "border-gray-200 bg-white text-text-light hover:border-primary/40 hover:text-brand"
+                                                                                    : "border-border-subtle bg-surface text-text-light hover:border-primary/40 hover:text-brand"
                                                                             )}
                                                                         >
                                                                             {isSelected && <Check className="w-3.5 h-3.5" />}
@@ -932,7 +932,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                     <div>
                                         <div className="flex items-center justify-between mb-2">
                                             <label className="block text-xs font-bold text-brand">
-                                                عنوان آگهی <span className="text-red-500">*</span>
+                                                عنوان آگهی <span className="text-error">*</span>
                                             </label>
                                             <span className="text-[11px] text-text-light font-medium">
                                                 {toPersianDigits(formData.title?.length || 0)} / ۱۲۰ کاراکتر (حداقل ۵)
@@ -941,10 +941,10 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                         <input
                                             type="text"
                                             className={cn(
-                                                "w-full p-3.5 border rounded-xl text-sm focus:bg-white focus:ring-2 outline-hidden transition-all",
+                                                "w-full p-3.5 border rounded-xl text-sm focus:bg-surface focus:ring-2 outline-hidden transition-all",
                                                 titleError
-                                                    ? "border-red-500 bg-red-50/40 focus:ring-red-400 text-red-900"
-                                                    : "border-gray-200 bg-gray-50 focus:ring-primary focus:border-primary"
+                                                    ? "border-red-500 bg-error-subtle/40 focus:ring-red-400 text-red-900"
+                                                    : "border-border-subtle bg-surface-secondary focus:ring-primary focus:border-primary"
                                             )}
                                             placeholder="مثلاً: آپارتمان ۱۱۰ متری دو خوابه فول امکانات در ونک"
                                             value={formData.title || ""}
@@ -954,7 +954,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                             }}
                                         />
                                         {titleError && (
-                                            <p className="text-xs text-red-500 font-bold mt-1.5 flex items-center gap-1">
+                                            <p className="text-xs text-error font-bold mt-1.5 flex items-center gap-1">
                                                 <span>⚠️</span>
                                                 <span>{titleError}</span>
                                             </p>
@@ -963,7 +963,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                     <div>
                                         <div className="flex items-center justify-between mb-2">
                                             <label className="block text-xs font-bold text-brand">
-                                                توضیحات تکمیلی <span className="text-red-500">*</span>
+                                                توضیحات تکمیلی <span className="text-error">*</span>
                                             </label>
                                             <span className="text-[11px] text-text-light font-medium">
                                                 {toPersianDigits(formData.description?.length || 0)} / ۴۰۰۰ کاراکتر (حداقل ۲۰)
@@ -972,10 +972,10 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                         <textarea
                                             rows={6}
                                             className={cn(
-                                                "w-full p-3.5 border rounded-xl text-sm focus:bg-white focus:ring-2 outline-hidden leading-relaxed transition-all",
+                                                "w-full p-3.5 border rounded-xl text-sm focus:bg-surface focus:ring-2 outline-hidden leading-relaxed transition-all",
                                                 descriptionError
-                                                    ? "border-red-500 bg-red-50/40 focus:ring-red-400 text-red-900"
-                                                    : "border-gray-200 bg-gray-50 focus:ring-primary focus:border-primary"
+                                                    ? "border-red-500 bg-error-subtle/40 focus:ring-red-400 text-red-900"
+                                                    : "border-border-subtle bg-surface-secondary focus:ring-primary focus:border-primary"
                                             )}
                                             placeholder="امکانات، موقعیت دسترسی، شرایط بازدید و ویژگی‌های شاخص ملک را شرح دهید (حداقل ۲۰ کاراکتر)..."
                                             value={formData.description || ""}
@@ -985,7 +985,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                             }}
                                         />
                                         {descriptionError && (
-                                            <p className="text-xs text-red-500 font-bold mt-1.5 flex items-center gap-1">
+                                            <p className="text-xs text-error font-bold mt-1.5 flex items-center gap-1">
                                                 <span>⚠️</span>
                                                 <span>{descriptionError}</span>
                                             </p>
@@ -1010,7 +1010,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
 
                                 {/* Locked Active Price Model Display */}
                                 {activePriceModel && (
-                                    <div className="flex items-center justify-between p-4 bg-gray-50/80 border border-gray-200/80 rounded-2xl">
+                                    <div className="flex items-center justify-between p-4 bg-surface-secondary/80 border border-border-subtle/80 rounded-2xl">
                                         <div className="flex items-center gap-3">
                                             <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
                                                 <Wallet className="w-5 h-5" />
@@ -1024,7 +1024,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                                 </span>
                                             </div>
                                         </div>
-                                        <span className="text-[11px] text-text-light bg-white border border-gray-200 px-3 py-1 rounded-xl">
+                                        <span className="text-[11px] text-text-light bg-surface border border-border-subtle px-3 py-1 rounded-xl">
                                             تعیین‌شده در مرحله دسته‌بندی
                                         </span>
                                     </div>
@@ -1032,7 +1032,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
 
                                 {/* Dynamic Pricing Fields based on selected PriceModel */}
                                 {activePriceModel && (
-                                    <div className="p-5 bg-gray-50/60 border border-gray-200/80 rounded-2xl">
+                                    <div className="p-5 bg-surface-secondary/60 border border-border-subtle/80 rounded-2xl">
                                         <DynamicPricingFields
                                             priceModel={activePriceModel}
                                             values={formData.rawPricing || {}}
@@ -1060,7 +1060,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                 {/* Dynamic Attributes Renderer based on Subcategory Attribute Definitions */}
                                 {subcatConfig?.attributeDefinitions && subcatConfig.attributeDefinitions.length > 0 && (
                                     <div className="pt-2">
-                                        <h3 className="text-sm font-bold text-brand mb-4 pb-2 border-b border-gray-100">
+                                        <h3 className="text-sm font-bold text-brand mb-4 pb-2 border-b border-border-subtle">
                                             مشخصات فنی و امکانات {subcatConfig.subcategory?.displayName || "ملک"}
                                         </h3>
                                         <DynamicAttributeRenderer
@@ -1140,9 +1140,9 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                         {step === "REVIEW" && (
                             <div className="space-y-6">
                                 <h2 className="text-lg font-black text-brand">بازبینی و تایید آگهی</h2>
-                                <div className="bg-gray-50/80 rounded-2xl p-6 space-y-4 border border-gray-100 text-sm">
+                                <div className="bg-surface-secondary/80 rounded-2xl p-6 space-y-4 border border-border-subtle text-sm">
                                     {adminMode && (
-                                        <div className="flex justify-between pb-2 border-b border-gray-200/50">
+                                        <div className="flex justify-between pb-2 border-b border-border-subtle/50">
                                             <span className="text-text-light">نوع مالکیت آگهی:</span>
                                             <span className="font-bold text-brand">
                                                 {adminOwnership.isPlatform
@@ -1151,21 +1151,21 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                             </span>
                                         </div>
                                     )}
-                                    <div className="flex justify-between pb-2 border-b border-gray-200/50">
+                                    <div className="flex justify-between pb-2 border-b border-border-subtle/50">
                                         <span className="text-text-light">عنوان آگهی:</span>
                                         <span className="font-bold text-brand text-left">{formData.title}</span>
                                     </div>
-                                    <div className="flex justify-between pb-2 border-b border-gray-200/50">
+                                    <div className="flex justify-between pb-2 border-b border-border-subtle/50">
                                         <span className="text-text-light">شهر و منطقه:</span>
                                         <span className="font-bold text-brand">{cityName}</span>
                                     </div>
-                                    <div className="flex justify-between pb-2 border-b border-gray-200/50">
+                                    <div className="flex justify-between pb-2 border-b border-border-subtle/50">
                                         <span className="text-text-light">دسته‌بندی:</span>
                                         <span className="font-bold text-brand">
                                             {subcatConfig?.subcategory?.categoryDisplayName || formData.categoryPath?.categoryKey} / {subcatConfig?.subcategory?.displayName || formData.categoryPath?.subcategoryKey}
                                         </span>
                                     </div>
-                                    <div className="flex justify-between pb-2 border-b border-gray-200/50">
+                                    <div className="flex justify-between pb-2 border-b border-border-subtle/50">
                                         <span className="text-text-light">مدل معامله:</span>
                                         <span className="font-bold text-primary">
                                             {activePriceModel?.displayName || formData.categoryPath?.businessModelKey}
@@ -1181,7 +1181,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                                     const val = formData.rawPricing?.[f.key];
                                                     if (val === undefined || val === null || val === "") return null;
                                                     return (
-                                                        <div key={f.key} className="flex justify-between p-2.5 bg-white rounded-xl border border-gray-200/60 text-xs">
+                                                        <div key={f.key} className="flex justify-between p-2.5 bg-surface rounded-xl border border-border-subtle/60 text-xs">
                                                             <span className="text-text-light">{f.label}:</span>
                                                             <span className="font-bold text-brand">
                                                                 {f.fieldType === "NUMBER" ? formatPrice(Number(val)) : String(val)} {f.unit || ""}
@@ -1193,7 +1193,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                         </div>
                                     )}
 
-                                    <div className="border-t border-gray-200/60 pt-3">
+                                    <div className="border-t border-border-subtle/60 pt-3">
                                         <p className="text-text-light text-xs mb-1">توضیحات آگهی:</p>
                                         <p className="text-xs text-text-main line-clamp-3 leading-relaxed">
                                             {formData.description}
@@ -1204,21 +1204,21 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                 {/* Quota / Publication Fee Entitlement Status */}
                                 {!adminMode && (
                                     remainingQuota > 0 ? (
-                                        <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200/80 text-xs text-emerald-800 leading-relaxed flex items-center justify-between">
+                                        <div className="p-4 rounded-2xl bg-success-subtle border border-success/30/80 text-xs text-success leading-relaxed flex items-center justify-between">
                                             <div className="flex items-center gap-2">
-                                                <Sparkles className="w-4 h-4 text-emerald-600 shrink-0" />
+                                                <Sparkles className="w-4 h-4 text-success shrink-0" />
                                                 <span className="font-bold">انتشار رایگان از سهمیه اشتراک</span>
                                             </div>
-                                            <span className="px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-900 font-black text-[11px]">
+                                            <span className="px-2.5 py-1 rounded-lg bg-success-subtle text-emerald-900 font-black text-[11px]">
                                                 سهمیه باقیمانده: {toPersianDigits(remainingQuota)} آگهی
                                             </span>
                                         </div>
                                     ) : (
-                                        <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200/80 text-xs text-amber-900 leading-relaxed flex items-start gap-2.5">
-                                            <Wallet className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                                        <div className="p-4 rounded-2xl bg-warning-subtle border border-warning/30/80 text-xs text-amber-900 leading-relaxed flex items-start gap-2.5">
+                                            <Wallet className="w-4 h-4 text-warning shrink-0 mt-0.5" />
                                             <div>
                                                 <span className="font-bold block mb-0.5">تعرفه انتشار آگهی</span>
-                                                <p className="text-amber-800/90 text-[11px] leading-relaxed">
+                                                <p className="text-warning/90 text-[11px] leading-relaxed">
                                                     سهمیه اشتراک فعال موجود نیست. هزینه انتشار آگهی طبق تعرفه مصوب در لحظه ارسال از کیف پول رزرو (Hold) شده و پس از بررسی و تایید کارشناسان نهایی می‌گردد. در صورت عدم تایید، مبلغ به کیف پول بازگردانده می‌شود.
                                                 </p>
                                             </div>
@@ -1226,8 +1226,8 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                     )
                                 )}
 
-                                <div className="p-4 rounded-2xl bg-amber-50 border border-amber-100 text-xs text-amber-800 leading-relaxed flex items-start gap-2.5">
-                                    <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                                <div className="p-4 rounded-2xl bg-warning-subtle border border-warning/30 text-xs text-warning leading-relaxed flex items-start gap-2.5">
+                                    <Info className="w-4 h-4 text-warning shrink-0 mt-0.5" />
                                     <span>
                                         {adminMode
                                             ? "با کلیک روی ثبت نهایی، آگهی به صورت مستقیم در وضعیت فعال در سامانه ثبت و منتشر می‌شود."
@@ -1239,7 +1239,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                     </div>
 
                     {/* Navigation Buttons */}
-                    <div className="mt-10 flex items-center justify-between border-t border-gray-100 pt-6">
+                    <div className="mt-10 flex items-center justify-between border-t border-border-subtle pt-6">
                         <button
                             type="button"
                             onClick={handleBack}
@@ -1270,7 +1270,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                             submitMutation.mutate({ shouldPublish: false });
                                         }}
                                         disabled={submitMutation.isPending}
-                                        className="px-4 py-2.5 rounded-xl border border-gray-200 text-text-main font-bold text-xs hover:bg-gray-50 transition-colors"
+                                        className="px-4 py-2.5 rounded-xl border border-border-subtle text-text-main font-bold text-xs hover:bg-surface-secondary transition-colors"
                                     >
                                         ذخیره پیش‌نویس
                                     </button>

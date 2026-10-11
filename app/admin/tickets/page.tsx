@@ -159,8 +159,8 @@ export default function AdminTicketsPage() {
     if (!canView) {
         return (
             <div className="p-8">
-                <div className="max-w-md mx-auto my-16 p-8 bg-white rounded-3xl border border-red-200 text-center shadow-sm">
-                    <div className="w-14 h-14 rounded-2xl bg-red-50 text-red-500 mx-auto flex items-center justify-center mb-4">
+                <div className="max-w-md mx-auto my-16 p-8 bg-surface rounded-3xl border border-error/30 text-center shadow-sm">
+                    <div className="w-14 h-14 rounded-2xl bg-error-subtle text-error mx-auto flex items-center justify-center mb-4">
                         <ShieldAlert className="w-8 h-8" />
                     </div>
                     <h3 className="text-base font-black text-brand mb-2">
@@ -168,7 +168,7 @@ export default function AdminTicketsPage() {
                     </h3>
                     <p className="text-xs text-secondary leading-relaxed">
                         حساب کاربری شما مجوز مشاهده تیکت‌های پشتیبانی (
-                        <code className="text-red-600 bg-red-50 px-1 py-0.5 rounded">
+                        <code className="text-error bg-error-subtle px-1 py-0.5 rounded">
                             tickets.view
                         </code>
                         ) را ندارد. لطفاً با راهبر ارشد سیستم (SuperAdmin) تماس بگیرید.
@@ -191,7 +191,7 @@ export default function AdminTicketsPage() {
     return (
         <div className="p-6 lg:p-8 space-y-6" dir="rtl">
             {/* Header & Page Title */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-soft-border shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-surface p-6 rounded-3xl border border-soft-border shadow-xs">
                 <div className="flex items-center gap-3">
                     <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
                         <Headphones className="w-6 h-6" />
@@ -230,7 +230,7 @@ export default function AdminTicketsPage() {
             </div>
 
             {/* Filter Bar */}
-            <div className="bg-white p-4 rounded-3xl border border-soft-border flex flex-wrap items-center gap-3 shadow-xs">
+            <div className="bg-surface p-4 rounded-3xl border border-soft-border flex flex-wrap items-center gap-3 shadow-xs">
                 {/* Search */}
                 <div className="relative flex-1 min-w-[200px]">
                     <Search className="w-4 h-4 absolute right-3.5 top-1/2 -translate-y-1/2 text-secondary" />
@@ -258,7 +258,7 @@ export default function AdminTicketsPage() {
                         onChange={(e) =>
                             setSelectedStatus(e.target.value as TicketStatus | "ALL")
                         }
-                        className="px-3 py-2 rounded-2xl border border-soft-border text-xs font-bold bg-white outline-none focus:border-primary"
+                        className="px-3 py-2 rounded-2xl border border-soft-border text-xs font-bold bg-surface outline-none focus:border-primary"
                     >
                         <option value="ALL">همه وضعیت‌ها</option>
                         {Object.values(TicketStatus).map((st) => (
@@ -282,7 +282,7 @@ export default function AdminTicketsPage() {
                         id={topicFilterId}
                         value={selectedTopicId}
                         onChange={(e) => setSelectedTopicId(e.target.value)}
-                        className="px-3 py-2 rounded-2xl border border-soft-border text-xs font-bold bg-white outline-none focus:border-primary"
+                        className="px-3 py-2 rounded-2xl border border-soft-border text-xs font-bold bg-surface outline-none focus:border-primary"
                     >
                         <option value="ALL">همه موضوعات</option>
                         {topics?.map((topic) => (
@@ -297,7 +297,7 @@ export default function AdminTicketsPage() {
             {/* Master-Detail Layout */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-[600px]">
                 {/* Right: Ticket List (Master) */}
-                <div className="lg:col-span-5 bg-white rounded-3xl border border-soft-border p-4 flex flex-col shadow-xs">
+                <div className="lg:col-span-5 bg-surface rounded-3xl border border-soft-border p-4 flex flex-col shadow-xs">
                     <div className="flex items-center justify-between pb-3 mb-2 border-b border-soft-border">
                         <span className="text-xs font-black text-brand">
                             فهرست تیکت‌ها ({toPersianDigits(ticketsData?.total || 0)})
@@ -381,7 +381,7 @@ export default function AdminTicketsPage() {
                 </div>
 
                 {/* Left: Ticket Detail & Message History (Detail) */}
-                <div className="lg:col-span-7 bg-white rounded-3xl border border-soft-border p-6 flex flex-col shadow-xs">
+                <div className="lg:col-span-7 bg-surface rounded-3xl border border-soft-border p-6 flex flex-col shadow-xs">
                     {!selectedTicketId ? (
                         <div className="flex-1 flex flex-col items-center justify-center text-center py-24 text-secondary">
                             <div className="w-16 h-16 rounded-3xl bg-soft-bg flex items-center justify-center text-secondary mb-3">
@@ -512,7 +512,7 @@ export default function AdminTicketsPage() {
                                                     "flex flex-col max-w-[80%] rounded-2xl p-3.5 shadow-xs text-xs space-y-1.5",
                                                     isAdmin
                                                         ? "mr-auto bg-brand text-white rounded-bl-xs"
-                                                        : "ml-auto bg-white border border-soft-border text-brand rounded-br-xs"
+                                                        : "ml-auto bg-surface border border-soft-border text-brand rounded-br-xs"
                                                 )}
                                             >
                                                 <div className="flex items-center justify-between gap-4 text-[10px] opacity-75 border-b border-white/10 pb-1">
@@ -544,8 +544,8 @@ export default function AdminTicketsPage() {
 
                             {/* Reply Composer */}
                             {activeTicket.status === TicketStatus.CLOSED ? (
-                                <div className="p-3.5 rounded-2xl bg-gray-100 border border-gray-200 text-center text-xs text-secondary font-bold flex items-center justify-center gap-2">
-                                    <Lock className="w-4 h-4 text-gray-500" />
+                                <div className="p-3.5 rounded-2xl bg-surface-secondary border border-border-subtle text-center text-xs text-secondary font-bold flex items-center justify-center gap-2">
+                                    <Lock className="w-4 h-4 text-foreground-muted" />
                                     <span>
                                         این تیکت بسته شده است. برای ارسال پاسخ ابتدا وضعیت آن را تغییر دهید.
                                     </span>
@@ -581,7 +581,7 @@ export default function AdminTicketsPage() {
                                     </button>
                                 </form>
                             ) : (
-                                <div className="p-3 bg-amber-50 border border-amber-200 rounded-2xl text-xs text-amber-700 font-bold flex items-center gap-2">
+                                <div className="p-3 bg-warning-subtle border border-warning/30 rounded-2xl text-xs text-warning font-bold flex items-center gap-2">
                                     <AlertCircle className="w-4 h-4 shrink-0" />
                                     <span>
                                         شما مجوز ارسال پاسخ به تیکت‌ها (<code>tickets.reply</code>) را

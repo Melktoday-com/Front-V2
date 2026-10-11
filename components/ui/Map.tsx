@@ -257,7 +257,7 @@ export default function Map({ ads, zones, selectedZoneId, selectedZoneIds, onZon
                                 className={
                                     isSelected
                                         ? "font-black text-xs bg-primary text-white border-none px-3 py-1.5 rounded-lg shadow-lg"
-                                        : "font-bold text-xs bg-white/95 text-slate-700 border border-slate-200 px-2.5 py-1 rounded-md shadow-md"
+                                        : "font-bold text-xs bg-surface/95 text-foreground-secondary border border-border-subtle px-2.5 py-1 rounded-md shadow-md"
                                 }
                             >
                                 {zone.name}

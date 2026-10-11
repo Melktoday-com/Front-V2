@@ -344,8 +344,8 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
     if (!adminMode && isRestricted) {
         return (
             <div className="min-h-[70vh] flex items-center justify-center p-4">
-                <div className="max-w-md w-full bg-white rounded-3xl p-6 sm:p-8 border border-soft-border shadow-md text-center space-y-5">
-                    <div className="w-16 h-16 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center mx-auto">
+                <div className="max-w-md w-full bg-surface rounded-3xl p-6 sm:p-8 border border-soft-border shadow-md text-center space-y-5">
+                    <div className="w-16 h-16 bg-error-subtle text-error rounded-2xl flex items-center justify-center mx-auto">
                         <ShieldAlert className="w-8 h-8" />
                     </div>
                     <div className="space-y-2">
@@ -377,7 +377,7 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
     }
 
     return (
-        <div className="min-h-screen bg-gray-50/50 py-8 px-4 sm:px-6 lg:px-8 pb-32 lg:pb-12">
+        <div className="min-h-screen bg-surface-secondary/50 py-8 px-4 sm:px-6 lg:px-8 pb-32 lg:pb-12">
             <div className="max-w-3xl mx-auto">
                 <header className="mb-6 flex items-center justify-between">
                     <div>
@@ -393,14 +393,14 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
                 </header>
 
                 {/* Mobile Stepper */}
-                <div className="sm:hidden mb-6 bg-white p-4 rounded-2xl border border-gray-100 shadow-xs">
+                <div className="sm:hidden mb-6 bg-surface p-4 rounded-2xl border border-border-subtle shadow-xs">
                     <div className="flex justify-between items-center text-xs font-bold text-brand mb-2">
                         <span>
                             مرحله {toPersianDigits(currentStepIndex + 1)} از {toPersianDigits(STEPS_CONFIG.length)}:
                         </span>
                         <span className="text-primary">{STEPS_CONFIG[currentStepIndex].label}</span>
                     </div>
-                    <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
+                    <div className="w-full bg-surface-secondary h-2 rounded-full overflow-hidden">
                         <div
                             className="bg-primary h-full transition-all duration-300 rounded-full"
                             style={{ width: `${((currentStepIndex + 1) / STEPS_CONFIG.length) * 100}%` }}
@@ -424,7 +424,7 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
                                                     ? "bg-primary text-white ring-4 ring-primary/20"
                                                     : isCompleted
                                                         ? "bg-brand text-white"
-                                                        : "bg-gray-200 text-gray-500"
+                                                        : "bg-gray-200 text-foreground-muted"
                                             )}
                                         >
                                             <s.icon className="h-5 w-5" />
@@ -453,7 +453,7 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
                 </nav>
 
                 {/* Form Card Content */}
-                <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 sm:p-8 min-h-[480px] flex flex-col justify-between">
+                <div className="bg-surface rounded-3xl shadow-sm border border-border-subtle p-6 sm:p-8 min-h-[480px] flex flex-col justify-between">
                     <div>
                         {/* 1. CATEGORY & CITY */}
                         {step === "CATEGORY" && (
@@ -470,7 +470,7 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
                                 <div className="grid grid-cols-1 gap-5">
                                     <div>
                                         <label className="block text-xs font-bold text-brand mb-2">
-                                            شهر اقامتگاه <span className="text-red-500">*</span>
+                                            شهر اقامتگاه <span className="text-error">*</span>
                                         </label>
                                         <button
                                             type="button"
@@ -478,7 +478,7 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
                                             className="w-full flex items-center justify-between p-3.5 sm:p-4 bg-soft-bg hover:bg-soft-bg/80 border border-soft-border hover:border-primary/50 rounded-2xl transition-all group text-right focus:outline-none focus:ring-2 focus:ring-primary/20"
                                         >
                                             <div className="flex items-center gap-3 min-w-0">
-                                                <div className="w-10 h-10 rounded-xl bg-white border border-soft-border flex items-center justify-center group-hover:border-primary/30 group-hover:text-primary transition-colors text-brand shrink-0">
+                                                <div className="w-10 h-10 rounded-xl bg-surface border border-soft-border flex items-center justify-center group-hover:border-primary/30 group-hover:text-primary transition-colors text-brand shrink-0">
                                                     <MapPin className="w-5 h-5 text-primary" />
                                                 </div>
                                                 <div className="min-w-0 text-right">
@@ -499,7 +499,7 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
 
                                     <div>
                                         <label className="block text-xs font-bold text-brand mb-2">
-                                            نوع اقامتگاه <span className="text-red-500">*</span>
+                                            نوع اقامتگاه <span className="text-error">*</span>
                                         </label>
                                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                                             {categories?.map((cat) => {
@@ -523,7 +523,7 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
                                                             "p-4 border rounded-2xl text-right transition-all flex flex-col justify-between min-h-[70px]",
                                                             isSelected
                                                                 ? "border-primary bg-primary/10 text-brand font-bold shadow-xs"
-                                                                : "border-gray-200 hover:border-primary/40 text-text-light bg-white"
+                                                                : "border-border-subtle hover:border-primary/40 text-text-light bg-surface"
                                                         )}
                                                     >
                                                         <div className="flex items-center gap-2.5">
@@ -531,7 +531,7 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
                                                                 <img
                                                                     src={getMediaUrl(cat.icon)}
                                                                     alt=""
-                                                                    className="w-7 h-7 object-contain rounded-lg p-0.5 bg-gray-50 border border-gray-100 shrink-0"
+                                                                    className="w-7 h-7 object-contain rounded-lg p-0.5 bg-surface-secondary border border-border-subtle shrink-0"
                                                                 />
                                                             )}
                                                             <span className="block text-sm font-black">{cat.displayName}</span>
@@ -588,7 +588,7 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
                                                     {subcatConfig.allowedPriceModels.length > 1 ? (
                                                         <div>
                                                             <label className="block text-xs font-bold text-brand mb-2">
-                                                                مدل قیمت‌گذاری <span className="text-red-500">*</span>
+                                                                مدل قیمت‌گذاری <span className="text-error">*</span>
                                                             </label>
                                                             <div className="flex flex-wrap gap-2.5">
                                                                 {subcatConfig.allowedPriceModels.map((pm) => {
@@ -607,7 +607,7 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
                                                                                 "px-4 py-2.5 rounded-xl border text-xs font-bold transition-all flex items-center gap-2",
                                                                                 isSelected
                                                                                     ? "border-primary bg-primary text-white shadow-xs"
-                                                                                    : "border-gray-200 bg-white text-text-light hover:border-primary/40 hover:text-brand"
+                                                                                    : "border-border-subtle bg-surface text-text-light hover:border-primary/40 hover:text-brand"
                                                                             )}
                                                                         >
                                                                             {isSelected && <Check className="w-3.5 h-3.5" />}
@@ -650,11 +650,11 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
                                 <div className="space-y-4">
                                     <div>
                                         <label className="block text-xs font-bold text-brand mb-2">
-                                            عنوان اقامتگاه <span className="text-red-500">*</span>
+                                            عنوان اقامتگاه <span className="text-error">*</span>
                                         </label>
                                         <input
                                             type="text"
-                                            className="w-full p-3 border border-gray-200 rounded-xl bg-gray-50 text-sm focus:bg-white focus:ring-2 focus:ring-primary outline-hidden"
+                                            className="w-full p-3 border border-border-subtle rounded-xl bg-surface-secondary text-sm focus:bg-surface focus:ring-2 focus:ring-primary outline-hidden"
                                             placeholder="مثلاً: ویلای استخردار دو خوابه با چشم‌انداز جنگل در رامسر"
                                             value={formData.title}
                                             onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
@@ -662,11 +662,11 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
                                     </div>
                                     <div>
                                         <label className="block text-xs font-bold text-brand mb-2">
-                                            توضیحات و قوانین اقامتگاه <span className="text-red-500">*</span>
+                                            توضیحات و قوانین اقامتگاه <span className="text-error">*</span>
                                         </label>
                                         <textarea
                                             rows={5}
-                                            className="w-full p-3 border border-gray-200 rounded-xl bg-gray-50 text-sm focus:bg-white focus:ring-2 focus:ring-primary outline-hidden leading-relaxed"
+                                            className="w-full p-3 border border-border-subtle rounded-xl bg-surface-secondary text-sm focus:bg-surface focus:ring-2 focus:ring-primary outline-hidden leading-relaxed"
                                             placeholder="توضیحات درباره محیط، امکانات رفاهی، دسترسی به مراکز تفریحی و ساعت ورود/خروج..."
                                             value={formData.description}
                                             onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
@@ -676,7 +676,7 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
 
                                 {/* Locked Active Price Model Display */}
                                 {activePriceModel && (
-                                    <div className="flex items-center justify-between p-4 bg-gray-50/80 border border-gray-200/80 rounded-2xl">
+                                    <div className="flex items-center justify-between p-4 bg-surface-secondary/80 border border-border-subtle/80 rounded-2xl">
                                         <div className="flex items-center gap-3">
                                             <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
                                                 <Wallet className="w-5 h-5" />
@@ -690,7 +690,7 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
                                                 </span>
                                             </div>
                                         </div>
-                                        <span className="text-[11px] text-text-light bg-white border border-gray-200 px-3 py-1 rounded-xl">
+                                        <span className="text-[11px] text-text-light bg-surface border border-border-subtle px-3 py-1 rounded-xl">
                                             تعیین‌شده در مرحله دسته‌بندی
                                         </span>
                                     </div>
@@ -698,7 +698,7 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
 
                                 {/* Dynamic Pricing Fields */}
                                 {activePriceModel && (
-                                    <div className="p-5 bg-gray-50/60 border border-gray-200/80 rounded-2xl">
+                                    <div className="p-5 bg-surface-secondary/60 border border-border-subtle/80 rounded-2xl">
                                         <DynamicPricingFields
                                             priceModel={activePriceModel}
                                             values={rawPricing}
@@ -723,7 +723,7 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
                                 {/* Dynamic Attributes for Temporary Rental */}
                                 {subcatConfig?.attributeDefinitions && subcatConfig.attributeDefinitions.length > 0 && (
                                     <div className="pt-2">
-                                        <h3 className="text-sm font-bold text-brand mb-4 pb-2 border-b border-gray-100">
+                                        <h3 className="text-sm font-bold text-brand mb-4 pb-2 border-b border-border-subtle">
                                             امکانات و ظرفیت اقامتگاه
                                         </h3>
                                         <DynamicAttributeRenderer
@@ -796,9 +796,9 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
                         {step === "REVIEW" && (
                             <div className="space-y-6">
                                 <h2 className="text-lg font-black text-brand">بازبینی و ثبت نهایی اقامتگاه</h2>
-                                <div className="bg-gray-50/80 rounded-2xl p-6 space-y-4 border border-gray-100 text-sm">
+                                <div className="bg-surface-secondary/80 rounded-2xl p-6 space-y-4 border border-border-subtle text-sm">
                                     {adminMode && (
-                                        <div className="flex justify-between pb-2 border-b border-gray-200/50">
+                                        <div className="flex justify-between pb-2 border-b border-border-subtle/50">
                                             <span className="text-text-light">نوع مالکیت:</span>
                                             <span className="font-bold text-brand">
                                                 {adminOwnership.isPlatform
@@ -807,33 +807,33 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
                                             </span>
                                         </div>
                                     )}
-                                    <div className="flex justify-between pb-2 border-b border-gray-200/50">
+                                    <div className="flex justify-between pb-2 border-b border-border-subtle/50">
                                         <span className="text-text-light">عنوان اقامتگاه:</span>
                                         <span className="font-bold text-brand">{formData.title}</span>
                                     </div>
-                                    <div className="flex justify-between pb-2 border-b border-gray-200/50">
+                                    <div className="flex justify-between pb-2 border-b border-border-subtle/50">
                                         <span className="text-text-light">شهر:</span>
                                         <span className="font-bold text-brand">{cityName}</span>
                                     </div>
-                                    <div className="flex justify-between pb-2 border-b border-gray-200/50">
+                                    <div className="flex justify-between pb-2 border-b border-border-subtle/50">
                                         <span className="text-text-light">نوع اقامتگاه:</span>
                                         <span className="font-bold text-brand">
                                             {subcatConfig?.subcategory?.categoryDisplayName} / {subcatConfig?.subcategory?.displayName}
                                         </span>
                                     </div>
-                                    <div className="flex justify-between pb-2 border-b border-gray-200/50">
+                                    <div className="flex justify-between pb-2 border-b border-border-subtle/50">
                                         <span className="text-text-light">مدل قیمت‌گذاری:</span>
                                         <span className="font-bold text-primary">
                                             {activePriceModel?.displayName}
                                         </span>
                                     </div>
-                                    <div className="flex justify-between pb-2 border-b border-gray-200/50">
+                                    <div className="flex justify-between pb-2 border-b border-border-subtle/50">
                                         <span className="text-text-light">اجاره هر شب:</span>
-                                        <span className="font-bold text-emerald-700">
+                                        <span className="font-bold text-success">
                                             {formatCurrency(rawPricing.nightlyPrice ? Number(rawPricing.nightlyPrice) : formData.nightlyPrice)} تومان
                                         </span>
                                     </div>
-                                    <div className="border-t border-gray-200/60 pt-3">
+                                    <div className="border-t border-border-subtle/60 pt-3">
                                         <p className="text-text-light text-xs mb-1">توضیحات:</p>
                                         <p className="text-xs text-text-main line-clamp-3 leading-relaxed">
                                             {formData.description}
@@ -845,7 +845,7 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
                     </div>
 
                     {/* Navigation Buttons */}
-                    <div className="mt-10 flex items-center justify-between border-t border-gray-100 pt-6">
+                    <div className="mt-10 flex items-center justify-between border-t border-border-subtle pt-6">
                         <button
                             type="button"
                             onClick={handleBack}

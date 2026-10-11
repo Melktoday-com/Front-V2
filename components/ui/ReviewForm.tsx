@@ -24,8 +24,8 @@ export const ReviewForm = ({ onSubmit, isLoading }: ReviewFormProps) => {
 
     if (isRestricted) {
         return (
-            <div className="bg-amber-50/70 border border-amber-200 rounded-2xl p-4 flex items-center gap-3 text-amber-900">
-                <ShieldAlert className="w-5 h-5 text-amber-600 shrink-0" />
+            <div className="bg-warning-subtle/70 border border-warning/30 rounded-2xl p-4 flex items-center gap-3 text-amber-900">
+                <ShieldAlert className="w-5 h-5 text-warning shrink-0" />
                 <p className="text-xs font-bold leading-relaxed">
                     امکان ثبت دیدگاه و امتیاز به دلیل وضعیت حساب کاربری (
                     {isBanned ? "مسدود شده" : "تعلیق موقت"}
@@ -68,7 +68,7 @@ export const ReviewForm = ({ onSubmit, isLoading }: ReviewFormProps) => {
                 <textarea
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
-                    className="w-full bg-white border border-soft-border rounded-xl p-3 text-xs min-h-24 focus:outline-none focus:border-primary transition-colors resize-none"
+                    className="w-full bg-surface border border-soft-border rounded-xl p-3 text-xs min-h-24 focus:outline-none focus:border-primary transition-colors resize-none"
                     placeholder="تجربه خود را بنویسید..."
                 />
             </div>

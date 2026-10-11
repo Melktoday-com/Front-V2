@@ -131,7 +131,7 @@ export default function MediaGalleryUpload({
 
     return (
         <div className="space-y-2 text-xs">
-            {label && <label className="block font-bold text-slate-700">{label}</label>}
+            {label && <label className="block font-bold text-foreground-secondary">{label}</label>}
 
             {/* Hidden file input */}
             <input
@@ -157,7 +157,7 @@ export default function MediaGalleryUpload({
                     return (
                         <div
                             key={`${item.id}-${idx}`}
-                            className="relative aspect-square rounded-2xl overflow-hidden border border-slate-200 bg-slate-50 group shadow-xs"
+                            className="relative aspect-square rounded-2xl overflow-hidden border border-border-subtle bg-surface-secondary group shadow-xs"
                         >
                             {isVideo ? (
                                 <div className="w-full h-full relative bg-slate-900 flex items-center justify-center">
@@ -170,7 +170,7 @@ export default function MediaGalleryUpload({
                                         preload="metadata"
                                     />
                                     <div className="absolute inset-0 bg-black/25 flex items-center justify-center pointer-events-none">
-                                        <div className="w-8 h-8 rounded-full bg-white/80 backdrop-blur-xs flex items-center justify-center text-slate-900 shadow-sm">
+                                        <div className="w-8 h-8 rounded-full bg-surface/80 backdrop-blur-xs flex items-center justify-center text-foreground shadow-sm">
                                             <Play className="w-4 h-4 fill-current ml-0.5" />
                                         </div>
                                     </div>
@@ -213,18 +213,18 @@ export default function MediaGalleryUpload({
                         disabled={disabled || isUploading}
                         className={`aspect-square rounded-2xl border-2 border-dashed flex flex-col items-center justify-center transition-all ${
                             isUploading
-                                ? 'bg-blue-50/50 border-blue-300 pointer-events-none'
-                                : 'bg-slate-50/60 hover:bg-slate-100/60 border-slate-200 hover:border-blue-400'
+                                ? 'bg-info-subtle/50 border-blue-300 pointer-events-none'
+                                : 'bg-surface-secondary/60 hover:bg-surface-secondary/60 border-border-subtle hover:border-blue-400'
                         }`}
                     >
                         {isUploading ? (
-                            <Loader2 className="h-6 w-6 text-blue-600 animate-spin" />
+                            <Loader2 className="h-6 w-6 text-info animate-spin" />
                         ) : (
                             <div className="flex flex-col items-center gap-1 text-center p-2">
-                                <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                                <div className="w-8 h-8 rounded-xl bg-info-subtle text-info flex items-center justify-center">
                                     <ImagePlus className="w-4 h-4" />
                                 </div>
-                                <span className="text-[11px] font-bold text-slate-600">
+                                <span className="text-[11px] font-bold text-foreground-secondary">
                                     {allowVideos ? 'افزودن تصویر یا ویدئو' : 'افزودن تصویر'}
                                 </span>
                             </div>
@@ -234,7 +234,7 @@ export default function MediaGalleryUpload({
             </div>
 
             {helperText && (
-                <p className="text-[10px] text-slate-400 mt-1">{helperText}</p>
+                <p className="text-[10px] text-foreground-muted mt-1">{helperText}</p>
             )}
         </div>
     );

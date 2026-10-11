@@ -77,8 +77,8 @@ export default function AdminTicketTopicsPage() {
     if (!isSuperAdmin) {
         return (
             <div className="p-8" dir="rtl">
-                <div className="max-w-md mx-auto my-16 p-8 bg-white rounded-3xl border border-red-200 text-center shadow-sm">
-                    <div className="w-14 h-14 rounded-2xl bg-red-50 text-red-500 mx-auto flex items-center justify-center mb-4">
+                <div className="max-w-md mx-auto my-16 p-8 bg-surface rounded-3xl border border-error/30 text-center shadow-sm">
+                    <div className="w-14 h-14 rounded-2xl bg-error-subtle text-error mx-auto flex items-center justify-center mb-4">
                         <ShieldAlert className="w-8 h-8" />
                     </div>
                     <h3 className="text-base font-black text-brand mb-2">
@@ -227,7 +227,7 @@ export default function AdminTicketTopicsPage() {
     return (
         <div className="p-6 lg:p-8 space-y-6" dir="rtl">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-soft-border shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-surface p-6 rounded-3xl border border-soft-border shadow-xs">
                 <div className="flex items-center gap-3">
                     <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
                         <Tag className="w-6 h-6" />
@@ -269,7 +269,7 @@ export default function AdminTicketTopicsPage() {
             </div>
 
             {/* Filter / Search Bar */}
-            <div className="bg-white p-4 rounded-3xl border border-soft-border flex items-center gap-3 shadow-xs">
+            <div className="bg-surface p-4 rounded-3xl border border-soft-border flex items-center gap-3 shadow-xs">
                 <div className="relative flex-1">
                     <Search className="w-4 h-4 absolute right-3.5 top-1/2 -translate-y-1/2 text-secondary" />
                     <input
@@ -286,7 +286,7 @@ export default function AdminTicketTopicsPage() {
             </div>
 
             {/* Topics Table Card */}
-            <div className="bg-white rounded-3xl border border-soft-border overflow-hidden shadow-xs">
+            <div className="bg-surface rounded-3xl border border-soft-border overflow-hidden shadow-xs">
                 {isTopicsLoading ? (
                     <div className="flex items-center justify-center py-24 gap-3 text-secondary font-bold text-xs">
                         <Loader2 className="w-6 h-6 animate-spin text-primary" />
@@ -329,12 +329,12 @@ export default function AdminTicketTopicsPage() {
                                         </td>
                                         <td className="py-4 px-4 text-center">
                                             {topic.isActive ? (
-                                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black bg-success-subtle text-success border border-success/30">
                                                     <CheckCircle2 className="w-3 h-3" />
                                                     فعال
                                                 </span>
                                             ) : (
-                                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black bg-gray-100 text-gray-600 border border-gray-200">
+                                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black bg-surface-secondary text-foreground-secondary border border-border-subtle">
                                                     <PowerOff className="w-3 h-3" />
                                                     غیرفعال
                                                 </span>
@@ -360,8 +360,8 @@ export default function AdminTicketTopicsPage() {
                                                     className={cn(
                                                         "p-1.5 rounded-xl border transition-colors",
                                                         topic.isActive
-                                                            ? "border-amber-200 text-amber-600 hover:bg-amber-50"
-                                                            : "border-emerald-200 text-emerald-600 hover:bg-emerald-50"
+                                                            ? "border-warning/30 text-warning hover:bg-warning-subtle"
+                                                            : "border-success/30 text-success hover:bg-success-subtle"
                                                     )}
                                                     title={
                                                         topic.isActive
@@ -382,7 +382,7 @@ export default function AdminTicketTopicsPage() {
                                                         setDeletingTopic(topic);
                                                         setDeleteErrorMessage(null);
                                                     }}
-                                                    className="p-1.5 rounded-xl border border-red-200 text-red-500 hover:bg-red-50 transition-colors"
+                                                    className="p-1.5 rounded-xl border border-error/30 text-error hover:bg-error-subtle transition-colors"
                                                     title="حذف فیزیکی (فقط برای موضوعات بدون تیکت)"
                                                 >
                                                     <Trash2 className="w-4 h-4" />
@@ -404,7 +404,7 @@ export default function AdminTicketTopicsPage() {
                     aria-modal="true"
                     className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in duration-200"
                 >
-                    <div className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl border border-soft-border space-y-4">
+                    <div className="bg-surface rounded-3xl p-6 w-full max-w-md shadow-2xl border border-soft-border space-y-4">
                         <div className="flex items-center justify-between border-b border-soft-border pb-3">
                             <h3 className="text-sm font-black text-brand flex items-center gap-2">
                                 <Plus className="w-4 h-4 text-primary" />
@@ -497,7 +497,7 @@ export default function AdminTicketTopicsPage() {
                     aria-modal="true"
                     className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in duration-200"
                 >
-                    <div className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl border border-soft-border space-y-4">
+                    <div className="bg-surface rounded-3xl p-6 w-full max-w-md shadow-2xl border border-soft-border space-y-4">
                         <div className="flex items-center justify-between border-b border-soft-border pb-3">
                             <h3 className="text-sm font-black text-brand flex items-center gap-2">
                                 <Edit2 className="w-4 h-4 text-primary" />
@@ -521,7 +521,7 @@ export default function AdminTicketTopicsPage() {
                                     type="text"
                                     value={editingTopic.key}
                                     disabled
-                                    className="w-full px-3.5 py-2 rounded-2xl border border-soft-border text-xs bg-gray-100 font-mono text-secondary cursor-not-allowed"
+                                    className="w-full px-3.5 py-2 rounded-2xl border border-soft-border text-xs bg-surface-secondary font-mono text-secondary cursor-not-allowed"
                                     dir="ltr"
                                 />
                             </div>
@@ -584,9 +584,9 @@ export default function AdminTicketTopicsPage() {
                     aria-modal="true"
                     className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in duration-200"
                 >
-                    <div className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl border border-soft-border space-y-4">
+                    <div className="bg-surface rounded-3xl p-6 w-full max-w-md shadow-2xl border border-soft-border space-y-4">
                         <div className="flex items-center justify-between border-b border-soft-border pb-3">
-                            <h3 className="text-sm font-black text-brand flex items-center gap-2 text-red-600">
+                            <h3 className="text-sm font-black text-brand flex items-center gap-2 text-error">
                                 <Trash2 className="w-4 h-4" />
                                 <span>حذف موضوع تیکت</span>
                             </h3>
@@ -606,15 +606,15 @@ export default function AdminTicketTopicsPage() {
                             آیا از حذف موضوع «{deletingTopic.label}» اطمینان دارید؟
                         </p>
 
-                        <div className="p-3 bg-amber-50/80 border border-amber-200 rounded-2xl text-[11px] text-amber-800 leading-relaxed">
+                        <div className="p-3 bg-warning-subtle/80 border border-warning/30 rounded-2xl text-[11px] text-warning leading-relaxed">
                             <span className="font-black text-amber-950 block mb-0.5">⚠️ توجه درباره یکپارچگی داده‌ها:</span>
                             موضوعاتی که کاربران قبلاً با آن‌ها تیکت ثبت کرده‌اند، به دلیل حفظ تاریخچه مکاتبات قابل حذف فیزیکی نیستند. اگر این موضوع دارای تیکت باشد، به جای حذف باید آن را <strong>غیرفعال</strong> نمایید.
                         </div>
 
                         {deleteErrorMessage && (
-                            <div className="p-3.5 bg-red-50 border border-red-200 rounded-2xl text-xs text-red-700 space-y-2">
+                            <div className="p-3.5 bg-error-subtle border border-error/30 rounded-2xl text-xs text-error space-y-2">
                                 <div className="flex items-start gap-2">
-                                    <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+                                    <AlertCircle className="w-4 h-4 text-error shrink-0 mt-0.5" />
                                     <span className="font-bold leading-relaxed">
                                         {deleteErrorMessage}
                                     </span>
@@ -626,7 +626,7 @@ export default function AdminTicketTopicsPage() {
                                         setDeletingTopic(null);
                                         setDeleteErrorMessage(null);
                                     }}
-                                    className="w-full py-2 px-3 bg-white border border-red-300 rounded-xl text-xs font-black text-red-700 hover:bg-red-50/50 transition-colors"
+                                    className="w-full py-2 px-3 bg-surface border border-red-300 rounded-xl text-xs font-black text-error hover:bg-error-subtle/50 transition-colors"
                                 >
                                     غیرفعال‌سازی این موضوع به جای حذف
                                 </button>

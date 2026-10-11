@@ -40,10 +40,10 @@ import AdminAdDetailModal from "./AdminAdDetailModal";
 import AdminAdRejectModal from "./AdminAdRejectModal";
 
 const STATUS_FILTERS = [
-    { key: "ALL", label: "همه", badgeClass: "bg-blue-100 text-blue-800 border-blue-200" },
-    { key: AdStatus.PUBLISHED, label: "منتشر شده", badgeClass: "bg-emerald-100 text-emerald-800 border-emerald-200" },
-    { key: AdStatus.DRAFT, label: "پیش‌نویس", badgeClass: "bg-slate-100 text-slate-700 border-slate-200" },
-    { key: AdStatus.ARCHIVED, label: "آرشیو شده", badgeClass: "bg-zinc-100 text-zinc-700 border-zinc-200" },
+    { key: "ALL", label: "همه", badgeClass: "bg-info-subtle text-blue-800 border-info/30" },
+    { key: AdStatus.PUBLISHED, label: "منتشر شده", badgeClass: "bg-success-subtle text-success border-success/30" },
+    { key: AdStatus.DRAFT, label: "پیش‌نویس", badgeClass: "bg-surface-secondary text-foreground-secondary border-border-subtle" },
+    { key: AdStatus.ARCHIVED, label: "آرشیو شده", badgeClass: "bg-surface-secondary text-foreground-secondary border-border-subtle" },
 ] as const;
 
 export default function AdminOrgAdsTab() {
@@ -174,28 +174,28 @@ export default function AdminOrgAdsTab() {
         switch (status) {
             case AdStatus.PUBLISHED:
                 return (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-success-subtle text-success">
                         <Check className="w-3 h-3" />
                         <span>منتشر شده</span>
                     </span>
                 );
             case AdStatus.DRAFT:
                 return (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-surface-secondary text-foreground-secondary">
                         <Clock className="w-3 h-3" />
                         <span>پیش‌نویس</span>
                     </span>
                 );
             case AdStatus.ARCHIVED:
                 return (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-zinc-100 text-zinc-600">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-surface-secondary text-foreground-secondary">
                         <Archive className="w-3 h-3" />
                         <span>آرشیو شده</span>
                     </span>
                 );
             case AdStatus.REJECTED:
                 return (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-700">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-error-subtle text-error">
                         <AlertCircle className="w-3 h-3" />
                         <span>رد شده</span>
                     </span>
@@ -207,7 +207,7 @@ export default function AdminOrgAdsTab() {
 
     if (!adminId) {
         return (
-            <div className="py-20 flex items-center justify-center text-slate-400 text-sm font-bold">
+            <div className="py-20 flex items-center justify-center text-foreground-muted text-sm font-bold">
                 در حال بارگذاری اطلاعات ادمین...
             </div>
         );
@@ -223,21 +223,21 @@ export default function AdminOrgAdsTab() {
                     className={`cursor-pointer p-5 rounded-2xl border transition-all ${
                         selectedStatus === AdStatus.PUBLISHED
                             ? "bg-emerald-500/10 border-emerald-500/40 shadow-sm ring-2 ring-emerald-500/20"
-                            : "bg-white border-slate-200/80 hover:border-slate-300"
+                            : "bg-surface border-border-subtle/80 hover:border-border"
                     }`}
                 >
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-xs font-bold text-slate-500">منتشر شده</p>
-                            <h3 className="text-2xl font-black text-slate-900 mt-1">
+                            <p className="text-xs font-bold text-foreground-muted">منتشر شده</p>
+                            <h3 className="text-2xl font-black text-foreground mt-1">
                                 {toPersianDigits(publishedData?.total ?? 0)}
                             </h3>
                         </div>
-                        <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                        <div className="w-12 h-12 rounded-2xl bg-success-subtle text-success flex items-center justify-center">
                             <CheckCircle2 className="w-6 h-6" />
                         </div>
                     </div>
-                    <p className="mt-2 text-xs text-emerald-700 font-medium">در حال نمایش برای کاربران</p>
+                    <p className="mt-2 text-xs text-success font-medium">در حال نمایش برای کاربران</p>
                 </div>
 
                 {/* Draft */}
@@ -245,22 +245,22 @@ export default function AdminOrgAdsTab() {
                     onClick={() => { setSelectedStatus(AdStatus.DRAFT); setPage(1); }}
                     className={`cursor-pointer p-5 rounded-2xl border transition-all ${
                         selectedStatus === AdStatus.DRAFT
-                            ? "bg-slate-200/60 border-slate-400 shadow-sm ring-2 ring-slate-400/20"
-                            : "bg-white border-slate-200/80 hover:border-slate-300"
+                            ? "bg-slate-200/60 border-border shadow-sm ring-2 ring-slate-400/20"
+                            : "bg-surface border-border-subtle/80 hover:border-border"
                     }`}
                 >
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-xs font-bold text-slate-500">پیش‌نویس</p>
-                            <h3 className="text-2xl font-black text-slate-900 mt-1">
+                            <p className="text-xs font-bold text-foreground-muted">پیش‌نویس</p>
+                            <h3 className="text-2xl font-black text-foreground mt-1">
                                 {toPersianDigits(draftData?.total ?? 0)}
                             </h3>
                         </div>
-                        <div className="w-12 h-12 rounded-2xl bg-slate-100 text-slate-600 flex items-center justify-center">
+                        <div className="w-12 h-12 rounded-2xl bg-surface-secondary text-foreground-secondary flex items-center justify-center">
                             <Clock className="w-6 h-6" />
                         </div>
                     </div>
-                    <p className="mt-2 text-xs text-slate-600 font-medium">ذخیره شده، هنوز منتشر نشده</p>
+                    <p className="mt-2 text-xs text-foreground-secondary font-medium">ذخیره شده، هنوز منتشر نشده</p>
                 </div>
 
                 {/* Archived */}
@@ -268,22 +268,22 @@ export default function AdminOrgAdsTab() {
                     onClick={() => { setSelectedStatus(AdStatus.ARCHIVED); setPage(1); }}
                     className={`cursor-pointer p-5 rounded-2xl border transition-all ${
                         selectedStatus === AdStatus.ARCHIVED
-                            ? "bg-zinc-200/70 border-zinc-400 shadow-sm ring-2 ring-zinc-400/20"
-                            : "bg-white border-slate-200/80 hover:border-slate-300"
+                            ? "bg-zinc-200/70 border-border shadow-sm ring-2 ring-zinc-400/20"
+                            : "bg-surface border-border-subtle/80 hover:border-border"
                     }`}
                 >
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-xs font-bold text-slate-500">آرشیو شده</p>
-                            <h3 className="text-2xl font-black text-slate-900 mt-1">
+                            <p className="text-xs font-bold text-foreground-muted">آرشیو شده</p>
+                            <h3 className="text-2xl font-black text-foreground mt-1">
                                 {toPersianDigits(archivedData?.total ?? 0)}
                             </h3>
                         </div>
-                        <div className="w-12 h-12 rounded-2xl bg-zinc-100 text-zinc-600 flex items-center justify-center">
+                        <div className="w-12 h-12 rounded-2xl bg-surface-secondary text-foreground-secondary flex items-center justify-center">
                             <Archive className="w-6 h-6" />
                         </div>
                     </div>
-                    <p className="mt-2 text-xs text-zinc-600 font-medium">منقضی یا دستی آرشیو شده</p>
+                    <p className="mt-2 text-xs text-foreground-secondary font-medium">منقضی یا دستی آرشیو شده</p>
                 </div>
             </div>
 
@@ -309,10 +309,10 @@ export default function AdminOrgAdsTab() {
             </div>
 
             {/* Filter Bar */}
-            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+            <div className="bg-surface p-5 rounded-2xl border border-border-subtle shadow-xs space-y-4">
                 {/* Status Tabs */}
-                <div className="flex flex-wrap items-center gap-2 border-b border-slate-100 pb-4">
-                    <span className="text-xs font-bold text-slate-400 ml-2">وضعیت:</span>
+                <div className="flex flex-wrap items-center gap-2 border-b border-border-subtle pb-4">
+                    <span className="text-xs font-bold text-foreground-muted ml-2">وضعیت:</span>
                     {STATUS_FILTERS.map((f) => {
                         const isActive = selectedStatus === f.key;
                         let count: number | undefined;
@@ -329,12 +329,12 @@ export default function AdminOrgAdsTab() {
                                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                                     isActive
                                         ? "bg-violet-600 text-white shadow-xs"
-                                        : "bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200"
+                                        : "bg-surface-secondary hover:bg-surface-secondary text-foreground-secondary border border-border-subtle"
                                 }`}
                             >
                                 <span>{f.label}</span>
                                 {count !== undefined && (
-                                    <span className={`px-1.5 rounded-full text-[11px] font-black ${isActive ? "bg-white/20 text-white" : "bg-slate-200 text-slate-700"}`}>
+                                    <span className={`px-1.5 rounded-full text-[11px] font-black ${isActive ? "bg-surface/20 text-white" : "bg-slate-200 text-foreground-secondary"}`}>
                                         {toPersianDigits(count)}
                                     </span>
                                 )}
@@ -346,19 +346,19 @@ export default function AdminOrgAdsTab() {
                 {/* Search + Refresh */}
                 <div className="flex items-center gap-3">
                     <div className="relative flex-1">
-                        <Search className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <Search className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground-muted" />
                         <input
                             type="text"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             placeholder="جستجو در عنوان یا شناسه آگهی..."
-                            className="w-full pl-9 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all font-medium"
+                            className="w-full pl-9 pr-10 py-2.5 bg-surface-secondary border border-border-subtle rounded-xl text-xs text-foreground placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all font-medium"
                         />
                         {searchTerm && (
                             <button
                                 type="button"
                                 onClick={() => setSearchTerm("")}
-                                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                                className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground-muted hover:text-foreground-secondary"
                             >
                                 <X className="w-3.5 h-3.5" />
                             </button>
@@ -368,7 +368,7 @@ export default function AdminOrgAdsTab() {
                         type="button"
                         onClick={() => refetch()}
                         disabled={isFetching}
-                        className="px-4 py-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 disabled:opacity-50"
+                        className="px-4 py-2.5 bg-surface-secondary hover:bg-surface-secondary border border-border-subtle text-foreground-secondary rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 disabled:opacity-50"
                     >
                         <RefreshCw className={`w-4 h-4 ${isFetching ? "animate-spin text-violet-600" : ""}`} />
                         بروزرسانی
@@ -377,10 +377,10 @@ export default function AdminOrgAdsTab() {
             </div>
 
             {/* Table */}
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+            <div className="bg-surface rounded-2xl border border-border-subtle shadow-xs overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-right">
-                        <thead className="bg-slate-50/80 text-slate-600 text-xs border-b border-slate-100">
+                        <thead className="bg-surface-secondary/80 text-foreground-secondary text-xs border-b border-border-subtle">
                             <tr>
                                 <th className="px-5 py-4 font-bold">عنوان آگهی</th>
                                 <th className="px-5 py-4 font-bold">دسته‌بندی</th>
@@ -393,7 +393,7 @@ export default function AdminOrgAdsTab() {
                         <tbody className="divide-y divide-slate-100 text-xs">
                             {isLoading ? (
                                 <tr>
-                                    <td colSpan={6} className="py-20 text-center text-slate-400">
+                                    <td colSpan={6} className="py-20 text-center text-foreground-muted">
                                         <div className="flex flex-col items-center justify-center gap-3">
                                             <RefreshCw className="w-6 h-6 animate-spin text-violet-600" />
                                             <span className="font-bold">در حال بارگذاری آگهی‌های سازمانی...</span>
@@ -407,10 +407,10 @@ export default function AdminOrgAdsTab() {
                                             <div className="w-14 h-14 rounded-2xl bg-violet-50 text-violet-400 flex items-center justify-center">
                                                 <Layers className="w-7 h-7" />
                                             </div>
-                                            <p className="font-black text-slate-700 text-sm mt-1">
+                                            <p className="font-black text-foreground-secondary text-sm mt-1">
                                                 هیچ آگهی سازمانی یافت نشد
                                             </p>
-                                            <p className="text-slate-400 text-xs leading-relaxed text-center">
+                                            <p className="text-foreground-muted text-xs leading-relaxed text-center">
                                                 هنوز آگهی سازمانی ثبت نکرده‌اید یا با فیلتر انتخابی آگهی‌ای وجود ندارد.
                                             </p>
                                             <Link
@@ -429,11 +429,11 @@ export default function AdminOrgAdsTab() {
                                     const hasMedia = !!ad.mediaIds?.[0] && mediaUrl !== "/property-placeholder.svg";
 
                                     return (
-                                        <tr key={ad.adId} className="hover:bg-slate-50/70 transition-colors group">
+                                        <tr key={ad.adId} className="hover:bg-surface-secondary/70 transition-colors group">
                                             {/* Thumbnail & Title */}
                                             <td className="px-5 py-4">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0 flex items-center justify-center">
+                                                    <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-surface-secondary border border-border-subtle shrink-0 flex items-center justify-center">
                                                         {hasMedia ? (
                                                             <>
                                                                 <Image
@@ -450,14 +450,14 @@ export default function AdminOrgAdsTab() {
                                                                 )}
                                                             </>
                                                         ) : (
-                                                            <Building2 className="w-5 h-5 text-slate-400" />
+                                                            <Building2 className="w-5 h-5 text-foreground-muted" />
                                                         )}
                                                     </div>
                                                     <div className="min-w-0 max-w-xs">
                                                         <div className="flex items-center gap-1.5">
                                                             <h4
                                                                 onClick={() => setDetailModalAdId(ad.adId)}
-                                                                className="font-black text-slate-900 truncate hover:text-violet-600 transition-colors cursor-pointer"
+                                                                className="font-black text-foreground truncate hover:text-violet-600 transition-colors cursor-pointer"
                                                             >
                                                                 {ad.title}
                                                             </h4>
@@ -467,13 +467,13 @@ export default function AdminOrgAdsTab() {
                                                                 سازمانی
                                                             </span>
                                                             {ad.isFeatured && (
-                                                                <span className="shrink-0 inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-amber-100 text-amber-800 text-[10px] font-black">
+                                                                <span className="shrink-0 inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-warning-subtle text-warning text-[10px] font-black">
                                                                     <Sparkles className="w-2.5 h-2.5" />
                                                                     ویژه
                                                                 </span>
                                                             )}
                                                         </div>
-                                                        <div className="flex items-center gap-2 mt-0.5 text-slate-400">
+                                                        <div className="flex items-center gap-2 mt-0.5 text-foreground-muted">
                                                             <span className="font-mono text-[11px]">
                                                                 ID: {ad.adId.slice(0, 8)}...
                                                             </span>
@@ -481,7 +481,7 @@ export default function AdminOrgAdsTab() {
                                                                 type="button"
                                                                 onClick={() => handleCopy(ad.adId, "شناسه آگهی")}
                                                                 title="کپی شناسه کامل"
-                                                                className="hover:text-slate-700 p-0.5"
+                                                                className="hover:text-foreground-secondary p-0.5"
                                                             >
                                                                 <Copy className="w-3 h-3" />
                                                             </button>
@@ -491,15 +491,15 @@ export default function AdminOrgAdsTab() {
                                             </td>
 
                                             {/* Category */}
-                                            <td className="px-5 py-4 text-slate-600">
-                                                <span className="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-lg text-[11px] font-bold">
+                                            <td className="px-5 py-4 text-foreground-secondary">
+                                                <span className="bg-surface-secondary text-foreground-secondary px-2.5 py-1 rounded-lg text-[11px] font-bold">
                                                     {getCategoryPathLabel(ad.categoryPath?.categoryKey, ad.categoryPath?.subcategoryKey)}
                                                 </span>
                                             </td>
 
                                             {/* Price */}
                                             <td className="px-5 py-4">
-                                                <div className="font-black text-emerald-600">
+                                                <div className="font-black text-success">
                                                     {formatAdPrice(ad.pricing)}
                                                 </div>
                                             </td>
@@ -510,7 +510,7 @@ export default function AdminOrgAdsTab() {
                                             </td>
 
                                             {/* Date */}
-                                            <td className="px-5 py-4 text-slate-500 font-medium">
+                                            <td className="px-5 py-4 text-foreground-muted font-medium">
                                                 {new Date(ad.createdAt).toLocaleDateString("fa-IR")}
                                             </td>
 
@@ -522,7 +522,7 @@ export default function AdminOrgAdsTab() {
                                                         type="button"
                                                         onClick={() => setDetailModalAdId(ad.adId)}
                                                         title="مشاهده جزئیات"
-                                                        className="p-2 rounded-xl text-blue-600 hover:bg-blue-50 transition-colors"
+                                                        className="p-2 rounded-xl text-info hover:bg-info-subtle transition-colors"
                                                     >
                                                         <Eye className="w-4 h-4" />
                                                     </button>
@@ -533,7 +533,7 @@ export default function AdminOrgAdsTab() {
                                                             type="button"
                                                             onClick={() => setArchiveTarget({ id: ad.adId, title: ad.title })}
                                                             title="آرشیو کردن آگهی"
-                                                            className="p-2 rounded-xl text-zinc-500 hover:bg-zinc-50 transition-colors"
+                                                            className="p-2 rounded-xl text-foreground-muted hover:bg-surface-secondary transition-colors"
                                                         >
                                                             <Archive className="w-4 h-4" />
                                                         </button>
@@ -544,7 +544,7 @@ export default function AdminOrgAdsTab() {
                                                         type="button"
                                                         onClick={() => setDeleteTarget({ id: ad.adId, title: ad.title })}
                                                         title="حذف دائمی آگهی"
-                                                        className="p-2 rounded-xl text-rose-500 hover:bg-rose-50 transition-colors"
+                                                        className="p-2 rounded-xl text-error hover:bg-error-subtle transition-colors"
                                                     >
                                                         <Trash2 className="w-4 h-4" />
                                                     </button>
@@ -555,7 +555,7 @@ export default function AdminOrgAdsTab() {
                                                             href={`/ads/${ad.adId}`}
                                                             target="_blank"
                                                             title="مشاهده در سایت"
-                                                            className="p-2 rounded-xl text-slate-500 hover:bg-slate-100 transition-colors"
+                                                            className="p-2 rounded-xl text-foreground-muted hover:bg-surface-secondary transition-colors"
                                                         >
                                                             <ExternalLink className="w-4 h-4" />
                                                         </Link>
@@ -572,8 +572,8 @@ export default function AdminOrgAdsTab() {
 
                 {/* Pagination */}
                 {adsData && adsData.total > limit && (
-                    <div className="p-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-                        <span className="text-slate-500 font-medium">
+                    <div className="p-4 border-t border-border-subtle flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+                        <span className="text-foreground-muted font-medium">
                             صفحه {toPersianDigits(page)} از {toPersianDigits(totalPages)} (مجموع {toPersianDigits(adsData.total)} آگهی)
                         </span>
                         <div className="flex items-center gap-1">
@@ -581,7 +581,7 @@ export default function AdminOrgAdsTab() {
                                 type="button"
                                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                                 disabled={page <= 1}
-                                className="px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-xl font-bold transition-colors disabled:opacity-40"
+                                className="px-3 py-1.5 bg-surface-secondary hover:bg-surface-secondary border border-border-subtle text-foreground-secondary rounded-xl font-bold transition-colors disabled:opacity-40"
                             >
                                 صفحه قبل
                             </button>
@@ -592,7 +592,7 @@ export default function AdminOrgAdsTab() {
                                 type="button"
                                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                                 disabled={page >= totalPages}
-                                className="px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-xl font-bold transition-colors disabled:opacity-40"
+                                className="px-3 py-1.5 bg-surface-secondary hover:bg-surface-secondary border border-border-subtle text-foreground-secondary rounded-xl font-bold transition-colors disabled:opacity-40"
                             >
                                 صفحه بعد
                             </button>
@@ -623,14 +623,14 @@ export default function AdminOrgAdsTab() {
             {/* Archive Confirm Modal */}
             {archiveTarget && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
-                    <div className="bg-white rounded-3xl w-full max-w-md p-6 shadow-2xl border border-slate-200 text-right space-y-4" dir="rtl">
-                        <div className="w-12 h-12 rounded-2xl bg-zinc-50 text-zinc-600 flex items-center justify-center mx-auto">
+                    <div className="bg-surface rounded-3xl w-full max-w-md p-6 shadow-2xl border border-border-subtle text-right space-y-4" dir="rtl">
+                        <div className="w-12 h-12 rounded-2xl bg-surface-secondary text-foreground-secondary flex items-center justify-center mx-auto">
                             <Archive className="w-6 h-6" />
                         </div>
                         <div className="text-center space-y-1">
-                            <h3 className="text-base font-black text-slate-900">آرشیو کردن آگهی</h3>
-                            <p className="text-xs text-slate-500 leading-relaxed">
-                                آیا از آرشیو کردن آگهی «<span className="font-bold text-slate-700">{archiveTarget.title}</span>» اطمینان دارید؟
+                            <h3 className="text-base font-black text-foreground">آرشیو کردن آگهی</h3>
+                            <p className="text-xs text-foreground-muted leading-relaxed">
+                                آیا از آرشیو کردن آگهی «<span className="font-bold text-foreground-secondary">{archiveTarget.title}</span>» اطمینان دارید؟
                                 آگهی از نمایش عمومی خارج می‌شود.
                             </p>
                         </div>
@@ -648,7 +648,7 @@ export default function AdminOrgAdsTab() {
                                 type="button"
                                 onClick={() => setArchiveTarget(null)}
                                 disabled={archiveMutation.isPending}
-                                className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors"
+                                className="flex-1 py-2.5 bg-surface-secondary hover:bg-slate-200 text-foreground-secondary rounded-xl text-xs font-bold transition-colors"
                             >
                                 انصراف
                             </button>
@@ -660,14 +660,14 @@ export default function AdminOrgAdsTab() {
             {/* Delete Confirm Modal */}
             {deleteTarget && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
-                    <div className="bg-white rounded-3xl w-full max-w-md p-6 shadow-2xl border border-slate-200 text-right space-y-4" dir="rtl">
-                        <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mx-auto">
+                    <div className="bg-surface rounded-3xl w-full max-w-md p-6 shadow-2xl border border-border-subtle text-right space-y-4" dir="rtl">
+                        <div className="w-12 h-12 rounded-2xl bg-error-subtle text-error flex items-center justify-center mx-auto">
                             <Trash2 className="w-6 h-6" />
                         </div>
                         <div className="text-center space-y-1">
-                            <h3 className="text-base font-black text-slate-900">حذف دائمی آگهی</h3>
-                            <p className="text-xs text-slate-500 leading-relaxed">
-                                آیا از حذف دائمی آگهی «<span className="font-bold text-slate-700">{deleteTarget.title}</span>» اطمینان دارید؟
+                            <h3 className="text-base font-black text-foreground">حذف دائمی آگهی</h3>
+                            <p className="text-xs text-foreground-muted leading-relaxed">
+                                آیا از حذف دائمی آگهی «<span className="font-bold text-foreground-secondary">{deleteTarget.title}</span>» اطمینان دارید؟
                                 این عملیات قابل بازگشت نیست.
                             </p>
                         </div>
@@ -685,7 +685,7 @@ export default function AdminOrgAdsTab() {
                                 type="button"
                                 onClick={() => setDeleteTarget(null)}
                                 disabled={deleteMutation.isPending}
-                                className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors"
+                                className="flex-1 py-2.5 bg-surface-secondary hover:bg-slate-200 text-foreground-secondary rounded-xl text-xs font-bold transition-colors"
                             >
                                 انصراف
                             </button>

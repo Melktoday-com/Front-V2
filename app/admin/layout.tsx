@@ -88,7 +88,7 @@ export default function AdminLayout({
         <AccessGuard roles={[RoleName.Admin, RoleName.SuperAdmin]}>
             <div className="flex min-h-screen bg-soft-bg admin-layout" dir="rtl">
                 {/* Sidebar */}
-                <aside className="w-64 bg-white border-l border-soft-border sticky top-0 h-screen overflow-y-auto p-6 flex flex-col">
+                <aside className="w-64 bg-surface border-l border-soft-border sticky top-0 h-screen overflow-y-auto p-6 flex flex-col">
                     <div className="mb-10 px-2">
                         <span className="text-2xl font-black text-brand tracking-tighter">
                             MELK<span className="text-primary">TODAY</span>
@@ -147,7 +147,7 @@ export default function AdminLayout({
 
                 {/* Main Content */}
                 <main className="flex-1 overflow-auto">
-                    <header className="h-16 bg-white border-b border-soft-border flex items-center justify-between px-8 sticky top-0 z-10">
+                    <header className="h-16 bg-surface border-b border-soft-border flex items-center justify-between px-8 sticky top-0 z-10">
                         <div className="flex items-center gap-4">
                             <h2 className="text-brand font-black text-lg">
                                 {sidebarItems.find(i => i.href === pathname)?.name || "مدیریت"}
@@ -159,9 +159,9 @@ export default function AdminLayout({
                     </header>
                     {isBlocked ? (
                         <div className="p-8 md:p-16 flex items-center justify-center min-h-[60vh]">
-                            <div className="bg-white border border-red-200 rounded-3xl p-8 max-w-md w-full text-center shadow-sm space-y-4">
-                                <ShieldAlert className="w-16 h-16 text-red-500 mx-auto" />
-                                <h2 className="text-xl font-black text-slate-800">عدم دسترسی به این بخش</h2>
+                            <div className="bg-surface border border-error/30 rounded-3xl p-8 max-w-md w-full text-center shadow-sm space-y-4">
+                                <ShieldAlert className="w-16 h-16 text-error mx-auto" />
+                                <h2 className="text-xl font-black text-foreground">عدم دسترسی به این بخش</h2>
                                 <p className="text-sm text-secondary leading-relaxed">
                                     حساب کاربری شما دسترسی لازم برای مشاهده یا مدیریت این بخش را ندارد. در صورت نیاز با مدیر ارشد هماهنگ نمایید.
                                 </p>
