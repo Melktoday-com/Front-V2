@@ -14,24 +14,20 @@ import {
 import { normalizeApiError } from "@/lib/api/error-handler";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-    AlertCircle,
     ArrowUpRight,
     Award,
     BadgeCheck,
     BookOpen,
     Building2,
-    Calendar,
     Check,
     CheckCircle2,
     ChevronLeft,
     Clock,
     Copy,
     ExternalLink,
-    FileText,
+    Eye,
     Globe,
-    HelpCircle,
     LayoutDashboard,
-    Mail,
     MapPin,
     MessageCircle,
     MessageSquare,
@@ -39,7 +35,6 @@ import {
     Plus,
     Send,
     Settings,
-    Share2,
     ShieldCheck,
     Smartphone,
     Sparkles,
@@ -52,10 +47,23 @@ import Image from "next/image";
 import Link from "next/link";
 import { useSafeBack } from "@/hooks/useSafeBack";
 import { useRouter } from "next/navigation";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { FreeMode } from "swiper/modules";
+import type { Swiper as SwiperType } from "swiper";
+
+import "swiper/css";
+import "swiper/css/free-mode";
 
 type Tab = "overview" | "settings" | "posts" | "messages";
+
+const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
+    { id: "overview", label: "نمای کلی و آمار", icon: LayoutDashboard },
+    { id: "settings", label: "شخصی‌سازی ویترین", icon: Settings },
+    { id: "posts", label: "پست‌ها و مقالات", icon: BookOpen },
+    { id: "messages", label: "پیام‌ها و مشاوره‌ها", icon: MessageSquare },
+];
 
 function InstagramIcon({ className }: { className?: string }) {
     return (
@@ -76,13 +84,15 @@ function InstagramIcon({ className }: { className?: string }) {
 }
 
 export default function AgencyPanelScene() {
-    const { user, isLoggedIn } = useAuth();
+    const { isLoggedIn } = useAuth();
     const router = useRouter();
     const handleBack = useSafeBack("/");
     const queryClient = useQueryClient();
     const [activeTab, setActiveTab] = useState<Tab>("overview");
     const [copiedLink, setCopiedLink] = useState(false);
     const [messageFilter, setMessageFilter] = useState<"all" | "pending" | "replied">("all");
+    const swiperRef = useRef<SwiperType | null>(null);
+    const isManualScrollingRef = useRef(false);
 
     const { data: agency, isLoading: isLoadingAgency } = useMyAgency();
     const { data: stats } = useAgencyStats(agency?.id || "");
@@ -142,7 +152,7 @@ export default function AgencyPanelScene() {
         },
     });
 
-    // Posts query & mutations
+    // Posts query & mutations - loaded for the page
     const {
         data: postsData,
         isLoading: isLoadingPosts,
@@ -150,7 +160,7 @@ export default function AgencyPanelScene() {
     } = useQuery<AgencyPostsListResponse>({
         queryKey: ["agency-posts", agency?.id],
         queryFn: () => agencyService.listMyPosts(),
-        enabled: !!agency?.id && (activeTab === "posts" || activeTab === "overview"),
+        enabled: !!agency?.id,
     });
 
     const posts: AgencyPost[] = useMemo(() => {
@@ -168,7 +178,7 @@ export default function AgencyPanelScene() {
         },
     });
 
-    // Messages query & reply mutation
+    // Messages query & reply mutation - loaded for the page
     const {
         data: messagesData,
         isLoading: isLoadingMessages,
@@ -176,7 +186,7 @@ export default function AgencyPanelScene() {
     } = useQuery<AgencyConsultationMessage[]>({
         queryKey: ["agency-messages", agency?.id],
         queryFn: () => agencyService.listMyMessages(),
-        enabled: !!agency?.id && (activeTab === "messages" || activeTab === "overview"),
+        enabled: !!agency?.id,
     });
 
     const messages: AgencyConsultationMessage[] = useMemo(() => {
@@ -222,6 +232,48 @@ export default function AgencyPanelScene() {
         }
     };
 
+    // Scroll smoothly to section when tab clicked
+    const scrollToSection = (tabId: Tab) => {
+        setActiveTab(tabId);
+        isManualScrollingRef.current = true;
+        const targetElement = document.getElementById(`section-${tabId}`);
+        if (targetElement) {
+            // Header (approx 60px) + Swiper Bar (approx 55px) + extra margin (15px) = 130px
+            const topOffset = targetElement.getBoundingClientRect().top + window.scrollY - 130;
+            window.scrollTo({
+                top: topOffset,
+                behavior: "smooth",
+            });
+            setTimeout(() => {
+                isManualScrollingRef.current = false;
+            }, 800);
+        }
+    };
+
+    // Scroll spy: Update activeTab as user scrolls down the page
+    useEffect(() => {
+        const handleScroll = () => {
+            if (isManualScrollingRef.current) return;
+            const scrollPosition = window.scrollY + 160;
+
+            for (let i = TABS.length - 1; i >= 0; i--) {
+                const section = document.getElementById(`section-${TABS[i].id}`);
+                if (section && section.offsetTop <= scrollPosition) {
+                    const currentTab = TABS[i].id;
+                    setActiveTab(currentTab);
+                    const tabIndex = TABS.findIndex((t) => t.id === currentTab);
+                    if (swiperRef.current && tabIndex !== -1) {
+                        swiperRef.current.slideTo(tabIndex);
+                    }
+                    break;
+                }
+            }
+        };
+
+        window.addEventListener("scroll", handleScroll, { passive: true });
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, []);
+
     // Unauthenticated State
     if (!isLoggedIn) {
         return (
@@ -233,7 +285,7 @@ export default function AgencyPanelScene() {
                     <div className="space-y-2">
                         <h2 className="text-xl font-black text-brand tracking-tight">ورود به پنل آژانس</h2>
                         <p className="text-xs sm:text-sm text-secondary leading-relaxed">
-                            برای مدیریت صفحه ویترین، پاسخ‌گویی به درخواست‌های مشتریان و ویرایش اطلاعات، لطفاً ابتدا وارد حساب کاربری خود شوید.
+                            برای مدیریت صفحه ویترین، پاسخ‌گویی به درخواست‌های مشتریان و ویرایش اطلاعات، ابتدا وارد حساب کاربری خود شوید.
                         </p>
                     </div>
                     <button
@@ -290,23 +342,23 @@ export default function AgencyPanelScene() {
     }
 
     return (
-        <div className="min-h-screen bg-canvas text-brand pb-28 lg:pb-16 selection:bg-accent/30" dir="rtl">
-            {/* Apple-style Translucent Navigation Bar */}
-            <header className="sticky top-0 z-30 bg-surface/85 backdrop-blur-xl border-b border-soft-border/70 shadow-[0_2px_15px_rgba(0,0,0,0.02)] transition-all">
-                <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between gap-3">
-                    {/* Brand & Back Button */}
-                    <div className="flex items-center gap-3 min-w-0">
+        <div className="min-h-screen bg-canvas text-brand pb-32 lg:pb-16 selection:bg-accent/30" dir="rtl">
+            {/* Clean Apple Navigation Bar (Minimal on mobile, informative on desktop) */}
+            <header className="sticky top-0 z-30 bg-surface/90 backdrop-blur-xl border-b border-soft-border/70 transition-all">
+                <div className="max-w-6xl mx-auto px-3.5 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between gap-3">
+                    {/* Back Button & Agency Title */}
+                    <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
                         <button
                             onClick={handleBack}
                             aria-label="بازگشت"
-                            className="w-10 h-10 rounded-2xl bg-soft-bg/80 hover:bg-soft-bg active:scale-95 border border-soft-border/60 flex items-center justify-center text-brand transition-all shrink-0 cursor-pointer"
+                            className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-soft-bg/80 hover:bg-soft-bg active:scale-95 border border-soft-border/60 flex items-center justify-center text-brand transition-all shrink-0 cursor-pointer"
                         >
-                            <ChevronLeft className="w-5 h-5 rotate-180" />
+                            <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 rotate-180" />
                         </button>
 
-                        <div className="flex items-center gap-3 min-w-0">
+                        <div className="flex items-center gap-2 min-w-0">
                             {agency.logoUrl ? (
-                                <div className="w-10 h-10 rounded-2xl overflow-hidden border border-soft-border/80 bg-surface shrink-0 relative shadow-2xs">
+                                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl sm:rounded-2xl overflow-hidden border border-soft-border/80 bg-surface shrink-0 relative shadow-2xs">
                                     <Image
                                         src={getMediaUrl(agency.logoUrl)}
                                         alt={agency.agencyName || agency.name}
@@ -314,391 +366,257 @@ export default function AgencyPanelScene() {
                                         className="object-cover"
                                     />
                                 </div>
-                            ) : (
-                                <div className="w-10 h-10 rounded-2xl bg-brand text-accent font-black text-sm flex items-center justify-center shrink-0 shadow-2xs">
-                                    {(agency.agencyName || agency.name || "م")[0]}
-                                </div>
-                            )}
+                            ) : null}
 
                             <div className="min-w-0">
-                                <div className="flex items-center gap-2">
-                                    <h1 className="text-sm sm:text-base font-black text-brand truncate tracking-tight">
+                                <div className="flex items-center gap-1.5">
+                                    <h1 className="text-xs sm:text-sm md:text-base font-black text-brand truncate">
                                         {agency.agencyName || agency.name}
                                     </h1>
-                                    <span className="shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
-                                        {agency.agencyType === "AGENCY" ? "دفتر املاک" : "مشاور املاک"}
-                                    </span>
+                                    {agency.verificationStatus === "VERIFIED" && (
+                                        <BadgeCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+                                    )}
                                 </div>
-                                <p className="text-[11px] text-secondary font-medium truncate hidden sm:block">
-                                    مرکز مدیریت اختصاصی و ویترین عمومی
-                                </p>
+                                <span className="text-[10px] text-secondary font-medium hidden md:block">
+                                    پنل مدیریت ویترین املاک
+                                </span>
                             </div>
                         </div>
                     </div>
 
-                    {/* Quick Action Badges & Public Showcase Link */}
-                    <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-                        {agency.verificationStatus === "VERIFIED" ? (
-                            <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 text-emerald-700 border border-emerald-500/20 text-xs font-bold">
-                                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                                <span>دارای تأیید هویت رسمی</span>
-                            </div>
-                        ) : (
-                            <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 text-amber-700 border border-amber-500/20 text-xs font-bold">
-                                <Clock className="w-3.5 h-3.5 text-amber-600" />
-                                <span>در انتظار بررسی مدارک</span>
-                            </div>
-                        )}
-
+                    {/* Actions: Clean & Minimal on mobile */}
+                    <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+                        {/* Copy link button (icon only on mobile) */}
                         <button
                             type="button"
                             onClick={handleCopyLink}
-                            className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-surface hover:bg-soft-bg active:scale-95 text-secondary hover:text-brand border border-soft-border/70 text-xs font-bold transition-all shadow-2xs cursor-pointer"
-                            title="کپی لینک ویترین"
+                            className="p-2 sm:px-3 sm:py-2 rounded-xl sm:rounded-2xl bg-soft-bg/60 hover:bg-soft-bg active:scale-95 text-secondary hover:text-brand border border-soft-border/70 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
+                            title="کپی آدرس ویترین"
+                            aria-label="کپی آدرس ویترین"
                         >
-                            {copiedLink ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                            <span>{copiedLink ? "کپی شد" : "کپی لینک"}</span>
+                            {copiedLink ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
+                            <span className="hidden sm:inline">{copiedLink ? "کپی شد" : "کپی لینک"}</span>
                         </button>
 
+                        {/* Open Showcase Link */}
                         <Link
                             href={publicShowcasePath}
                             target="_blank"
-                            className="inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-2xl bg-brand hover:bg-brand/90 active:scale-95 text-white text-xs font-black transition-all shadow-sm shadow-brand/10"
+                            className="p-2 sm:px-3.5 sm:py-2 rounded-xl sm:rounded-2xl bg-brand hover:bg-brand/90 active:scale-95 text-white text-xs font-black transition-all shadow-xs flex items-center gap-1.5"
+                            title="مشاهده صفحه ویترین"
+                            aria-label="مشاهده صفحه ویترین"
                         >
-                            <ExternalLink className="w-3.5 h-3.5" />
-                            <span className="hidden xs:inline">صفحه عمومی</span>
-                            <span className="xs:hidden">ویترین</span>
+                            <ExternalLink className="w-4 h-4" />
+                            <span className="hidden sm:inline">مشاهده ویترین</span>
                         </Link>
                     </div>
                 </div>
             </header>
 
-            <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-8 space-y-6">
-                {/* Apple Segmented Control Tabs */}
-                <div className="flex justify-center sm:justify-start">
-                    <nav
-                        aria-label="زبانه های پنل"
-                        className="w-full sm:w-auto p-1.5 bg-soft-bg/80 backdrop-blur-md rounded-[20px] border border-soft-border/70 flex items-center gap-1 overflow-x-auto no-scrollbar shadow-2xs"
+            {/* Apple-style Sticky Tabs powered by Swiper */}
+            <div className="sticky top-14 sm:top-16 z-20 bg-canvas/80 backdrop-blur-xl border-b border-soft-border/60 py-2 sm:py-2.5 transition-all">
+                <div className="max-w-6xl mx-auto px-3.5 sm:px-6 lg:px-8">
+                    <Swiper
+                        modules={[FreeMode]}
+                        freeMode={{ enabled: true, momentum: true }}
+                        slidesPerView="auto"
+                        spaceBetween={8}
+                        onBeforeInit={(swiper) => {
+                            swiperRef.current = swiper;
+                        }}
+                        className="w-full !overflow-visible"
                     >
-                        <button
-                            type="button"
-                            onClick={() => setActiveTab("overview")}
-                            className={cn(
-                                "flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-black transition-all duration-200 select-none cursor-pointer whitespace-nowrap",
-                                activeTab === "overview"
-                                    ? "bg-surface text-brand shadow-[0_2px_8px_rgba(23,43,73,0.08)] scale-[1.01]"
-                                    : "text-secondary hover:text-brand hover:bg-surface/50"
-                            )}
-                        >
-                            <LayoutDashboard className="w-4 h-4 text-primary" />
-                            <span>نمای کلی و آمار</span>
-                        </button>
+                        {TABS.map((tab) => {
+                            const Icon = tab.icon;
+                            const isActive = activeTab === tab.id;
+                            const badgeCount =
+                                tab.id === "messages" && pendingMessagesCount > 0
+                                    ? pendingMessagesCount
+                                    : tab.id === "posts" && posts.length > 0
+                                    ? posts.length
+                                    : null;
 
-                        <button
-                            type="button"
-                            onClick={() => setActiveTab("settings")}
-                            className={cn(
-                                "flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-black transition-all duration-200 select-none cursor-pointer whitespace-nowrap",
-                                activeTab === "settings"
-                                    ? "bg-surface text-brand shadow-[0_2px_8px_rgba(23,43,73,0.08)] scale-[1.01]"
-                                    : "text-secondary hover:text-brand hover:bg-surface/50"
-                            )}
-                        >
-                            <Settings className="w-4 h-4 text-secondary" />
-                            <span>شخصی‌سازی ویترین</span>
-                        </button>
-
-                        <button
-                            type="button"
-                            onClick={() => setActiveTab("posts")}
-                            className={cn(
-                                "flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-black transition-all duration-200 select-none cursor-pointer whitespace-nowrap",
-                                activeTab === "posts"
-                                    ? "bg-surface text-brand shadow-[0_2px_8px_rgba(23,43,73,0.08)] scale-[1.01]"
-                                    : "text-secondary hover:text-brand hover:bg-surface/50"
-                            )}
-                        >
-                            <BookOpen className="w-4 h-4 text-accent-foreground" />
-                            <span>پست‌ها و استودیو</span>
-                            {posts.length > 0 && (
-                                <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-soft-border/70 text-secondary font-bold">
-                                    {toPersianDigits(posts.length)}
-                                </span>
-                            )}
-                        </button>
-
-                        <button
-                            type="button"
-                            onClick={() => setActiveTab("messages")}
-                            className={cn(
-                                "flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-black transition-all duration-200 select-none cursor-pointer whitespace-nowrap relative",
-                                activeTab === "messages"
-                                    ? "bg-surface text-brand shadow-[0_2px_8px_rgba(23,43,73,0.08)] scale-[1.01]"
-                                    : "text-secondary hover:text-brand hover:bg-surface/50"
-                            )}
-                        >
-                            <MessageSquare className="w-4 h-4 text-emerald-600" />
-                            <span>پیام‌ها و مشاوره‌ها</span>
-                            {pendingMessagesCount > 0 && (
-                                <span className="inline-flex items-center justify-center min-w-5 h-5 px-1.5 text-[10px] font-black rounded-full bg-emerald-600 text-white shadow-xs">
-                                    {toPersianDigits(pendingMessagesCount)}
-                                </span>
-                            )}
-                        </button>
-                    </nav>
-                </div>
-
-                {/* ───────────────────────────────────────────────────────────── */}
-                {/* TAB 1: OVERVIEW & STATS                                      */}
-                {/* ───────────────────────────────────────────────────────────── */}
-                {activeTab === "overview" && (
-                    <div className="space-y-6">
-                        {/* Apple-style Hero Showcase Banner */}
-                        <div className="relative overflow-hidden rounded-[28px] sm:rounded-[32px] bg-gradient-to-br from-brand via-[#1c3355] to-primary p-6 sm:p-8 text-white shadow-lg shadow-brand/10 border border-white/10">
-                            {/* Ambient background decoration */}
-                            <div className="absolute -left-16 -top-16 w-64 h-64 bg-accent/15 rounded-full blur-3xl pointer-events-none" />
-                            <div className="absolute -right-16 -bottom-16 w-64 h-64 bg-primary/20 rounded-full blur-3xl pointer-events-none" />
-
-                            <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                                <div className="space-y-3 max-w-2xl">
-                                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-accent text-xs font-bold">
-                                        <Sparkles className="w-3.5 h-3.5 text-accent" />
-                                        <span>ویترین اختصاصی دیجیتال شما</span>
-                                    </div>
-
-                                    <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white leading-tight">
-                                        {agency.agencyName || agency.name}
-                                    </h2>
-
-                                    {agency.bio && (
-                                        <p className="text-xs sm:text-sm text-slate-200 line-clamp-2 leading-relaxed font-normal">
-                                            {agency.bio}
-                                        </p>
-                                    )}
-
-                                    {/* Showcase Link Pill */}
-                                    <div className="flex flex-wrap items-center gap-2 pt-1">
-                                        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-black/25 backdrop-blur-md border border-white/10 text-xs font-mono text-slate-200 max-w-full">
-                                            <Globe className="w-3.5 h-3.5 text-accent shrink-0" />
-                                            <span className="truncate select-all text-[11px] sm:text-xs" dir="ltr">
-                                                {fullPublicUrl}
-                                            </span>
-                                        </div>
-
-                                        <button
-                                            type="button"
-                                            onClick={handleCopyLink}
-                                            className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-white text-xs font-bold transition-all border border-white/15 inline-flex items-center gap-1.5 cursor-pointer"
-                                        >
-                                            {copiedLink ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                                            <span>{copiedLink ? "کپی شد" : "کپی آدرس"}</span>
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <div className="flex flex-row md:flex-col gap-2.5 shrink-0">
-                                    <Link
-                                        href={publicShowcasePath}
-                                        target="_blank"
-                                        className="flex-1 md:flex-initial inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-white text-brand hover:bg-slate-100 active:scale-95 text-xs sm:text-sm font-black transition-all shadow-md"
-                                    >
-                                        <ExternalLink className="w-4 h-4 text-primary" />
-                                        <span>مشاهده ویترین آنلاین</span>
-                                    </Link>
-
+                            return (
+                                <SwiperSlide key={tab.id} className="!w-auto">
                                     <button
                                         type="button"
-                                        onClick={() => setActiveTab("settings")}
-                                        className="flex-1 md:flex-initial inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-white/15 hover:bg-white/25 active:scale-95 text-white text-xs sm:text-sm font-bold transition-all border border-white/20 cursor-pointer"
+                                        onClick={() => scrollToSection(tab.id)}
+                                        className={cn(
+                                            "inline-flex items-center gap-2 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl text-xs font-black transition-all duration-200 select-none cursor-pointer whitespace-nowrap",
+                                            isActive
+                                                ? "bg-surface text-brand border border-soft-border shadow-xs scale-[1.02]"
+                                                : "bg-soft-bg/50 text-secondary hover:text-brand hover:bg-soft-bg/80 border border-transparent"
+                                        )}
                                     >
-                                        <Settings className="w-4 h-4" />
-                                        <span>ویرایش اطلاعات</span>
+                                        <Icon className={cn("w-3.5 h-3.5 sm:w-4 sm:h-4", isActive ? "text-primary" : "text-secondary")} />
+                                        <span>{tab.label}</span>
+                                        {badgeCount !== null && (
+                                            <span
+                                                className={cn(
+                                                    "text-[10px] px-1.5 py-0.2 rounded-full font-bold",
+                                                    tab.id === "messages" && pendingMessagesCount > 0
+                                                        ? "bg-emerald-600 text-white"
+                                                        : "bg-soft-border/70 text-secondary"
+                                                )}
+                                            >
+                                                {toPersianDigits(badgeCount)}
+                                            </span>
+                                        )}
                                     </button>
-                                </div>
-                            </div>
-                        </div>
+                                </SwiperSlide>
+                            );
+                        })}
+                    </Swiper>
+                </div>
+            </div>
 
-                        {/* Apple KPI Metric Cards Grid */}
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-                            {/* Metric 1 */}
-                            <div className="p-4 sm:p-5 rounded-[24px] bg-surface/90 backdrop-blur-xl border border-soft-border/70 shadow-xs space-y-3 hover:shadow-sm transition-all">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-xs font-bold text-secondary">دنبال‌کنندگان</span>
-                                    <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-                                        <Users className="w-4 h-4" />
-                                    </div>
+            {/* Main Content: All Sections stacked sequentially with smooth anchors */}
+            <main className="max-w-6xl mx-auto px-3.5 sm:px-6 lg:px-8 py-5 sm:py-8 space-y-12">
+                {/* ───────────────────────────────────────────────────────────── */}
+                {/* SECTION 1: OVERVIEW & STATS                                  */}
+                {/* ───────────────────────────────────────────────────────────── */}
+                <section id="section-overview" className="space-y-5 scroll-mt-28">
+                    {/* Simplified, Calm Apple Showcase Card */}
+                    <div className="rounded-[24px] sm:rounded-[28px] bg-surface border border-soft-border/70 p-5 sm:p-7 shadow-xs">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div className="space-y-1.5 min-w-0">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
+                                        {agency.agencyType === "AGENCY" ? "دفتر املاک" : "مشاور املاک"}
+                                    </span>
+                                    {agency.verificationStatus === "VERIFIED" ? (
+                                        <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 border border-emerald-500/20 flex items-center gap-1">
+                                            <ShieldCheck className="w-3 h-3 text-emerald-600" />
+                                            <span>تأیید هویت رسمی</span>
+                                        </span>
+                                    ) : (
+                                        <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-700 border border-amber-500/20 flex items-center gap-1">
+                                            <Clock className="w-3 h-3 text-amber-600" />
+                                            <span>در انتظار مدارک</span>
+                                        </span>
+                                    )}
                                 </div>
-                                <div>
-                                    <div className="text-2xl sm:text-3xl font-black text-brand tracking-tight">
-                                        {toPersianDigits(agency.followersCount || stats?.followerCount || 0)}
-                                    </div>
-                                    <span className="text-[11px] text-secondary/70">کاربران علاقه‌مند به ویترین</span>
-                                </div>
-                            </div>
 
-                            {/* Metric 2 */}
-                            <div className="p-4 sm:p-5 rounded-[24px] bg-surface/90 backdrop-blur-xl border border-soft-border/70 shadow-xs space-y-3 hover:shadow-sm transition-all">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-xs font-bold text-secondary">درخواست‌های مشاوره</span>
-                                    <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
-                                        <MessageSquare className="w-4 h-4" />
-                                    </div>
-                                </div>
-                                <div>
-                                    <div className="text-2xl sm:text-3xl font-black text-brand tracking-tight">
-                                        {toPersianDigits(agency.consultationsCount || stats?.consultationCount || messages.length || 0)}
-                                    </div>
-                                    <span className="text-[11px] text-emerald-600 font-bold">
-                                        {pendingMessagesCount > 0 ? `${toPersianDigits(pendingMessagesCount)} پیام پاسخ داده‌نشده` : "تمام پیام‌ها پاسخ داده شده"}
+                                <h2 className="text-lg sm:text-xl font-black text-brand tracking-tight">
+                                    {agency.agencyName || agency.name}
+                                </h2>
+
+                                {agency.bio && (
+                                    <p className="text-xs sm:text-sm text-secondary line-clamp-2 leading-relaxed">
+                                        {agency.bio}
+                                    </p>
+                                )}
+
+                                {/* Compact Link Pill */}
+                                <div className="pt-1 flex items-center gap-2">
+                                    <span className="text-[11px] text-secondary font-mono truncate max-w-xs" dir="ltr">
+                                        {fullPublicUrl}
                                     </span>
                                 </div>
                             </div>
 
-                            {/* Metric 3 */}
-                            <div className="p-4 sm:p-5 rounded-[24px] bg-surface/90 backdrop-blur-xl border border-soft-border/70 shadow-xs space-y-3 hover:shadow-sm transition-all">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-xs font-bold text-secondary">امتیاز و اعتبار</span>
-                                    <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
-                                        <Star className="w-4 h-4 fill-amber-500" />
-                                    </div>
-                                </div>
-                                <div>
-                                    <div className="flex items-center gap-1.5">
-                                        {agency.rating != null && !isNaN(Number(agency.rating)) && Number(agency.rating) > 0 ? (
-                                            <>
-                                                <span className="text-2xl sm:text-3xl font-black text-brand">
-                                                    {toPersianDigits(Number(agency.rating).toFixed(1))}
-                                                </span>
-                                                <span className="text-xs font-bold text-secondary">از ۵</span>
-                                            </>
-                                        ) : (
-                                            <span className="text-base sm:text-lg font-bold text-secondary">بدون امتیاز</span>
-                                        )}
-                                    </div>
-                                    <span className="text-[11px] text-secondary/70">بر اساس نظرات کاربران</span>
-                                </div>
-                            </div>
-
-                            {/* Metric 4 */}
-                            <div className="p-4 sm:p-5 rounded-[24px] bg-surface/90 backdrop-blur-xl border border-soft-border/70 shadow-xs space-y-3 hover:shadow-sm transition-all">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-xs font-bold text-secondary">وضعیت انتشار</span>
-                                    <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-                                        <BadgeCheck className="w-4 h-4" />
-                                    </div>
-                                </div>
-                                <div>
-                                    <div className="flex items-center gap-2">
-                                        <span className="relative flex h-2.5 w-2.5">
-                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                                            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
-                                        </span>
-                                        <span className="text-base sm:text-lg font-black text-brand">
-                                            {agency.isActive ? "فعال و آنلاین" : "معلق"}
-                                        </span>
-                                    </div>
-                                    <span className="text-[11px] text-secondary/70">در دسترس همه مراجعین</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Content Studio Pro Feature Banner */}
-                        <div className="rounded-[28px] bg-gradient-to-r from-soft-bg via-surface to-soft-bg border border-soft-border/80 p-6 sm:p-7 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-5">
-                            <div className="flex items-start gap-4">
-                                <div className="w-12 h-12 rounded-2xl bg-brand text-accent flex items-center justify-center shrink-0 shadow-sm">
-                                    <Sparkles className="w-6 h-6" />
-                                </div>
-                                <div className="space-y-1">
-                                    <div className="flex items-center gap-2">
-                                        <h3 className="text-base font-black text-brand">استودیو اختصاصی تولید محتوا و مقالات</h3>
-                                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-accent/30 text-brand">
-                                            ویژه مشاوران
-                                        </span>
-                                    </div>
-                                    <p className="text-xs text-secondary leading-relaxed max-w-xl">
-                                        با نگارش تحلیل‌های تخصصی منطقه، معرفی پروژه‌های ویژه و پست‌های تصویری، رتبه و توجه کاربران را به ویترین خود جلب کنید.
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div className="flex items-center gap-2.5 self-end md:self-center shrink-0">
+                            <div className="flex items-center gap-2 shrink-0 pt-2 sm:pt-0">
                                 <Link
-                                    href="/posts/create"
-                                    className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-brand hover:bg-brand/90 active:scale-95 text-white text-xs font-black transition-all shadow-md shadow-brand/10"
+                                    href={publicShowcasePath}
+                                    target="_blank"
+                                    className="px-4 py-2.5 rounded-xl bg-brand hover:bg-brand/90 active:scale-95 text-white text-xs font-black transition-all shadow-xs inline-flex items-center gap-1.5"
                                 >
-                                    <Plus className="w-4 h-4" />
-                                    <span>ایجاد پست جدید</span>
+                                    <Eye className="w-3.5 h-3.5" />
+                                    <span>مشاهده زنده</span>
                                 </Link>
                                 <button
                                     type="button"
-                                    onClick={() => setActiveTab("posts")}
-                                    className="px-4 py-3 rounded-2xl bg-surface hover:bg-soft-bg active:scale-95 text-secondary hover:text-brand border border-soft-border/70 text-xs font-bold transition-all"
+                                    onClick={() => scrollToSection("settings")}
+                                    className="px-4 py-2.5 rounded-xl bg-soft-bg hover:bg-soft-border/70 text-brand text-xs font-bold transition-all border border-soft-border/70 cursor-pointer"
                                 >
-                                    مدیریت پست‌ها
+                                    ویرایش سریع
                                 </button>
                             </div>
                         </div>
-
-                        {/* Recent Inquiries Preview (if any) */}
-                        {messages.length > 0 && (
-                            <div className="rounded-[28px] bg-surface/90 backdrop-blur-xl border border-soft-border/70 p-6 shadow-xs space-y-4">
-                                <div className="flex items-center justify-between border-b border-soft-border/50 pb-3">
-                                    <div className="flex items-center gap-2">
-                                        <MessageSquare className="w-4 h-4 text-emerald-600" />
-                                        <h3 className="text-sm font-black text-brand">آخرین درخواست‌های مشاوره</h3>
-                                    </div>
-                                    <button
-                                        type="button"
-                                        onClick={() => setActiveTab("messages")}
-                                        className="text-xs font-bold text-primary hover:underline cursor-pointer"
-                                    >
-                                        مشاهده همه ({toPersianDigits(messages.length)})
-                                    </button>
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                    {messages.slice(0, 4).map((msg) => (
-                                        <div
-                                            key={msg.id}
-                                            onClick={() => {
-                                                setActiveTab("messages");
-                                                setReplyingMessage(msg);
-                                                setReplyText(msg.replyMessage || "");
-                                            }}
-                                            className="p-4 rounded-2xl bg-soft-bg/40 hover:bg-soft-bg/80 border border-soft-border/60 transition-all cursor-pointer space-y-2 group"
-                                        >
-                                            <div className="flex items-center justify-between">
-                                                <span className="text-xs font-black text-brand group-hover:text-primary transition-colors">
-                                                    {msg.subject}
-                                                </span>
-                                                <span
-                                                    className={cn(
-                                                        "text-[10px] font-bold px-2 py-0.5 rounded-full",
-                                                        msg.status === "REPLIED"
-                                                            ? "bg-emerald-500/10 text-emerald-700"
-                                                            : "bg-amber-500/10 text-amber-700"
-                                                    )}
-                                                >
-                                                    {msg.status === "REPLIED" ? "پاسخ داده شد" : "در انتظار پاسخ"}
-                                                </span>
-                                            </div>
-                                            <p className="text-xs text-secondary line-clamp-1">{msg.message}</p>
-                                            <div className="text-[10px] text-secondary/70 flex items-center justify-between pt-1">
-                                                <span>{msg.senderName || "کاربر ناشناس"}</span>
-                                                <span>{new Date(msg.createdAt).toLocaleDateString("fa-IR")}</span>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
                     </div>
-                )}
+
+                    {/* Apple KPI Metric Grid (Clean, balanced 4 cards) */}
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                        <div className="p-4 rounded-2xl bg-surface border border-soft-border/70 shadow-2xs space-y-1">
+                            <span className="text-[11px] font-bold text-secondary flex items-center justify-between">
+                                <span>دنبال‌کنندگان</span>
+                                <Users className="w-3.5 h-3.5 text-primary" />
+                            </span>
+                            <div className="text-xl sm:text-2xl font-black text-brand">
+                                {toPersianDigits(agency.followersCount || stats?.followerCount || 0)}
+                            </div>
+                        </div>
+
+                        <div className="p-4 rounded-2xl bg-surface border border-soft-border/70 shadow-2xs space-y-1">
+                            <span className="text-[11px] font-bold text-secondary flex items-center justify-between">
+                                <span>مشاوره‌ها</span>
+                                <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
+                            </span>
+                            <div className="text-xl sm:text-2xl font-black text-brand">
+                                {toPersianDigits(agency.consultationsCount || stats?.consultationCount || messages.length || 0)}
+                            </div>
+                        </div>
+
+                        <div className="p-4 rounded-2xl bg-surface border border-soft-border/70 shadow-2xs space-y-1">
+                            <span className="text-[11px] font-bold text-secondary flex items-center justify-between">
+                                <span>امتیاز رضایت</span>
+                                <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                            </span>
+                            <div className="text-xl sm:text-2xl font-black text-brand">
+                                {agency.rating != null && !isNaN(Number(agency.rating)) && Number(agency.rating) > 0 ? (
+                                    <span>{toPersianDigits(Number(agency.rating).toFixed(1))} <span className="text-xs font-normal text-secondary">از ۵</span></span>
+                                ) : (
+                                    <span className="text-sm font-bold text-secondary">بدون نظر</span>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="p-4 rounded-2xl bg-surface border border-soft-border/70 shadow-2xs space-y-1">
+                            <span className="text-[11px] font-bold text-secondary flex items-center justify-between">
+                                <span>وضعیت ویترین</span>
+                                <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                            </span>
+                            <div className="text-base sm:text-lg font-black text-emerald-700">
+                                {agency.isActive ? "فعال و آنلاین" : "معلق"}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Content Studio Minimal Callout */}
+                    <div className="rounded-2xl bg-soft-bg/60 border border-soft-border/70 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-xl bg-brand text-accent flex items-center justify-center shrink-0">
+                                <Sparkles className="w-4 h-4" />
+                            </div>
+                            <div>
+                                <h3 className="text-xs sm:text-sm font-black text-brand">استودیو انتشار محتوا و تحلیل بازار</h3>
+                                <p className="text-[11px] text-secondary">نگارش پست‌های تحلیلی، معرفی پروژه‌ها و مقالات ویژه املاک</p>
+                            </div>
+                        </div>
+                        <Link
+                            href="/posts/create"
+                            className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-brand hover:bg-brand/90 text-white text-xs font-black transition-all shrink-0 shadow-2xs"
+                        >
+                            <Plus className="w-3.5 h-3.5" />
+                            <span>ایجاد پست جدید</span>
+                        </Link>
+                    </div>
+                </section>
 
                 {/* ───────────────────────────────────────────────────────────── */}
-                {/* TAB 2: SETTINGS & CUSTOMIZATION                              */}
+                {/* SECTION 2: SETTINGS & CUSTOMIZATION                          */}
                 {/* ───────────────────────────────────────────────────────────── */}
-                {activeTab === "settings" && (
+                <section id="section-settings" className="space-y-6 scroll-mt-28">
+                    <div className="border-b border-soft-border/60 pb-3 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <Settings className="w-5 h-5 text-secondary" />
+                            <div>
+                                <h2 className="text-base sm:text-lg font-black text-brand">تنظیمات و هویت صفحه ویترین</h2>
+                                <p className="text-[11px] text-secondary">شخصی‌سازی اطلاعات عمومی، تصاویر و پل‌های ارتباطی دفتر املاک</p>
+                            </div>
+                        </div>
+                    </div>
+
                     <form
                         onSubmit={(e) => {
                             e.preventDefault();
@@ -706,21 +624,14 @@ export default function AgencyPanelScene() {
                         }}
                         className="space-y-6"
                     >
-                        {/* Section 1: Basic Identity (Apple Inset Grouped Card) */}
-                        <div className="rounded-[28px] bg-surface/90 backdrop-blur-xl border border-soft-border/70 p-6 sm:p-8 shadow-xs space-y-6">
-                            <div className="border-b border-soft-border/50 pb-4">
-                                <div className="flex items-center gap-2.5">
-                                    <div className="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-                                        <Building2 className="w-4 h-4" />
-                                    </div>
-                                    <h3 className="text-base font-black text-brand">مشخصات پایه و هویت برند</h3>
-                                </div>
-                                <p className="text-xs text-secondary mt-1">
-                                    نام رسمی، شناسه نشانی اینترنتی و بیوگرافی معرفی برای نمایش عمومی.
-                                </p>
-                            </div>
+                        {/* Section: Basic Identity */}
+                        <div className="rounded-[24px] bg-surface border border-soft-border/70 p-5 sm:p-7 shadow-xs space-y-4">
+                            <h3 className="text-sm font-black text-brand flex items-center gap-2">
+                                <Building2 className="w-4 h-4 text-primary" />
+                                <span>مشخصات پایه و نام برند</span>
+                            </h3>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div className="space-y-1.5">
                                     <label className="text-xs font-bold text-brand block">
                                         نام دفتر املاک یا مشاور <span className="text-status-error">*</span>
@@ -730,14 +641,14 @@ export default function AgencyPanelScene() {
                                         required
                                         value={settingsForm.agencyName}
                                         onChange={(e) => setSettingsForm({ ...settingsForm, agencyName: e.target.value })}
-                                        className="w-full px-4 py-3 bg-soft-bg/30 border border-soft-border/80 rounded-2xl text-xs sm:text-sm text-brand placeholder:text-secondary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                        className="w-full px-3.5 py-2.5 bg-soft-bg/30 border border-soft-border/80 rounded-xl text-xs sm:text-sm text-brand focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                                         placeholder="مثال: املاک مدرن ونک"
                                     />
                                 </div>
 
                                 <div className="space-y-1.5">
                                     <label className="text-xs font-bold text-brand block">
-                                        شناسه یکتای آدرس وب (Slug) - فقط حروف انگلیسی و عدد
+                                        شناسه آدرس وب (Slug) - فقط انگلیسی
                                     </label>
                                     <input
                                         type="text"
@@ -750,11 +661,8 @@ export default function AgencyPanelScene() {
                                         }
                                         placeholder="tehran-modern-melk"
                                         dir="ltr"
-                                        className="w-full px-4 py-3 bg-soft-bg/30 border border-soft-border/80 rounded-2xl text-xs sm:text-sm font-mono text-brand placeholder:text-secondary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-left"
+                                        className="w-full px-3.5 py-2.5 bg-soft-bg/30 border border-soft-border/80 rounded-xl text-xs sm:text-sm font-mono text-brand focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-left"
                                     />
-                                    <span className="text-[10px] text-secondary font-mono block truncate" dir="ltr">
-                                        آدرس: {fullPublicUrl}
-                                    </span>
                                 </div>
 
                                 <div className="space-y-1.5">
@@ -764,7 +672,7 @@ export default function AgencyPanelScene() {
                                         value={settingsForm.licenseNumber}
                                         onChange={(e) => setSettingsForm({ ...settingsForm, licenseNumber: e.target.value })}
                                         placeholder="مثال: ۱۲۳۴۵۶۷۸"
-                                        className="w-full px-4 py-3 bg-soft-bg/30 border border-soft-border/80 rounded-2xl text-xs sm:text-sm text-brand placeholder:text-secondary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-mono"
+                                        className="w-full px-3.5 py-2.5 bg-soft-bg/30 border border-soft-border/80 rounded-xl text-xs sm:text-sm text-brand focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-mono"
                                     />
                                 </div>
 
@@ -775,7 +683,7 @@ export default function AgencyPanelScene() {
                                         value={settingsForm.guildCode}
                                         onChange={(e) => setSettingsForm({ ...settingsForm, guildCode: e.target.value })}
                                         placeholder="مثال: ۹۸۷۶۵"
-                                        className="w-full px-4 py-3 bg-soft-bg/30 border border-soft-border/80 rounded-2xl text-xs sm:text-sm text-brand placeholder:text-secondary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-mono"
+                                        className="w-full px-3.5 py-2.5 bg-soft-bg/30 border border-soft-border/80 rounded-xl text-xs sm:text-sm text-brand focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-mono"
                                     />
                                 </div>
 
@@ -786,40 +694,33 @@ export default function AgencyPanelScene() {
                                         onChange={(e) => setSettingsForm({ ...settingsForm, bio: e.target.value })}
                                         rows={3}
                                         placeholder="توضیحاتی در مورد سوابق کاری، مناطق تحت پوشش، خدمات ویژه و نحوه همکاری..."
-                                        className="w-full p-4 bg-soft-bg/30 border border-soft-border/80 rounded-2xl text-xs sm:text-sm text-brand placeholder:text-secondary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all leading-relaxed"
+                                        className="w-full p-3 bg-soft-bg/30 border border-soft-border/80 rounded-xl text-xs sm:text-sm text-brand focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary leading-relaxed"
                                     />
                                 </div>
                             </div>
                         </div>
 
-                        {/* Section 2: Visual Media & Banners */}
-                        <div className="rounded-[28px] bg-surface/90 backdrop-blur-xl border border-soft-border/70 p-6 sm:p-8 shadow-xs space-y-6">
-                            <div className="border-b border-soft-border/50 pb-4">
-                                <div className="flex items-center gap-2.5">
-                                    <div className="w-8 h-8 rounded-xl bg-accent/20 text-brand flex items-center justify-center">
-                                        <Sparkles className="w-4 h-4" />
-                                    </div>
-                                    <h3 className="text-base font-black text-brand">تصاویر نمایه و بنر سربرگ</h3>
-                                </div>
-                                <p className="text-xs text-secondary mt-1">
-                                    تصاویر باکیفیت و رسمی موجب جلب اعتماد بیشتر بازدیدکنندگان می‌شود.
-                                </p>
-                            </div>
+                        {/* Section: Media & Visuals */}
+                        <div className="rounded-[24px] bg-surface border border-soft-border/70 p-5 sm:p-7 shadow-xs space-y-4">
+                            <h3 className="text-sm font-black text-brand flex items-center gap-2">
+                                <Sparkles className="w-4 h-4 text-accent" />
+                                <span>تصاویر نمایه و بنر سربرگ</span>
+                            </h3>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                <div className="p-4 rounded-2xl bg-soft-bg/25 border border-soft-border/60 space-y-2">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="p-3.5 rounded-xl bg-soft-bg/30 border border-soft-border/60">
                                     <MediaIconUpload
-                                        label="لوگوی رسمی دفتر یا تصویر پرتره مشاور"
-                                        helperText="فرمت پیشنهادی: مربع با کیفیت بالا (PNG یا WebP)"
+                                        label="لوگوی رسمی دفتر یا تصویر پرتره"
+                                        helperText="فرمت: مربع با کیفیت بالا"
                                         value={settingsForm.logoUrl}
                                         onChange={(mediaId) => setSettingsForm({ ...settingsForm, logoUrl: mediaId })}
                                     />
                                 </div>
 
-                                <div className="p-4 rounded-2xl bg-soft-bg/25 border border-soft-border/60 space-y-2">
+                                <div className="p-3.5 rounded-xl bg-soft-bg/30 border border-soft-border/60">
                                     <MediaIconUpload
-                                        label="تصویر کاور و بنر بالای صفحه ویترین"
-                                        helperText="فرمت پیشنهادی: افقی با نسبت ۱۶:۹ جهت نمایش چشم‌نواز در بالای صفحه"
+                                        label="تصویر بنر سربرگ (کاور بالای صفحه)"
+                                        helperText="فرمت: افقی با نسبت ۱۶:۹"
                                         value={settingsForm.coverUrl}
                                         onChange={(mediaId) => setSettingsForm({ ...settingsForm, coverUrl: mediaId })}
                                     />
@@ -827,25 +728,18 @@ export default function AgencyPanelScene() {
                             </div>
                         </div>
 
-                        {/* Section 3: Contact Channels & Socials */}
-                        <div className="rounded-[28px] bg-surface/90 backdrop-blur-xl border border-soft-border/70 p-6 sm:p-8 shadow-xs space-y-6">
-                            <div className="border-b border-soft-border/50 pb-4">
-                                <div className="flex items-center gap-2.5">
-                                    <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
-                                        <Phone className="w-4 h-4" />
-                                    </div>
-                                    <h3 className="text-base font-black text-brand">راه‌های ارتباطی و شبکه‌های اجتماعی</h3>
-                                </div>
-                                <p className="text-xs text-secondary mt-1">
-                                    اطلاعات تماس مستقیم جهت برقراری ارتباط سریع مراجعین و متقاضیان ملک.
-                                </p>
-                            </div>
+                        {/* Section: Contacts */}
+                        <div className="rounded-[24px] bg-surface border border-soft-border/70 p-5 sm:p-7 shadow-xs space-y-4">
+                            <h3 className="text-sm font-black text-brand flex items-center gap-2">
+                                <Phone className="w-4 h-4 text-emerald-600" />
+                                <span>راه‌های ارتباطی و شبکه‌های اجتماعی</span>
+                            </h3>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5">
                                 <div className="space-y-1.5">
                                     <label className="text-xs font-bold text-brand block flex items-center gap-1.5">
                                         <Phone className="w-3.5 h-3.5 text-secondary" />
-                                        <span>تلفن ثابت دفتر</span>
+                                        <span>تلفن ثابت</span>
                                     </label>
                                     <input
                                         type="text"
@@ -853,14 +747,14 @@ export default function AgencyPanelScene() {
                                         onChange={(e) => setSettingsForm({ ...settingsForm, phone: e.target.value })}
                                         placeholder="۰۲۱..."
                                         dir="ltr"
-                                        className="w-full px-4 py-3 bg-soft-bg/30 border border-soft-border/80 rounded-2xl text-xs sm:text-sm font-mono text-brand placeholder:text-secondary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-left"
+                                        className="w-full px-3.5 py-2.5 bg-soft-bg/30 border border-soft-border/80 rounded-xl text-xs sm:text-sm font-mono text-brand focus:outline-none focus:ring-2 focus:ring-primary/20 text-left"
                                     />
                                 </div>
 
                                 <div className="space-y-1.5">
                                     <label className="text-xs font-bold text-brand block flex items-center gap-1.5">
                                         <Smartphone className="w-3.5 h-3.5 text-secondary" />
-                                        <span>شماره موبایل مستقیم</span>
+                                        <span>شماره همراه</span>
                                     </label>
                                     <input
                                         type="text"
@@ -868,14 +762,14 @@ export default function AgencyPanelScene() {
                                         onChange={(e) => setSettingsForm({ ...settingsForm, mobile: e.target.value })}
                                         placeholder="۰۹۱۲..."
                                         dir="ltr"
-                                        className="w-full px-4 py-3 bg-soft-bg/30 border border-soft-border/80 rounded-2xl text-xs sm:text-sm font-mono text-brand placeholder:text-secondary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-left"
+                                        className="w-full px-3.5 py-2.5 bg-soft-bg/30 border border-soft-border/80 rounded-xl text-xs sm:text-sm font-mono text-brand focus:outline-none focus:ring-2 focus:ring-primary/20 text-left"
                                     />
                                 </div>
 
                                 <div className="space-y-1.5">
                                     <label className="text-xs font-bold text-brand block flex items-center gap-1.5">
                                         <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
-                                        <span>شماره واتساپ</span>
+                                        <span>واتساپ</span>
                                     </label>
                                     <input
                                         type="text"
@@ -883,44 +777,44 @@ export default function AgencyPanelScene() {
                                         onChange={(e) => setSettingsForm({ ...settingsForm, whatsapp: e.target.value })}
                                         placeholder="۰۹..."
                                         dir="ltr"
-                                        className="w-full px-4 py-3 bg-soft-bg/30 border border-soft-border/80 rounded-2xl text-xs sm:text-sm font-mono text-brand placeholder:text-secondary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-left"
+                                        className="w-full px-3.5 py-2.5 bg-soft-bg/30 border border-soft-border/80 rounded-xl text-xs sm:text-sm font-mono text-brand focus:outline-none focus:ring-2 focus:ring-primary/20 text-left"
                                     />
                                 </div>
 
                                 <div className="space-y-1.5">
                                     <label className="text-xs font-bold text-brand block flex items-center gap-1.5">
                                         <InstagramIcon className="w-3.5 h-3.5 text-pink-600" />
-                                        <span>آیدی اینستاگرام (بدون @)</span>
+                                        <span>اینستاگرام</span>
                                     </label>
                                     <input
                                         type="text"
                                         value={settingsForm.instagram}
                                         onChange={(e) => setSettingsForm({ ...settingsForm, instagram: e.target.value })}
-                                        placeholder="melk_agency"
+                                        placeholder="نام کاربری بدون @"
                                         dir="ltr"
-                                        className="w-full px-4 py-3 bg-soft-bg/30 border border-soft-border/80 rounded-2xl text-xs sm:text-sm font-mono text-brand placeholder:text-secondary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-left"
+                                        className="w-full px-3.5 py-2.5 bg-soft-bg/30 border border-soft-border/80 rounded-xl text-xs sm:text-sm font-mono text-brand focus:outline-none focus:ring-2 focus:ring-primary/20 text-left"
                                     />
                                 </div>
 
                                 <div className="space-y-1.5">
                                     <label className="text-xs font-bold text-brand block flex items-center gap-1.5">
                                         <Send className="w-3.5 h-3.5 text-sky-500" />
-                                        <span>آیدی یا کانال تلگرام</span>
+                                        <span>تلگرام</span>
                                     </label>
                                     <input
                                         type="text"
                                         value={settingsForm.telegram}
                                         onChange={(e) => setSettingsForm({ ...settingsForm, telegram: e.target.value })}
-                                        placeholder="melk_agency"
+                                        placeholder="آیدی تلگرام"
                                         dir="ltr"
-                                        className="w-full px-4 py-3 bg-soft-bg/30 border border-soft-border/80 rounded-2xl text-xs sm:text-sm font-mono text-brand placeholder:text-secondary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-left"
+                                        className="w-full px-3.5 py-2.5 bg-soft-bg/30 border border-soft-border/80 rounded-xl text-xs sm:text-sm font-mono text-brand focus:outline-none focus:ring-2 focus:ring-primary/20 text-left"
                                     />
                                 </div>
 
                                 <div className="space-y-1.5">
                                     <label className="text-xs font-bold text-brand block flex items-center gap-1.5">
                                         <Globe className="w-3.5 h-3.5 text-primary" />
-                                        <span>وب‌سایت اختصاصی</span>
+                                        <span>وب‌سایت</span>
                                     </label>
                                     <input
                                         type="text"
@@ -928,25 +822,18 @@ export default function AgencyPanelScene() {
                                         onChange={(e) => setSettingsForm({ ...settingsForm, website: e.target.value })}
                                         placeholder="https://..."
                                         dir="ltr"
-                                        className="w-full px-4 py-3 bg-soft-bg/30 border border-soft-border/80 rounded-2xl text-xs sm:text-sm font-mono text-brand placeholder:text-secondary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-left"
+                                        className="w-full px-3.5 py-2.5 bg-soft-bg/30 border border-soft-border/80 rounded-xl text-xs sm:text-sm font-mono text-brand focus:outline-none focus:ring-2 focus:ring-primary/20 text-left"
                                     />
                                 </div>
                             </div>
                         </div>
 
-                        {/* Section 4: Physical Location & Hours */}
-                        <div className="rounded-[28px] bg-surface/90 backdrop-blur-xl border border-soft-border/70 p-6 sm:p-8 shadow-xs space-y-6">
-                            <div className="border-b border-soft-border/50 pb-4">
-                                <div className="flex items-center gap-2.5">
-                                    <div className="w-8 h-8 rounded-xl bg-accent-foreground/10 text-brand flex items-center justify-center">
-                                        <MapPin className="w-4 h-4" />
-                                    </div>
-                                    <h3 className="text-base font-black text-brand">موقعیت مکانی و ساعات پاسخ‌گویی</h3>
-                                </div>
-                                <p className="text-xs text-secondary mt-1">
-                                    نشانی دقیق جهت مراجعه حضوری مراجعین و زمان‌های در دسترس بودن دفتر.
-                                </p>
-                            </div>
+                        {/* Section: Location */}
+                        <div className="rounded-[24px] bg-surface border border-soft-border/70 p-5 sm:p-7 shadow-xs space-y-4">
+                            <h3 className="text-sm font-black text-brand flex items-center gap-2">
+                                <MapPin className="w-4 h-4 text-brand" />
+                                <span>موقعیت مکانی و ساعات فعالیت</span>
+                            </h3>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div className="space-y-1.5 sm:col-span-2">
@@ -955,19 +842,19 @@ export default function AgencyPanelScene() {
                                         type="text"
                                         value={settingsForm.workingHours}
                                         onChange={(e) => setSettingsForm({ ...settingsForm, workingHours: e.target.value })}
-                                        placeholder="مثال: شنبه تا چهارشنبه از ۹:۰۰ تا ۲۱:۰۰ - پنجشنبه تا ۱۴:۰۰"
-                                        className="w-full px-4 py-3 bg-soft-bg/30 border border-soft-border/80 rounded-2xl text-xs sm:text-sm text-brand placeholder:text-secondary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                        placeholder="مثال: شنبه تا چهارشنبه از ۹:۰۰ تا ۲۱:۰۰"
+                                        className="w-full px-3.5 py-2.5 bg-soft-bg/30 border border-soft-border/80 rounded-xl text-xs sm:text-sm text-brand focus:outline-none focus:ring-2 focus:ring-primary/20"
                                     />
                                 </div>
 
                                 <div className="space-y-1.5 sm:col-span-2">
-                                    <label className="text-xs font-bold text-brand block">آدرس دقیق پستی دفتر</label>
+                                    <label className="text-xs font-bold text-brand block">آدرس دقیق پستی</label>
                                     <input
                                         type="text"
                                         value={settingsForm.address}
                                         onChange={(e) => setSettingsForm({ ...settingsForm, address: e.target.value })}
-                                        placeholder="مثال: تهران، میدان ونک، خیابان ملاصدرا، پلاک ..."
-                                        className="w-full px-4 py-3 bg-soft-bg/30 border border-soft-border/80 rounded-2xl text-xs sm:text-sm text-brand placeholder:text-secondary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                        placeholder="مثال: تهران، میدان ونک، خیابان ملاصدرا..."
+                                        className="w-full px-3.5 py-2.5 bg-soft-bg/30 border border-soft-border/80 rounded-xl text-xs sm:text-sm text-brand focus:outline-none focus:ring-2 focus:ring-primary/20"
                                     />
                                 </div>
 
@@ -977,328 +864,289 @@ export default function AgencyPanelScene() {
                                         type="text"
                                         value={settingsForm.postalCode}
                                         onChange={(e) => setSettingsForm({ ...settingsForm, postalCode: e.target.value })}
-                                        placeholder="کد پستی ده‌رقمی"
+                                        placeholder="کد پستی"
                                         dir="ltr"
-                                        className="w-full px-4 py-3 bg-soft-bg/30 border border-soft-border/80 rounded-2xl text-xs sm:text-sm font-mono text-brand placeholder:text-secondary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-left"
+                                        className="w-full px-3.5 py-2.5 bg-soft-bg/30 border border-soft-border/80 rounded-xl text-xs sm:text-sm font-mono text-brand focus:outline-none focus:ring-2 focus:ring-primary/20 text-left"
                                     />
                                 </div>
                             </div>
                         </div>
 
-                        {/* Floating / Sticky Save Action Bar */}
-                        <div className="sticky bottom-4 z-20 bg-surface/90 backdrop-blur-xl border border-soft-border/80 p-4 rounded-2xl shadow-lg flex items-center justify-between gap-4">
-                            <span className="text-xs text-secondary font-medium hidden sm:inline">
-                                تغییرات بلافاصله پس از ذخیره در صفحه ویترین عمومی اعمال می‌شوند.
-                            </span>
-
-                            <div className="flex items-center gap-3 mr-auto">
-                                <button
-                                    type="submit"
-                                    disabled={updateShowcaseMutation.isPending}
-                                    className="px-6 py-3 bg-brand hover:bg-brand/90 active:scale-95 text-white rounded-xl text-xs sm:text-sm font-black transition-all shadow-md shadow-brand/10 disabled:opacity-50 inline-flex items-center gap-2 cursor-pointer"
-                                >
-                                    {updateShowcaseMutation.isPending && (
-                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                    )}
-                                    <span>{updateShowcaseMutation.isPending ? "در حال ذخیره‌سازی..." : "ذخیره تغییرات ویترین"}</span>
-                                </button>
-                            </div>
+                        {/* Save Button */}
+                        <div className="flex justify-end pt-2">
+                            <button
+                                type="submit"
+                                disabled={updateShowcaseMutation.isPending}
+                                className="w-full sm:w-auto px-6 py-3 bg-brand hover:bg-brand/90 active:scale-95 text-white rounded-xl text-xs sm:text-sm font-black transition-all shadow-sm shadow-brand/10 disabled:opacity-50 inline-flex items-center justify-center gap-2 cursor-pointer"
+                            >
+                                {updateShowcaseMutation.isPending && (
+                                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                )}
+                                <span>{updateShowcaseMutation.isPending ? "در حال ذخیره‌سازی..." : "ذخیره تغییرات ویترین"}</span>
+                            </button>
                         </div>
                     </form>
-                )}
+                </section>
 
                 {/* ───────────────────────────────────────────────────────────── */}
-                {/* TAB 3: POSTS & CONTENT STUDIO                                */}
+                {/* SECTION 3: POSTS & ARTICLES                                  */}
                 {/* ───────────────────────────────────────────────────────────── */}
-                {activeTab === "posts" && (
-                    <div className="space-y-6">
-                        {/* Header Action Card */}
-                        <div className="rounded-[28px] bg-surface/90 backdrop-blur-xl border border-soft-border/70 p-6 sm:p-7 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                            <div className="space-y-1">
-                                <div className="flex items-center gap-2">
-                                    <BookOpen className="w-5 h-5 text-accent-foreground" />
-                                    <h3 className="text-base font-black text-brand">پست‌ها، تحلیل‌ها و مقالات اختصاصی</h3>
-                                </div>
-                                <p className="text-xs text-secondary">
-                                    مقالات تخصصی و اخبار منطقه را مستقیماً در ویترین آژانس خود منتشر کنید.
+                <section id="section-posts" className="space-y-6 scroll-mt-28">
+                    <div className="border-b border-soft-border/60 pb-3 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <BookOpen className="w-5 h-5 text-accent-foreground" />
+                            <div>
+                                <h2 className="text-base sm:text-lg font-black text-brand">پست‌ها و مقالات اختصاصی</h2>
+                                <p className="text-[11px] text-secondary">
+                                    {posts.length > 0 ? `${toPersianDigits(posts.length)} مطلب منتشر شده یا پیش‌نویس` : "مطالب تحلیلی و اخبار ویترین"}
                                 </p>
                             </div>
-
-                            <Link
-                                href="/posts/create"
-                                className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-brand hover:bg-brand/90 active:scale-95 text-white text-xs sm:text-sm font-black transition-all shadow-md shadow-brand/10 shrink-0"
-                            >
-                                <Plus className="w-4 h-4" />
-                                <span>نگارش و انتشار پست جدید</span>
-                            </Link>
                         </div>
 
-                        {/* Content Loading State */}
-                        {isLoadingPosts ? (
-                            <div className="rounded-[28px] bg-surface/90 backdrop-blur-xl border border-soft-border/70 p-12 text-center">
-                                <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-                                <p className="text-xs font-bold text-secondary">در حال دریافت پست‌ها...</p>
+                        <Link
+                            href="/posts/create"
+                            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-brand hover:bg-brand/90 active:scale-95 text-white text-xs font-black transition-all shadow-2xs shrink-0"
+                        >
+                            <Plus className="w-3.5 h-3.5" />
+                            <span>پست جدید</span>
+                        </Link>
+                    </div>
+
+                    {isLoadingPosts ? (
+                        <div className="rounded-2xl bg-surface border border-soft-border/70 p-10 text-center">
+                            <div className="w-7 h-7 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                            <p className="text-xs font-bold text-secondary">در حال دریافت پست‌ها...</p>
+                        </div>
+                    ) : posts.length === 0 ? (
+                        <div className="rounded-2xl bg-surface border border-soft-border/70 p-8 sm:p-12 text-center space-y-3">
+                            <div className="w-12 h-12 rounded-2xl bg-soft-bg border border-soft-border/70 text-secondary flex items-center justify-center mx-auto">
+                                <BookOpen className="w-6 h-6" />
                             </div>
-                        ) : posts.length === 0 ? (
-                            /* Empty State */
-                            <div className="rounded-[32px] bg-surface/90 backdrop-blur-xl border border-soft-border/70 p-12 sm:p-16 text-center space-y-4">
-                                <div className="w-16 h-16 rounded-[22px] bg-soft-bg/80 border border-soft-border/70 text-secondary flex items-center justify-center mx-auto">
-                                    <BookOpen className="w-8 h-8" />
-                                </div>
-                                <div className="space-y-1 max-w-sm mx-auto">
-                                    <h4 className="text-base font-black text-brand">هنوز هیچ پستی منتشر نکرده‌اید</h4>
-                                    <p className="text-xs text-secondary leading-relaxed">
-                                        با تولید محتوای ارزشمند و معرفی محله یا پروژه‌ها، رتبه و اعتماد مشتریان را ارتقا دهید.
-                                    </p>
-                                </div>
-                                <div className="pt-2">
-                                    <Link
-                                        href="/posts/create"
-                                        className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-brand hover:bg-brand/90 text-white text-xs font-black transition-all shadow-sm shadow-brand/10"
-                                    >
-                                        <Plus className="w-4 h-4" />
-                                        <span>ایجاد اولین پست در استودیو</span>
-                                    </Link>
-                                </div>
+                            <div className="space-y-1 max-w-sm mx-auto">
+                                <h4 className="text-sm font-black text-brand">هنوز پستی ثبت نشده است</h4>
+                                <p className="text-xs text-secondary">
+                                    با انتشار تحلیل‌های بازار، اعتبار ویترین دفتر خود را افزایش دهید.
+                                </p>
                             </div>
-                        ) : (
-                            /* Posts Grid */
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {posts.map((post) => (
-                                    <div
-                                        key={post.id}
-                                        className="rounded-[24px] bg-surface/90 backdrop-blur-xl border border-soft-border/70 p-5 shadow-xs space-y-4 flex flex-col justify-between hover:border-soft-border transition-all"
-                                    >
-                                        <div className="space-y-3">
-                                            <div className="flex items-center justify-between">
-                                                <span
-                                                    className={cn(
-                                                        "text-[10px] font-bold px-2.5 py-1 rounded-full",
-                                                        post.isPublished
-                                                            ? "bg-emerald-500/10 text-emerald-700 border border-emerald-500/20"
-                                                            : "bg-soft-bg text-secondary border border-soft-border/70"
-                                                    )}
-                                                >
-                                                    {post.isPublished ? "منتشر شده در ویترین" : "پیش‌نویس"}
-                                                </span>
-
-                                                <span className="text-[11px] text-secondary font-medium">
-                                                    {new Date(post.createdAt).toLocaleDateString("fa-IR")}
-                                                </span>
-                                            </div>
-
-                                            <h4 className="text-sm sm:text-base font-black text-brand leading-snug line-clamp-2">
-                                                {post.title}
-                                            </h4>
-
-                                            {post.summary && (
-                                                <p className="text-xs text-secondary line-clamp-2 leading-relaxed">
-                                                    {post.summary}
-                                                </p>
-                                            )}
+                            <div className="pt-1">
+                                <Link
+                                    href="/posts/create"
+                                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand text-white text-xs font-black"
+                                >
+                                    <Plus className="w-3.5 h-3.5" />
+                                    <span>نوشتن اولین پست</span>
+                                </Link>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {posts.map((post) => (
+                                <div
+                                    key={post.id}
+                                    className="rounded-2xl bg-surface border border-soft-border/70 p-4 sm:p-5 shadow-2xs space-y-3 flex flex-col justify-between hover:border-soft-border transition-all"
+                                >
+                                    <div className="space-y-2">
+                                        <div className="flex items-center justify-between">
+                                            <span
+                                                className={cn(
+                                                    "text-[10px] font-bold px-2 py-0.5 rounded-full",
+                                                    post.isPublished
+                                                        ? "bg-emerald-500/10 text-emerald-700"
+                                                        : "bg-soft-bg text-secondary"
+                                                )}
+                                            >
+                                                {post.isPublished ? "منتشر شده" : "پیش‌نویس"}
+                                            </span>
+                                            <span className="text-[10px] text-secondary">
+                                                {new Date(post.createdAt).toLocaleDateString("fa-IR")}
+                                            </span>
                                         </div>
 
-                                        <div className="pt-3 border-t border-soft-border/50 flex items-center justify-between text-xs">
-                                            <div className="flex items-center gap-3 text-secondary text-[11px] font-medium">
-                                                <span>بازدید: {toPersianDigits(post.viewCount || 0)}</span>
-                                                {post.likeCount != null && (
-                                                    <span>پسندها: {toPersianDigits(post.likeCount)}</span>
+                                        <h4 className="text-xs sm:text-sm font-black text-brand line-clamp-2">
+                                            {post.title}
+                                        </h4>
+
+                                        {post.summary && (
+                                            <p className="text-xs text-secondary line-clamp-2 leading-relaxed">
+                                                {post.summary}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    <div className="pt-2.5 border-t border-soft-border/50 flex items-center justify-between text-xs">
+                                        <span className="text-secondary text-[11px]">
+                                            بازدید: {toPersianDigits(post.viewCount || 0)}
+                                        </span>
+
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                if (window.confirm("آیا از حذف این پست اطمینان دارید؟")) {
+                                                    deletePostMutation.mutate(post.id);
+                                                }
+                                            }}
+                                            disabled={deletePostMutation.isPending}
+                                            className="p-1.5 text-status-error hover:bg-status-error/10 rounded-lg transition-colors cursor-pointer"
+                                            title="حذف"
+                                        >
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </section>
+
+                {/* ───────────────────────────────────────────────────────────── */}
+                {/* SECTION 4: INQUIRIES & MESSAGES                              */}
+                {/* ───────────────────────────────────────────────────────────── */}
+                <section id="section-messages" className="space-y-6 scroll-mt-28">
+                    <div className="border-b border-soft-border/60 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div className="flex items-center gap-2">
+                            <MessageSquare className="w-5 h-5 text-emerald-600" />
+                            <div>
+                                <h2 className="text-base sm:text-lg font-black text-brand">صندوق پیام‌ها و درخواست‌های مشاوره</h2>
+                                <p className="text-[11px] text-secondary">پیام‌های ارسال‌شده توسط کاربران ویترین اختصاصی شما</p>
+                            </div>
+                        </div>
+
+                        {/* Filter Chips */}
+                        <div className="inline-flex items-center p-1 bg-soft-bg/80 rounded-xl border border-soft-border/70 gap-1 self-start sm:self-auto">
+                            <button
+                                type="button"
+                                onClick={() => setMessageFilter("all")}
+                                className={cn(
+                                    "px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer",
+                                    messageFilter === "all" ? "bg-surface text-brand shadow-xs" : "text-secondary hover:text-brand"
+                                )}
+                            >
+                                همه ({toPersianDigits(messages.length)})
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setMessageFilter("pending")}
+                                className={cn(
+                                    "px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer",
+                                    messageFilter === "pending"
+                                        ? "bg-surface text-brand shadow-xs"
+                                        : "text-secondary hover:text-brand"
+                                )}
+                            >
+                                در انتظار ({toPersianDigits(pendingMessagesCount)})
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setMessageFilter("replied")}
+                                className={cn(
+                                    "px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer",
+                                    messageFilter === "replied"
+                                        ? "bg-surface text-brand shadow-xs"
+                                        : "text-secondary hover:text-brand"
+                                )}
+                            >
+                                پاسخ داده شده
+                            </button>
+                        </div>
+                    </div>
+
+                    {isLoadingMessages ? (
+                        <div className="rounded-2xl bg-surface border border-soft-border/70 p-10 text-center">
+                            <div className="w-7 h-7 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                            <p className="text-xs font-bold text-secondary">در حال دریافت پیام‌ها...</p>
+                        </div>
+                    ) : filteredMessages.length === 0 ? (
+                        <div className="rounded-2xl bg-surface border border-soft-border/70 p-8 sm:p-12 text-center space-y-2">
+                            <div className="w-12 h-12 rounded-2xl bg-soft-bg border border-soft-border/70 text-secondary flex items-center justify-center mx-auto">
+                                <MessageSquare className="w-6 h-6 text-secondary" />
+                            </div>
+                            <h4 className="text-sm font-black text-brand">پیامی یافت نشد</h4>
+                            <p className="text-xs text-secondary">پیام‌های جدید کاربران در این بخش نمایش داده می‌شوند.</p>
+                        </div>
+                    ) : (
+                        <div className="space-y-3.5">
+                            {filteredMessages.map((msg) => (
+                                <div
+                                    key={msg.id}
+                                    className="rounded-2xl bg-surface border border-soft-border/70 p-4 sm:p-5 shadow-2xs space-y-3"
+                                >
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-soft-border/50 pb-2.5">
+                                        <div>
+                                            <h4 className="text-xs sm:text-sm font-black text-brand">{msg.subject}</h4>
+                                            <div className="flex items-center gap-2 text-[11px] text-secondary mt-0.5">
+                                                <span>{msg.senderName || "کاربر ناشناس"}</span>
+                                                {msg.senderPhone && (
+                                                    <a
+                                                        href={`tel:${msg.senderPhone}`}
+                                                        className="font-mono text-primary hover:underline"
+                                                        dir="ltr"
+                                                    >
+                                                        {msg.senderPhone}
+                                                    </a>
                                                 )}
                                             </div>
-
-                                            <div className="flex items-center gap-2">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        if (window.confirm("آیا از حذف این پست اطمینان دارید؟ این عمل غیرقابل بازگشت است.")) {
-                                                            deletePostMutation.mutate(post.id);
-                                                        }
-                                                    }}
-                                                    disabled={deletePostMutation.isPending}
-                                                    className="p-2 text-status-error hover:bg-status-error/10 rounded-xl font-bold transition-colors cursor-pointer"
-                                                    title="حذف پست"
-                                                >
-                                                    <Trash2 className="w-4 h-4" />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                )}
-
-                {/* ───────────────────────────────────────────────────────────── */}
-                {/* TAB 4: INQUIRIES & MESSAGES                                  */}
-                {/* ───────────────────────────────────────────────────────────── */}
-                {activeTab === "messages" && (
-                    <div className="space-y-6">
-                        {/* Header & Filter Controls */}
-                        <div className="rounded-[28px] bg-surface/90 backdrop-blur-xl border border-soft-border/70 p-6 sm:p-7 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                            <div className="space-y-1">
-                                <div className="flex items-center gap-2">
-                                    <MessageSquare className="w-5 h-5 text-emerald-600" />
-                                    <h3 className="text-base font-black text-brand">صندوق پیام‌ها و درخواست‌های مشاوره</h3>
-                                </div>
-                                <p className="text-xs text-secondary">
-                                    پیام‌های ثبت شده توسط بازدیدکنندگان ویترین شما با امکان پاسخ‌گویی آنلاین.
-                                </p>
-                            </div>
-
-                            {/* Filter Pills */}
-                            <div className="inline-flex items-center p-1 bg-soft-bg/80 rounded-2xl border border-soft-border/70 gap-1 self-start sm:self-auto">
-                                <button
-                                    type="button"
-                                    onClick={() => setMessageFilter("all")}
-                                    className={cn(
-                                        "px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer",
-                                        messageFilter === "all" ? "bg-surface text-brand shadow-xs" : "text-secondary hover:text-brand"
-                                    )}
-                                >
-                                    همه ({toPersianDigits(messages.length)})
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setMessageFilter("pending")}
-                                    className={cn(
-                                        "px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer",
-                                        messageFilter === "pending"
-                                            ? "bg-surface text-brand shadow-xs"
-                                            : "text-secondary hover:text-brand"
-                                    )}
-                                >
-                                    در انتظار ({toPersianDigits(pendingMessagesCount)})
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setMessageFilter("replied")}
-                                    className={cn(
-                                        "px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer",
-                                        messageFilter === "replied"
-                                            ? "bg-surface text-brand shadow-xs"
-                                            : "text-secondary hover:text-brand"
-                                    )}
-                                >
-                                    پاسخ داده شده
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Messages Loading State */}
-                        {isLoadingMessages ? (
-                            <div className="rounded-[28px] bg-surface/90 backdrop-blur-xl border border-soft-border/70 p-12 text-center">
-                                <div className="w-8 h-8 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-                                <p className="text-xs font-bold text-secondary">در حال فراخوانی پیام‌ها...</p>
-                            </div>
-                        ) : filteredMessages.length === 0 ? (
-                            /* Empty State */
-                            <div className="rounded-[32px] bg-surface/90 backdrop-blur-xl border border-soft-border/70 p-12 sm:p-16 text-center space-y-3">
-                                <div className="w-16 h-16 rounded-[22px] bg-soft-bg/80 border border-soft-border/70 text-secondary flex items-center justify-center mx-auto">
-                                    <MessageSquare className="w-8 h-8 text-secondary" />
-                                </div>
-                                <h4 className="text-base font-black text-brand">پیامی در این بخش وجود ندارد</h4>
-                                <p className="text-xs text-secondary">
-                                    پیام‌های ارسالی کاربران از طریق صفحه ویترین اختصاصی، در این قسمت نمایش داده می‌شوند.
-                                </p>
-                            </div>
-                        ) : (
-                            /* Messages List */
-                            <div className="space-y-4">
-                                {filteredMessages.map((msg) => (
-                                    <div
-                                        key={msg.id}
-                                        className="rounded-[28px] bg-surface/90 backdrop-blur-xl border border-soft-border/70 p-5 sm:p-6 shadow-xs space-y-4 hover:shadow-sm transition-all"
-                                    >
-                                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-soft-border/50 pb-3.5">
-                                            <div>
-                                                <h4 className="text-sm sm:text-base font-black text-brand">{msg.subject}</h4>
-                                                <div className="flex flex-wrap items-center gap-3 text-xs text-secondary mt-1">
-                                                    <span>فرستنده: <strong className="text-brand">{msg.senderName || "کاربر سایت"}</strong></span>
-                                                    {msg.senderPhone && (
-                                                        <a
-                                                            href={`tel:${msg.senderPhone}`}
-                                                            className="font-mono text-primary hover:underline flex items-center gap-1"
-                                                            dir="ltr"
-                                                        >
-                                                            <Phone className="w-3 h-3" />
-                                                            <span>{msg.senderPhone}</span>
-                                                        </a>
-                                                    )}
-                                                </div>
-                                            </div>
-
-                                            <div className="flex items-center gap-2 self-start sm:self-auto">
-                                                <span
-                                                    className={cn(
-                                                        "px-2.5 py-1 rounded-full text-[10px] font-bold",
-                                                        msg.status === "REPLIED"
-                                                            ? "bg-emerald-500/10 text-emerald-700 border border-emerald-500/20"
-                                                            : "bg-amber-500/10 text-amber-700 border border-amber-500/20"
-                                                    )}
-                                                >
-                                                    {msg.status === "REPLIED" ? "پاسخ داده شد" : "در انتظار پاسخ"}
-                                                </span>
-                                                <span className="text-[11px] text-secondary">
-                                                    {new Date(msg.createdAt).toLocaleDateString("fa-IR")}
-                                                </span>
-                                            </div>
                                         </div>
 
-                                        {/* User message body */}
-                                        <div className="p-4 rounded-2xl bg-soft-bg/40 border border-soft-border/60 text-xs sm:text-sm text-brand leading-relaxed">
-                                            {msg.message}
-                                        </div>
-
-                                        {/* Agent's Reply (if exists) */}
-                                        {msg.replyMessage && (
-                                            <div className="p-4 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 space-y-1">
-                                                <div className="flex items-center justify-between">
-                                                    <span className="text-xs font-black text-emerald-800 flex items-center gap-1.5">
-                                                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                                                        <span>پاسخ ارسالی شما:</span>
-                                                    </span>
-                                                    {msg.respondedAt && (
-                                                        <span className="text-[10px] text-emerald-700 font-medium">
-                                                            {new Date(msg.respondedAt).toLocaleDateString("fa-IR")}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                <p className="text-xs sm:text-sm text-brand/90 leading-relaxed pt-1">
-                                                    {msg.replyMessage}
-                                                </p>
-                                            </div>
-                                        )}
-
-                                        {/* Actions */}
-                                        <div className="flex justify-end pt-1">
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    setReplyingMessage(msg);
-                                                    setReplyText(msg.replyMessage || "");
-                                                }}
-                                                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-primary/10 hover:bg-primary/15 active:scale-95 text-primary text-xs font-bold transition-all cursor-pointer"
+                                        <div className="flex items-center gap-2">
+                                            <span
+                                                className={cn(
+                                                    "px-2 py-0.5 rounded-full text-[10px] font-bold",
+                                                    msg.status === "REPLIED"
+                                                        ? "bg-emerald-500/10 text-emerald-700"
+                                                        : "bg-amber-500/10 text-amber-700"
+                                                )}
                                             >
-                                                <Send className="w-3.5 h-3.5" />
-                                                <span>{msg.replyMessage ? "ویرایش متن پاسخ" : "ارسال پاسخ به کاربر"}</span>
-                                            </button>
+                                                {msg.status === "REPLIED" ? "پاسخ داده شد" : "در انتظار پاسخ"}
+                                            </span>
+                                            <span className="text-[10px] text-secondary">
+                                                {new Date(msg.createdAt).toLocaleDateString("fa-IR")}
+                                            </span>
                                         </div>
                                     </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                )}
+
+                                    {/* User query */}
+                                    <div className="p-3 rounded-xl bg-soft-bg/30 text-xs text-brand leading-relaxed">
+                                        {msg.message}
+                                    </div>
+
+                                    {/* Agent response if exists */}
+                                    {msg.replyMessage && (
+                                        <div className="p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/20 space-y-1">
+                                            <span className="text-[11px] font-black text-emerald-800 flex items-center gap-1">
+                                                <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                                                <span>پاسخ شما:</span>
+                                            </span>
+                                            <p className="text-xs text-brand leading-relaxed">{msg.replyMessage}</p>
+                                        </div>
+                                    )}
+
+                                    <div className="flex justify-end pt-1">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setReplyingMessage(msg);
+                                                setReplyText(msg.replyMessage || "");
+                                            }}
+                                            className="px-3.5 py-1.5 rounded-xl bg-primary/10 hover:bg-primary/15 text-primary text-xs font-bold transition-all cursor-pointer inline-flex items-center gap-1.5"
+                                        >
+                                            <Send className="w-3 h-3" />
+                                            <span>{msg.replyMessage ? "ویرایش پاسخ" : "ارسال پاسخ"}</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </section>
             </main>
 
             {/* Apple-style Reply Bottom Sheet / Modal */}
             {replyingMessage && (
                 <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4 transition-all">
-                    <div className="w-full max-w-lg bg-surface rounded-t-[32px] sm:rounded-[32px] p-6 sm:p-7 space-y-5 shadow-2xl border border-soft-border/70 max-h-[90vh] overflow-y-auto">
-                        <div className="flex items-center justify-between border-b border-soft-border/50 pb-3.5">
+                    <div className="w-full max-w-lg bg-surface rounded-t-[28px] sm:rounded-[28px] p-5 sm:p-6 space-y-4 shadow-2xl border border-soft-border/70 max-h-[90vh] overflow-y-auto">
+                        <div className="flex items-center justify-between border-b border-soft-border/50 pb-3">
                             <div>
-                                <h3 className="text-base font-black text-brand">
+                                <h3 className="text-sm sm:text-base font-black text-brand">
                                     پاسخ به: {replyingMessage.subject}
                                 </h3>
                                 <span className="text-xs text-secondary">
@@ -1308,14 +1156,14 @@ export default function AgencyPanelScene() {
                             <button
                                 type="button"
                                 onClick={() => setReplyingMessage(null)}
-                                className="w-8 h-8 rounded-full bg-soft-bg hover:bg-soft-border/70 text-secondary hover:text-brand flex items-center justify-center transition-colors cursor-pointer"
+                                className="w-7 h-7 rounded-full bg-soft-bg hover:bg-soft-border/70 text-secondary flex items-center justify-center transition-colors cursor-pointer"
                             >
                                 <X className="w-4 h-4" />
                             </button>
                         </div>
 
                         {/* User Message Quote */}
-                        <div className="p-3.5 bg-soft-bg/50 border border-soft-border/60 rounded-2xl text-xs text-secondary leading-relaxed space-y-1">
+                        <div className="p-3 bg-soft-bg/50 border border-soft-border/60 rounded-xl text-xs text-secondary leading-relaxed space-y-1">
                             <span className="font-bold text-brand block">متن درخواست کاربر:</span>
                             <p className="line-clamp-3">{replyingMessage.message}</p>
                         </div>
@@ -1328,16 +1176,16 @@ export default function AgencyPanelScene() {
                                 onChange={(e) => setReplyText(e.target.value)}
                                 rows={4}
                                 placeholder="پاسخ خود به کاربر را با لحنی محترمانه و حرفه‌ای در این قسمت بنویسید..."
-                                className="w-full p-4 bg-soft-bg/30 border border-soft-border/80 rounded-2xl text-xs sm:text-sm text-brand placeholder:text-secondary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all leading-relaxed"
+                                className="w-full p-3 bg-soft-bg/30 border border-soft-border/80 rounded-xl text-xs sm:text-sm text-brand focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary leading-relaxed"
                             />
                         </div>
 
                         {/* Actions */}
-                        <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-soft-border/50">
+                        <div className="flex items-center justify-end gap-2 pt-2 border-t border-soft-border/50">
                             <button
                                 type="button"
                                 onClick={() => setReplyingMessage(null)}
-                                className="px-4 py-2.5 rounded-xl border border-soft-border/80 text-xs font-bold text-secondary hover:bg-soft-bg transition-colors cursor-pointer"
+                                className="px-3.5 py-2 rounded-xl border border-soft-border/80 text-xs font-bold text-secondary hover:bg-soft-bg transition-colors cursor-pointer"
                             >
                                 انصراف
                             </button>
@@ -1354,10 +1202,10 @@ export default function AgencyPanelScene() {
                                     });
                                 }}
                                 disabled={replyMutation.isPending}
-                                className="px-5 py-2.5 rounded-xl bg-brand hover:bg-brand/90 active:scale-95 text-white text-xs font-black transition-all shadow-md shadow-brand/10 disabled:opacity-50 inline-flex items-center gap-2 cursor-pointer"
+                                className="px-4 py-2 rounded-xl bg-brand hover:bg-brand/90 active:scale-95 text-white text-xs font-black transition-all shadow-xs disabled:opacity-50 inline-flex items-center gap-1.5 cursor-pointer"
                             >
                                 {replyMutation.isPending && (
-                                    <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                    <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
                                 )}
                                 <span>{replyMutation.isPending ? "در حال ارسال..." : "ارسال پاسخ"}</span>
                             </button>
