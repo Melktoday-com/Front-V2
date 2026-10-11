@@ -119,7 +119,24 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
     const searchParams = useSearchParams();
     const router = useRouter();
     const { selectedCity, setSelectedCity } = useCity();
-    const [viewMode, setViewMode] = useState<"list" | "map">(initialViewMode);
+    const urlView = searchParams.get("view");
+    const [viewMode, setViewModeState] = useState<"list" | "map">(
+        urlView === "map" ? "map" : (urlView === "list" ? "list" : initialViewMode)
+    );
+
+    const setViewMode = useCallback(
+        (mode: "list" | "map") => {
+            setViewModeState(mode);
+            const params = new URLSearchParams(searchParams.toString());
+            if (mode === "map") {
+                params.set("view", "map");
+            } else {
+                params.delete("view");
+            }
+            router.replace(`/ads?${params.toString()}`, { scroll: false });
+        },
+        [searchParams, router]
+    );
     const [selectedZones, setSelectedZones] = useState<ZoneSummary[]>([]);
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
@@ -145,7 +162,12 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
         setSelectedCategory(searchParams.get("categoryKey") || "");
         setSelectedSubcategory(searchParams.get("subcategoryKey") || "");
         setSearch(searchParams.get("search") || "");
-    }, [searchParams]);
+        if (urlView === "map" || urlView === "list") {
+            setViewModeState(urlView);
+        } else {
+            setViewModeState(initialViewMode);
+        }
+    }, [searchParams, urlView, initialViewMode]);
 
     // Reset pagination when search query or city changes
     useEffect(() => {
@@ -726,7 +748,7 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
                 {/* Map Section */}
                 <div
                     className={cn(
-                        "relative flex-1 lg:flex-[1.4] transition-all duration-300 h-full overflow-hidden rounded-2xl border border-gray-100 shadow-xs",
+                        "relative flex-1 lg:flex-[1.4] h-full overflow-hidden rounded-2xl border border-gray-100 shadow-xs animate-in fade-in duration-150",
                         viewMode === "list" ? "hidden" : "block"
                     )}
                 >
@@ -743,9 +765,9 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
                     <button
                         onClick={() => setViewMode("list")}
                         aria-label="بستن نقشه"
-                        className="absolute bottom-24 lg:bottom-6 left-1/2 -translate-x-1/2 z-[500] bg-brand text-white px-5 py-2.5 rounded-full shadow-2xl flex items-center gap-2 font-bold text-xs sm:text-sm active:scale-95 hover:bg-brand/90 transition-all border border-white/20 backdrop-blur-md cursor-pointer"
+                        className="absolute bottom-24 lg:bottom-6 left-1/2 -translate-x-1/2 z-[500] bg-brand text-white px-3.5 py-1.5 sm:px-5 sm:py-2.5 rounded-full shadow-2xl flex items-center gap-1.5 sm:gap-2 font-bold text-xs sm:text-sm active:scale-95 hover:bg-brand/90 transition-all border border-white/20 backdrop-blur-md cursor-pointer"
                     >
-                        <X className="w-4 h-4 text-primary" />
+                        <X className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
                         <span>بستن نقشه</span>
                     </button>
                 </div>
@@ -755,9 +777,9 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
                     <button
                         onClick={() => setViewMode("map")}
                         aria-label="نمایش نقشه"
-                        className="fixed bottom-24 lg:bottom-8 left-1/2 -translate-x-1/2 z-40 bg-brand text-white px-5 py-2.5 rounded-full shadow-2xl flex items-center gap-2 font-bold text-sm active:scale-95 hover:bg-brand/90 transition-all border border-white/20 hover:shadow-brand/25 cursor-pointer backdrop-blur-md"
+                        className="fixed bottom-24 lg:bottom-8 left-1/2 -translate-x-1/2 z-40 bg-brand text-white px-3.5 py-1.5 sm:px-5 sm:py-2.5 rounded-full shadow-2xl flex items-center gap-1.5 sm:gap-2 font-bold text-xs sm:text-sm active:scale-95 hover:bg-brand/90 transition-all border border-white/20 hover:shadow-brand/25 cursor-pointer backdrop-blur-md"
                     >
-                        <MapIcon className="w-4 h-4 text-primary" />
+                        <MapIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
                         <span>مشاهده روی نقشه</span>
                     </button>
                 )}

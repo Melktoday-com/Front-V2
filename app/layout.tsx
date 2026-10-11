@@ -1,6 +1,7 @@
 import { MobileNav, Sidebar } from "@/components/layout/Navigation";
 import { CityProvider } from "@/components/providers/CityProvider";
 import { GlobalModalManager } from "@/components/providers/GlobalModalManager";
+import { MapTileCacheInitializer } from "@/components/providers/MapTileCacheInitializer";
 import { NavigationHistoryTracker } from "@/components/providers/NavigationHistoryTracker";
 import { QueryProvider } from "@/components/providers/QueryProvider";
 import { TicketFloatingWidget } from "@/components/ticketing/TicketFloatingWidget";
@@ -40,6 +41,7 @@ export default function RootLayout({
       >
         <QueryProvider>
           <CityProvider>
+            <MapTileCacheInitializer />
             <NavigationHistoryTracker />
             <Sidebar />
             <main className="flex-1 w-full ">

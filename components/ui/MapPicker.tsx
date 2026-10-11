@@ -323,6 +323,10 @@ export default function MapPicker({
                 >
                     <TileLayer
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        keepBuffer={8}
+                        updateWhenIdle={false}
+                        updateInterval={100}
+                        crossOrigin="anonymous"
                     />
                     <MapController
                         targetCenter={effectiveCityCenter}

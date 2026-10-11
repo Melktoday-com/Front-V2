@@ -83,7 +83,18 @@ function MapViewHandler({ center, zoom, bounds }: { center: [number, number]; zo
         }
     }, [center, zoom, bounds, map]);
 
-    // When the map container transitions from hidden to visible (e.g. user toggles to map on mobile), recalculate size
+    // Multi-stage size recalculation on mount to guarantee tiles fill the entire container
+    useEffect(() => {
+        const triggers = [50, 150, 300, 600];
+        const timers = triggers.map((ms) =>
+            setTimeout(() => {
+                map.invalidateSize({ pan: false });
+            }, ms)
+        );
+        return () => timers.forEach(clearTimeout);
+    }, [map]);
+
+    // When the map container transitions from hidden to visible (e.g. user toggles to map on mobile/desktop), recalculate size
     useEffect(() => {
         const container = map.getContainer();
         if (!container || typeof ResizeObserver === "undefined") return;
@@ -91,7 +102,7 @@ function MapViewHandler({ center, zoom, bounds }: { center: [number, number]; zo
         const observer = new ResizeObserver(() => {
             const size = map.getSize();
             if (size.x > 0 && size.y > 0) {
-                map.invalidateSize();
+                map.invalidateSize({ pan: false });
                 if (prevCenterRef.current) {
                     map.setView(prevCenterRef.current, prevZoomRef.current || zoom);
                 }
@@ -99,6 +110,9 @@ function MapViewHandler({ center, zoom, bounds }: { center: [number, number]; zo
         });
 
         observer.observe(container);
+        if (container.parentElement) {
+            observer.observe(container.parentElement);
+        }
         return () => observer.disconnect();
     }, [map, zoom]);
 
@@ -149,6 +163,10 @@ export default function Map({ ads, zones, selectedZoneId, selectedZoneIds, onZon
             >
                 <TileLayer
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    keepBuffer={8}
+                    updateWhenIdle={false}
+                    updateInterval={100}
+                    crossOrigin="anonymous"
                 />
                 <MapViewHandler center={sanitizedCenter} zoom={zoom} bounds={bounds} />
 
