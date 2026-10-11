@@ -3,37 +3,45 @@
 @theme inline {
   --font-vazirmatn: var(--font-vazirmatn);
 
-  /* Brand Colors */
-  --color-primary: #8BC83F;
-  /* Green - Actions */
-  --color-brand: #252B5C;
-  /* Navy - Headings */
-  --color-secondary: #53587A;
+  /* Brand Colors — Navy + Beige */
+  --color-primary: #253E63;
+  --color-primary-foreground: #FFFFFF;
+  --color-brand: #172B49;
+  --color-secondary: #63748A;
+  --color-accent: #D9C29A;
+  --color-accent-foreground: #2D2B26;
 
-  /* Backgrounds & Borders */
-  --color-soft-bg: #F5F4F8;
-  --color-soft-border: #ECEDF3;
+  /* Backgrounds, Surfaces & Borders */
+  --color-canvas: #FBF8F1;
+  --color-surface: #FFFFFF;
+  --color-soft-bg: #F3EBDD;
+  --color-soft-border: #E4D8C5;
 
   /* Text */
-  --color-text-main: #252B5C;
-  --color-text-light: #53587A;
+  --color-text-main: #1F2E42;
+  --color-text-light: #687486;
+
   /* Status Colors */
-  --color-status-error: #EF4444;
-  --color-status-warning: #F59E0B;
-  --color-status-success: #22C55E;
+  --color-status-error: #DC4545;
+  --color-status-warning: #D99021;
+  --color-status-success: #278656;
+  --color-status-info: #3978B7;
 
   /* Utility */
-  --radius-button: 10px;
+  --radius-button: 12px;
+  --radius-card: 18px;
 }
 
 body {
-  background: #FFFFFF;
-  color: #252B5C;
+  background: var(--color-canvas);
+  color: var(--color-text-main);
   font-family: var(--font-vazirmatn), sans-serif;
 }
+
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -58,6 +66,7 @@ path.leaflet-interactive {
 
 /* Prevent auto-zooming on focus in iOS Safari and mobile browsers */
 @media screen and (max-width: 768px) {
+
   input:not([type="checkbox"]):not([type="radio"]),
   textarea,
   select {
@@ -80,5 +89,3 @@ body.modal-open .mobile-bottom-nav,
 html.modal-open .mobile-bottom-nav {
   display: none !important;
 }
-
-

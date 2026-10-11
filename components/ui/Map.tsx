@@ -196,11 +196,12 @@ export default function Map({ ads, zones, selectedZoneId, selectedZoneIds, onZon
                             key={zone.id}
                             positions={positions}
                             pathOptions={{
-                                color: isSelected ? "#2563EB" : "#94A3B8",
-                                fillColor: isSelected ? "#3B82F6" : "#CBD5E1",
-                                fillOpacity: isSelected ? 0.45 : 0.10,
-                                weight: isSelected ? 3.5 : 1.5,
-                                dashArray: isSelected ? undefined : "4, 4",
+                                color: isSelected ? "#2563EB" : "#CBD5E1",
+                                fillColor: isSelected ? "#3B82F6" : "#E2E8F0",
+                                fillOpacity: isSelected ? 0.45 : 0.04,
+                                opacity: isSelected ? 1 : 0.6,
+                                weight: isSelected ? 3.5 : 1,
+                                dashArray: isSelected ? undefined : "3, 3",
                             }}
                             eventHandlers={{
                                 click: () => {
@@ -212,9 +213,10 @@ export default function Map({ ads, zones, selectedZoneId, selectedZoneIds, onZon
                                     if (!isSelected) {
                                         const layer = e.target;
                                         layer.setStyle({
-                                            fillOpacity: 0.25,
-                                            weight: 2.5,
-                                            color: "#64748B",
+                                            fillOpacity: 0.18,
+                                            opacity: 0.9,
+                                            weight: 2,
+                                            color: "#94A3B8",
                                         });
                                     }
                                 },
@@ -222,9 +224,10 @@ export default function Map({ ads, zones, selectedZoneId, selectedZoneIds, onZon
                                     if (!isSelected) {
                                         const layer = e.target;
                                         layer.setStyle({
-                                            fillOpacity: 0.10,
-                                            weight: 1.5,
-                                            color: "#94A3B8",
+                                            fillOpacity: 0.04,
+                                            opacity: 0.6,
+                                            weight: 1,
+                                            color: "#CBD5E1",
                                         });
                                     }
                                 },
