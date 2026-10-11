@@ -571,7 +571,14 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
 
 
                     {isLoading ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-4 pb-12">
+                        <div
+                            className={cn(
+                                "grid gap-4 pb-12",
+                                viewMode === "map"
+                                    ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2"
+                                    : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4"
+                            )}
+                        >
                             {Array.from({ length: 6 }).map((_, i) => (
                                 <div key={i} className="h-72 bg-soft-bg animate-pulse rounded-2xl" />
                             ))}
@@ -604,7 +611,14 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
                             )}
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-4 pb-32 lg:pb-6">
+                        <div
+                            className={cn(
+                                "grid gap-4 pb-32 lg:pb-6",
+                                viewMode === "map"
+                                    ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2"
+                                    : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4"
+                            )}
+                        >
                             {data?.pages.map((page, pageIndex) => {
                                 const pageSummaries = page.hits.map(searchDocToAdSummary);
                                 const pageAds =
@@ -713,7 +727,7 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
                 <div
                     className={cn(
                         "relative flex-1 lg:flex-[1.4] transition-all duration-300 h-full overflow-hidden rounded-2xl border border-gray-100 shadow-xs",
-                        viewMode === "list" ? "hidden lg:block" : "block"
+                        viewMode === "list" ? "hidden" : "block"
                     )}
                 >
                     <Map
@@ -724,26 +738,29 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
                         center={mapCenter}
                         zoom={mapZoom}
                     />
+
+                    {/* Close Map Button at the bottom of the map */}
+                    <button
+                        onClick={() => setViewMode("list")}
+                        aria-label="بستن نقشه"
+                        className="absolute bottom-24 lg:bottom-6 left-1/2 -translate-x-1/2 z-[500] bg-brand text-white px-5 py-2.5 rounded-full shadow-2xl flex items-center gap-2 font-bold text-xs sm:text-sm active:scale-95 hover:bg-brand/90 transition-all border border-white/20 backdrop-blur-md cursor-pointer"
+                    >
+                        <X className="w-4 h-4 text-primary" />
+                        <span>بستن نقشه</span>
+                    </button>
                 </div>
 
-                {/* Mobile Floating Toggle */}
-                <button
-                    onClick={() => setViewMode(viewMode === "list" ? "map" : "list")}
-                    aria-label="تغییر حالت نمایش نقشه یا لیست"
-                    className="lg:hidden fixed bottom-24 left-1/2 -translate-x-1/2 z-40 bg-brand text-white px-5 py-2.5 rounded-full shadow-xl flex items-center gap-2 font-bold text-sm active:scale-95 transition-transform border border-white/20"
-                >
-                    {viewMode === "list" ? (
-                        <>
-                            <MapIcon className="w-4 h-4 text-primary" />
-                            <span>مشاهده روی نقشه</span>
-                        </>
-                    ) : (
-                        <>
-                            <LayoutGrid className="w-4 h-4 text-primary" />
-                            <span>مشاهده آگهی‌ها</span>
-                        </>
-                    )}
-                </button>
+                {/* Floating Show Map Button (When map is hidden) */}
+                {viewMode === "list" && (
+                    <button
+                        onClick={() => setViewMode("map")}
+                        aria-label="نمایش نقشه"
+                        className="fixed bottom-24 lg:bottom-8 left-1/2 -translate-x-1/2 z-40 bg-brand text-white px-5 py-2.5 rounded-full shadow-2xl flex items-center gap-2 font-bold text-sm active:scale-95 hover:bg-brand/90 transition-all border border-white/20 hover:shadow-brand/25 cursor-pointer backdrop-blur-md"
+                    >
+                        <MapIcon className="w-4 h-4 text-primary" />
+                        <span>مشاهده روی نقشه</span>
+                    </button>
+                )}
             </div>
 
             {/* Neighborhood Drawer */}
