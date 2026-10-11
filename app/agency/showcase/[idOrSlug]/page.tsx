@@ -18,9 +18,11 @@ async function fetchAgency(idOrSlug: string): Promise<AgencyFull | null> {
                 next: { revalidate: 60 },
             });
             if (!fallbackRes.ok) return null;
-            return await fallbackRes.json();
+            const fallbackJson = await fallbackRes.json();
+            return fallbackJson.data || fallbackJson;
         }
-        return await res.json();
+        const json = await res.json();
+        return json.data || json;
     } catch {
         return null;
     }
