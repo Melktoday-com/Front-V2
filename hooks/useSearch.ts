@@ -4,6 +4,7 @@ import {
   GlobalSearchQueryDto,
   ListingSearchDocument,
   SearchListingsQueryDto,
+  SearchMapQueryDto,
   SearchPostsQueryDto,
   SearchProfilesQueryDto,
   SearchTemporaryRentalsQueryDto,
@@ -35,6 +36,15 @@ export function useSearchListings(params: SearchListingsQueryDto, enabled: boole
     queryFn: () => searchService.searchListings(params),
     enabled,
     staleTime: 30000,
+  });
+}
+
+export function useSearchMap(params: SearchMapQueryDto, enabled: boolean = true) {
+  return useQuery({
+    queryKey: ["search-map", params],
+    queryFn: () => searchService.searchMap(params),
+    enabled,
+    staleTime: 15000,
   });
 }
 

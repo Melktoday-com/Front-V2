@@ -4,7 +4,7 @@ import { useAd, useAdContact, useAds } from "@/hooks/useAds";
 import { useAuth } from "@/hooks/useAuth";
 import { useCreateConversation } from "@/hooks/useChat";
 import { cn, formatAdPrice, formatPrice, toPersianDigits, getMediaUrl, getMediaPosterUrl } from "@/lib/utils";
-import { AdSummary } from "@/types/api/ads.types";
+import { AdDetail, AdSummary } from "@/types/api/ads.types";
 import {
     Bath,
     Bed,
@@ -52,8 +52,13 @@ const Map = dynamic(() => import("@/components/ui/Map"), {
     ),
 });
 
-export default function SingleAdScene() {
-    const { id } = useParams() as { id: string };
+interface SingleAdSceneProps {
+    initialData?: AdDetail;
+}
+
+export default function SingleAdScene({ initialData }: SingleAdSceneProps = {}) {
+    const params = useParams();
+    const id = ((params?.id as string) || initialData?.adId) || "";
     const router = useRouter();
     const handleBack = useSafeBack("/");
     const [saved, setSaved] = useState(false);
@@ -65,7 +70,7 @@ export default function SingleAdScene() {
     const { user, isLoggedIn } = useAuth();
     const chatMutation = useCreateConversation();
     const toggleSaveMutation = useToggleSaveAd();
-    const { data: ad, isLoading, error } = useAd(id);
+    const { data: ad, isLoading, error } = useAd(id, initialData);
     const { data: contact } = useAdContact(id);
 
     const isOwner = isLoggedIn && !!user?.userId && user?.userId === ad?.ownerId;

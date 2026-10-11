@@ -8,6 +8,8 @@ import {
   PostSearchDocument,
   ProfileSearchDocument,
   SearchListingsQueryDto,
+  SearchMapQueryDto,
+  SearchMapResultDto,
   SearchPostsQueryDto,
   SearchProfilesQueryDto,
   SearchSuggestion,
@@ -21,6 +23,16 @@ export const searchService = {
    */
   async searchListings(query: SearchListingsQueryDto): Promise<DomainSearchResult<ListingSearchDocument>> {
     const response = await apiClient.get<DomainSearchResult<ListingSearchDocument>>("/search/listings", {
+      params: query,
+    });
+    return response.data;
+  },
+
+  /**
+   * Search property markers bounded by viewport bounding-box
+   */
+  async searchMap(query: SearchMapQueryDto): Promise<SearchMapResultDto> {
+    const response = await apiClient.get<SearchMapResultDto>("/search/map", {
       params: query,
     });
     return response.data;

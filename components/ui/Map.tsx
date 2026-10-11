@@ -119,6 +119,26 @@ function MapViewHandler({ center, zoom, bounds }: { center: [number, number]; zo
     return null;
 }
 
+function MapEventsHandler({ onBoundsChange }: { onBoundsChange?: (bounds: { northEast: { lat: number; lng: number }; southWest: { lat: number; lng: number } }) => void }) {
+    const map = useMap();
+    useEffect(() => {
+        if (!onBoundsChange) return;
+        const handleMoveEnd = () => {
+            const b = map.getBounds();
+            onBoundsChange({
+                northEast: { lat: b.getNorthEast().lat, lng: b.getNorthEast().lng },
+                southWest: { lat: b.getSouthWest().lat, lng: b.getSouthWest().lng },
+            });
+        };
+        map.on('moveend', handleMoveEnd);
+        return () => {
+            map.off('moveend', handleMoveEnd);
+        };
+    }, [map, onBoundsChange]);
+
+    return null;
+}
+
 interface MapProps {
     ads: AdSummary[];
     zones?: ZoneSummary[];
@@ -128,9 +148,10 @@ interface MapProps {
     center?: [number, number];
     zoom?: number;
     bounds?: L.LatLngBoundsExpression;
+    onBoundsChange?: (bounds: { northEast: { lat: number; lng: number }; southWest: { lat: number; lng: number } }) => void;
 }
 
-export default function Map({ ads, zones, selectedZoneId, selectedZoneIds, onZoneSelect, center = [35.6892, 51.3890], zoom = 12, bounds }: MapProps) {
+export default function Map({ ads, zones, selectedZoneId, selectedZoneIds, onZoneSelect, center = [35.6892, 51.3890], zoom = 12, bounds, onBoundsChange }: MapProps) {
     // Sanitize center - if it contains undefined/NaN or isn't a valid pair, use default
     const sanitizedCenter: [number, number] = (
         Array.isArray(center) &&
@@ -169,6 +190,7 @@ export default function Map({ ads, zones, selectedZoneId, selectedZoneIds, onZon
                     crossOrigin="anonymous"
                 />
                 <MapViewHandler center={sanitizedCenter} zoom={zoom} bounds={bounds} />
+                <MapEventsHandler onBoundsChange={onBoundsChange} />
 
                 {/* Render Zone / Neighborhood Polygons */}
                 {zones?.map((zone) => {

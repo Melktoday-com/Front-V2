@@ -9,7 +9,7 @@ import { PaginationControls } from "@/components/ui/PaginationControls";
 import { PropertyCard } from "@/components/ui/PropertyCard";
 import { EmptyState } from "@/components/ui/StatusStates";
 import { useCategories } from "@/hooks/useAds";
-import { useInfiniteSearchListings } from "@/hooks/useSearch";
+import { useInfiniteSearchListings, useSearchMap } from "@/hooks/useSearch";
 import { useCategoryLookup } from "@/hooks/useCategoryLookup";
 import { useFavorites, useToggleSaveAd } from "@/hooks/useFavorites";
 import { useGeoHierarchy } from "@/hooks/useGeoHierarchy";
@@ -19,7 +19,7 @@ import { geoService } from "@/services/geo.service";
 import { AdSummary } from "@/types/api/ads.types";
 import { AdStatus } from "@/types/api/enums";
 import { ZoneSummary } from "@/types/api/geo.types";
-import { ListingSearchDocument, SearchSortOption } from "@/types/api/search.types";
+import { ListingSearchDocument, MapMarkerDto, SearchSortOption } from "@/types/api/search.types";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronDown, LayoutGrid, Loader2, Map as MapIcon, MapPin, SlidersHorizontal, Tag, X } from "lucide-react";
 import dynamic from "next/dynamic";
@@ -35,44 +35,36 @@ const Map = dynamic(() => import("@/components/ui/Map"), {
     ),
 });
 
-// Ray-casting point-in-polygon
-function isPointInPolygon(lat: number, lng: number, polygon: [number, number][]): boolean {
-    let inside = false;
-    for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
-        const xi = polygon[i][0];
-        const yi = polygon[i][1];
-        const xj = polygon[j][0];
-        const yj = polygon[j][1];
-        const intersect = ((yi > lng) !== (yj > lng)) &&
-            (lat < ((xj - xi) * (lng - yi)) / (yj - yi) + xi);
-        if (intersect) inside = !inside;
-    }
-    return inside;
+function mapMarkerToAdSummary(m: MapMarkerDto): AdSummary {
+    return {
+        adId: m.id,
+        ownerId: "",
+        cityId: "",
+        cityName: m.cityName ?? undefined,
+        status: AdStatus.PUBLISHED,
+        title: m.title,
+        categoryPath: {
+            categoryKey: m.category ?? "",
+            subcategoryKey: m.subcategory ?? "",
+            businessModelKey: "",
+            attributeSchemaVersion: 1,
+            categoryTitle: m.category ?? undefined,
+            subcategoryTitle: m.subcategory ?? undefined,
+        },
+        categoryTitle: m.category ?? undefined,
+        subcategoryTitle: m.subcategory ?? undefined,
+        pricing: m.price ? { price: m.price } : {},
+        isFeatured: false,
+        mediaIds: m.mediaIds ?? [],
+        createdAt: new Date().toISOString(),
+        location: {
+            latitude: m.latitude,
+            longitude: m.longitude,
+        },
+    };
 }
 
-function adMatchesZone(ad: AdSummary, zone: ZoneSummary): boolean {
-    const cleanZoneName = zone.name.replace(/^(بلوار|میدان|خیابان|شهرک)\s+/, "").trim();
-    if (ad.title.includes(zone.name) || (cleanZoneName.length > 2 && ad.title.includes(cleanZoneName))) {
-        return true;
-    }
-    if (ad.location && typeof ad.location.latitude === "number" && typeof ad.location.longitude === "number") {
-        const coords = zone.boundaries?.coordinates;
-        if (!coords || !Array.isArray(coords) || coords.length === 0) return false;
 
-        if (zone.boundaries?.type === "Polygon" && Array.isArray(coords[0])) {
-            const polygon: [number, number][] = (coords[0] as number[][]).map(([lng, lat]) => [lat, lng]);
-            if (isPointInPolygon(ad.location.latitude, ad.location.longitude, polygon)) return true;
-        } else if (zone.boundaries?.type === "MultiPolygon" && Array.isArray(coords[0])) {
-            for (const poly of coords as number[][][][]) {
-                if (Array.isArray(poly[0])) {
-                    const polygon: [number, number][] = poly[0].map(([lng, lat]) => [lat, lng]);
-                    if (isPointInPolygon(ad.location.latitude, ad.location.longitude, polygon)) return true;
-                }
-            }
-        }
-    }
-    return false;
-}
 
 function searchDocToAdSummary(doc: ListingSearchDocument): AdSummary {
     const primaryPrice = doc.pricing?.number?.price ?? doc.pricing?.number?.totalPrice ?? 0;
@@ -112,26 +104,28 @@ function searchDocToAdSummary(doc: ListingSearchDocument): AdSummary {
 }
 
 interface AdsSceneProps {
-    initialViewMode?: "list" | "map";
+    initialViewMode?: "list" | "split" | "map";
 }
 
-export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
+export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
     const searchParams = useSearchParams();
     const router = useRouter();
     const { selectedCity, setSelectedCity } = useCity();
-    const urlView = searchParams.get("view");
-    const [viewMode, setViewModeState] = useState<"list" | "map">(
-        urlView === "map" ? "map" : (urlView === "list" ? "list" : initialViewMode)
+    const urlView = searchParams.get("view") as "list" | "split" | "map" | null;
+    const [viewMode, setViewModeState] = useState<"list" | "split" | "map">(
+        urlView === "map" || urlView === "split" || urlView === "list"
+            ? urlView
+            : initialViewMode
     );
 
     const setViewMode = useCallback(
-        (mode: "list" | "map") => {
+        (mode: "list" | "split" | "map") => {
             setViewModeState(mode);
             const params = new URLSearchParams(searchParams.toString());
-            if (mode === "map") {
-                params.set("view", "map");
-            } else {
+            if (mode === "split") {
                 params.delete("view");
+            } else {
+                params.set("view", mode);
             }
             router.replace(`/ads?${params.toString()}`, { scroll: false });
         },
@@ -162,7 +156,7 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
         setSelectedCategory(searchParams.get("categoryKey") || "");
         setSelectedSubcategory(searchParams.get("subcategoryKey") || "");
         setSearch(searchParams.get("search") || "");
-        if (urlView === "map" || urlView === "list") {
+        if (urlView === "map" || urlView === "split" || urlView === "list") {
             setViewModeState(urlView);
         } else {
             setViewModeState(initialViewMode);
@@ -273,13 +267,30 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
         return data?.pages.flatMap((page) => page.hits.map(searchDocToAdSummary)) || [];
     }, [data]);
 
-    // Filter ads: OR logic across all selected zones
-    const displayedAds = useMemo(() => {
-        if (selectedZones.length <= 1) return allLoadedAds;
-        return allLoadedAds.filter((ad) =>
-            selectedZones.some((zone) => adMatchesZone(ad, zone))
-        );
-    }, [allLoadedAds, selectedZones]);
+    // Backend-driven results directly: zero client-side zone/polygon filtering
+    const displayedAds = allLoadedAds;
+
+    // Viewport bounding-box state for dedicated map query
+    const [mapBounds, setMapBounds] = useState<{
+        northEast: { lat: number; lng: number };
+        southWest: { lat: number; lng: number };
+    } | null>(null);
+
+    const { data: mapData } = useSearchMap(
+        {
+            northLat: mapBounds?.northEast.lat ?? 0,
+            southLat: mapBounds?.southWest.lat ?? 0,
+            eastLng: mapBounds?.northEast.lng ?? 0,
+            westLng: mapBounds?.southWest.lng ?? 0,
+            cityId: effectiveCityId,
+            cityName: effectiveCityName !== "همه شهرها" ? effectiveCityName : undefined,
+            categoryKey: selectedCategory || undefined,
+            subcategoryKey: selectedSubcategory || undefined,
+            query: debouncedSearch.trim() || undefined,
+            limit: 150,
+        },
+        Boolean(mapBounds && (viewMode === "split" || viewMode === "map"))
+    );
 
     // Pagination metrics
     const totalCount = data?.pages[0]?.total ?? 0;
@@ -323,6 +334,9 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
     };
 
     const adsForMap = useMemo(() => {
+        if (mapData?.markers && mapData.markers.length > 0) {
+            return mapData.markers.map(mapMarkerToAdSummary);
+        }
         return displayedAds
             .filter(
                 (ad): ad is AdSummary & { location: NonNullable<AdSummary['location']> } =>
@@ -340,7 +354,7 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
                     longitude: (ad.location.longitude ?? ad.location.lng) as number,
                 },
             }));
-    }, [displayedAds]);
+    }, [mapData, displayedAds]);
 
     const handleCitySelect = (city: {
         id: string;
@@ -574,6 +588,52 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
                             <option value="price_desc">گران‌ترین</option>
                         </select>
                     </div>
+
+                    {/* View Mode Toggle: List / Split / Map */}
+                    <div className="flex items-center bg-soft-bg border border-soft-border rounded-full p-0.5 shrink-0 mr-auto">
+                        <button
+                            type="button"
+                            onClick={() => setViewMode("list")}
+                            className={cn(
+                                "flex items-center gap-1 px-2.5 sm:px-3 h-7 sm:h-7.5 rounded-full text-[11px] sm:text-xs font-bold transition-all cursor-pointer",
+                                viewMode === "list"
+                                    ? "bg-primary text-white shadow-xs"
+                                    : "text-secondary hover:text-text-main"
+                            )}
+                            title="نمایش فهرست"
+                        >
+                            <LayoutGrid className="w-3.5 h-3.5" />
+                            <span>فهرست</span>
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setViewMode("split")}
+                            className={cn(
+                                "hidden lg:flex items-center gap-1 px-2.5 sm:px-3 h-7 sm:h-7.5 rounded-full text-[11px] sm:text-xs font-bold transition-all cursor-pointer",
+                                viewMode === "split"
+                                    ? "bg-primary text-white shadow-xs"
+                                    : "text-secondary hover:text-text-main"
+                            )}
+                            title="نمایش همزمان"
+                        >
+                            <SlidersHorizontal className="w-3.5 h-3.5" />
+                            <span>تقسیم</span>
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setViewMode("map")}
+                            className={cn(
+                                "flex items-center gap-1 px-2.5 sm:px-3 h-7 sm:h-7.5 rounded-full text-[11px] sm:text-xs font-bold transition-all cursor-pointer",
+                                viewMode === "map"
+                                    ? "bg-primary text-white shadow-xs"
+                                    : "text-secondary hover:text-text-main"
+                            )}
+                            title="نمایش تمام‌صفحه نقشه"
+                        >
+                            <MapIcon className="w-3.5 h-3.5" />
+                            <span>نقشه</span>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -584,8 +644,12 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
                     ref={listContainerRef}
                     id="ads-list-container"
                     className={cn(
-                        "flex-1 overflow-y-auto custom-scrollbar transition-all duration-300 px-1",
-                        viewMode === "map" ? "hidden lg:block" : "block"
+                        "overflow-y-auto custom-scrollbar transition-all duration-300 px-1",
+                        viewMode === "map"
+                            ? "hidden"
+                            : viewMode === "list"
+                            ? "w-full flex-1 block"
+                            : "flex-1 block"
                     )}
                 >
                     {/* Anchor for top of list */}
@@ -642,13 +706,7 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
                             )}
                         >
                             {data?.pages.map((page, pageIndex) => {
-                                const pageSummaries = page.hits.map(searchDocToAdSummary);
-                                const pageAds =
-                                    selectedZones.length <= 1
-                                        ? pageSummaries
-                                        : pageSummaries.filter((ad) =>
-                                              selectedZones.some((zone) => adMatchesZone(ad, zone))
-                                          );
+                                const pageAds = page.hits.map(searchDocToAdSummary);
 
                                 if (pageAds.length === 0 && pageIndex > 0) return null;
 
@@ -748,8 +806,12 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
                 {/* Map Section */}
                 <div
                     className={cn(
-                        "relative flex-1 lg:flex-[1.4] h-full overflow-hidden rounded-2xl border border-border-subtle shadow-xs animate-in fade-in duration-150",
-                        viewMode === "list" ? "hidden" : "block"
+                        "relative h-full overflow-hidden rounded-2xl border border-border-subtle shadow-xs animate-in fade-in duration-150",
+                        viewMode === "list"
+                            ? "hidden"
+                            : viewMode === "map"
+                            ? "w-full flex-1 block"
+                            : "flex-1 lg:flex-[1.4] block"
                     )}
                 >
                     <Map
@@ -759,17 +821,29 @@ export default function AdsScene({ initialViewMode = "list" }: AdsSceneProps) {
                         onZoneSelect={(zone) => handleZoneToggle(zone)}
                         center={mapCenter}
                         zoom={mapZoom}
+                        onBoundsChange={setMapBounds}
                     />
 
-                    {/* Close Map Button at the bottom of the map */}
-                    <button
-                        onClick={() => setViewMode("list")}
-                        aria-label="بستن نقشه"
-                        className="absolute bottom-24 lg:bottom-6 left-1/2 -translate-x-1/2 z-[500] bg-brand text-white px-3.5 py-1.5 sm:px-5 sm:py-2.5 rounded-full shadow-2xl flex items-center gap-1.5 sm:gap-2 font-bold text-xs sm:text-sm active:scale-95 hover:bg-brand/90 transition-all border border-white/20 backdrop-blur-md cursor-pointer"
-                    >
-                        <X className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
-                        <span>بستن نقشه</span>
-                    </button>
+                    {/* Toggle Map View button */}
+                    {viewMode === "map" ? (
+                        <button
+                            onClick={() => setViewMode("split")}
+                            aria-label="خروج از نقشه تمام‌صفحه"
+                            className="absolute bottom-24 lg:bottom-6 left-1/2 -translate-x-1/2 z-[500] bg-brand text-white px-3.5 py-1.5 sm:px-5 sm:py-2.5 rounded-full shadow-2xl flex items-center gap-1.5 sm:gap-2 font-bold text-xs sm:text-sm active:scale-95 hover:bg-brand/90 transition-all border border-white/20 backdrop-blur-md cursor-pointer"
+                        >
+                            <X className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
+                            <span>خروج از تمام‌صفحه</span>
+                        </button>
+                    ) : (
+                        <button
+                            onClick={() => setViewMode("list")}
+                            aria-label="بستن نقشه"
+                            className="lg:hidden absolute bottom-24 left-1/2 -translate-x-1/2 z-[500] bg-brand text-white px-3.5 py-1.5 sm:px-5 sm:py-2.5 rounded-full shadow-2xl flex items-center gap-1.5 sm:gap-2 font-bold text-xs sm:text-sm active:scale-95 hover:bg-brand/90 transition-all border border-white/20 backdrop-blur-md cursor-pointer"
+                        >
+                            <X className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
+                            <span>بستن نقشه</span>
+                        </button>
+                    )}
                 </div>
 
                 {/* Floating Show Map Button (When map is hidden) */}

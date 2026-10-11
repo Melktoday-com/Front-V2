@@ -201,6 +201,7 @@ export interface SearchListingsQueryDto {
   categorySlug?: string;
   categoryKey?: string;
   subcategoryKey?: string;
+  provinceId?: number | string;
   cityId?: string;
   cityName?: string;
   neighbourhoodName?: string;
@@ -209,9 +210,50 @@ export interface SearchListingsQueryDto {
   lat?: number;
   lng?: number;
   radiusKm?: number;
+  northLat?: number;
+  southLat?: number;
+  eastLng?: number;
+  westLng?: number;
+  minArea?: number;
+  maxArea?: number;
+  minRooms?: number;
+  maxRooms?: number;
   sort?: SearchSortOption;
   page?: number;
   limit?: number;
+}
+
+export interface SearchMapQueryDto {
+  query?: string;
+  categoryKey?: string;
+  subcategoryKey?: string;
+  provinceId?: number | string;
+  cityId?: string;
+  cityName?: string;
+  neighbourhoodName?: string;
+  northLat?: number;
+  southLat?: number;
+  eastLng?: number;
+  westLng?: number;
+  limit?: number;
+}
+
+export interface MapMarkerDto {
+  id: string;
+  title: string;
+  latitude: number;
+  longitude: number;
+  price?: number | null;
+  mediaIds?: MediaReference[];
+  category?: string | null;
+  subcategory?: string | null;
+  cityName?: string | null;
+  neighbourhoodName?: string | null;
+}
+
+export interface SearchMapResultDto {
+  markers: MapMarkerDto[];
+  total: number;
 }
 
 export interface SearchTemporaryRentalsQueryDto {

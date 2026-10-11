@@ -1,6 +1,6 @@
 import { ListTemporaryRentQuery, TemporaryRentAdSummary, temporaryRentService } from "@/services/temporary-rent.service";
 import { PaginatedResponse } from "@/types/api/ads.types";
-import { CreateTemporaryRentDraftRequest } from "@/types/api/temporary-rent.types";
+import { CreateTemporaryRentDraftRequest, TemporaryRentAd } from "@/types/api/temporary-rent.types";
 import { useMutation, useQuery, useQueryClient, UseQueryOptions } from "@tanstack/react-query";
 
 export const useTemporaryRentAds = (query: ListTemporaryRentQuery = {}, options?: Partial<UseQueryOptions<PaginatedResponse<TemporaryRentAdSummary>, Error>>) => {
@@ -11,11 +11,12 @@ export const useTemporaryRentAds = (query: ListTemporaryRentQuery = {}, options?
     });
 };
 
-export const useTemporaryRentAdDetail = (id: string) => {
+export const useTemporaryRentAdDetail = (id: string, initialData?: TemporaryRentAd) => {
     return useQuery({
         queryKey: ["temporary-rent-ad", id],
         queryFn: () => temporaryRentService.getById(id),
         enabled: !!id,
+        initialData,
     });
 };
 

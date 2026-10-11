@@ -336,32 +336,44 @@ export default function AdminAdDetailModal({
                             )}
 
                             {/* Dynamic Attributes Grid */}
-                            {ad.attributes && Object.keys(ad.attributes).length > 0 && (
+                            {((ad.attributeList && ad.attributeList.length > 0) || (ad.attributes && Object.keys(ad.attributes).length > 0)) && (
                                 <div className="space-y-2.5">
                                     <h4 className="text-xs font-black text-foreground-secondary uppercase tracking-wider">
                                         مشخصات و ویژگی‌های ملک
                                     </h4>
                                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                                        {Object.entries(ad.attributes).map(([key, val]) => {
-                                            const displayVal =
-                                                typeof val === "boolean"
-                                                    ? val
-                                                        ? "دارد"
-                                                        : "ندارد"
-                                                    : String(val);
+                                        {ad.attributeList && ad.attributeList.length > 0
+                                            ? ad.attributeList.map((attr) => (
+                                                  <div
+                                                      key={attr.key}
+                                                      className="flex items-center justify-between p-3 bg-surface border border-border-subtle rounded-xl text-xs"
+                                                  >
+                                                      <span className="font-bold text-foreground-muted">{attr.label}:</span>
+                                                      <span className="font-black text-foreground">
+                                                          {toPersianDigits(attr.displayValue || String(attr.value ?? ""))}
+                                                      </span>
+                                                  </div>
+                                              ))
+                                            : Object.entries(ad.attributes || {}).map(([key, val]) => {
+                                                  const displayVal =
+                                                      typeof val === "boolean"
+                                                          ? val
+                                                              ? "دارد"
+                                                              : "ندارد"
+                                                          : String(val);
 
-                                            return (
-                                                <div
-                                                    key={key}
-                                                    className="flex items-center justify-between p-3 bg-surface border border-border-subtle rounded-xl text-xs"
-                                                >
-                                                    <span className="font-bold text-foreground-muted">{key}:</span>
-                                                    <span className="font-black text-foreground">
-                                                        {toPersianDigits(displayVal)}
-                                                    </span>
-                                                </div>
-                                            );
-                                        })}
+                                                  return (
+                                                      <div
+                                                          key={key}
+                                                          className="flex items-center justify-between p-3 bg-surface border border-border-subtle rounded-xl text-xs"
+                                                      >
+                                                          <span className="font-bold text-foreground-muted">{key}:</span>
+                                                          <span className="font-black text-foreground">
+                                                              {toPersianDigits(displayVal)}
+                                                          </span>
+                                                      </div>
+                                                  );
+                                              })}
                                     </div>
                                 </div>
                             )}

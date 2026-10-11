@@ -10,11 +10,26 @@ export interface CategoryPath {
     subcategoryTitle?: string;
 }
 
+export interface NamedReference {
+    id: string;
+    label: string;
+}
+
+export interface AttributeItem {
+    key: string;
+    label: string;
+    value: unknown;
+    displayValue: string;
+}
+
 export interface AdLocation {
     latitude: number;
     longitude: number;
     lat?: number;
     lng?: number;
+    province?: NamedReference | null;
+    city?: NamedReference | null;
+    area?: NamedReference | null;
 }
 
 export interface AdPublisher {
@@ -32,6 +47,11 @@ export interface AdSummary {
     cityName?: string;
     provinceId?: string;
     provinceName?: string;
+    province?: NamedReference | null;
+    city?: NamedReference | null;
+    category?: NamedReference | null;
+    subcategory?: NamedReference | null;
+    attributeList?: AttributeItem[];
     status: AdStatus;
     title: string;
     categoryPath: CategoryPath;

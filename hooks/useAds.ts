@@ -1,5 +1,5 @@
 import { adsService } from "@/services/ads.service";
-import { ListAdsQuery, PaginatedAdsResponse } from "@/types/api/ads.types";
+import { AdDetail, ListAdsQuery, PaginatedAdsResponse } from "@/types/api/ads.types";
 import { useInfiniteQuery, useQuery, UseQueryOptions } from "@tanstack/react-query";
 
 export function useAds(query: ListAdsQuery = {}, options?: Partial<UseQueryOptions<PaginatedAdsResponse, Error>>) {
@@ -41,11 +41,12 @@ export function useInfiniteAds(
     });
 }
 
-export function useAd(adId: string) {
+export function useAd(adId: string, initialData?: AdDetail) {
     return useQuery({
         queryKey: ["ads", adId],
         queryFn: () => adsService.getById(adId),
         enabled: !!adId,
+        initialData,
     });
 }
 

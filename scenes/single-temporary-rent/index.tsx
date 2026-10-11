@@ -13,7 +13,7 @@ import { useShowcase } from "@/hooks/useShowcase";
 import { useTemporaryRentAdDetail, useTemporaryRentAds } from "@/hooks/useTemporaryRent";
 import { cn, formatPrice, getMediaPosterUrl, getMediaUrl, toPersianDigits } from "@/lib/utils";
 import { temporaryRentService } from "@/services/temporary-rent.service";
-import type { TemporaryRentContactInfo } from "@/types/api/temporary-rent.types";
+import type { TemporaryRentAd, TemporaryRentContactInfo } from "@/types/api/temporary-rent.types";
 import {
     Bath,
     Bed,
@@ -57,16 +57,20 @@ const Map = dynamic(() => import("@/components/ui/Map"), {
     ),
 });
 
-export default function ResidenceDetailScene() {
+interface ResidenceDetailSceneProps {
+    initialData?: TemporaryRentAd;
+}
+
+export default function ResidenceDetailScene({ initialData }: ResidenceDetailSceneProps = {}) {
     const params = useParams();
-    const id = params.id as string;
+    const id = ((params?.id as string) || initialData?.id) || "";
     const router = useRouter();
     const handleBack = useSafeBack("/");
 
     const { isLoggedIn, user } = useAuth();
     const chatMutation = useCreateConversation();
 
-    const { data: residence, isLoading, error, refetch } = useTemporaryRentAdDetail(id);
+    const { data: residence, isLoading, error, refetch } = useTemporaryRentAdDetail(id, initialData);
     const isOwner = Boolean(user && residence?.ownerId && user.userId === residence.ownerId);
     const isPublished = residence?.status === 'PUBLISHED';
     const isPromoted = Boolean(residence?.isFeatured || residence?.isUrgent);

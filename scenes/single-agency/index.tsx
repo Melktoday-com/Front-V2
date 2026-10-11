@@ -10,7 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useCreateConversation } from "@/hooks/useChat";
 import { cn, formatPrice, toPersianDigits, getMediaUrl, getMediaPosterUrl } from "@/lib/utils";
 import { agencyService } from "@/services/agency.service";
-import { AgencyPost } from "@/types/api/agency.types";
+import { AgencyFull, AgencyPost } from "@/types/api/agency.types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
     Award,
@@ -47,9 +47,13 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { MarkdownRenderer } from "@/components/ui/MarkdownRenderer";
 
-export default function SingleAgencyScene() {
+interface SingleAgencySceneProps {
+    initialData?: AgencyFull;
+}
+
+export default function SingleAgencyScene({ initialData }: SingleAgencySceneProps = {}) {
     const params = useParams();
-    const idOrSlug = (params.idOrSlug || params.id) as string;
+    const idOrSlug = (params?.idOrSlug || params?.id || initialData?.slug || initialData?.id) as string;
     const router = useRouter();
     const handleBack = useSafeBack("/");
 
@@ -72,6 +76,7 @@ export default function SingleAgencyScene() {
         queryKey: ["agency-showcase", idOrSlug],
         queryFn: () => agencyService.getPublicShowcase(idOrSlug),
         enabled: !!idOrSlug,
+        initialData,
     });
 
     const targetAgencyId = agency?.id || idOrSlug;

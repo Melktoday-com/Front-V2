@@ -40,15 +40,16 @@ export const SHOWCASE_KEYS = {
   platformProfile: () => ['platform', 'profile'] as const,
 };
 
-export function useShowcase(type: 'agency', idOrSlug: string): UseQueryResult<ShowcaseResponse<AgencyAbout>, Error>;
-export function useShowcase(type: 'host', idOrSlug: string): UseQueryResult<ShowcaseResponse<HostAbout>, Error>;
-export function useShowcase(type: 'platform', idOrSlug: string): UseQueryResult<ShowcaseResponse<PlatformAbout>, Error>;
-export function useShowcase<TAbout = ShowcaseAbout>(type: 'agency' | 'host' | 'platform', idOrSlug: string): UseQueryResult<ShowcaseResponse<TAbout>, Error>;
-export function useShowcase<TAbout = ShowcaseAbout>(type: 'agency' | 'host' | 'platform', idOrSlug: string) {
+export function useShowcase(type: 'agency', idOrSlug: string, initialData?: ShowcaseResponse<AgencyAbout>): UseQueryResult<ShowcaseResponse<AgencyAbout>, Error>;
+export function useShowcase(type: 'host', idOrSlug: string, initialData?: ShowcaseResponse<HostAbout>): UseQueryResult<ShowcaseResponse<HostAbout>, Error>;
+export function useShowcase(type: 'platform', idOrSlug: string, initialData?: ShowcaseResponse<PlatformAbout>): UseQueryResult<ShowcaseResponse<PlatformAbout>, Error>;
+export function useShowcase<TAbout = ShowcaseAbout>(type: 'agency' | 'host' | 'platform', idOrSlug: string, initialData?: ShowcaseResponse<TAbout>): UseQueryResult<ShowcaseResponse<TAbout>, Error>;
+export function useShowcase<TAbout = ShowcaseAbout>(type: 'agency' | 'host' | 'platform', idOrSlug: string, initialData?: ShowcaseResponse<TAbout>) {
   return useQuery({
     queryKey: SHOWCASE_KEYS.showcase(type, idOrSlug),
     queryFn: () => showcaseService.getShowcase<TAbout>(type, idOrSlug),
     enabled: !!idOrSlug,
+    initialData,
   });
 }
 

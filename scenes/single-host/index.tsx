@@ -41,13 +41,15 @@ import { formatCurrency, formatPrice, toPersianDigits, cn, getMediaUrl, getMedia
 import { toast } from "sonner";
 import { UnifiedPost } from "@/types/api/post.types";
 import { AdSummary } from "@/types/api/ads.types";
+import { HostAbout, ShowcaseResponse } from "@/types/api/showcase.types";
 import { MarkdownRenderer } from "@/components/ui/MarkdownRenderer";
 
 interface SingleHostSceneProps {
   idOrSlug: string;
+  initialData?: ShowcaseResponse<HostAbout>;
 }
 
-export default function SingleHostScene({ idOrSlug }: SingleHostSceneProps) {
+export default function SingleHostScene({ idOrSlug, initialData }: SingleHostSceneProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const requestedTab = searchParams.get("tab");
@@ -62,7 +64,7 @@ export default function SingleHostScene({ idOrSlug }: SingleHostSceneProps) {
   const [selectedPost, setSelectedPost] = useState<UnifiedPost | null>(null);
 
   // Queries
-  const { data: showcase, isLoading, error } = useShowcase("host", idOrSlug);
+  const { data: showcase, isLoading, error } = useShowcase("host", idOrSlug, initialData);
   const { data: publicHost } = usePublicHostProfile(idOrSlug);
   const { data: rentalsData, isLoading: isLoadingRentals } = useShowcaseListings("host", idOrSlug);
   const { data: postsData, isLoading: isLoadingPosts } = useShowcasePosts("host", idOrSlug);
