@@ -197,11 +197,19 @@ export default function AdminTicketTopicsPage() {
             toast.success(`موضوع «${deletingTopic.label}» با موفقیت حذف شد`);
             setDeletingTopic(null);
             refetchTopics();
-        } catch (err) {
-            const errorMsg = normalizeApiError(
-                err instanceof Error ? err : String(err),
-                "امکان حذف فیزیکی این موضوع به دلیل وجود تیکت‌های تاریخی وجود ندارد. می‌توانید آن را غیرفعال کنید."
-            );
+        } catch (err: any) {
+            const isReferenceError =
+                err?.response?.data?.error?.code === "TICKET_TOPIC_HAS_REFERENCES" ||
+                err?.response?.status === 422 ||
+                err?.response?.data?.error?.message?.includes("reference") ||
+                err?.response?.data?.error?.message?.includes("Cannot delete topic");
+
+            const errorMsg = isReferenceError
+                ? "این موضوع دارای تیکت‌های ثبت‌شده است و برای حفظ تاریخچه مکاتبات کاربران قابل حذف فیزیکی نیست. لطفاً آن را غیرفعال (Deactivate) کنید."
+                : normalizeApiError(
+                      err instanceof Error ? err : String(err),
+                      "امکان حذف فیزیکی این موضوع وجود ندارد. می‌توانید آن را غیرفعال کنید."
+                  );
             setDeleteErrorMessage(errorMsg);
             toast.error(errorMsg);
         }
@@ -375,7 +383,7 @@ export default function AdminTicketTopicsPage() {
                                                         setDeleteErrorMessage(null);
                                                     }}
                                                     className="p-1.5 rounded-xl border border-red-200 text-red-500 hover:bg-red-50 transition-colors"
-                                                    title="حذف موضوع"
+                                                    title="حذف فیزیکی (فقط برای موضوعات بدون تیکت)"
                                                 >
                                                     <Trash2 className="w-4 h-4" />
                                                 </button>
@@ -597,6 +605,11 @@ export default function AdminTicketTopicsPage() {
                         <p className="text-xs text-brand leading-relaxed font-bold">
                             آیا از حذف موضوع «{deletingTopic.label}» اطمینان دارید؟
                         </p>
+
+                        <div className="p-3 bg-amber-50/80 border border-amber-200 rounded-2xl text-[11px] text-amber-800 leading-relaxed">
+                            <span className="font-black text-amber-950 block mb-0.5">⚠️ توجه درباره یکپارچگی داده‌ها:</span>
+                            موضوعاتی که کاربران قبلاً با آن‌ها تیکت ثبت کرده‌اند، به دلیل حفظ تاریخچه مکاتبات قابل حذف فیزیکی نیستند. اگر این موضوع دارای تیکت باشد، به جای حذف باید آن را <strong>غیرفعال</strong> نمایید.
+                        </div>
 
                         {deleteErrorMessage && (
                             <div className="p-3.5 bg-red-50 border border-red-200 rounded-2xl text-xs text-red-700 space-y-2">
