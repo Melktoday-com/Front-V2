@@ -6,7 +6,6 @@ import { cn, toPersianDigits, getMediaUrl } from "@/lib/utils";
 import { agencyService } from "@/services/agency.service";
 import MediaIconUpload from "@/components/admin/MediaIconUpload";
 import {
-    AgencyConsultationMessage,
     AgencyPost,
     AgencyPostsListResponse,
     UpdateAgencyProfileRequest,
@@ -20,28 +19,28 @@ import {
     BookOpen,
     Building2,
     Check,
-    CheckCircle2,
     ChevronLeft,
     Clock,
     Copy,
+    Edit3,
     ExternalLink,
     Eye,
     Globe,
+    ImageIcon,
     LayoutDashboard,
     MapPin,
     MessageCircle,
-    MessageSquare,
+    PenTool,
     Phone,
     Plus,
+    RotateCcw,
     Send,
     Settings,
     ShieldCheck,
     Smartphone,
-    Sparkles,
     Star,
     Trash2,
     Users,
-    X,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -56,13 +55,12 @@ import type { Swiper as SwiperType } from "swiper";
 import "swiper/css";
 import "swiper/css/free-mode";
 
-type Tab = "overview" | "settings" | "posts" | "messages";
+type Tab = "overview" | "settings" | "posts";
 
 const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
     { id: "overview", label: "نمای کلی و آمار", icon: LayoutDashboard },
     { id: "settings", label: "شخصی‌سازی ویترین", icon: Settings },
     { id: "posts", label: "پست‌ها و مقالات", icon: BookOpen },
-    { id: "messages", label: "پیام‌ها و مشاوره‌ها", icon: MessageSquare },
 ];
 
 function InstagramIcon({ className }: { className?: string }) {
@@ -90,7 +88,7 @@ export default function AgencyPanelScene() {
     const queryClient = useQueryClient();
     const [activeTab, setActiveTab] = useState<Tab>("overview");
     const [copiedLink, setCopiedLink] = useState(false);
-    const [messageFilter, setMessageFilter] = useState<"all" | "pending" | "replied">("all");
+    const [isEditing, setIsEditing] = useState(false);
     const swiperRef = useRef<SwiperType | null>(null);
     const isManualScrollingRef = useRef(false);
 
@@ -117,34 +115,55 @@ export default function AgencyPanelScene() {
         workingHours: "",
     });
 
-    useEffect(() => {
-        if (agency) {
-            setSettingsForm({
-                agencyName: agency.agencyName || agency.name || "",
-                slug: agency.slug || "",
-                bio: agency.bio || "",
-                logoUrl: agency.logoUrl || "",
-                coverUrl: agency.coverUrl || "",
-                licenseNumber: agency.licenseNumber || "",
-                guildCode: agency.guildCode || "",
-                website: agency.website || "",
-                phone: agency.phone || "",
-                mobile: agency.mobile || "",
-                whatsapp: agency.whatsapp || "",
-                telegram: agency.telegram || "",
-                instagram: agency.instagram || "",
-                address: agency.address || "",
-                postalCode: agency.postalCode || "",
-                workingHours: agency.workingHours || "",
-            });
-        }
+    // Reference initial values to detect if user changed anything
+    const initialFormValues = useMemo(() => {
+        if (!agency) return null;
+        return {
+            agencyName: agency.agencyName || agency.name || "",
+            slug: agency.slug || "",
+            bio: agency.bio || "",
+            logoUrl: agency.logoUrl || "",
+            coverUrl: agency.coverUrl || "",
+            licenseNumber: agency.licenseNumber || "",
+            guildCode: agency.guildCode || "",
+            website: agency.website || "",
+            phone: agency.phone || "",
+            mobile: agency.mobile || "",
+            whatsapp: agency.whatsapp || "",
+            telegram: agency.telegram || "",
+            instagram: agency.instagram || "",
+            address: agency.address || "",
+            postalCode: agency.postalCode || "",
+            workingHours: agency.workingHours || "",
+        };
     }, [agency]);
+
+    useEffect(() => {
+        if (initialFormValues) {
+            setSettingsForm(initialFormValues);
+        }
+    }, [initialFormValues]);
+
+    const hasChanges = useMemo(() => {
+        if (!initialFormValues) return false;
+        return (Object.keys(initialFormValues) as (keyof typeof initialFormValues)[]).some(
+            (key) => settingsForm[key] !== initialFormValues[key]
+        );
+    }, [settingsForm, initialFormValues]);
+
+    const handleRevertChanges = () => {
+        if (initialFormValues) {
+            setSettingsForm(initialFormValues);
+        }
+        setIsEditing(false);
+    };
 
     // Update showcase mutation
     const updateShowcaseMutation = useMutation({
         mutationFn: (data: UpdateAgencyProfileRequest) => agencyService.updateMyShowcase(data),
         onSuccess: () => {
             toast.success("تنظیمات صفحه ویترین با موفقیت ذخیره شد.");
+            setIsEditing(false);
             queryClient.invalidateQueries({ queryKey: ["my-agency"] });
         },
         onError: (err: Error) => {
@@ -152,7 +171,7 @@ export default function AgencyPanelScene() {
         },
     });
 
-    // Posts query & mutations - loaded for the page
+    // Posts query & mutations
     const {
         data: postsData,
         isLoading: isLoadingPosts,
@@ -178,48 +197,6 @@ export default function AgencyPanelScene() {
         },
     });
 
-    // Messages query & reply mutation - loaded for the page
-    const {
-        data: messagesData,
-        isLoading: isLoadingMessages,
-        refetch: refetchMessages,
-    } = useQuery<AgencyConsultationMessage[]>({
-        queryKey: ["agency-messages", agency?.id],
-        queryFn: () => agencyService.listMyMessages(),
-        enabled: !!agency?.id,
-    });
-
-    const messages: AgencyConsultationMessage[] = useMemo(() => {
-        return Array.isArray(messagesData) ? messagesData : [];
-    }, [messagesData]);
-
-    const pendingMessagesCount = useMemo(() => {
-        return messages.filter((m) => m.status === "PENDING").length;
-    }, [messages]);
-
-    const filteredMessages = useMemo(() => {
-        if (messageFilter === "pending") return messages.filter((m) => m.status === "PENDING");
-        if (messageFilter === "replied") return messages.filter((m) => m.status === "REPLIED");
-        return messages;
-    }, [messages, messageFilter]);
-
-    const [replyingMessage, setReplyingMessage] = useState<AgencyConsultationMessage | null>(null);
-    const [replyText, setReplyText] = useState("");
-
-    const replyMutation = useMutation({
-        mutationFn: ({ messageId, replyMessage }: { messageId: string; replyMessage: string }) =>
-            agencyService.replyToMessage(messageId, { replyMessage }),
-        onSuccess: () => {
-            toast.success("پاسخ شما با موفقیت ارسال شد.");
-            setReplyingMessage(null);
-            setReplyText("");
-            refetchMessages();
-        },
-        onError: (err: Error) => {
-            toast.error(normalizeApiError(err, "خطا در ارسال پاسخ."));
-        },
-    });
-
     const publicShowcasePath = `/agency/showcase/${agency?.slug || agency?.id || ""}`;
     const fullPublicUrl = typeof window !== "undefined" ? `${window.location.origin}${publicShowcasePath}` : publicShowcasePath;
 
@@ -238,7 +215,6 @@ export default function AgencyPanelScene() {
         isManualScrollingRef.current = true;
         const targetElement = document.getElementById(`section-${tabId}`);
         if (targetElement) {
-            // Header (approx 60px) + Swiper Bar (approx 55px) + extra margin (15px) = 130px
             const topOffset = targetElement.getBoundingClientRect().top + window.scrollY - 130;
             window.scrollTo({
                 top: topOffset,
@@ -285,7 +261,7 @@ export default function AgencyPanelScene() {
                     <div className="space-y-2">
                         <h2 className="text-xl font-black text-brand tracking-tight">ورود به پنل آژانس</h2>
                         <p className="text-xs sm:text-sm text-secondary leading-relaxed">
-                            برای مدیریت صفحه ویترین، پاسخ‌گویی به درخواست‌های مشتریان و ویرایش اطلاعات، ابتدا وارد حساب کاربری خود شوید.
+                            برای مدیریت صفحه ویترین، ویرایش اطلاعات و انتشار مقالات، ابتدا وارد حساب کاربری خود شوید.
                         </p>
                     </div>
                     <button
@@ -343,7 +319,7 @@ export default function AgencyPanelScene() {
 
     return (
         <div className="min-h-screen bg-canvas text-brand pb-32 lg:pb-16 selection:bg-accent/30" dir="rtl">
-            {/* Clean Apple Navigation Bar (Minimal on mobile, informative on desktop) */}
+            {/* Clean Apple Navigation Bar */}
             <header className="sticky top-0 z-30 bg-surface/90 backdrop-blur-xl border-b border-soft-border/70 transition-all">
                 <div className="max-w-6xl mx-auto px-3.5 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between gap-3">
                     {/* Back Button & Agency Title */}
@@ -386,7 +362,6 @@ export default function AgencyPanelScene() {
 
                     {/* Actions: Clean & Minimal on mobile */}
                     <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
-                        {/* Copy link button (icon only on mobile) */}
                         <button
                             type="button"
                             onClick={handleCopyLink}
@@ -398,7 +373,6 @@ export default function AgencyPanelScene() {
                             <span className="hidden sm:inline">{copiedLink ? "کپی شد" : "کپی لینک"}</span>
                         </button>
 
-                        {/* Open Showcase Link */}
                         <Link
                             href={publicShowcasePath}
                             target="_blank"
@@ -430,11 +404,7 @@ export default function AgencyPanelScene() {
                             const Icon = tab.icon;
                             const isActive = activeTab === tab.id;
                             const badgeCount =
-                                tab.id === "messages" && pendingMessagesCount > 0
-                                    ? pendingMessagesCount
-                                    : tab.id === "posts" && posts.length > 0
-                                    ? posts.length
-                                    : null;
+                                tab.id === "posts" && posts.length > 0 ? posts.length : null;
 
                             return (
                                 <SwiperSlide key={tab.id} className="!w-auto">
@@ -451,14 +421,7 @@ export default function AgencyPanelScene() {
                                         <Icon className={cn("w-3.5 h-3.5 sm:w-4 sm:h-4", isActive ? "text-primary" : "text-secondary")} />
                                         <span>{tab.label}</span>
                                         {badgeCount !== null && (
-                                            <span
-                                                className={cn(
-                                                    "text-[10px] px-1.5 py-0.2 rounded-full font-bold",
-                                                    tab.id === "messages" && pendingMessagesCount > 0
-                                                        ? "bg-emerald-600 text-white"
-                                                        : "bg-soft-border/70 text-secondary"
-                                                )}
-                                            >
+                                            <span className="text-[10px] px-1.5 py-0.2 rounded-full font-bold bg-soft-border/70 text-secondary">
                                                 {toPersianDigits(badgeCount)}
                                             </span>
                                         )}
@@ -470,13 +433,13 @@ export default function AgencyPanelScene() {
                 </div>
             </div>
 
-            {/* Main Content: All Sections stacked sequentially with smooth anchors */}
+            {/* Main Content: Stacked Sections with Smooth Anchors */}
             <main className="max-w-6xl mx-auto px-3.5 sm:px-6 lg:px-8 py-5 sm:py-8 space-y-12">
                 {/* ───────────────────────────────────────────────────────────── */}
                 {/* SECTION 1: OVERVIEW & STATS                                  */}
                 {/* ───────────────────────────────────────────────────────────── */}
                 <section id="section-overview" className="space-y-5 scroll-mt-28">
-                    {/* Simplified, Calm Apple Showcase Card */}
+                    {/* Clean Apple Showcase Card */}
                     <div className="rounded-[24px] sm:rounded-[28px] bg-surface border border-soft-border/70 p-5 sm:p-7 shadow-xs">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                             <div className="space-y-1.5 min-w-0">
@@ -507,7 +470,6 @@ export default function AgencyPanelScene() {
                                     </p>
                                 )}
 
-                                {/* Compact Link Pill */}
                                 <div className="pt-1 flex items-center gap-2">
                                     <span className="text-[11px] text-secondary font-mono truncate max-w-xs" dir="ltr">
                                         {fullPublicUrl}
@@ -526,16 +488,20 @@ export default function AgencyPanelScene() {
                                 </Link>
                                 <button
                                     type="button"
-                                    onClick={() => scrollToSection("settings")}
-                                    className="px-4 py-2.5 rounded-xl bg-soft-bg hover:bg-soft-border/70 text-brand text-xs font-bold transition-all border border-soft-border/70 cursor-pointer"
+                                    onClick={() => {
+                                        scrollToSection("settings");
+                                        setIsEditing(true);
+                                    }}
+                                    className="px-4 py-2.5 rounded-xl bg-soft-bg hover:bg-soft-border/70 text-brand text-xs font-bold transition-all border border-soft-border/70 cursor-pointer inline-flex items-center gap-1.5"
                                 >
-                                    ویرایش سریع
+                                    <Edit3 className="w-3.5 h-3.5 text-secondary" />
+                                    <span>ویرایش ویترین</span>
                                 </button>
                             </div>
                         </div>
                     </div>
 
-                    {/* Apple KPI Metric Grid (Clean, balanced 4 cards) */}
+                    {/* Apple KPI Metric Grid (Followers, Posts, Rating, Status) */}
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                         <div className="p-4 rounded-2xl bg-surface border border-soft-border/70 shadow-2xs space-y-1">
                             <span className="text-[11px] font-bold text-secondary flex items-center justify-between">
@@ -549,11 +515,11 @@ export default function AgencyPanelScene() {
 
                         <div className="p-4 rounded-2xl bg-surface border border-soft-border/70 shadow-2xs space-y-1">
                             <span className="text-[11px] font-bold text-secondary flex items-center justify-between">
-                                <span>مشاوره‌ها</span>
-                                <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
+                                <span>مقالات و پست‌ها</span>
+                                <BookOpen className="w-3.5 h-3.5 text-accent-foreground" />
                             </span>
                             <div className="text-xl sm:text-2xl font-black text-brand">
-                                {toPersianDigits(agency.consultationsCount || stats?.consultationCount || messages.length || 0)}
+                                {toPersianDigits(posts.length)}
                             </div>
                         </div>
 
@@ -582,11 +548,11 @@ export default function AgencyPanelScene() {
                         </div>
                     </div>
 
-                    {/* Content Studio Minimal Callout */}
+                    {/* Content Studio Callout */}
                     <div className="rounded-2xl bg-soft-bg/60 border border-soft-border/70 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <div className="flex items-center gap-3">
                             <div className="w-9 h-9 rounded-xl bg-brand text-accent flex items-center justify-center shrink-0">
-                                <Sparkles className="w-4 h-4" />
+                                <PenTool className="w-4 h-4" />
                             </div>
                             <div>
                                 <h3 className="text-xs sm:text-sm font-black text-brand">استودیو انتشار محتوا و تحلیل بازار</h3>
@@ -607,25 +573,60 @@ export default function AgencyPanelScene() {
                 {/* SECTION 2: SETTINGS & CUSTOMIZATION                          */}
                 {/* ───────────────────────────────────────────────────────────── */}
                 <section id="section-settings" className="space-y-6 scroll-mt-28">
-                    <div className="border-b border-soft-border/60 pb-3 flex items-center justify-between">
+                    {/* Header with Edit Toggle */}
+                    <div className="border-b border-soft-border/60 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <div className="flex items-center gap-2">
                             <Settings className="w-5 h-5 text-secondary" />
                             <div>
                                 <h2 className="text-base sm:text-lg font-black text-brand">تنظیمات و هویت صفحه ویترین</h2>
-                                <p className="text-[11px] text-secondary">شخصی‌سازی اطلاعات عمومی، تصاویر و پل‌های ارتباطی دفتر املاک</p>
+                                <p className="text-[11px] text-secondary">
+                                    {isEditing
+                                        ? "در حال ویرایش اطلاعات ویترین - پس از اعمال تغییرات، دکمه ذخیره فعال خواهد شد."
+                                        : "مشاهده مشخصات عمومی ویترین. برای تغییر هر بخش روی «ویرایش اطلاعات» کلیک کنید."}
+                                </p>
                             </div>
+                        </div>
+
+                        {/* Edit Mode Buttons */}
+                        <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
+                            {isEditing ? (
+                                <button
+                                    type="button"
+                                    onClick={handleRevertChanges}
+                                    className="px-3.5 py-1.5 rounded-xl border border-soft-border text-secondary hover:bg-soft-bg text-xs font-bold transition-all cursor-pointer inline-flex items-center gap-1.5"
+                                >
+                                    <RotateCcw className="w-3.5 h-3.5" />
+                                    <span>انصراف</span>
+                                </button>
+                            ) : (
+                                <button
+                                    type="button"
+                                    onClick={() => setIsEditing(true)}
+                                    className="px-4 py-2 rounded-xl bg-brand hover:bg-brand/90 active:scale-95 text-white text-xs font-black transition-all shadow-xs cursor-pointer inline-flex items-center gap-1.5"
+                                >
+                                    <Edit3 className="w-3.5 h-3.5" />
+                                    <span>ویرایش اطلاعات</span>
+                                </button>
+                            )}
                         </div>
                     </div>
 
                     <form
                         onSubmit={(e) => {
                             e.preventDefault();
+                            if (!hasChanges) {
+                                toast.info("تغییری برای ذخیره ثبت نشده است.");
+                                return;
+                            }
                             updateShowcaseMutation.mutate(settingsForm);
                         }}
                         className="space-y-6"
                     >
                         {/* Section: Basic Identity */}
-                        <div className="rounded-[24px] bg-surface border border-soft-border/70 p-5 sm:p-7 shadow-xs space-y-4">
+                        <div className={cn(
+                            "rounded-[24px] bg-surface border transition-all p-5 sm:p-7 shadow-xs space-y-4",
+                            isEditing ? "border-primary/40 ring-1 ring-primary/20" : "border-soft-border/70"
+                        )}>
                             <h3 className="text-sm font-black text-brand flex items-center gap-2">
                                 <Building2 className="w-4 h-4 text-primary" />
                                 <span>مشخصات پایه و نام برند</span>
@@ -639,9 +640,15 @@ export default function AgencyPanelScene() {
                                     <input
                                         type="text"
                                         required
+                                        disabled={!isEditing}
                                         value={settingsForm.agencyName}
                                         onChange={(e) => setSettingsForm({ ...settingsForm, agencyName: e.target.value })}
-                                        className="w-full px-3.5 py-2.5 bg-soft-bg/30 border border-soft-border/80 rounded-xl text-xs sm:text-sm text-brand focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                                        className={cn(
+                                            "w-full px-3.5 py-2.5 rounded-xl text-xs sm:text-sm text-brand transition-all",
+                                            isEditing
+                                                ? "bg-white border border-soft-border/80 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                                                : "bg-soft-bg/40 border border-soft-border/50 text-secondary cursor-not-allowed"
+                                        )}
                                         placeholder="مثال: املاک مدرن ونک"
                                     />
                                 </div>
@@ -652,6 +659,7 @@ export default function AgencyPanelScene() {
                                     </label>
                                     <input
                                         type="text"
+                                        disabled={!isEditing}
                                         value={settingsForm.slug}
                                         onChange={(e) =>
                                             setSettingsForm({
@@ -661,7 +669,12 @@ export default function AgencyPanelScene() {
                                         }
                                         placeholder="tehran-modern-melk"
                                         dir="ltr"
-                                        className="w-full px-3.5 py-2.5 bg-soft-bg/30 border border-soft-border/80 rounded-xl text-xs sm:text-sm font-mono text-brand focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-left"
+                                        className={cn(
+                                            "w-full px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-mono text-brand transition-all text-left",
+                                            isEditing
+                                                ? "bg-white border border-soft-border/80 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                                                : "bg-soft-bg/40 border border-soft-border/50 text-secondary cursor-not-allowed"
+                                        )}
                                     />
                                 </div>
 
@@ -669,10 +682,16 @@ export default function AgencyPanelScene() {
                                     <label className="text-xs font-bold text-brand block">شماره پروانه کسب / مجوز صنفی</label>
                                     <input
                                         type="text"
+                                        disabled={!isEditing}
                                         value={settingsForm.licenseNumber}
                                         onChange={(e) => setSettingsForm({ ...settingsForm, licenseNumber: e.target.value })}
                                         placeholder="مثال: ۱۲۳۴۵۶۷۸"
-                                        className="w-full px-3.5 py-2.5 bg-soft-bg/30 border border-soft-border/80 rounded-xl text-xs sm:text-sm text-brand focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-mono"
+                                        className={cn(
+                                            "w-full px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-mono text-brand transition-all",
+                                            isEditing
+                                                ? "bg-white border border-soft-border/80 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                                                : "bg-soft-bg/40 border border-soft-border/50 text-secondary cursor-not-allowed"
+                                        )}
                                     />
                                 </div>
 
@@ -680,30 +699,45 @@ export default function AgencyPanelScene() {
                                     <label className="text-xs font-bold text-brand block">کد عضویت اتحادیه املاک (کد صنف)</label>
                                     <input
                                         type="text"
+                                        disabled={!isEditing}
                                         value={settingsForm.guildCode}
                                         onChange={(e) => setSettingsForm({ ...settingsForm, guildCode: e.target.value })}
                                         placeholder="مثال: ۹۸۷۶۵"
-                                        className="w-full px-3.5 py-2.5 bg-soft-bg/30 border border-soft-border/80 rounded-xl text-xs sm:text-sm text-brand focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-mono"
+                                        className={cn(
+                                            "w-full px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-mono text-brand transition-all",
+                                            isEditing
+                                                ? "bg-white border border-soft-border/80 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                                                : "bg-soft-bg/40 border border-soft-border/50 text-secondary cursor-not-allowed"
+                                        )}
                                     />
                                 </div>
 
                                 <div className="space-y-1.5 sm:col-span-2">
                                     <label className="text-xs font-bold text-brand block">بیوگرافی و معرفی تخصصی</label>
                                     <textarea
+                                        disabled={!isEditing}
                                         value={settingsForm.bio}
                                         onChange={(e) => setSettingsForm({ ...settingsForm, bio: e.target.value })}
                                         rows={3}
                                         placeholder="توضیحاتی در مورد سوابق کاری، مناطق تحت پوشش، خدمات ویژه و نحوه همکاری..."
-                                        className="w-full p-3 bg-soft-bg/30 border border-soft-border/80 rounded-xl text-xs sm:text-sm text-brand focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary leading-relaxed"
+                                        className={cn(
+                                            "w-full p-3 rounded-xl text-xs sm:text-sm text-brand transition-all leading-relaxed",
+                                            isEditing
+                                                ? "bg-white border border-soft-border/80 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                                                : "bg-soft-bg/40 border border-soft-border/50 text-secondary cursor-not-allowed"
+                                        )}
                                     />
                                 </div>
                             </div>
                         </div>
 
                         {/* Section: Media & Visuals */}
-                        <div className="rounded-[24px] bg-surface border border-soft-border/70 p-5 sm:p-7 shadow-xs space-y-4">
+                        <div className={cn(
+                            "rounded-[24px] bg-surface border transition-all p-5 sm:p-7 shadow-xs space-y-4",
+                            isEditing ? "border-primary/40 ring-1 ring-primary/20" : "border-soft-border/70"
+                        )}>
                             <h3 className="text-sm font-black text-brand flex items-center gap-2">
-                                <Sparkles className="w-4 h-4 text-accent" />
+                                <ImageIcon className="w-4 h-4 text-accent" />
                                 <span>تصاویر نمایه و بنر سربرگ</span>
                             </h3>
 
@@ -712,6 +746,7 @@ export default function AgencyPanelScene() {
                                     <MediaIconUpload
                                         label="لوگوی رسمی دفتر یا تصویر پرتره"
                                         helperText="فرمت: مربع با کیفیت بالا"
+                                        disabled={!isEditing}
                                         value={settingsForm.logoUrl}
                                         onChange={(mediaId) => setSettingsForm({ ...settingsForm, logoUrl: mediaId })}
                                     />
@@ -721,6 +756,7 @@ export default function AgencyPanelScene() {
                                     <MediaIconUpload
                                         label="تصویر بنر سربرگ (کاور بالای صفحه)"
                                         helperText="فرمت: افقی با نسبت ۱۶:۹"
+                                        disabled={!isEditing}
                                         value={settingsForm.coverUrl}
                                         onChange={(mediaId) => setSettingsForm({ ...settingsForm, coverUrl: mediaId })}
                                     />
@@ -729,7 +765,10 @@ export default function AgencyPanelScene() {
                         </div>
 
                         {/* Section: Contacts */}
-                        <div className="rounded-[24px] bg-surface border border-soft-border/70 p-5 sm:p-7 shadow-xs space-y-4">
+                        <div className={cn(
+                            "rounded-[24px] bg-surface border transition-all p-5 sm:p-7 shadow-xs space-y-4",
+                            isEditing ? "border-primary/40 ring-1 ring-primary/20" : "border-soft-border/70"
+                        )}>
                             <h3 className="text-sm font-black text-brand flex items-center gap-2">
                                 <Phone className="w-4 h-4 text-emerald-600" />
                                 <span>راه‌های ارتباطی و شبکه‌های اجتماعی</span>
@@ -743,11 +782,17 @@ export default function AgencyPanelScene() {
                                     </label>
                                     <input
                                         type="text"
+                                        disabled={!isEditing}
                                         value={settingsForm.phone}
                                         onChange={(e) => setSettingsForm({ ...settingsForm, phone: e.target.value })}
                                         placeholder="۰۲۱..."
                                         dir="ltr"
-                                        className="w-full px-3.5 py-2.5 bg-soft-bg/30 border border-soft-border/80 rounded-xl text-xs sm:text-sm font-mono text-brand focus:outline-none focus:ring-2 focus:ring-primary/20 text-left"
+                                        className={cn(
+                                            "w-full px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-mono text-brand transition-all text-left",
+                                            isEditing
+                                                ? "bg-white border border-soft-border/80 focus:outline-none focus:ring-2 focus:ring-primary/20 text-left"
+                                                : "bg-soft-bg/40 border border-soft-border/50 text-secondary cursor-not-allowed"
+                                        )}
                                     />
                                 </div>
 
@@ -758,11 +803,17 @@ export default function AgencyPanelScene() {
                                     </label>
                                     <input
                                         type="text"
+                                        disabled={!isEditing}
                                         value={settingsForm.mobile}
                                         onChange={(e) => setSettingsForm({ ...settingsForm, mobile: e.target.value })}
                                         placeholder="۰۹۱۲..."
                                         dir="ltr"
-                                        className="w-full px-3.5 py-2.5 bg-soft-bg/30 border border-soft-border/80 rounded-xl text-xs sm:text-sm font-mono text-brand focus:outline-none focus:ring-2 focus:ring-primary/20 text-left"
+                                        className={cn(
+                                            "w-full px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-mono text-brand transition-all text-left",
+                                            isEditing
+                                                ? "bg-white border border-soft-border/80 focus:outline-none focus:ring-2 focus:ring-primary/20 text-left"
+                                                : "bg-soft-bg/40 border border-soft-border/50 text-secondary cursor-not-allowed"
+                                        )}
                                     />
                                 </div>
 
@@ -773,11 +824,17 @@ export default function AgencyPanelScene() {
                                     </label>
                                     <input
                                         type="text"
+                                        disabled={!isEditing}
                                         value={settingsForm.whatsapp}
                                         onChange={(e) => setSettingsForm({ ...settingsForm, whatsapp: e.target.value })}
                                         placeholder="۰۹..."
                                         dir="ltr"
-                                        className="w-full px-3.5 py-2.5 bg-soft-bg/30 border border-soft-border/80 rounded-xl text-xs sm:text-sm font-mono text-brand focus:outline-none focus:ring-2 focus:ring-primary/20 text-left"
+                                        className={cn(
+                                            "w-full px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-mono text-brand transition-all text-left",
+                                            isEditing
+                                                ? "bg-white border border-soft-border/80 focus:outline-none focus:ring-2 focus:ring-primary/20 text-left"
+                                                : "bg-soft-bg/40 border border-soft-border/50 text-secondary cursor-not-allowed"
+                                        )}
                                     />
                                 </div>
 
@@ -788,11 +845,17 @@ export default function AgencyPanelScene() {
                                     </label>
                                     <input
                                         type="text"
+                                        disabled={!isEditing}
                                         value={settingsForm.instagram}
                                         onChange={(e) => setSettingsForm({ ...settingsForm, instagram: e.target.value })}
                                         placeholder="نام کاربری بدون @"
                                         dir="ltr"
-                                        className="w-full px-3.5 py-2.5 bg-soft-bg/30 border border-soft-border/80 rounded-xl text-xs sm:text-sm font-mono text-brand focus:outline-none focus:ring-2 focus:ring-primary/20 text-left"
+                                        className={cn(
+                                            "w-full px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-mono text-brand transition-all text-left",
+                                            isEditing
+                                                ? "bg-white border border-soft-border/80 focus:outline-none focus:ring-2 focus:ring-primary/20 text-left"
+                                                : "bg-soft-bg/40 border border-soft-border/50 text-secondary cursor-not-allowed"
+                                        )}
                                     />
                                 </div>
 
@@ -803,11 +866,17 @@ export default function AgencyPanelScene() {
                                     </label>
                                     <input
                                         type="text"
+                                        disabled={!isEditing}
                                         value={settingsForm.telegram}
                                         onChange={(e) => setSettingsForm({ ...settingsForm, telegram: e.target.value })}
                                         placeholder="آیدی تلگرام"
                                         dir="ltr"
-                                        className="w-full px-3.5 py-2.5 bg-soft-bg/30 border border-soft-border/80 rounded-xl text-xs sm:text-sm font-mono text-brand focus:outline-none focus:ring-2 focus:ring-primary/20 text-left"
+                                        className={cn(
+                                            "w-full px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-mono text-brand transition-all text-left",
+                                            isEditing
+                                                ? "bg-white border border-soft-border/80 focus:outline-none focus:ring-2 focus:ring-primary/20 text-left"
+                                                : "bg-soft-bg/40 border border-soft-border/50 text-secondary cursor-not-allowed"
+                                        )}
                                     />
                                 </div>
 
@@ -818,18 +887,27 @@ export default function AgencyPanelScene() {
                                     </label>
                                     <input
                                         type="text"
+                                        disabled={!isEditing}
                                         value={settingsForm.website}
                                         onChange={(e) => setSettingsForm({ ...settingsForm, website: e.target.value })}
                                         placeholder="https://..."
                                         dir="ltr"
-                                        className="w-full px-3.5 py-2.5 bg-soft-bg/30 border border-soft-border/80 rounded-xl text-xs sm:text-sm font-mono text-brand focus:outline-none focus:ring-2 focus:ring-primary/20 text-left"
+                                        className={cn(
+                                            "w-full px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-mono text-brand transition-all text-left",
+                                            isEditing
+                                                ? "bg-white border border-soft-border/80 focus:outline-none focus:ring-2 focus:ring-primary/20 text-left"
+                                                : "bg-soft-bg/40 border border-soft-border/50 text-secondary cursor-not-allowed"
+                                        )}
                                     />
                                 </div>
                             </div>
                         </div>
 
                         {/* Section: Location */}
-                        <div className="rounded-[24px] bg-surface border border-soft-border/70 p-5 sm:p-7 shadow-xs space-y-4">
+                        <div className={cn(
+                            "rounded-[24px] bg-surface border transition-all p-5 sm:p-7 shadow-xs space-y-4",
+                            isEditing ? "border-primary/40 ring-1 ring-primary/20" : "border-soft-border/70"
+                        )}>
                             <h3 className="text-sm font-black text-brand flex items-center gap-2">
                                 <MapPin className="w-4 h-4 text-brand" />
                                 <span>موقعیت مکانی و ساعات فعالیت</span>
@@ -840,10 +918,16 @@ export default function AgencyPanelScene() {
                                     <label className="text-xs font-bold text-brand block">ساعات کاری و پاسخگویی</label>
                                     <input
                                         type="text"
+                                        disabled={!isEditing}
                                         value={settingsForm.workingHours}
                                         onChange={(e) => setSettingsForm({ ...settingsForm, workingHours: e.target.value })}
                                         placeholder="مثال: شنبه تا چهارشنبه از ۹:۰۰ تا ۲۱:۰۰"
-                                        className="w-full px-3.5 py-2.5 bg-soft-bg/30 border border-soft-border/80 rounded-xl text-xs sm:text-sm text-brand focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                        className={cn(
+                                            "w-full px-3.5 py-2.5 rounded-xl text-xs sm:text-sm text-brand transition-all",
+                                            isEditing
+                                                ? "bg-white border border-soft-border/80 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                                : "bg-soft-bg/40 border border-soft-border/50 text-secondary cursor-not-allowed"
+                                        )}
                                     />
                                 </div>
 
@@ -851,10 +935,16 @@ export default function AgencyPanelScene() {
                                     <label className="text-xs font-bold text-brand block">آدرس دقیق پستی</label>
                                     <input
                                         type="text"
+                                        disabled={!isEditing}
                                         value={settingsForm.address}
                                         onChange={(e) => setSettingsForm({ ...settingsForm, address: e.target.value })}
                                         placeholder="مثال: تهران، میدان ونک، خیابان ملاصدرا..."
-                                        className="w-full px-3.5 py-2.5 bg-soft-bg/30 border border-soft-border/80 rounded-xl text-xs sm:text-sm text-brand focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                        className={cn(
+                                            "w-full px-3.5 py-2.5 rounded-xl text-xs sm:text-sm text-brand transition-all",
+                                            isEditing
+                                                ? "bg-white border border-soft-border/80 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                                : "bg-soft-bg/40 border border-soft-border/50 text-secondary cursor-not-allowed"
+                                        )}
                                     />
                                 </div>
 
@@ -862,29 +952,62 @@ export default function AgencyPanelScene() {
                                     <label className="text-xs font-bold text-brand block">کد پستی ۱۰ رقمی</label>
                                     <input
                                         type="text"
+                                        disabled={!isEditing}
                                         value={settingsForm.postalCode}
                                         onChange={(e) => setSettingsForm({ ...settingsForm, postalCode: e.target.value })}
                                         placeholder="کد پستی"
                                         dir="ltr"
-                                        className="w-full px-3.5 py-2.5 bg-soft-bg/30 border border-soft-border/80 rounded-xl text-xs sm:text-sm font-mono text-brand focus:outline-none focus:ring-2 focus:ring-primary/20 text-left"
+                                        className={cn(
+                                            "w-full px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-mono text-brand transition-all text-left",
+                                            isEditing
+                                                ? "bg-white border border-soft-border/80 focus:outline-none focus:ring-2 focus:ring-primary/20 text-left"
+                                                : "bg-soft-bg/40 border border-soft-border/50 text-secondary cursor-not-allowed"
+                                        )}
                                     />
                                 </div>
                             </div>
                         </div>
 
-                        {/* Save Button */}
-                        <div className="flex justify-end pt-2">
-                            <button
-                                type="submit"
-                                disabled={updateShowcaseMutation.isPending}
-                                className="w-full sm:w-auto px-6 py-3 bg-brand hover:bg-brand/90 active:scale-95 text-white rounded-xl text-xs sm:text-sm font-black transition-all shadow-sm shadow-brand/10 disabled:opacity-50 inline-flex items-center justify-center gap-2 cursor-pointer"
-                            >
-                                {updateShowcaseMutation.isPending && (
-                                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                )}
-                                <span>{updateShowcaseMutation.isPending ? "در حال ذخیره‌سازی..." : "ذخیره تغییرات ویترین"}</span>
-                            </button>
-                        </div>
+                        {/* Save Action Button: Only visible/active when in editing mode */}
+                        {isEditing && (
+                            <div className="sticky bottom-4 z-20 bg-surface/95 backdrop-blur-xl border border-soft-border/80 p-3.5 sm:p-4 rounded-2xl shadow-lg flex items-center justify-between gap-3 transition-all animate-in fade-in slide-in-from-bottom-2">
+                                <div className="flex items-center gap-2 text-xs">
+                                    <span className={cn(
+                                        "w-2 h-2 rounded-full",
+                                        hasChanges ? "bg-amber-500 animate-pulse" : "bg-secondary/40"
+                                    )} />
+                                    <span className="text-secondary font-medium">
+                                        {hasChanges ? "تغییرات اعمال‌شده آماده ذخیره‌سازی هستند." : "تغییری در فیلدها اعمال نشده است."}
+                                    </span>
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={handleRevertChanges}
+                                        className="px-3.5 py-2 rounded-xl border border-soft-border text-xs font-bold text-secondary hover:bg-soft-bg transition-all cursor-pointer"
+                                    >
+                                        انصراف
+                                    </button>
+
+                                    <button
+                                        type="submit"
+                                        disabled={!hasChanges || updateShowcaseMutation.isPending}
+                                        className={cn(
+                                            "px-5 py-2 rounded-xl text-xs sm:text-sm font-black transition-all inline-flex items-center gap-2 cursor-pointer shadow-sm",
+                                            hasChanges
+                                                ? "bg-brand hover:bg-brand/90 text-white shadow-brand/10 active:scale-95"
+                                                : "bg-soft-bg text-secondary/50 cursor-not-allowed border border-soft-border/50"
+                                        )}
+                                    >
+                                        {updateShowcaseMutation.isPending && (
+                                            <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                        )}
+                                        <span>{updateShowcaseMutation.isPending ? "در حال ذخیره‌سازی..." : "ذخیره تغییرات"}</span>
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </form>
                 </section>
 
@@ -997,222 +1120,7 @@ export default function AgencyPanelScene() {
                         </div>
                     )}
                 </section>
-
-                {/* ───────────────────────────────────────────────────────────── */}
-                {/* SECTION 4: INQUIRIES & MESSAGES                              */}
-                {/* ───────────────────────────────────────────────────────────── */}
-                <section id="section-messages" className="space-y-6 scroll-mt-28">
-                    <div className="border-b border-soft-border/60 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                        <div className="flex items-center gap-2">
-                            <MessageSquare className="w-5 h-5 text-emerald-600" />
-                            <div>
-                                <h2 className="text-base sm:text-lg font-black text-brand">صندوق پیام‌ها و درخواست‌های مشاوره</h2>
-                                <p className="text-[11px] text-secondary">پیام‌های ارسال‌شده توسط کاربران ویترین اختصاصی شما</p>
-                            </div>
-                        </div>
-
-                        {/* Filter Chips */}
-                        <div className="inline-flex items-center p-1 bg-soft-bg/80 rounded-xl border border-soft-border/70 gap-1 self-start sm:self-auto">
-                            <button
-                                type="button"
-                                onClick={() => setMessageFilter("all")}
-                                className={cn(
-                                    "px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer",
-                                    messageFilter === "all" ? "bg-surface text-brand shadow-xs" : "text-secondary hover:text-brand"
-                                )}
-                            >
-                                همه ({toPersianDigits(messages.length)})
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setMessageFilter("pending")}
-                                className={cn(
-                                    "px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer",
-                                    messageFilter === "pending"
-                                        ? "bg-surface text-brand shadow-xs"
-                                        : "text-secondary hover:text-brand"
-                                )}
-                            >
-                                در انتظار ({toPersianDigits(pendingMessagesCount)})
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setMessageFilter("replied")}
-                                className={cn(
-                                    "px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer",
-                                    messageFilter === "replied"
-                                        ? "bg-surface text-brand shadow-xs"
-                                        : "text-secondary hover:text-brand"
-                                )}
-                            >
-                                پاسخ داده شده
-                            </button>
-                        </div>
-                    </div>
-
-                    {isLoadingMessages ? (
-                        <div className="rounded-2xl bg-surface border border-soft-border/70 p-10 text-center">
-                            <div className="w-7 h-7 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
-                            <p className="text-xs font-bold text-secondary">در حال دریافت پیام‌ها...</p>
-                        </div>
-                    ) : filteredMessages.length === 0 ? (
-                        <div className="rounded-2xl bg-surface border border-soft-border/70 p-8 sm:p-12 text-center space-y-2">
-                            <div className="w-12 h-12 rounded-2xl bg-soft-bg border border-soft-border/70 text-secondary flex items-center justify-center mx-auto">
-                                <MessageSquare className="w-6 h-6 text-secondary" />
-                            </div>
-                            <h4 className="text-sm font-black text-brand">پیامی یافت نشد</h4>
-                            <p className="text-xs text-secondary">پیام‌های جدید کاربران در این بخش نمایش داده می‌شوند.</p>
-                        </div>
-                    ) : (
-                        <div className="space-y-3.5">
-                            {filteredMessages.map((msg) => (
-                                <div
-                                    key={msg.id}
-                                    className="rounded-2xl bg-surface border border-soft-border/70 p-4 sm:p-5 shadow-2xs space-y-3"
-                                >
-                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-soft-border/50 pb-2.5">
-                                        <div>
-                                            <h4 className="text-xs sm:text-sm font-black text-brand">{msg.subject}</h4>
-                                            <div className="flex items-center gap-2 text-[11px] text-secondary mt-0.5">
-                                                <span>{msg.senderName || "کاربر ناشناس"}</span>
-                                                {msg.senderPhone && (
-                                                    <a
-                                                        href={`tel:${msg.senderPhone}`}
-                                                        className="font-mono text-primary hover:underline"
-                                                        dir="ltr"
-                                                    >
-                                                        {msg.senderPhone}
-                                                    </a>
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        <div className="flex items-center gap-2">
-                                            <span
-                                                className={cn(
-                                                    "px-2 py-0.5 rounded-full text-[10px] font-bold",
-                                                    msg.status === "REPLIED"
-                                                        ? "bg-emerald-500/10 text-emerald-700"
-                                                        : "bg-amber-500/10 text-amber-700"
-                                                )}
-                                            >
-                                                {msg.status === "REPLIED" ? "پاسخ داده شد" : "در انتظار پاسخ"}
-                                            </span>
-                                            <span className="text-[10px] text-secondary">
-                                                {new Date(msg.createdAt).toLocaleDateString("fa-IR")}
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    {/* User query */}
-                                    <div className="p-3 rounded-xl bg-soft-bg/30 text-xs text-brand leading-relaxed">
-                                        {msg.message}
-                                    </div>
-
-                                    {/* Agent response if exists */}
-                                    {msg.replyMessage && (
-                                        <div className="p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/20 space-y-1">
-                                            <span className="text-[11px] font-black text-emerald-800 flex items-center gap-1">
-                                                <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                                                <span>پاسخ شما:</span>
-                                            </span>
-                                            <p className="text-xs text-brand leading-relaxed">{msg.replyMessage}</p>
-                                        </div>
-                                    )}
-
-                                    <div className="flex justify-end pt-1">
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                setReplyingMessage(msg);
-                                                setReplyText(msg.replyMessage || "");
-                                            }}
-                                            className="px-3.5 py-1.5 rounded-xl bg-primary/10 hover:bg-primary/15 text-primary text-xs font-bold transition-all cursor-pointer inline-flex items-center gap-1.5"
-                                        >
-                                            <Send className="w-3 h-3" />
-                                            <span>{msg.replyMessage ? "ویرایش پاسخ" : "ارسال پاسخ"}</span>
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </section>
             </main>
-
-            {/* Apple-style Reply Bottom Sheet / Modal */}
-            {replyingMessage && (
-                <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4 transition-all">
-                    <div className="w-full max-w-lg bg-surface rounded-t-[28px] sm:rounded-[28px] p-5 sm:p-6 space-y-4 shadow-2xl border border-soft-border/70 max-h-[90vh] overflow-y-auto">
-                        <div className="flex items-center justify-between border-b border-soft-border/50 pb-3">
-                            <div>
-                                <h3 className="text-sm sm:text-base font-black text-brand">
-                                    پاسخ به: {replyingMessage.subject}
-                                </h3>
-                                <span className="text-xs text-secondary">
-                                    فرستنده: {replyingMessage.senderName || "کاربر سایت"}
-                                </span>
-                            </div>
-                            <button
-                                type="button"
-                                onClick={() => setReplyingMessage(null)}
-                                className="w-7 h-7 rounded-full bg-soft-bg hover:bg-soft-border/70 text-secondary flex items-center justify-center transition-colors cursor-pointer"
-                            >
-                                <X className="w-4 h-4" />
-                            </button>
-                        </div>
-
-                        {/* User Message Quote */}
-                        <div className="p-3 bg-soft-bg/50 border border-soft-border/60 rounded-xl text-xs text-secondary leading-relaxed space-y-1">
-                            <span className="font-bold text-brand block">متن درخواست کاربر:</span>
-                            <p className="line-clamp-3">{replyingMessage.message}</p>
-                        </div>
-
-                        {/* Reply Textarea */}
-                        <div className="space-y-1.5">
-                            <label className="text-xs font-bold text-brand block">متن پاسخ شما:</label>
-                            <textarea
-                                value={replyText}
-                                onChange={(e) => setReplyText(e.target.value)}
-                                rows={4}
-                                placeholder="پاسخ خود به کاربر را با لحنی محترمانه و حرفه‌ای در این قسمت بنویسید..."
-                                className="w-full p-3 bg-soft-bg/30 border border-soft-border/80 rounded-xl text-xs sm:text-sm text-brand focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary leading-relaxed"
-                            />
-                        </div>
-
-                        {/* Actions */}
-                        <div className="flex items-center justify-end gap-2 pt-2 border-t border-soft-border/50">
-                            <button
-                                type="button"
-                                onClick={() => setReplyingMessage(null)}
-                                className="px-3.5 py-2 rounded-xl border border-soft-border/80 text-xs font-bold text-secondary hover:bg-soft-bg transition-colors cursor-pointer"
-                            >
-                                انصراف
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    if (!replyText.trim()) {
-                                        toast.error("متن پاسخ نمی‌تواند خالی باشد.");
-                                        return;
-                                    }
-                                    replyMutation.mutate({
-                                        messageId: replyingMessage.id,
-                                        replyMessage: replyText.trim(),
-                                    });
-                                }}
-                                disabled={replyMutation.isPending}
-                                className="px-4 py-2 rounded-xl bg-brand hover:bg-brand/90 active:scale-95 text-white text-xs font-black transition-all shadow-xs disabled:opacity-50 inline-flex items-center gap-1.5 cursor-pointer"
-                            >
-                                {replyMutation.isPending && (
-                                    <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                )}
-                                <span>{replyMutation.isPending ? "در حال ارسال..." : "ارسال پاسخ"}</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 }
