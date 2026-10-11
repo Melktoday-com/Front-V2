@@ -124,7 +124,7 @@ export default function AboutScene() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden rounded-3xl md:rounded-[36px] bg-gradient-to-br from-brand via-[#2B326B] to-brand text-white p-6 sm:p-10 md:p-14 shadow-xl">
+      <section className="relative overflow-hidden rounded-3xl md:rounded-[36px] bg-gradient-to-br from-brand via-primary-hover to-brand text-white p-6 sm:p-10 md:p-14 shadow-xl">
         {/* Decorative background shapes */}
         <div className="absolute -top-24 -left-24 w-72 h-72 bg-primary/20 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-24 -right-24 w-72 h-72 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
@@ -396,7 +396,7 @@ export default function AboutScene() {
       </section>
 
       {/* CTA Box */}
-      <section className="bg-gradient-to-r from-brand to-[#343D7B] rounded-3xl p-6 sm:p-10 text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-right">
+      <section className="bg-gradient-to-r from-brand to-primary-hover rounded-3xl p-6 sm:p-10 text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-right">
         <div className="space-y-2 max-w-xl">
           <h3 className="text-xl sm:text-2xl font-black text-white">
             همراه شما در انتخاب بهترین ملک

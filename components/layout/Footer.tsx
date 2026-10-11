@@ -46,29 +46,29 @@ export function Footer() {
           <div className="lg:col-span-5 space-y-5">
             <div className="flex items-center gap-3">
               <Link href="/" className="inline-flex items-center gap-2 group">
-                <span className="text-2xl md:text-3xl font-black text-white tracking-tighter">
-                  MELK<span className="text-primary group-hover:opacity-90 transition-opacity">TODAY</span>
+                <span className="text-2xl md:text-3xl font-black text-primary-foreground tracking-tighter">
+                  MELK<span className="text-accent group-hover:opacity-90 transition-opacity">TODAY</span>
                 </span>
-                <span className="text-[11px] font-black bg-primary/20 text-primary px-2.5 py-0.5 rounded-full border border-primary/30">
+                <span className="text-[11px] font-black bg-accent/20 text-accent px-2.5 py-0.5 rounded-full border border-accent/30">
                   ملک تودی
                 </span>
               </Link>
             </div>
 
-            <p className="text-white/80 text-xs sm:text-sm leading-relaxed text-justify">
+            <p className="text-primary-foreground/80 text-xs sm:text-sm leading-relaxed text-justify">
               ملک تودی با هدف ساده‌تر، سریع‌تر و شفاف‌تر کردن مسیر جست‌وجو و معامله ملک شکل گرفته است.
               ما بستری یکپارچه برای معرفی و بررسی انواع املاک مسکونی، تجاری و اقامتگاه‌های روزانه ایجاد
               کرده‌ایم تا خریداران، مستأجران، مالکان و مشاورین بتوانند آگاهانه‌تر تصمیم‌گیری کنند.
             </p>
 
             <div className="p-3.5 rounded-2xl bg-white/[0.04] border border-white/10 flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2 text-xs font-bold text-white/90">
-                <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
+              <div className="flex items-center gap-2 text-xs font-bold text-primary-foreground/90">
+                <CheckCircle2 className="w-4 h-4 text-accent shrink-0" />
                 <span>ملک تودی؛ جایی برای پیدا کردن ملک مناسب</span>
               </div>
               <Link
                 href="/about"
-                className="text-xs text-primary font-bold hover:underline shrink-0 flex items-center gap-1"
+                className="text-xs text-accent font-bold hover:underline shrink-0 flex items-center gap-1"
               >
                 <span>درباره ما</span>
                 <ChevronLeft className="w-3.5 h-3.5" />
@@ -256,7 +256,7 @@ export function Footer() {
               {/* Address */}
               <div className="p-3 rounded-2xl bg-white/[0.04] border border-white/10 space-y-2">
                 <div className="flex items-start gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-primary/20 flex items-center justify-center text-primary shrink-0 mt-0.5">
+                  <div className="w-8 h-8 rounded-xl bg-accent/20 flex items-center justify-center text-accent shrink-0 mt-0.5">
                     <MapPin className="w-4 h-4" />
                   </div>
                   <div className="flex-1">
@@ -274,7 +274,7 @@ export function Footer() {
                         "آدرس دفتر"
                       )
                     }
-                    className="text-[10px] text-primary hover:underline flex items-center gap-1 font-bold"
+                    className="text-[10px] text-accent hover:underline flex items-center gap-1 font-bold"
                   >
                     {copiedText === "آدرس دفتر" ? (
                       <>
@@ -305,21 +305,21 @@ export function Footer() {
           </div>
 
           <div className="flex items-center gap-3 sm:gap-4">
-            <Link href="/about" className="hover:text-primary transition-colors text-white/70">
+            <Link href="/about" className="hover:text-accent transition-colors text-white/70">
               درباره ما
             </Link>
             <span className="text-white/20">•</span>
-            <Link href="/rules" className="hover:text-primary transition-colors text-white/70">
+            <Link href="/rules" className="hover:text-accent transition-colors text-white/70">
               قوانین و مقررات
             </Link>
             <span className="text-white/20">•</span>
             <button
               onClick={scrollToTop}
-              className="inline-flex items-center gap-1.5 hover:text-primary transition-colors cursor-pointer group"
+              className="inline-flex items-center gap-1.5 hover:text-accent transition-colors cursor-pointer group"
               aria-label="بازگشت به ابتدای صفحه"
             >
               <span>بازگشت به بالا</span>
-              <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all">
+              <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-accent group-hover:text-accent-foreground transition-all">
                 <ArrowUp className="w-3.5 h-3.5" />
               </div>
             </button>

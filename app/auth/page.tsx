@@ -70,16 +70,16 @@ function AuthContent() {
   };
 
   return (
-    <main className="min-h-screen bg-white flex flex-col items-center p-6  text-right">
+    <main className="min-h-screen bg-background flex flex-col items-center p-6 text-right">
       {/* Visual Header - House/Property Images Grid */}
       <div className="grid grid-cols-2 gap-2 mb-12 mt-6 w-full max-w-85">
         <div className="aspect-square bg-primary/10 rounded-xl overflow-hidden flex items-center justify-center text-primary text-4xl shadow-sm relative">
           <Image src={authImage1} alt="Property 1" fill className="object-cover" />
         </div>
-        <div className="aspect-square bg-[#252B5C]/5 rounded-xl overflow-hidden flex items-center justify-center text-brand text-4xl shadow-sm relative">
+        <div className="aspect-square bg-brand/5 rounded-xl overflow-hidden flex items-center justify-center text-brand text-4xl shadow-sm relative">
           <Image src={authImage2} alt="Property 2" fill className="object-cover" />
         </div>
-        <div className="aspect-square bg-[#252B5C]/5 rounded-xl overflow-hidden flex items-center justify-center text-brand text-4xl shadow-sm relative">
+        <div className="aspect-square bg-brand/5 rounded-xl overflow-hidden flex items-center justify-center text-brand text-4xl shadow-sm relative">
           <Image src={authImage3} alt="Property 3" fill className="object-cover" />
         </div>
         <div className="aspect-square bg-primary/10 rounded-xl overflow-hidden flex items-center justify-center text-primary text-4xl shadow-sm relative">

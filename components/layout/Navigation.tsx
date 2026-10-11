@@ -87,19 +87,19 @@ export function Sidebar() {
     };
 
     return (
-        <aside className="hidden lg:flex flex-col w-64 bg-white border-l border-soft-border h-screen sticky top-0 p-6 z-30">
+        <aside className="hidden lg:flex flex-col w-64 bg-surface border-l border-border-subtle h-screen sticky top-0 p-6 z-30">
             <div className="mb-8 px-2 flex items-center justify-between">
                 <Link href="/" className="text-2xl font-black text-brand tracking-tighter">
-                    MELK<span className="text-primary">TODAY</span>
+                    MELK<span className="text-accent">TODAY</span>
                 </Link>
             </div>
 
             {/* Prominent Submit Ad CTA Button */}
             <Link
                 href="/ads/submit"
-                className="flex items-center justify-center gap-2 w-full py-3.5 px-4 rounded-2xl bg-brand text-white font-bold text-sm shadow-md hover:bg-brand/90 transition-all mb-6 group"
+                className="flex items-center justify-center gap-2 w-full py-3.5 px-4 rounded-2xl bg-primary text-primary-foreground font-bold text-sm shadow-sm hover:bg-primary-hover active:bg-primary-active transition-all mb-6 group"
             >
-                <PlusCircle className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
+                <PlusCircle className="w-5 h-5 text-accent group-hover:scale-110 transition-transform" />
                 <span>ثبت آگهی</span>
             </Link>
 
@@ -113,14 +113,14 @@ export function Sidebar() {
                             className={cn(
                                 "flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 group",
                                 active
-                                    ? "bg-primary text-white shadow-lg shadow-brand/20 font-black"
-                                    : "text-secondary hover:bg-soft-bg font-bold"
+                                    ? "bg-primary text-primary-foreground shadow-sm font-black"
+                                    : "text-foreground-secondary hover:bg-surface-secondary font-bold"
                             )}
                         >
                             <item.icon
                                 className={cn(
                                     "w-5 h-5",
-                                    active ? "text-white" : "text-secondary group-hover:text-brand"
+                                    active ? "text-primary-foreground" : "text-foreground-secondary group-hover:text-primary"
                                 )}
                             />
                             <span className="text-sm">{item.label}</span>
@@ -135,8 +135,8 @@ export function Sidebar() {
                             className={cn(
                                 "flex items-center justify-between px-4 py-3 rounded-2xl transition-all duration-200 group",
                                 pathname.startsWith("/profile/chat")
-                                    ? "bg-primary text-white shadow-lg shadow-brand/20 font-black"
-                                    : "text-secondary hover:bg-soft-bg font-bold"
+                                    ? "bg-primary text-primary-foreground shadow-sm font-black"
+                                    : "text-foreground-secondary hover:bg-surface-secondary font-bold"
                             )}
                         >
                             <div className="flex items-center gap-3">
@@ -144,8 +144,8 @@ export function Sidebar() {
                                     className={cn(
                                         "w-5 h-5",
                                         pathname.startsWith("/profile/chat")
-                                            ? "text-white"
-                                            : "text-secondary group-hover:text-brand"
+                                            ? "text-primary-foreground"
+                                            : "text-foreground-secondary group-hover:text-primary"
                                     )}
                                 />
                                 <span className="text-sm">پیام‌ها</span>
@@ -154,7 +154,7 @@ export function Sidebar() {
                                 <span className={cn(
                                     "px-2 py-0.5 rounded-full text-xs font-black",
                                     pathname.startsWith("/profile/chat")
-                                        ? "bg-white text-primary"
+                                        ? "bg-surface text-primary"
                                         : "bg-primary/15 text-primary"
                                 )}>
                                     {toPersianDigits(unreadChatCount)}
@@ -167,8 +167,8 @@ export function Sidebar() {
                             className={cn(
                                 "flex items-center justify-between px-4 py-3 rounded-2xl transition-all duration-200 group",
                                 pathname.startsWith("/notifications")
-                                    ? "bg-primary text-white shadow-lg shadow-brand/20 font-black"
-                                    : "text-secondary hover:bg-soft-bg font-bold"
+                                    ? "bg-primary text-primary-foreground shadow-sm font-black"
+                                    : "text-foreground-secondary hover:bg-surface-secondary font-bold"
                             )}
                         >
                             <div className="flex items-center gap-3">
@@ -176,14 +176,14 @@ export function Sidebar() {
                                     className={cn(
                                         "w-5 h-5",
                                         pathname.startsWith("/notifications")
-                                            ? "text-white"
-                                            : "text-secondary group-hover:text-brand"
+                                            ? "text-primary-foreground"
+                                            : "text-foreground-secondary group-hover:text-primary"
                                     )}
                                 />
                                 <span className="text-sm">اعلان‌ها</span>
                             </div>
                             {unreadNotificationsCount > 0 && (
-                                <span className="px-2 py-0.5 rounded-full text-xs font-black bg-red-500 text-white animate-pulse">
+                                <span className="px-2 py-0.5 rounded-full text-xs font-black bg-error text-error-foreground animate-pulse">
                                     {toPersianDigits(unreadNotificationsCount)}
                                 </span>
                             )}
@@ -315,7 +315,7 @@ function MobileNavContent() {
     return (
         <nav
             aria-label="منوی موبایل"
-            className="mobile-bottom-nav lg:hidden fixed bottom-5 left-4 right-4 h-16 bg-white/90 backdrop-blur-xl border border-gray-100/60 rounded-full flex items-center justify-around px-3 shadow-2xl shadow-brand/10 z-50"
+            className="mobile-bottom-nav lg:hidden fixed bottom-5 left-4 right-4 h-16 bg-surface/95 backdrop-blur-xl border border-border-subtle rounded-full flex items-center justify-around px-3 shadow-xl shadow-brand/10 z-50"
         >
             {/* 1. Home */}
             <Link
@@ -324,8 +324,8 @@ function MobileNavContent() {
                 className={cn(
                     "flex flex-col items-center justify-center w-11 h-11 rounded-full transition-all",
                     isHome
-                        ? "bg-primary text-white shadow-md shadow-primary/30"
-                        : "text-secondary hover:text-brand"
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "text-foreground-secondary hover:text-primary"
                 )}
             >
                 <Home className="w-5 h-5" />
@@ -338,8 +338,8 @@ function MobileNavContent() {
                 className={cn(
                     "flex flex-col items-center justify-center w-11 h-11 rounded-full transition-all",
                     isExplore
-                        ? "bg-primary text-white shadow-md shadow-primary/30"
-                        : "text-secondary hover:text-brand"
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "text-foreground-secondary hover:text-primary"
                 )}
             >
                 <MapPin className="w-5 h-5" />
@@ -350,10 +350,10 @@ function MobileNavContent() {
                 href="/ads/submit"
                 aria-label="ثبت آگهی جدید"
                 className={cn(
-                    "flex items-center justify-center w-13 h-13 -mt-6 rounded-full transition-transform active:scale-90 border-4 border-white shadow-lg",
+                    "flex items-center justify-center w-13 h-13 -mt-6 rounded-full transition-transform active:scale-90 border-4 border-surface shadow-lg",
                     isSubmit
-                        ? "bg-brand text-white shadow-brand/40"
-                        : "bg-primary text-white shadow-primary/40 hover:bg-primary/90"
+                        ? "bg-accent text-accent-foreground shadow-accent/40"
+                        : "bg-primary text-primary-foreground shadow-primary/40 hover:bg-primary-hover"
                 )}
             >
                 <Plus className="w-7 h-7 stroke-[2.5]" />
@@ -366,8 +366,8 @@ function MobileNavContent() {
                 className={cn(
                     "flex flex-col items-center justify-center w-11 h-11 rounded-full transition-all",
                     isFavorites
-                        ? "bg-primary text-white shadow-md shadow-primary/30"
-                        : "text-secondary hover:text-brand"
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "text-foreground-secondary hover:text-primary"
                 )}
             >
                 <Heart className="w-5 h-5" />

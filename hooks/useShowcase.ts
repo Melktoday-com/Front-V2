@@ -10,6 +10,7 @@ import {
   CreatePostRequest,
   ExploreParams,
   HostAbout,
+  HostProfile,
   HostApplicationRequest,
   PlatformAbout,
   ShowcaseAbout,
@@ -135,13 +136,17 @@ export function useCreatePost() {
   });
 }
 
-export function useHostProfile() {
+export function useHostProfile(): UseQueryResult<HostProfile | null, Error> {
   const { user, activeRole } = useAuth();
 
   return useQuery({
     queryKey: [...SHOWCASE_KEYS.hostProfile(), user?.userId, activeRole],
     queryFn: () => showcaseService.getMyHostProfile(),
-    enabled: !!user?.userId && activeRole === RoleName.Landlord,
+    enabled:
+      !!user?.userId &&
+      (activeRole === RoleName.Landlord ||
+        activeRole === RoleName.Admin ||
+        activeRole === RoleName.SuperAdmin),
     retry: false,
   });
 }

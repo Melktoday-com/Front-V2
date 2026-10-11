@@ -269,11 +269,11 @@ const AVAILABLE_BADGE_ICONS = [
 ];
 
 const AVAILABLE_COLORS = [
-    { id: "emerald", label: "سبز زمردی", bg: "#ecfdf5", border: "#a7f3d0", text: "#065f46" },
-    { id: "blue", label: "آبی کلاسیک", bg: "#eff6ff", border: "#bfdbfe", text: "#1e40af" },
-    { id: "amber", label: "طلایی / کهربایی", bg: "#fef3c7", border: "#fde68a", text: "#92400e" },
-    { id: "purple", label: "بنفش متمایز", bg: "#faf5ff", border: "#e9d5ff", text: "#6b21a8" },
-    { id: "rose", label: "قرمز گلی", bg: "#fff1f2", border: "#fecdd3", text: "#9f1239" },
+    { id: "emerald", label: "سبز زمردی", bg: "var(--color-success-subtle)", border: "var(--color-success)", text: "var(--color-success)" },
+    { id: "blue", label: "آبی کلاسیک", bg: "var(--color-info-subtle)", border: "var(--color-info)", text: "var(--color-info)" },
+    { id: "amber", label: "طلایی / کهربایی", bg: "var(--color-warning-subtle)", border: "var(--color-warning)", text: "var(--color-warning)" },
+    { id: "purple", label: "بنفش متمایز", bg: "var(--color-surface-secondary)", border: "var(--color-accent)", text: "var(--color-accent-text)" },
+    { id: "rose", label: "قرمز گلی", bg: "var(--color-error-subtle)", border: "var(--color-error)", text: "var(--color-error)" },
 ];
 
 interface PlanFormState {
@@ -312,7 +312,7 @@ const DEFAULT_PLAN_FORM: PlanFormState = {
     badgeIcon: "shield-check",
     badgeIconType: "lucide",
     badgeColor: "blue",
-    badgeBgColor: "#eff6ff",
+    badgeBgColor: "var(--color-info-subtle)",
     badgeTooltip: "دارای نشان تایید پلتفرم ملک‌تودی",
     isActive: true,
     sortOrder: 1,
@@ -494,7 +494,7 @@ export default function AdminConfigPage() {
             badgeIcon: plan.badgeIcon || "shield-check",
             badgeIconType: plan.badgeIconType || "lucide",
             badgeColor: (meta && typeof meta.color === "string") ? meta.color : "blue",
-            badgeBgColor: (meta && typeof meta.bg === "string") ? meta.bg : "#eff6ff",
+            badgeBgColor: (meta && typeof meta.bg === "string") ? meta.bg : "var(--color-info-subtle)",
             badgeTooltip: (meta && typeof meta.tooltip === "string") ? meta.tooltip : "",
             isActive: plan.isActive,
             sortOrder: plan.sortOrder,
@@ -933,9 +933,9 @@ export default function AdminConfigPage() {
                                                         backgroundColor:
                                                             typeof plan.badgeMetadata?.bg === "string"
                                                                 ? plan.badgeMetadata.bg
-                                                                : badgeColorInfo?.bg || "#eff6ff",
-                                                        borderColor: badgeColorInfo?.border || "#bfdbfe",
-                                                        color: badgeColorInfo?.text || "#1e40af",
+                                                                : badgeColorInfo?.bg || "var(--color-info-subtle)",
+                                                        borderColor: badgeColorInfo?.border || "var(--color-info)",
+                                                        color: badgeColorInfo?.text || "var(--color-info)",
                                                     }}
                                                 >
                                                     <DynamicBadgeIcon iconName={plan.badgeIcon} className="w-4 h-4 shrink-0" />

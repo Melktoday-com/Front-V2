@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "audit:colors": "node scripts/audit-colors.mjs",
+    "audit:contrast": "node scripts/audit-contrast.mjs",
+    "audit:design-system": "node scripts/audit-colors.mjs && node scripts/audit-contrast.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",

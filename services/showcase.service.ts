@@ -4,6 +4,7 @@ import {
   AgencyAbout,
   CreatePostRequest,
   HostAbout,
+  HostProfile,
   HostApplicationRequest,
   HostApplicationResponse,
   PlatformAbout,
@@ -146,9 +147,9 @@ export const showcaseService = {
     }
   },
 
-  async getMyHostProfile() {
+  async getMyHostProfile(): Promise<HostProfile | null> {
     try {
-      const response = await apiClient.get('/hosts/my-profile');
+      const response = await apiClient.get<HostProfile>('/hosts/my-profile');
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error) && (error.response?.status === 404 || error.response?.status === 403)) {

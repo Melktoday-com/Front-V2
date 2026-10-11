@@ -89,7 +89,7 @@ export default function RulesScene() {
       </nav>
 
       {/* Hero Header */}
-      <section className="relative overflow-hidden rounded-3xl md:rounded-[36px] bg-gradient-to-br from-brand via-[#2B326B] to-brand text-white p-6 sm:p-10 md:p-12 shadow-xl">
+      <section className="relative overflow-hidden rounded-3xl md:rounded-[36px] bg-gradient-to-br from-brand via-primary-hover to-brand text-white p-6 sm:p-10 md:p-12 shadow-xl">
         <div className="absolute -top-24 -left-24 w-72 h-72 bg-primary/20 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-24 -right-24 w-72 h-72 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
 

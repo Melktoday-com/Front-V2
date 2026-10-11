@@ -1,43 +1,287 @@
 @import "tailwindcss";
 
+/* =============================================================================
+   1. MANDATORY BRAND PALETTE & CENTRAL DESIGN SYSTEM TOKEN ARCHITECTURE
+   =============================================================================
+   Authoritative Source of Truth: app/globals.css
+   Brand Navy:     #3E5879 (rgb(62, 88, 121))  — Primary brand, strong surfaces, headings
+   Warm Apricot:   #E39F73 (rgb(227, 159, 115)) — Brand accent, emphasis, visual highlights
+   Warm Beige:     #D8C4B6 (rgb(216, 196, 182)) — Muted surfaces, subtle separation
+   Warm Off-White: #F5EFE7 (rgb(245, 239, 231)) — Main light background, readable cards
+   ============================================================================= */
+
+:root {
+  /* ===========================================================================
+     LAYER A: FOUNDATIONAL BRAND TOKENS
+     Literal source of truth for the brand. Never duplicate outside this file.
+     =========================================================================== */
+  --brand-navy: #3E5879;
+  --brand-apricot: #E39F73;
+  --brand-beige: #D8C4B6;
+  --brand-off-white: #F5EFE7;
+
+  /* ===========================================================================
+     LAYER A.1: PALETTE-DERIVED ACCESSIBLE TINTS & SHADES
+     All derivatives are mathematically grounded in the 4 parent tokens to
+     satisfy strict WCAG 2.2 AA (>= 4.5:1 normal, >= 3:1 large/non-text) and AAA.
+     =========================================================================== */
+
+  /* Deep Navy: Contrast 12.2:1 on Warm Off-White, 8.3:1 on Warm Beige, 13.9:1 on White.
+     Role: High-contrast primary reading typography, titles, bold text. (WCAG AAA) */
+  --brand-navy-dark: #202D3E;
+
+  /* Muted Navy: Contrast 5.41:1 on Warm Off-White, 6.17:1 on White.
+     Role: Accessible secondary/muted text, captions, metadata. (WCAG AA pass: >= 4.5:1) */
+  --brand-navy-muted: #4B6381;
+
+  /* Interactive Navy States: hover and pressed actions for Navy surfaces */
+  --brand-navy-hover: #324762;
+  --brand-navy-active: #283950;
+  --brand-navy-subtle: #EDF2F7;
+
+  /* Accessible Terracotta-Apricot: Contrast 5.82:1 on Warm Off-White, 6.65:1 on White.
+     Role: High-contrast accent colored text on light backgrounds where #E39F73 (1.94:1) fails text contrast. */
+  --brand-apricot-dark: #964516;
+  --brand-apricot-hover: #D78D5E;
+  --brand-apricot-active: #C57B4D;
+  --brand-apricot-subtle: #FDF6F0;
+
+  /* Beige derivatives for structural boundaries and warm cards */
+  --brand-beige-subtle: #F4EDE7;
+  --brand-beige-border: #CBB5A5;
+  /* Component boundary border: Contrast 3.01:1 on Warm Off-White (WCAG 1.4.11 Non-text contrast >= 3:1) */
+  --brand-beige-boundary: #9B8471;
+
+  /* Pure surface white for cards & elevated popovers */
+  --color-pure-white: #FFFFFF;
+
+  /* Centralized, palette-harmonized feedback tokens (WCAG 2.2 AA compliant) */
+  --feedback-success: #236B48;
+  --feedback-success-foreground: #FFFFFF;
+  --feedback-success-subtle: #EBF5F0;
+  --feedback-success-border: #A3D4BA;
+
+  --feedback-warning: #945B0A;
+  --feedback-warning-foreground: #FFFFFF;
+  --feedback-warning-subtle: #FEF6EC;
+  --feedback-warning-border: #F6CCA0;
+
+  --feedback-error: #9B2C2C;
+  --feedback-error-foreground: #FFFFFF;
+  --feedback-error-subtle: #FDF2F2;
+  --feedback-error-border: #F8B4B4;
+
+  --feedback-info: #2E5377;
+  --feedback-info-foreground: #FFFFFF;
+  --feedback-info-subtle: #EEF4F9;
+  --feedback-info-border: #AEC8E2;
+
+  /* ===========================================================================
+     LAYER B: SEMANTIC DESIGN TOKENS
+     Mapped directly to UI purpose and validated for foreground/background contrast.
+     =========================================================================== */
+
+  /* Backgrounds */
+  --background: var(--brand-off-white);
+  --background-subtle: var(--brand-beige-subtle);
+  --surface: var(--color-pure-white);
+  --surface-secondary: var(--brand-beige-subtle);
+  --surface-elevated: var(--color-pure-white);
+  --surface-inverse: var(--brand-navy);
+
+  /* Foregrounds (Text & Icons) */
+  --foreground: var(--brand-navy-dark);
+  --foreground-secondary: var(--brand-navy);
+  --foreground-muted: var(--brand-navy-muted);
+  --foreground-inverse: var(--brand-off-white);
+  --foreground-disabled: #8E9EA5;
+
+  /* Brand & Actions */
+  --primary: var(--brand-navy);
+  --primary-foreground: var(--brand-off-white);
+  --primary-hover: var(--brand-navy-hover);
+  --primary-active: var(--brand-navy-active);
+  --accent: var(--brand-apricot);
+  --accent-foreground: var(--brand-navy-dark);
+  --accent-hover: var(--brand-apricot-hover);
+  --accent-active: var(--brand-apricot-active);
+  --accent-subtle: var(--brand-apricot-subtle);
+  --accent-text: var(--brand-apricot-dark);
+
+  /* Borders & Focus */
+  --border: var(--brand-beige);
+  --border-strong: var(--brand-navy);
+  --border-subtle: var(--brand-beige-border);
+  --border-boundary: var(--brand-beige-boundary);
+  --input-border: var(--brand-beige-border);
+  --focus-ring: var(--brand-navy);
+
+  /* Interactive & Contextual States */
+  --selected: var(--brand-navy);
+  --selected-foreground: var(--brand-off-white);
+  --disabled: var(--brand-beige-subtle);
+  --disabled-foreground: var(--brand-navy-muted);
+  --overlay: rgba(32, 45, 62, 0.6);
+  --overlay-foreground: var(--brand-off-white);
+
+  /* Feedback Semantics */
+  --success: var(--feedback-success);
+  --success-foreground: var(--feedback-success-foreground);
+  --success-subtle: var(--feedback-success-subtle);
+  --warning: var(--feedback-warning);
+  --warning-foreground: var(--feedback-warning-foreground);
+  --warning-subtle: var(--feedback-warning-subtle);
+  --error: var(--feedback-error);
+  --error-foreground: var(--feedback-error-foreground);
+  --error-subtle: var(--feedback-error-subtle);
+  --info: var(--feedback-info);
+  --info-foreground: var(--feedback-info-foreground);
+  --info-subtle: var(--feedback-info-subtle);
+
+  /* Standard Component Geometry */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+  --radius-3xl: 32px;
+  --radius-full: 9999px;
+  --radius-button: 12px;
+  --radius-card: 18px;
+  --radius-input: 12px;
+  --radius-dialog: 24px;
+}
+
+/* =============================================================================
+   TAILWIND CSS V4 THEME CONFIGURATION
+   Exposes semantic design tokens to Tailwind utility classes.
+   ============================================================================= */
 @theme inline {
   --font-vazirmatn: var(--font-vazirmatn);
 
-  /* Brand Colors — Navy + Beige */
-  --color-primary: #253E63;
-  --color-primary-foreground: #FFFFFF;
-  --color-brand: #172B49;
-  --color-secondary: #63748A;
-  --color-accent: #D9C29A;
-  --color-accent-foreground: #2D2B26;
+  /* Foundational brand exposure */
+  --color-brand-navy: var(--brand-navy);
+  --color-brand-apricot: var(--brand-apricot);
+  --color-brand-beige: var(--brand-beige);
+  --color-brand-off-white: var(--brand-off-white);
 
-  /* Backgrounds, Surfaces & Borders */
-  --color-canvas: #FBF8F1;
-  --color-surface: #FFFFFF;
-  --color-soft-bg: #F3EBDD;
-  --color-soft-border: #E4D8C5;
+  /* Semantic utilities */
+  --color-background: var(--background);
+  --color-background-subtle: var(--background-subtle);
+  --color-surface: var(--surface);
+  --color-surface-secondary: var(--surface-secondary);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-surface-inverse: var(--surface-inverse);
 
-  /* Text */
-  --color-text-main: #1F2E42;
-  --color-text-light: #687486;
+  --color-foreground: var(--foreground);
+  --color-foreground-secondary: var(--foreground-secondary);
+  --color-foreground-muted: var(--foreground-muted);
+  --color-foreground-inverse: var(--foreground-inverse);
+  --color-foreground-disabled: var(--foreground-disabled);
 
-  /* Status Colors */
-  --color-status-error: #DC4545;
-  --color-status-warning: #D99021;
-  --color-status-success: #278656;
-  --color-status-info: #3978B7;
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-active: var(--primary-active);
 
-  /* Utility */
-  --radius-button: 12px;
-  --radius-card: 18px;
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-active: var(--accent-active);
+  --color-accent-subtle: var(--accent-subtle);
+  --color-accent-text: var(--accent-text);
+
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-boundary: var(--border-boundary);
+  --color-input-border: var(--input-border);
+  --color-focus-ring: var(--focus-ring);
+  --color-ring: var(--focus-ring);
+
+  --color-selected: var(--selected);
+  --color-selected-foreground: var(--selected-foreground);
+  --color-disabled: var(--disabled);
+  --color-disabled-foreground: var(--disabled-foreground);
+  --color-overlay: var(--overlay);
+  --color-overlay-foreground: var(--overlay-foreground);
+
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-success-subtle: var(--success-subtle);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-warning-subtle: var(--warning-subtle);
+  --color-error: var(--error);
+  --color-error-foreground: var(--error-foreground);
+  --color-error-subtle: var(--error-subtle);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-info-subtle: var(--info-subtle);
+
+  /* Component library semantic aliases */
+  --color-card: var(--surface);
+  --color-card-foreground: var(--foreground);
+  --color-popover: var(--surface-elevated);
+  --color-popover-foreground: var(--foreground);
+  --color-muted: var(--surface-secondary);
+  --color-muted-foreground: var(--foreground-muted);
+  --color-input: var(--input-border);
+  --color-destructive: var(--error);
+  --color-destructive-foreground: var(--error-foreground);
+
+  /* Backward-compatible semantic aliases mapped to the brand palette */
+  --color-brand: var(--primary);
+  --color-secondary: var(--foreground-muted);
+  --color-canvas: var(--background);
+  --color-soft-bg: var(--surface-secondary);
+  --color-soft-border: var(--border-subtle);
+  --color-text-main: var(--foreground);
+  --color-text-light: var(--foreground-muted);
+  --color-status-error: var(--error);
+  --color-status-warning: var(--warning);
+  --color-status-success: var(--success);
+  --color-status-info: var(--info);
+
+  /* Radius & shape tokens */
+  --radius-xs: var(--radius-xs);
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+  --radius-2xl: var(--radius-2xl);
+  --radius-3xl: var(--radius-3xl);
+  --radius-full: var(--radius-full);
+  --radius-button: var(--radius-button);
+  --radius-card: var(--radius-card);
+  --radius-input: var(--radius-input);
+  --radius-dialog: var(--radius-dialog);
 }
 
+/* =============================================================================
+   BASE STYLES & INTERACTION SEMANTICS
+   ============================================================================= */
 body {
-  background: var(--color-canvas);
-  color: var(--color-text-main);
+  background: var(--background);
+  color: var(--foreground);
   font-family: var(--font-vazirmatn), sans-serif;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
 }
 
+::selection {
+  background: var(--brand-beige);
+  color: var(--brand-navy-dark);
+}
+
+/* Focus indicator standard */
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* Utility classes */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
@@ -45,6 +289,16 @@ body {
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* Leaflet focus & outline reset to prevent black bounding boxes on polygon click */
@@ -66,7 +320,6 @@ path.leaflet-interactive {
 
 /* Prevent auto-zooming on focus in iOS Safari and mobile browsers */
 @media screen and (max-width: 768px) {
-
   input:not([type="checkbox"]):not([type="radio"]),
   textarea,
   select {

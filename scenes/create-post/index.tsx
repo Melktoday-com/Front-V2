@@ -2,11 +2,12 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth, useSwitchRole } from "@/hooks/useAuth";
 import { useMyAgency } from "@/hooks/useAgencies";
 import { useHostProfile } from "@/hooks/useShowcase";
+import { useMeProfile } from "@/hooks/useUser";
 import { useCreatePost } from "@/hooks/usePosts";
-import { RoleName } from "@/types/access";
+import { RoleName, tryRoleNameFrom } from "@/types/access";
 import type { MediaReference } from "@/types/api/media.types";
 import { InstagramPostEditor } from "@/components/posts/InstagramPostEditor";
 import { MediumPostEditor } from "@/components/posts/MediumPostEditor";
@@ -34,11 +35,12 @@ import {
   Image as ImageIcon,
   Check,
   HelpCircle,
+  RotateCcw,
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { PublisherType } from "@/types/api/post.types";
-import { ShowcaseResponse, HostAbout } from "@/types/api/showcase.types";
+import { ShowcaseResponse, HostAbout, HostProfile, ShowcaseHeader } from "@/types/api/showcase.types";
 import axios from "axios";
 
 type PostFormat = "instagram" | "medium";
@@ -55,8 +57,10 @@ interface PublisherOption {
 export default function CreatePostScene() {
   const router = useRouter();
   const { user, isLoggedIn, isLoading: isLoadingAuth } = useAuth();
+  const { data: profile } = useMeProfile();
+  const switchRoleMutation = useSwitchRole();
   const { data: myAgency, isLoading: isLoadingAgency } = useMyAgency();
-  const { data: hostProfile, isLoading: isLoadingHost } = useHostProfile();
+  const { data: hostProfile, isLoading: isLoadingHost, refetch: refetchHost } = useHostProfile();
   const createPostMutation = useCreatePost();
 
   // Wizard Step: 1 = Choose Publisher & Format, 2 = Create Content, 3 = Review & Publish
@@ -115,17 +119,29 @@ export default function CreatePostScene() {
     }
 
     // 3. Host Profile / Landlord
-    const hostProfileData = hostProfile as ShowcaseResponse<HostAbout> | null | undefined;
-    const hostHeader = hostProfileData?.header;
-    const hostId = hostHeader?.id;
+    const rawHost = hostProfile as (HostProfile & { header?: ShowcaseHeader }) | null | undefined;
+    const hostId = rawHost?.id || rawHost?.header?.id;
     if (hostId) {
+      const hostName =
+        rawHost?.hostName ||
+        rawHost?.header?.title ||
+        "میزبان اقامتگاه";
+      const avatarUrl =
+        rawHost?.avatarUrl ||
+        rawHost?.header?.avatarUrl ||
+        undefined;
+      const isVerified =
+        rawHost?.verificationStatus === "VERIFIED" ||
+        rawHost?.header?.isVerified ||
+        false;
+
       options.push({
         type: "HOST",
         id: hostId,
-        name: hostHeader?.title || "میزبان اقامتگاه",
-        avatarUrl: hostHeader?.avatarUrl || undefined,
-        isVerified: hostHeader?.isVerified ?? true,
-        label: `میزبان: ${hostHeader?.title || "اقامتگاه"}`,
+        name: hostName,
+        avatarUrl,
+        isVerified,
+        label: `میزبان: ${hostName}`,
       });
     }
 
@@ -383,6 +399,116 @@ export default function CreatePostScene() {
 
   // Permission Guard
   if (publisherOptions.length === 0) {
+    const userRoles = (profile?.roles || [])
+      .map((r) => tryRoleNameFrom(r))
+      .filter((r): r is RoleName => r !== null);
+
+    const switchableRoles = userRoles.filter(
+      (r) =>
+        r !== user?.activeRole &&
+        (r === RoleName.Landlord ||
+          r === RoleName.Agent ||
+          r === RoleName.Admin ||
+          r === RoleName.SuperAdmin)
+    );
+
+    const roleLabels: Record<string, string> = {
+      user: "کاربر عادی",
+      agent: "مشاور املاک",
+      landlord: "میزبان اقامتگاه",
+      admin: "ادمین",
+      "super-admin": "مدیر کل",
+    };
+
+    const handleSwitchRole = async (targetRole: RoleName) => {
+      if (!user?.sessionId || switchRoleMutation.isPending) return;
+      try {
+        await switchRoleMutation.mutateAsync({
+          sessionId: user.sessionId,
+          roleName: targetRole,
+        });
+        toast.success(`نقش فعال شما به «${roleLabels[targetRole] || targetRole}» تغییر یافت.`);
+      } catch {
+        toast.error("خطا در تغییر نقش فعال.");
+      }
+    };
+
+    // Edge Case: Landlord active role but profile failed or not yet initialized
+    if (user?.activeRole === RoleName.Landlord && !hostProfile) {
+      return (
+        <div className="max-w-lg mx-auto my-16 p-8 rounded-3xl bg-white border border-slate-200 text-center space-y-6 shadow-sm" dir="rtl">
+          <div className="w-14 h-14 mx-auto rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center">
+            <Hotel className="w-7 h-7" />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-lg font-black text-brand">پروفایل میزبانی در دسترس نیست</h2>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              شما با نقش <strong className="text-brand">میزبان اقامتگاه</strong> وارد شده‌اید، اما اطلاعات پروفایل میزبانی دریافت نشد. لطفاً دوباره تلاش کنید یا به بخش مدیریت اقامتگاه‌ها مراجعه فرمایید.
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3 pt-2 justify-center">
+            <button
+              onClick={() => refetchHost()}
+              disabled={isLoadingHost}
+              className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-brand text-white text-xs font-bold hover:bg-brand/90 transition-all shadow-xs"
+            >
+              <RotateCcw className={cn("w-4 h-4", isLoadingHost && "animate-spin")} />
+              <span>تلاش مجدد</span>
+            </button>
+            <Link
+              href="/profile/temporary-rent"
+              className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl border border-slate-200 hover:border-primary text-xs font-bold text-slate-700 hover:text-brand transition-all"
+            >
+              <span>مدیریت پروفایل میزبانی</span>
+              <ChevronLeft className="w-4 h-4" />
+            </Link>
+          </div>
+        </div>
+      );
+    }
+
+    // Role Switch option if user holds eligible publisher role in other mode
+    if (switchableRoles.length > 0) {
+      return (
+        <div className="max-w-lg mx-auto my-16 p-8 rounded-3xl bg-white border border-slate-200 text-center space-y-6 shadow-sm" dir="rtl">
+          <div className="w-14 h-14 mx-auto rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
+            <ShieldCheck className="w-7 h-7" />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-lg font-black text-brand">تغییر نقش فعال برای ایجاد محتوا</h2>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              نقش فعلی شما «<strong className="text-brand">{roleLabels[user?.activeRole || "user"]}</strong>» است. حساب شما دارای نقش ناشر است. برای انتشار پست، لطفاً نقش فعال خود را انتخاب کنید:
+            </p>
+          </div>
+          <div className="flex flex-col gap-2.5 pt-2">
+            {switchableRoles.map((role) => (
+              <button
+                key={role}
+                onClick={() => handleSwitchRole(role)}
+                disabled={switchRoleMutation.isPending}
+                className="w-full p-4 rounded-2xl border border-slate-200 hover:border-primary bg-slate-50 hover:bg-white text-right flex items-center justify-between transition-all group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold">
+                    {role === RoleName.Landlord ? (
+                      <Hotel className="w-5 h-5" />
+                    ) : (
+                      <Building2 className="w-5 h-5" />
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-xs font-black text-brand">تغییر به نقش {roleLabels[role]}</p>
+                    <p className="text-[11px] text-slate-500">فعال‌سازی دسترسی ناشر {roleLabels[role]}</p>
+                  </div>
+                </div>
+                <ChevronLeft className="w-4 h-4 text-slate-400 group-hover:-translate-x-1 transition-transform" />
+              </button>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="max-w-lg mx-auto my-16 p-8 rounded-3xl bg-white border border-slate-200 text-center space-y-6 shadow-sm" dir="rtl">
         <div className="w-14 h-14 mx-auto rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center">

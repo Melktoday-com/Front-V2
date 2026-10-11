@@ -214,8 +214,8 @@ export default function Map({ ads, zones, selectedZoneId, selectedZoneIds, onZon
                             key={zone.id}
                             positions={positions}
                             pathOptions={{
-                                color: isSelected ? "#2563EB" : "#94A3B8",
-                                fillColor: isSelected ? "#3B82F6" : "#CBD5E1",
+                                color: isSelected ? "var(--color-primary)" : "var(--color-border-strong)",
+                                fillColor: isSelected ? "var(--color-primary)" : "var(--color-brand-beige)",
                                 fillOpacity: isSelected ? 0.45 : 0.07,
                                 opacity: isSelected ? 1 : 0.85,
                                 weight: isSelected ? 3.5 : 1.2,
@@ -234,7 +234,7 @@ export default function Map({ ads, zones, selectedZoneId, selectedZoneIds, onZon
                                             fillOpacity: 0.22,
                                             opacity: 1,
                                             weight: 2.2,
-                                            color: "#64748B",
+                                            color: "var(--color-primary-hover)",
                                         });
                                     }
                                 },
@@ -245,7 +245,7 @@ export default function Map({ ads, zones, selectedZoneId, selectedZoneIds, onZon
                                             fillOpacity: 0.07,
                                             opacity: 0.85,
                                             weight: 1.2,
-                                            color: "#94A3B8",
+                                            color: "var(--color-border-strong)",
                                         });
                                     }
                                 },

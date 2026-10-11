@@ -37,7 +37,7 @@ export function CategoryDirectory({
                 {[1, 2, 3, 4].map((i) => (
                     <div
                         key={i}
-                        className="bg-[#F8F9FA] rounded-2xl p-3.5 sm:p-4 border border-soft-border/70 flex flex-col justify-between min-h-[96px] animate-pulse"
+                        className="bg-surface-secondary/70 rounded-2xl p-3.5 sm:p-4 border border-soft-border/70 flex flex-col justify-between min-h-[96px] animate-pulse"
                     >
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2.5">
@@ -78,7 +78,7 @@ export function CategoryDirectory({
                 return (
                     <div
                         key={category.id || category.key}
-                        className="bg-[#F8F9FA] hover:bg-white rounded-2xl p-3.5 sm:p-4 border border-soft-border/80 hover:border-primary/40 transition-all duration-300 flex flex-col justify-between group hover:shadow-md hover:shadow-brand/5"
+                        className="bg-surface-secondary/70 hover:bg-surface rounded-2xl p-3.5 sm:p-4 border border-soft-border/80 hover:border-primary/40 transition-all duration-300 flex flex-col justify-between group hover:shadow-md hover:shadow-brand/5"
                     >
                         {/* Header: Icon + Title + Direct View All Link */}
                         <div className="flex items-center justify-between gap-2.5">

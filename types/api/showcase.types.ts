@@ -49,6 +49,27 @@ export interface HostAbout {
   rating?: number;
 }
 
+export interface HostProfile {
+  id: string;
+  userId: string;
+  hostName: string;
+  title?: string;
+  slug?: string;
+  bio?: string;
+  cityId?: string;
+  avatarUrl?: string;
+  coverUrl?: string;
+  rating?: number;
+  address?: string;
+  phone?: string;
+  mobile?: string;
+  verificationStatus?: 'UNVERIFIED' | 'PENDING' | 'VERIFIED' | 'REJECTED';
+  isVerified?: boolean;
+  isActive?: boolean;
+  status?: 'ACTIVE' | 'SUSPENDED' | 'BLOCKED';
+  header?: ShowcaseHeader;
+}
+
 export interface PlatformAbout {
   title: string;
   subtitle: string;
