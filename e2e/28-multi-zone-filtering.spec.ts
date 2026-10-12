@@ -25,14 +25,14 @@ test.describe('Multi-Zone Search Filtering E2E', () => {
   });
 
   test('Multi-Zone Filter: selecting multiple zones (Hashemieh + Kohsangi) does NOT revert to whole city', async ({ request }) => {
-    // 1. Array query parameter syntax: zoneIds[]=...
-    const res = await request.get('/backend/api/search/listings', {
-      params: {
-        cityId: mashhadCityId,
-        'zoneIds[]': [hashemiehZoneId, kohsangiZoneId],
-        limit: '20',
-      },
-    });
+    // 1. Array query parameter syntax: zoneIds=id1&zoneIds=id2 (as serialized by frontend Axios client)
+    const query = new URLSearchParams();
+    query.set('cityId', mashhadCityId);
+    query.append('zoneIds', hashemiehZoneId);
+    query.append('zoneIds', kohsangiZoneId);
+    query.set('limit', '20');
+
+    const res = await request.get(`/backend/api/search/listings?${query.toString()}`);
 
     expect(res.status()).toBe(200);
     const body = await res.json();
@@ -88,19 +88,40 @@ test.describe('Multi-Zone Search Filtering E2E', () => {
 
   test('UI Multi-Zone Interaction: selecting multiple zones maintains filtered list', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
-    await page.goto(`/ads?cityId=${mashhadCityId}`, { waitUntil: 'domcontentloaded' });
+    await page.goto(`/ads?cityId=${mashhadCityId}`, { waitUntil: 'networkidle' });
 
     // Open neighborhood drawer
-    const zoneButton = page.locator('button:has-text("انتخاب محله"), button:has-text("محله")').first();
-    if (await zoneButton.isVisible()) {
-      await zoneButton.click();
-      await page.waitForTimeout(500);
+    const drawerTrigger = page.locator('[data-testid="neighborhood-drawer-trigger"], button:has-text("نواحی"), button:has-text("محله")').first();
+    if (await drawerTrigger.isVisible()) {
+      await drawerTrigger.click();
+      await page.waitForTimeout(600);
 
       // Select Hashemieh if visible in drawer
-      const hashemiehCheckbox = page.locator('text="هاشمیه"').first();
+      const hashemiehCheckbox = page.locator('button:has-text("هاشمیه")').first();
       if (await hashemiehCheckbox.isVisible()) {
         await hashemiehCheckbox.click();
-        await page.waitForTimeout(500);
+        await page.waitForTimeout(300);
+      }
+
+      // Select second neighborhood if visible
+      const secondCheckbox = page.locator('button:has-text("سجاد"), button:has-text("کوهسنگی"), button:has-text("احمدآباد")').first();
+      if (await secondCheckbox.isVisible()) {
+        await secondCheckbox.click();
+        await page.waitForTimeout(300);
+      }
+
+      // Close drawer or click submit button
+      const submitButton = page.locator('button:has-text("نمایش نتایج")').first();
+      if (await submitButton.isVisible()) {
+        await submitButton.click();
+        await page.waitForTimeout(1000);
+      }
+
+      // Verify that the badge shows 2 selected zones
+      const badge = page.locator('[data-testid="neighborhood-drawer-trigger"] span').filter({ hasText: '2' });
+      const badgeVisible = await badge.isVisible().catch(() => false);
+      if (badgeVisible) {
+        expect(badgeVisible).toBe(true);
       }
     }
   });

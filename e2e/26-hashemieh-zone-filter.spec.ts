@@ -41,12 +41,18 @@ test.describe('Hashemieh Zone Filter & Geographic Membership Live E2E', () => {
       params: {
         cityId: mashhadCityId,
         zoneId: hashemiehZoneId,
+        northLat: '36.33',
+        southLat: '36.31',
+        eastLng: '59.53',
+        westLng: '59.50',
+        zoom: '16',
       },
     });
     expect(res.status()).toBe(200);
     const body = await res.json();
     expect(body.success).toBe(true);
-    expect(body.data.total).toBeGreaterThanOrEqual(1);
+    const totalCount = body.data.meta?.totalMatching ?? body.data.total ?? body.data.markers?.length;
+    expect(totalCount).toBeGreaterThanOrEqual(1);
     const marker = body.data.markers.find((m: any) => m.id === targetListingId);
     expect(marker).toBeDefined();
     expect(marker.latitude).toBeCloseTo(36.320231, 4);
