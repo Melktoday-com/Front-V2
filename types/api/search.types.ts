@@ -205,6 +205,7 @@ export interface SearchListingsQueryDto {
   cityId?: string;
   cityName?: string;
   neighbourhoodName?: string;
+  neighbourhoodNames?: string[];
   zoneId?: string;
   zoneIds?: string[];
   minPrice?: number;
@@ -233,6 +234,7 @@ export interface SearchMapQueryDto {
   cityId?: string;
   cityName?: string;
   neighbourhoodName?: string;
+  neighbourhoodNames?: string[];
   zoneId?: string;
   zoneIds?: string[];
   northLat?: number;

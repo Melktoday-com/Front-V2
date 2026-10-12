@@ -166,10 +166,13 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
         }
     }, [searchParams, urlView, initialViewMode]);
 
-    // Reset pagination when search query or city changes
+    // Reset pagination when search query, city, or selected zones change
     useEffect(() => {
         setStartPage(1);
-    }, [debouncedSearch, effectiveCityId]);
+    }, [debouncedSearch, effectiveCityId, selectedZones]);
+
+    const selectedZoneIds = useMemo(() => selectedZones.map((z) => z.id), [selectedZones]);
+    const selectedZoneNames = useMemo(() => selectedZones.map((z) => z.name), [selectedZones]);
 
     const observerTargetRef = useRef<HTMLDivElement | null>(null);
     const listContainerRef = useRef<HTMLDivElement | null>(null);
@@ -191,7 +194,9 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
             cityId: effectiveCityId,
             cityName: effectiveCityName !== "همه شهرها" ? effectiveCityName : undefined,
             neighbourhoodName: selectedZones.length === 1 ? selectedZones[0].name : undefined,
+            neighbourhoodNames: selectedZoneNames.length > 1 ? selectedZoneNames : undefined,
             zoneId: selectedZones.length === 1 ? selectedZones[0].id : undefined,
+            zoneIds: selectedZoneIds.length > 0 ? selectedZoneIds : undefined,
             categoryKey: selectedCategory || undefined,
             subcategoryKey: selectedSubcategory || undefined,
             sort,
@@ -294,7 +299,9 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
             cityId: effectiveCityId,
             cityName: effectiveCityName !== "همه شهرها" ? effectiveCityName : undefined,
             neighbourhoodName: selectedZones.length === 1 ? selectedZones[0].name : undefined,
+            neighbourhoodNames: selectedZoneNames.length > 1 ? selectedZoneNames : undefined,
             zoneId: selectedZones.length === 1 ? selectedZones[0].id : undefined,
+            zoneIds: selectedZoneIds.length > 0 ? selectedZoneIds : undefined,
             categoryKey: selectedCategory || undefined,
             subcategoryKey: selectedSubcategory || undefined,
             query: debouncedSearch.trim() || undefined,
@@ -459,7 +466,6 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
     }, [currentCityCoords, adsForMap]);
 
     const activeZoneForMap = selectedZones.length === 1 ? selectedZones[0] : null;
-    const selectedZoneIds = useMemo(() => selectedZones.map((z) => z.id), [selectedZones]);
 
     return (
         <div className="h-screen bg-surface flex flex-col overflow-hidden">
@@ -888,7 +894,10 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                 neighborhoods={neighborhoods}
                 selectedIds={selectedZoneIds}
                 onToggle={handleZoneToggle}
-                onClear={() => setSelectedZones([])}
+                onClear={() => {
+                    setSelectedZones([]);
+                    setStartPage(1);
+                }}
             />
 
             {/* Category Tree Dialog / Drawer */}
