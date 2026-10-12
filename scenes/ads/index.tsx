@@ -274,18 +274,23 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
     // Backend-driven results directly: zero client-side zone/polygon filtering
     const displayedAds = allLoadedAds;
 
-    // Viewport bounding-box state for dedicated map query
-    const [mapBounds, setMapBounds] = useState<{
+    // Viewport bounding-box & zoom state for dedicated map query
+    const mapZoom = 12;
+    const [mapViewport, setMapViewport] = useState<{
         northEast: { lat: number; lng: number };
         southWest: { lat: number; lng: number };
+        zoom: number;
     } | null>(null);
+
+    const debouncedMapViewport = useDebounce(mapViewport, 250);
 
     const { data: mapData } = useSearchMap(
         {
-            northLat: mapBounds?.northEast.lat ?? 0,
-            southLat: mapBounds?.southWest.lat ?? 0,
-            eastLng: mapBounds?.northEast.lng ?? 0,
-            westLng: mapBounds?.southWest.lng ?? 0,
+            northLat: debouncedMapViewport?.northEast.lat ?? 0,
+            southLat: debouncedMapViewport?.southWest.lat ?? 0,
+            eastLng: debouncedMapViewport?.northEast.lng ?? 0,
+            westLng: debouncedMapViewport?.southWest.lng ?? 0,
+            zoom: debouncedMapViewport?.zoom ?? mapZoom,
             cityId: effectiveCityId,
             cityName: effectiveCityName !== "همه شهرها" ? effectiveCityName : undefined,
             neighbourhoodName: selectedZones.length === 1 ? selectedZones[0].name : undefined,
@@ -293,9 +298,9 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
             categoryKey: selectedCategory || undefined,
             subcategoryKey: selectedSubcategory || undefined,
             query: debouncedSearch.trim() || undefined,
-            limit: 150,
+            limit: 500,
         },
-        Boolean(mapBounds && (viewMode === "split" || viewMode === "map"))
+        Boolean(debouncedMapViewport && (viewMode === "split" || viewMode === "map"))
     );
 
     // Pagination metrics
@@ -453,7 +458,6 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
         return [35.6892, 51.389];
     }, [currentCityCoords, adsForMap]);
 
-    const mapZoom = 12;
     const activeZoneForMap = selectedZones.length === 1 ? selectedZones[0] : null;
     const selectedZoneIds = useMemo(() => selectedZones.map((z) => z.id), [selectedZones]);
 
@@ -826,12 +830,20 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                 >
                     <Map
                         ads={adsForMap}
+                        markers={mapData?.markers}
+                        clusters={mapData?.clusters}
                         zones={neighborhoods}
                         selectedZoneIds={selectedZoneIds}
                         onZoneSelect={(zone) => handleZoneToggle(zone)}
                         center={mapCenter}
                         zoom={mapZoom}
-                        onBoundsChange={setMapBounds}
+                        onViewportChange={(v) =>
+                            setMapViewport({
+                                northEast: v.bounds.northEast,
+                                southWest: v.bounds.southWest,
+                                zoom: v.zoom,
+                            })
+                        }
                     />
 
                     {/* Toggle Map View button */}

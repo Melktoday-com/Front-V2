@@ -239,7 +239,26 @@ export interface SearchMapQueryDto {
   southLat?: number;
   eastLng?: number;
   westLng?: number;
+  zoom?: number;
+  minPrice?: number;
+  maxPrice?: number;
+  minArea?: number;
+  maxArea?: number;
+  minRooms?: number;
+  maxRooms?: number;
   limit?: number;
+}
+
+export interface MapClusterDto {
+  id: string;
+  latitude: number;
+  longitude: number;
+  count: number;
+  expansionZoom?: number;
+  bounds?: {
+    northEast: { lat: number; lng: number };
+    southWest: { lat: number; lng: number };
+  };
 }
 
 export interface MapMarkerDto {
@@ -256,8 +275,15 @@ export interface MapMarkerDto {
 }
 
 export interface SearchMapResultDto {
+  clusters: MapClusterDto[];
   markers: MapMarkerDto[];
   total: number;
+  meta?: {
+    totalMatching: number;
+    clustersCount: number;
+    markersCount: number;
+    zoom: number;
+  };
 }
 
 export interface SearchTemporaryRentalsQueryDto {

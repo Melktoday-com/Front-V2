@@ -2,9 +2,10 @@
 
 import { AdSummary } from "@/types/api/ads.types";
 import { ZoneSummary } from "@/types/api/geo.types";
+import { MapClusterDto, MapMarkerDto } from "@/types/api/search.types";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { MapContainer, Marker, Polygon, Popup, TileLayer, Tooltip, useMap } from "react-leaflet";
 import { PropertyCard } from "./PropertyCard";
 import { getMediaUrl, getMediaPosterUrl } from "@/lib/utils";
@@ -32,6 +33,58 @@ const createPriceIcon = (price: string) => L.divIcon({
     iconSize: [0, 0],
     iconAnchor: [0, 0],
 });
+
+const createClusterIcon = (count: number) => {
+    const size = count < 10 ? 38 : count < 100 ? 46 : 54;
+    return L.divIcon({
+        className: 'custom-cluster-icon',
+        html: `
+            <div style="width: ${size}px; height: ${size}px;" 
+                 class="flex items-center justify-center rounded-full bg-brand/90 hover:bg-brand text-white font-black text-xs sm:text-sm shadow-xl border-2 border-white transform -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-transform duration-200 hover:scale-110 active:scale-95">
+                <span>${count.toLocaleString('fa-IR')}</span>
+            </div>
+        `,
+        iconSize: [0, 0],
+        iconAnchor: [0, 0],
+    });
+};
+
+function ClusterMarker({ cluster }: { cluster: MapClusterDto }) {
+    const map = useMap();
+    const icon = useMemo(() => createClusterIcon(cluster.count), [cluster.count]);
+
+    const handleClick = () => {
+        if (
+            cluster.bounds &&
+            (cluster.bounds.northEast.lat !== cluster.bounds.southWest.lat ||
+             cluster.bounds.northEast.lng !== cluster.bounds.southWest.lng)
+        ) {
+            map.fitBounds(
+                [
+                    [cluster.bounds.southWest.lat, cluster.bounds.southWest.lng],
+                    [cluster.bounds.northEast.lat, cluster.bounds.northEast.lng],
+                ],
+                { padding: [50, 50], animate: true }
+            );
+        } else {
+            map.setView(
+                [cluster.latitude, cluster.longitude],
+                cluster.expansionZoom || Math.min(18, map.getZoom() + 2),
+                { animate: true }
+            );
+        }
+    };
+
+    return (
+        <Marker
+            position={[cluster.latitude, cluster.longitude]}
+            icon={icon}
+            eventHandlers={{
+                click: handleClick,
+            }}
+        />
+    );
+}
 
 function MapViewHandler({ center, zoom, bounds }: { center: [number, number]; zoom: number; bounds?: L.LatLngBoundsExpression }) {
     const map = useMap();
@@ -119,28 +172,46 @@ function MapViewHandler({ center, zoom, bounds }: { center: [number, number]; zo
     return null;
 }
 
-function MapEventsHandler({ onBoundsChange }: { onBoundsChange?: (bounds: { northEast: { lat: number; lng: number }; southWest: { lat: number; lng: number } }) => void }) {
+function MapEventsHandler({
+    onViewportChange,
+    onBoundsChange,
+}: {
+    onViewportChange?: (viewport: {
+        bounds: { northEast: { lat: number; lng: number }; southWest: { lat: number; lng: number } };
+        zoom: number;
+    }) => void;
+    onBoundsChange?: (bounds: { northEast: { lat: number; lng: number }; southWest: { lat: number; lng: number } }) => void;
+}) {
     const map = useMap();
     useEffect(() => {
-        if (!onBoundsChange) return;
+        if (!onViewportChange && !onBoundsChange) return;
         const handleMoveEnd = () => {
             const b = map.getBounds();
-            onBoundsChange({
+            const z = map.getZoom();
+            const bounds = {
                 northEast: { lat: b.getNorthEast().lat, lng: b.getNorthEast().lng },
                 southWest: { lat: b.getSouthWest().lat, lng: b.getSouthWest().lng },
-            });
+            };
+            if (onViewportChange) {
+                onViewportChange({ bounds, zoom: z });
+            }
+            if (onBoundsChange) {
+                onBoundsChange(bounds);
+            }
         };
         map.on('moveend', handleMoveEnd);
         return () => {
             map.off('moveend', handleMoveEnd);
         };
-    }, [map, onBoundsChange]);
+    }, [map, onViewportChange, onBoundsChange]);
 
     return null;
 }
 
 interface MapProps {
-    ads: AdSummary[];
+    ads?: AdSummary[];
+    markers?: MapMarkerDto[];
+    clusters?: MapClusterDto[];
     zones?: ZoneSummary[];
     selectedZoneId?: string;
     selectedZoneIds?: string[];
@@ -148,10 +219,27 @@ interface MapProps {
     center?: [number, number];
     zoom?: number;
     bounds?: L.LatLngBoundsExpression;
+    onViewportChange?: (viewport: {
+        bounds: { northEast: { lat: number; lng: number }; southWest: { lat: number; lng: number } };
+        zoom: number;
+    }) => void;
     onBoundsChange?: (bounds: { northEast: { lat: number; lng: number }; southWest: { lat: number; lng: number } }) => void;
 }
 
-export default function Map({ ads, zones, selectedZoneId, selectedZoneIds, onZoneSelect, center = [35.6892, 51.3890], zoom = 12, bounds, onBoundsChange }: MapProps) {
+export default function Map({
+    ads = [],
+    markers,
+    clusters,
+    zones,
+    selectedZoneId,
+    selectedZoneIds,
+    onZoneSelect,
+    center = [35.6892, 51.3890],
+    zoom = 12,
+    bounds,
+    onViewportChange,
+    onBoundsChange,
+}: MapProps) {
     // Sanitize center - if it contains undefined/NaN or isn't a valid pair, use default
     const sanitizedCenter: [number, number] = (
         Array.isArray(center) &&
@@ -190,7 +278,7 @@ export default function Map({ ads, zones, selectedZoneId, selectedZoneIds, onZon
                     crossOrigin="anonymous"
                 />
                 <MapViewHandler center={sanitizedCenter} zoom={zoom} bounds={bounds} />
-                <MapEventsHandler onBoundsChange={onBoundsChange} />
+                <MapEventsHandler onViewportChange={onViewportChange} onBoundsChange={onBoundsChange} />
 
                 {/* Render Zone / Neighborhood Polygons */}
                 {zones?.map((zone) => {
@@ -287,36 +375,80 @@ export default function Map({ ads, zones, selectedZoneId, selectedZoneIds, onZon
                         </Polygon>
                     );
                 })}
-                {adsWithLocation.map((ad) => {
-                    const price = ad.pricing ? Object.values(ad.pricing)[0] : undefined;
-                    const priceLabel = price ?
-                        (price >= 1000000000 ? `${(price / 1000000000).toFixed(1)} میلیارد` :
-                            (price >= 1000000 ? `${(price / 1000000).toFixed(0)} میلیون` : price.toLocaleString()))
-                        : "توافقی";
+                {/* Render Adaptive Clusters */}
+                {clusters?.map((cluster) => (
+                    <ClusterMarker key={cluster.id} cluster={cluster} />
+                ))}
 
-                    return (
-                        <Marker
-                            key={ad.adId}
-                            position={[ad.location.latitude, ad.location.longitude]}
-                            icon={createPriceIcon(priceLabel)}
-                        >
-                            <Popup className="property-popup">
-                                <div className="w-64 p-1">
-                                    <PropertyCard
-                                        adId={ad.adId}
-                                        variant="vertical"
-                                        title={ad.title}
-                                        price={price?.toLocaleString() || "0"}
-                                        location={ad.cityId}
-                                        image={getMediaPosterUrl(ad.mediaIds?.[0])}
-                                        isVideo={ad.mediaIds?.[0]?.type === "VIDEO"}
-                                        category={ad.subcategoryTitle || ad.categoryPath.subcategoryTitle || ad.categoryPath.subcategoryKey}
-                                    />
-                                </div>
-                            </Popup>
-                        </Marker>
-                    );
-                })}
+                {/* Render Individual Markers (if provided) */}
+                {markers && markers.length > 0 ? (
+                    markers.map((marker) => {
+                        const price = marker.price;
+                        const priceLabel = price ?
+                            (price >= 1000000000 ? `${(price / 1000000000).toFixed(1)} میلیارد` :
+                                (price >= 1000000 ? `${(price / 1000000).toFixed(0)} میلیون` : price.toLocaleString('fa-IR')))
+                            : "توافقی";
+
+                        return (
+                            <Marker
+                                key={marker.id}
+                                position={[marker.latitude, marker.longitude]}
+                                icon={createPriceIcon(priceLabel)}
+                            >
+                                <Popup className="property-popup">
+                                    <div className="w-64 p-1">
+                                        <PropertyCard
+                                            adId={marker.id}
+                                            variant="vertical"
+                                            title={marker.title}
+                                            price={price ? price.toLocaleString('fa-IR') : "توافقی"}
+                                            location={
+                                                marker.neighbourhoodName
+                                                    ? `${marker.cityName || ''}، ${marker.neighbourhoodName}`
+                                                    : (marker.cityName || '')
+                                            }
+                                            image={getMediaPosterUrl(marker.mediaIds?.[0])}
+                                            isVideo={marker.mediaIds?.[0]?.type === "VIDEO"}
+                                            category={marker.subcategory || marker.category || ''}
+                                        />
+                                    </div>
+                                </Popup>
+                            </Marker>
+                        );
+                    })
+                ) : (
+                    /* Fallback to legacy ads list if markers not provided */
+                    adsWithLocation.map((ad) => {
+                        const price = ad.pricing ? Object.values(ad.pricing)[0] : undefined;
+                        const priceLabel = price ?
+                            (price >= 1000000000 ? `${(price / 1000000000).toFixed(1)} میلیارد` :
+                                (price >= 1000000 ? `${(price / 1000000).toFixed(0)} میلیون` : price.toLocaleString()))
+                            : "توافقی";
+
+                        return (
+                            <Marker
+                                key={ad.adId}
+                                position={[ad.location.latitude, ad.location.longitude]}
+                                icon={createPriceIcon(priceLabel)}
+                            >
+                                <Popup className="property-popup">
+                                    <div className="w-64 p-1">
+                                        <PropertyCard
+                                            adId={ad.adId}
+                                            variant="vertical"
+                                            title={ad.title}
+                                            price={price?.toLocaleString() || "0"}
+                                            location={ad.cityId}
+                                            image={getMediaPosterUrl(ad.mediaIds?.[0])}
+                                            isVideo={ad.mediaIds?.[0]?.type === "VIDEO"}
+                                            category={ad.subcategoryTitle || ad.categoryPath.subcategoryTitle || ad.categoryPath.subcategoryKey}
+                                        />
+                                    </div>
+                                </Popup>
+                            </Marker>
+                        );
+                    })
+                )}
             </MapContainer>
         </div>
     );

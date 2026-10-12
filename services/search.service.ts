@@ -31,9 +31,10 @@ export const searchService = {
   /**
    * Search property markers bounded by viewport bounding-box
    */
-  async searchMap(query: SearchMapQueryDto): Promise<SearchMapResultDto> {
+  async searchMap(query: SearchMapQueryDto, signal?: AbortSignal): Promise<SearchMapResultDto> {
     const response = await apiClient.get<SearchMapResultDto>("/search/map", {
       params: query,
+      signal,
     });
     return response.data;
   },

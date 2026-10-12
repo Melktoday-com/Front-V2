@@ -42,9 +42,10 @@ export function useSearchListings(params: SearchListingsQueryDto, enabled: boole
 export function useSearchMap(params: SearchMapQueryDto, enabled: boolean = true) {
   return useQuery({
     queryKey: ["search-map", params],
-    queryFn: () => searchService.searchMap(params),
+    queryFn: ({ signal }) => searchService.searchMap(params, signal),
     enabled,
     staleTime: 15000,
+    placeholderData: (previousData) => previousData,
   });
 }
 
