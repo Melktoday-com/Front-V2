@@ -205,6 +205,8 @@ export interface SearchListingsQueryDto {
   cityId?: string;
   cityName?: string;
   neighbourhoodName?: string;
+  zoneId?: string;
+  zoneIds?: string[];
   minPrice?: number;
   maxPrice?: number;
   lat?: number;
@@ -231,6 +233,8 @@ export interface SearchMapQueryDto {
   cityId?: string;
   cityName?: string;
   neighbourhoodName?: string;
+  zoneId?: string;
+  zoneIds?: string[];
   northLat?: number;
   southLat?: number;
   eastLng?: number;

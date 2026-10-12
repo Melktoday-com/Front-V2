@@ -96,6 +96,9 @@ function searchDocToAdSummary(doc: ListingSearchDocument): AdSummary {
                 ? {
                       latitude: doc._geo.lat,
                       longitude: doc._geo.lng,
+                      area: doc.geo?.neighbourhoodName
+                          ? { id: doc.geo?.zoneIds?.[0] || "area", label: doc.geo.neighbourhoodName }
+                          : null,
                   }
                 : null,
         area: typeof area === "number" ? area : undefined,
@@ -188,6 +191,7 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
             cityId: effectiveCityId,
             cityName: effectiveCityName !== "همه شهرها" ? effectiveCityName : undefined,
             neighbourhoodName: selectedZones.length === 1 ? selectedZones[0].name : undefined,
+            zoneId: selectedZones.length === 1 ? selectedZones[0].id : undefined,
             categoryKey: selectedCategory || undefined,
             subcategoryKey: selectedSubcategory || undefined,
             sort,
@@ -284,6 +288,8 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
             westLng: mapBounds?.southWest.lng ?? 0,
             cityId: effectiveCityId,
             cityName: effectiveCityName !== "همه شهرها" ? effectiveCityName : undefined,
+            neighbourhoodName: selectedZones.length === 1 ? selectedZones[0].name : undefined,
+            zoneId: selectedZones.length === 1 ? selectedZones[0].id : undefined,
             categoryKey: selectedCategory || undefined,
             subcategoryKey: selectedSubcategory || undefined,
             query: debouncedSearch.trim() || undefined,
@@ -746,7 +752,11 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                                                     title={ad.title}
                                                     price={pricing.price}
                                                     unit={pricing.unit}
-                                                    location={ad.cityName || effectiveCityName || ad.cityId}
+                                                    location={
+                                                        ad.location?.area?.label
+                                                            ? `${ad.cityName || effectiveCityName}، ${ad.location.area.label}`
+                                                            : (ad.cityName || effectiveCityName || ad.cityId)
+                                                    }
                                                     image={
                                                         ad.mediaIds && ad.mediaIds.length > 0
                                                             ? getMediaPosterUrl(ad.mediaIds[0])

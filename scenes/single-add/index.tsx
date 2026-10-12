@@ -105,6 +105,10 @@ export default function SingleAdScene({ initialData }: SingleAdSceneProps = {}) 
 
     const cityName = ad?.cityName || getCityName(ad?.cityId);
     const provinceName = ad?.provinceName;
+    const areaName =
+        ad?.location?.area?.label ||
+        (typeof (ad as any)?.area === "object" ? (ad as any)?.area?.label : undefined) ||
+        (ad as any)?.neighbourhoodName;
 
     const rawCatKey = ad?.categoryPath?.categoryKey;
     const rawSubKey = ad?.categoryPath?.subcategoryKey;
@@ -361,7 +365,11 @@ export default function SingleAdScene({ initialData }: SingleAdSceneProps = {}) 
 
                         <div className="flex flex-wrap items-center gap-1.5 text-text-light text-sm mt-2">
                             <MapPin className="w-4 h-4 shrink-0 text-primary" />
-                            <span>{provinceName ? `${provinceName}، ${cityName}` : `شهر: ${cityName}`}</span>
+                            <span>
+                                {provinceName
+                                    ? `${provinceName}، ${cityName}${areaName ? `، ${areaName}` : ""}`
+                                    : `شهر: ${cityName}${areaName ? `، ${areaName}` : ""}`}
+                            </span>
                             {categoryTitle && (
                                 <>
                                     <span className="text-gray-300">•</span>
