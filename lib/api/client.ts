@@ -22,6 +22,9 @@ export const apiClient = axios.create({
     headers: {
         "Content-Type": "application/json",
     },
+    paramsSerializer: {
+        indexes: null,
+    },
 });
 
 let isRefreshing = false;
