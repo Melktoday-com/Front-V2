@@ -12,7 +12,7 @@ test.describe('Map Search, Scalable Retrieval & Adaptive Clustering E2E', () => 
         southLat: '36.20',
         eastLng: '59.65',
         westLng: '59.40',
-        zoom: '11',
+        zoom: '9',
       },
     });
     expect(res.status()).toBe(200);
@@ -33,15 +33,14 @@ test.describe('Map Search, Scalable Retrieval & Adaptive Clustering E2E', () => 
     expect(data.meta.clustersCount).toBe(totalClusterItems);
     expect(data.meta.markersCount).toBe(data.markers.length);
 
-    if (data.clusters.length > 0) {
-      const firstCluster = data.clusters[0];
-      expect(firstCluster.id).toMatch(/^cluster-/);
-      expect(typeof firstCluster.latitude).toBe('number');
-      expect(typeof firstCluster.longitude).toBe('number');
-      expect(typeof firstCluster.count).toBe('number');
-      expect(firstCluster.count).toBeGreaterThanOrEqual(2);
-      expect(firstCluster.expansionZoom).toBeGreaterThan(11);
-    }
+    expect(data.clusters.length).toBeGreaterThanOrEqual(1);
+    const firstCluster = data.clusters[0];
+    expect(firstCluster.id).toMatch(/^cluster-/);
+    expect(typeof firstCluster.latitude).toBe('number');
+    expect(typeof firstCluster.longitude).toBe('number');
+    expect(typeof firstCluster.count).toBe('number');
+    expect(firstCluster.count).toBeGreaterThanOrEqual(2);
+    expect(firstCluster.expansionZoom).toBeGreaterThan(9);
   });
 
   test('Requirement 4: High zoom street view returns individual markers when density is reasonable', async ({ request }) => {
