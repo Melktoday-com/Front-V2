@@ -1,7 +1,7 @@
 "use client";
 
 import { AdminOwnershipData, AdminOwnershipSelector } from "@/components/admin/AdminOwnershipSelector";
-import { DynamicAttributeRenderer } from "@/components/dynamic-form/DynamicAttributeRenderer";
+import { DynamicAttributeRenderer, validateAttributeValue } from "@/components/dynamic-form/DynamicAttributeRenderer";
 import { DynamicPricingFields } from "@/components/dynamic-form/DynamicPricingFields";
 import MediaGalleryUpload from "@/components/MediaGalleryUpload";
 import { useCity } from "@/components/providers/CityProvider";
@@ -65,6 +65,15 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
     const router = useRouter();
     const searchParams = useSearchParams();
     const editAdId = searchParams.get("edit");
+    const [activeAdId, setActiveAdId] = useState<string | null>(editAdId || null);
+    const activeAdIdRef = useRef<string | null>(editAdId || null);
+
+    useEffect(() => {
+        if (editAdId) {
+            setActiveAdId(editAdId);
+            activeAdIdRef.current = editAdId;
+        }
+    }, [editAdId]);
     const { selectedCity } = useCity();
     const { isRestricted, restrictionTitle, restrictionMessage } = useUserStatus();
     const { data: entitlements = [] } = useEntitlements();
@@ -480,11 +489,12 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                 return { adId: created?.adId || "", shouldPublish: true };
             }
 
-            let adId = editAdId;
+            const targetAdId = activeAdIdRef.current || activeAdId || editAdId;
+            let adId = targetAdId;
 
-            if (editAdId) {
+            if (targetAdId) {
                 // Update existing ad
-                await adsService.update(editAdId, {
+                await adsService.update(targetAdId, {
                     title: formData.title,
                     description: formData.description,
                     priceModelKey: resolvedPriceModelKey,
@@ -513,6 +523,16 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                 };
                 const created = await adsService.createDraft(payload);
                 adId = created.adId;
+                activeAdIdRef.current = created.adId;
+                hydratedEditAdIdRef.current = created.adId;
+                setActiveAdId(created.adId);
+
+                // Update URL to edit mode so any refresh or re-submit targets this ad
+                if (typeof window !== "undefined") {
+                    const url = new URL(window.location.href);
+                    url.searchParams.set("edit", created.adId);
+                    window.history.replaceState(null, "", url.toString());
+                }
             }
 
             // If user requested approval review, submit it
@@ -537,16 +557,16 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                             },
                             duration: 8000,
                         });
-                        return { adId, shouldPublish: false, paymentRequired: true };
+                        return { adId, shouldPublish: false, paymentRequired: true, isUpdate: Boolean(targetAdId) };
                     }
                     console.error("Error during submitForReview:", e);
                     throw e;
                 }
             }
 
-            return { adId, shouldPublish, paymentRequired: false };
+            return { adId, shouldPublish, paymentRequired: false, isUpdate: Boolean(targetAdId) };
         },
-        onSuccess: ({ shouldPublish, paymentRequired }: { shouldPublish: boolean; paymentRequired?: boolean }) => {
+        onSuccess: ({ shouldPublish, paymentRequired, isUpdate }: { shouldPublish: boolean; paymentRequired?: boolean; isUpdate?: boolean }) => {
             if (adminMode) {
                 toast.success("آگهی با موفقیت توسط ادمین ثبت گردید");
                 router.push("/admin/ads");
@@ -560,7 +580,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
             if (shouldPublish) {
                 toast.success("آگهی با موفقیت ثبت و جهت بررسی و انتشار به ادمین ارسال شد");
             } else {
-                toast.success("آگهی با موفقیت به عنوان پیش‌نویس ذخیره شد");
+                toast.success(isUpdate ? "پیش‌نویس آگهی با موفقیت به‌روزرسانی شد" : "آگهی با موفقیت به عنوان پیش‌نویس ذخیره شد");
             }
             router.push("/profile/ads");
         },
@@ -577,37 +597,38 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
         const pErrors: Record<string, string> = {};
         const aErrors: Record<string, string> = {};
 
-        // Validate required pricing fields
+        // Validate pricing fields
         if (activePriceModel) {
             for (const field of activePriceModel.pricingFields) {
                 const val = formData.pricingValues?.[field.key];
-                if (field.required) {
-                    if (val === undefined || val === null || String(val).trim() === "") {
-                        pErrors[field.key] = `فیلد ${field.label} الزامی است`;
-                        isValid = false;
-                    } else if (field.fieldType === "NUMBER") {
-                        const num = Number(val);
-                        if (isNaN(num) || num < 0) {
-                            pErrors[field.key] = `فیلد ${field.label} باید عدد معتبر باشد`;
-                            isValid = false;
-                        }
-                    }
-                } else if (val !== undefined && val !== null && String(val).trim() !== "" && field.fieldType === "NUMBER") {
+                const isUnset = val === undefined || val === null || String(val).trim() === "";
+
+                if (field.required && isUnset) {
+                    pErrors[field.key] = `فیلد «${field.label}» الزامی است`;
+                    isValid = false;
+                } else if (!isUnset && field.fieldType === "NUMBER") {
                     const num = Number(val);
                     if (isNaN(num) || num < 0) {
-                        pErrors[field.key] = `فیلد ${field.label} باید عدد معتبر باشد`;
+                        pErrors[field.key] = `فیلد «${field.label}» باید عدد معتبر باشد`;
+                        isValid = false;
+                    } else if (field.constraints?.min !== undefined && num < field.constraints.min) {
+                        pErrors[field.key] = `فیلد «${field.label}» نمی‌تواند کمتر از ${toPersianDigits(field.constraints.min)} باشد`;
+                        isValid = false;
+                    } else if (field.constraints?.max !== undefined && num > field.constraints.max) {
+                        pErrors[field.key] = `فیلد «${field.label}» نمی‌تواند بیشتر از ${toPersianDigits(field.constraints.max)} باشد`;
                         isValid = false;
                     }
                 }
             }
         }
 
-        // Validate required attributes
+        // Validate attributes with constraints & logical domain rules
         if (subcatConfig?.attributeDefinitions) {
             for (const attr of subcatConfig.attributeDefinitions) {
                 const val = formData.attributes?.[attr.key];
-                if (attr.required && (val === undefined || val === null || val === "")) {
-                    aErrors[attr.key] = `تکمیل مشخصه ${attr.label} الزامی است`;
+                const err = validateAttributeValue(attr, val, formData.attributes);
+                if (err) {
+                    aErrors[attr.key] = err;
                     isValid = false;
                 }
             }
@@ -617,7 +638,13 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
         setAttributeErrors(aErrors);
 
         if (!isValid) {
-            toast.error("لطفاً فیلدهای الزامی مشخص شده را تکمیل فرمایید");
+            const hasConstraintErrors = Object.values(aErrors).some((e) => !e.includes("الزامی")) ||
+                Object.values(pErrors).some((e) => !e.includes("الزامی"));
+            if (hasConstraintErrors) {
+                toast.error("لطفاً مقادیر وارد شده را بر اساس محدودیت‌ها و خطاهای مشخص‌شده اصلاح فرمایید");
+            } else {
+                toast.error("لطفاً فیلدهای الزامی مشخص شده را تکمیل فرمایید");
+            }
         }
 
         return isValid;
@@ -1126,17 +1153,43 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                             definitions={subcatConfig.attributeDefinitions}
                                             values={formData.attributes || {}}
                                             onChange={(key, value) => {
+                                                const nextAttributes = {
+                                                    ...(formData.attributes || {}),
+                                                    [key]: value,
+                                                };
                                                 setFormData((prev) => ({
                                                     ...prev,
-                                                    attributes: {
-                                                        ...prev.attributes,
-                                                        [key]: value,
-                                                    },
+                                                    attributes: nextAttributes,
                                                 }));
-                                                if (attributeErrors[key]) {
+
+                                                const def = subcatConfig.attributeDefinitions?.find((d) => d.key === key);
+                                                if (def) {
+                                                    const err = validateAttributeValue(def, value, nextAttributes);
                                                     setAttributeErrors((prev) => {
                                                         const copy = { ...prev };
-                                                        delete copy[key];
+                                                        if (err) {
+                                                            copy[key] = err;
+                                                        } else {
+                                                            delete copy[key];
+                                                        }
+
+                                                        // If changing total_floors or floor_number, recheck relationship
+                                                        if (key === "total_floors" && copy.floor_number) {
+                                                            const floorDef = subcatConfig.attributeDefinitions?.find((d) => d.key === "floor_number");
+                                                            if (floorDef) {
+                                                                const floorErr = validateAttributeValue(floorDef, nextAttributes.floor_number, nextAttributes);
+                                                                if (!floorErr) delete copy.floor_number;
+                                                                else copy.floor_number = floorErr;
+                                                            }
+                                                        } else if (key === "floor_number" && copy.total_floors) {
+                                                            const totalDef = subcatConfig.attributeDefinitions?.find((d) => d.key === "total_floors");
+                                                            if (totalDef) {
+                                                                const totalErr = validateAttributeValue(totalDef, nextAttributes.total_floors, nextAttributes);
+                                                                if (!totalErr) delete copy.total_floors;
+                                                                else copy.total_floors = totalErr;
+                                                            }
+                                                        }
+
                                                         return copy;
                                                     });
                                                 }
@@ -1341,9 +1394,16 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                             submitMutation.mutate({ shouldPublish: false });
                                         }}
                                         disabled={submitMutation.isPending}
-                                        className="px-4 py-2.5 rounded-xl border border-border-subtle text-text-main font-bold text-xs hover:bg-surface-secondary transition-colors"
+                                        className="px-4 py-2.5 rounded-xl border border-border-subtle text-text-main font-bold text-xs hover:bg-surface-secondary transition-colors flex items-center gap-1.5"
                                     >
-                                        ذخیره پیش‌نویس
+                                        {submitMutation.isPending && !submitForApproval ? (
+                                            <>
+                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                                <span>در حال ذخیره...</span>
+                                            </>
+                                        ) : (
+                                            <span>{activeAdId || editAdId ? "به‌روزرسانی پیش‌نویس" : "ذخیره پیش‌نویس"}</span>
+                                        )}
                                     </button>
                                     <button
                                         type="button"
@@ -1354,7 +1414,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                         disabled={submitMutation.isPending}
                                         className="px-6 py-2.5 rounded-xl bg-primary text-white font-black text-xs hover:bg-primary/90 shadow-md shadow-primary/20 flex items-center gap-1.5 transition-all"
                                     >
-                                        {submitMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+                                        {submitMutation.isPending && submitForApproval && <Loader2 className="h-4 w-4 animate-spin" />}
                                         <span>ارسال برای تایید و انتشار</span>
                                     </button>
                                 </div>

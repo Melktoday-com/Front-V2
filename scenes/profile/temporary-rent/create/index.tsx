@@ -4,7 +4,7 @@ import { CitySelector } from "@/components/CitySelector";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
 import { DynamicPricingFields } from "@/components/dynamic-form/DynamicPricingFields";
-import { DynamicAttributeRenderer } from "@/components/dynamic-form/DynamicAttributeRenderer";
+import { DynamicAttributeRenderer, validateAttributeValue } from "@/components/dynamic-form/DynamicAttributeRenderer";
 import { useCreateTemporaryRentDraft } from "@/hooks/useTemporaryRent";
 import { temporaryRentService } from "@/services/temporary-rent.service";
 import {
@@ -211,12 +211,13 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
             return false;
         }
 
-        // Validate attributes
+        // Validate attributes with constraints
         if (subcatConfig?.attributeDefinitions) {
             for (const attr of subcatConfig.attributeDefinitions) {
                 const val = formData.attributes?.[attr.key];
-                if (attr.required && (val === undefined || val === null || val === "")) {
-                    aErrors[attr.key] = `تکمیل مشخصه ${attr.label} الزامی است`;
+                const err = validateAttributeValue(attr, val, formData.attributes);
+                if (err) {
+                    aErrors[attr.key] = err;
                     isValid = false;
                 }
             }
@@ -226,7 +227,12 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
         setAttributeErrors(aErrors);
 
         if (!isValid) {
-            toast.error("لطفاً فیلدهای الزامی مشخص شده را تکمیل نمایید");
+            const hasConstraintErrors = Object.values(aErrors).some((e) => !e.includes("الزامی"));
+            if (hasConstraintErrors) {
+                toast.error("لطفاً مقادیر وارد شده را بر اساس محدودیت‌ها و خطاهای مشخص‌شده اصلاح فرمایید");
+            } else {
+                toast.error("لطفاً فیلدهای الزامی مشخص شده را تکمیل نمایید");
+            }
         }
 
         return isValid;
