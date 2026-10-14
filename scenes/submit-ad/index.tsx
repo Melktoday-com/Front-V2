@@ -1,8 +1,11 @@
 "use client";
 
+import { AdminOwnershipData, AdminOwnershipSelector } from "@/components/admin/AdminOwnershipSelector";
 import { DynamicAttributeRenderer } from "@/components/dynamic-form/DynamicAttributeRenderer";
 import { DynamicPricingFields } from "@/components/dynamic-form/DynamicPricingFields";
+import MediaGalleryUpload from "@/components/MediaGalleryUpload";
 import { useCity } from "@/components/providers/CityProvider";
+import { AccountStatusBanner } from "@/components/ui/AccountStatusBanner";
 import {
     ResponsiveSelectDrawer,
     SelectDrawerOption,
@@ -10,42 +13,37 @@ import {
 } from "@/components/ui/ResponsiveSelectDrawer";
 import { useAd, useCategories } from "@/hooks/useAds";
 import { useGeoHierarchy } from "@/hooks/useGeoHierarchy";
-import { cn, formatPrice, toPersianDigits, getMediaUrl } from "@/lib/utils";
+import { useEntitlements } from "@/hooks/useSubscription";
+import { useUserStatus } from "@/hooks/useUserStatus";
 import { normalizeApiError } from "@/lib/api/error-handler";
+import { cn, formatPrice, getMediaUrl, toPersianDigits } from "@/lib/utils";
+import { adminService } from "@/services/admin.service";
 import { adsService } from "@/services/ads.service";
+import { AdminCreateAdRequest } from "@/types/api/admin.types";
 import { CreateAdDraftRequest, PriceModel, SubcategoryConfigResponse } from "@/types/api/ads.types";
-import type { MediaReference } from "@/types/api/media.types";
-import MediaGalleryUpload from "@/components/MediaGalleryUpload";
 import { AdStatus } from "@/types/api/enums";
+import type { MediaReference } from "@/types/api/media.types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
-    Check,
     ChevronLeft,
     ChevronRight,
     Flame,
     FolderTree,
-    Image as ImageIcon,
     Info,
     Loader2,
     LucideIcon,
     MapPin,
     Send,
+    ShieldAlert,
     Sparkles,
     Tag,
-    Wallet,
+    Wallet
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { AdminOwnershipSelector, AdminOwnershipData } from "@/components/admin/AdminOwnershipSelector";
-import { adminService } from "@/services/admin.service";
-import { AdminCreateAdRequest } from "@/types/api/admin.types";
-import { useUserStatus } from "@/hooks/useUserStatus";
-import { AccountStatusBanner } from "@/components/ui/AccountStatusBanner";
-import { ShieldAlert } from "lucide-react";
-import { useEntitlements } from "@/hooks/useSubscription";
 
 // Leaflet is client-side only
 const DynamicMapPicker = dynamic(() => import("@/components/ui/MapPicker"), { ssr: false });
@@ -955,8 +953,8 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                             isLoadingConfig
                                                 ? "در حال بارگذاری..."
                                                 : !formData.categoryPath?.subcategoryKey
-                                                ? "ابتدا زیردسته را انتخاب کنید"
-                                                : "انتخاب نوع معامله..."
+                                                    ? "ابتدا زیردسته را انتخاب کنید"
+                                                    : "انتخاب نوع معامله..."
                                         }
                                         drawerTitle="انتخاب نوع معامله"
                                         icon={<Wallet className="w-4 h-4 text-primary" />}
@@ -1270,7 +1268,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                             <div>
                                                 <span className="font-bold block mb-0.5">تعرفه انتشار آگهی</span>
                                                 <p className="text-warning/90 text-[11px] leading-relaxed">
-                                                    سهمیه اشتراک فعال موجود نیست. هزینه انتشار آگهی طبق تعرفه مصوب در لحظه ارسال از کیف پول رزرو (Hold) شده و پس از بررسی و تایید کارشناسان نهایی می‌گردد. در صورت عدم تایید، مبلغ به کیف پول بازگردانده می‌شود.
+                                                    سهمیه اشتراک فعال موجود نیست. هزینه انتشار آگهی طبق تعرفه مصوب در لحظه ارسال از کیف پول رزرو شده و پس از بررسی و تایید کارشناسان نهایی می‌گردد. در صورت عدم تایید، مبلغ به کیف پول بازگردانده می‌شود.
                                                 </p>
                                             </div>
                                         </div>

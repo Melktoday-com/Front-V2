@@ -2,16 +2,19 @@
 "use client";
 
 import { authImage1, authImage2, authImage3, authImage4 } from "@/assets/auth";
-import { useRequestOtp, useVerifyOtp } from "@/hooks/useAuth";
+import { useAuth, useRequestOtp, useVerifyOtp } from "@/hooks/useAuth";
 import { normalizeApiError } from "@/lib/api/error-handler";
 import Image from "next/image";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 function AuthContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTarget = searchParams.get("redirect") || searchParams.get("returnUrl") || "/";
+
+  const { isLoggedIn, isLoading } = useAuth();
 
   const [step, setStep] = useState<"phone" | "otp">("phone");
   const [phone, setPhone] = useState("");
@@ -20,6 +23,12 @@ function AuthContent() {
 
   const requestOtpMutation = useRequestOtp();
   const verifyOtpMutation = useVerifyOtp(redirectTarget);
+
+  useEffect(() => {
+    if (!isLoading && isLoggedIn) {
+      router.replace(redirectTarget || "/");
+    }
+  }, [isLoggedIn, isLoading, redirectTarget, router]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -73,6 +82,14 @@ function AuthContent() {
       toast.error(normalizeApiError(err as Error));
     }
   };
+
+  if (isLoading || isLoggedIn) {
+    return (
+      <div className="min-h-screen bg-surface flex items-center justify-center font-bold text-brand">
+        در حال انتقال...
+      </div>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-background flex flex-col items-center p-6 text-right">

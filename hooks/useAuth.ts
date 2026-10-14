@@ -28,7 +28,7 @@ export function useVerifyOtp(redirectTarget?: string) {
             queryClient.invalidateQueries({ queryKey: ["auth-session"] });
 
             // Redirect to target or home
-            router.push(redirectTarget || "/");
+            router.replace(redirectTarget || "/");
         },
     });
 }
