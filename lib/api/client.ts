@@ -2,8 +2,29 @@ import { JsonValue } from "@/types/common";
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 import { deleteCookie, getCookie, setCookie } from "cookies-next";
 
+function getClientApiUrl(): string {
+    let url = process.env.NEXT_PUBLIC_API_URL || "";
+    if (!url && typeof window !== "undefined") {
+        return `${window.location.origin}/backend/api`;
+    }
+    url = (url || "http://localhost:3000/api").trim().replace(/\/+$/, "");
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+    if (url.includes("109.122.254.238")) {
+        url = url.replace(/https?:\/\/109\.122\.254\.238(:\d+)?/, "https://melktoday.com");
+    }
+
+    if (!url.endsWith("/api") && !url.includes("/api/")) {
+        url = `${url}/backend/api`;
+    }
+
+    if (typeof window !== "undefined" && window.location.protocol === "https:" && url.startsWith("http:")) {
+        url = url.replace(/^http:/, "https:");
+    }
+
+    return url;
+}
+
+const API_URL = getClientApiUrl();
 
 interface FailedRequest {
     resolve: (token: string | null) => void;

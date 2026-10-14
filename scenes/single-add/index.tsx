@@ -106,7 +106,7 @@ export default function SingleAdScene({ initialData }: SingleAdSceneProps = {}) 
     const chatMutation = useCreateConversation();
     const toggleSaveMutation = useToggleSaveAd();
     const { data: ad, isLoading, error } = useAd(id, initialData);
-    const { data: contact } = useAdContact(id);
+    const { data: contact } = useAdContact(id, { enabled: !!id && isLoggedIn });
 
     const isOwner = isLoggedIn && !!user?.userId && user?.userId === ad?.ownerId;
     const isPublished = ad?.status === AdStatus.PUBLISHED || (ad?.status as string) === "PUBLISHED";
@@ -437,7 +437,7 @@ export default function SingleAdScene({ initialData }: SingleAdSceneProps = {}) 
                             )}
                             <span className="text-gray-300">•</span>
                             <span className="text-xs">
-                                ثبت: {new Date(ad.createdAt).toLocaleDateString("fa-IR")}
+                                ثبت: {ad.createdAt ? new Date(ad.createdAt).toLocaleDateString("fa-IR") : "—"}
                             </span>
                         </div>
                     </div>

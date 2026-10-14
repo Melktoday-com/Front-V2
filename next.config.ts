@@ -34,7 +34,15 @@ const nextConfig: NextConfig = {
   images: {
     formats: ["image/avif", "image/webp"],
     minimumCacheTTL: 2592000,
-    remotePatterns: getEnvHostnames(),
+    remotePatterns: [
+      ...getEnvHostnames(),
+      { protocol: "https", hostname: "melktoday.com", pathname: "/**" },
+      { protocol: "https", hostname: "**.melktoday.com", pathname: "/**" },
+      { protocol: "https", hostname: "beta.melktoday.ir", pathname: "/**" },
+      { protocol: "https", hostname: "**.melktoday.ir", pathname: "/**" },
+      { protocol: "https", hostname: "images.unsplash.com", pathname: "/**" },
+      { protocol: "https", hostname: "unpkg.com", pathname: "/**" },
+    ],
   },
 };
 

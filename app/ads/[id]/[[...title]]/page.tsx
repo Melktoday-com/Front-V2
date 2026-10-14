@@ -1,47 +1,34 @@
 import SingleAdScene from "@/scenes/single-add";
 import { Metadata } from "next";
 import { AdDetail } from "@/types/api/ads.types";
-import { getMediaPosterUrl } from "@/lib/utils";
+import { getMediaPosterUrl, getSiteBaseUrl } from "@/lib/utils";
+import { serverFetch } from "@/lib/api/server";
 
 interface PageProps {
     params: Promise<{ id: string; title?: string[] }>;
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://beta.melktoday.ir/backend/api";
-
-async function fetchAd(id: string): Promise<AdDetail | null> {
-    try {
-        const res = await fetch(`${API_BASE_URL}/ads/${id}`, {
-            next: { revalidate: 60 },
-        });
-        if (!res.ok) return null;
-        const json = await res.json();
-        return json.data || json;
-    } catch {
-        return null;
-    }
-}
-
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
     const { id } = await params;
-    const ad = await fetchAd(id);
+    const ad = await serverFetch<AdDetail>(`/ads/${encodeURIComponent(id)}`);
 
     if (!ad) {
         return {
-            title: "آگهی پیدا نشد | ملک تودی",
-            description: "آگهی مورد نظر در سامانه ملک تودی یافت نشد.",
+            title: "مشاهده آگهی | ملک تودی",
+            description: "مشاهده جزئیات ملک و اطلاعات تماس در ملک تودی.",
         };
     }
 
+    const siteBase = getSiteBaseUrl();
     const title = `${ad.title} | ملک تودی`;
     const description = ad.description
         ? ad.description.slice(0, 160)
         : `${ad.title} - ${ad.cityName || 'ایران'} در ملک تودی`;
-    const canonical = `https://beta.melktoday.ir/ads/${ad.adId}`;
+    const canonical = `${siteBase}/ads/${ad.adId}`;
     const images =
         ad.mediaIds && ad.mediaIds.length > 0
             ? [getMediaPosterUrl(ad.mediaIds[0])]
-            : ["https://beta.melktoday.ir/og-image.png"];
+            : [`${siteBase}/og-image.png`];
 
     return {
         title,
@@ -72,6 +59,6 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function PropertyDetailPage({ params }: PageProps) {
     const { id } = await params;
-    const initialData = await fetchAd(id);
+    const initialData = await serverFetch<AdDetail>(`/ads/${encodeURIComponent(id)}`);
     return <SingleAdScene initialData={initialData ?? undefined} />;
 }

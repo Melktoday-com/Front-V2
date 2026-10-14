@@ -40,9 +40,12 @@ export function extractMediaId(media?: string | { id: string; type?: string } | 
     return typeof media === "object" ? media.id : media;
 }
 
-function getSiteBaseUrl(): string {
-    const raw = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_SITE_URL || "";
+export function getSiteBaseUrl(): string {
+    let raw = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_SITE_URL || "";
     if (raw) {
+        if (raw.includes("109.122.254.238")) {
+            raw = raw.replace(/https?:\/\/109\.122\.254\.238(:\d+)?/, "https://melktoday.com");
+        }
         if (raw.startsWith("http://") || raw.startsWith("https://")) {
             return raw.replace(/\/$/, "");
         }
@@ -53,19 +56,29 @@ function getSiteBaseUrl(): string {
     if (typeof window !== "undefined" && window.location?.origin) {
         return window.location.origin;
     }
-    return "";
+    return "https://melktoday.com";
 }
 
-function getMediaBaseUrl(): string {
-    const apiBase = process.env.NEXT_PUBLIC_API_URL || "/backend/api";
-    if (apiBase.startsWith("http://") || apiBase.startsWith("https://")) {
-        return apiBase.replace(/\/$/, "");
+export function getMediaBaseUrl(): string {
+    let apiBase = process.env.NEXT_PUBLIC_API_URL || "";
+    if (apiBase.includes("109.122.254.238")) {
+        apiBase = apiBase.replace(/https?:\/\/109\.122\.254\.238(:\d+)?/, "https://melktoday.com");
+    }
+    if (apiBase) {
+        apiBase = apiBase.replace(/\/+$/, "");
+        if (!apiBase.endsWith("/api") && !apiBase.includes("/api/")) {
+            apiBase = `${apiBase}/backend/api`;
+        }
+        if (apiBase.startsWith("http://") || apiBase.startsWith("https://")) {
+            return apiBase;
+        }
     }
     const siteBase = getSiteBaseUrl();
     if (siteBase) {
-        return `${siteBase}/${apiBase.replace(/^\//, "")}`.replace(/\/$/, "");
+        const path = (apiBase || "/backend/api").replace(/^\//, "");
+        return `${siteBase}/${path}`.replace(/\/+$/, "");
     }
-    return apiBase.startsWith("/") ? apiBase.replace(/\/$/, "") : `/${apiBase.replace(/\/$/, "")}`;
+    return apiBase.startsWith("/") ? apiBase.replace(/\/+$/, "") : `/${apiBase.replace(/\/+$/, "")}`;
 }
 
 export function getMediaUrl(mediaIdOrUrl?: string | { id: string; type?: string } | null): string {

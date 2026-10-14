@@ -2,29 +2,16 @@ import { Metadata } from "next";
 import { Suspense } from "react";
 import SingleHostScene from "@/scenes/single-host";
 import { HostAbout, ShowcaseResponse } from "@/types/api/showcase.types";
+import { serverFetch } from "@/lib/api/server";
+import { getSiteBaseUrl } from "@/lib/utils";
 
 interface HostPageProps {
   params: Promise<{ idOrSlug: string }>;
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://beta.melktoday.ir/backend/api";
-
-async function fetchHostShowcase(idOrSlug: string): Promise<ShowcaseResponse<HostAbout> | null> {
-  try {
-    const res = await fetch(`${API_BASE_URL}/showcase/HOST/${encodeURIComponent(idOrSlug)}`, {
-      next: { revalidate: 60 },
-    });
-    if (!res.ok) return null;
-    const json = await res.json();
-    return json.data || json;
-  } catch {
-    return null;
-  }
-}
-
 export async function generateMetadata({ params }: HostPageProps): Promise<Metadata> {
   const { idOrSlug } = await params;
-  const showcase = await fetchHostShowcase(idOrSlug);
+  const showcase = await serverFetch<ShowcaseResponse<HostAbout>>(`/showcase/HOST/${encodeURIComponent(idOrSlug)}`);
 
   if (!showcase || !showcase.header) {
     return {
@@ -33,18 +20,19 @@ export async function generateMetadata({ params }: HostPageProps): Promise<Metad
     };
   }
 
+  const siteBase = getSiteBaseUrl();
   const header = showcase.header;
   const bio = showcase.about?.bio;
   const title = `ویترین میزبان ${header.title} | ملک تودی`;
   const description = bio
     ? bio.slice(0, 160)
     : `مشاهده اقامتگاه‌ها، سوئیت‌ها و پست‌های ${header.title} در سامانه ملک تودی`;
-  const canonical = `https://beta.melktoday.ir/host/${header.slug || idOrSlug}`;
+  const canonical = `${siteBase}/host/${header.slug || idOrSlug}`;
   const images = header.coverUrl
     ? [header.coverUrl]
     : header.avatarUrl
     ? [header.avatarUrl]
-    : ["https://beta.melktoday.ir/og-image.png"];
+    : [`${siteBase}/og-image.png`];
 
   return {
     title,
@@ -75,7 +63,7 @@ export async function generateMetadata({ params }: HostPageProps): Promise<Metad
 
 export default async function HostShowcasePage({ params }: HostPageProps) {
   const { idOrSlug } = await params;
-  const initialData = await fetchHostShowcase(idOrSlug);
+  const initialData = await serverFetch<ShowcaseResponse<HostAbout>>(`/showcase/HOST/${encodeURIComponent(idOrSlug)}`);
 
   return (
     <Suspense

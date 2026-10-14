@@ -50,11 +50,11 @@ export function useAd(adId: string, initialData?: AdDetail) {
     });
 }
 
-export function useAdContact(adId: string) {
+export function useAdContact(adId: string, options?: { enabled?: boolean }) {
     return useQuery({
         queryKey: ["ads", adId, "contact"],
         queryFn: () => adsService.getContactInfo(adId),
-        enabled: !!adId,
+        enabled: (options?.enabled ?? true) && !!adId,
     });
 }
 

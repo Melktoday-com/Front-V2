@@ -1,30 +1,16 @@
 import ResidenceDetailScene from "@/scenes/single-temporary-rent";
 import { Metadata } from "next";
 import { TemporaryRentAd } from "@/types/api/temporary-rent.types";
-import { getMediaPosterUrl } from "@/lib/utils";
+import { getMediaPosterUrl, getSiteBaseUrl } from "@/lib/utils";
+import { serverFetch } from "@/lib/api/server";
 
 interface PageProps {
     params: Promise<{ id: string; title?: string[] }>;
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://beta.melktoday.ir/backend/api";
-
-async function fetchTemporaryRentAd(id: string): Promise<TemporaryRentAd | null> {
-    try {
-        const res = await fetch(`${API_BASE_URL}/temporary-rent/${id}`, {
-            next: { revalidate: 60 },
-        });
-        if (!res.ok) return null;
-        const json = await res.json();
-        return json.data || json;
-    } catch {
-        return null;
-    }
-}
-
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
     const { id } = await params;
-    const residence = await fetchTemporaryRentAd(id);
+    const residence = await serverFetch<TemporaryRentAd>(`/temporary-rent/${encodeURIComponent(id)}`);
 
     if (!residence) {
         return {
@@ -33,15 +19,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         };
     }
 
+    const siteBase = getSiteBaseUrl();
     const title = `${residence.title} | اجاره اقامتگاه در ملک تودی`;
     const description = residence.description
         ? residence.description.slice(0, 160)
         : `${residence.title} - ${residence.cityName || 'ایران'} در سامانه اجاره کوتاه‌مدت ملک تودی`;
-    const canonical = `https://beta.melktoday.ir/temporary-rent/${residence.id}`;
+    const canonical = `${siteBase}/temporary-rent/${residence.id}`;
     const images =
         residence.mediaIds && residence.mediaIds.length > 0
             ? [getMediaPosterUrl(residence.mediaIds[0])]
-            : ["https://beta.melktoday.ir/og-image.png"];
+            : [`${siteBase}/og-image.png`];
 
     return {
         title,
@@ -72,6 +59,6 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function PropertyDetailPage({ params }: PageProps) {
     const { id } = await params;
-    const initialData = await fetchTemporaryRentAd(id);
+    const initialData = await serverFetch<TemporaryRentAd>(`/temporary-rent/${encodeURIComponent(id)}`);
     return <ResidenceDetailScene initialData={initialData ?? undefined} />;
 }
