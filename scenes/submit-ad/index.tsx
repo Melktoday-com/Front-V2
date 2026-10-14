@@ -1088,9 +1088,6 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                                 </span>
                                             </div>
                                         </div>
-                                        <span className="text-[11px] text-text-light bg-surface border border-border-subtle px-3 py-1 rounded-xl">
-                                            تعیین‌شده در مرحله اطلاعات پایه
-                                        </span>
                                     </div>
                                 )}
 
