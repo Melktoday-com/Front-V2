@@ -297,6 +297,14 @@ function MobileNavContent() {
     if (pathname.startsWith("/admin")) return null;
     if (pathname.startsWith("/auth")) return null;
 
+    // Hide bottom navbar on submit ad pages
+    const isSubmitAd =
+        pathname.startsWith("/ads/submit") ||
+        pathname.startsWith("/profile/temporary-rent/create") ||
+        pathname.startsWith("/profile/temporary-rent/new") ||
+        pathname.startsWith("/temporary-rent/create");
+    if (isSubmitAd) return null;
+
     // Hide bottom navbar on single ad pages (they have their own dedicated sticky action bar)
     const isSingleAd =
         (pathname.startsWith("/ads/") && !pathname.startsWith("/ads/submit")) ||
