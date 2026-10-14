@@ -8,7 +8,7 @@
    Secondary navy: #3E5879
    Vibrant accent: Teal #14B8A6
    Main canvas:    Pure White #FFFFFF
-   Soft surface:   #F6F3EF
+   Soft surface:   #F8FAFC
 
    Keep application colors semantic. Prefer bg-primary, text-foreground,
    border-border, bg-accent-subtle, etc. over literal colors in components.
@@ -35,12 +35,12 @@
   --brand-teal-subtle: #E6FFFB;
   --brand-teal-border: #99F6E4;
 
-  /* Neutrals */
-  --brand-beige: #D8C4B6;
-  --brand-off-white: #F5EFE7;
-  --brand-beige-subtle: #F6F3EF;
-  --brand-beige-border: #CBB5A5;
-  --brand-beige-boundary: #9B8471;
+  /* Neutral palette: no cream/beige surfaces */
+  --brand-beige: #E2E8F0;
+  --brand-off-white: #FFFFFF;
+  --brand-beige-subtle: #F8FAFC;
+  --brand-beige-border: #CBD5E1;
+  --brand-beige-boundary: #94A3B8;
   --color-pure-white: #FFFFFF;
 
   /* ---------------------------------------------------------------------------
@@ -70,7 +70,7 @@
   /* ---------------------------------------------------------------------------
      C. SEMANTIC TOKENS
      --------------------------------------------------------------------------- */
-  /* White canvas; secondary sections may use a very subtle warm neutral. */
+  /* White canvas; secondary sections use a cool, neutral near-white. */
   --background: var(--color-pure-white);
   --background-subtle: var(--brand-beige-subtle);
   --surface: var(--color-pure-white);
