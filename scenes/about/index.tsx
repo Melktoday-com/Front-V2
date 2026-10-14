@@ -130,10 +130,7 @@ export default function AboutScene() {
         <div className="absolute -bottom-24 -right-24 w-72 h-72 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10 max-w-3xl space-y-6">
-          <div className="inline-flex items-center gap-2 bg-surface/10 backdrop-blur-md border border-white/15 px-3.5 py-1.5 rounded-full text-xs font-black text-primary">
-            <Sparkles className="w-4 h-4" />
-            <span>درباره پلتفرم ملک تودی</span>
-          </div>
+
 
           <h1 className="text-2xl sm:text-3xl md:text-5xl font-black leading-tight sm:leading-tight md:leading-tight text-white tracking-tight">
             ساده‌تر، سریع‌تر و شفاف‌تر در مسیر جست‌وجو و معامله ملک
