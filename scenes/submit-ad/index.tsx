@@ -1,10 +1,13 @@
 "use client";
 
-import { CitySelector } from "@/components/CitySelector";
 import { DynamicAttributeRenderer } from "@/components/dynamic-form/DynamicAttributeRenderer";
 import { DynamicPricingFields } from "@/components/dynamic-form/DynamicPricingFields";
 import { useCity } from "@/components/providers/CityProvider";
-import { Select } from "@/components/ui/Select";
+import {
+    ResponsiveSelectDrawer,
+    SelectDrawerOption,
+    SelectDrawerTag,
+} from "@/components/ui/ResponsiveSelectDrawer";
 import { useAd, useCategories } from "@/hooks/useAds";
 import { useGeoHierarchy } from "@/hooks/useGeoHierarchy";
 import { cn, formatPrice, toPersianDigits, getMediaUrl } from "@/lib/utils";
@@ -19,6 +22,8 @@ import {
     Check,
     ChevronLeft,
     ChevronRight,
+    Flame,
+    FolderTree,
     Image as ImageIcon,
     Info,
     Loader2,
@@ -27,9 +32,7 @@ import {
     Send,
     Sparkles,
     Tag,
-    Upload,
     Wallet,
-    X
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
@@ -47,14 +50,12 @@ import { useEntitlements } from "@/hooks/useSubscription";
 // Leaflet is client-side only
 const DynamicMapPicker = dynamic(() => import("@/components/ui/MapPicker"), { ssr: false });
 
-type Step = "CATEGORY" | "BASIC_INFO" | "DETAILS" | "LOCATION" | "MEDIA" | "REVIEW";
+type Step = "BASIC_INFO" | "DETAILS" | "LOCATION" | "REVIEW";
 
 const STEPS_CONFIG: { id: Step; label: string; icon: LucideIcon }[] = [
-    { id: "CATEGORY", icon: Tag, label: "دسته‌بندی" },
-    { id: "BASIC_INFO", icon: Check, label: "اطلاعات پایه" },
+    { id: "BASIC_INFO", icon: Tag, label: "اطلاعات پایه" },
     { id: "DETAILS", icon: Wallet, label: "قیمت و مشخصات" },
     { id: "LOCATION", icon: MapPin, label: "موقعیت" },
-    { id: "MEDIA", icon: ImageIcon, label: "تصاویر" },
     { id: "REVIEW", icon: Send, label: "بازبینی و ثبت" },
 ];
 
@@ -83,9 +84,8 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
         lastName: "",
     });
 
-    const [step, setStep] = useState<Step>("CATEGORY");
+    const [step, setStep] = useState<Step>("BASIC_INFO");
     const [submitForApproval, setSubmitForApproval] = useState(false);
-    const [isCitySelectorOpen, setIsCitySelectorOpen] = useState(false);
     const [cityName, setCityName] = useState(selectedCity?.name || "");
     const [pricingErrors, setPricingErrors] = useState<Record<string, string>>({});
     const [attributeErrors, setAttributeErrors] = useState<Record<string, string>>({});
@@ -163,6 +163,160 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
             }));
         }
     }, [activePriceModel]);
+
+    // Options and change handlers for Step 1 Responsive Select / Drawer
+    const cityOptions = useMemo<SelectDrawerOption<string>[]>(() => {
+        if (!geoHierarchy) {
+            if (formData.cityId && cityName) {
+                return [{ value: formData.cityId, label: cityName }];
+            }
+            return [];
+        }
+        const list: SelectDrawerOption<string>[] = [];
+        let hasCurrentCity = false;
+        for (const province of geoHierarchy) {
+            for (const city of province.cities) {
+                if (city.id === formData.cityId) hasCurrentCity = true;
+                list.push({
+                    value: city.id,
+                    label: city.name,
+                    description: `استان ${province.name}`,
+                    badge: city.isCapital ? "مرکز استان" : undefined,
+                });
+            }
+        }
+        if (!hasCurrentCity && formData.cityId && cityName) {
+            list.unshift({ value: formData.cityId, label: cityName });
+        }
+        return list;
+    }, [geoHierarchy, formData.cityId, cityName]);
+
+    const popularCityTags = useMemo<SelectDrawerTag<string>[]>(() => {
+        if (!geoHierarchy) return [];
+        const tags: SelectDrawerTag<string>[] = [];
+        const popularNames = ["تهران", "مشهد", "اصفهان", "شیراز", "تبریز", "کیش"];
+        for (const name of popularNames) {
+            for (const p of geoHierarchy) {
+                const found = p.cities.find((c) => c.name === name);
+                if (found) {
+                    tags.push({ label: found.name, value: found.id });
+                    break;
+                }
+            }
+        }
+        return tags;
+    }, [geoHierarchy]);
+
+    const handleCityChange = (newCityId: string) => {
+        let matched: { id: string; name: string; centerPoint?: { latitude: number; longitude: number } } | null = null;
+        if (geoHierarchy) {
+            for (const p of geoHierarchy) {
+                const found = p.cities.find((c) => c.id === newCityId);
+                if (found) {
+                    matched = found;
+                    break;
+                }
+            }
+        }
+        setFormData((prev) => ({
+            ...prev,
+            cityId: newCityId,
+            latitude: matched?.centerPoint?.latitude ?? prev.latitude ?? 35.6892,
+            longitude: matched?.centerPoint?.longitude ?? prev.longitude ?? 51.3890,
+        }));
+        setCityName(matched?.name || "");
+    };
+
+    const categoryOptions = useMemo<SelectDrawerOption<string>[]>(() => {
+        if (!categories) return [];
+        return categories.map((cat) => ({
+            value: cat.key,
+            label: cat.displayName,
+            description: cat.description,
+            icon: cat.icon ? (
+                <img
+                    src={getMediaUrl(cat.icon)}
+                    alt=""
+                    className="w-5 h-5 object-contain rounded p-0.5 bg-surface-secondary border border-border-subtle shrink-0"
+                />
+            ) : undefined,
+        }));
+    }, [categories]);
+
+    const handleCategoryChange = (catKey: string) => {
+        if (formData.categoryPath?.categoryKey === catKey) return;
+        const cat = categories?.find((c) => c.key === catKey);
+        const firstSub = cat?.subcategories?.[0];
+        setFormData((prev) => ({
+            ...prev,
+            categoryPath: {
+                categoryKey: catKey,
+                subcategoryKey: firstSub?.key || "",
+                businessModelKey: "",
+                attributeSchemaVersion: 1,
+            },
+            pricingValues: {},
+            attributes: {},
+        }));
+        setPricingErrors({});
+        setAttributeErrors({});
+    };
+
+    const subcategoryOptions = useMemo<SelectDrawerOption<string>[]>(() => {
+        if (!categories || !formData.categoryPath?.categoryKey) return [];
+        const currentCat = categories.find((c) => c.key === formData.categoryPath?.categoryKey);
+        if (!currentCat?.subcategories) return [];
+        return currentCat.subcategories.map((sub) => ({
+            value: sub.key,
+            label: sub.displayName,
+            icon: sub.icon ? (
+                <img
+                    src={getMediaUrl(sub.icon)}
+                    alt=""
+                    className="w-4 h-4 object-contain rounded shrink-0"
+                />
+            ) : undefined,
+        }));
+    }, [categories, formData.categoryPath?.categoryKey]);
+
+    const handleSubcategoryChange = (subKey: string) => {
+        if (formData.categoryPath?.subcategoryKey === subKey) return;
+        setFormData((prev) => ({
+            ...prev,
+            categoryPath: {
+                categoryKey: prev.categoryPath?.categoryKey || "",
+                subcategoryKey: subKey,
+                businessModelKey: "",
+                attributeSchemaVersion: 1,
+            },
+            pricingValues: {},
+            attributes: {},
+        }));
+        setPricingErrors({});
+        setAttributeErrors({});
+    };
+
+    const dealTypeOptions = useMemo<SelectDrawerOption<string>[]>(() => {
+        if (!subcatConfig?.allowedPriceModels) return [];
+        return subcatConfig.allowedPriceModels.map((pm) => ({
+            value: pm.key,
+            label: pm.displayName,
+        }));
+    }, [subcatConfig?.allowedPriceModels]);
+
+    const handleDealTypeChange = (pmKey: string) => {
+        setFormData((prev) => ({
+            ...prev,
+            categoryPath: {
+                categoryKey: prev.categoryPath?.categoryKey || "",
+                subcategoryKey: prev.categoryPath?.subcategoryKey || "",
+                attributeSchemaVersion: prev.categoryPath?.attributeSchemaVersion || 1,
+                businessModelKey: pmKey,
+            },
+            pricingValues: {},
+        }));
+        setPricingErrors({});
+    };
 
     const hydratedEditAdIdRef = useRef<string | null>(null);
 
@@ -473,7 +627,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
 
     const handleNext = () => {
         // Validation per step
-        if (step === "CATEGORY") {
+        if (step === "BASIC_INFO") {
             if (adminMode && !adminOwnership.isPlatform) {
                 const phone = adminOwnership.phoneNumber?.trim() || "";
                 if (!phone) {
@@ -494,7 +648,6 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
 
             if (!formData.cityId) {
                 toast.error("لطفاً شهر ملک را مشخص فرمایید");
-                setIsCitySelectorOpen(true);
                 return;
             }
 
@@ -502,7 +655,6 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                 const isCityValid = geoHierarchy.some((p) => p.cities.some((c) => c.id === formData.cityId));
                 if (!isCityValid) {
                     toast.error("شهر انتخاب شده در سامانه معتبر نیست. لطفاً مجدداً شهر را انتخاب فرمایید");
-                    setIsCitySelectorOpen(true);
                     return;
                 }
             }
@@ -529,9 +681,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                 toast.error("لطفاً نوع معامله ملک را انتخاب فرمایید");
                 return;
             }
-        }
 
-        if (step === "BASIC_INFO") {
             let hasBasicError = false;
             const trimmedTitle = formData.title?.trim() || "";
             const trimmedDesc = formData.description?.trim() || "";
@@ -598,12 +748,6 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
             setStep(STEPS_CONFIG[currentStepIndex - 1].id);
         }
     };
-
-    const currentSubcategory = useMemo(() => {
-        if (!categories || !formData.categoryPath?.categoryKey) return null;
-        const cat = categories.find((c) => c.key === formData.categoryPath?.categoryKey);
-        return cat?.subcategories?.find((s) => s.key === formData.categoryPath?.subcategoryKey);
-    }, [categories, formData.categoryPath?.categoryKey, formData.categoryPath?.subcategoryKey]);
 
     if (!adminMode && isRestricted) {
         return (
@@ -732,8 +876,8 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                 {/* Form Card Content */}
                 <div className="bg-surface rounded-3xl shadow-sm border border-border-subtle p-6 sm:p-8 min-h-[480px] flex flex-col justify-between">
                     <div>
-                        {/* 1. CATEGORY */}
-                        {step === "CATEGORY" && (
+                        {/* 1. BASIC_INFO (City, Category, Subcategory, Deal Type, Title, Description, Media) */}
+                        {step === "BASIC_INFO" && (
                             <div className="space-y-6">
                                 {adminMode && (
                                     <AdminOwnershipSelector
@@ -743,198 +887,91 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                     />
                                 )}
 
-                                <div className="flex items-center justify-between">
-                                    <h2 className="text-lg font-black text-brand">انتخاب شهر و دسته‌بندی ملک</h2>
+                                <div>
+                                    <h2 className="text-lg font-black text-brand">اطلاعات پایه ملک</h2>
+                                    <p className="text-xs text-text-light mt-1">
+                                        شهر، دسته‌بندی، نوع معامله، عنوان، توضیحات و تصاویر ملک را وارد نمایید.
+                                    </p>
                                 </div>
 
-                                <div className="grid grid-cols-1 gap-5">
-                                    <div>
-                                        <label className="block text-xs font-bold text-brand mb-2">
-                                            شهر ملک <span className="text-error">*</span>
-                                        </label>
-                                        <button
-                                            type="button"
-                                            onClick={() => setIsCitySelectorOpen(true)}
-                                            className="w-full flex items-center justify-between p-3.5 sm:p-4 bg-soft-bg hover:bg-soft-bg/80 border border-soft-border hover:border-primary/50 rounded-2xl transition-all group text-right focus:outline-none focus:ring-2 focus:ring-primary/20"
-                                        >
-                                            <div className="flex items-center gap-3 min-w-0">
-                                                <div className="w-10 h-10 rounded-xl bg-surface border border-soft-border flex items-center justify-center group-hover:border-primary/30 group-hover:text-primary transition-colors text-brand shrink-0">
-                                                    <MapPin className="w-5 h-5 text-primary" />
-                                                </div>
-                                                <div className="min-w-0 text-right">
-                                                    <span className={cn("text-sm font-black block truncate", cityName ? "text-brand" : "text-secondary/60")}>
-                                                        {cityName || "انتخاب شهر ملک..."}
-                                                    </span>
-                                                    <span className="text-[11px] text-secondary font-medium">
-                                                        {cityName ? "برای تغییر شهر کلیک کنید" : "شهر مورد نظر خود را انتخاب کنید"}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div className="flex items-center gap-1.5 text-xs font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-xl group-hover:bg-primary group-hover:text-white transition-all shrink-0">
-                                                <span>تغییر شهر</span>
-                                                <ChevronLeft className="w-4 h-4" />
-                                            </div>
-                                        </button>
-                                    </div>
+                                {/* Section 1: Dropdown / Drawer Selectors */}
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-surface-secondary/40 p-4 sm:p-5 rounded-2xl border border-border-subtle">
+                                    {/* 1. City */}
+                                    <ResponsiveSelectDrawer
+                                        label="شهر ملک"
+                                        required
+                                        value={formData.cityId}
+                                        onChange={handleCityChange}
+                                        options={cityOptions}
+                                        placeholder="انتخاب شهر ملک..."
+                                        drawerTitle="انتخاب شهر ملک"
+                                        icon={<MapPin className="w-4 h-4 text-primary" />}
+                                        searchable
+                                        searchPlaceholder="جستجوی نام شهر یا استان..."
+                                        tags={popularCityTags}
+                                        tagsLabel="شهرهای پربازدید:"
+                                        tagsIcon={<Flame className="w-3.5 h-3.5 text-amber-500" />}
+                                        isLoading={!geoHierarchy}
+                                        loadingText="در حال دریافت فهرست شهرها..."
+                                    />
 
-                                    <div>
-                                        <label className="block text-xs font-bold text-brand mb-2">
-                                            دسته‌بندی اصلی <span className="text-error">*</span>
-                                        </label>
-                                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                                            {categories?.map((cat) => {
-                                                const isSelected = formData.categoryPath?.categoryKey === cat.key;
-                                                return (
-                                                    <button
-                                                        type="button"
-                                                        key={cat.id || cat.key}
-                                                        onClick={() => {
-                                                            if (formData.categoryPath?.categoryKey === cat.key) return;
-                                                            const firstSub = cat.subcategories?.[0];
-                                                            setFormData((prev) => ({
-                                                                ...prev,
-                                                                categoryPath: {
-                                                                    categoryKey: cat.key,
-                                                                    subcategoryKey: firstSub?.key || "",
-                                                                    businessModelKey: "",
-                                                                    attributeSchemaVersion: 1,
-                                                                },
-                                                                pricingValues: {},
-                                                                attributes: {},
-                                                            }));
-                                                        }}
-                                                        className={cn(
-                                                            "p-4 border rounded-2xl text-right transition-all flex flex-col justify-between min-h-[70px]",
-                                                            isSelected
-                                                                ? "border-primary bg-primary/10 text-brand font-bold shadow-xs"
-                                                                : "border-border-subtle hover:border-primary/40 text-text-light bg-surface"
-                                                        )}
-                                                    >
-                                                        <div className="flex items-center gap-2.5">
-                                                            {cat.icon && (
-                                                                <img
-                                                                    src={getMediaUrl(cat.icon)}
-                                                                    alt=""
-                                                                    className="w-7 h-7 object-contain rounded-lg p-0.5 bg-surface-secondary border border-border-subtle shrink-0"
-                                                                />
-                                                            )}
-                                                            <span className="block text-sm font-black">{cat.displayName}</span>
-                                                        </div>
-                                                        {cat.description && (
-                                                            <span className="block text-[11px] text-text-light mt-1 line-clamp-1">
-                                                                {cat.description}
-                                                            </span>
-                                                        )}
-                                                    </button>
-                                                );
-                                            })}
-                                        </div>
-                                    </div>
+                                    {/* 2. Category */}
+                                    <ResponsiveSelectDrawer
+                                        label="دسته‌بندی اصلی"
+                                        required
+                                        value={formData.categoryPath?.categoryKey}
+                                        onChange={handleCategoryChange}
+                                        options={categoryOptions}
+                                        placeholder="انتخاب دسته‌بندی..."
+                                        drawerTitle="انتخاب دسته‌بندی اصلی"
+                                        icon={<Tag className="w-4 h-4 text-primary" />}
+                                    />
 
-                                    {formData.categoryPath?.categoryKey && (
-                                        <div className="space-y-4">
-                                            <div>
-                                                <Select
-                                                    label="زیردسته ملک *"
-                                                    value={formData.categoryPath?.subcategoryKey || ""}
-                                                    onChange={(val) => {
-                                                        if (formData.categoryPath?.subcategoryKey === val) return;
-                                                        setFormData((prev) => ({
-                                                            ...prev,
-                                                            categoryPath: {
-                                                                categoryKey: prev.categoryPath?.categoryKey || "",
-                                                                subcategoryKey: val,
-                                                                businessModelKey: "",
-                                                                attributeSchemaVersion: 1,
-                                                            },
-                                                            pricingValues: {},
-                                                            attributes: {},
-                                                        }));
-                                                    }}
-                                                    options={
-                                                        categories
-                                                            ?.find((c) => c.key === formData.categoryPath?.categoryKey)
-                                                            ?.subcategories?.map((sub) => ({
-                                                                value: sub.key,
-                                                                label: sub.displayName,
-                                                                icon: sub.icon ? (
-                                                                    <img
-                                                                        src={getMediaUrl(sub.icon)}
-                                                                        alt=""
-                                                                        className="w-4 h-4 object-contain rounded shrink-0"
-                                                                    />
-                                                                ) : undefined,
-                                                            })) || []
-                                                    }
-                                                    placeholder="انتخاب زیردسته..."
-                                                />
-                                            </div>
+                                    {/* 3. Subcategory */}
+                                    <ResponsiveSelectDrawer
+                                        label="زیردسته ملک"
+                                        required
+                                        value={formData.categoryPath?.subcategoryKey}
+                                        onChange={handleSubcategoryChange}
+                                        options={subcategoryOptions}
+                                        placeholder={
+                                            formData.categoryPath?.categoryKey
+                                                ? "انتخاب زیردسته..."
+                                                : "ابتدا دسته‌بندی را انتخاب کنید"
+                                        }
+                                        drawerTitle="انتخاب زیردسته ملک"
+                                        icon={<FolderTree className="w-4 h-4 text-primary" />}
+                                        disabled={!formData.categoryPath?.categoryKey}
+                                    />
 
-                                            {/* Transaction Type Selection within Step 1 */}
-                                            {formData.categoryPath?.subcategoryKey && subcatConfig?.allowedPriceModels && (
-                                                <div>
-                                                    {subcatConfig.allowedPriceModels.length > 1 ? (
-                                                        <div>
-                                                            <label className="block text-xs font-bold text-brand mb-2">
-                                                                نوع معامله <span className="text-error">*</span>
-                                                            </label>
-                                                            <div className="flex flex-wrap gap-2.5">
-                                                                {subcatConfig.allowedPriceModels.map((pm) => {
-                                                                    const isSelected =
-                                                                        (formData.categoryPath?.businessModelKey || activePriceModel?.key) === pm.key;
-                                                                    return (
-                                                                        <button
-                                                                            key={pm.key}
-                                                                            type="button"
-                                                                            onClick={() => {
-                                                                                setFormData((prev) => ({
-                                                                                    ...prev,
-                                                                                    categoryPath: {
-                                                                                        categoryKey: prev.categoryPath?.categoryKey || "",
-                                                                                        subcategoryKey: prev.categoryPath?.subcategoryKey || "",
-                                                                                        attributeSchemaVersion: prev.categoryPath?.attributeSchemaVersion || 1,
-                                                                                        businessModelKey: pm.key,
-                                                                                    },
-                                                                                    pricingValues: {},
-                                                                                }));
-                                                                                setPricingErrors({});
-                                                                            }}
-                                                                            className={cn(
-                                                                                "px-4 py-2.5 rounded-xl border text-xs font-bold transition-all flex items-center gap-2",
-                                                                                isSelected
-                                                                                    ? "border-primary bg-primary text-white shadow-xs"
-                                                                                    : "border-border-subtle bg-surface text-text-light hover:border-primary/40 hover:text-brand"
-                                                                            )}
-                                                                        >
-                                                                            {isSelected && <Check className="w-3.5 h-3.5" />}
-                                                                            <span>{pm.displayName}</span>
-                                                                        </button>
-                                                                    );
-                                                                })}
-                                                            </div>
-                                                        </div>
-                                                    ) : subcatConfig.allowedPriceModels.length === 1 ? (
-                                                        <div className="p-3.5 bg-primary/5 border border-primary/20 rounded-2xl flex items-center justify-between">
-                                                            <span className="text-xs text-text-light font-medium">نوع معامله تعیین‌شده:</span>
-                                                            <span className="text-xs font-black text-primary flex items-center gap-1.5">
-                                                                <Check className="w-4 h-4" />
-                                                                {subcatConfig.allowedPriceModels[0].displayName}
-                                                            </span>
-                                                        </div>
-                                                    ) : null}
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
+                                    {/* 4. Deal Type (Transaction Type) */}
+                                    <ResponsiveSelectDrawer
+                                        label="نوع معامله"
+                                        required
+                                        value={formData.categoryPath?.businessModelKey || activePriceModel?.key}
+                                        onChange={handleDealTypeChange}
+                                        options={dealTypeOptions}
+                                        placeholder={
+                                            isLoadingConfig
+                                                ? "در حال بارگذاری..."
+                                                : !formData.categoryPath?.subcategoryKey
+                                                ? "ابتدا زیردسته را انتخاب کنید"
+                                                : "انتخاب نوع معامله..."
+                                        }
+                                        drawerTitle="انتخاب نوع معامله"
+                                        icon={<Wallet className="w-4 h-4 text-primary" />}
+                                        disabled={!formData.categoryPath?.subcategoryKey || isLoadingConfig}
+                                        isLoading={isLoadingConfig}
+                                        loadingText="در حال دریافت نوع معامله..."
+                                    />
                                 </div>
-                            </div>
-                        )}
 
-                        {/* 2. BASIC_INFO */}
-                        {step === "BASIC_INFO" && (
-                            <div className="space-y-6">
-                                <h2 className="text-lg font-black text-brand">عنوان و توضیحات آگهی</h2>
-                                <div className="space-y-5">
+                                {/* Section 2: Title and Description */}
+                                <div className="space-y-4 pt-2">
+                                    <h3 className="text-sm font-black text-brand pb-1 border-b border-border-subtle">
+                                        عنوان و توضیحات آگهی
+                                    </h3>
+
                                     <div>
                                         <div className="flex items-center justify-between mb-2">
                                             <label className="block text-xs font-bold text-brand">
@@ -966,6 +1003,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                             </p>
                                         )}
                                     </div>
+
                                     <div>
                                         <div className="flex items-center justify-between mb-2">
                                             <label className="block text-xs font-bold text-brand">
@@ -976,7 +1014,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                             </span>
                                         </div>
                                         <textarea
-                                            rows={6}
+                                            rows={5}
                                             className={cn(
                                                 "w-full p-3.5 border rounded-xl text-sm focus:bg-surface focus:ring-2 outline-hidden leading-relaxed transition-all",
                                                 descriptionError
@@ -997,6 +1035,26 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                             </p>
                                         )}
                                     </div>
+                                </div>
+
+                                {/* Section 3: Media Upload */}
+                                <div className="space-y-3 pt-2">
+                                    <h3 className="text-sm font-black text-brand pb-1 border-b border-border-subtle">
+                                        تصاویر و ویدئوهای ملک
+                                    </h3>
+                                    <MediaGalleryUpload
+                                        value={formData.mediaIds}
+                                        onChange={(media) =>
+                                            setFormData((prev) => ({
+                                                ...prev,
+                                                mediaIds: media,
+                                            }))
+                                        }
+                                        label="تصاویر و ویدئوهای ملک"
+                                        helperText="آگهی‌های دارای تصویر و ویدئوی واقعی تا ۵ برابر بیشتر بازدید دریافت می‌کنند."
+                                        maxFiles={15}
+                                        allowVideos={true}
+                                    />
                                 </div>
                             </div>
                         )}
@@ -1031,7 +1089,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                             </div>
                                         </div>
                                         <span className="text-[11px] text-text-light bg-surface border border-border-subtle px-3 py-1 rounded-xl">
-                                            تعیین‌شده در مرحله دسته‌بندی
+                                            تعیین‌شده در مرحله اطلاعات پایه
                                         </span>
                                     </div>
                                 )}
@@ -1095,7 +1153,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                             </div>
                         )}
 
-                        {/* 4. LOCATION */}
+                        {/* 3. LOCATION */}
                         {step === "LOCATION" && (
                             <div className="space-y-4">
                                 <div>
@@ -1123,26 +1181,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                             </div>
                         )}
 
-                        {/* 5. MEDIA */}
-                        {step === "MEDIA" && (
-                            <div className="space-y-6">
-                                <MediaGalleryUpload
-                                    value={formData.mediaIds}
-                                    onChange={(media) =>
-                                        setFormData((prev) => ({
-                                            ...prev,
-                                            mediaIds: media,
-                                        }))
-                                    }
-                                    label="تصاویر و ویدئوهای ملک"
-                                    helperText="آگهی‌های دارای تصویر و ویدئوی واقعی تا ۵ برابر بیشتر بازدید دریافت می‌کنند."
-                                    maxFiles={15}
-                                    allowVideos={true}
-                                />
-                            </div>
-                        )}
-
-                        {/* 6. REVIEW */}
+                        {/* 4. REVIEW */}
                         {step === "REVIEW" && (
                             <div className="space-y-6">
                                 <h2 className="text-lg font-black text-brand">بازبینی و تایید آگهی</h2>
@@ -1205,6 +1244,15 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                             {formData.description}
                                         </p>
                                     </div>
+
+                                    {formData.mediaIds && formData.mediaIds.length > 0 && (
+                                        <div className="flex justify-between pt-2 border-t border-border-subtle/50">
+                                            <span className="text-text-light">رسانه‌های ضمیمه:</span>
+                                            <span className="font-bold text-brand">
+                                                {toPersianDigits(formData.mediaIds.length)} تصویر/ویدئو
+                                            </span>
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Quota / Publication Fee Entitlement Status */}
@@ -1249,7 +1297,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                         <button
                             type="button"
                             onClick={handleBack}
-                            disabled={step === "CATEGORY"}
+                            disabled={step === "BASIC_INFO"}
                             className="flex items-center text-text-light hover:text-brand disabled:opacity-30 font-bold text-xs"
                         >
                             <ChevronRight className="h-4 w-4 ml-1" />
@@ -1307,22 +1355,6 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                     </div>
                 </div>
             </div>
-
-            {/* City Selector Modal */}
-            <CitySelector
-                isOpen={isCitySelectorOpen}
-                onClose={() => setIsCitySelectorOpen(false)}
-                currentCityId={formData.cityId}
-                onSelect={(city) => {
-                    setFormData((prev) => ({
-                        ...prev,
-                        cityId: city.id,
-                        latitude: city.centerPoint?.latitude ?? prev.latitude ?? 35.6892,
-                        longitude: city.centerPoint?.longitude ?? prev.longitude ?? 51.3890,
-                    }));
-                    setCityName(city.name);
-                }}
-            />
         </div>
     );
 }
