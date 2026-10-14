@@ -95,31 +95,39 @@ const STATUS_CONFIG: Record<
     },
 };
 
-const formatAdPrice = (pricing?: Record<string, number>): { price: string; unit?: string } => {
+const formatAdPrice = (pricing?: Record<string, number | boolean | string>): { price: string; unit?: string } => {
     if (!pricing || Object.keys(pricing).length === 0) {
         return { price: "توافقی" };
     }
-    if (pricing.mortgagePrice !== undefined && pricing.rentPrice !== undefined) {
+    if (pricing.depositPrice !== undefined && pricing.monthlyRent !== undefined) {
         return {
-            price: `رهن ${formatPrice(pricing.mortgagePrice, "")} - اجاره ${formatPrice(pricing.rentPrice, "")}`,
-            unit: "تومان",
-        };
-    }
-    if (pricing.deposit !== undefined && pricing.monthlyRent !== undefined) {
-        return {
-            price: `ودیعه ${formatPrice(pricing.deposit, "")} - اجاره ${formatPrice(pricing.monthlyRent, "")}`,
+            price: `رهن ${formatPrice(Number(pricing.depositPrice), "")} - اجاره ${formatPrice(Number(pricing.monthlyRent), "")}`,
             unit: "تومان",
         };
     }
     if (pricing.totalPrice !== undefined) {
-        return { price: `${formatPrice(pricing.totalPrice, "")} تومان` };
+        const total = Number(pricing.totalPrice);
+        return { price: total > 0 ? formatPrice(total, "") : "توافقی", unit: total > 0 ? "تومان" : undefined };
     }
-    if (pricing.nightlyPrice !== undefined) {
-        return { price: `${formatPrice(pricing.nightlyPrice, "")} تومان`, unit: "/شب" };
+    if (pricing.depositPrice !== undefined) {
+        const dep = Number(pricing.depositPrice);
+        return { price: dep > 0 ? `ودیعه ${formatPrice(dep, "")}` : "توافقی", unit: dep > 0 ? "تومان" : undefined };
     }
-    const firstVal = Object.values(pricing)[0];
-    if (typeof firstVal === "number" && firstVal > 0) {
-        return { price: `${formatPrice(firstVal, "")} تومان` };
+    if (pricing.monthlyRent !== undefined) {
+        const rent = Number(pricing.monthlyRent);
+        return { price: rent > 0 ? `اجاره ${formatPrice(rent, "")}` : "توافقی", unit: rent > 0 ? "تومان" : undefined };
+    }
+    if (pricing.estimatedTotalPrice !== undefined) {
+        const est = Number(pricing.estimatedTotalPrice);
+        return { price: est > 0 ? `قیمت کل: ${formatPrice(est, "")}` : "توافقی", unit: est > 0 ? "تومان" : undefined };
+    }
+    if (pricing.goodwillPrice !== undefined) {
+        const gw = Number(pricing.goodwillPrice);
+        return { price: gw > 0 ? `سرقفلی: ${formatPrice(gw, "")}` : "توافقی", unit: gw > 0 ? "تومان" : undefined };
+    }
+    if (pricing.fractionPrice !== undefined) {
+        const fp = Number(pricing.fractionPrice);
+        return { price: fp > 0 ? `قدرالسهم: ${formatPrice(fp, "")}` : "توافقی", unit: fp > 0 ? "تومان" : undefined };
     }
     return { price: "توافقی" };
 };

@@ -13,7 +13,7 @@ import { useShowcase } from "@/hooks/useShowcase";
 import { useTemporaryRentAdDetail, useTemporaryRentAds } from "@/hooks/useTemporaryRent";
 import { cn, formatPrice, getMediaPosterUrl, getMediaUrl, toPersianDigits } from "@/lib/utils";
 import { temporaryRentService } from "@/services/temporary-rent.service";
-import type { TemporaryRentAd, TemporaryRentContactInfo } from "@/types/api/temporary-rent.types";
+import type { TemporaryRentAd, TemporaryRentContactInfo, TemporaryRentPricingReadModel } from "@/types/api/temporary-rent.types";
 import {
     Bath,
     Bed,
@@ -225,7 +225,24 @@ export default function ResidenceDetailScene({ initialData }: ResidenceDetailSce
         );
     }
 
-    const nightlyPrice = residence.pricing.nightlyPrice;
+function getResidenceRate(pricing?: TemporaryRentPricingReadModel | null): number {
+    if (!pricing) return 0;
+    switch (pricing.priceModelKey) {
+        case "DAILY_RENT_STANDARD":
+        case "WEEKLY_MONTHLY_RENT":
+            return pricing.pricing.nightlyPrice;
+        case "WEEKEND_PEAK_RENT":
+            return pricing.pricing.midweekNightlyPrice || pricing.pricing.weekendNightlyPrice;
+        case "EVENT_VENUE_RENT":
+            return pricing.pricing.eventBasePrice;
+        case null:
+            return pricing.legacyNightlyPrice;
+        default:
+            return 0;
+    }
+}
+
+    const nightlyPrice = getResidenceRate(residence.pricing);
     const totalPrice = nightlyPrice * nights;
     const lat = residence.latitude;
     const lng = residence.longitude;
@@ -680,7 +697,7 @@ export default function ResidenceDetailScene({ initialData }: ResidenceDetailSce
                                     key={item.id}
                                     id={item.id}
                                     title={item.title}
-                                    nightlyPrice={item.pricing.nightlyPrice}
+                                    nightlyPrice={getResidenceRate(item.pricing)}
                                     location={item.cityName || getCityName(item.cityId) || cityName || "ایران"}
                                     mediaIds={item.mediaIds}
                                     maxGuests={item.maxGuests}

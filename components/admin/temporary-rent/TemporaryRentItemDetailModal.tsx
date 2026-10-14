@@ -3,6 +3,51 @@
 import { useTemporaryRentAdDetail } from "@/hooks/useTemporaryRent";
 import { formatPrice, toPersianDigits, getMediaUrl, getMediaPosterUrl } from "@/lib/utils";
 import { temporaryRentService } from "@/services/temporary-rent.service";
+import type { TemporaryRentPricingReadModel } from "@/types/api/temporary-rent.types";
+
+function getTemporaryRentPriceDisplay(pricing?: TemporaryRentPricingReadModel | null): { label: string; formatted: string; hasCurrency: boolean } {
+    if (!pricing) return { label: "قیمت", formatted: "توافقی", hasCurrency: false };
+    switch (pricing.priceModelKey) {
+        case "DAILY_RENT_STANDARD":
+            return {
+                label: "اجاره هر شب",
+                formatted: formatPrice(pricing.pricing.nightlyPrice, ""),
+                hasCurrency: pricing.pricing.nightlyPrice > 0,
+            };
+        case "WEEKLY_MONTHLY_RENT":
+            return {
+                label: "اجاره هر شب",
+                formatted: formatPrice(pricing.pricing.nightlyPrice, ""),
+                hasCurrency: pricing.pricing.nightlyPrice > 0,
+            };
+        case "WEEKEND_PEAK_RENT": {
+            const amount = pricing.pricing.midweekNightlyPrice || pricing.pricing.weekendNightlyPrice;
+            return {
+                label: "اجاره هر شب",
+                formatted: formatPrice(amount, ""),
+                hasCurrency: amount > 0,
+            };
+        }
+        case "EVENT_VENUE_RENT":
+            return {
+                label: "پایه برگزاری مراسم",
+                formatted: formatPrice(pricing.pricing.eventBasePrice, ""),
+                hasCurrency: pricing.pricing.eventBasePrice > 0,
+            };
+        case null:
+            return {
+                label: "اجاره هر شب",
+                formatted: formatPrice(pricing.legacyNightlyPrice, ""),
+                hasCurrency: pricing.legacyNightlyPrice > 0,
+            };
+        default:
+            return {
+                label: "قیمت",
+                formatted: "توافقی",
+                hasCurrency: false,
+            };
+    }
+}
 import {
     Calendar,
     CheckCircle2,
@@ -232,13 +277,20 @@ export default function TemporaryRentItemDetailModal({
 
                             {/* Core Specs Grid */}
                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                                <div className="p-4 bg-surface-secondary rounded-2xl border border-border-subtle space-y-1">
-                                    <span className="text-xs text-foreground-muted font-bold block">نرخ شبانه</span>
-                                    <span className="text-base font-black text-success">
-                                        {formatPrice(ad.pricing?.nightlyPrice || 0, "")}
-                                    </span>
-                                    <span className="text-[10px] text-foreground-muted font-bold mr-1">تومان</span>
-                                </div>
+                                {(() => {
+                                    const trPrice = getTemporaryRentPriceDisplay(ad.pricing);
+                                    return (
+                                        <div className="p-4 bg-surface-secondary rounded-2xl border border-border-subtle space-y-1">
+                                            <span className="text-xs text-foreground-muted font-bold block">{trPrice.label}</span>
+                                            <span className="text-base font-black text-success">
+                                                {trPrice.formatted}
+                                            </span>
+                                            {trPrice.hasCurrency && (
+                                                <span className="text-[10px] text-foreground-muted font-bold mr-1">تومان</span>
+                                            )}
+                                        </div>
+                                    );
+                                })()}
 
                                 <div className="p-4 bg-surface-secondary rounded-2xl border border-border-subtle space-y-1">
                                     <span className="text-xs text-foreground-muted font-bold block">حداکثر ظرفیت</span>

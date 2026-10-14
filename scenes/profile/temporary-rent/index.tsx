@@ -13,6 +13,7 @@ import { showcaseService } from "@/services/showcase.service";
 import MediaIconUpload from "@/components/admin/MediaIconUpload";
 import { PromotionModal } from "@/components/promotions/PromotionModal";
 import { UpdateHostProfileRequest } from "@/types/api/showcase.types";
+import type { TemporaryRentPricingReadModel } from "@/types/api/temporary-rent.types";
 import { cn, formatCurrency, getMediaUrl, toPersianDigits } from "@/lib/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -57,6 +58,52 @@ import type { Swiper as SwiperType } from "swiper";
 
 import "swiper/css";
 import "swiper/css/free-mode";
+
+function formatTemporaryRentPricing(pricing?: TemporaryRentPricingReadModel | null): { label: string; formatted: string; hasCurrency: boolean } {
+    if (!pricing) {
+        return { label: "قیمت", formatted: "توافقی", hasCurrency: false };
+    }
+    switch (pricing.priceModelKey) {
+        case "DAILY_RENT_STANDARD":
+            return {
+                label: "اجاره هر شب",
+                formatted: formatCurrency(pricing.pricing.nightlyPrice),
+                hasCurrency: pricing.pricing.nightlyPrice > 0,
+            };
+        case "WEEKLY_MONTHLY_RENT":
+            return {
+                label: "اجاره هر شب",
+                formatted: formatCurrency(pricing.pricing.nightlyPrice),
+                hasCurrency: pricing.pricing.nightlyPrice > 0,
+            };
+        case "WEEKEND_PEAK_RENT": {
+            const amount = pricing.pricing.midweekNightlyPrice || pricing.pricing.weekendNightlyPrice;
+            return {
+                label: "اجاره هر شب",
+                formatted: formatCurrency(amount),
+                hasCurrency: amount > 0,
+            };
+        }
+        case "EVENT_VENUE_RENT":
+            return {
+                label: "پایه برگزاری مراسم",
+                formatted: formatCurrency(pricing.pricing.eventBasePrice),
+                hasCurrency: pricing.pricing.eventBasePrice > 0,
+            };
+        case null:
+            return {
+                label: "اجاره هر شب",
+                formatted: formatCurrency(pricing.legacyNightlyPrice),
+                hasCurrency: pricing.legacyNightlyPrice > 0,
+            };
+        default:
+            return {
+                label: "قیمت",
+                formatted: "توافقی",
+                hasCurrency: false,
+            };
+    }
+}
 
 type Tab = "overview" | "rentals" | "settings" | "posts";
 
@@ -712,10 +759,17 @@ export default function TemporaryRentPanelScene() {
 
                                             <div className="pt-2 flex flex-wrap items-center justify-between gap-3 border-t border-soft-border/40">
                                                 <div>
-                                                    <span className="text-[10px] text-secondary font-bold block">اجاره هر شب:</span>
-                                                    <span className="text-sm font-black text-primary">
-                                                        {formatCurrency(ad.pricing?.nightlyPrice)} <span className="text-[10px] font-normal text-secondary">تومان</span>
-                                                    </span>
+                                                    {(() => {
+                                                        const trPrice = formatTemporaryRentPricing(ad.pricing);
+                                                        return (
+                                                            <>
+                                                                <span className="text-[10px] text-secondary font-bold block">{trPrice.label}:</span>
+                                                                <span className="text-sm font-black text-primary">
+                                                                    {trPrice.formatted} {trPrice.hasCurrency && <span className="text-[10px] font-normal text-secondary">تومان</span>}
+                                                                </span>
+                                                            </>
+                                                        );
+                                                    })()}
                                                 </div>
 
                                                 <div className="flex flex-wrap items-center gap-2">

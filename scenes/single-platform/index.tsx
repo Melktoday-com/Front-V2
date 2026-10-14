@@ -39,6 +39,40 @@ import { formatCurrency, toPersianDigits, cn, getMediaUrl, getMediaPosterUrl } f
 import { toast } from "sonner";
 import { UnifiedPost } from "@/types/api/post.types";
 import { MarkdownRenderer } from "@/components/ui/MarkdownRenderer";
+function formatShowcaseAdPrice(pricing?: unknown): string {
+  if (!pricing || typeof pricing !== "object") return "توافقی";
+  const p = pricing as Record<string, unknown>;
+  const values = (p.values && typeof p.values === "object" ? p.values : p) as Record<string, number | boolean | string>;
+
+  if (values.depositPrice !== undefined && values.monthlyRent !== undefined) {
+    return `رهن ${formatCurrency(Number(values.depositPrice))} - اجاره ${formatCurrency(Number(values.monthlyRent))} تومان`;
+  }
+  if (values.totalPrice !== undefined) {
+    const total = Number(values.totalPrice);
+    return total > 0 ? `${formatCurrency(total)} تومان` : "توافقی";
+  }
+  if (values.depositPrice !== undefined) {
+    const dep = Number(values.depositPrice);
+    return dep > 0 ? `ودیعه ${formatCurrency(dep)} تومان` : "توافقی";
+  }
+  if (values.monthlyRent !== undefined) {
+    const rent = Number(values.monthlyRent);
+    return rent > 0 ? `اجاره ${formatCurrency(rent)} تومان` : "توافقی";
+  }
+  if (values.estimatedTotalPrice !== undefined) {
+    const est = Number(values.estimatedTotalPrice);
+    return est > 0 ? `قیمت کل: ${formatCurrency(est)} تومان` : "توافقی";
+  }
+  if (values.goodwillPrice !== undefined) {
+    const gw = Number(values.goodwillPrice);
+    return gw > 0 ? `سرقفلی: ${formatCurrency(gw)} تومان` : "توافقی";
+  }
+  if (values.fractionPrice !== undefined) {
+    const fp = Number(values.fractionPrice);
+    return fp > 0 ? `قدرالسهم: ${formatCurrency(fp)} تومان` : "توافقی";
+  }
+  return "توافقی";
+}
 
 export default function SinglePlatformScene() {
   const router = useRouter();
@@ -362,34 +396,36 @@ export default function SinglePlatformScene() {
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                {adsData?.items?.map((ad) => (
-                  <Link
-                    key={ad.id}
-                    href={`/ads/${ad.id}`}
-                    className="bg-surface rounded-3xl overflow-hidden border border-soft-border hover:shadow-lg transition-all group flex flex-col"
-                  >
-                    <div className="relative h-48 w-full bg-soft-bg overflow-hidden">
-                      {ad.mediaIds?.[0] ? (
-                        <Image src={getMediaUrl(ad.mediaIds[0])} alt={ad.title} fill className="object-cover group-hover:scale-105 transition-transform" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-secondary/40">
-                          <Home className="w-8 h-8" />
-                        </div>
-                      )}
-                    </div>
-                    <div className="p-5 flex-1 flex flex-col justify-between space-y-3">
-                      <h3 className="font-black text-brand text-sm line-clamp-1 group-hover:text-primary transition-colors">
-                        {ad.title}
-                      </h3>
-                      <div className="pt-3 border-t border-soft-border flex items-center justify-between text-xs">
-                        <span className="text-secondary font-bold">قیمت:</span>
-                        <span className="font-black text-brand text-sm">
-                          {formatCurrency(ad.totalPrice || ad.price || 0)} تومان
-                        </span>
+                {adsData?.items?.map((ad) => {
+                  return (
+                    <Link
+                      key={ad.id}
+                      href={`/ads/${ad.id}`}
+                      className="bg-surface rounded-3xl overflow-hidden border border-soft-border hover:shadow-lg transition-all group flex flex-col"
+                    >
+                      <div className="relative h-48 w-full bg-soft-bg overflow-hidden">
+                        {ad.mediaIds?.[0] ? (
+                          <Image src={getMediaUrl(ad.mediaIds[0])} alt={ad.title} fill className="object-cover group-hover:scale-105 transition-transform" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-secondary/40">
+                            <Home className="w-8 h-8" />
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  </Link>
-                ))}
+                      <div className="p-5 flex-1 flex flex-col justify-between space-y-3">
+                        <h3 className="font-black text-brand text-sm line-clamp-1 group-hover:text-primary transition-colors">
+                          {ad.title}
+                        </h3>
+                        <div className="pt-3 border-t border-soft-border flex items-center justify-between text-xs">
+                          <span className="text-secondary font-bold">قیمت:</span>
+                          <span className="font-black text-brand text-sm">
+                            {formatShowcaseAdPrice(ad.pricing)}
+                          </span>
+                        </div>
+                      </div>
+                    </Link>
+                  );
+                })}
               </div>
             )}
           </div>

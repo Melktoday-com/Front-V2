@@ -46,6 +46,42 @@ import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { MarkdownRenderer } from "@/components/ui/MarkdownRenderer";
+function getAgencyAdPricing(pricing?: Record<string, number | boolean | string> | null): { price: string | number; unit?: string } {
+    if (!pricing || Object.keys(pricing).length === 0) {
+        return { price: "توافقی" };
+    }
+    if (pricing.depositPrice !== undefined && pricing.monthlyRent !== undefined) {
+        return {
+            price: `رهن ${formatPrice(Number(pricing.depositPrice), "")} - اجاره ${formatPrice(Number(pricing.monthlyRent), "")}`,
+            unit: "تومان",
+        };
+    }
+    if (pricing.totalPrice !== undefined) {
+        const total = Number(pricing.totalPrice);
+        return { price: total > 0 ? total : "توافقی", unit: total > 0 ? "تومان" : undefined };
+    }
+    if (pricing.depositPrice !== undefined) {
+        const dep = Number(pricing.depositPrice);
+        return { price: dep > 0 ? `ودیعه ${formatPrice(dep, "")}` : "توافقی", unit: dep > 0 ? "تومان" : undefined };
+    }
+    if (pricing.monthlyRent !== undefined) {
+        const rent = Number(pricing.monthlyRent);
+        return { price: rent > 0 ? `اجاره ${formatPrice(rent, "")}` : "توافقی", unit: rent > 0 ? "تومان" : undefined };
+    }
+    if (pricing.estimatedTotalPrice !== undefined) {
+        const est = Number(pricing.estimatedTotalPrice);
+        return { price: est > 0 ? `قیمت کل: ${formatPrice(est, "")}` : "توافقی", unit: est > 0 ? "تومان" : undefined };
+    }
+    if (pricing.goodwillPrice !== undefined) {
+        const gw = Number(pricing.goodwillPrice);
+        return { price: gw > 0 ? `سرقفلی: ${formatPrice(gw, "")}` : "توافقی", unit: gw > 0 ? "تومان" : undefined };
+    }
+    if (pricing.fractionPrice !== undefined) {
+        const fp = Number(pricing.fractionPrice);
+        return { price: fp > 0 ? `قدرالسهم: ${formatPrice(fp, "")}` : "توافقی", unit: fp > 0 ? "تومان" : undefined };
+    }
+    return { price: "توافقی" };
+}
 
 interface SingleAgencySceneProps {
     initialData?: AgencyFull;
@@ -498,18 +534,22 @@ export default function SingleAgencyScene({ initialData }: SingleAgencySceneProp
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {ads.map((ad) => (
-                                <PropertyCard
-                                    key={ad.adId}
-                                    adId={ad.adId}
-                                    title={ad.title}
-                                    price={ad.pricing ? (Object.values(ad.pricing)[0] ?? 0) : 0}
-                                    location={ad.cityId}
-                                    image={getMediaPosterUrl(ad.mediaIds?.[0])}
-                                    isVideo={ad.mediaIds?.[0]?.type === "VIDEO"}
-                                    category={ad.subcategoryTitle || ad.categoryPath?.subcategoryTitle || ad.categoryPath?.subcategoryKey}
-                                />
-                            ))}
+                            {ads.map((ad) => {
+                                const adPrice = getAgencyAdPricing(ad.pricing);
+                                return (
+                                    <PropertyCard
+                                        key={ad.adId}
+                                        adId={ad.adId}
+                                        title={ad.title}
+                                        price={adPrice.price}
+                                        unit={adPrice.unit}
+                                        location={ad.cityName || ad.cityId}
+                                        image={getMediaPosterUrl(ad.mediaIds?.[0])}
+                                        isVideo={ad.mediaIds?.[0]?.type === "VIDEO"}
+                                        category={ad.subcategoryTitle || ad.categoryPath?.subcategoryTitle || ad.categoryPath?.subcategoryKey}
+                                    />
+                                );
+                            })}
                         </div>
                     )}
                 </div>

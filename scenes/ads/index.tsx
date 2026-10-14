@@ -437,18 +437,30 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
         setStartPage(1);
     };
 
-    const getPricingDisplay = (ad: AdSummary) => {
+    const getPricingDisplay = (ad: AdSummary): { price: string | number; unit?: string } => {
         const pricing = ad.pricing;
-        if (!pricing || Object.keys(pricing).length === 0) return { price: "توافقی", unit: undefined };
-        if (pricing.mortgagePrice !== undefined && pricing.rentPrice !== undefined) {
+        if (!pricing) return { price: "توافقی" };
+        const dep = pricing.depositPrice ?? pricing.mortgagePrice ?? pricing.deposit;
+        const rent = pricing.monthlyRent ?? pricing.rentPrice ?? pricing.monthly_rent;
+        if (dep !== undefined && rent !== undefined) {
             return {
-                price: `رهن ${formatPrice(pricing.mortgagePrice, "")} - اجاره ${formatPrice(pricing.rentPrice, "")}`,
+                price: `رهن ${formatPrice(Number(dep), "")} - اجاره ${formatPrice(Number(rent), "")}`,
                 unit: "تومان",
             };
         }
-        if (pricing.nightlyPrice !== undefined) return { price: pricing.nightlyPrice, unit: "/شب" };
-        const firstValue = Object.values(pricing)[0];
-        return { price: firstValue ?? "توافقی", unit: undefined };
+        if (pricing.totalPrice !== undefined || pricing.price !== undefined) {
+            const total = Number(pricing.totalPrice ?? pricing.price);
+            return { price: total > 0 ? total : "توافقی", unit: "تومان" };
+        }
+        if (dep !== undefined) {
+            const depNum = Number(dep);
+            return { price: depNum > 0 ? `ودیعه ${formatPrice(depNum, "")}` : "توافقی", unit: "تومان" };
+        }
+        if (rent !== undefined) {
+            const rentNum = Number(rent);
+            return { price: rentNum > 0 ? `اجاره ${formatPrice(rentNum, "")}` : "توافقی", unit: "تومان" };
+        }
+        return { price: "توافقی" };
     };
 
     // Map center: based on city coordinates or ads; decoupled from zone selection count to avoid disruptive viewport resets

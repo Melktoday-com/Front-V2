@@ -41,6 +41,7 @@ import { formatCurrency, formatPrice, toPersianDigits, cn, getMediaUrl, getMedia
 import { toast } from "sonner";
 import { UnifiedPost } from "@/types/api/post.types";
 import { AdSummary } from "@/types/api/ads.types";
+import type { TemporaryRentPricingReadModel } from "@/types/api/temporary-rent.types";
 import { HostAbout, ShowcaseResponse } from "@/types/api/showcase.types";
 import { MarkdownRenderer } from "@/components/ui/MarkdownRenderer";
 
@@ -87,18 +88,42 @@ export default function SingleHostScene({ idOrSlug, initialData }: SingleHostSce
   const hasAds = ads.length > 0;
   const isHostOwner = Boolean(user?.userId && (hostUserId === user.userId || header?.id === user.userId || idOrSlug === user.userId));
 
-  const getPricingDisplay = (ad: AdSummary) => {
+  const getPricingDisplay = (ad: AdSummary): { price: string; unit?: string } => {
     const pricing = ad.pricing;
-    if (!pricing || Object.keys(pricing).length === 0) return { price: "توافقی", unit: undefined };
-    if (pricing.mortgagePrice !== undefined && pricing.rentPrice !== undefined) {
+    if (!pricing || Object.keys(pricing).length === 0) {
+      return { price: "توافقی" };
+    }
+    if (pricing.depositPrice !== undefined && pricing.monthlyRent !== undefined) {
       return {
-        price: `رهن ${formatPrice(pricing.mortgagePrice, "")} - اجاره ${formatPrice(pricing.rentPrice, "")}`,
+        price: `رهن ${formatPrice(Number(pricing.depositPrice), "")} - اجاره ${formatPrice(Number(pricing.monthlyRent), "")}`,
         unit: "تومان",
       };
     }
-    if (pricing.nightlyPrice !== undefined) return { price: pricing.nightlyPrice, unit: "/شب" };
-    const firstValue = Object.values(pricing)[0];
-    return { price: firstValue ?? "توافقی", unit: undefined };
+    if (pricing.totalPrice !== undefined) {
+      const total = Number(pricing.totalPrice);
+      return { price: total > 0 ? formatPrice(total, "") : "توافقی", unit: total > 0 ? "تومان" : undefined };
+    }
+    if (pricing.depositPrice !== undefined) {
+      const dep = Number(pricing.depositPrice);
+      return { price: dep > 0 ? `ودیعه ${formatPrice(dep, "")}` : "توافقی", unit: dep > 0 ? "تومان" : undefined };
+    }
+    if (pricing.monthlyRent !== undefined) {
+      const rent = Number(pricing.monthlyRent);
+      return { price: rent > 0 ? `اجاره ${formatPrice(rent, "")}` : "توافقی", unit: rent > 0 ? "تومان" : undefined };
+    }
+    if (pricing.estimatedTotalPrice !== undefined) {
+      const est = Number(pricing.estimatedTotalPrice);
+      return { price: est > 0 ? `قیمت کل: ${formatPrice(est, "")}` : "توافقی", unit: est > 0 ? "تومان" : undefined };
+    }
+    if (pricing.goodwillPrice !== undefined) {
+      const gw = Number(pricing.goodwillPrice);
+      return { price: gw > 0 ? `سرقفلی: ${formatPrice(gw, "")}` : "توافقی", unit: gw > 0 ? "تومان" : undefined };
+    }
+    if (pricing.fractionPrice !== undefined) {
+      const fp = Number(pricing.fractionPrice);
+      return { price: fp > 0 ? `قدرالسهم: ${formatPrice(fp, "")}` : "توافقی", unit: fp > 0 ? "تومان" : undefined };
+    }
+    return { price: "توافقی" };
   };
 
   const handleToggleFollow = () => {
@@ -319,7 +344,25 @@ export default function SingleHostScene({ idOrSlug, initialData }: SingleHostSce
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 {rentalsData?.items?.map((rental) => {
                   const media = rental.mediaIds?.[0] || rental.media_ids?.[0];
-                  const price = rental.pricing?.nightlyPrice || rental.attributes?.nightlyPrice || rental.basePricePerNight || rental.price || 0;
+                  const p = rental.pricing as TemporaryRentPricingReadModel | undefined;
+                  let nightlyRate = 0;
+                  if (p) {
+                    switch (p.priceModelKey) {
+                      case "DAILY_RENT_STANDARD":
+                      case "WEEKLY_MONTHLY_RENT":
+                        nightlyRate = p.pricing.nightlyPrice || 0;
+                        break;
+                      case "WEEKEND_PEAK_RENT":
+                        nightlyRate = p.pricing.midweekNightlyPrice || p.pricing.weekendNightlyPrice || 0;
+                        break;
+                      case "EVENT_VENUE_RENT":
+                        nightlyRate = p.pricing.eventBasePrice || 0;
+                        break;
+                      case null:
+                        nightlyRate = p.legacyNightlyPrice || 0;
+                        break;
+                    }
+                  }
                   return (
                     <Link
                       key={rental.id}
@@ -355,7 +398,9 @@ export default function SingleHostScene({ idOrSlug, initialData }: SingleHostSce
                         <div className="pt-3 border-t border-soft-border flex items-center justify-between text-xs">
                           <span className="text-secondary font-bold">هر شب از:</span>
                           <span className="font-black text-brand text-sm">
-                            {formatCurrency(price)} تومان
+                            {nightlyRate > 0
+                              ? `${formatCurrency(nightlyRate)} تومان`
+                              : "توافقی"}
                           </span>
                         </div>
                       </div>

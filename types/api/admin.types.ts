@@ -3,6 +3,7 @@ import { PricingFieldDefinition } from "./ads.types";
 import { JsonObject } from "../common";
 import { AgencyFull } from "./agency.types";
 import type { MediaReference } from "./media.types";
+import type { TemporaryRentPricingPayload } from "./temporary-rent.types";
 
 export interface ModerationHistory {
     id: string;
@@ -331,7 +332,8 @@ export interface AdminCreateAdRequest {
     };
     title: string;
     description: string;
-    rawPricing?: Record<string, number | string | boolean>;
+    priceModelKey?: string;
+    pricingValues?: Record<string, number | boolean | string>;
     attributes?: JsonObject;
     latitude: number;
     longitude: number;
@@ -352,7 +354,9 @@ export interface AdminCreateTemporaryRentRequest {
     };
     title: string;
     description: string;
-    nightlyPrice: number;
+    priceModelKey: string;
+    pricing: TemporaryRentPricingPayload;
+    nightlyPrice?: number;
     maxGuests: number;
     availabilityWindow: {
         availableFrom: string;

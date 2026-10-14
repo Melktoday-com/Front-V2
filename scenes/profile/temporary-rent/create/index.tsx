@@ -80,7 +80,7 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
         lastName: "",
     });
 
-    const [formData, setFormData] = useState<CreateTemporaryRentDraftRequest>({
+    const [formData, setFormData] = useState<Omit<CreateTemporaryRentDraftRequest, "priceModelKey" | "pricing">>({
         cityId: "",
         categoryPath: {
             categoryKey: "",
@@ -123,7 +123,7 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
         return [formData.latitude || 35.6892, formData.longitude || 51.3890];
     }, [formData.cityId, cityName, geoHierarchy, formData.latitude, formData.longitude]);
 
-    const [rawPricing, setRawPricing] = useState<Record<string, number | string | boolean>>({});
+    const [pricing, setPricing] = useState<Record<string, number | string | boolean>>({});
     const [priceModelKey, setPriceModelKey] = useState<string>("DAILY_RENT_STANDARD");
 
     const createDraftMutation = useCreateTemporaryRentDraft();
@@ -200,7 +200,7 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
         // Validate pricing
         if (activePriceModel) {
             for (const field of activePriceModel.pricingFields) {
-                const val = rawPricing[field.key];
+                const val = pricing[field.key];
                 if (field.required && (val === undefined || val === null || val === "" || Number(val) <= 0)) {
                     pErrors[field.key] = `فیلد ${field.label} الزامی است`;
                     isValid = false;
@@ -275,8 +275,8 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
 
     const handleSubmit = async () => {
         try {
-            const resolvedNightlyPrice = rawPricing.nightlyPrice
-                ? Number(rawPricing.nightlyPrice)
+            const resolvedNightlyPrice = pricing.nightlyPrice
+                ? Number(pricing.nightlyPrice)
                 : formData.nightlyPrice || 1000000;
             const resolvedMaxGuests = formData.attributes?.max_guests
                 ? Number(formData.attributes.max_guests)
@@ -300,6 +300,8 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
                     description: formData.description,
                     nightlyPrice: resolvedNightlyPrice,
                     maxGuests: resolvedMaxGuests,
+                    priceModelKey,
+                    pricing,
                     availabilityWindow: {
                         availableFrom: formData.availabilityWindow?.availableFrom || new Date().toISOString(),
                         availableTo: formData.availabilityWindow?.availableTo || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
@@ -309,7 +311,7 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
                     mediaIds: formData.mediaIds || [],
                     attributes: {
                         ...formData.attributes,
-                        ...rawPricing,
+                        ...pricing,
                     },
                 };
                 await adminService.createTemporaryRent(payload);
@@ -323,10 +325,10 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
                 nightlyPrice: resolvedNightlyPrice,
                 maxGuests: resolvedMaxGuests,
                 priceModelKey,
-                pricing: rawPricing,
+                pricing,
                 attributes: {
                     ...formData.attributes,
-                    ...rawPricing,
+                    ...pricing,
                 },
             };
 
@@ -561,7 +563,7 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
                                                                 subcategoryKey: val,
                                                             },
                                                         }));
-                                                        setRawPricing({});
+                                                        setPricing({});
                                                     }}
                                                     options={
                                                         categories
@@ -600,7 +602,7 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
                                                                             type="button"
                                                                             onClick={() => {
                                                                                 setPriceModelKey(pm.key);
-                                                                                setRawPricing({});
+                                                                                setPricing({});
                                                                                 setPricingErrors({});
                                                                             }}
                                                                             className={cn(
@@ -701,9 +703,9 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
                                     <div className="p-5 bg-surface-secondary/60 border border-border-subtle/80 rounded-2xl">
                                         <DynamicPricingFields
                                             priceModel={activePriceModel}
-                                            values={rawPricing}
+                                            values={pricing}
                                             onChange={(k, v) => {
-                                                setRawPricing((prev) => ({ ...prev, [k]: v }));
+                                                setPricing((prev) => ({ ...prev, [k]: v }));
                                                 if (k === "nightlyPrice") {
                                                     setFormData((prev) => ({ ...prev, nightlyPrice: Number(v) }));
                                                 }
@@ -830,7 +832,7 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
                                     <div className="flex justify-between pb-2 border-b border-border-subtle/50">
                                         <span className="text-text-light">اجاره هر شب:</span>
                                         <span className="font-bold text-success">
-                                            {formatCurrency(rawPricing.nightlyPrice ? Number(rawPricing.nightlyPrice) : formData.nightlyPrice)} تومان
+                                            {formatCurrency(pricing.nightlyPrice ? Number(pricing.nightlyPrice) : formData.nightlyPrice)} تومان
                                         </span>
                                     </div>
                                     <div className="border-t border-border-subtle/60 pt-3">

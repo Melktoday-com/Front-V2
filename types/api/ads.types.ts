@@ -57,7 +57,8 @@ export interface AdSummary {
     categoryPath: CategoryPath;
     categoryTitle?: string;
     subcategoryTitle?: string;
-    pricing: Record<string, number>;
+    priceModelKey?: string;
+    pricing: Record<string, number | boolean | string>;
     isFeatured: boolean;
     isSaved?: boolean;
     mediaIds?: MediaReference[];
@@ -123,8 +124,8 @@ export interface CreateAdDraftRequest {
     categoryPath: CategoryPath;
     title: string;
     description: string;
-    rawPricing: Record<string, number | string | boolean>;
-    pricing?: Record<string, number | string | boolean>;
+    priceModelKey?: string;
+    pricingValues?: Record<string, number | boolean | string>;
     attributes: JsonObject;
     latitude: number;
     longitude: number;
@@ -134,7 +135,8 @@ export interface CreateAdDraftRequest {
 export interface EditAdRequest {
     title?: string;
     description?: string;
-    rawPricing?: Record<string, number | string | boolean>;
+    priceModelKey?: string;
+    pricingValues?: Record<string, number | boolean | string>;
     attributes?: JsonObject;
     mediaIds?: MediaReference[];
 }
@@ -149,9 +151,32 @@ export interface AdMutationResponse {
 
 export interface CreateAdDraftResponse extends AdMutationResponse {
     categoryPath: CategoryPath;
-    pricing: Record<string, number>;
+    priceModelKey?: string;
+    pricing: Record<string, number | boolean | string>;
     createdAt: string;
 }
+
+export interface AdCanonicalPricingRead {
+    kind: 'CANONICAL';
+    modelKey: string;
+    unit: string | null;
+    values: Record<string, number | boolean | string>;
+}
+
+export type AdPricingReadModel =
+    | AdCanonicalPricingRead
+    | {
+        kind: 'LEGACY_MODEL';
+        modelKey: string;
+        unit: string | null;
+        values: Record<string, number | boolean | string>;
+    }
+    | {
+        kind: 'UNCLASSIFIED';
+        modelKey: null;
+        unit: string | null;
+        values: Record<string, number | boolean | string>;
+    };
 
 export interface AdContactInfo {
     adId: string;

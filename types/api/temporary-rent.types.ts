@@ -13,6 +13,61 @@ export interface TemporaryRentAvailabilityWindow {
     availableTo: string;
 }
 
+export interface TemporaryRentDailyRentStandardValues {
+    nightlyPrice: number;
+    extraGuestNightlyPrice?: number;
+    securityDeposit?: number;
+}
+
+export interface TemporaryRentWeeklyMonthlyRentValues {
+    nightlyPrice: number;
+    weeklyDiscountPercent?: number;
+    monthlyPrice: number;
+    securityDeposit?: number;
+}
+
+export interface TemporaryRentWeekendPeakRentValues {
+    midweekNightlyPrice: number;
+    weekendNightlyPrice: number;
+    peakHolidayNightlyPrice?: number;
+    minStayNightsWeekend?: number;
+}
+
+export interface TemporaryRentEventVenueRentValues {
+    eventBasePrice: number;
+    maxEventGuests: number;
+    extraPersonFee?: number;
+    cleaningAndDamageDeposit: number;
+    musicAndSoundLimitHours?: string;
+}
+
+export type TemporaryRentPricingReadModel =
+    | {
+        priceModelKey: 'DAILY_RENT_STANDARD';
+        pricing: TemporaryRentDailyRentStandardValues;
+        legacyNightlyPrice?: never;
+    }
+    | {
+        priceModelKey: 'WEEKLY_MONTHLY_RENT';
+        pricing: TemporaryRentWeeklyMonthlyRentValues;
+        legacyNightlyPrice?: never;
+    }
+    | {
+        priceModelKey: 'WEEKEND_PEAK_RENT';
+        pricing: TemporaryRentWeekendPeakRentValues;
+        legacyNightlyPrice?: never;
+    }
+    | {
+        priceModelKey: 'EVENT_VENUE_RENT';
+        pricing: TemporaryRentEventVenueRentValues;
+        legacyNightlyPrice?: never;
+    }
+    | {
+        priceModelKey: null;
+        pricing: null;
+        legacyNightlyPrice: number;
+    };
+
 export interface TemporaryRentAd {
     id: string;
     ownerId: string;
@@ -20,9 +75,7 @@ export interface TemporaryRentAd {
     status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED' | 'PENDING_APPROVAL';
     title: string;
     description: string;
-    pricing: {
-        nightlyPrice: number;
-    };
+    pricing: TemporaryRentPricingReadModel;
     maxGuests: number;
     guestCapacity?: number;
     mediaIds: MediaReference[];
@@ -46,20 +99,27 @@ export interface TemporaryRentAd {
     publisher?: AdPublisher;
 }
 
+export type TemporaryRentPricingPayload =
+    | TemporaryRentDailyRentStandardValues
+    | TemporaryRentWeeklyMonthlyRentValues
+    | TemporaryRentWeekendPeakRentValues
+    | TemporaryRentEventVenueRentValues
+    | Record<string, JsonValue>;
+
 export interface CreateTemporaryRentDraftRequest {
     cityId: string;
     categoryPath: TemporaryRentCategoryPath;
     title: string;
     description: string;
-    nightlyPrice: number;
+    priceModelKey: string;
+    pricing: TemporaryRentPricingPayload;
+    nightlyPrice?: number;
     maxGuests: number;
     availabilityWindow: TemporaryRentAvailabilityWindow;
     latitude: number;
     longitude: number;
     attributes?: Record<string, JsonValue>;
     mediaIds?: MediaReference[];
-    priceModelKey?: string;
-    pricing?: Record<string, number | string | boolean>;
 }
 
 export interface PublishTemporaryRentRequest {

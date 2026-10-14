@@ -52,6 +52,41 @@ const Map = dynamic(() => import("@/components/ui/Map"), {
     ),
 });
 
+function getAdSummaryPricing(pricing?: Record<string, number | boolean | string> | null): { price: string | number; unit?: string } {
+    if (!pricing) return { price: "توافقی" };
+    if (pricing.depositPrice !== undefined && pricing.monthlyRent !== undefined) {
+        return {
+            price: `رهن ${formatPrice(Number(pricing.depositPrice), "")} - اجاره ${formatPrice(Number(pricing.monthlyRent), "")}`,
+            unit: "تومان",
+        };
+    }
+    if (pricing.totalPrice !== undefined) {
+        const total = Number(pricing.totalPrice);
+        return { price: total > 0 ? total : "توافقی", unit: total > 0 ? "تومان" : undefined };
+    }
+    if (pricing.depositPrice !== undefined) {
+        const dep = Number(pricing.depositPrice);
+        return { price: dep > 0 ? `ودیعه ${formatPrice(dep, "")}` : "توافقی", unit: dep > 0 ? "تومان" : undefined };
+    }
+    if (pricing.monthlyRent !== undefined) {
+        const rent = Number(pricing.monthlyRent);
+        return { price: rent > 0 ? `اجاره ${formatPrice(rent, "")}` : "توافقی", unit: rent > 0 ? "تومان" : undefined };
+    }
+    if (pricing.estimatedTotalPrice !== undefined) {
+        const est = Number(pricing.estimatedTotalPrice);
+        return { price: est > 0 ? `قیمت کل: ${formatPrice(est, "")}` : "توافقی", unit: est > 0 ? "تومان" : undefined };
+    }
+    if (pricing.goodwillPrice !== undefined) {
+        const gw = Number(pricing.goodwillPrice);
+        return { price: gw > 0 ? `سرقفلی: ${formatPrice(gw, "")}` : "توافقی", unit: gw > 0 ? "تومان" : undefined };
+    }
+    if (pricing.fractionPrice !== undefined) {
+        const fp = Number(pricing.fractionPrice);
+        return { price: fp > 0 ? `قدرالسهم: ${formatPrice(fp, "")}` : "توافقی", unit: fp > 0 ? "تومان" : undefined };
+    }
+    return { price: "توافقی" };
+}
+
 interface SingleAdSceneProps {
     initialData?: AdDetail;
 }
@@ -219,15 +254,33 @@ export default function SingleAdScene({ initialData }: SingleAdSceneProps = {}) 
     let priceMain = "توافقی";
     let priceSub: string | null = null;
 
-    if (pricing.mortgagePrice !== undefined && pricing.rentPrice !== undefined) {
-        priceMain = `رهن: ${formatAdPrice(pricing.mortgagePrice)}`;
-        priceSub = `اجاره ماهانه: ${formatAdPrice(pricing.rentPrice)}`;
+    if (pricing.depositPrice !== undefined && pricing.monthlyRent !== undefined) {
+        priceMain = `رهن: ${formatAdPrice(Number(pricing.depositPrice))}`;
+        priceSub = `اجاره ماهانه: ${formatAdPrice(Number(pricing.monthlyRent))}`;
     } else if (pricing.totalPrice !== undefined) {
-        priceMain = formatAdPrice(pricing.totalPrice);
-    } else if (pricing.nightlyPrice !== undefined) {
-        priceMain = `${formatAdPrice(pricing.nightlyPrice)} /شب`;
-    } else if (Object.values(pricing).length > 0) {
-        priceMain = formatAdPrice(Object.values(pricing)[0]);
+        const total = Number(pricing.totalPrice);
+        priceMain = total > 0 ? formatAdPrice(total) : "توافقی";
+    } else if (pricing.depositPrice !== undefined) {
+        const dep = Number(pricing.depositPrice);
+        priceMain = dep > 0 ? `ودیعه: ${formatAdPrice(dep)}` : "توافقی";
+    } else if (pricing.monthlyRent !== undefined) {
+        const rent = Number(pricing.monthlyRent);
+        priceMain = rent > 0 ? `اجاره: ${formatAdPrice(rent)}` : "توافقی";
+    } else if (pricing.estimatedTotalPrice !== undefined) {
+        const est = Number(pricing.estimatedTotalPrice);
+        priceMain = est > 0 ? `پیش‌بینی: ${formatAdPrice(est)}` : "توافقی";
+    } else if (pricing.goodwillPrice !== undefined) {
+        const gw = Number(pricing.goodwillPrice);
+        priceMain = gw > 0 ? `سرقفلی: ${formatAdPrice(gw)}` : "توافقی";
+    } else if (pricing.fractionPrice !== undefined) {
+        const frac = Number(pricing.fractionPrice);
+        priceMain = frac > 0 ? `قدرالسهم: ${formatAdPrice(frac)}` : "توافقی";
+    } else if (pricing.prepaymentAmount !== undefined) {
+        const prep = Number(pricing.prepaymentAmount);
+        priceMain = prep > 0 ? `پیش‌پرداخت: ${formatAdPrice(prep)}` : "توافقی";
+        if (pricing.monthlyLeaseInstallment !== undefined) {
+            priceSub = `اجاره ماهانه: ${formatAdPrice(Number(pricing.monthlyLeaseInstallment))}`;
+        }
     }
 
     // Attributes extraction
@@ -652,7 +705,8 @@ export default function SingleAdScene({ initialData }: SingleAdSceneProps = {}) 
                                     key={item.adId}
                                     adId={item.adId}
                                     title={item.title}
-                                    price={Object.values(item.pricing)[0] ?? 0}
+                                    price={getAdSummaryPricing(item.pricing).price}
+                                    unit={getAdSummaryPricing(item.pricing).unit}
                                     location={getCityName(item.cityId || ad.cityId)}
                                     image={getMediaPosterUrl(item.mediaIds?.[0])}
                                     isVideo={item.mediaIds?.[0]?.type === "VIDEO"}

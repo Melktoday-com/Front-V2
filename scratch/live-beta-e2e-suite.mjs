@@ -441,7 +441,8 @@ async function runLiveE2ETestSuite() {
       },
       title: `آگهی آزمایشی با کلید پویا ${ts}`,
       description: 'این آگهی جهت سنجش یکپارچگی ویرایش کلید فنی ثبت شده است.',
-      rawPricing: {
+      priceModelKey: 'CASH_FREEHOLD_SALE',
+      pricingValues: {
         totalPrice: 4500000000,
       },
       attributes: {
@@ -543,7 +544,8 @@ async function runLiveE2ETestSuite() {
       body: {
         title: `آگهی با عنوان به روز شده ${ts}`,
         description: 'توضیحات اصلاح شده پس از تغییر کلید دسته بندی',
-        rawPricing: {
+        priceModelKey: 'CASH_FREEHOLD_SALE',
+        pricingValues: {
           totalPrice: 4800000000,
         },
         attributes: {

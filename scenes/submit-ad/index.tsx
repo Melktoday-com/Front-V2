@@ -105,7 +105,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
             attributeSchemaVersion: 1,
         },
         attributes: {},
-        rawPricing: {},
+        pricingValues: {},
         latitude: initialCoords.latitude,
         longitude: initialCoords.longitude,
         mediaIds: [] as MediaReference[],
@@ -183,7 +183,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                     title: existingAd.title,
                     description: existingAd.description,
                     attributes: existingAd.attributes || {},
-                    rawPricing: existingAd.pricing || {},
+                    pricingValues: existingAd.pricing || {},
                     latitude: existingAd.location?.latitude ?? 35.6892,
                     longitude: existingAd.location?.longitude ?? 51.389,
                     mediaIds: existingAd.mediaIds || [],
@@ -297,6 +297,9 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
 
     const submitMutation = useMutation({
         mutationFn: async ({ shouldPublish }: { shouldPublish: boolean }) => {
+            const resolvedPriceModelKey = activePriceModel?.key || formData.categoryPath?.businessModelKey;
+            const resolvedPricingValues = (formData.pricingValues as Record<string, number | boolean | string>) || {};
+
             if (adminMode) {
                 const payload: AdminCreateAdRequest = {
                     isPlatform: adminOwnership.isPlatform,
@@ -313,7 +316,8 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                     },
                     title: formData.title!,
                     description: formData.description!,
-                    rawPricing: (formData.rawPricing as Record<string, number | string | boolean>) || {},
+                    priceModelKey: resolvedPriceModelKey,
+                    pricingValues: resolvedPricingValues,
                     attributes: formData.attributes || {},
                     latitude: formData.latitude || 35.6892,
                     longitude: formData.longitude || 51.389,
@@ -331,7 +335,8 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                 await adsService.update(editAdId, {
                     title: formData.title,
                     description: formData.description,
-                    rawPricing: formData.rawPricing,
+                    priceModelKey: resolvedPriceModelKey,
+                    pricingValues: resolvedPricingValues,
                     attributes: formData.attributes,
                     mediaIds: formData.mediaIds,
                 });
@@ -347,7 +352,8 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                     },
                     title: formData.title!,
                     description: formData.description!,
-                    rawPricing: (formData.rawPricing as Record<string, number | string | boolean>) || {},
+                    priceModelKey: resolvedPriceModelKey,
+                    pricingValues: resolvedPricingValues,
                     attributes: formData.attributes || {},
                     latitude: formData.latitude || 35.6892,
                     longitude: formData.longitude || 51.389,
@@ -422,7 +428,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
         // Validate required pricing fields
         if (activePriceModel) {
             for (const field of activePriceModel.pricingFields) {
-                const val = formData.rawPricing?.[field.key];
+                const val = formData.pricingValues?.[field.key];
                 if (field.required) {
                     if (val === undefined || val === null || String(val).trim() === "") {
                         pErrors[field.key] = `فیلد ${field.label} الزامی است`;
@@ -793,7 +799,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                                                     businessModelKey: "",
                                                                     attributeSchemaVersion: 1,
                                                                 },
-                                                                rawPricing: {},
+                                                                pricingValues: {},
                                                                 attributes: {},
                                                             }));
                                                         }}
@@ -841,7 +847,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                                                 businessModelKey: "",
                                                                 attributeSchemaVersion: 1,
                                                             },
-                                                            rawPricing: {},
+                                                            pricingValues: {},
                                                             attributes: {},
                                                         }));
                                                     }}
@@ -889,7 +895,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                                                                         attributeSchemaVersion: prev.categoryPath?.attributeSchemaVersion || 1,
                                                                                         businessModelKey: pm.key,
                                                                                     },
-                                                                                    rawPricing: {},
+                                                                                    pricingValues: {},
                                                                                 }));
                                                                                 setPricingErrors({});
                                                                             }}
@@ -1035,12 +1041,12 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                     <div className="p-5 bg-surface-secondary/60 border border-border-subtle/80 rounded-2xl">
                                         <DynamicPricingFields
                                             priceModel={activePriceModel}
-                                            values={formData.rawPricing || {}}
+                                            values={formData.pricingValues || {}}
                                             onChange={(key, value) => {
                                                 setFormData((prev) => ({
                                                     ...prev,
-                                                    rawPricing: {
-                                                        ...prev.rawPricing,
+                                                    pricingValues: {
+                                                        ...prev.pricingValues,
                                                         [key]: value,
                                                     },
                                                 }));
@@ -1178,7 +1184,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                             <p className="text-xs font-bold text-text-light">شرایط مالی:</p>
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                                 {activePriceModel.pricingFields.map((f) => {
-                                                    const val = formData.rawPricing?.[f.key];
+                                                    const val = formData.pricingValues?.[f.key];
                                                     if (val === undefined || val === null || val === "") return null;
                                                     return (
                                                         <div key={f.key} className="flex justify-between p-2.5 bg-surface rounded-xl border border-border-subtle/60 text-xs">

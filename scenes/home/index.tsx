@@ -16,10 +16,53 @@ import { useTemporaryRentAds } from "@/hooks/useTemporaryRent";
 import { TemporaryRentAdSummary } from "@/services/temporary-rent.service";
 import { AdSummary } from "@/types/api/ads.types";
 import { AgencySummary } from "@/types/api/agency.types";
-import { getMediaUrl, getMediaPosterUrl } from "@/lib/utils";
+import { TemporaryRentPricingReadModel } from "@/types/api/temporary-rent.types";
+import { getMediaUrl, getMediaPosterUrl, formatPrice } from "@/lib/utils";
 import { Footer } from "@/components/layout/Footer";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+
+function getHomeAdPrice(pricing?: Record<string, number | boolean | string>): { price: string | number; unit?: string } {
+    if (!pricing) return { price: "توافقی" };
+    const dep = pricing.depositPrice ?? pricing.mortgagePrice ?? pricing.deposit;
+    const rent = pricing.monthlyRent ?? pricing.rentPrice ?? pricing.monthly_rent;
+    if (dep !== undefined && rent !== undefined) {
+        return {
+            price: `رهن ${formatPrice(Number(dep), "")} - اجاره ${formatPrice(Number(rent), "")}`,
+            unit: "تومان",
+        };
+    }
+    if (pricing.totalPrice !== undefined || pricing.price !== undefined) {
+        const total = Number(pricing.totalPrice ?? pricing.price);
+        return { price: total > 0 ? total : "توافقی", unit: "تومان" };
+    }
+    if (dep !== undefined) {
+        const depNum = Number(dep);
+        return { price: depNum > 0 ? `ودیعه ${formatPrice(depNum, "")}` : "توافقی", unit: "تومان" };
+    }
+    if (rent !== undefined) {
+        const rentNum = Number(rent);
+        return { price: rentNum > 0 ? `اجاره ${formatPrice(rentNum, "")}` : "توافقی", unit: "تومان" };
+    }
+    return { price: "توافقی" };
+}
+
+function getHomeTemporaryRentPrice(pricing: TemporaryRentPricingReadModel): { amount: number; unit: string } {
+    switch (pricing.priceModelKey) {
+        case "DAILY_RENT_STANDARD":
+        case "WEEKLY_MONTHLY_RENT":
+            return { amount: pricing.pricing.nightlyPrice, unit: "/شب" };
+        case "WEEKEND_PEAK_RENT":
+            return {
+                amount: pricing.pricing.midweekNightlyPrice || pricing.pricing.weekendNightlyPrice,
+                unit: "/شب",
+            };
+        case "EVENT_VENUE_RENT":
+            return { amount: pricing.pricing.eventBasePrice, unit: "/رویداد" };
+        case null:
+            return { amount: pricing.legacyNightlyPrice, unit: "/شب" };
+    }
+}
 
 export const HomeScene = () => {
     const { selectedCity, setSelectedCity } = useCity();
@@ -118,6 +161,7 @@ export const HomeScene = () => {
                     <Slider>
                         {featuredData?.items.map((property: AdSummary) => {
                             const effectiveId = property.adId || (property as any).id;
+                            const adPrice = getHomeAdPrice(property.pricing);
                             return (
                                 <PropertyCard
                                     key={effectiveId}
@@ -126,7 +170,8 @@ export const HomeScene = () => {
                                     variant="vertical"
                                     href={`/ads/${effectiveId}`}
                                     title={property.title}
-                                    price={Object.values(property.pricing)[0] ?? 0}
+                                    price={adPrice.price}
+                                    unit={adPrice.unit}
                                     location={selectedCity.name}
                                     image={getMediaPosterUrl(property.mediaIds?.[0])}
                                     isVideo={property.mediaIds?.[0]?.type === "VIDEO"}
@@ -192,25 +237,28 @@ export const HomeScene = () => {
                         <EmptyState message="در حال حاضر اقامتگاه روزانه‌ای در این شهر ثبت نشده است" />
                     ) : (
                         <Slider>
-                            {tempRentData.items.map((property: TemporaryRentAdSummary) => (
-                                <PropertyCard
-                                    key={property.id}
-                                    id={property.id}
-                                    adId={property.id}
-                                    variant="vertical"
-                                    href={`/temporary-rent/${property.id}`}
-                                    title={property.title}
-                                    price={property.pricing.nightlyPrice}
-                                    unit="/شب"
-                                    location={selectedCity.name}
-                                    image={getMediaPosterUrl(property.mediaIds?.[0])}
-                                    isVideo={property.mediaIds?.[0]?.type === "VIDEO"}
-                                    category="اجاره روزانه"
-                                    className="w-[210px] lg:w-[250px]"
-                                    isSaved={property.isSaved ?? isTemporaryRentSaved(property.id)}
-                                    onToggleSave={(id) => toggleSaveTempMutation.mutateAsync(id)}
-                                />
-                            ))}
+                            {tempRentData.items.map((property: TemporaryRentAdSummary) => {
+                                const trPrice = getHomeTemporaryRentPrice(property.pricing);
+                                return (
+                                    <PropertyCard
+                                        key={property.id}
+                                        id={property.id}
+                                        adId={property.id}
+                                        variant="vertical"
+                                        href={`/temporary-rent/${property.id}`}
+                                        title={property.title}
+                                        price={trPrice.amount}
+                                        unit={trPrice.unit}
+                                        location={selectedCity.name}
+                                        image={getMediaPosterUrl(property.mediaIds?.[0])}
+                                        isVideo={property.mediaIds?.[0]?.type === "VIDEO"}
+                                        category="اجاره روزانه"
+                                        className="w-[210px] lg:w-[250px]"
+                                        isSaved={property.isSaved ?? isTemporaryRentSaved(property.id)}
+                                        onToggleSave={(id) => toggleSaveTempMutation.mutateAsync(id)}
+                                    />
+                                );
+                            })}
                         </Slider>
                     )}
                 </div>
@@ -237,6 +285,7 @@ export const HomeScene = () => {
                     <Slider>
                         {recentData.items.map((property: AdSummary) => {
                             const effectiveId = property.adId || (property as any).id;
+                            const adPrice = getHomeAdPrice(property.pricing);
                             return (
                                 <PropertyCard
                                     key={effectiveId}
@@ -245,7 +294,8 @@ export const HomeScene = () => {
                                     variant="vertical"
                                     href={`/ads/${effectiveId}`}
                                     title={property.title}
-                                    price={Object.values(property.pricing)[0] ?? 0}
+                                    price={adPrice.price}
+                                    unit={adPrice.unit}
                                     location={selectedCity.name}
                                     image={getMediaPosterUrl(property.mediaIds?.[0])}
                                     isVideo={property.mediaIds?.[0]?.type === "VIDEO"}

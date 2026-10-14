@@ -20,6 +20,41 @@ const DefaultIcon = L.icon({
 
 L.Marker.prototype.options.icon = DefaultIcon;
 
+function getMapAdPricing(pricing?: Record<string, number | boolean | string> | null): { price: string | number; unit?: string } {
+    if (!pricing || Object.keys(pricing).length === 0) return { price: "توافقی" };
+    if (pricing.depositPrice !== undefined && pricing.monthlyRent !== undefined) {
+        return {
+            price: `رهن ${Number(pricing.depositPrice).toLocaleString('fa-IR')} - اجاره ${Number(pricing.monthlyRent).toLocaleString('fa-IR')}`,
+            unit: "تومان",
+        };
+    }
+    if (pricing.totalPrice !== undefined) {
+        const total = Number(pricing.totalPrice);
+        return { price: total > 0 ? total : "توافقی", unit: total > 0 ? "تومان" : undefined };
+    }
+    if (pricing.depositPrice !== undefined) {
+        const dep = Number(pricing.depositPrice);
+        return { price: dep > 0 ? `ودیعه ${dep.toLocaleString('fa-IR')}` : "توافقی", unit: dep > 0 ? "تومان" : undefined };
+    }
+    if (pricing.monthlyRent !== undefined) {
+        const rent = Number(pricing.monthlyRent);
+        return { price: rent > 0 ? `اجاره ${rent.toLocaleString('fa-IR')}` : "توافقی", unit: rent > 0 ? "تومان" : undefined };
+    }
+    if (pricing.estimatedTotalPrice !== undefined) {
+        const est = Number(pricing.estimatedTotalPrice);
+        return { price: est > 0 ? est : "توافقی", unit: est > 0 ? "تومان" : undefined };
+    }
+    if (pricing.goodwillPrice !== undefined) {
+        const gw = Number(pricing.goodwillPrice);
+        return { price: gw > 0 ? gw : "توافقی", unit: gw > 0 ? "تومان" : undefined };
+    }
+    if (pricing.fractionPrice !== undefined) {
+        const fp = Number(pricing.fractionPrice);
+        return { price: fp > 0 ? fp : "توافقی", unit: fp > 0 ? "تومان" : undefined };
+    }
+    return { price: "توافقی" };
+}
+
 const createPriceIcon = (price: string) => L.divIcon({
     className: 'price-tag-icon',
     html: `
@@ -419,11 +454,12 @@ export default function Map({
                 ) : (
                     /* Fallback to legacy ads list if markers not provided */
                     adsWithLocation.map((ad) => {
-                        const price = ad.pricing ? Object.values(ad.pricing)[0] : undefined;
-                        const priceLabel = price ?
-                            (price >= 1000000000 ? `${(price / 1000000000).toFixed(1)} میلیارد` :
-                                (price >= 1000000 ? `${(price / 1000000).toFixed(0)} میلیون` : price.toLocaleString()))
-                            : "توافقی";
+                        const priceInfo = getMapAdPricing(ad.pricing);
+                        const numericPrice = typeof priceInfo.price === "number" ? priceInfo.price : undefined;
+                        const priceLabel = numericPrice ?
+                            (numericPrice >= 1000000000 ? `${(numericPrice / 1000000000).toFixed(1)} میلیارد` :
+                                (numericPrice >= 1000000 ? `${(numericPrice / 1000000).toFixed(0)} میلیون` : numericPrice.toLocaleString('fa-IR')))
+                            : (priceInfo.price ? String(priceInfo.price) : "توافقی");
 
                         return (
                             <Marker
@@ -437,11 +473,12 @@ export default function Map({
                                             adId={ad.adId}
                                             variant="vertical"
                                             title={ad.title}
-                                            price={price?.toLocaleString() || "0"}
+                                            price={priceInfo.price || "0"}
+                                            unit={priceInfo.unit}
                                             location={ad.cityId}
                                             image={getMediaPosterUrl(ad.mediaIds?.[0])}
                                             isVideo={ad.mediaIds?.[0]?.type === "VIDEO"}
-                                            category={ad.subcategoryTitle || ad.categoryPath.subcategoryTitle || ad.categoryPath.subcategoryKey}
+                                            category={ad.subcategoryTitle || ad.categoryPath?.subcategoryTitle || ad.categoryPath?.subcategoryKey}
                                         />
                                     </div>
                                 </Popup>

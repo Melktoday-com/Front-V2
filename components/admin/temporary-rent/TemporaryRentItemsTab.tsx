@@ -8,6 +8,7 @@ import {
 } from "@/hooks/useTemporaryRent";
 import { formatPrice, toPersianDigits, getMediaUrl, getMediaPosterUrl } from "@/lib/utils";
 import { TemporaryRentAdSummary } from "@/services/temporary-rent.service";
+import type { TemporaryRentPricingReadModel } from "@/types/api/temporary-rent.types";
 import {
     AlertCircle,
     Building2,
@@ -46,6 +47,44 @@ const STATUS_FILTERS = [
     { key: "ARCHIVED", label: "آرشیو شده", badgeClass: "bg-surface-secondary text-foreground-secondary border-border-subtle" },
     { key: "ALL", label: "همه وضعیت‌ها", badgeClass: "bg-info-subtle text-blue-800 border-info/30" },
 ] as const;
+
+function formatTemporaryRentPrice(pricing?: TemporaryRentPricingReadModel | null): { formatted: string; hasCurrency: boolean } {
+    if (!pricing) return { formatted: "توافقی", hasCurrency: false };
+    switch (pricing.priceModelKey) {
+        case "DAILY_RENT_STANDARD":
+            return {
+                formatted: formatPrice(pricing.pricing.nightlyPrice, ""),
+                hasCurrency: pricing.pricing.nightlyPrice > 0,
+            };
+        case "WEEKLY_MONTHLY_RENT":
+            return {
+                formatted: formatPrice(pricing.pricing.nightlyPrice, ""),
+                hasCurrency: pricing.pricing.nightlyPrice > 0,
+            };
+        case "WEEKEND_PEAK_RENT": {
+            const amount = pricing.pricing.midweekNightlyPrice || pricing.pricing.weekendNightlyPrice;
+            return {
+                formatted: formatPrice(amount, ""),
+                hasCurrency: amount > 0,
+            };
+        }
+        case "EVENT_VENUE_RENT":
+            return {
+                formatted: formatPrice(pricing.pricing.eventBasePrice, ""),
+                hasCurrency: pricing.pricing.eventBasePrice > 0,
+            };
+        case null:
+            return {
+                formatted: formatPrice(pricing.legacyNightlyPrice, ""),
+                hasCurrency: pricing.legacyNightlyPrice > 0,
+            };
+        default:
+            return {
+                formatted: "توافقی",
+                hasCurrency: false,
+            };
+    }
+}
 
 export default function TemporaryRentItemsTab() {
     // Filter & Search states
@@ -480,12 +519,19 @@ export default function TemporaryRentItemsTab() {
 
                                             {/* Nightly Price */}
                                             <td className="px-5 py-4">
-                                                <div className="font-black text-success">
-                                                    {formatPrice(item.pricing?.nightlyPrice || 0, "")}
-                                                    <span className="text-[10px] text-foreground-muted font-bold mr-1">
-                                                        تومان
-                                                    </span>
-                                                </div>
+                                                {(() => {
+                                                    const trPrice = formatTemporaryRentPrice(item.pricing);
+                                                    return (
+                                                        <div className="font-black text-success">
+                                                            {trPrice.formatted}
+                                                            {trPrice.hasCurrency && (
+                                                                <span className="text-[10px] text-foreground-muted font-bold mr-1">
+                                                                    تومان
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })()}
                                             </td>
 
                                             {/* Guests */}

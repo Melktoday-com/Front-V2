@@ -10,6 +10,8 @@ import {
 } from './post.types';
 import type { MediaReference } from './media.types';
 import type { JsonValue } from '../common';
+import type { AdPricingReadModel } from './ads.types';
+import type { TemporaryRentPricingReadModel } from './temporary-rent.types';
 
 export type {
   PublisherType,
@@ -137,15 +139,23 @@ export interface ShowcaseListingAttributes {
 
 export interface ShowcaseListingItem {
   id: string;
+  owner_id?: string;
+  city_id?: string;
   title: string;
+  description?: string;
   price?: number;
   totalPrice?: number;
   basePricePerNight?: number;
-  pricing?: ShowcaseListingPricing;
+  pricing?:
+    | AdPricingReadModel
+    | TemporaryRentPricingReadModel
+    | ShowcaseListingPricing;
   attributes?: ShowcaseListingAttributes;
   address?: string;
   mediaIds?: MediaReference[];
   media_ids?: MediaReference[];
+  status?: string;
+  is_featured?: boolean;
   createdAt?: string;
   created_at?: string;
 }

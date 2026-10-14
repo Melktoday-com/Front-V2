@@ -285,7 +285,8 @@ async function run() {
         businessModelKey: 'CASH_FREEHOLD_SALE',
         attributeSchemaVersion: 1,
       },
-      rawPricing: { totalPrice: 1000000000 },
+      priceModelKey: 'CASH_FREEHOLD_SALE',
+      pricingValues: { totalPrice: 1000000000 },
       mediaIds: [mediaId], // RAW STRING ARRAY - INVALID!
       attributes: { floor_count: 2 },
       latitude: 35.7,
@@ -391,7 +392,8 @@ async function run() {
         businessModelKey: 'CASH_FREEHOLD_SALE',
         attributeSchemaVersion: 1,
       },
-      rawPricing: { totalPrice: 5500000000 },
+      priceModelKey: 'CASH_FREEHOLD_SALE',
+      pricingValues: { totalPrice: 5500000000 },
       mediaIds: [{ id: mediaId, type: 'IMAGE' }], // CANONICAL OBJECT SHAPE!
       attributes: { floor_count: 3 },
       latitude: 35.7,

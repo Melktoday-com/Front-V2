@@ -158,16 +158,36 @@ export default function AdminOrgAdsTab() {
 
     const totalPages = Math.ceil((adsData?.total || 0) / limit) || 1;
 
-    const formatAdPrice = (pricing?: Record<string, number>) => {
+    const formatAdPrice = (pricing?: Record<string, number | boolean | string>) => {
         if (!pricing || Object.keys(pricing).length === 0) return "توافقی";
-        if (pricing.totalPrice) return `${formatPrice(pricing.totalPrice, "")} تومان`;
-        if (pricing.deposit || pricing.monthlyRent) {
-            const dep = pricing.deposit ? `${formatPrice(pricing.deposit, "")} ودیعه` : "";
-            const rent = pricing.monthlyRent ? `${formatPrice(pricing.monthlyRent, "")} اجاره` : "";
-            return [dep, rent].filter(Boolean).join(" / ");
+        if (pricing.depositPrice !== undefined && pricing.monthlyRent !== undefined) {
+            return `رهن ${formatPrice(Number(pricing.depositPrice), "")} - اجاره ${formatPrice(Number(pricing.monthlyRent), "")} تومان`;
         }
-        const firstVal = Object.values(pricing)[0];
-        return typeof firstVal === "number" ? `${formatPrice(firstVal, "")} تومان` : "توافقی";
+        if (pricing.totalPrice !== undefined) {
+            const total = Number(pricing.totalPrice);
+            return total > 0 ? `${formatPrice(total, "")} تومان` : "توافقی";
+        }
+        if (pricing.depositPrice !== undefined) {
+            const dep = Number(pricing.depositPrice);
+            return dep > 0 ? `ودیعه ${formatPrice(dep, "")} تومان` : "توافقی";
+        }
+        if (pricing.monthlyRent !== undefined) {
+            const rent = Number(pricing.monthlyRent);
+            return rent > 0 ? `اجاره ${formatPrice(rent, "")} تومان` : "توافقی";
+        }
+        if (pricing.estimatedTotalPrice !== undefined) {
+            const est = Number(pricing.estimatedTotalPrice);
+            return est > 0 ? `قیمت کل: ${formatPrice(est, "")} تومان` : "توافقی";
+        }
+        if (pricing.goodwillPrice !== undefined) {
+            const gw = Number(pricing.goodwillPrice);
+            return gw > 0 ? `سرقفلی: ${formatPrice(gw, "")} تومان` : "توافقی";
+        }
+        if (pricing.fractionPrice !== undefined) {
+            const fp = Number(pricing.fractionPrice);
+            return fp > 0 ? `قدرالسهم: ${formatPrice(fp, "")} تومان` : "توافقی";
+        }
+        return "توافقی";
     };
 
     const getStatusBadge = (status: AdStatus) => {

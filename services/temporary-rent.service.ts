@@ -8,6 +8,7 @@ import {
     TemporaryRentContactInfo,
     TemporaryRentMutationResponse,
     TemporaryRentSubcategoryConfigResponse,
+    TemporaryRentPricingReadModel,
 } from "@/types/api/temporary-rent.types";
 
 export interface TemporaryRentAdSummary {
@@ -17,9 +18,7 @@ export interface TemporaryRentAdSummary {
     cityName?: string;
     status: string;
     title: string;
-    pricing: {
-        nightlyPrice: number;
-    };
+    pricing: TemporaryRentPricingReadModel;
     mediaIds?: MediaReference[];
     createdAt: string;
     maxGuests?: number;
