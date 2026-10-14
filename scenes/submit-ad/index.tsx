@@ -1220,11 +1220,33 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                                 {activePriceModel.pricingFields.map((f) => {
                                                     const val = formData.pricingValues?.[f.key];
                                                     if (val === undefined || val === null || val === "") return null;
+
+                                                    const isBool = f.fieldType === "BOOLEAN" || typeof val === "boolean" || val === "true" || val === "false";
+                                                    let displayValue: string;
+
+                                                    if (isBool) {
+                                                        const isTrue = val === true || val === "true" || val === 1 || val === "1";
+                                                        const isQuestion = f.label.includes("آیا") || f.label.includes("؟") || f.label.includes("?");
+                                                        displayValue = isQuestion ? (isTrue ? "بله" : "خیر") : (isTrue ? "دارد" : "ندارد");
+                                                    } else if (f.fieldType === "NUMBER") {
+                                                        const unit = f.unit?.trim();
+                                                        if (unit && unit !== "تومان") {
+                                                            displayValue = `${formatPrice(Number(val), "")} ${unit}`;
+                                                        } else {
+                                                            displayValue = formatPrice(Number(val));
+                                                        }
+                                                    } else if (f.fieldType === "SELECT") {
+                                                        const matchedOption = f.constraints?.options?.find((opt) => opt.key === String(val));
+                                                        displayValue = matchedOption?.label || String(val);
+                                                    } else {
+                                                        displayValue = `${String(val)}${f.unit ? ` ${f.unit}` : ""}`;
+                                                    }
+
                                                     return (
                                                         <div key={f.key} className="flex justify-between p-2.5 bg-surface rounded-xl border border-border-subtle/60 text-xs">
                                                             <span className="text-text-light">{f.label}:</span>
                                                             <span className="font-bold text-brand">
-                                                                {f.fieldType === "NUMBER" ? formatPrice(Number(val)) : String(val)} {f.unit || ""}
+                                                                {displayValue}
                                                             </span>
                                                         </div>
                                                     );
