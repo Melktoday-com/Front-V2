@@ -1,28 +1,30 @@
 "use client";
 
+import { PromotionModal } from "@/components/promotions/PromotionModal";
+import { PropertyCard } from "@/components/ui/PropertyCard";
 import { useAd, useAdContact, useAds } from "@/hooks/useAds";
 import { useAuth } from "@/hooks/useAuth";
+import { useCategoryLookup } from "@/hooks/useCategoryLookup";
 import { useCreateConversation } from "@/hooks/useChat";
-import { cn, formatAdPrice, formatPrice, toPersianDigits, getMediaUrl, getMediaPosterUrl } from "@/lib/utils";
-import { AdDetail, AdSummary, SubcategoryConfigResponse } from "@/types/api/ads.types";
+import { useCityLookup } from "@/hooks/useCityLookup";
+import { useToggleSaveAd } from "@/hooks/useFavorites";
+import { useSafeBack } from "@/hooks/useSafeBack";
+import { cn, formatAdPrice, formatPrice, getMediaPosterUrl, getMediaUrl, toPersianDigits } from "@/lib/utils";
 import { adsService } from "@/services/ads.service";
+import { AdDetail, AdSummary, SubcategoryConfigResponse } from "@/types/api/ads.types";
+import { AdStatus } from "@/types/api/enums";
 import { useQuery } from "@tanstack/react-query";
 import {
-    Bath,
     Bed,
     Building,
     Building2,
     Calendar,
-    Check,
     CheckCircle2,
     ChevronLeft,
     ChevronRight,
-    Clock,
     Copy,
     CreditCard,
     FileText,
-    Flame,
-    Hash,
     Heart,
     Layers,
     Lock,
@@ -36,24 +38,15 @@ import {
     Share2,
     ShieldAlert,
     ShieldCheck,
-    Snowflake,
     Sparkles,
-    Star,
     Tag,
-    X,
+    X
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import { useSafeBack } from "@/hooks/useSafeBack";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { useCityLookup } from "@/hooks/useCityLookup";
-import { useCategoryLookup } from "@/hooks/useCategoryLookup";
-import { PropertyCard } from "@/components/ui/PropertyCard";
-import { useToggleSaveAd } from "@/hooks/useFavorites";
-import { PromotionModal } from "@/components/promotions/PromotionModal";
-import { AdStatus } from "@/types/api/enums";
 
 const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string; border: string }> = {
     [AdStatus.PUBLISHED]: {
@@ -273,7 +266,7 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
             navigator.share({
                 title: ad?.title,
                 url: window.location.href,
-            }).catch(() => {});
+            }).catch(() => { });
         } else if (typeof navigator !== "undefined" && navigator.clipboard) {
             navigator.clipboard.writeText(window.location.href);
             toast.success("لینک آگهی کپی شد");
@@ -595,10 +588,10 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
                                         {ad.status === AdStatus.DRAFT
                                             ? "این آگهی در حالت پیش‌نویس است و هنوز در سایت منتشر نشده است."
                                             : ad.status === AdStatus.PENDING_APPROVAL
-                                            ? "این آگهی در دست بررسی کارشناسان ملک تودی است."
-                                            : ad.status === AdStatus.REJECTED
-                                            ? "این آگهی تایید نشده است. لطفاً برای ویرایش اقدام نمایید."
-                                            : "این آگهی بایگانی یا غیرفعال شده است."}
+                                                ? "این آگهی در دست بررسی کارشناسان ملک تودی است."
+                                                : ad.status === AdStatus.REJECTED
+                                                    ? "این آگهی تایید نشده است. لطفاً برای ویرایش اقدام نمایید."
+                                                    : "این آگهی بایگانی یا غیرفعال شده است."}
                                     </p>
                                 </div>
                             </div>
@@ -656,47 +649,7 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
                             </span>
                         </div>
 
-                        {/* Ad ID and Owner Badge */}
-                        <div className="flex flex-wrap items-center justify-between gap-2 text-text-light text-xs mt-3 pt-3 border-t border-border-subtle/50">
-                            <div className="flex items-center gap-1.5">
-                                <Hash className="w-3.5 h-3.5 text-text-light" />
-                                <span>شناسه آگهی:</span>
-                                <code className="bg-surface-secondary px-2 py-0.5 rounded text-[11px] font-mono text-brand font-bold select-all">
-                                    {ad.adId}
-                                </code>
-                                <button
-                                    onClick={handleCopyId}
-                                    className="p-1 hover:text-brand text-text-light transition-colors cursor-pointer"
-                                    title="کپی شناسه آگهی"
-                                >
-                                    <Copy className="w-3.5 h-3.5" />
-                                </button>
-                            </div>
-                            {isOwner && (
-                                <span className="text-[11px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
-                                    آگهی شما
-                                </span>
-                            )}
-                        </div>
                     </div>
-
-                    {/* Category & Subcategory Pills */}
-                    {(categoryTitle || subcategoryTitle) && (
-                        <div className="flex flex-wrap items-center gap-2">
-                            {categoryTitle && (
-                                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-secondary rounded-xl border border-border-subtle text-xs">
-                                    <span className="text-text-light">دسته اصلی:</span>
-                                    <span className="font-bold text-brand">{categoryTitle}</span>
-                                </div>
-                            )}
-                            {subcategoryTitle && (
-                                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary rounded-xl border border-primary/20 text-xs">
-                                    <span className="text-primary/70">زیردسته:</span>
-                                    <span className="font-bold">{subcategoryTitle}</span>
-                                </div>
-                            )}
-                        </div>
-                    )}
 
                     {/* Financial Terms Card */}
                     {hasFinancialDetails && (
@@ -803,8 +756,8 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
                         <div className={cn(
                             "grid gap-3 bg-surface-secondary/70 p-4 rounded-2xl border border-border-subtle",
                             keyMetrics.length === 1 ? "grid-cols-1" :
-                            keyMetrics.length === 2 ? "grid-cols-2" :
-                            keyMetrics.length === 3 ? "grid-cols-3" : "grid-cols-2 sm:grid-cols-4"
+                                keyMetrics.length === 2 ? "grid-cols-2" :
+                                    keyMetrics.length === 3 ? "grid-cols-3" : "grid-cols-2 sm:grid-cols-4"
                         )}>
                             {keyMetrics.map((m, idx) => {
                                 const IconComp = m.icon;
@@ -837,13 +790,14 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
                                         <span>{feat.label}</span>
                                         {feat.value ? (
                                             <span className="flex items-center gap-1 text-[11px] font-black text-success">
-                                                <CheckCircle2 className="w-3.5 h-3.5" />
                                                 دارد
+                                                <CheckCircle2 className="w-3.5 h-3.5" />
                                             </span>
                                         ) : (
                                             <span className="flex items-center gap-1 text-[11px] text-foreground-muted">
-                                                <Minus className="w-3.5 h-3.5" />
                                                 ندارد
+                                                <Minus className="w-3.5 h-3.5" />
+
                                             </span>
                                         )}
                                     </div>

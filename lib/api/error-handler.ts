@@ -126,3 +126,35 @@ export function normalizeApiError(
  * Backward compatible alias
  */
 export const translateApiErrorMessage = (msg: string): string => msg;
+
+/**
+ * Strictly typed check for whether an API error represents an insufficient wallet balance.
+ */
+export function isInsufficientBalanceError(error: Error | AxiosError<ApiErrorResponse>): boolean {
+    if (axios.isAxiosError(error)) {
+        const data: ApiErrorResponse | undefined = error.response?.data;
+        const status = error.response?.status;
+        if (status === 402) {
+            return true;
+        }
+
+        if (data && typeof data === "object") {
+            const errObj = typeof data.error === "object" ? data.error : undefined;
+            const code = errObj?.code || "";
+            if (code === "WALLET_INSUFFICIENT_BALANCE" || code === "INSUFFICIENT_AVAILABLE_BALANCE") {
+                return true;
+            }
+
+            const message = (errObj?.message || (typeof data.message === "string" ? data.message : "") || "").toLowerCase();
+            if (
+                status === 400 &&
+                (message.includes("insufficient") ||
+                    message.includes("موجودی") ||
+                    message.includes("کیف پول"))
+            ) {
+                return true;
+            }
+        }
+    }
+    return false;
+}

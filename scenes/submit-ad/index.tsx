@@ -11,11 +11,12 @@ import {
     SelectDrawerOption,
     SelectDrawerTag,
 } from "@/components/ui/ResponsiveSelectDrawer";
+import { AdPublicationFeeModal } from "@/components/wallet/AdPublicationFeeModal";
 import { useAd, useCategories } from "@/hooks/useAds";
 import { useGeoHierarchy } from "@/hooks/useGeoHierarchy";
 import { useEntitlements } from "@/hooks/useSubscription";
 import { useUserStatus } from "@/hooks/useUserStatus";
-import { normalizeApiError } from "@/lib/api/error-handler";
+import { isInsufficientBalanceError, normalizeApiError } from "@/lib/api/error-handler";
 import { cn, formatPrice, getMediaUrl, toPersianDigits } from "@/lib/utils";
 import { adminService } from "@/services/admin.service";
 import { adsService } from "@/services/ads.service";
@@ -93,6 +94,8 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
 
     const [step, setStep] = useState<Step>("BASIC_INFO");
     const [submitForApproval, setSubmitForApproval] = useState(false);
+    const [isFeeModalOpen, setIsFeeModalOpen] = useState(false);
+    const [feeModalAdId, setFeeModalAdId] = useState<string | null>(null);
     const [cityName, setCityName] = useState(selectedCity?.name || "");
     const [pricingErrors, setPricingErrors] = useState<Record<string, string>>({});
     const [attributeErrors, setAttributeErrors] = useState<Record<string, string>>({});
@@ -539,28 +542,16 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
             if (shouldPublish && adId) {
                 try {
                     await adsService.submitForReview(adId);
-                } catch (e: unknown) {
-                    const err = e as { response?: { status?: number; data?: { message?: string } }; message?: string };
-                    const message = err?.response?.data?.message || err?.message || "";
-                    const isInsufficient =
-                        err?.response?.status === 402 ||
-                        (err?.response?.status === 400 && (
-                            message.toLowerCase().includes("insufficient") ||
-                            message.includes("موجودی") ||
-                            message.includes("کیف پول")
-                        ));
-                    if (isInsufficient) {
-                        toast.error("موجودی کیف پول برای پرداخت تعرفه انتشار کافی نیست. لطفاً ابتدا کیف پول خود را شارژ کنید.", {
-                            action: {
-                                label: "شارژ کیف پول",
-                                onClick: () => router.push("/wallet"),
-                            },
-                            duration: 8000,
-                        });
+                } catch (e) {
+                    const err = e instanceof Error ? e : new Error(String(e));
+                    if (isInsufficientBalanceError(err)) {
+                        toast.error("موجودی کیف پول شما برای پرداخت تعرفه ثبت آگهی کافی نیست.");
+                        setFeeModalAdId(adId);
+                        setIsFeeModalOpen(true);
                         return { adId, shouldPublish: false, paymentRequired: true, isUpdate: Boolean(targetAdId) };
                     }
-                    console.error("Error during submitForReview:", e);
-                    throw e;
+                    console.error("Error during submitForReview:", err);
+                    throw err;
                 }
             }
 
@@ -573,8 +564,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                 return;
             }
             if (paymentRequired) {
-                toast.info("آگهی به عنوان پیش‌نویس ذخیره شد. پس از شارژ کیف پول می‌توانید از بخش آگهی‌های من آن را ارسال کنید.");
-                router.push("/profile/ads");
+                // User is prompted with AdPublicationFeeModal/Drawer to top up
                 return;
             }
             if (shouldPublish) {
@@ -1432,6 +1422,14 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                     </div>
                 </div>
             </div>
+
+            {isFeeModalOpen && (
+                <AdPublicationFeeModal
+                    isOpen={isFeeModalOpen}
+                    onClose={() => setIsFeeModalOpen(false)}
+                    adId={feeModalAdId || activeAdId || undefined}
+                />
+            )}
         </div>
     );
 }

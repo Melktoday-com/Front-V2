@@ -35,6 +35,8 @@ import { toast } from "sonner";
 import { useUserStatus } from "@/hooks/useUserStatus";
 import { AccountStatusBanner } from "@/components/ui/AccountStatusBanner";
 import { PromotionModal } from "@/components/promotions/PromotionModal";
+import { AdPublicationFeeModal } from "@/components/wallet/AdPublicationFeeModal";
+import { isInsufficientBalanceError, normalizeApiError } from "@/lib/api/error-handler";
 
 type FilterTab = "ALL" | AdStatus;
 
@@ -387,6 +389,7 @@ export default function MyAdsScene() {
     const [deleteTarget, setDeleteTarget] = useState<AdSummary | null>(null);
     const [archiveTarget, setArchiveTarget] = useState<AdSummary | null>(null);
     const [promotingAd, setPromotingAd] = useState<{ id: string; title: string } | null>(null);
+    const [feeModalAdId, setFeeModalAdId] = useState<string | null>(null);
 
     const observerTargetRef = useRef<HTMLDivElement | null>(null);
 
@@ -440,8 +443,14 @@ export default function MyAdsScene() {
             queryClient.invalidateQueries({ queryKey: ["my-ads"] });
             queryClient.invalidateQueries({ queryKey: ["my-ads-infinite"] });
         },
-        onError: () => {
-            toast.error("خطا در ارسال آگهی برای بررسی");
+        onError: (err: Error, adId: string) => {
+            if (isInsufficientBalanceError(err)) {
+                toast.error("موجودی کیف پول شما برای پرداخت تعرفه ثبت آگهی کافی نیست.");
+                setFeeModalAdId(adId);
+                return;
+            }
+            const message = normalizeApiError(err, "خطا در ارسال آگهی برای بررسی");
+            toast.error(message);
         },
         onSettled: () => {
             setSubmittingId(null);
@@ -901,6 +910,13 @@ export default function MyAdsScene() {
                 listingId={promotingAd?.id || ""}
                 listingTitle={promotingAd?.title || ""}
                 itemType="LISTING"
+            />
+
+            {/* Ad Publication Fee Modal / Drawer */}
+            <AdPublicationFeeModal
+                isOpen={Boolean(feeModalAdId)}
+                onClose={() => setFeeModalAdId(null)}
+                adId={feeModalAdId || undefined}
             />
         </div>
     );
