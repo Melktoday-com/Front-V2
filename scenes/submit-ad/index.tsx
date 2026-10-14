@@ -794,11 +794,11 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
     }
 
     return (
-        <div className="min-h-screen bg-surface-secondary/50 py-8 px-4 sm:px-6 lg:px-8 pb-32 lg:pb-12">
+        <div className="min-h-screen bg-surface-secondary/50 py-3 sm:py-8 px-2.5 sm:px-6 lg:px-8 pb-24 sm:pb-32 lg:pb-12">
             <div className="max-w-3xl mx-auto">
-                <header className="mb-6 flex items-start justify-between">
+                <header className="mb-3 sm:mb-6 flex items-start justify-between">
                     <div>
-                        <h1 className="text-2xl font-black text-brand">
+                        <h1 className="text-lg sm:text-2xl font-black text-brand">
                             {adminMode
                                 ? "ثبت آگهی ملک (پنل مدیریت)"
                                 : editAdId
@@ -814,7 +814,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                 </header>
 
                 {/* Mobile Compact Step Indicator */}
-                <div className="sm:hidden mb-6 bg-surface p-4 rounded-2xl border border-border-subtle shadow-xs">
+                <div className="sm:hidden mb-3 bg-surface p-2.5 sm:p-4 rounded-xl border border-border-subtle shadow-xs">
                     <div className="flex justify-between items-center text-xs font-bold text-brand mb-2">
                         <span>
                             مرحله {toPersianDigits(currentStepIndex + 1)} از {toPersianDigits(STEPS_CONFIG.length)}:
@@ -874,11 +874,11 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                 </nav>
 
                 {/* Form Card Content */}
-                <div className="bg-surface rounded-3xl shadow-sm border border-border-subtle p-6 sm:p-8 min-h-[480px] flex flex-col justify-between">
+                <div className="bg-surface rounded-2xl sm:rounded-3xl shadow-sm border border-border-subtle p-3.5 sm:p-8 min-h-[480px] flex flex-col justify-between">
                     <div>
-                        {/* 1. BASIC_INFO (City, Category, Subcategory, Deal Type, Title, Description, Media) */}
+                        {/* 1. BASIC_INFO (City, Category, Subcategory, Deal Type, Media, Title, Description) */}
                         {step === "BASIC_INFO" && (
-                            <div className="space-y-6">
+                            <div className="space-y-4 sm:space-y-6">
                                 {adminMode && (
                                     <AdminOwnershipSelector
                                         value={adminOwnership}
@@ -888,14 +888,14 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                 )}
 
                                 <div>
-                                    <h2 className="text-lg font-black text-brand">اطلاعات پایه ملک</h2>
-                                    <p className="text-xs text-text-light mt-1">
-                                        شهر، دسته‌بندی، نوع معامله، عنوان، توضیحات و تصاویر ملک را وارد نمایید.
+                                    <h2 className="text-base sm:text-lg font-black text-brand">اطلاعات پایه ملک</h2>
+                                    <p className="text-xs text-text-light mt-0.5">
+                                        شهر، دسته‌بندی، نوع معامله، تصاویر، عنوان و توضیحات ملک را وارد نمایید.
                                     </p>
                                 </div>
 
-                                {/* Section 1: Dropdown / Drawer Selectors */}
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-surface-secondary/40 p-4 sm:p-5 rounded-2xl border border-border-subtle">
+                                {/* Section 1: Dropdown / Drawer Selectors (No background/border container) */}
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                                     {/* 1. City */}
                                     <ResponsiveSelectDrawer
                                         label="شهر ملک"
@@ -966,8 +966,28 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                     />
                                 </div>
 
-                                {/* Section 2: Title and Description */}
-                                <div className="space-y-4 pt-2">
+                                {/* Section 2: Media Upload (Above Title Section) */}
+                                <div className="space-y-3 pt-1">
+                                    <h3 className="text-sm font-black text-brand pb-1 border-b border-border-subtle">
+                                        تصاویر و ویدئوهای ملک
+                                    </h3>
+                                    <MediaGalleryUpload
+                                        value={formData.mediaIds}
+                                        onChange={(media) =>
+                                            setFormData((prev) => ({
+                                                ...prev,
+                                                mediaIds: media,
+                                            }))
+                                        }
+                                        label="تصاویر و ویدئوهای ملک"
+                                        helperText="آگهی‌های دارای تصویر و ویدئوی واقعی تا ۵ برابر بیشتر بازدید دریافت می‌کنند."
+                                        maxFiles={15}
+                                        allowVideos={true}
+                                    />
+                                </div>
+
+                                {/* Section 3: Title and Description */}
+                                <div className="space-y-4 pt-1">
                                     <h3 className="text-sm font-black text-brand pb-1 border-b border-border-subtle">
                                         عنوان و توضیحات آگهی
                                     </h3>
@@ -1035,26 +1055,6 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                             </p>
                                         )}
                                     </div>
-                                </div>
-
-                                {/* Section 3: Media Upload */}
-                                <div className="space-y-3 pt-2">
-                                    <h3 className="text-sm font-black text-brand pb-1 border-b border-border-subtle">
-                                        تصاویر و ویدئوهای ملک
-                                    </h3>
-                                    <MediaGalleryUpload
-                                        value={formData.mediaIds}
-                                        onChange={(media) =>
-                                            setFormData((prev) => ({
-                                                ...prev,
-                                                mediaIds: media,
-                                            }))
-                                        }
-                                        label="تصاویر و ویدئوهای ملک"
-                                        helperText="آگهی‌های دارای تصویر و ویدئوی واقعی تا ۵ برابر بیشتر بازدید دریافت می‌کنند."
-                                        maxFiles={15}
-                                        allowVideos={true}
-                                    />
                                 </div>
                             </div>
                         )}
@@ -1293,7 +1293,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                     </div>
 
                     {/* Navigation Buttons */}
-                    <div className="mt-10 flex items-center justify-between border-t border-border-subtle pt-6">
+                    <div className="mt-6 sm:mt-10 flex items-center justify-between border-t border-border-subtle pt-4 sm:pt-6">
                         <button
                             type="button"
                             onClick={handleBack}
