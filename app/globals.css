@@ -1,61 +1,52 @@
 @import "tailwindcss";
 
 /* =============================================================================
-   1. MANDATORY BRAND PALETTE & CENTRAL DESIGN SYSTEM TOKEN ARCHITECTURE
-   =============================================================================
-   Authoritative Source of Truth: app/globals.css
-   Brand Navy:     #3E5879 (rgb(62, 88, 121))  — Primary brand, strong surfaces, headings
-   Warm Apricot:   #E39F73 (rgb(227, 159, 115)) — Brand accent, emphasis, visual highlights
-   Warm Beige:     #D8C4B6 (rgb(216, 196, 182)) — Muted surfaces, subtle separation
-   Warm Off-White: #F5EFE7 (rgb(245, 239, 231)) — Main light background, readable cards
+   BRAND DESIGN SYSTEM
+   Source of truth: app/globals.css
+
+   Primary brand: Deep Navy #202D3E
+   Secondary navy: #3E5879
+   Vibrant accent: Teal #14B8A6
+   Main canvas:    Pure White #FFFFFF
+   Soft surface:   #F6F3EF
+
+   Keep application colors semantic. Prefer bg-primary, text-foreground,
+   border-border, bg-accent-subtle, etc. over literal colors in components.
    ============================================================================= */
 
 :root {
-  /* ===========================================================================
-     LAYER A: FOUNDATIONAL BRAND TOKENS
-     Literal source of truth for the brand. Never duplicate outside this file.
-     =========================================================================== */
-  --brand-navy: #3E5879;
-  --brand-apricot: #E39F73;
-  --brand-beige: #D8C4B6;
-  --brand-off-white: #F5EFE7;
-
-  /* ===========================================================================
-     LAYER A.1: PALETTE-DERIVED ACCESSIBLE TINTS & SHADES
-     All derivatives are mathematically grounded in the 4 parent tokens to
-     satisfy strict WCAG 2.2 AA (>= 4.5:1 normal, >= 3:1 large/non-text) and AAA.
-     =========================================================================== */
-
-  /* Deep Navy: Contrast 12.2:1 on Warm Off-White, 8.3:1 on Warm Beige, 13.9:1 on White.
-     Role: High-contrast primary reading typography, titles, bold text. (WCAG AAA) */
-  --brand-navy-dark: #202D3E;
-
-  /* Muted Navy: Contrast 5.41:1 on Warm Off-White, 6.17:1 on White.
-     Role: Accessible secondary/muted text, captions, metadata. (WCAG AA pass: >= 4.5:1) */
+  /* ---------------------------------------------------------------------------
+     A. FOUNDATION TOKENS
+     --------------------------------------------------------------------------- */
+  --brand-navy: #202D3E;
+  --brand-navy-dark: #182435;
+  --brand-navy-secondary: #3E5879;
+  --brand-navy-light: #7186A0;
   --brand-navy-muted: #4B6381;
-
-  /* Interactive Navy States: hover and pressed actions for Navy surfaces */
-  --brand-navy-hover: #324762;
-  --brand-navy-active: #283950;
+  --brand-navy-hover: #182435;
+  --brand-navy-active: #121A27;
   --brand-navy-subtle: #EDF2F7;
 
-  /* Accessible Terracotta-Apricot: Contrast 5.82:1 on Warm Off-White, 6.65:1 on White.
-     Role: High-contrast accent colored text on light backgrounds where #E39F73 (1.94:1) fails text contrast. */
-  --brand-apricot-dark: #964516;
-  --brand-apricot-hover: #D78D5E;
-  --brand-apricot-active: #C57B4D;
-  --brand-apricot-subtle: #FDF6F0;
+  /* Bright accent, used sparingly for highlights and supporting actions. */
+  --brand-teal: #14B8A6;
+  --brand-teal-hover: #0D9488;
+  --brand-teal-active: #0F766E;
+  --brand-teal-dark: #0F766E;
+  --brand-teal-subtle: #E6FFFB;
+  --brand-teal-border: #99F6E4;
 
-  /* Beige derivatives for structural boundaries and warm cards */
-  --brand-beige-subtle: #F4EDE7;
+  /* Neutrals */
+  --brand-beige: #D8C4B6;
+  --brand-off-white: #F5EFE7;
+  --brand-beige-subtle: #F6F3EF;
   --brand-beige-border: #CBB5A5;
-  /* Component boundary border: Contrast 3.01:1 on Warm Off-White (WCAG 1.4.11 Non-text contrast >= 3:1) */
   --brand-beige-boundary: #9B8471;
-
-  /* Pure surface white for cards & elevated popovers */
   --color-pure-white: #FFFFFF;
 
-  /* Centralized, palette-harmonized feedback tokens (WCAG 2.2 AA compliant) */
+  /* ---------------------------------------------------------------------------
+     B. FEEDBACK TOKENS
+     Keep status colors independent from the brand accent.
+     --------------------------------------------------------------------------- */
   --feedback-success: #236B48;
   --feedback-success-foreground: #FFFFFF;
   --feedback-success-subtle: #EBF5F0;
@@ -76,97 +67,126 @@
   --feedback-info-subtle: #EEF4F9;
   --feedback-info-border: #AEC8E2;
 
-  /* ===========================================================================
-     LAYER B: SEMANTIC DESIGN TOKENS
-     Mapped directly to UI purpose and validated for foreground/background contrast.
-     =========================================================================== */
-
-  /* Backgrounds */
-  --background: var(--brand-off-white);
+  /* ---------------------------------------------------------------------------
+     C. SEMANTIC TOKENS
+     --------------------------------------------------------------------------- */
+  /* White canvas; secondary sections may use a very subtle warm neutral. */
+  --background: var(--color-pure-white);
   --background-subtle: var(--brand-beige-subtle);
   --surface: var(--color-pure-white);
   --surface-secondary: var(--brand-beige-subtle);
   --surface-elevated: var(--color-pure-white);
   --surface-inverse: var(--brand-navy);
 
-  /* Foregrounds (Text & Icons) */
-  --foreground: var(--brand-navy-dark);
+  /* Text and icons */
+  --foreground: var(--brand-navy);
   --foreground-secondary: var(--brand-navy);
   --foreground-muted: var(--brand-navy-muted);
-  --foreground-inverse: var(--brand-off-white);
+  --foreground-inverse: var(--color-pure-white);
   --foreground-disabled: #8E9EA5;
 
-  /* Brand & Actions */
+  /* Deep Navy is the primary brand and primary button color. */
   --primary: var(--brand-navy);
-  --primary-foreground: var(--brand-off-white);
+  --primary-foreground: var(--color-pure-white);
   --primary-hover: var(--brand-navy-hover);
   --primary-active: var(--brand-navy-active);
-  --accent: var(--brand-apricot);
-  --accent-foreground: var(--brand-navy-dark);
-  --accent-hover: var(--brand-apricot-hover);
-  --accent-active: var(--brand-apricot-active);
-  --accent-subtle: var(--brand-apricot-subtle);
-  --accent-text: var(--brand-apricot-dark);
 
-  /* Borders & Focus */
-  --border: var(--brand-beige);
+  /* Teal is the accent, not the primary button/brand color. */
+  --accent: var(--brand-teal);
+  --accent-foreground: var(--brand-navy);
+  --accent-hover: var(--brand-teal-hover);
+  --accent-active: var(--brand-teal-active);
+  --accent-subtle: var(--brand-teal-subtle);
+  --accent-text: var(--brand-teal-dark);
+
+  /* Borders, inputs, and keyboard focus */
+  --border: #D8DEE7;
   --border-strong: var(--brand-navy);
   --border-subtle: var(--brand-beige-border);
   --border-boundary: var(--brand-beige-boundary);
   --input-border: var(--brand-beige-border);
   --focus-ring: var(--brand-navy);
 
-  /* Interactive & Contextual States */
+  /* Selection and interaction states */
   --selected: var(--brand-navy);
-  --selected-foreground: var(--brand-off-white);
+  --selected-foreground: var(--color-pure-white);
   --disabled: var(--brand-beige-subtle);
   --disabled-foreground: var(--brand-navy-muted);
   --overlay: rgba(32, 45, 62, 0.6);
-  --overlay-foreground: var(--brand-off-white);
+  --overlay-foreground: var(--color-pure-white);
 
-  /* Feedback Semantics */
+  /* Feedback semantic aliases */
   --success: var(--feedback-success);
   --success-foreground: var(--feedback-success-foreground);
   --success-subtle: var(--feedback-success-subtle);
+  --success-border: var(--feedback-success-border);
+
   --warning: var(--feedback-warning);
   --warning-foreground: var(--feedback-warning-foreground);
   --warning-subtle: var(--feedback-warning-subtle);
+  --warning-border: var(--feedback-warning-border);
+
   --error: var(--feedback-error);
   --error-foreground: var(--feedback-error-foreground);
   --error-subtle: var(--feedback-error-subtle);
+  --error-border: var(--feedback-error-border);
+
   --info: var(--feedback-info);
   --info-foreground: var(--feedback-info-foreground);
   --info-subtle: var(--feedback-info-subtle);
+  --info-border: var(--feedback-info-border);
 
-  /* Standard Component Geometry */
-  --radius-xs: 4px;
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 20px;
-  --radius-2xl: 24px;
-  --radius-3xl: 32px;
-  --radius-full: 9999px;
-  --radius-button: 12px;
-  --radius-card: 18px;
-  --radius-input: 12px;
-  --radius-dialog: 24px;
+  /* ---------------------------------------------------------------------------
+     D. COMPONENT GEOMETRY
+     Namespaced source values avoid self-referencing theme tokens.
+     Legacy radius aliases remain available to existing CSS.
+     --------------------------------------------------------------------------- */
+  --ui-radius-xs: 4px;
+  --ui-radius-sm: 8px;
+  --ui-radius-md: 12px;
+  --ui-radius-lg: 16px;
+  --ui-radius-xl: 20px;
+  --ui-radius-2xl: 24px;
+  --ui-radius-3xl: 32px;
+  --ui-radius-full: 9999px;
+  --ui-radius-button: 12px;
+  --ui-radius-card: 18px;
+  --ui-radius-input: 12px;
+  --ui-radius-dialog: 24px;
+
+  --radius-xs: var(--ui-radius-xs);
+  --radius-sm: var(--ui-radius-sm);
+  --radius-md: var(--ui-radius-md);
+  --radius-lg: var(--ui-radius-lg);
+  --radius-xl: var(--ui-radius-xl);
+  --radius-2xl: var(--ui-radius-2xl);
+  --radius-3xl: var(--ui-radius-3xl);
+  --radius-full: var(--ui-radius-full);
+  --radius-button: var(--ui-radius-button);
+  --radius-card: var(--ui-radius-card);
+  --radius-input: var(--ui-radius-input);
+  --radius-dialog: var(--ui-radius-dialog);
 }
 
 /* =============================================================================
-   TAILWIND CSS V4 THEME CONFIGURATION
-   Exposes semantic design tokens to Tailwind utility classes.
+   TAILWIND CSS V4 THEME
+   Semantic tokens power utilities such as bg-primary and text-foreground.
    ============================================================================= */
 @theme inline {
-  --font-vazirmatn: var(--font-vazirmatn);
+  /* The Next.js font variable is supplied by the app/layout font loader. */
+  --font-sans: var(--font-vazirmatn);
 
-  /* Foundational brand exposure */
+  /* Brand palette */
   --color-brand-navy: var(--brand-navy);
-  --color-brand-apricot: var(--brand-apricot);
+  --color-brand-deep-navy: var(--brand-navy);
+  --color-brand-navy-secondary: var(--brand-navy-secondary);
+  --color-brand-navy-light: var(--brand-navy-light);
+  --color-brand-teal: var(--brand-teal);
+  --color-brand-teal-dark: var(--brand-teal-dark);
   --color-brand-beige: var(--brand-beige);
   --color-brand-off-white: var(--brand-off-white);
 
-  /* Semantic utilities */
+  /* Semantic backgrounds and surfaces */
   --color-background: var(--background);
   --color-background-subtle: var(--background-subtle);
   --color-surface: var(--surface);
@@ -174,17 +194,20 @@
   --color-surface-elevated: var(--surface-elevated);
   --color-surface-inverse: var(--surface-inverse);
 
+  /* Semantic typography */
   --color-foreground: var(--foreground);
   --color-foreground-secondary: var(--foreground-secondary);
   --color-foreground-muted: var(--foreground-muted);
   --color-foreground-inverse: var(--foreground-inverse);
   --color-foreground-disabled: var(--foreground-disabled);
 
+  /* Primary: Deep Navy */
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-primary-hover: var(--primary-hover);
   --color-primary-active: var(--primary-active);
 
+  /* Accent: Teal */
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent-hover: var(--accent-hover);
@@ -192,6 +215,7 @@
   --color-accent-subtle: var(--accent-subtle);
   --color-accent-text: var(--accent-text);
 
+  /* Borders and focus */
   --color-border: var(--border);
   --color-border-strong: var(--border-strong);
   --color-border-subtle: var(--border-subtle);
@@ -200,6 +224,7 @@
   --color-focus-ring: var(--focus-ring);
   --color-ring: var(--focus-ring);
 
+  /* Interaction and overlay */
   --color-selected: var(--selected);
   --color-selected-foreground: var(--selected-foreground);
   --color-disabled: var(--disabled);
@@ -207,20 +232,25 @@
   --color-overlay: var(--overlay);
   --color-overlay-foreground: var(--overlay-foreground);
 
+  /* Feedback */
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
   --color-success-subtle: var(--success-subtle);
+  --color-success-border: var(--success-border);
   --color-warning: var(--warning);
   --color-warning-foreground: var(--warning-foreground);
   --color-warning-subtle: var(--warning-subtle);
+  --color-warning-border: var(--warning-border);
   --color-error: var(--error);
   --color-error-foreground: var(--error-foreground);
   --color-error-subtle: var(--error-subtle);
+  --color-error-border: var(--error-border);
   --color-info: var(--info);
   --color-info-foreground: var(--info-foreground);
   --color-info-subtle: var(--info-subtle);
+  --color-info-border: var(--info-border);
 
-  /* Component library semantic aliases */
+  /* Component-library aliases */
   --color-card: var(--surface);
   --color-card-foreground: var(--foreground);
   --color-popover: var(--surface-elevated);
@@ -231,7 +261,7 @@
   --color-destructive: var(--error);
   --color-destructive-foreground: var(--error-foreground);
 
-  /* Backward-compatible semantic aliases mapped to the brand palette */
+  /* Backward-compatible semantic aliases */
   --color-brand: var(--primary);
   --color-secondary: var(--foreground-muted);
   --color-canvas: var(--background);
@@ -244,158 +274,223 @@
   --color-status-success: var(--success);
   --color-status-info: var(--info);
 
-  /* =========================================================================
-     CENTRALIZED THEME OVERRIDES FOR STATIC TAILWIND COLOR FAMILIES
-     Binds all default utility names to the brand palette and accessible tokens,
-     completely eliminating unbranded static colors across the application.
-     ========================================================================= */
-  /* Blue -> Info / Primary Brand Navy derivatives */
+  /* ---------------------------------------------------------------------------
+     Legacy Tailwind color-family remapping.
+     Old utility classes remain on-brand instead of introducing unrelated hues.
+     --------------------------------------------------------------------------- */
+
+  /* Blue -> Deep Navy / information */
   --color-blue-50: var(--info-subtle);
   --color-blue-100: var(--info-subtle);
-  --color-blue-200: var(--feedback-info-border);
-  --color-blue-300: var(--feedback-info-border);
+  --color-blue-200: var(--info-border);
+  --color-blue-300: var(--info-border);
   --color-blue-400: var(--brand-navy-light);
   --color-blue-500: var(--brand-navy);
-  --color-blue-600: var(--info);
+  --color-blue-600: var(--brand-navy);
   --color-blue-700: var(--brand-navy-dark);
   --color-blue-800: var(--brand-navy-dark);
   --color-blue-900: var(--brand-navy-dark);
   --color-blue-950: var(--brand-navy-dark);
 
-  /* Emerald & Green -> Success */
+  /* Emerald / Green -> success */
   --color-emerald-50: var(--success-subtle);
   --color-emerald-100: var(--success-subtle);
-  --color-emerald-200: var(--feedback-success-border);
-  --color-emerald-300: var(--feedback-success-border);
+  --color-emerald-200: var(--success-border);
+  --color-emerald-300: var(--success-border);
+  --color-emerald-400: var(--success);
   --color-emerald-500: var(--success);
   --color-emerald-600: var(--success);
   --color-emerald-700: var(--success);
   --color-emerald-800: var(--success);
+  --color-emerald-900: var(--success);
+  --color-emerald-950: var(--success);
+
   --color-green-50: var(--success-subtle);
   --color-green-100: var(--success-subtle);
-  --color-green-200: var(--feedback-success-border);
+  --color-green-200: var(--success-border);
+  --color-green-300: var(--success-border);
+  --color-green-400: var(--success);
   --color-green-500: var(--success);
   --color-green-600: var(--success);
   --color-green-700: var(--success);
+  --color-green-800: var(--success);
+  --color-green-900: var(--success);
+  --color-green-950: var(--success);
 
-  /* Amber & Yellow -> Warning / Warm Apricot Accent */
+  /* Amber / Yellow -> warning */
   --color-amber-50: var(--warning-subtle);
   --color-amber-100: var(--warning-subtle);
-  --color-amber-200: var(--feedback-warning-border);
-  --color-amber-300: var(--feedback-warning-border);
-  --color-amber-400: var(--brand-apricot);
+  --color-amber-200: var(--warning-border);
+  --color-amber-300: var(--warning-border);
+  --color-amber-400: var(--warning-border);
   --color-amber-500: var(--warning);
   --color-amber-600: var(--warning);
   --color-amber-700: var(--warning);
   --color-amber-800: var(--warning);
   --color-amber-900: var(--warning);
+  --color-amber-950: var(--warning);
+
   --color-yellow-50: var(--warning-subtle);
   --color-yellow-100: var(--warning-subtle);
-  --color-yellow-200: var(--feedback-warning-border);
-  --color-yellow-400: var(--brand-apricot);
+  --color-yellow-200: var(--warning-border);
+  --color-yellow-300: var(--warning-border);
+  --color-yellow-400: var(--warning-border);
   --color-yellow-500: var(--warning);
   --color-yellow-600: var(--warning);
+  --color-yellow-700: var(--warning);
+  --color-yellow-800: var(--warning);
+  --color-yellow-900: var(--warning);
+  --color-yellow-950: var(--warning);
 
-  /* Orange -> Warm Apricot derivatives */
-  --color-orange-50: var(--brand-apricot-subtle);
-  --color-orange-100: var(--brand-apricot-subtle);
-  --color-orange-200: var(--brand-apricot-hover);
-  --color-orange-400: var(--brand-apricot);
-  --color-orange-500: var(--brand-apricot-hover);
-  --color-orange-600: var(--brand-apricot-dark);
+  /* Orange utilities -> the new vibrant Teal accent */
+  --color-orange-50: var(--brand-teal-subtle);
+  --color-orange-100: var(--brand-teal-subtle);
+  --color-orange-200: var(--brand-teal-border);
+  --color-orange-300: var(--brand-teal-border);
+  --color-orange-400: var(--brand-teal);
+  --color-orange-500: var(--brand-teal-hover);
+  --color-orange-600: var(--brand-teal-dark);
+  --color-orange-700: var(--brand-teal-dark);
+  --color-orange-800: var(--brand-teal-dark);
+  --color-orange-900: var(--brand-teal-dark);
+  --color-orange-950: var(--brand-teal-dark);
 
-  /* Red & Rose -> Error */
+  /* Teal utilities */
+  --color-teal-50: var(--brand-teal-subtle);
+  --color-teal-100: var(--brand-teal-subtle);
+  --color-teal-200: var(--brand-teal-border);
+  --color-teal-300: var(--brand-teal-border);
+  --color-teal-400: var(--brand-teal);
+  --color-teal-500: var(--brand-teal);
+  --color-teal-600: var(--brand-teal-hover);
+  --color-teal-700: var(--brand-teal-dark);
+  --color-teal-800: var(--brand-teal-dark);
+  --color-teal-900: var(--brand-teal-dark);
+  --color-teal-950: var(--brand-teal-dark);
+
+  /* Red / Rose -> error */
   --color-red-50: var(--error-subtle);
   --color-red-100: var(--error-subtle);
-  --color-red-200: var(--feedback-error-border);
-  --color-red-300: var(--feedback-error-border);
+  --color-red-200: var(--error-border);
+  --color-red-300: var(--error-border);
+  --color-red-400: var(--error);
   --color-red-500: var(--error);
   --color-red-600: var(--error);
   --color-red-700: var(--error);
   --color-red-800: var(--error);
+  --color-red-900: var(--error);
+  --color-red-950: var(--error);
+
   --color-rose-50: var(--error-subtle);
   --color-rose-100: var(--error-subtle);
-  --color-rose-200: var(--feedback-error-border);
+  --color-rose-200: var(--error-border);
+  --color-rose-300: var(--error-border);
+  --color-rose-400: var(--error);
   --color-rose-500: var(--error);
   --color-rose-600: var(--error);
   --color-rose-700: var(--error);
+  --color-rose-800: var(--error);
+  --color-rose-900: var(--error);
+  --color-rose-950: var(--error);
 
-  /* Indigo & Purple -> Brand Navy & Accent derivatives */
+  /* Indigo -> Deep Navy; Purple -> Teal accent */
   --color-indigo-50: var(--info-subtle);
   --color-indigo-100: var(--info-subtle);
+  --color-indigo-200: var(--info-border);
+  --color-indigo-300: var(--info-border);
+  --color-indigo-400: var(--brand-navy-light);
   --color-indigo-500: var(--brand-navy);
   --color-indigo-600: var(--brand-navy);
   --color-indigo-700: var(--brand-navy-dark);
-  --color-purple-50: var(--brand-apricot-subtle);
-  --color-purple-100: var(--brand-apricot-subtle);
-  --color-purple-500: var(--brand-apricot-dark);
-  --color-purple-600: var(--brand-apricot-dark);
+  --color-indigo-800: var(--brand-navy-dark);
+  --color-indigo-900: var(--brand-navy-dark);
+  --color-indigo-950: var(--brand-navy-dark);
 
-  /* Slate, Gray, Zinc -> Warm Brand Neutrals */
+  --color-purple-50: var(--brand-teal-subtle);
+  --color-purple-100: var(--brand-teal-subtle);
+  --color-purple-200: var(--brand-teal-border);
+  --color-purple-300: var(--brand-teal-border);
+  --color-purple-400: var(--brand-teal);
+  --color-purple-500: var(--brand-teal-dark);
+  --color-purple-600: var(--brand-teal-dark);
+  --color-purple-700: var(--brand-teal-dark);
+  --color-purple-800: var(--brand-teal-dark);
+  --color-purple-900: var(--brand-teal-dark);
+  --color-purple-950: var(--brand-teal-dark);
+
+  /* Slate / Gray / Zinc -> neutral brand surfaces and Navy typography */
   --color-slate-50: var(--brand-beige-subtle);
   --color-slate-100: var(--brand-beige-subtle);
   --color-slate-200: var(--brand-beige-border);
   --color-slate-300: var(--brand-beige);
   --color-slate-400: var(--brand-navy-muted);
   --color-slate-500: var(--brand-navy-muted);
-  --color-slate-600: var(--brand-navy-light);
+  --color-slate-600: var(--brand-navy-secondary);
   --color-slate-700: var(--brand-navy);
   --color-slate-800: var(--brand-navy-dark);
   --color-slate-900: var(--brand-navy-dark);
   --color-slate-950: var(--brand-navy-dark);
+
   --color-gray-50: var(--brand-beige-subtle);
   --color-gray-100: var(--brand-beige-subtle);
   --color-gray-200: var(--brand-beige-border);
   --color-gray-300: var(--brand-beige);
   --color-gray-400: var(--brand-navy-muted);
   --color-gray-500: var(--brand-navy-muted);
-  --color-gray-600: var(--brand-navy-light);
+  --color-gray-600: var(--brand-navy-secondary);
   --color-gray-700: var(--brand-navy);
   --color-gray-800: var(--brand-navy-dark);
   --color-gray-900: var(--brand-navy-dark);
+  --color-gray-950: var(--brand-navy-dark);
+
   --color-zinc-50: var(--brand-beige-subtle);
   --color-zinc-100: var(--brand-beige-subtle);
   --color-zinc-200: var(--brand-beige-border);
   --color-zinc-300: var(--brand-beige);
   --color-zinc-400: var(--brand-navy-muted);
   --color-zinc-500: var(--brand-navy-muted);
-  --color-zinc-600: var(--brand-navy-light);
+  --color-zinc-600: var(--brand-navy-secondary);
   --color-zinc-700: var(--brand-navy);
   --color-zinc-800: var(--brand-navy-dark);
   --color-zinc-900: var(--brand-navy-dark);
+  --color-zinc-950: var(--brand-navy-dark);
 
-  /* Radius & shape tokens */
-  --radius-xs: var(--radius-xs);
-  --radius-sm: var(--radius-sm);
-  --radius-md: var(--radius-md);
-  --radius-lg: var(--radius-lg);
-  --radius-xl: var(--radius-xl);
-  --radius-2xl: var(--radius-2xl);
-  --radius-3xl: var(--radius-3xl);
-  --radius-full: var(--radius-full);
-  --radius-button: var(--radius-button);
-  --radius-card: var(--radius-card);
-  --radius-input: var(--radius-input);
-  --radius-dialog: var(--radius-dialog);
+  /* Tailwind radius utilities use distinct source token names. */
+  --radius-xs: var(--ui-radius-xs);
+  --radius-sm: var(--ui-radius-sm);
+  --radius-md: var(--ui-radius-md);
+  --radius-lg: var(--ui-radius-lg);
+  --radius-xl: var(--ui-radius-xl);
+  --radius-2xl: var(--ui-radius-2xl);
+  --radius-3xl: var(--ui-radius-3xl);
+  --radius-full: var(--ui-radius-full);
+  --radius-button: var(--ui-radius-button);
+  --radius-card: var(--ui-radius-card);
+  --radius-input: var(--ui-radius-input);
+  --radius-dialog: var(--ui-radius-dialog);
 }
 
 /* =============================================================================
-   BASE STYLES & INTERACTION SEMANTICS
+   BASE STYLES
    ============================================================================= */
+html {
+  background: var(--background);
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-vazirmatn), sans-serif;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 ::selection {
-  background: var(--brand-beige);
-  color: var(--brand-navy-dark);
+  background: var(--brand-teal);
+  color: var(--brand-navy);
 }
 
-/* Focus indicator standard */
 :focus-visible {
   outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
@@ -411,9 +506,12 @@ body {
   scrollbar-width: none;
 }
 
-/* Respect user's motion preferences */
+/* Respect reduced-motion preferences. */
 @media (prefers-reduced-motion: reduce) {
-  *, ::before, ::after {
+
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
@@ -421,7 +519,7 @@ body {
   }
 }
 
-/* Leaflet focus & outline reset to prevent black bounding boxes on polygon click */
+/* Leaflet focus/outline reset to prevent black bounding boxes on polygon click. */
 .leaflet-container :focus,
 .leaflet-container :focus-visible,
 .leaflet-interactive:focus,
@@ -438,8 +536,9 @@ path.leaflet-interactive {
   transition: stroke 0.15s ease, fill 0.15s ease, stroke-width 0.15s ease;
 }
 
-/* Prevent auto-zooming on focus in iOS Safari and mobile browsers */
+/* Prevent auto-zooming on focus in iOS Safari and mobile browsers. */
 @media screen and (max-width: 768px) {
+
   input:not([type="checkbox"]):not([type="radio"]),
   textarea,
   select {
@@ -447,7 +546,7 @@ path.leaflet-interactive {
   }
 }
 
-/* Global Modal Lock: Prevent background scrolling and bouncing */
+/* Global modal lock: prevent background scrolling and bouncing. */
 body.modal-open,
 html.modal-open {
   overflow: hidden !important;
@@ -455,7 +554,7 @@ html.modal-open {
   -webkit-overflow-scrolling: touch;
 }
 
-/* Hide mobile bottom navbar when any modal or drawer is open */
+/* Hide mobile bottom navigation while any modal or drawer is open. */
 body.modal-open nav[aria-label="منوی موبایل"],
 html.modal-open nav[aria-label="منوی موبایل"],
 body.modal-open .mobile-bottom-nav,
