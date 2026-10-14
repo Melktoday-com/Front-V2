@@ -8,43 +8,17 @@ import { toPersianDigits } from "@/lib/utils";
 
 export type AttributeValue = number | string | boolean | string[];
 
+
 export function getAttributeConstraints(attr: AttributeDefinition): {
     min?: number;
     max?: number;
     minLength?: number;
     maxLength?: number;
 } {
-    const min = attr.constraints?.min;
-    const max = attr.constraints?.max;
-    const key = (attr.key || "").toLowerCase();
-    const label = (attr.label || "").toLowerCase();
-
-    let resolvedMin = min;
-    let resolvedMax = max;
-
-    if (key.includes("construction_year") || key.includes("build_year") || label.includes("سال ساخت")) {
-        resolvedMin = min ?? 1350;
-        resolvedMax = max ?? 1405;
-    } else if (key === "total_floors" || (label.includes("تعداد") && label.includes("کل طبقات"))) {
-        resolvedMin = min ?? 1;
-        resolvedMax = max ?? 60;
-    } else if (key === "floor_number" || key === "floor" || label.includes("طبقه واحد")) {
-        resolvedMin = min ?? -2;
-        resolvedMax = max ?? 50;
-    } else if (key.includes("units_per_floor") || label.includes("واحد در هر طبقه")) {
-        resolvedMin = min ?? 1;
-        resolvedMax = max ?? 20;
-    } else if (key.includes("rooms") || label.includes("اتاق")) {
-        resolvedMin = min ?? 0;
-        resolvedMax = max ?? 10;
-    } else if (key.includes("area") || key.includes("meterage") || label.includes("متراژ") || label.includes("زیربنا") || label.includes("مساحت")) {
-        resolvedMin = min ?? 5;
-        resolvedMax = max ?? 50000;
-    }
-
+    // Strictly respect backend schema constraints without imposing arbitrary frontend barriers
     return {
-        min: resolvedMin,
-        max: resolvedMax,
+        min: attr.constraints?.min,
+        max: attr.constraints?.max,
         minLength: attr.constraints?.minLength,
         maxLength: attr.constraints?.maxLength,
     };
@@ -66,7 +40,6 @@ export function validateAttributeValue(
     }
 
     const key = (attr.key || "").toLowerCase();
-    const label = (attr.label || "").toLowerCase();
     const constraints = getAttributeConstraints(attr);
 
     if (attr.type === "NUMBER") {
@@ -76,41 +49,29 @@ export function validateAttributeValue(
         }
 
         if (constraints.min !== undefined && num < constraints.min) {
-            if (label.includes("سال ساخت")) {
-                return `سال ساخت نمی‌تواند کمتر از ${toPersianDigits(constraints.min)} باشد`;
-            }
-            if (label.includes("طبقه واحد")) {
-                return `طبقه واحد نمی‌تواند کمتر از ${toPersianDigits(constraints.min)} باشد (برای زیرزمین از مقادیر منفی استفاده کنید)`;
-            }
             return `مقدار «${attr.label}» نمی‌تواند کمتر از ${toPersianDigits(constraints.min)} باشد`;
         }
 
         if (constraints.max !== undefined && num > constraints.max) {
-            if (label.includes("سال ساخت")) {
-                return `سال ساخت نمی‌تواند بیشتر از ${toPersianDigits(constraints.max)} باشد`;
-            }
-            if (label.includes("تعداد اتاق")) {
-                return `تعداد اتاق خواب نمی‌تواند بیشتر از ${toPersianDigits(constraints.max)} باشد`;
-            }
             return `مقدار «${attr.label}» نمی‌تواند بیشتر از ${toPersianDigits(constraints.max)} باشد`;
         }
 
-        // Cross-field validation: floor vs total_floors
-        if (key === "floor_number" || key === "floor" || label.includes("طبقه واحد")) {
+        // Logical Cross-field validation: floor vs total_floors (only when both are positive numbers)
+        if (key === "floor_number" || key === "floor") {
             const totalFloorsRaw = allAttributes?.total_floors ?? allAttributes?.totalFloors;
             if (totalFloorsRaw !== undefined && totalFloorsRaw !== null && totalFloorsRaw !== "") {
                 const totalFloorsNum = Number(totalFloorsRaw);
-                if (!isNaN(totalFloorsNum) && num > totalFloorsNum) {
+                if (!isNaN(totalFloorsNum) && num > 0 && totalFloorsNum > 0 && num > totalFloorsNum) {
                     return `طبقه واحد (${toPersianDigits(num)}) نمی‌تواند از تعداد کل طبقات (${toPersianDigits(totalFloorsNum)}) بیشتر باشد`;
                 }
             }
         }
 
-        if (key === "total_floors" || (label.includes("تعداد") && label.includes("کل طبقات"))) {
+        if (key === "total_floors") {
             const floorRaw = allAttributes?.floor_number ?? allAttributes?.floor;
             if (floorRaw !== undefined && floorRaw !== null && floorRaw !== "") {
                 const floorNum = Number(floorRaw);
-                if (!isNaN(floorNum) && floorNum > num) {
+                if (!isNaN(floorNum) && num > 0 && floorNum > 0 && floorNum > num) {
                     return `تعداد کل طبقات (${toPersianDigits(num)}) نمی‌تواند کمتر از طبقه واحد (${toPersianDigits(floorNum)}) باشد`;
                 }
             }
@@ -207,7 +168,7 @@ export const DynamicAttributeRenderer: React.FC<DynamicAttributeRendererProps> =
                                         min={constraints.min}
                                         max={constraints.max}
                                         value={typeof val === "number" || typeof val === "string" ? val : ""}
-                                        placeholder={`مثال: ${constraints.min ?? 0}`}
+                                        placeholder={attr.description || `ورود ${attr.label}...`}
                                         onChange={(e) => {
                                             const v = e.target.value;
                                             onChange(attr.key, v === "" ? "" : Number(v));

@@ -60,5 +60,5 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function PropertyDetailPage({ params }: PageProps) {
     const { id } = await params;
     const initialData = await serverFetch<AdDetail>(`/ads/${encodeURIComponent(id)}`);
-    return <SingleAdScene initialData={initialData ?? undefined} />;
+    return <SingleAdScene adId={id} initialData={initialData ?? undefined} />;
 }

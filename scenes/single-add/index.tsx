@@ -4,30 +4,42 @@ import { useAd, useAdContact, useAds } from "@/hooks/useAds";
 import { useAuth } from "@/hooks/useAuth";
 import { useCreateConversation } from "@/hooks/useChat";
 import { cn, formatAdPrice, formatPrice, toPersianDigits, getMediaUrl, getMediaPosterUrl } from "@/lib/utils";
-import { AdDetail, AdSummary } from "@/types/api/ads.types";
+import { AdDetail, AdSummary, SubcategoryConfigResponse } from "@/types/api/ads.types";
+import { adsService } from "@/services/ads.service";
+import { useQuery } from "@tanstack/react-query";
 import {
     Bath,
     Bed,
     Building,
+    Building2,
     Calendar,
+    Check,
     CheckCircle2,
     ChevronLeft,
     ChevronRight,
+    Clock,
+    Copy,
+    CreditCard,
+    FileText,
+    Flame,
+    Hash,
     Heart,
     Layers,
     Lock,
     MapPin,
     Maximize2,
     MessageCircle,
+    Minus,
     Pencil,
     Phone,
     Play,
     Share2,
     ShieldAlert,
     ShieldCheck,
+    Snowflake,
     Sparkles,
     Star,
-    Copy,
+    Tag,
     X,
 } from "lucide-react";
 import dynamic from "next/dynamic";
@@ -42,6 +54,39 @@ import { PropertyCard } from "@/components/ui/PropertyCard";
 import { useToggleSaveAd } from "@/hooks/useFavorites";
 import { PromotionModal } from "@/components/promotions/PromotionModal";
 import { AdStatus } from "@/types/api/enums";
+
+const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string; border: string }> = {
+    [AdStatus.PUBLISHED]: {
+        label: "منتشر شده",
+        bg: "bg-success-subtle/80",
+        text: "text-success",
+        border: "border-success/30",
+    },
+    [AdStatus.DRAFT]: {
+        label: "پیش‌نویس",
+        bg: "bg-surface-secondary",
+        text: "text-foreground-secondary",
+        border: "border-border-subtle",
+    },
+    [AdStatus.PENDING_APPROVAL]: {
+        label: "در حال بررسی",
+        bg: "bg-warning-subtle/80",
+        text: "text-warning",
+        border: "border-warning/30",
+    },
+    [AdStatus.REJECTED]: {
+        label: "رد شده",
+        bg: "bg-error-subtle/80",
+        text: "text-error",
+        border: "border-error/30",
+    },
+    [AdStatus.ARCHIVED]: {
+        label: "بایگانی شده",
+        bg: "bg-purple-50",
+        text: "text-purple-700",
+        border: "border-purple-200",
+    },
+};
 
 const Map = dynamic(() => import("@/components/ui/Map"), {
     ssr: false,
@@ -88,12 +133,13 @@ function getAdSummaryPricing(pricing?: Record<string, number | boolean | string>
 }
 
 interface SingleAdSceneProps {
+    adId?: string;
     initialData?: AdDetail;
 }
 
-export default function SingleAdScene({ initialData }: SingleAdSceneProps = {}) {
+export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps = {}) {
     const params = useParams();
-    const id = ((params?.id as string) || initialData?.adId) || "";
+    const id = adId || ((params?.id as string) || initialData?.adId) || "";
     const router = useRouter();
     const handleBack = useSafeBack("/");
     const [saved, setSaved] = useState(false);
@@ -157,6 +203,14 @@ export default function SingleAdScene({ initialData }: SingleAdSceneProps = {}) 
         ad?.subcategoryTitle ||
         ad?.categoryPath?.subcategoryTitle ||
         getSubcategoryName(rawSubKey, rawCatKey);
+
+    // Fetch dynamic subcategory config to support any subcategory schema
+    const { data: subcatConfig } = useQuery<SubcategoryConfigResponse>({
+        queryKey: ["subcategory-config", rawSubKey, rawCatKey],
+        queryFn: () => adsService.getSubcategoryConfig(rawSubKey!, rawCatKey),
+        enabled: Boolean(rawSubKey),
+        staleTime: 1000 * 60 * 60,
+    });
 
     // Nearby / similar ads in the same city
     const { data: similarAds } = useAds(
@@ -283,21 +337,143 @@ export default function SingleAdScene({ initialData }: SingleAdSceneProps = {}) 
         }
     }
 
-    // Attributes extraction
-    const attrs = ad.attributes || {};
-    const area = attrs.area || attrs.meterage || attrs.size;
-    const rooms = attrs.rooms || attrs.bedrooms;
-    const floor = attrs.floor;
-    const totalFloors = attrs.totalFloors;
-    const buildYear = attrs.buildYear || attrs.yearBuilt;
-    const hasElevator = attrs.hasElevator ?? attrs.elevator;
-    const hasParking = attrs.hasParking ?? attrs.parking;
-    const hasStorage = attrs.hasStorage ?? attrs.storage;
-    const hasBalcony = attrs.hasBalcony ?? attrs.balcony;
+    if (pricing.prepaidMonths !== undefined && !priceSub) {
+        priceSub = `پیش‌پرداخت: ${toPersianDigits(String(pricing.prepaidMonths))} ماه`;
+    }
+
+    // Business model label (Server schema first, then categoryPath)
+    const rawModel = ad.categoryPath?.businessModelKey;
+    const dynamicPriceModel = subcatConfig?.allowedPriceModels?.find(
+        (m) => m.key?.toLowerCase() === rawModel?.toLowerCase() || m.id?.toLowerCase() === rawModel?.toLowerCase()
+    );
+    const businessModelTitle =
+        dynamicPriceModel?.displayName ||
+        (ad.categoryPath as any)?.businessModelTitle ||
+        rawModel ||
+        null;
+
+    // Attributes extraction supporting all subcategories dynamically
+    const rawAttrs = (ad.attributes as Record<string, any>) || {};
+    const booleanFeatures: { key: string; label: string; value: boolean }[] = [];
+    const technicalSpecs: { key: string; label: string; displayValue: string }[] = [];
+    const processedKeys = new Set<string>();
+
+    const attributeList = ad.attributeList || [];
+
+    // 1. Process items from attributeList provided by backend
+    if (attributeList.length > 0) {
+        for (const item of attributeList) {
+            processedKeys.add(item.key);
+            const isBool = typeof item.value === "boolean" ||
+                item.displayValue === "دارد" ||
+                item.displayValue === "ندارد";
+
+            if (isBool) {
+                const val = typeof item.value === "boolean" ? item.value : item.displayValue === "دارد";
+                booleanFeatures.push({ key: item.key, label: item.label, value: val });
+            } else {
+                technicalSpecs.push({
+                    key: item.key,
+                    label: item.label,
+                    displayValue: item.displayValue || String(item.value ?? "—"),
+                });
+            }
+        }
+    }
+
+    // 2. Dynamically process any raw attributes from ad.attributes not in attributeList
+    const attrDefs = subcatConfig?.attributeDefinitions || [];
+    for (const [key, rawVal] of Object.entries(rawAttrs)) {
+        if (processedKeys.has(key)) continue;
+        if (rawVal === undefined || rawVal === null || rawVal === "") continue;
+
+        processedKeys.add(key);
+
+        const def = attrDefs.find((d) => d.key === key);
+        const label = def?.label || key;
+        const isBool = def?.type === "BOOLEAN" || typeof rawVal === "boolean";
+
+        if (isBool) {
+            booleanFeatures.push({
+                key,
+                label,
+                value: Boolean(rawVal),
+            });
+        } else {
+            let displayVal = String(rawVal);
+            if (def?.type === "SELECT" && def.options) {
+                const opt = def.options.find((o) => o.key === String(rawVal));
+                if (opt) displayVal = opt.label;
+            } else if (typeof rawVal === "number") {
+                displayVal = toPersianDigits(rawVal);
+            }
+            technicalSpecs.push({
+                key,
+                label,
+                displayValue: displayVal,
+            });
+        }
+    }
+
+    const getAttributeIcon = (key: string) => {
+        const k = key.toLowerCase();
+        if (k.includes("area") || k.includes("meterage") || k.includes("size") || k.includes("land") || k.includes("shed")) return Maximize2;
+        if (k.includes("room") || k.includes("bed")) return Bed;
+        if (k.includes("floor") || k.includes("unit") || k.includes("level")) return Layers;
+        if (k.includes("year") || k.includes("date") || k.includes("age") || k.includes("construction")) return Calendar;
+        if (k.includes("width") || k.includes("height") || k.includes("passage") || k.includes("frontage")) return Building;
+        if (k.includes("price") || k.includes("rent") || k.includes("deposit") || k.includes("share") || k.includes("percent")) return Tag;
+        if (k.includes("deed") || k.includes("permit") || k.includes("document") || k.includes("contract")) return FileText;
+        return Building2;
+    };
+
+    // Top Key Specs Chips (Dynamically adapt to any property category based on technicalSpecs)
+    const keyMetrics: { label: string; value: string; icon: any }[] = [];
+
+    const topArea = (ad as any).area || rawAttrs.area || rawAttrs.land_area || rawAttrs.building_area || rawAttrs.shed_area || rawAttrs.meterage;
+    if (topArea && !technicalSpecs.some(s => s.key.toLowerCase().includes("area"))) {
+        keyMetrics.push({
+            label: "متراژ",
+            value: `${toPersianDigits(topArea)} متر`,
+            icon: Maximize2,
+        });
+    }
+
+    for (const spec of technicalSpecs) {
+        if (keyMetrics.length >= 4) break;
+        keyMetrics.push({
+            label: spec.label,
+            value: spec.displayValue,
+            icon: getAttributeIcon(spec.key),
+        });
+    }
+
+    const hasFinancialDetails = Boolean(
+        businessModelTitle ||
+        pricing.monthlyRent !== undefined ||
+        pricing.depositPrice !== undefined ||
+        pricing.prepaidMonths !== undefined ||
+        pricing.totalPrice !== undefined ||
+        pricing.prepaymentAmount !== undefined ||
+        pricing.monthlyLeaseInstallment !== undefined ||
+        pricing.goodwillPrice !== undefined ||
+        pricing.fractionPrice !== undefined ||
+        rawAttrs.owner_share_percentage !== undefined ||
+        rawAttrs.developer_gratuitous_payment !== undefined
+    );
+
+    const statusConfig = STATUS_CONFIG[ad.status] || STATUS_CONFIG.PUBLISHED;
 
     const lat = ad.location?.latitude ?? ad.location?.lat;
     const lng = ad.location?.longitude ?? ad.location?.lng;
     const hasCoords = typeof lat === "number" && typeof lng === "number";
+
+    const handleCopyId = () => {
+        if (typeof navigator !== "undefined" && navigator.clipboard) {
+            navigator.clipboard.writeText(ad.adId);
+            toast.success("کد آگهی در حافظه کپی شد");
+        }
+    };
 
     return (
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 pb-32 lg:pb-12">
@@ -399,6 +575,45 @@ export default function SingleAdScene({ initialData }: SingleAdSceneProps = {}) 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-6">
                 {/* Right / Main column (2 cols) */}
                 <div className="lg:col-span-2 space-y-6">
+                    {/* Status Alert Banner for non-published ads */}
+                    {!isPublished && (
+                        <div className={cn(
+                            "p-4 rounded-2xl border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3",
+                            statusConfig.bg,
+                            statusConfig.border
+                        )}>
+                            <div className="flex items-center gap-2.5">
+                                <ShieldAlert className={cn("w-5 h-5 shrink-0", statusConfig.text)} />
+                                <div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-xs font-medium text-foreground-secondary">وضعیت آگهی:</span>
+                                        <span className={cn("text-xs font-black px-2 py-0.5 rounded-full border", statusConfig.bg, statusConfig.border, statusConfig.text)}>
+                                            {statusConfig.label}
+                                        </span>
+                                    </div>
+                                    <p className="text-[11px] text-foreground-muted mt-0.5">
+                                        {ad.status === AdStatus.DRAFT
+                                            ? "این آگهی در حالت پیش‌نویس است و هنوز در سایت منتشر نشده است."
+                                            : ad.status === AdStatus.PENDING_APPROVAL
+                                            ? "این آگهی در دست بررسی کارشناسان ملک تودی است."
+                                            : ad.status === AdStatus.REJECTED
+                                            ? "این آگهی تایید نشده است. لطفاً برای ویرایش اقدام نمایید."
+                                            : "این آگهی بایگانی یا غیرفعال شده است."}
+                                    </p>
+                                </div>
+                            </div>
+                            {isOwner && (
+                                <button
+                                    onClick={() => router.push(`/submit-ad?edit=${ad.adId}`)}
+                                    className="flex items-center justify-center gap-1.5 px-4 py-2 bg-brand text-white rounded-xl text-xs font-bold hover:bg-brand/90 transition-colors shrink-0 shadow-xs cursor-pointer"
+                                >
+                                    <Pencil className="w-3.5 h-3.5" />
+                                    <span>ویرایش آگهی</span>
+                                </button>
+                            )}
+                        </div>
+                    )}
+
                     {/* Title & Price Header */}
                     <div className="border-b border-border-subtle pb-6">
                         <div className="flex flex-col gap-2">
@@ -440,6 +655,29 @@ export default function SingleAdScene({ initialData }: SingleAdSceneProps = {}) 
                                 ثبت: {ad.createdAt ? new Date(ad.createdAt).toLocaleDateString("fa-IR") : "—"}
                             </span>
                         </div>
+
+                        {/* Ad ID and Owner Badge */}
+                        <div className="flex flex-wrap items-center justify-between gap-2 text-text-light text-xs mt-3 pt-3 border-t border-border-subtle/50">
+                            <div className="flex items-center gap-1.5">
+                                <Hash className="w-3.5 h-3.5 text-text-light" />
+                                <span>شناسه آگهی:</span>
+                                <code className="bg-surface-secondary px-2 py-0.5 rounded text-[11px] font-mono text-brand font-bold select-all">
+                                    {ad.adId}
+                                </code>
+                                <button
+                                    onClick={handleCopyId}
+                                    className="p-1 hover:text-brand text-text-light transition-colors cursor-pointer"
+                                    title="کپی شناسه آگهی"
+                                >
+                                    <Copy className="w-3.5 h-3.5" />
+                                </button>
+                            </div>
+                            {isOwner && (
+                                <span className="text-[11px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
+                                    آگهی شما
+                                </span>
+                            )}
+                        </div>
                     </div>
 
                     {/* Category & Subcategory Pills */}
@@ -460,73 +698,174 @@ export default function SingleAdScene({ initialData }: SingleAdSceneProps = {}) 
                         </div>
                     )}
 
-                    {/* Key Specs Row (Zillow style) */}
-                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 bg-surface-secondary/70 p-4 rounded-2xl border border-border-subtle">
-                        {area && (
-                            <div className="flex flex-col items-center justify-center p-2 text-center">
-                                <Maximize2 className="w-5 h-5 text-text-light mb-1" />
-                                <span className="text-xs text-text-light">متراژ</span>
-                                <span className="text-sm font-black text-brand">{toPersianDigits(area)} متر</span>
+                    {/* Financial Terms Card */}
+                    {hasFinancialDetails && (
+                        <div className="bg-surface-secondary/50 rounded-2xl p-5 border border-border-subtle space-y-4">
+                            <div className="flex items-center justify-between border-b border-border-subtle/70 pb-3">
+                                <div className="flex items-center gap-2">
+                                    <CreditCard className="w-5 h-5 text-primary" />
+                                    <h2 className="text-sm sm:text-base font-black text-brand">شرایط مالی و قرارداد</h2>
+                                </div>
+                                {businessModelTitle && (
+                                    <span className="text-xs font-black px-2.5 py-1 rounded-xl bg-primary/10 text-primary border border-primary/20">
+                                        {businessModelTitle}
+                                    </span>
+                                )}
                             </div>
-                        )}
-                        {rooms && (
-                            <div className="flex flex-col items-center justify-center p-2 text-center">
-                                <Bed className="w-5 h-5 text-text-light mb-1" />
-                                <span className="text-xs text-text-light">اتاق خواب</span>
-                                <span className="text-sm font-black text-brand">{toPersianDigits(rooms)} خوابه</span>
-                            </div>
-                        )}
-                        {floor !== undefined && (
-                            <div className="flex flex-col items-center justify-center p-2 text-center">
-                                <Layers className="w-5 h-5 text-text-light mb-1" />
-                                <span className="text-xs text-text-light">طبقه</span>
-                                <span className="text-sm font-black text-brand">
-                                    {toPersianDigits(floor)} {totalFloors ? `از ${toPersianDigits(totalFloors)}` : ""}
-                                </span>
-                            </div>
-                        )}
-                        {buildYear && (
-                            <div className="flex flex-col items-center justify-center p-2 text-center">
-                                <Calendar className="w-5 h-5 text-text-light mb-1" />
-                                <span className="text-xs text-text-light">سال ساخت</span>
-                                <span className="text-sm font-black text-brand">{toPersianDigits(buildYear)}</span>
-                            </div>
-                        )}
-                    </div>
 
-                    {/* Amenities & Features */}
-                    {(hasElevator !== undefined || hasParking !== undefined || hasStorage !== undefined || hasBalcony !== undefined) && (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs sm:text-sm">
+                                {pricing.depositPrice !== undefined && (
+                                    <div className="flex items-center justify-between p-3 rounded-xl bg-surface border border-border-subtle/60">
+                                        <span className="text-text-light">مبلغ ودیعه / رهن:</span>
+                                        <span className="font-black text-brand">
+                                            {Number(pricing.depositPrice) > 0 ? `${formatPrice(Number(pricing.depositPrice))} تومان` : "توافقی"}
+                                        </span>
+                                    </div>
+                                )}
+                                {pricing.monthlyRent !== undefined && (
+                                    <div className="flex items-center justify-between p-3 rounded-xl bg-surface border border-border-subtle/60">
+                                        <span className="text-text-light">اجاره ماهیانه:</span>
+                                        <span className="font-black text-brand">
+                                            {Number(pricing.monthlyRent) > 0 ? `${formatPrice(Number(pricing.monthlyRent))} تومان` : "توافقی"}
+                                        </span>
+                                    </div>
+                                )}
+                                {pricing.prepaidMonths !== undefined && (
+                                    <div className="flex items-center justify-between p-3 rounded-xl bg-surface border border-border-subtle/60">
+                                        <span className="text-text-light">پیش‌پرداخت اجاره:</span>
+                                        <span className="font-black text-brand">
+                                            {toPersianDigits(String(pricing.prepaidMonths))} ماه
+                                        </span>
+                                    </div>
+                                )}
+                                {pricing.totalPrice !== undefined && (
+                                    <div className="flex items-center justify-between p-3 rounded-xl bg-surface border border-border-subtle/60">
+                                        <span className="text-text-light">قیمت کل:</span>
+                                        <span className="font-black text-brand">
+                                            {Number(pricing.totalPrice) > 0 ? `${formatPrice(Number(pricing.totalPrice))} تومان` : "توافقی"}
+                                        </span>
+                                    </div>
+                                )}
+                                {pricing.prepaymentAmount !== undefined && (
+                                    <div className="flex items-center justify-between p-3 rounded-xl bg-surface border border-border-subtle/60">
+                                        <span className="text-text-light">پیش‌پرداخت اولیه:</span>
+                                        <span className="font-black text-brand">
+                                            {formatPrice(Number(pricing.prepaymentAmount))} تومان
+                                        </span>
+                                    </div>
+                                )}
+                                {pricing.monthlyLeaseInstallment !== undefined && (
+                                    <div className="flex items-center justify-between p-3 rounded-xl bg-surface border border-border-subtle/60">
+                                        <span className="text-text-light">قسط ماهانه:</span>
+                                        <span className="font-black text-brand">
+                                            {formatPrice(Number(pricing.monthlyLeaseInstallment))} تومان
+                                        </span>
+                                    </div>
+                                )}
+                                {pricing.goodwillPrice !== undefined && (
+                                    <div className="flex items-center justify-between p-3 rounded-xl bg-surface border border-border-subtle/60">
+                                        <span className="text-text-light">حق سرقفلی:</span>
+                                        <span className="font-black text-brand">
+                                            {formatPrice(Number(pricing.goodwillPrice))} تومان
+                                        </span>
+                                    </div>
+                                )}
+                                {pricing.fractionPrice !== undefined && (
+                                    <div className="flex items-center justify-between p-3 rounded-xl bg-surface border border-border-subtle/60">
+                                        <span className="text-text-light">قدرالسهم:</span>
+                                        <span className="font-black text-brand">
+                                            {formatPrice(Number(pricing.fractionPrice))} تومان
+                                        </span>
+                                    </div>
+                                )}
+                                {rawAttrs.owner_share_percentage !== undefined && (
+                                    <div className="flex items-center justify-between p-3 rounded-xl bg-surface border border-border-subtle/60">
+                                        <span className="text-text-light">درصد سهم مالک:</span>
+                                        <span className="font-black text-brand">
+                                            {toPersianDigits(rawAttrs.owner_share_percentage)}٪
+                                        </span>
+                                    </div>
+                                )}
+                                {rawAttrs.developer_gratuitous_payment !== undefined && (
+                                    <div className="flex items-center justify-between p-3 rounded-xl bg-surface border border-border-subtle/60">
+                                        <span className="text-text-light">مبلغ بلاعوض پیشنهادی:</span>
+                                        <span className="font-black text-brand">
+                                            {formatPrice(Number(rawAttrs.developer_gratuitous_payment))} تومان
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Key Specs Row (Dynamic top chips adapting to any subcategory) */}
+                    {keyMetrics.length > 0 && (
+                        <div className={cn(
+                            "grid gap-3 bg-surface-secondary/70 p-4 rounded-2xl border border-border-subtle",
+                            keyMetrics.length === 1 ? "grid-cols-1" :
+                            keyMetrics.length === 2 ? "grid-cols-2" :
+                            keyMetrics.length === 3 ? "grid-cols-3" : "grid-cols-2 sm:grid-cols-4"
+                        )}>
+                            {keyMetrics.map((m, idx) => {
+                                const IconComp = m.icon;
+                                return (
+                                    <div key={idx} className="flex flex-col items-center justify-center p-2 text-center">
+                                        <IconComp className="w-5 h-5 text-text-light mb-1" />
+                                        <span className="text-xs text-text-light">{m.label}</span>
+                                        <span className="text-sm font-black text-brand truncate max-w-full">{m.value}</span>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+
+                    {/* Amenities & Boolean Features */}
+                    {booleanFeatures.length > 0 && (
                         <div className="space-y-3">
                             <h2 className="text-base font-black text-brand">امکانات اصلی ملک</h2>
                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                                <div className={cn(
-                                    "flex items-center gap-2 p-3 rounded-xl border text-xs font-bold",
-                                    hasElevator ? "bg-success-subtle/50 border-success/30 text-success" : "bg-surface-secondary border-border-subtle text-foreground-muted"
-                                )}>
-                                    <CheckCircle2 className="w-4 h-4" />
-                                    <span>آسانسور</span>
-                                </div>
-                                <div className={cn(
-                                    "flex items-center gap-2 p-3 rounded-xl border text-xs font-bold",
-                                    hasParking ? "bg-success-subtle/50 border-success/30 text-success" : "bg-surface-secondary border-border-subtle text-foreground-muted"
-                                )}>
-                                    <CheckCircle2 className="w-4 h-4" />
-                                    <span>پارکینگ</span>
-                                </div>
-                                <div className={cn(
-                                    "flex items-center gap-2 p-3 rounded-xl border text-xs font-bold",
-                                    hasStorage ? "bg-success-subtle/50 border-success/30 text-success" : "bg-surface-secondary border-border-subtle text-foreground-muted"
-                                )}>
-                                    <CheckCircle2 className="w-4 h-4" />
-                                    <span>انباری</span>
-                                </div>
-                                <div className={cn(
-                                    "flex items-center gap-2 p-3 rounded-xl border text-xs font-bold",
-                                    hasBalcony ? "bg-success-subtle/50 border-success/30 text-success" : "bg-surface-secondary border-border-subtle text-foreground-muted"
-                                )}>
-                                    <CheckCircle2 className="w-4 h-4" />
-                                    <span>بالکن</span>
-                                </div>
+                                {booleanFeatures.map((feat) => (
+                                    <div
+                                        key={feat.key}
+                                        className={cn(
+                                            "flex items-center justify-between p-3 rounded-xl border text-xs font-bold transition-colors",
+                                            feat.value
+                                                ? "bg-success-subtle/50 border-success/30 text-success"
+                                                : "bg-surface-secondary border-border-subtle text-foreground-muted"
+                                        )}
+                                    >
+                                        <span>{feat.label}</span>
+                                        {feat.value ? (
+                                            <span className="flex items-center gap-1 text-[11px] font-black text-success">
+                                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                                دارد
+                                            </span>
+                                        ) : (
+                                            <span className="flex items-center gap-1 text-[11px] text-foreground-muted">
+                                                <Minus className="w-3.5 h-3.5" />
+                                                ندارد
+                                            </span>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Technical Specifications / Attribute List */}
+                    {technicalSpecs.length > 0 && (
+                        <div className="space-y-3">
+                            <h2 className="text-base font-black text-brand">مشخصات و ویژگی‌های فنی</h2>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                {technicalSpecs.map((spec) => (
+                                    <div
+                                        key={spec.key}
+                                        className="flex items-center justify-between p-3.5 rounded-xl bg-surface-secondary/50 border border-border-subtle text-xs sm:text-sm"
+                                    >
+                                        <span className="text-text-light font-medium">{spec.label}</span>
+                                        <span className="font-bold text-brand">{spec.displayValue}</span>
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     )}
