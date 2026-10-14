@@ -58,11 +58,18 @@ export default function WalletScene() {
             },
             {
                 onSuccess: (res) => {
-                    toast.info("در حال انتقال به درگاه پرداخت شاپرک...");
-                    window.location.href = res.paymentUrl;
+                    if (res?.paymentUrl) {
+                        toast.info("در حال انتقال به درگاه پرداخت شاپرک...");
+                        window.location.href = res.paymentUrl;
+                    } else {
+                        toast.error("آدرس درگاه پرداخت از سرور دریافت نشد.");
+                    }
                 },
-                onError: () => {
-                    toast.error("خطا در برقراری ارتباط با درگاه پرداخت");
+                onError: (err: any) => {
+                    const message =
+                        err?.response?.data?.message ||
+                        "خطا در برقراری ارتباط با درگاه پرداخت";
+                    toast.error(message);
                 },
             }
         );

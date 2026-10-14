@@ -1,5 +1,6 @@
 "use client";
 
+import { useAuth } from "@/hooks/useAuth";
 import { usePaymentStatus } from "@/hooks/useWallet";
 import { formatCurrency, toPersianDigits } from "@/lib/utils";
 import {
@@ -17,14 +18,40 @@ import { Suspense } from "react";
 
 function PaymentCallbackContent() {
     const searchParams = useSearchParams();
-    const purchaseId = searchParams.get("purchaseId") || "";
+    const { isLoggedIn } = useAuth();
+
+    // Check multiple query param aliases passed by gateways or redirects
+    const purchaseId =
+        searchParams.get("purchaseId") ||
+        searchParams.get("purchase_id") ||
+        searchParams.get("id") ||
+        searchParams.get("paymentId") ||
+        searchParams.get("authority") ||
+        "";
+
+    const queryStatus = (
+        searchParams.get("status") ||
+        searchParams.get("state") ||
+        ""
+    ).toUpperCase();
 
     const { data: statusData, isLoading, isError } = usePaymentStatus(purchaseId);
 
     const status = statusData?.status;
+    const isGatewayFailed =
+        queryStatus === "FAILED" ||
+        queryStatus === "CANCELED" ||
+        queryStatus === "EXPIRED" ||
+        queryStatus === "NOK";
+
     const isSuccess = status === "SUCCESS" || status === "COMPLETED";
-    const isFailed = status === "FAILED" || status === "CANCELED" || status === "EXPIRED";
-    const isPending = status === "PENDING" || isLoading;
+    const isFailed =
+        status === "FAILED" ||
+        status === "CANCELED" ||
+        status === "EXPIRED" ||
+        (isGatewayFailed && !statusData && !isLoading);
+    const isPending = (status === "PENDING" || (isLoading && !statusData)) && !isGatewayFailed;
+    const isUnknown = !purchaseId && !queryStatus;
 
     return (
         <div className="max-w-md mx-auto px-4 py-12">
@@ -81,27 +108,51 @@ function PaymentCallbackContent() {
                         </div>
                         <h1 className="text-xl font-black text-error">تراکنش ناموفق بود</h1>
                         <p className="text-xs text-text-light leading-relaxed">
-                            پرداخت توسط کاربر لغو شده یا با خطای بانکی مواجه گردید. در صورت کسر وجه از حساب، حداکثر ظرف ۷۲ ساعت توسط بانک بازگردانده می‌شود.
+                            پرداخت توسط کاربر لغو شده یا با خطای درگاه بانکی مواجه گردید. در صورت کسر وجه از حساب، حداکثر ظرف ۷۲ ساعت توسط بانک بازگردانده می‌شود.
                         </p>
 
-                        <div className="bg-surface-secondary rounded-2xl p-4 text-xs space-y-3 font-bold border border-border-subtle text-right mt-6">
-                            <div className="flex items-center justify-between">
-                                <span className="text-text-light">شناسه پرداخت:</span>
-                                <span className="font-mono text-brand truncate max-w-[180px]">{toPersianDigits(purchaseId)}</span>
+                        {purchaseId && (
+                            <div className="bg-surface-secondary rounded-2xl p-4 text-xs space-y-3 font-bold border border-border-subtle text-right mt-6">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-text-light">شناسه پرداخت:</span>
+                                    <span className="font-mono text-brand truncate max-w-[180px]">{toPersianDigits(purchaseId)}</span>
+                                </div>
                             </div>
-                        </div>
+                        )}
                     </div>
                 )}
 
-                {isError && (
+                {isUnknown && (
+                    <div className="space-y-4">
+                        <div className="w-20 h-20 bg-warning-subtle text-warning rounded-full flex items-center justify-center mx-auto">
+                            <AlertCircle className="w-10 h-10" />
+                        </div>
+                        <h1 className="text-lg font-black text-brand">اطلاعات تراکنش یافت نشد</h1>
+                        <p className="text-xs text-text-light leading-relaxed">
+                            هیچ شناسه پرداختی در آدرس بازگشت وجود ندارد. لطفاً موجودی کیف پول خود را بررسی فرمایید.
+                        </p>
+                    </div>
+                )}
+
+                {isError && !isGatewayFailed && !isUnknown && (
                     <div className="space-y-4">
                         <div className="w-20 h-20 bg-warning-subtle text-warning rounded-full flex items-center justify-center mx-auto">
                             <AlertCircle className="w-10 h-10" />
                         </div>
                         <h1 className="text-lg font-black text-brand">عدم دسترسی به اطلاعات تراکنش</h1>
-                        <p className="text-xs text-text-light">
-                            اطلاعات مربوط به این تراکنش یافت نشد یا منقضی شده است.
+                        <p className="text-xs text-text-light leading-relaxed">
+                            {isLoggedIn
+                                ? "اطلاعات مربوط به این تراکنش یافت نشد یا منقضی شده است. در صورت کسر وجه از حساب، حداکثر ظرف ۷۲ ساعت توسط بانک بازگردانده می‌شود."
+                                : "برای استعلام وضعیت پرداخت و شارژ کیف پول، لطفاً ابتدا وارد حساب کاربری خود شوید."}
                         </p>
+                        {!isLoggedIn && (
+                            <Link
+                                href={`/auth?redirect=${encodeURIComponent(`/wallet/callback?purchaseId=${purchaseId}`)}`}
+                                className="inline-flex items-center justify-center px-6 py-2.5 bg-brand text-white font-bold text-xs rounded-xl shadow hover:bg-brand-900 transition-colors"
+                            >
+                                ورود به حساب کاربری
+                            </Link>
+                        )}
                     </div>
                 )}
 

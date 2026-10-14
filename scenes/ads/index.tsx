@@ -688,9 +688,9 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                         <div
                             className={cn(
                                 "grid gap-4 pb-12",
-                                viewMode === "map"
-                                    ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2"
-                                    : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4"
+                                viewMode === "split"
+                                    ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 min-[1800px]:grid-cols-3"
+                                    : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
                             )}
                         >
                             {Array.from({ length: 6 }).map((_, i) => (
@@ -728,9 +728,9 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                         <div
                             className={cn(
                                 "grid gap-4 pb-32 lg:pb-6",
-                                viewMode === "map"
-                                    ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2"
-                                    : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4"
+                                viewMode === "split"
+                                    ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 min-[1800px]:grid-cols-3"
+                                    : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
                             )}
                         >
                             {data?.pages.map((page, pageIndex) => {
