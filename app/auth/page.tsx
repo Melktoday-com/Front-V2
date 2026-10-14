@@ -31,6 +31,11 @@ function AuthContent() {
     return () => clearInterval(interval);
   }, [step, timer]);
 
+  const toEnglishDigits = (str: string) =>
+    str
+      .replace(/[۰-۹]/g, (d) => String(d.charCodeAt(0) - 1728))
+      .replace(/[٠-٩]/g, (d) => String(d.charCodeAt(0) - 1632));
+
   const normalizePhone = (num: string) => {
     let normalized = num.replace(/\D/g, "");
     if (normalized.startsWith("0")) {
@@ -103,7 +108,7 @@ function AuthContent() {
                   placeholder="۰۹۱۲۳۴۵۶۷۸۹"
                   dir="ltr"
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={(e) => setPhone(toEnglishDigits(e.target.value))}
                   className="w-full bg-soft-bg border-2 border-transparent focus:border-primary/20 rounded-2xl p-4 text-brand font-bold placeholder:text-text-light/30 focus:bg-surface outline-none transition-all"
                   required
                 />
@@ -164,7 +169,7 @@ function AuthContent() {
                   placeholder="· · · · · ·"
                   dir="ltr"
                   value={otp}
-                  onChange={(e) => setOtp(e.target.value)}
+                  onChange={(e) => setOtp(toEnglishDigits(e.target.value))}
                   className="w-full bg-soft-bg border-2 border-transparent focus:border-primary/20 rounded-2xl p-4 text-brand text-center text-2xl tracking-[0.5em] font-black placeholder:text-text-light/30 focus:bg-surface outline-none transition-all"
                   required
                 />
