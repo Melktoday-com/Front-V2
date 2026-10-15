@@ -43,8 +43,8 @@ export default function AboutScene() {
   const contactNumbers = [
     {
       label: "تلفن دفتر مرکزی",
-      phone: "05191001717",
-      display: "۰۵۱۹۱۰۰۱۷۱۷",
+      phone: "02191003417",
+      display: "۰۲۱ ۹۱۰۰ ۳۴۱۷",
       icon: Phone,
       key: "landline",
       note: "پاسخگویی در ساعات کاری",
@@ -59,7 +59,7 @@ export default function AboutScene() {
     },
   ];
 
-  const addressText = "مشهد، بلوار وکیل آباد، بلوار هاشمیه، هاشمیه ۳، پلاک ۱۰";
+  const addressText = "تهران، برج نگار";
 
   const coreValues = [
     {

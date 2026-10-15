@@ -202,16 +202,16 @@ export function Footer() {
                   <div>
                     <span className="text-[10px] text-white/60 block">تلفن دفتر مرکزی</span>
                     <a
-                      href="tel:05191001717"
+                      href="tel:02191003417"
                       dir="ltr"
                       className="text-xs sm:text-sm font-black text-white tracking-wider hover:text-primary transition-colors inline-block"
                     >
-                      {toPersianDigits("05191001717")}
+                      {toPersianDigits("021 9100 3417")}
                     </a>
                   </div>
                 </div>
                 <button
-                  onClick={() => handleCopy("05191001717", "شماره تلفن دفتر")}
+                  onClick={() => handleCopy("02191003417", "شماره تلفن دفتر")}
                   title="کپی شماره"
                   className="p-1.5 rounded-lg text-white/40 hover:text-white hover:bg-surface/10 transition-colors"
                 >
@@ -262,7 +262,7 @@ export function Footer() {
                   <div className="flex-1">
                     <span className="text-[10px] text-white/60 block">نشانی دفتر</span>
                     <p className="text-xs text-white/90 leading-relaxed font-medium">
-                      مشهد، بلوار وکیل آباد، بلوار هاشمیه، هاشمیه ۳، پلاک ۱۰
+                      تهران، برج نگار
                     </p>
                   </div>
                 </div>
@@ -270,7 +270,7 @@ export function Footer() {
                   <button
                     onClick={() =>
                       handleCopy(
-                        "مشهد، بلوار وکیل آباد، بلوار هاشمیه، هاشمیه ۳، پلاک ۱۰",
+                        "تهران، برج نگار",
                         "آدرس دفتر"
                       )
                     }
