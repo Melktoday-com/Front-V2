@@ -112,9 +112,9 @@ function AuthContent() {
       <div className="w-full max-w-85  pb-10">
         {step === "phone" ? (
           <div className="transition-all duration-500 transform">
-            <h1 className="text-2xl font-bold text-brand mb-3">بزن بریم!</h1>
+            <h1 className="text-2xl font-bold text-brand mb-3">به ملک تودی خوش آمدید</h1>
             <p className="text-text-light mb-10 text-sm leading-relaxed">
-              برای شروع ماجراجویی در پیدا کردن ملک، شماره موبایلت رو وارد کن.
+              برای ورود یا ثبت‌نام، شماره موبایل خود را وارد کنید.
             </p>
 
             <form onSubmit={handleRequestOtp} className="space-y-8">
@@ -160,7 +160,7 @@ function AuthContent() {
 
             <h1 className="text-2xl font-bold text-brand mb-3">تایید شماره</h1>
             <p className="text-text-light mb-10 text-sm leading-relaxed">
-              کد ۶ رقمی که برات اس‌ام‌اس کردیم رو اینجا بنویس.
+              کد تایید ۶ رقمی ارسال‌شده به شماره همراه خود را وارد کنید.
             </p>
 
             <form onSubmit={handleVerifyOtp} className="space-y-8">
@@ -197,7 +197,7 @@ function AuthContent() {
                 disabled={verifyOtpMutation.isPending}
                 className="w-full bg-primary text-white py-4 rounded-button font-bold text-lg shadow-xl shadow-primary/20 transition-all hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50"
               >
-                {verifyOtpMutation.isPending ? "در حال تایید..." : "بزن بریم تو!"}
+                {verifyOtpMutation.isPending ? "در حال تایید..." : "تایید و ورود"}
               </button>
             </form>
           </div>

@@ -11,6 +11,7 @@ import {
     ChevronLeft,
     Clock,
     FileCheck,
+    Gift,
     Headphones,
     Heart,
     LifeBuoy,
@@ -204,6 +205,14 @@ const TYPE_CONFIGS: Record<NotificationType, TypeConfig> = {
         badgeBg: "bg-info-subtle",
         badgeColor: "text-info",
     },
+    WELCOME_PACKAGE_ACTIVATED: {
+        icon: Gift,
+        iconBg: "bg-emerald-50",
+        iconColor: "text-emerald-600",
+        badgeLabel: "بسته خوش‌آمدگویی",
+        badgeBg: "bg-emerald-50",
+        badgeColor: "text-emerald-700",
+    },
 };
 
 const DEFAULT_CONFIG: TypeConfig = {
@@ -255,6 +264,9 @@ export function NotificationCard({
     } else if (notification.type === "NEW_REVIEW") {
         targetLink = "/profile";
         targetLinkLabel = "مشاهده نظرات";
+    } else if (notification.type === "WELCOME_PACKAGE_ACTIVATED") {
+        targetLink = "/subscriptions";
+        targetLinkLabel = "مشاهده بسته‌ها و سهمیه‌ها";
     } else if (
         (notification.type === "TICKET_REPLY_RECEIVED" || notification.type === "TICKET_STATUS_CHANGED") &&
         notification.referenceId

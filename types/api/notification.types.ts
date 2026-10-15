@@ -18,7 +18,8 @@ export type NotificationType =
     | 'NEW_FOLLOWER'
     | 'NEW_REVIEW'
     | 'TICKET_REPLY_RECEIVED'
-    | 'TICKET_STATUS_CHANGED';
+    | 'TICKET_STATUS_CHANGED'
+    | 'WELCOME_PACKAGE_ACTIVATED';
 
 export interface NotificationSummary {
     id: string;
