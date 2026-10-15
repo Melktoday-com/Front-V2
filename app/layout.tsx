@@ -105,18 +105,18 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/web-app-manifest-512x512.png",
-        width: 512,
-        height: 512,
-        alt: "لوگوی ملک تودی",
+        url: "/banner.png",
+        width: 1672,
+        height: 940,
+        alt: "بنر رسمی ملک تودی | MelkToday",
       },
     ],
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title: "ملک تودی | MelkToday",
     description: "سامانه هوشمند خرید، فروش، رهن و اجاره املاک و مستغلات",
-    images: ["/web-app-manifest-512x512.png"],
+    images: ["/banner.png"],
   },
 };
 
