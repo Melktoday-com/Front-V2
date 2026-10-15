@@ -174,7 +174,8 @@
    ============================================================================= */
 @theme inline {
   /* The Next.js font variable is supplied by the app/layout font loader. */
-  --font-sans: var(--font-vazirmatn);
+  --font-sans: var(--font);
+  --font-font: var(--font);
 
   /* Brand palette */
   --color-brand-navy: var(--brand-navy);
@@ -480,10 +481,14 @@ html {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-vazirmatn), sans-serif;
+  font-family: var(--font), sans-serif;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.font {
+  font-family: var(--font), sans-serif;
 }
 
 ::selection {

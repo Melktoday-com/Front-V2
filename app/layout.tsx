@@ -7,15 +7,46 @@ import { QueryProvider } from "@/components/providers/QueryProvider";
 import { TicketFloatingWidget } from "@/components/ticketing/TicketFloatingWidget";
 import { WelcomePackageModal } from "@/components/subscriptions/WelcomePackageModal";
 import type { Metadata, Viewport } from "next";
-import { Vazirmatn } from "next/font/google";
+import localFont from "next/font/local";
 import { Suspense } from "react";
 import { Toaster } from "sonner";
 import "./globals.css";
 
-const vazirmatn = Vazirmatn({
-  variable: "--font-vazirmatn",
-  subsets: ["arabic", "latin"],
-  preload: false,
+const font = localFont({
+  src: [
+    {
+      path: "../assets/font/Morabba-Light.ttf",
+      weight: "300",
+      style: "normal",
+    },
+    {
+      path: "../assets/font/Morabba-Regular.ttf",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../assets/font/Morabba-Medium.ttf",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "../assets/font/Morabba-SemiBold.ttf",
+      weight: "600",
+      style: "normal",
+    },
+    {
+      path: "../assets/font/Morabba-Bold.ttf",
+      weight: "700",
+      style: "normal",
+    },
+    {
+      path: "../assets/font/Morabba-Black.ttf",
+      weight: "900",
+      style: "normal",
+    },
+  ],
+  variable: "--font",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -38,7 +69,7 @@ export default function RootLayout({
   return (
     <html lang="fa" dir="rtl">
       <body
-        className={`${vazirmatn.variable} antialiased font-vazirmatn flex min-h-screen overflow-x-hidden`}
+        className={`${font.variable} antialiased font flex min-h-screen overflow-x-hidden`}
       >
         <QueryProvider>
           <CityProvider>
