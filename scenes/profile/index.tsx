@@ -37,6 +37,7 @@ import {
     User,
     X
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -193,10 +194,12 @@ export default function ProfileScene() {
                         <div className="relative group shrink-0">
                             <div className="w-18 h-18 rounded-full bg-surface border-2 border-soft-border flex items-center justify-center overflow-hidden shadow-xs">
                                 {profile?.avatarUrl ? (
-                                    <img
+                                    <Image
                                         src={getMediaUrl(profile.avatarUrl)}
                                         alt={firstName || "Profile"}
                                         className="w-full h-full object-cover"
+                                        width={18}
+                                        height={18}
                                     />
                                 ) : (
                                     <User className="w-9 h-9 text-brand/60" />
