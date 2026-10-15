@@ -215,7 +215,7 @@ export function SearchHeader({ isInitialOpen }: SearchHeaderProps) {
             <div className="space-y-4 sm:space-y-6">
                 <div className="max-w-2xl space-y-1.5 sm:space-y-2">
                     <h1 className="text-brand text-xl sm:text-2xl lg:text-4xl font-black tracking-tight leading-[1.2] sm:leading-[1.1]">
-                        اینجا، داستان <span className="text-primary">خانه</span> شما آغاز می‌شود
+                        اینجا، داستان <span className="text-accent">خانه</span> شما آغاز می‌شود
                     </h1>
                     <p className="text-secondary text-xs sm:text-sm lg:text-base font-medium sm:font-bold opacity-75 sm:opacity-70">
                         هوشمندانه جستجو کنید، با اطمینان انتخاب کنید
@@ -295,55 +295,50 @@ export function SearchHeader({ isInitialOpen }: SearchHeaderProps) {
                                     <button
                                         type="button"
                                         onClick={() => setActiveTab("ALL")}
-                                        className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full transition-all shrink-0 ${
-                                            activeTab === "ALL"
+                                        className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full transition-all shrink-0 ${activeTab === "ALL"
                                                 ? "bg-primary text-white shadow-sm"
                                                 : "bg-soft-bg text-secondary hover:text-brand"
-                                        }`}
+                                            }`}
                                     >
                                         همه نتایج ({toPersianDigits(totalResultsCount)})
                                     </button>
                                     <button
                                         type="button"
                                         onClick={() => setActiveTab("LISTINGS")}
-                                        className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full transition-all shrink-0 ${
-                                            activeTab === "LISTINGS"
+                                        className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full transition-all shrink-0 ${activeTab === "LISTINGS"
                                                 ? "bg-primary text-white shadow-sm"
                                                 : "bg-soft-bg text-secondary hover:text-brand"
-                                        }`}
+                                            }`}
                                     >
                                         املاک ({toPersianDigits(listings.length)})
                                     </button>
                                     <button
                                         type="button"
                                         onClick={() => setActiveTab("RENTALS")}
-                                        className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full transition-all shrink-0 ${
-                                            activeTab === "RENTALS"
+                                        className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full transition-all shrink-0 ${activeTab === "RENTALS"
                                                 ? "bg-primary text-white shadow-sm"
                                                 : "bg-soft-bg text-secondary hover:text-brand"
-                                        }`}
+                                            }`}
                                     >
                                         اجاره روزانه ({toPersianDigits(rentals.length)})
                                     </button>
                                     <button
                                         type="button"
                                         onClick={() => setActiveTab("PROFILES")}
-                                        className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full transition-all shrink-0 ${
-                                            activeTab === "PROFILES"
+                                        className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full transition-all shrink-0 ${activeTab === "PROFILES"
                                                 ? "bg-primary text-white shadow-sm"
                                                 : "bg-soft-bg text-secondary hover:text-brand"
-                                        }`}
+                                            }`}
                                     >
                                         دفاتر و میزبان‌ها ({toPersianDigits(profiles.length)})
                                     </button>
                                     <button
                                         type="button"
                                         onClick={() => setActiveTab("POSTS")}
-                                        className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full transition-all shrink-0 ${
-                                            activeTab === "POSTS"
+                                        className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full transition-all shrink-0 ${activeTab === "POSTS"
                                                 ? "bg-primary text-white shadow-sm"
                                                 : "bg-soft-bg text-secondary hover:text-brand"
-                                        }`}
+                                            }`}
                                     >
                                         مقالات ({toPersianDigits(posts.length)})
                                     </button>
