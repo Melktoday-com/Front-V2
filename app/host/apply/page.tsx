@@ -1,34 +1,29 @@
 "use client";
 
-import React, { useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { showcaseService } from "@/services/showcase.service";
 import { CitySelector } from "@/components/CitySelector";
-import { toEnglishDigits, toOnlyDigits } from "@/lib/utils";
+import { AccountStatusBanner } from "@/components/ui/AccountStatusBanner";
+import { useAuth } from "@/hooks/useAuth";
+import { useUserStatus } from "@/hooks/useUserStatus";
+import { cn, toEnglishDigits, toOnlyDigits } from "@/lib/utils";
+import { showcaseService } from "@/services/showcase.service";
+import { HostApplicationRequest } from "@/types/api/showcase.types";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  AlertCircle,
   ArrowRight,
-  Award,
   CheckCircle,
   Clock,
   FileCheck,
   Home,
-  Info,
   MapPin,
-  Phone,
   ShieldCheck,
   Sparkles,
   UserCheck,
-  XCircle,
+  XCircle
 } from "lucide-react";
-import { toast } from "sonner";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/hooks/useAuth";
-import { useUserStatus } from "@/hooks/useUserStatus";
-import { AccountStatusBanner } from "@/components/ui/AccountStatusBanner";
-import { HostApplicationRequest } from "@/types/api/showcase.types";
-import { cn } from "@/lib/utils";
+import React, { useState } from "react";
+import { toast } from "sonner";
 
 export default function HostApplyPage() {
   const router = useRouter();
@@ -113,7 +108,7 @@ export default function HostApplyPage() {
   };
 
   return (
-    <div className="min-h-screen bg-surface-secondary py-10 px-4 sm:px-6 lg:px-8" dir="rtl">
+    <div className="min-h-screen bg-surface-secondary pb-24 lg:pb-10 py-10 px-4 sm:px-6 lg:px-8" dir="rtl">
       <div className="max-w-3xl mx-auto space-y-8">
         {/* Navigation Breadcrumb */}
         <div className="flex items-center justify-between">

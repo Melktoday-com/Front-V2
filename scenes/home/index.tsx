@@ -97,7 +97,7 @@ export const HomeScene = () => {
 
     const { data: categoriesData, isLoading: isCategoriesLoading } = useCategories();
 
-    const { data: agencyData, isLoading: isAgenciesLoading } = useAgencies({
+    const { data: agencyData, isLoading: isAgenciesLoading, error: agencyError, refetch: refetchAgencies } = useAgencies({
         cityId: selectedCity.id || undefined,
     }, { enabled: !!selectedCity.id });
 
@@ -206,6 +206,10 @@ export const HomeScene = () => {
                             <div key={i} className="min-w-32 h-40 bg-surface-secondary animate-pulse rounded-xl" />
                         ))}
                     </div>
+                ) : agencyError ? (
+                    <ErrorState onRetry={refetchAgencies} />
+                ) : !topAgencies.length ? (
+                    <EmptyState message="در حال حاضر آژانسی در این شهر ثبت نشده است" />
                 ) : (
                     <Slider>
                         {topAgencies.map((agency: { id: string; name: string; image: string; listingsCount: number }) => (

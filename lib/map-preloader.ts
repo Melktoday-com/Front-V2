@@ -25,13 +25,19 @@ export function initMapTileServiceWorker(): void {
         return;
     }
 
-    window.addEventListener('load', () => {
+    const register = () => {
         navigator.serviceWorker
-            .register('/sw.js')
+            .register('/sw.js', { scope: '/' })
             .catch(() => {
                 // Silently ignore registration failure in unsupported environments
             });
-    });
+    };
+
+    if (document.readyState === 'complete') {
+        register();
+    } else {
+        window.addEventListener('load', register);
+    }
 }
 
 /**

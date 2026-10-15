@@ -65,8 +65,59 @@ const font = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Melktoday",
-  description: "Find the property of your dreams",
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_BASE_URL || "https://melktoday.com"
+  ),
+  title: {
+    default: "ملک تودی | MelkToday",
+    template: "%s | ملک تودی",
+  },
+  description: "سامانه هوشمند خرید، فروش، رهن و اجاره املاک و مستغلات",
+  applicationName: "ملک تودی",
+  manifest: "/site.webmanifest",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon-96x96.png", sizes: "96x96", type: "image/png" },
+    ],
+    shortcut: "/favicon.ico",
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "ملک تودی",
+  },
+  formatDetection: {
+    telephone: false,
+  },
+  other: {
+    "mobile-web-app-capable": "yes",
+  },
+  openGraph: {
+    title: "ملک تودی | MelkToday",
+    description: "سامانه هوشمند خرید، فروش، رهن و اجاره املاک و مستغلات",
+    siteName: "ملک تودی",
+    locale: "fa_IR",
+    type: "website",
+    images: [
+      {
+        url: "/web-app-manifest-512x512.png",
+        width: 512,
+        height: 512,
+        alt: "لوگوی ملک تودی",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary",
+    title: "ملک تودی | MelkToday",
+    description: "سامانه هوشمند خرید، فروش، رهن و اجاره املاک و مستغلات",
+    images: ["/web-app-manifest-512x512.png"],
+  },
 };
 
 export const viewport: Viewport = {
@@ -74,6 +125,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  themeColor: "#ffffff",
 };
 
 export default function RootLayout({
