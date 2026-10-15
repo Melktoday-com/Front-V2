@@ -22,6 +22,7 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 import { ProvinceItem, CityItem, ZoneSummary } from "@/types/api/geo.types";
+import { getPaginationItems, toPersianDigits } from "@/lib/utils";
 
 type ZoneCategory = "PROVINCE" | "CITY" | "DISTRICT" | "NEIGHBORHOOD";
 
@@ -50,7 +51,7 @@ export default function AdminGeoPage() {
     // Fetch Cities for parent selection if NEIGHBORHOOD or DISTRICT is selected
     const { data: citiesData } = useQuery({
         queryKey: ["geo", "cities", provinceId],
-        queryFn: () => geoService.listCities({ provinceId: provinceId ? parseInt(provinceId) : undefined, limit: 1000 }),
+        queryFn: () => geoService.listCities({ provinceId: provinceId ? parseInt(provinceId, 10) : undefined, limit: 1000 }),
         enabled: zoneType === "NEIGHBORHOOD" || zoneType === "CITY" || zoneType === "DISTRICT"
     });
 
@@ -62,7 +63,7 @@ export default function AdminGeoPage() {
                 const res = await geoService.listProvinces({
                     page,
                     limit,
-                    search: searchTerm,
+                    search: searchTerm.trim() || undefined,
                     status: statusFilter || undefined
                 });
                 return {
@@ -74,9 +75,9 @@ export default function AdminGeoPage() {
                 const res = await geoService.listCities({
                     page,
                     limit,
-                    search: searchTerm,
+                    search: searchTerm.trim() || undefined,
                     status: statusFilter || undefined,
-                    provinceId: provinceId ? parseInt(provinceId) : undefined
+                    provinceId: provinceId ? parseInt(provinceId, 10) : undefined
                 });
                 return {
                     items: res.items || res.zones || [],
@@ -84,14 +85,16 @@ export default function AdminGeoPage() {
                     totalPages: res.totalPages || Math.ceil((res.total || 0) / limit),
                 };
             } else if (zoneType === "DISTRICT") {
+                const isNumericCity = cityId && /^\d+$/.test(cityId);
                 const res = await geoService.listZones({
                     types: "DISTRICT,RURAL_DISTRICT",
                     page,
                     limit,
-                    search: searchTerm,
+                    search: searchTerm.trim() || undefined,
                     status: statusFilter || undefined,
-                    provinceId: provinceId ? parseInt(provinceId) : undefined,
-                    cityId: cityId ? parseInt(cityId) : undefined
+                    provinceId: provinceId ? parseInt(provinceId, 10) : undefined,
+                    cityId: isNumericCity ? parseInt(cityId, 10) : undefined,
+                    parentId: cityId && !isNumericCity ? cityId : undefined,
                 });
                 return {
                     items: res.zones || [],
@@ -99,14 +102,16 @@ export default function AdminGeoPage() {
                     totalPages: res.totalPages || Math.ceil((res.total || 0) / limit),
                 };
             } else {
+                const isNumericCity = cityId && /^\d+$/.test(cityId);
                 const res = await geoService.listZones({
                     type: "NEIGHBORHOOD",
                     page,
                     limit,
-                    search: searchTerm,
+                    search: searchTerm.trim() || undefined,
                     status: statusFilter || undefined,
-                    provinceId: provinceId ? parseInt(provinceId) : undefined,
-                    cityId: cityId ? parseInt(cityId) : undefined
+                    provinceId: provinceId ? parseInt(provinceId, 10) : undefined,
+                    cityId: isNumericCity ? parseInt(cityId, 10) : undefined,
+                    parentId: cityId && !isNumericCity ? cityId : undefined,
                 });
                 return {
                     items: res.zones || [],
@@ -215,13 +220,19 @@ export default function AdminGeoPage() {
                 const uploadedMedia = await mediaService.upload(kmlFile, "PRIVATE", "DOCUMENT");
                 toast.dismiss(uploadToastId);
 
+                const selectedCity = citiesData?.items?.find((c: CityItem) => c.id === newZoneParentId || String(c.geoCityId) === newZoneParentId);
+                const cityNumericId = selectedCity?.geoCityId || (/^\d+$/.test(newZoneParentId) ? parseInt(newZoneParentId, 10) : undefined);
+                const cityParentUuid = selectedCity?.id || (!/^\d+$/.test(newZoneParentId) ? newZoneParentId : undefined);
+                const provNumericId = provinceId ? parseInt(provinceId, 10) : (selectedCity?.geoProvinceId || undefined);
+
                 const parseToastId = toast.loading("در حال استخراج و پردازش پلیگان‌های نقشه...");
                 importKmlMutation.mutate(
                     {
                         mediaId: uploadedMedia.mediaId || uploadedMedia.id,
                         type: "NEIGHBORHOOD",
-                        parentZoneId: newZoneParentId,
-                        geoProvinceId: provinceId ? parseInt(provinceId) : undefined,
+                        parentZoneId: cityParentUuid,
+                        geoProvinceId: provNumericId,
+                        geoCityId: cityNumericId,
                         format: "KML",
                     },
                     {
@@ -305,13 +316,13 @@ export default function AdminGeoPage() {
                 {/* Tabs */}
                 <div className="flex bg-surface-secondary p-1 rounded-xl">
                     <button
-                        onClick={() => { setZoneType("CITY"); setPage(1); }}
+                        onClick={() => { setZoneType("CITY"); setPage(1); setCityId(""); }}
                         className={`px-5 py-2 rounded-lg text-sm font-bold transition-all ${zoneType === "CITY" ? "bg-surface text-info shadow-sm" : "text-foreground-muted hover:text-foreground-secondary"}`}
                     >
                         شهرها
                     </button>
                     <button
-                        onClick={() => { setZoneType("PROVINCE"); setPage(1); }}
+                        onClick={() => { setZoneType("PROVINCE"); setPage(1); setProvinceId(""); setCityId(""); }}
                         className={`px-5 py-2 rounded-lg text-sm font-bold transition-all ${zoneType === "PROVINCE" ? "bg-surface text-info shadow-sm" : "text-foreground-muted hover:text-foreground-secondary"}`}
                     >
                         استان‌ها
@@ -357,6 +368,7 @@ export default function AdminGeoPage() {
                             ]}
                             placeholder="همه استان‌ها"
                             size="sm"
+                            searchable
                             variant="white"
                         />
                     </div>
@@ -371,12 +383,13 @@ export default function AdminGeoPage() {
                             options={[
                                 { value: "", label: "همه شهرها" },
                                 ...(citiesData?.items?.map((c: CityItem) => ({
-                                    value: c.id || String(c.geoCityId),
+                                    value: c.geoCityId ? String(c.geoCityId) : c.id,
                                     label: c.name,
                                 })) || [])
                             ]}
                             placeholder="همه شهرها"
                             size="sm"
+                            searchable
                             variant="white"
                         />
                     </div>
@@ -448,21 +461,30 @@ export default function AdminGeoPage() {
                                     </td>
                                     {zoneType !== "PROVINCE" && (
                                         <td className="px-6 py-4 text-foreground-secondary font-medium">
-                                            {zone.geoProvinceId != null ? (provincesMap.get(zone.geoProvinceId) || provincesMap.get(String(zone.geoProvinceId)) || "—") : "—"}
+                                            {zone.provinceName ||
+                                                (zone.geoProvinceId != null
+                                                    ? (provincesMap.get(zone.geoProvinceId) || provincesMap.get(String(zone.geoProvinceId)))
+                                                    : null) ||
+                                                "—"}
                                         </td>
                                     )}
                                     {(zoneType === "DISTRICT" || zoneType === "NEIGHBORHOOD") && (
                                         <td className="px-6 py-4 text-foreground-secondary font-medium">
-                                            {(zone.geoCityId != null ? (citiesMap.get(zone.geoCityId) || citiesMap.get(String(zone.geoCityId))) : null) || (zone.parentZoneId != null ? citiesMap.get(zone.parentZoneId) : null) || "—"}
+                                            {zone.cityName ||
+                                                (zone.geoCityId != null
+                                                    ? (citiesMap.get(zone.geoCityId) || citiesMap.get(String(zone.geoCityId)))
+                                                    : null) ||
+                                                (zone.parentZoneId != null ? citiesMap.get(zone.parentZoneId) : null) ||
+                                                "—"}
                                         </td>
                                     )}
                                     <td className="px-6 py-4 font-mono text-sm text-foreground-muted uppercase">
                                         {zoneType === 'CITY'
-                                            ? (zone.geoCityId ?? "—")
+                                            ? (zone.geoCityId != null ? toPersianDigits(zone.geoCityId) : "—")
                                             : zoneType === 'PROVINCE'
-                                            ? (zone.geoProvinceId ?? "—")
+                                            ? (zone.geoProvinceId != null ? toPersianDigits(zone.geoProvinceId) : "—")
                                             : zoneType === 'DISTRICT'
-                                            ? (zone.geoDistrictId || zone.geoRuralDistrictId || "—")
+                                            ? (zone.geoDistrictId || zone.geoRuralDistrictId ? toPersianDigits(zone.geoDistrictId || zone.geoRuralDistrictId) : "—")
                                             : (zone.id?.substring(0, 8) ?? "—")}
                                     </td>
                                     <td className="px-6 py-4 text-center">
@@ -517,48 +539,55 @@ export default function AdminGeoPage() {
                 </table>
 
                 {/* Pagination */}
-                <div className="px-6 py-4 bg-surface-secondary border-t border-border-subtle flex justify-between items-center">
+                <div className="px-6 py-4 bg-surface-secondary border-t border-border-subtle flex flex-col sm:flex-row justify-between items-center gap-4">
                     <span className="text-sm text-foreground-muted">
-                        نمایش {items.length} مورد از {totalItems}
+                        نمایش {totalItems === 0 ? "۰" : toPersianDigits((page - 1) * limit + 1)} تا {toPersianDigits(Math.min(page * limit, totalItems))} از {toPersianDigits(totalItems)} مورد
                     </span>
-                    <div className="flex items-center gap-2">
-                        <button
-                            disabled={page === 1}
-                            onClick={() => setPage(p => p - 1)}
-                            className="p-2 border border-border-subtle rounded-lg bg-surface text-foreground-muted hover:text-info hover:border-info/30 disabled:opacity-50 transition-all font-bold"
-                        >
-                            <ChevronRight size={18} />
-                        </button>
-                        <div className="flex gap-1">
-                            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                                let pageNum;
-                                if (totalPages <= 5) pageNum = i + 1;
-                                else if (page <= 3) pageNum = i + 1;
-                                else if (page >= totalPages - 2) pageNum = totalPages - 4 + i;
-                                else pageNum = page - 2 + i;
-
-                                return (
-                                    <button
-                                        key={pageNum}
-                                        onClick={() => setPage(pageNum)}
-                                        className={`w-9 h-9 flex items-center justify-center rounded-lg text-sm font-bold transition-all ${page === pageNum
-                                            ? "bg-blue-600 text-white shadow-md shadow-blue-100"
-                                            : "bg-surface border border-border-subtle text-foreground-secondary hover:bg-surface-secondary"
+                    {totalPages > 1 && (
+                        <div className="flex items-center gap-1.5">
+                            <button
+                                disabled={page <= 1}
+                                onClick={() => setPage(p => Math.max(1, p - 1))}
+                                className="px-3 py-1.5 border border-border-subtle rounded-xl bg-surface text-foreground-muted hover:text-foreground hover:border-border transition-all font-bold text-xs flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed"
+                            >
+                                <ChevronRight size={16} />
+                                <span>قبلی</span>
+                            </button>
+                            <div className="flex items-center gap-1">
+                                {getPaginationItems(page, page, totalPages).map((item, idx) => {
+                                    if (item === "...") {
+                                        return (
+                                            <span key={`ellipsis-${idx}`} className="px-2 text-foreground-muted text-xs select-none">
+                                                ...
+                                            </span>
+                                        );
+                                    }
+                                    const isCurrent = item === page;
+                                    return (
+                                        <button
+                                            key={`page-${item}`}
+                                            onClick={() => setPage(item as number)}
+                                            className={`min-w-8 h-8 px-2 flex items-center justify-center rounded-xl text-xs font-bold transition-all ${
+                                                isCurrent
+                                                    ? "bg-blue-600 text-white shadow-sm font-black"
+                                                    : "bg-surface border border-border-subtle text-foreground-secondary hover:bg-surface-secondary"
                                             }`}
-                                    >
-                                        {pageNum}
-                                    </button>
-                                );
-                            })}
+                                        >
+                                            {toPersianDigits(item)}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                            <button
+                                disabled={page >= totalPages}
+                                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                                className="px-3 py-1.5 border border-border-subtle rounded-xl bg-surface text-foreground-muted hover:text-foreground hover:border-border transition-all font-bold text-xs flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed"
+                            >
+                                <span>بعدی</span>
+                                <ChevronLeft size={16} />
+                            </button>
                         </div>
-                        <button
-                            disabled={page === totalPages || totalPages === 0}
-                            onClick={() => setPage(p => p + 1)}
-                            className="p-2 border border-border-subtle rounded-lg bg-surface text-foreground-muted hover:text-info hover:border-info/30 disabled:opacity-50 transition-all font-bold"
-                        >
-                            <ChevronLeft size={18} />
-                        </button>
-                    </div>
+                    )}
                 </div>
             </div>
 
@@ -638,7 +667,7 @@ export default function AdminGeoPage() {
                                         <Select
                                             label="استان"
                                             value={provinceId}
-                                            onChange={(val) => setProvinceId(val)}
+                                            onChange={(val) => { setProvinceId(val); setNewZoneParentId(""); }}
                                             options={
                                                 provincesData?.items?.map((p: ProvinceItem) => ({
                                                     value: String(p.geoProvinceId || p.id),
@@ -658,7 +687,7 @@ export default function AdminGeoPage() {
                                             disabled={!provinceId}
                                             options={
                                                 citiesData?.items?.map((c: CityItem) => ({
-                                                    value: c.id || String(c.geoCityId),
+                                                    value: c.geoCityId ? String(c.geoCityId) : c.id,
                                                     label: c.name,
                                                 })) || []
                                             }

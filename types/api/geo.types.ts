@@ -11,7 +11,9 @@ export interface ZoneSummary {
     type?: ZoneType;
     status?: string;
     geoProvinceId?: number | null;
+    provinceName?: string | null;
     geoCityId?: number | null;
+    cityName?: string | null;
     geoDistrictId?: number | null;
     geoRuralDistrictId?: number | null;
     centerPoint?: GeoCenterPoint;
@@ -20,6 +22,7 @@ export interface ZoneSummary {
         coordinates: number[][][] | number[][][][];
     } | null;
     parentZoneId?: string | null;
+    isConfirmed?: boolean;
 }
 
 export interface ListZonesParams {
@@ -110,6 +113,8 @@ export interface ProvinceItem {
     osmUrl?: string;
     type?: string;
     status?: string;
+    provinceName?: string | null;
+    cityName?: string | null;
 }
 
 export interface PaginatedProvincesResponse {
@@ -127,6 +132,8 @@ export interface CityItem {
     nameEn?: string;
     geoCityId?: number;
     geoProvinceId?: number;
+    provinceName?: string | null;
+    cityName?: string | null;
     geoDistrictId?: number | null;
     geoRuralDistrictId?: number | null;
     parentZoneId?: string | null;
