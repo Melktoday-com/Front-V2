@@ -81,16 +81,36 @@ export interface ClaimWelcomePackageRequest {
 
 export interface ClaimWelcomePackageResponse {
     claimed: boolean;
-    message: string;
-    type: 'wallet_bonus' | 'subscription';
-    details: {
-        bonusAmountIrr?: string;
-        subscriptionId?: string;
-        entitlements?: {
-            type: EntitlementTypeName;
-            quota: number;
-        }[];
+    alreadyClaimed?: boolean;
+    message?: string;
+    packageTitle: string;
+    targetRole: string;
+    walletBonusIrr?: string;
+    subscriptionId?: string;
+    quotas?: {
+        publicationQuota: number;
+        tempRentQuota: number;
+        urgentQuota: number;
+        ladderQuota: number;
     };
+}
+
+export interface WelcomePackageEligibilityResponse {
+    eligible: boolean;
+    package?: {
+        id: string;
+        title: string;
+        targetRole: string;
+        walletBonusIrr?: string;
+        durationDays?: number;
+        quotas?: {
+            publicationQuota: number;
+            tempRentQuota: number;
+            urgentQuota: number;
+            ladderQuota: number;
+        };
+    };
+    reason?: 'ALREADY_CLAIMED' | 'NO_ACTIVE_PACKAGE' | 'UNAUTHORIZED_ROLE';
 }
 
 export interface WelcomePackage {

@@ -5,6 +5,7 @@ import { MapTileCacheInitializer } from "@/components/providers/MapTileCacheInit
 import { NavigationHistoryTracker } from "@/components/providers/NavigationHistoryTracker";
 import { QueryProvider } from "@/components/providers/QueryProvider";
 import { TicketFloatingWidget } from "@/components/ticketing/TicketFloatingWidget";
+import { WelcomePackageModal } from "@/components/subscriptions/WelcomePackageModal";
 import type { Metadata, Viewport } from "next";
 import { Vazirmatn } from "next/font/google";
 import { Suspense } from "react";
@@ -50,6 +51,7 @@ export default function RootLayout({
               </div>
             </main>
             <GlobalModalManager />
+            <WelcomePackageModal />
             <MobileNav />
             <Suspense fallback={null}>
               <TicketFloatingWidget />

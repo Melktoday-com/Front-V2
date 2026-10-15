@@ -13,6 +13,7 @@ import {
     UpdateSubscriptionPlanRequest,
     UpdateWelcomePackageRequest,
     WelcomePackage,
+    WelcomePackageEligibilityResponse,
 } from "@/types/api/subscription.types";
 
 export const subscriptionService = {
@@ -43,6 +44,28 @@ export const subscriptionService = {
     ): Promise<ClaimWelcomePackageResponse> => {
         const { data } = await api.post<ClaimWelcomePackageResponse>(
             "/subscriptions/welcome-package/claim",
+            payload || {},
+        );
+        return data;
+    },
+
+    getWelcomeEligibility: async (
+        role?: SubscriptionTargetRole | string,
+    ): Promise<WelcomePackageEligibilityResponse> => {
+        const { data } = await api.get<WelcomePackageEligibilityResponse>(
+            "/subscriptions/welcome-package/eligibility",
+            {
+                params: role ? { role } : undefined,
+            },
+        );
+        return data;
+    },
+
+    autoGrantWelcomePackage: async (
+        payload?: ClaimWelcomePackageRequest,
+    ): Promise<ClaimWelcomePackageResponse> => {
+        const { data } = await api.post<ClaimWelcomePackageResponse>(
+            "/subscriptions/welcome-package/auto-grant",
             payload || {},
         );
         return data;

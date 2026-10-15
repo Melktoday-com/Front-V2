@@ -62,6 +62,30 @@ export function useClaimWelcomePackage() {
     });
 }
 
+export function useWelcomeEligibility(role?: SubscriptionTargetRole | string) {
+    const { isLoggedIn } = useAuth();
+
+    return useQuery({
+        queryKey: ["subscription", "welcome-eligibility", role],
+        queryFn: () => subscriptionService.getWelcomeEligibility(role),
+        enabled: isLoggedIn,
+    });
+}
+
+export function useAutoGrantWelcomePackage() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (payload?: ClaimWelcomePackageRequest) =>
+            subscriptionService.autoGrantWelcomePackage(payload),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["subscription"] });
+            queryClient.invalidateQueries({ queryKey: ["wallet"] });
+            queryClient.invalidateQueries({ queryKey: ["notifications"] });
+        },
+    });
+}
+
 export function useAdminSubscriptionPlans() {
     return useQuery({
         queryKey: ["admin", "subscription", "plans"],

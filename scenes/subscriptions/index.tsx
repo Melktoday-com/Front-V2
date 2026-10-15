@@ -132,7 +132,12 @@ export default function SubscriptionsScene() {
             { targetRole: activeRole || "user" },
             {
                 onSuccess: (res) => {
-                    toast.success(res.message || "بسته خوش‌آمدگویی با موفقیت دریافت شد!");
+                    const successMsg =
+                        res.message ||
+                        (res.packageTitle
+                            ? `بسته «${res.packageTitle}» با موفقیت فعال شد!`
+                            : "بسته خوش‌آمدگویی با موفقیت دریافت شد!");
+                    toast.success(successMsg);
                 },
                 onError: (err: Error) => {
                     const msg = normalizeApiError(
