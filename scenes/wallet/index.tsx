@@ -1,7 +1,8 @@
 "use client";
 
 import { useInitiateTopUp, useWalletBalance, useWalletTransactions } from "@/hooks/useWallet";
-import { cn, formatCurrency, toPersianDigits } from "@/lib/utils";
+import { cn, formatCurrency, rialToToman, toPersianDigits } from "@/lib/utils";
+import { normalizeApiError } from "@/lib/api/error-handler";
 import {
     ArrowDownRight,
     ArrowUpLeft,
@@ -17,8 +18,8 @@ import {
 } from "lucide-react";
 import { TransactionStatus, TransactionType } from "@/types/api/enums";
 import { useSafeBack } from "@/hooks/useSafeBack";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 const QUICK_AMOUNTS = [
@@ -30,10 +31,24 @@ const QUICK_AMOUNTS = [
 
 export default function WalletScene() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const handleBack = useSafeBack("/");
     const [isChargeModalOpen, setIsChargeModalOpen] = useState(false);
     const [selectedAmount, setSelectedAmount] = useState<number>(250000);
     const [customAmount, setCustomAmount] = useState<string>("");
+
+    // Prefill amount if redirected with ?amount=...
+    useEffect(() => {
+        const queryAmount = searchParams?.get("amount");
+        if (queryAmount) {
+            const parsed = parseInt(queryAmount, 10);
+            if (!isNaN(parsed) && parsed > 0) {
+                setCustomAmount(String(parsed));
+                setSelectedAmount(0);
+                setIsChargeModalOpen(true);
+            }
+        }
+    }, [searchParams]);
 
     const { data: balanceData, isLoading: isLoadingBalance } = useWalletBalance();
     const { data: transactionsData, isLoading: isLoadingTransactions } = useWalletTransactions(1, 20);
@@ -65,17 +80,21 @@ export default function WalletScene() {
                         toast.error("آدرس درگاه پرداخت از سرور دریافت نشد.");
                     }
                 },
-                onError: (err: any) => {
-                    const message =
-                        err?.response?.data?.message ||
-                        "خطا در برقراری ارتباط با درگاه پرداخت";
+                onError: (err: Error) => {
+                    const message = normalizeApiError(
+                        err,
+                        "خطا در برقراری ارتباط با درگاه پرداخت",
+                    );
                     toast.error(message);
                 },
             }
         );
     };
 
-    const balanceAmount = balanceData?.balance ?? 0;
+    // Backend wallet stores balance in IRR (currency: "IRR").
+    // Convert to Toman for user display (1 Toman = 10 IRR).
+    const rawBalanceIrr = Number(balanceData?.availableBalance ?? balanceData?.balance ?? 0);
+    const balanceToman = rialToToman(rawBalanceIrr);
 
     return (
         <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6 pb-28 lg:pb-10">
@@ -113,11 +132,16 @@ export default function WalletScene() {
                         {isLoadingBalance ? (
                             <div className="h-10 w-40 bg-surface/20 animate-pulse rounded-xl" />
                         ) : (
-                            <div className="flex items-baseline gap-2">
-                                <span className="text-3xl sm:text-4xl font-black tracking-tight">
-                                    {formatCurrency(balanceAmount)}
-                                </span>
-                                <span className="text-sm font-bold text-white/80">تومان</span>
+                            <div className="space-y-1">
+                                <div className="flex items-baseline gap-2">
+                                    <span className="text-3xl sm:text-4xl font-black tracking-tight">
+                                        {formatCurrency(balanceToman)}
+                                    </span>
+                                    <span className="text-sm font-bold text-white/80">تومان</span>
+                                </div>
+                                <div className="text-xs text-white/60 font-medium">
+                                    معادل {formatCurrency(rawBalanceIrr)} ریال
+                                </div>
                             </div>
                         )}
                     </div>
@@ -125,7 +149,7 @@ export default function WalletScene() {
                     <div className="pt-2 flex flex-wrap items-center gap-3">
                         <button
                             onClick={() => setIsChargeModalOpen(true)}
-                            className="flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary/90 text-white font-black text-xs rounded-2xl shadow-lg shadow-primary/30 transition-transform active:scale-95"
+                            className="flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary/90 text-white font-black text-xs rounded-2xl shadow-lg shadow-primary/30 transition-transform active:scale-95 cursor-pointer"
                         >
                             <Plus className="w-4 h-4 stroke-[3]" />
                             <span>افزایش موجودی</span>
@@ -206,7 +230,10 @@ export default function WalletScene() {
                                                 isDeposit ? "text-success" : "text-error"
                                             )}
                                         >
-                                            {isDeposit ? "+" : "-"} {formatCurrency(tx.amount)} تومان
+                                            {isDeposit ? "+" : "-"} {formatCurrency(rialToToman(tx.amount))} تومان
+                                        </span>
+                                        <span className="text-[10px] text-text-light block mt-0.5">
+                                            {formatCurrency(tx.amount)} ریال
                                         </span>
                                         <span
                                             className={cn(

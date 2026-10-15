@@ -213,6 +213,30 @@ const TYPE_CONFIGS: Record<NotificationType, TypeConfig> = {
         badgeBg: "bg-emerald-50",
         badgeColor: "text-emerald-700",
     },
+    PAID_SUBSCRIPTION_ACTIVATED: {
+        icon: Sparkles,
+        iconBg: "bg-emerald-50",
+        iconColor: "text-emerald-600",
+        badgeLabel: "فعال‌سازی اشتراک",
+        badgeBg: "bg-emerald-50",
+        badgeColor: "text-emerald-700",
+    },
+    SUBSCRIPTION_EXPIRING_SOON: {
+        icon: Clock,
+        iconBg: "bg-amber-50",
+        iconColor: "text-amber-600",
+        badgeLabel: "یادآوری انقضای اشتراک",
+        badgeBg: "bg-amber-50",
+        badgeColor: "text-amber-700",
+    },
+    SUBSCRIPTION_EXPIRED: {
+        icon: AlertCircle,
+        iconBg: "bg-rose-50",
+        iconColor: "text-rose-600",
+        badgeLabel: "انقضای اشتراک",
+        badgeBg: "bg-rose-50",
+        badgeColor: "text-rose-700",
+    },
 };
 
 const DEFAULT_CONFIG: TypeConfig = {
@@ -264,9 +288,14 @@ export function NotificationCard({
     } else if (notification.type === "NEW_REVIEW") {
         targetLink = "/profile";
         targetLinkLabel = "مشاهده نظرات";
-    } else if (notification.type === "WELCOME_PACKAGE_ACTIVATED") {
+    } else if (
+        notification.type === "WELCOME_PACKAGE_ACTIVATED" ||
+        notification.type === "PAID_SUBSCRIPTION_ACTIVATED" ||
+        notification.type === "SUBSCRIPTION_EXPIRING_SOON" ||
+        notification.type === "SUBSCRIPTION_EXPIRED"
+    ) {
         targetLink = "/subscriptions";
-        targetLinkLabel = "مشاهده بسته‌ها و سهمیه‌ها";
+        targetLinkLabel = "مشاهده بسته‌ها و اشتراک‌ها";
     } else if (
         (notification.type === "TICKET_REPLY_RECEIVED" || notification.type === "TICKET_STATUS_CHANGED") &&
         notification.referenceId

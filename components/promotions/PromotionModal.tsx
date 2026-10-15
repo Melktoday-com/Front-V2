@@ -6,7 +6,8 @@ import { useEntitlements } from "@/hooks/useSubscription";
 import { useWalletBalance } from "@/hooks/useWallet";
 import { useTariffs } from "@/hooks/useTariffs";
 import { PromotionType } from "@/types/api/promotion.types";
-import { formatCurrency, toPersianDigits } from "@/lib/utils";
+import { formatCurrency, rialToToman, toPersianDigits } from "@/lib/utils";
+import { normalizeApiError } from "@/lib/api/error-handler";
 import { Zap, TrendingUp, X, Sparkles, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -69,8 +70,8 @@ export function PromotionModal({
         return rule ? Number(rule.pricePerDayRials) : 0;
     }, [ladderTariff, pricingData]);
 
-    const urgentPriceTomans = Math.round(urgentPriceRials / 10);
-    const ladderPriceTomans = Math.round(ladderPriceRials / 10);
+    const urgentPriceTomans = rialToToman(urgentPriceRials);
+    const ladderPriceTomans = rialToToman(ladderPriceRials);
 
     const activePriceRials = selectedType === "URGENT_TAG" ? urgentPriceRials : ladderPriceRials;
     const activePriceTomans = selectedType === "URGENT_TAG" ? urgentPriceTomans : ladderPriceTomans;
@@ -96,9 +97,8 @@ export function PromotionModal({
                     : "آگهی با موفقیت نردبان شد"
             );
             onClose();
-        } catch (err: unknown) {
-            const error = err as { response?: { data?: { message?: string } } };
-            const msg = error?.response?.data?.message || "خطا در ثبت درخواست ارتقا";
+        } catch (err) {
+            const msg = normalizeApiError(err instanceof Error ? err : undefined, "خطا در ثبت درخواست ارتقا");
             toast.error(msg);
         }
     };
@@ -274,7 +274,7 @@ export function PromotionModal({
                         <div className="flex items-center justify-between text-[11px] pt-2 border-t border-border-subtle/50">
                             <span className="text-text-light">موجودی کیف پول شما:</span>
                             <span className="font-bold text-brand">
-                                {formatCurrency(Math.round(currentBalanceRials / 10))} تومان
+                                {formatCurrency(rialToToman(currentBalanceRials))} تومان
                             </span>
                         </div>
                     )}

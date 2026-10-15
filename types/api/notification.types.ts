@@ -19,7 +19,10 @@ export type NotificationType =
     | 'NEW_REVIEW'
     | 'TICKET_REPLY_RECEIVED'
     | 'TICKET_STATUS_CHANGED'
-    | 'WELCOME_PACKAGE_ACTIVATED';
+    | 'WELCOME_PACKAGE_ACTIVATED'
+    | 'PAID_SUBSCRIPTION_ACTIVATED'
+    | 'SUBSCRIPTION_EXPIRING_SOON'
+    | 'SUBSCRIPTION_EXPIRED';
 
 export interface NotificationSummary {
     id: string;

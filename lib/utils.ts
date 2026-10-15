@@ -26,6 +26,39 @@ export function formatPrice(amount: number | string | undefined | null, suffix =
 }
 
 /**
+ * Converts Iranian Rial (IRR) to Toman (IRT). 1 Toman = 10 IRR.
+ */
+export function rialToToman(amountIrr: number | string | undefined | null): number {
+    if (amountIrr === undefined || amountIrr === null || amountIrr === "") return 0;
+    const num = typeof amountIrr === "string" ? parseFloat(amountIrr.replace(/,/g, "")) : amountIrr;
+    if (isNaN(num)) return 0;
+    return Math.floor(num / 10);
+}
+
+/**
+ * Formats an amount in Iranian Rial (IRR) to Toman with localized Persian digits.
+ * Example: 200000 -> "۲۰٬۰۰۰ تومان"
+ */
+export function formatRialToToman(
+    amountIrr: number | string | undefined | null,
+    suffix = " تومان",
+): string {
+    const toman = rialToToman(amountIrr);
+    return `${formatCurrency(toman)}${suffix}`;
+}
+
+/**
+ * Formats an amount in Iranian Rial (IRR) with localized Persian digits.
+ * Example: 200000 -> "۲۰۰٬۰۰۰ ریال"
+ */
+export function formatRial(
+    amountIrr: number | string | undefined | null,
+    suffix = " ریال",
+): string {
+    return `${formatCurrency(amountIrr)}${suffix}`;
+}
+
+/**
  * Specifically for listing (ad) or temporary rental prices where an unset or 0 price means "توافقی" (negotiable).
  */
 export function formatAdPrice(amount: number | string | undefined | null, suffix = " تومان"): string {

@@ -15,7 +15,7 @@ import {
 import { useWalletBalance, useInitiateTopUp } from "@/hooks/useWallet";
 import { useTariffs } from "@/hooks/useTariffs";
 import { normalizeApiError } from "@/lib/api/error-handler";
-import { cn, formatCurrency, toPersianDigits } from "@/lib/utils";
+import { cn, formatCurrency, rialToToman, toPersianDigits } from "@/lib/utils";
 import { toast } from "sonner";
 
 interface AdPublicationFeeModalProps {
@@ -48,13 +48,13 @@ export function AdPublicationFeeModal({
     const feeTomans = useMemo(() => {
         if (!publicationTariff) return 10000; // Default platform baseline
         const amountIrr = Number(publicationTariff.amountIrr);
-        return isNaN(amountIrr) || amountIrr <= 0 ? 10000 : Math.round(amountIrr / 10);
+        return isNaN(amountIrr) || amountIrr <= 0 ? 10000 : rialToToman(amountIrr);
     }, [publicationTariff]);
 
     // Available wallet balance in Tomans
     const balanceTomans = useMemo(() => {
         const rawIrr = Number(walletData?.availableBalance ?? walletData?.balance ?? 0);
-        return isNaN(rawIrr) ? 0 : Math.max(0, Math.round(rawIrr / 10));
+        return isNaN(rawIrr) ? 0 : Math.max(0, rialToToman(rawIrr));
     }, [walletData]);
 
     // Deficit needed to fulfill the publication fee

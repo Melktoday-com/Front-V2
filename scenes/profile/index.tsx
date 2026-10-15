@@ -11,7 +11,7 @@ import { useHostProfile } from "@/hooks/useShowcase";
 import { useMeProfile, useUser } from "@/hooks/useUser";
 import { useUserStatus } from "@/hooks/useUserStatus";
 import { useWallet } from "@/hooks/useWallet";
-import { cn, formatCurrency, getMediaUrl, toPersianDigits } from "@/lib/utils";
+import { cn, formatCurrency, getMediaUrl, rialToToman, toPersianDigits } from "@/lib/utils";
 import { mediaService } from "@/services/media.service";
 import { userService } from "@/services/user.service";
 import { RoleName, isRoleAdmin, tryRoleNameFrom } from "@/types/access";
@@ -479,7 +479,7 @@ export default function ProfileScene() {
                             <span className="font-bold text-brand">کیف پول و تراکنش‌ها</span>
                         </div>
                         <div className="flex items-center gap-2">
-                            <span className="text-secondary text-xs">{formatCurrency(balance?.balance)} تومان</span>
+                            <span className="text-secondary text-xs">{formatCurrency(rialToToman(balance?.balance))} تومان</span>
                             <ChevronLeft className="w-5 h-5 text-secondary" />
                         </div>
                     </Button>

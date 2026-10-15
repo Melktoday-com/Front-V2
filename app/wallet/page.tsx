@@ -1,5 +1,7 @@
 import WalletScene from "@/scenes/wallet";
 import { Metadata } from "next";
+import { Suspense } from "react";
+import { Loader2 } from "lucide-react";
 
 export const metadata: Metadata = {
     title: "کیف پول | ملک‌تودی",
@@ -7,5 +9,15 @@ export const metadata: Metadata = {
 };
 
 export default function WalletPage() {
-    return <WalletScene />;
+    return (
+        <Suspense
+            fallback={
+                <div className="min-h-[50vh] flex items-center justify-center">
+                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                </div>
+            }
+        >
+            <WalletScene />
+        </Suspense>
+    );
 }

@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/hooks/useAuth";
 import { useAutoGrantWelcomePackage } from "@/hooks/useSubscription";
-import { cn, formatPrice, toPersianDigits } from "@/lib/utils";
+import { cn, formatCurrency, formatPrice, toPersianDigits } from "@/lib/utils";
 import { ClaimWelcomePackageResponse } from "@/types/api/subscription.types";
 import {
     ArrowUpCircle,
@@ -56,10 +56,8 @@ export function WelcomePackageModal() {
                     }
                 },
                 onError: () => {
-                    // Silently ignore failures on auto-grant to protect user session
-                    if (typeof window !== "undefined") {
-                        window.sessionStorage.setItem(sessionKey, "true");
-                    }
+                    // On transient error (e.g. network timeout), allow retry on next mount/navigation
+                    hasTriggeredRef.current = false;
                 },
             }
         );
@@ -156,6 +154,11 @@ export function WelcomePackageModal() {
                             <p className="text-lg font-black text-brand tracking-tight mt-0.5">
                                 {formatPrice(bonusToman)}
                             </p>
+                            {packageData.walletBonusIrr && (
+                                <span className="text-[11px] text-text-light block">
+                                    معادل {formatCurrency(packageData.walletBonusIrr)} ریال
+                                </span>
+                            )}
                         </div>
                     </div>
                 )}
