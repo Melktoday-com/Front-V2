@@ -115,24 +115,38 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
     const router = useRouter();
     const { selectedCity, setSelectedCity } = useCity();
     const urlView = searchParams.get("view") as "list" | "split" | "map" | null;
+    const [isMobile, setIsMobile] = useState<boolean>(false);
     const [viewMode, setViewModeState] = useState<"list" | "split" | "map">(
         urlView === "map" || urlView === "split" || urlView === "list"
             ? urlView
             : initialViewMode
     );
 
+    // Track mobile viewport (< 1024px / Tailwind lg breakpoint)
+    useEffect(() => {
+        const mql = window.matchMedia("(max-width: 1023px)");
+        const handleChange = (e: MediaQueryListEvent | MediaQueryList) => {
+            setIsMobile(e.matches);
+        };
+        setIsMobile(mql.matches);
+        mql.addEventListener("change", handleChange);
+        return () => mql.removeEventListener("change", handleChange);
+    }, []);
+
     const setViewMode = useCallback(
         (mode: "list" | "split" | "map") => {
-            setViewModeState(mode);
+            const defaultMode = isMobile ? "list" : "split";
+            const targetMode = isMobile && mode === "split" ? "list" : mode;
+            setViewModeState(targetMode);
             const params = new URLSearchParams(searchParams.toString());
-            if (mode === "split") {
+            if (targetMode === defaultMode) {
                 params.delete("view");
             } else {
-                params.set("view", mode);
+                params.set("view", targetMode);
             }
             router.replace(`/ads?${params.toString()}`, { scroll: false });
         },
-        [searchParams, router]
+        [searchParams, router, isMobile]
     );
     const [selectedZones, setSelectedZones] = useState<ZoneSummary[]>([]);
     const [drawerOpen, setDrawerOpen] = useState(false);
@@ -155,17 +169,21 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
 
     const debouncedSearch = useDebounce(search, 350);
 
-    // Keep state in sync with URL search params
+    // Keep state in sync with URL search params and screen size
     useEffect(() => {
         setSelectedCategory(searchParams.get("categoryKey") || "");
         setSelectedSubcategory(searchParams.get("subcategoryKey") || "");
         setSearch(searchParams.get("search") || "");
-        if (urlView === "map" || urlView === "split" || urlView === "list") {
-            setViewModeState(urlView);
+        if (urlView === "map") {
+            setViewModeState("map");
+        } else if (urlView === "list") {
+            setViewModeState("list");
+        } else if (urlView === "split") {
+            setViewModeState(isMobile ? "list" : "split");
         } else {
-            setViewModeState(initialViewMode);
+            setViewModeState(isMobile ? "list" : initialViewMode);
         }
-    }, [searchParams, urlView, initialViewMode]);
+    }, [searchParams, urlView, initialViewMode, isMobile]);
 
     // Reset pagination when search query, city, or selected zones change
     useEffect(() => {
@@ -308,7 +326,7 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
             query: debouncedSearch.trim() || undefined,
             limit: 500,
         },
-        Boolean(debouncedMapViewport && (viewMode === "split" || viewMode === "map"))
+        Boolean(debouncedMapViewport && (viewMode === "map" || (viewMode === "split" && !isMobile)))
     );
 
     // Pagination metrics
@@ -625,7 +643,7 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                             onClick={() => setViewMode("list")}
                             className={cn(
                                 "flex items-center gap-1 px-2.5 sm:px-3 h-7 sm:h-7.5 rounded-full text-[11px] sm:text-xs font-bold transition-all cursor-pointer",
-                                viewMode === "list"
+                                viewMode === "list" || (isMobile && viewMode === "split")
                                     ? "bg-primary text-white shadow-xs"
                                     : "text-secondary hover:text-text-main"
                             )}
@@ -639,7 +657,7 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                             onClick={() => setViewMode("split")}
                             className={cn(
                                 "hidden lg:flex items-center gap-1 px-2.5 sm:px-3 h-7 sm:h-7.5 rounded-full text-[11px] sm:text-xs font-bold transition-all cursor-pointer",
-                                viewMode === "split"
+                                viewMode === "split" && !isMobile
                                     ? "bg-primary text-white shadow-xs"
                                     : "text-secondary hover:text-text-main"
                             )}
@@ -678,7 +696,7 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                             ? "hidden"
                             : viewMode === "list"
                             ? "w-full flex-1 block"
-                            : "flex-1 block"
+                            : "w-full lg:flex-1 block"
                     )}
                 >
                     {/* Anchor for top of list */}
@@ -689,7 +707,7 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                         <div
                             className={cn(
                                 "grid gap-4 pb-12",
-                                viewMode === "split"
+                                viewMode === "split" && !isMobile
                                     ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 min-[1800px]:grid-cols-3"
                                     : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
                             )}
@@ -729,7 +747,7 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                         <div
                             className={cn(
                                 "grid gap-4 pb-32 lg:pb-6",
-                                viewMode === "split"
+                                viewMode === "split" && !isMobile
                                     ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 min-[1800px]:grid-cols-3"
                                     : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
                             )}
@@ -844,7 +862,7 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                             ? "hidden"
                             : viewMode === "map"
                             ? "w-full flex-1 block"
-                            : "flex-1 lg:flex-[1.4] block"
+                            : "hidden lg:block lg:flex-[1.4]"
                     )}
                 >
                     <Map
@@ -869,12 +887,12 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                     {!isAnyModalOpen && (
                         viewMode === "map" ? (
                             <button
-                                onClick={() => setViewMode("split")}
-                                aria-label="خروج از نقشه تمام‌صفحه"
+                                onClick={() => setViewMode(isMobile ? "list" : "split")}
+                                aria-label={isMobile ? "مشاهده فهرست" : "خروج از نقشه تمام‌صفحه"}
                                 className="ads-floating-map-btn absolute bottom-24 lg:bottom-6 left-1/2 -translate-x-1/2 z-[500] bg-brand text-white px-3.5 py-1.5 sm:px-5 sm:py-2.5 rounded-full shadow-2xl flex items-center gap-1.5 sm:gap-2 font-bold text-xs sm:text-sm active:scale-95 hover:bg-brand/90 transition-all border border-white/20 backdrop-blur-md cursor-pointer"
                             >
                                 <X className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
-                                <span>خروج از تمام‌صفحه</span>
+                                <span>{isMobile ? "مشاهده فهرست" : "خروج از تمام‌صفحه"}</span>
                             </button>
                         ) : (
                             <button
@@ -890,7 +908,7 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                 </div>
 
                 {/* Floating Show Map Button (When map is hidden) */}
-                {viewMode === "list" && !isAnyModalOpen && (
+                {(viewMode === "list" || (isMobile && viewMode === "split")) && !isAnyModalOpen && (
                     <button
                         onClick={() => setViewMode("map")}
                         aria-label="نمایش نقشه"
