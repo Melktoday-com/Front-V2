@@ -97,9 +97,9 @@ export function Sidebar() {
             {/* Prominent Submit Ad CTA Button */}
             <Link
                 href="/ads/submit"
-                className="flex items-center justify-center gap-2 w-full py-3.5 px-4 rounded-2xl bg-primary text-primary-foreground font-bold text-sm shadow-sm hover:bg-primary-hover active:bg-primary-active transition-all mb-6 group"
+                className="flex items-center justify-center gap-2 w-full py-3.5 px-4 rounded-2xl border-2 border-primary text-primary font-bold text-sm bg-transparent hover:bg-primary/5 active:bg-primary/10 transition-all mb-6 group"
             >
-                <PlusCircle className="w-5 h-5 text-accent group-hover:scale-110 transition-transform" />
+                <PlusCircle className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
                 <span>ثبت آگهی</span>
             </Link>
 
