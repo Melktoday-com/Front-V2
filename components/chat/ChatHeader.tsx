@@ -22,7 +22,7 @@ export function ChatHeader() {
             <div className="flex items-center gap-4 md:gap-10">
                 <Link href="/" className="flex items-center gap-2">
                     <div className="w-9 h-9 bg-brand rounded-xl flex items-center justify-center shadow-lg shadow-brand/20">
-                        <LayoutGrid className="w-5 h-5 text-primary" />
+                        <LayoutGrid className="w-5 h-5 text-accent" />
                     </div>
                     <span className="text-xl font-black text-brand tracking-tighter">
                         MELK<span className="text-primary">TODAY</span>
