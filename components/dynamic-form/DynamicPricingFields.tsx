@@ -2,7 +2,7 @@
 
 import React from "react";
 import { PriceModel } from "@/types/api/ads.types";
-import { formatPrice, toPersianDigits } from "@/lib/utils";
+import { formatPrice, toOnlyDigits, toPersianDigits } from "@/lib/utils";
 
 export type PricingValue = number | string | boolean;
 
@@ -137,13 +137,18 @@ export const DynamicPricingFields: React.FC<DynamicPricingFieldsProps> = ({
                                     </select>
                                 ) : (
                                     <input
-                                        type={field.fieldType === "NUMBER" ? "number" : "text"}
-                                        min={field.fieldType === "NUMBER" ? 0 : undefined}
+                                        type="text"
+                                        inputMode={field.fieldType === "NUMBER" ? "numeric" : undefined}
                                         value={typeof rawVal === "boolean" ? "" : (rawVal ?? "")}
                                         placeholder={field.placeholder || (field.fieldType === "NUMBER" ? "مبلغ به عدد..." : "")}
                                         onChange={(e) => {
-                                            const v = e.target.value;
-                                            onChange(field.key, field.fieldType === "NUMBER" ? (v === "" ? "" : Number(v)) : v);
+                                            const raw = e.target.value;
+                                            if (field.fieldType === "NUMBER") {
+                                                const v = toOnlyDigits(raw);
+                                                onChange(field.key, v === "" ? "" : Number(v));
+                                            } else {
+                                                onChange(field.key, raw);
+                                            }
                                         }}
                                         className={`w-full p-3 text-sm bg-surface-secondary border rounded-xl focus:bg-surface focus:ring-2 focus:ring-primary outline-hidden transition-all ${
                                             errors[field.key] ? "border-red-500 bg-error-subtle/20" : "border-border-subtle"

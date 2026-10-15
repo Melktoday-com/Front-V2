@@ -55,7 +55,7 @@ import {
     GiftCreditRequest,
 } from "@/types/api/admin.types";
 import { normalizeApiError } from "@/lib/api/error-handler";
-import { formatCurrency, toPersianDigits } from "@/lib/utils";
+import { formatCurrency, toOnlyDigits, toPersianDigits } from "@/lib/utils";
 
 // Format Rial to Toman
 function formatRialToToman(rialAmount: string | number | undefined | null): string {
@@ -1494,8 +1494,8 @@ function AdminWalletDashboard() {
                                 <label className="text-xs font-black text-foreground-secondary">مبلغ تراکنش (ریال)</label>
                                 <input
                                     type="text"
-                                    value={manualAmount ? formatCurrency(parseInt(manualAmount.replace(/[^\d]/g, ""), 10) || 0) : ""}
-                                    onChange={(e) => setManualAmount(e.target.value.replace(/[^\d]/g, ""))}
+                                    value={manualAmount ? formatCurrency(parseInt(toOnlyDigits(manualAmount), 10) || 0) : ""}
+                                    onChange={(e) => setManualAmount(toOnlyDigits(e.target.value))}
                                     placeholder="مبلغ را به ریال وارد کنید"
                                     className="w-full px-4 py-3 bg-surface border border-soft-border rounded-xl text-base font-black text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition"
                                 />

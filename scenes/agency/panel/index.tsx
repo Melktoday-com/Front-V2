@@ -2,7 +2,7 @@
 
 import { useAgencyStats, useMyAgency } from "@/hooks/useAgencies";
 import { useAuth } from "@/hooks/useAuth";
-import { cn, toPersianDigits, getMediaUrl } from "@/lib/utils";
+import { cn, toPersianDigits, getMediaUrl, toEnglishDigits, toOnlyDigits } from "@/lib/utils";
 import { agencyService } from "@/services/agency.service";
 import MediaIconUpload from "@/components/admin/MediaIconUpload";
 import {
@@ -784,7 +784,7 @@ export default function AgencyPanelScene() {
                                         type="text"
                                         disabled={!isEditing}
                                         value={settingsForm.phone}
-                                        onChange={(e) => setSettingsForm({ ...settingsForm, phone: e.target.value })}
+                                        onChange={(e) => setSettingsForm({ ...settingsForm, phone: toEnglishDigits(e.target.value) })}
                                         placeholder="۰۲۱..."
                                         dir="ltr"
                                         className={cn(
@@ -805,7 +805,7 @@ export default function AgencyPanelScene() {
                                         type="text"
                                         disabled={!isEditing}
                                         value={settingsForm.mobile}
-                                        onChange={(e) => setSettingsForm({ ...settingsForm, mobile: e.target.value })}
+                                        onChange={(e) => setSettingsForm({ ...settingsForm, mobile: toOnlyDigits(e.target.value) })}
                                         placeholder="۰۹۱۲..."
                                         dir="ltr"
                                         className={cn(
@@ -954,7 +954,7 @@ export default function AgencyPanelScene() {
                                         type="text"
                                         disabled={!isEditing}
                                         value={settingsForm.postalCode}
-                                        onChange={(e) => setSettingsForm({ ...settingsForm, postalCode: e.target.value })}
+                                        onChange={(e) => setSettingsForm({ ...settingsForm, postalCode: toOnlyDigits(e.target.value) })}
                                         placeholder="کد پستی"
                                         dir="ltr"
                                         className={cn(

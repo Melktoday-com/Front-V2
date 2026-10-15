@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { adminService } from "@/services/admin.service";
 import { UserLookupResponse } from "@/types/api/admin.types";
 import { Building2, User, CheckCircle2, UserPlus, AlertCircle, Loader2, Phone } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, toEnglishDigits } from "@/lib/utils";
 
 export interface AdminOwnershipData {
     isPlatform: boolean;
@@ -198,7 +198,7 @@ export function AdminOwnershipSelector({
                                 placeholder="09123456789"
                                 value={value.phoneNumber}
                                 onChange={(e) => {
-                                    const val = e.target.value;
+                                    const val = toEnglishDigits(e.target.value);
                                     onChange({
                                         ...value,
                                         phoneNumber: val,

@@ -1,7 +1,7 @@
 "use client";
 
 import { useInitiateTopUp, useWalletBalance, useWalletTransactions } from "@/hooks/useWallet";
-import { cn, formatCurrency, rialToToman, toPersianDigits } from "@/lib/utils";
+import { cn, formatCurrency, rialToToman, toOnlyDigits, toPersianDigits } from "@/lib/utils";
 import { normalizeApiError } from "@/lib/api/error-handler";
 import {
     ArrowDownRight,
@@ -319,11 +319,12 @@ export default function WalletScene() {
                         <div>
                             <label className="block text-xs font-bold text-brand mb-2">یا مبلغ دلخواه (تومان)</label>
                             <input
-                                type="number"
+                                type="text"
+                                inputMode="numeric"
                                 placeholder="مثلاً: ۱۵۰,۰۰۰"
                                 value={customAmount}
                                 onChange={(e) => {
-                                    setCustomAmount(e.target.value);
+                                    setCustomAmount(toOnlyDigits(e.target.value));
                                     setSelectedAmount(0);
                                 }}
                                 className="w-full p-3.5 border border-border-subtle rounded-2xl bg-surface-secondary focus:bg-surface focus:ring-2 focus:ring-primary outline-hidden text-sm font-bold"

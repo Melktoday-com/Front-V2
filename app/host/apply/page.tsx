@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { showcaseService } from "@/services/showcase.service";
 import { CitySelector } from "@/components/CitySelector";
+import { toEnglishDigits, toOnlyDigits } from "@/lib/utils";
 import {
   AlertCircle,
   ArrowRight,
@@ -271,7 +272,7 @@ export default function HostApplyPage() {
                   required
                   maxLength={10}
                   value={formData.nationalCode}
-                  onChange={(e) => setFormData({ ...formData, nationalCode: e.target.value })}
+                  onChange={(e) => setFormData({ ...formData, nationalCode: toOnlyDigits(e.target.value) })}
                   placeholder="مثال: 0012345678"
                   className="w-full p-3 bg-surface-secondary border border-border-subtle rounded-xl text-xs font-mono focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
                 />
@@ -315,7 +316,7 @@ export default function HostApplyPage() {
                   type="text"
                   required
                   value={formData.mobileNumber}
-                  onChange={(e) => setFormData({ ...formData, mobileNumber: e.target.value })}
+                  onChange={(e) => setFormData({ ...formData, mobileNumber: toOnlyDigits(e.target.value) })}
                   placeholder="مثال: 09123456789"
                   className="w-full p-3 bg-surface-secondary border border-border-subtle rounded-xl text-xs font-mono focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
                 />
@@ -326,7 +327,7 @@ export default function HostApplyPage() {
                 <input
                   type="text"
                   value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  onChange={(e) => setFormData({ ...formData, phone: toEnglishDigits(e.target.value) })}
                   placeholder="مثال: 01155223344"
                   className="w-full p-3 bg-surface-secondary border border-border-subtle rounded-xl text-xs font-mono focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
                 />
@@ -335,10 +336,10 @@ export default function HostApplyPage() {
               <div className="space-y-1.5 sm:col-span-2">
                 <label className="text-xs font-bold text-foreground-secondary">تعداد تقریبی اقامتگاه‌های تحت مدیریت</label>
                 <input
-                  type="number"
-                  min={1}
+                  type="text"
+                  inputMode="numeric"
                   value={formData.propertyCount}
-                  onChange={(e) => setFormData({ ...formData, propertyCount: parseInt(e.target.value, 10) || 1 })}
+                  onChange={(e) => setFormData({ ...formData, propertyCount: parseInt(toOnlyDigits(e.target.value), 10) || 1 })}
                   className="w-full p-3 bg-surface-secondary border border-border-subtle rounded-xl text-xs font-mono focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
                 />
               </div>

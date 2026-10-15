@@ -4,7 +4,7 @@ import React from "react";
 import { AttributeDefinition } from "@/types/api/ads.types";
 import { JsonValue } from "@/types/common";
 import { Select } from "@/components/ui/Select";
-import { toPersianDigits } from "@/lib/utils";
+import { toOnlyDigits, toPersianDigits } from "@/lib/utils";
 
 export type AttributeValue = number | string | boolean | string[];
 
@@ -164,13 +164,12 @@ export const DynamicAttributeRenderer: React.FC<DynamicAttributeRendererProps> =
                                         )}
                                     </div>
                                     <input
-                                        type="number"
-                                        min={constraints.min}
-                                        max={constraints.max}
+                                        type="text"
+                                        inputMode="numeric"
                                         value={typeof val === "number" || typeof val === "string" ? val : ""}
                                         placeholder={attr.description || `ورود ${attr.label}...`}
                                         onChange={(e) => {
-                                            const v = e.target.value;
+                                            const v = toOnlyDigits(e.target.value);
                                             onChange(attr.key, v === "" ? "" : Number(v));
                                         }}
                                         className={`w-full p-3 text-sm bg-surface-secondary border rounded-xl focus:bg-surface focus:ring-2 focus:ring-primary outline-hidden transition-all ${

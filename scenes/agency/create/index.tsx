@@ -11,6 +11,7 @@ import { useSafeBack } from "@/hooks/useSafeBack";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { toEnglishDigits } from "@/lib/utils";
 
 export default function CreateAgencyScene() {
     const router = useRouter();
@@ -145,7 +146,7 @@ export default function CreateAgencyScene() {
                                 <input
                                     type="text"
                                     value={formData.phone}
-                                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                    onChange={(e) => setFormData({ ...formData, phone: toEnglishDigits(e.target.value) })}
                                     className="w-full bg-soft-bg border border-soft-border rounded-2xl py-4 pr-12 pl-4 text-sm font-bold text-brand focus:ring-2 focus:ring-brand/10 outline-none transition-all"
                                     placeholder="۰۲۱XXXXXXXX"
                                 />

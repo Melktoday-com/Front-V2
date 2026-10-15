@@ -14,7 +14,7 @@ import MediaIconUpload from "@/components/admin/MediaIconUpload";
 import { PromotionModal } from "@/components/promotions/PromotionModal";
 import { UpdateHostProfileRequest } from "@/types/api/showcase.types";
 import type { TemporaryRentPricingReadModel } from "@/types/api/temporary-rent.types";
-import { cn, formatCurrency, getMediaUrl, toPersianDigits } from "@/lib/utils";
+import { cn, formatCurrency, getMediaUrl, toEnglishDigits, toOnlyDigits, toPersianDigits } from "@/lib/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
     Award,
@@ -1008,7 +1008,7 @@ export default function TemporaryRentPanelScene() {
                                         type="text"
                                         disabled={!isEditing}
                                         value={settingsForm.mobile}
-                                        onChange={(e) => setSettingsForm({ ...settingsForm, mobile: e.target.value })}
+                                        onChange={(e) => setSettingsForm({ ...settingsForm, mobile: toOnlyDigits(e.target.value) })}
                                         placeholder="۰۹۱۲..."
                                         dir="ltr"
                                         className={cn(
@@ -1029,7 +1029,7 @@ export default function TemporaryRentPanelScene() {
                                         type="text"
                                         disabled={!isEditing}
                                         value={settingsForm.phone}
-                                        onChange={(e) => setSettingsForm({ ...settingsForm, phone: e.target.value })}
+                                        onChange={(e) => setSettingsForm({ ...settingsForm, phone: toEnglishDigits(e.target.value) })}
                                         placeholder="۰۲۱..."
                                         dir="ltr"
                                         className={cn(

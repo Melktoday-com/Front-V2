@@ -30,7 +30,7 @@ import {
     PermissionDefinition,
 } from "@/types/api/admin.types";
 import { normalizeApiError } from "@/lib/api/error-handler";
-import { toPersianDigits } from "@/lib/utils";
+import { toEnglishDigits, toPersianDigits } from "@/lib/utils";
 
 export default function AdminsManagementPage() {
     const queryClient = useQueryClient();
@@ -457,7 +457,7 @@ export default function AdminsManagementPage() {
                                         type="text"
                                         placeholder="مثال: ۰۹۱۲۳۴۵۶۷۸۹"
                                         value={createPhone}
-                                        onChange={(e) => setCreatePhone(e.target.value)}
+                                        onChange={(e) => setCreatePhone(toEnglishDigits(e.target.value))}
                                         dir="ltr"
                                         className="w-full px-4 py-3 bg-soft-bg rounded-2xl text-sm border-none focus:ring-2 focus:ring-primary/20 text-foreground font-bold"
                                     />

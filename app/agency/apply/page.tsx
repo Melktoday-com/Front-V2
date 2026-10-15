@@ -6,6 +6,7 @@ import { agencyService } from "@/services/agency.service";
 import { userService } from "@/services/user.service";
 import { CitySelector } from "@/components/CitySelector";
 import { useCities } from "@/hooks/useGeo";
+import { toEnglishDigits, toOnlyDigits } from "@/lib/utils";
 import {
     Award,
     Building2,
@@ -382,7 +383,7 @@ export default function AgencyApplyPage() {
                                     type="text"
                                     maxLength={10}
                                     value={formData.nationalCode}
-                                    onChange={(e) => setFormData({ ...formData, nationalCode: e.target.value.replace(/\D/g, "") })}
+                                    onChange={(e) => setFormData({ ...formData, nationalCode: toOnlyDigits(e.target.value) })}
                                     placeholder="کد ملی ۱۰ رقمی منطبق با سیم‌کارت"
                                     className="w-full p-3 bg-surface-secondary border border-border-subtle rounded-xl text-xs font-mono focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                                     required
@@ -409,7 +410,7 @@ export default function AgencyApplyPage() {
                                             type="text"
                                             maxLength={10}
                                             value={formData.guildCode}
-                                            onChange={(e) => setFormData({ ...formData, guildCode: e.target.value.replace(/\D/g, "") })}
+                                            onChange={(e) => setFormData({ ...formData, guildCode: toOnlyDigits(e.target.value) })}
                                             placeholder="شناسه ۱۰ رقمی پروانه کسب اصناف"
                                             className="w-full p-3 bg-surface-secondary border border-border-subtle rounded-xl text-xs font-mono focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                                             required
@@ -453,7 +454,7 @@ export default function AgencyApplyPage() {
                                 <input
                                     type="text"
                                     value={formData.phone}
-                                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                    onChange={(e) => setFormData({ ...formData, phone: toEnglishDigits(e.target.value) })}
                                     placeholder="تلفن ثابت یا همراه پشتیبان"
                                     className="w-full p-3 bg-surface-secondary border border-border-subtle rounded-xl text-xs font-mono focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                                 />
@@ -462,11 +463,10 @@ export default function AgencyApplyPage() {
                             <div className="space-y-1.5">
                                 <label className="text-xs font-bold text-foreground-secondary">سابقه فعالیت ملکی (سال)</label>
                                 <input
-                                    type="number"
-                                    min={0}
-                                    max={60}
+                                    type="text"
+                                    inputMode="numeric"
                                     value={formData.experienceYears}
-                                    onChange={(e) => setFormData({ ...formData, experienceYears: Number(e.target.value) })}
+                                    onChange={(e) => setFormData({ ...formData, experienceYears: Number(toOnlyDigits(e.target.value)) })}
                                     className="w-full p-3 bg-surface-secondary border border-border-subtle rounded-xl text-xs focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                                 />
                             </div>

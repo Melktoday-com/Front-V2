@@ -57,7 +57,7 @@ import { useAdminPermissions } from "@/hooks/useAdminPermissions";
 import { useAdminTariffs, useUpdateTariff } from "@/hooks/useTariffs";
 import { TariffDetail } from "@/services/tariff.service";
 import { normalizeApiError } from "@/lib/api/error-handler";
-import { toPersianDigits } from "@/lib/utils";
+import { toOnlyDigits, toPersianDigits } from "@/lib/utils";
 
 // Currency & Date helpers
 function formatRialToToman(rialAmount: string | number | undefined | null): string {
@@ -207,7 +207,7 @@ function TariffEditorCard({ tariff, canManage, onUpdate, isUpdating }: TariffEdi
                         type="text"
                         value={amount}
                         onChange={(e) => {
-                            setAmount(e.target.value.replace(/[^0-9]/g, ""));
+                            setAmount(toOnlyDigits(e.target.value));
                             setDirty(true);
                         }}
                         disabled={!canManage}
@@ -1569,7 +1569,7 @@ export default function AdminConfigPage() {
                                             type="text"
                                             required
                                             value={planForm.priceIrr}
-                                            onChange={(e) => setPlanForm({ ...planForm, priceIrr: e.target.value })}
+                                            onChange={(e) => setPlanForm({ ...planForm, priceIrr: toOnlyDigits(e.target.value) })}
                                             placeholder="مثال: 2500000"
                                             className="w-full p-3 rounded-xl border border-border text-sm font-mono focus:ring-2 focus:ring-blue-500 outline-none"
                                         />

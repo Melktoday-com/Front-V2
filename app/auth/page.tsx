@@ -4,6 +4,7 @@
 import { authImage1, authImage2, authImage3, authImage4 } from "@/assets/auth";
 import { useAuth, useRequestOtp, useVerifyOtp } from "@/hooks/useAuth";
 import { normalizeApiError } from "@/lib/api/error-handler";
+import { toEnglishDigits, toOnlyDigits } from "@/lib/utils";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
@@ -39,11 +40,6 @@ function AuthContent() {
     }
     return () => clearInterval(interval);
   }, [step, timer]);
-
-  const toEnglishDigits = (str: string) =>
-    str
-      .replace(/[۰-۹]/g, (d) => String(d.charCodeAt(0) - 1728))
-      .replace(/[٠-٩]/g, (d) => String(d.charCodeAt(0) - 1632));
 
   const normalizePhone = (num: string) => {
     let normalized = num.replace(/\D/g, "");
@@ -186,7 +182,7 @@ function AuthContent() {
                   placeholder="· · · · · ·"
                   dir="ltr"
                   value={otp}
-                  onChange={(e) => setOtp(toEnglishDigits(e.target.value))}
+                  onChange={(e) => setOtp(toOnlyDigits(e.target.value))}
                   className="w-full bg-soft-bg border-2 border-transparent focus:border-primary/20 rounded-2xl p-4 text-brand text-center text-2xl tracking-[0.5em] font-black placeholder:text-text-light/30 focus:bg-surface outline-none transition-all"
                   required
                 />

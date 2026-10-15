@@ -18,6 +18,25 @@ export function toPersianDigits(n: number | string | undefined | null): string {
     return String(n).replace(/\d/g, (d) => persianDigits[parseInt(d, 10)]);
 }
 
+/**
+ * Converts Persian (۰-۹) and Arabic (٠-٩) digits to English digits (0-9).
+ */
+export function toEnglishDigits(value: number | string | undefined | null): string {
+    if (value === undefined || value === null) return "";
+    return String(value)
+        .replace(/[۰-۹]/g, (d) => String(d.charCodeAt(0) - 1776))
+        .replace(/[٠-٩]/g, (d) => String(d.charCodeAt(0) - 1632));
+}
+
+/**
+ * Normalizes input for numeric fields:
+ * Converts Persian and Arabic digits to English digits and removes all non-digit characters.
+ * Useful for phone numbers, OTP codes, national IDs, card numbers, etc.
+ */
+export function toOnlyDigits(value: number | string | undefined | null): string {
+    return toEnglishDigits(value).replace(/\D/g, "");
+}
+
 export function formatPrice(amount: number | string | undefined | null, suffix = " تومان"): string {
     if (amount === undefined || amount === null || amount === "") return `۰${suffix}`;
     const num = typeof amount === "string" ? parseFloat(amount.replace(/,/g, "")) : amount;

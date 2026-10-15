@@ -11,7 +11,7 @@ import { useHostProfile } from "@/hooks/useShowcase";
 import { useMeProfile, useUser } from "@/hooks/useUser";
 import { useUserStatus } from "@/hooks/useUserStatus";
 import { useWallet } from "@/hooks/useWallet";
-import { cn, formatCurrency, getMediaUrl, rialToToman, toPersianDigits } from "@/lib/utils";
+import { cn, formatCurrency, getMediaUrl, rialToToman, toEnglishDigits, toOnlyDigits, toPersianDigits } from "@/lib/utils";
 import { mediaService } from "@/services/media.service";
 import { userService } from "@/services/user.service";
 import { RoleName, isRoleAdmin, tryRoleNameFrom } from "@/types/access";
@@ -634,7 +634,7 @@ export default function ProfileScene() {
                                     placeholder="مثلاً: ۰۰۱۲۳۴۵۶۷۸"
                                     dir="ltr"
                                     value={nationalCode}
-                                    onChange={(e) => setNationalCode(e.target.value.replace(/\D/g, ""))}
+                                    onChange={(e) => setNationalCode(toOnlyDigits(e.target.value))}
                                     className="w-full p-3.5 border border-border-subtle rounded-xl bg-surface-secondary focus:bg-surface focus:ring-2 focus:ring-primary outline-hidden text-center text-base tracking-widest font-black"
                                 />
                             </div>
@@ -646,7 +646,7 @@ export default function ProfileScene() {
                                     placeholder="مثلاً: 13700101"
                                     dir="ltr"
                                     value={birthDate}
-                                    onChange={(e) => setBirthDate(e.target.value)}
+                                    onChange={(e) => setBirthDate(toEnglishDigits(e.target.value))}
                                     className="w-full p-3.5 border border-border-subtle rounded-xl bg-surface-secondary focus:bg-surface focus:ring-2 focus:ring-primary outline-hidden text-center text-base tracking-wider font-bold"
                                 />
                             </div>

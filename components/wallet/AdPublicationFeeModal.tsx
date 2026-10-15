@@ -15,7 +15,7 @@ import {
 import { useWalletBalance, useInitiateTopUp } from "@/hooks/useWallet";
 import { useTariffs } from "@/hooks/useTariffs";
 import { normalizeApiError } from "@/lib/api/error-handler";
-import { cn, formatCurrency, rialToToman, toPersianDigits } from "@/lib/utils";
+import { cn, formatCurrency, rialToToman, toOnlyDigits, toPersianDigits } from "@/lib/utils";
 import { toast } from "sonner";
 
 interface AdPublicationFeeModalProps {
@@ -262,11 +262,12 @@ export function AdPublicationFeeModal({
                 <div className="space-y-1.5 mb-5">
                     <label className="block text-xs font-bold text-brand">یا مبلغ دلخواه (تومان)</label>
                     <input
-                        type="number"
+                        type="text"
+                        inputMode="numeric"
                         placeholder={`حداقل ${toPersianDigits("10,000")} تومان`}
                         value={customAmount}
                         onChange={(e) => {
-                            setCustomAmount(e.target.value);
+                            setCustomAmount(toOnlyDigits(e.target.value));
                             setSelectedAmount(0);
                         }}
                         className="w-full p-3 border border-border-subtle rounded-xl bg-surface-secondary focus:bg-surface focus:ring-2 focus:ring-primary outline-hidden text-sm font-bold"
