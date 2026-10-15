@@ -15,32 +15,47 @@ import "./globals.css";
 const font = localFont({
   src: [
     {
-      path: "../assets/font/Morabba-Light.ttf",
+      path: "../assets/font/IRANSansX-Thin.woff",
+      weight: "100",
+      style: "normal",
+    },
+    {
+      path: "../assets/font/IRANSansX-UltraLight.woff",
+      weight: "200",
+      style: "normal",
+    },
+    {
+      path: "../assets/font/IRANSansX-Light.woff",
       weight: "300",
       style: "normal",
     },
     {
-      path: "../assets/font/Morabba-Regular.ttf",
+      path: "../assets/font/IRANSansX-Regular.woff",
       weight: "400",
       style: "normal",
     },
     {
-      path: "../assets/font/Morabba-Medium.ttf",
+      path: "../assets/font/IRANSansX-Medium.woff",
       weight: "500",
       style: "normal",
     },
     {
-      path: "../assets/font/Morabba-SemiBold.ttf",
+      path: "../assets/font/IRANSansX-DemiBold.woff",
       weight: "600",
       style: "normal",
     },
     {
-      path: "../assets/font/Morabba-Bold.ttf",
+      path: "../assets/font/IRANSansX-Bold.woff",
       weight: "700",
       style: "normal",
     },
     {
-      path: "../assets/font/Morabba-Black.ttf",
+      path: "../assets/font/IRANSansX-ExtraBold.woff",
+      weight: "800",
+      style: "normal",
+    },
+    {
+      path: "../assets/font/IRANSansX-Black.woff",
       weight: "900",
       style: "normal",
     },
