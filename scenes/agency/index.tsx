@@ -9,7 +9,7 @@ import { useInfiniteAgencies } from "@/hooks/useAgencies";
 import { useGeoHierarchy } from "@/hooks/useGeoHierarchy";
 import { toPersianDigits } from "@/lib/utils";
 import { AgencySummary } from "@/types/api/agency.types";
-import { ArrowLeft, Building2, Home, Loader2, Sparkles } from "lucide-react";
+import { ArrowLeft, Building2, Home, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -156,68 +156,32 @@ export default function AgencyScene() {
                     cityName={effectiveCityName}
                     cityId={effectiveCityId}
                     onCitySelect={handleCitySelect}
+                    actions={
+                        <div className="flex items-center gap-2">
+                            {/* Host Application Button */}
+                            <Link
+                                href="/host/apply"
+                                title="درخواست میزبانی اقامتگاه روزانه"
+                                className="group inline-flex items-center gap-2 px-3 py-1.5 md:py-2 rounded-xl bg-success-subtle hover:bg-emerald-500/15 border border-success-border/60 hover:border-success-border text-success text-xs font-bold transition-all shadow-2xs hover:shadow-xs"
+                            >
+                                <Home className="w-4 h-4 shrink-0" />
+                                <span>درخواست میزبانی</span>
+                                <ArrowLeft className="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 group-hover:-translate-x-0.5 transition-all" />
+                            </Link>
+
+                            {/* Agency Application Button */}
+                            <Link
+                                href="/agency/apply"
+                                title="ثبت‌نام آژانس و مشاور املاک"
+                                className="group inline-flex items-center gap-2 px-3 py-1.5 md:py-2 rounded-xl bg-info-subtle hover:bg-blue-500/15 border border-info-border/60 hover:border-info-border text-info text-xs font-bold transition-all shadow-2xs hover:shadow-xs"
+                            >
+                                <Building2 className="w-4 h-4 shrink-0" />
+                                <span>ثبت‌نام آژانس</span>
+                                <ArrowLeft className="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 group-hover:-translate-x-0.5 transition-all" />
+                            </Link>
+                        </div>
+                    }
                 />
-
-                {/* Opportunity / Apply Cards: Landlord & Agency */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Landlord / Host Application Card */}
-                    <Link
-                        href="/host/apply"
-                        className="group relative bg-gradient-to-l from-emerald-500/10 via-emerald-500/5 to-transparent border border-emerald-500/20 hover:border-emerald-500/40 rounded-2xl p-5 flex items-center justify-between transition-all hover:shadow-md"
-                    >
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-xl bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
-                                <Home className="w-6 h-6" />
-                            </div>
-                            <div className="space-y-1">
-                                <div className="flex items-center gap-2">
-                                    <h3 className="text-sm font-black text-foreground">
-                                        مالک یا میزبان اقامتگاه روزانه هستید؟
-                                    </h3>
-                                    <span className="px-2 py-0.5 rounded-full bg-success-subtle text-success text-[10px] font-bold">
-                                        میزبانی
-                                    </span>
-                                </div>
-                                <p className="text-xs text-foreground-muted leading-relaxed font-medium">
-                                    درخواست میزبانی در ملک‌تودی را ثبت کنید و ویترین اختصاصی خود را دریافت نمایید.
-                                </p>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-1 text-xs font-bold text-success shrink-0 group-hover:translate-x-[-4px] transition-transform">
-                            <span>درخواست میزبانی</span>
-                            <ArrowLeft className="w-4 h-4" />
-                        </div>
-                    </Link>
-
-                    {/* Agency / Agent Application Card */}
-                    <Link
-                        href="/agency/apply"
-                        className="group relative bg-gradient-to-l from-blue-500/10 via-blue-500/5 to-transparent border border-blue-500/20 hover:border-blue-500/40 rounded-2xl p-5 flex items-center justify-between transition-all hover:shadow-md"
-                    >
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
-                                <Building2 className="w-6 h-6" />
-                            </div>
-                            <div className="space-y-1">
-                                <div className="flex items-center gap-2">
-                                    <h3 className="text-sm font-black text-foreground">
-                                        مشاور یا مدیر آژانس املاک هستید؟
-                                    </h3>
-                                    <span className="px-2 py-0.5 rounded-full bg-info-subtle text-info text-[10px] font-bold">
-                                        همکاری
-                                    </span>
-                                </div>
-                                <p className="text-xs text-foreground-muted leading-relaxed font-medium">
-                                    دفتر املاک خود را ثبت کنید و از ویترین تخصصی مشاورین در شهر خود بهره‌مند شوید.
-                                </p>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-1 text-xs font-bold text-info shrink-0 group-hover:translate-x-[-4px] transition-transform">
-                            <span>ثبت‌نام آژانس</span>
-                            <ArrowLeft className="w-4 h-4" />
-                        </div>
-                    </Link>
-                </div>
 
                 {isLoading ? (
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-4 gap-y-6 items-stretch">

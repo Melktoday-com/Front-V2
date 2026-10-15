@@ -1,7 +1,7 @@
 "use client";
 
 import { ChevronDown, MapPin, Search } from "lucide-react";
-import { useState } from "react";
+import { ReactNode, useState } from "react";
 import { CitySelector } from "./CitySelector";
 
 interface PageHeaderProps {
@@ -13,6 +13,7 @@ interface PageHeaderProps {
     cityName: string;
     cityId?: string;
     onCitySelect: (city: { id: string; name: string; centerPoint?: { latitude: number; longitude: number } }) => void;
+    actions?: ReactNode;
 }
 
 export function PageHeader({
@@ -23,20 +24,29 @@ export function PageHeader({
     onSearchChange,
     cityName,
     cityId,
-    onCitySelect
+    onCitySelect,
+    actions
 }: PageHeaderProps) {
     const [isSelectorOpen, setIsSelectorOpen] = useState(false);
 
     return (
         <div className="space-y-3">
-            <div className="space-y-1">
-                <h1 className="text-brand text-lg sm:text-2xl lg:text-3xl font-black leading-tight">
-                    {title}
-                </h1>
-                {description && (
-                    <p className="text-secondary text-xs sm:text-sm font-medium">
-                        {description}
-                    </p>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="space-y-1">
+                    <h1 className="text-brand text-lg sm:text-2xl lg:text-3xl font-black leading-tight">
+                        {title}
+                    </h1>
+                    {description && (
+                        <p className="text-secondary text-xs sm:text-sm font-medium">
+                            {description}
+                        </p>
+                    )}
+                </div>
+
+                {actions && (
+                    <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap shrink-0">
+                        {actions}
+                    </div>
                 )}
             </div>
 
