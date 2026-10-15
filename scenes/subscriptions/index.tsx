@@ -10,6 +10,7 @@ import {
 } from "@/hooks/useSubscription";
 import { useWalletBalance } from "@/hooks/useWallet";
 import { cn, formatCurrency, formatPrice, toPersianDigits } from "@/lib/utils";
+import { normalizeApiError } from "@/lib/api/error-handler";
 import {
     ActiveBadgeInfo,
     EntitlementTypeName,
@@ -118,9 +119,8 @@ export default function SubscriptionsScene() {
                     setSelectedPlanForPurchase(null);
                     setActiveTab("entitlements");
                 },
-                onError: (err: any) => {
-                    const message =
-                        err?.response?.data?.message || err?.message || "خطا در خرید اشتراک";
+                onError: (err: Error) => {
+                    const message = normalizeApiError(err, "خطا در خرید اشتراک");
                     toast.error(message);
                 },
             },
@@ -134,11 +134,11 @@ export default function SubscriptionsScene() {
                 onSuccess: (res) => {
                     toast.success(res.message || "بسته خوش‌آمدگویی با موفقیت دریافت شد!");
                 },
-                onError: (err: any) => {
-                    const msg =
-                        err?.response?.data?.message ||
-                        err?.message ||
-                        "شما پیش از این بسته خوش‌آمدگویی را دریافت کرده‌اید.";
+                onError: (err: Error) => {
+                    const msg = normalizeApiError(
+                        err,
+                        "شما پیش از این بسته خوش‌آمدگویی را دریافت کرده‌اید.",
+                    );
                     toast.error(msg);
                 },
             },
