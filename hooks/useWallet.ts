@@ -32,11 +32,15 @@ export function useInitiateTopUp() {
     });
 }
 
-export function usePaymentStatus(purchaseId?: string) {
+export function usePaymentStatus(purchaseId?: string, ref?: string) {
+    const { isLoggedIn } = useAuth();
+    const effectiveId = purchaseId || (isLoggedIn ? "latest" : undefined);
+    const shouldEnable = Boolean(effectiveId || ref);
+
     return useQuery({
-        queryKey: ["wallet", "payment-status", purchaseId],
-        queryFn: () => walletService.getPaymentStatus(purchaseId!),
-        enabled: !!purchaseId,
+        queryKey: ["wallet", "payment-status", effectiveId, ref],
+        queryFn: () => walletService.getPaymentStatus(effectiveId, ref),
+        enabled: shouldEnable,
         refetchInterval: (query) => {
             const status = query.state.data?.status;
             return status === "PENDING" ? 2000 : false;

@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/hooks/useAuth";
 import { usePaymentStatus } from "@/hooks/useWallet";
-import { formatCurrency, toPersianDigits } from "@/lib/utils";
+import { formatCurrency, rialToToman, toPersianDigits } from "@/lib/utils";
 import {
     AlertCircle,
     CheckCircle2,
@@ -14,20 +14,55 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
 
 function PaymentCallbackContent() {
     const searchParams = useSearchParams();
     const { isLoggedIn } = useAuth();
 
     // Check multiple query param aliases passed by gateways or redirects
-    const purchaseId =
+    const paramPurchaseId =
         searchParams.get("purchaseId") ||
         searchParams.get("purchase_id") ||
         searchParams.get("id") ||
         searchParams.get("paymentId") ||
         searchParams.get("authority") ||
+        searchParams.get("trackId") ||
         "";
+
+    const paramRef =
+        searchParams.get("ref") ||
+        searchParams.get("clientReferenceNumber") ||
+        "";
+
+    const [resolvedId, setResolvedId] = useState<string>(paramPurchaseId);
+    const [resolvedRef, setResolvedRef] = useState<string>(paramRef);
+
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            const storedPurchaseId =
+                sessionStorage.getItem("melktoday_pending_purchase_id") ||
+                localStorage.getItem("melktoday_pending_purchase_id") ||
+                "";
+            const storedRef =
+                sessionStorage.getItem("melktoday_pending_client_ref") ||
+                localStorage.getItem("melktoday_pending_client_ref") ||
+                "";
+
+            if (!resolvedId) {
+                if (storedPurchaseId) {
+                    setResolvedId(storedPurchaseId);
+                } else if (storedRef) {
+                    setResolvedRef(storedRef);
+                } else if (isLoggedIn) {
+                    setResolvedId("latest");
+                }
+            }
+            if (!resolvedRef && storedRef) {
+                setResolvedRef(storedRef);
+            }
+        }
+    }, [isLoggedIn, resolvedId, resolvedRef]);
 
     const queryStatus = (
         searchParams.get("status") ||
@@ -35,7 +70,24 @@ function PaymentCallbackContent() {
         ""
     ).toUpperCase();
 
-    const { data: statusData, isLoading, isError } = usePaymentStatus(purchaseId);
+    const { data: statusData, isLoading, isError } = usePaymentStatus(
+        resolvedId,
+        resolvedRef || undefined
+    );
+
+    // Clean up temporary stored keys once payment settles
+    useEffect(() => {
+        if (statusData?.status === "SUCCESS" || statusData?.status === "COMPLETED") {
+            try {
+                sessionStorage.removeItem("melktoday_pending_purchase_id");
+                localStorage.removeItem("melktoday_pending_purchase_id");
+                sessionStorage.removeItem("melktoday_pending_client_ref");
+                localStorage.removeItem("melktoday_pending_client_ref");
+            } catch {
+                // storage disabled
+            }
+        }
+    }, [statusData?.status]);
 
     const status = statusData?.status;
     const isGatewayFailed =
@@ -51,7 +103,13 @@ function PaymentCallbackContent() {
         status === "EXPIRED" ||
         (isGatewayFailed && !statusData && !isLoading);
     const isPending = (status === "PENDING" || (isLoading && !statusData)) && !isGatewayFailed;
-    const isUnknown = !purchaseId && !queryStatus;
+    const isUnknown = !resolvedId && !resolvedRef && !queryStatus && !isLoggedIn;
+
+    const displayPurchaseId =
+        statusData?.purchaseId ||
+        (resolvedId && resolvedId !== "latest" ? resolvedId : "") ||
+        resolvedRef ||
+        "";
 
     return (
         <div className="max-w-md mx-auto px-4 py-12">
@@ -83,7 +141,7 @@ function PaymentCallbackContent() {
                                 <div className="flex items-center justify-between">
                                     <span className="text-text-light">مبلغ پرداختی:</span>
                                     <span className="text-brand font-black text-sm">
-                                        {formatCurrency(Math.floor(statusData.amountIRR / 10))} تومان
+                                        {formatCurrency(rialToToman(statusData.amountIRR))} تومان
                                     </span>
                                 </div>
                             )}
@@ -93,10 +151,12 @@ function PaymentCallbackContent() {
                                     <span className="font-mono text-brand">{toPersianDigits(statusData.rrn)}</span>
                                 </div>
                             )}
-                            <div className="flex items-center justify-between">
-                                <span className="text-text-light">شناسه پرداخت:</span>
-                                <span className="font-mono text-brand truncate max-w-[180px]">{toPersianDigits(purchaseId)}</span>
-                            </div>
+                            {displayPurchaseId && (
+                                <div className="flex items-center justify-between">
+                                    <span className="text-text-light">شناسه پرداخت:</span>
+                                    <span className="font-mono text-brand truncate max-w-[180px]">{toPersianDigits(displayPurchaseId)}</span>
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}
@@ -111,11 +171,11 @@ function PaymentCallbackContent() {
                             پرداخت توسط کاربر لغو شده یا با خطای درگاه بانکی مواجه گردید. در صورت کسر وجه از حساب، حداکثر ظرف ۷۲ ساعت توسط بانک بازگردانده می‌شود.
                         </p>
 
-                        {purchaseId && (
+                        {displayPurchaseId && (
                             <div className="bg-surface-secondary rounded-2xl p-4 text-xs space-y-3 font-bold border border-border-subtle text-right mt-6">
                                 <div className="flex items-center justify-between">
                                     <span className="text-text-light">شناسه پرداخت:</span>
-                                    <span className="font-mono text-brand truncate max-w-[180px]">{toPersianDigits(purchaseId)}</span>
+                                    <span className="font-mono text-brand truncate max-w-[180px]">{toPersianDigits(displayPurchaseId)}</span>
                                 </div>
                             </div>
                         )}
@@ -147,7 +207,7 @@ function PaymentCallbackContent() {
                         </p>
                         {!isLoggedIn && (
                             <Link
-                                href={`/auth?redirect=${encodeURIComponent(`/wallet/callback?purchaseId=${purchaseId}`)}`}
+                                href={`/auth?redirect=${encodeURIComponent(`/wallet/callback${displayPurchaseId ? `?purchaseId=${displayPurchaseId}` : ""}`)}`}
                                 className="inline-flex items-center justify-center px-6 py-2.5 bg-brand text-white font-bold text-xs rounded-xl shadow hover:bg-brand-900 transition-colors"
                             >
                                 ورود به حساب کاربری

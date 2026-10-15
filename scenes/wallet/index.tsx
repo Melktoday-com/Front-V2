@@ -63,16 +63,27 @@ export default function WalletScene() {
 
         // Convert Toman to IRR (1 Toman = 10 IRR)
         const amountIRR = finalAmount * 10;
-        const callbackUrl = `${window.location.origin}/wallet/callback`;
+        const idempotencyKey = `topup_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+        const callbackUrl = `${window.location.origin}/wallet/callback?ref=${encodeURIComponent(idempotencyKey)}`;
 
         initiateMutation.mutate(
             {
                 amountIRR,
                 callbackUrl,
-                idempotencyKey: `topup_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+                idempotencyKey,
             },
             {
                 onSuccess: (res) => {
+                    if (res?.purchaseId) {
+                        try {
+                            sessionStorage.setItem("melktoday_pending_purchase_id", res.purchaseId);
+                            localStorage.setItem("melktoday_pending_purchase_id", res.purchaseId);
+                            sessionStorage.setItem("melktoday_pending_client_ref", idempotencyKey);
+                            localStorage.setItem("melktoday_pending_client_ref", idempotencyKey);
+                        } catch {
+                            // storage quota or private browsing
+                        }
+                    }
                     if (res?.paymentUrl) {
                         toast.info("در حال انتقال به درگاه پرداخت شاپرک...");
                         window.location.href = res.paymentUrl;
@@ -240,10 +251,18 @@ export default function WalletScene() {
                                                 "text-[9px] font-bold px-2 py-0.5 rounded-full inline-block mt-0.5",
                                                 isSuccess
                                                     ? "bg-success-subtle text-success"
+                                                    : tx.status === "failed" || tx.status === "cancelled"
+                                                    ? "bg-error-subtle text-error"
                                                     : "bg-warning-subtle text-warning"
                                             )}
                                         >
-                                            {isSuccess ? "موفق" : "در انتظار"}
+                                            {isSuccess
+                                                ? "موفق"
+                                                : tx.status === "cancelled"
+                                                ? "لغو شده"
+                                                : tx.status === "failed"
+                                                ? "ناموفق"
+                                                : "در انتظار"}
                                         </span>
                                     </div>
                                 </div>

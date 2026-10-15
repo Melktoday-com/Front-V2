@@ -27,10 +27,21 @@ export const walletService = {
         return data;
     },
 
-    getPaymentStatus: async (purchaseId: string): Promise<PaymentStatusResponse> => {
-        const { data } = await api.get<PaymentStatusResponse>("/wallet/payments/status", {
-            params: { purchaseId },
-        });
+    getPaymentStatus: async (
+        purchaseId?: string,
+        ref?: string
+    ): Promise<PaymentStatusResponse> => {
+        const params: Record<string, string> = {};
+        if (purchaseId && purchaseId !== "latest") {
+            params.purchaseId = purchaseId;
+        }
+        if (ref) {
+            params.ref = ref;
+        }
+        const { data } = await api.get<PaymentStatusResponse>(
+            "/wallet/payments/status",
+            { params }
+        );
         return data;
     },
 

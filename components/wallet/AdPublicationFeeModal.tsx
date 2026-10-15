@@ -86,18 +86,29 @@ export function AdPublicationFeeModal({
 
         // Convert Toman to IRR for Shaparak gateway
         const amountIRR = finalAmountTomans * 10;
+        const idempotencyKey = `topup_fee_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
         const callbackUrl = typeof window !== "undefined"
-            ? `${window.location.origin}/wallet/callback${adId ? `?adId=${encodeURIComponent(adId)}` : ""}`
+            ? `${window.location.origin}/wallet/callback?ref=${encodeURIComponent(idempotencyKey)}${adId ? `&adId=${encodeURIComponent(adId)}` : ""}`
             : "";
 
         initiateMutation.mutate(
             {
                 amountIRR,
                 callbackUrl,
-                idempotencyKey: `topup_fee_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+                idempotencyKey,
             },
             {
                 onSuccess: (res) => {
+                    if (res?.purchaseId) {
+                        try {
+                            sessionStorage.setItem("melktoday_pending_purchase_id", res.purchaseId);
+                            localStorage.setItem("melktoday_pending_purchase_id", res.purchaseId);
+                            sessionStorage.setItem("melktoday_pending_client_ref", idempotencyKey);
+                            localStorage.setItem("melktoday_pending_client_ref", idempotencyKey);
+                        } catch {
+                            // storage quota or private browsing
+                        }
+                    }
                     if (res?.paymentUrl) {
                         toast.info("در حال انتقال به درگاه پرداخت بانکی شاپرک...");
                         window.location.href = res.paymentUrl;
