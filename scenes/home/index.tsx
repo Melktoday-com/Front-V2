@@ -219,49 +219,47 @@ export const HomeScene = () => {
 
             {/* Temporary Rentals */}
             <section className="container mx-auto px-4">
-                <div className="bg-orange-50/30 border border-orange-100/50 py-6 px-3.5 sm:px-6 rounded-2xl sm:rounded-3xl">
-                    <SectionHeader
-                        title="اجاره روزانه"
-                        subtitle="بهترین گزینه‌ها برای سفرهای کوتاه"
-                        link="/temporary-rent"
-                    />
-                    {isTempRentLoading ? (
-                        <div className="flex gap-4 overflow-hidden">
-                            {[1, 2, 3, 4].map((i) => (
-                                <div key={i} className="min-w-72 h-64 bg-surface-secondary animate-pulse rounded-xl" />
-                            ))}
-                        </div>
-                    ) : tempRentError ? (
-                        <ErrorState onRetry={refetchTempRent} />
-                    ) : !tempRentData?.items.length ? (
-                        <EmptyState message="در حال حاضر اقامتگاه روزانه‌ای در این شهر ثبت نشده است" />
-                    ) : (
-                        <Slider>
-                            {tempRentData.items.map((property: TemporaryRentAdSummary) => {
-                                const trPrice = getHomeTemporaryRentPrice(property.pricing);
-                                return (
-                                    <PropertyCard
-                                        key={property.id}
-                                        id={property.id}
-                                        adId={property.id}
-                                        variant="vertical"
-                                        href={`/temporary-rent/${property.id}`}
-                                        title={property.title}
-                                        price={trPrice.amount}
-                                        unit={trPrice.unit}
-                                        location={selectedCity.name}
-                                        image={getMediaPosterUrl(property.mediaIds?.[0])}
-                                        isVideo={property.mediaIds?.[0]?.type === "VIDEO"}
-                                        category="اجاره روزانه"
-                                        className="w-[210px] lg:w-[250px]"
-                                        isSaved={property.isSaved ?? isTemporaryRentSaved(property.id)}
-                                        onToggleSave={(id) => toggleSaveTempMutation.mutateAsync(id)}
-                                    />
-                                );
-                            })}
-                        </Slider>
-                    )}
-                </div>
+                <SectionHeader
+                    title="اجاره روزانه"
+                    subtitle="بهترین گزینه‌ها برای سفرهای کوتاه"
+                    link="/temporary-rent"
+                />
+                {isTempRentLoading ? (
+                    <div className="flex gap-4 overflow-hidden">
+                        {[1, 2, 3, 4].map((i) => (
+                            <div key={i} className="min-w-72 h-64 bg-surface-secondary animate-pulse rounded-xl" />
+                        ))}
+                    </div>
+                ) : tempRentError ? (
+                    <ErrorState onRetry={refetchTempRent} />
+                ) : !tempRentData?.items.length ? (
+                    <EmptyState message="در حال حاضر اقامتگاه روزانه‌ای در این شهر ثبت نشده است" />
+                ) : (
+                    <Slider>
+                        {tempRentData.items.map((property: TemporaryRentAdSummary) => {
+                            const trPrice = getHomeTemporaryRentPrice(property.pricing);
+                            return (
+                                <PropertyCard
+                                    key={property.id}
+                                    id={property.id}
+                                    adId={property.id}
+                                    variant="vertical"
+                                    href={`/temporary-rent/${property.id}`}
+                                    title={property.title}
+                                    price={trPrice.amount}
+                                    unit={trPrice.unit}
+                                    location={selectedCity.name}
+                                    image={getMediaPosterUrl(property.mediaIds?.[0])}
+                                    isVideo={property.mediaIds?.[0]?.type === "VIDEO"}
+                                    category="اجاره روزانه"
+                                    className="w-[210px] lg:w-[250px]"
+                                    isSaved={property.isSaved ?? isTemporaryRentSaved(property.id)}
+                                    onToggleSave={(id) => toggleSaveTempMutation.mutateAsync(id)}
+                                />
+                            );
+                        })}
+                    </Slider>
+                )}
             </section>
 
             {/* Latest Listings */}
