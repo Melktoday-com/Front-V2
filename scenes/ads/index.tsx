@@ -137,6 +137,7 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
     const [selectedZones, setSelectedZones] = useState<ZoneSummary[]>([]);
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
+    const isAnyModalOpen = drawerOpen || categoryDialogOpen;
 
     const urlSearch = searchParams.get("search") || "";
     const effectiveCityId = searchParams.get("cityId") || selectedCity.id || undefined;
@@ -838,7 +839,7 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                 {/* Map Section */}
                 <div
                     className={cn(
-                        "relative h-full overflow-hidden rounded-2xl border border-border-subtle shadow-xs animate-in fade-in duration-150",
+                        "relative z-0 h-full overflow-hidden rounded-2xl border border-border-subtle shadow-xs animate-in fade-in duration-150",
                         viewMode === "list"
                             ? "hidden"
                             : viewMode === "map"
@@ -865,33 +866,35 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                     />
 
                     {/* Toggle Map View button */}
-                    {viewMode === "map" ? (
-                        <button
-                            onClick={() => setViewMode("split")}
-                            aria-label="خروج از نقشه تمام‌صفحه"
-                            className="absolute bottom-24 lg:bottom-6 left-1/2 -translate-x-1/2 z-[500] bg-brand text-white px-3.5 py-1.5 sm:px-5 sm:py-2.5 rounded-full shadow-2xl flex items-center gap-1.5 sm:gap-2 font-bold text-xs sm:text-sm active:scale-95 hover:bg-brand/90 transition-all border border-white/20 backdrop-blur-md cursor-pointer"
-                        >
-                            <X className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
-                            <span>خروج از تمام‌صفحه</span>
-                        </button>
-                    ) : (
-                        <button
-                            onClick={() => setViewMode("list")}
-                            aria-label="بستن نقشه"
-                            className="lg:hidden absolute bottom-24 left-1/2 -translate-x-1/2 z-[500] bg-brand text-white px-3.5 py-1.5 sm:px-5 sm:py-2.5 rounded-full shadow-2xl flex items-center gap-1.5 sm:gap-2 font-bold text-xs sm:text-sm active:scale-95 hover:bg-brand/90 transition-all border border-white/20 backdrop-blur-md cursor-pointer"
-                        >
-                            <X className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
-                            <span>بستن نقشه</span>
-                        </button>
+                    {!isAnyModalOpen && (
+                        viewMode === "map" ? (
+                            <button
+                                onClick={() => setViewMode("split")}
+                                aria-label="خروج از نقشه تمام‌صفحه"
+                                className="ads-floating-map-btn absolute bottom-24 lg:bottom-6 left-1/2 -translate-x-1/2 z-[500] bg-brand text-white px-3.5 py-1.5 sm:px-5 sm:py-2.5 rounded-full shadow-2xl flex items-center gap-1.5 sm:gap-2 font-bold text-xs sm:text-sm active:scale-95 hover:bg-brand/90 transition-all border border-white/20 backdrop-blur-md cursor-pointer"
+                            >
+                                <X className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
+                                <span>خروج از تمام‌صفحه</span>
+                            </button>
+                        ) : (
+                            <button
+                                onClick={() => setViewMode("list")}
+                                aria-label="بستن نقشه"
+                                className="ads-floating-map-btn lg:hidden absolute bottom-24 left-1/2 -translate-x-1/2 z-[500] bg-brand text-white px-3.5 py-1.5 sm:px-5 sm:py-2.5 rounded-full shadow-2xl flex items-center gap-1.5 sm:gap-2 font-bold text-xs sm:text-sm active:scale-95 hover:bg-brand/90 transition-all border border-white/20 backdrop-blur-md cursor-pointer"
+                            >
+                                <X className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
+                                <span>بستن نقشه</span>
+                            </button>
+                        )
                     )}
                 </div>
 
                 {/* Floating Show Map Button (When map is hidden) */}
-                {viewMode === "list" && (
+                {viewMode === "list" && !isAnyModalOpen && (
                     <button
                         onClick={() => setViewMode("map")}
                         aria-label="نمایش نقشه"
-                        className="fixed bottom-24 lg:bottom-8 left-1/2 -translate-x-1/2 z-40 bg-brand text-white px-3.5 py-1.5 sm:px-5 sm:py-2.5 rounded-full shadow-2xl flex items-center gap-1.5 sm:gap-2 font-bold text-xs sm:text-sm active:scale-95 hover:bg-brand/90 transition-all border border-white/20 hover:shadow-brand/25 cursor-pointer backdrop-blur-md"
+                        className="ads-floating-map-btn fixed bottom-24 lg:bottom-8 left-1/2 -translate-x-1/2 z-30 bg-brand text-white px-3.5 py-1.5 sm:px-5 sm:py-2.5 rounded-full shadow-2xl flex items-center gap-1.5 sm:gap-2 font-bold text-xs sm:text-sm active:scale-95 hover:bg-brand/90 transition-all border border-white/20 hover:shadow-brand/25 cursor-pointer backdrop-blur-md"
                     >
                         <MapIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
                         <span>مشاهده روی نقشه</span>

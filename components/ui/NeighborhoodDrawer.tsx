@@ -43,10 +43,11 @@ export function NeighborhoodDrawer({
             {/* Backdrop */}
             <div
                 className={cn(
-                    "fixed inset-0 z-40 bg-black/30 backdrop-blur-sm transition-opacity duration-300",
+                    "fixed inset-0 z-50 bg-black/30 backdrop-blur-sm transition-opacity duration-300",
                     isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
                 )}
                 onClick={onClose}
+                data-modal="true"
             />
 
             {/* Drawer — slides up from bottom on mobile, appears as right sidebar on lg+ */}
@@ -63,6 +64,7 @@ export function NeighborhoodDrawer({
                 )}
                 role="dialog"
                 aria-modal="true"
+                data-modal="true"
                 aria-hidden={!isOpen}
                 aria-label="انتخاب محله"
             >
