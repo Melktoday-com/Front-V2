@@ -609,16 +609,6 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
 
                     {/* Title & Price Header */}
                     <div className="border-b border-border-subtle pb-6">
-                        <div className="flex flex-col gap-2">
-                            <span className="text-2xl sm:text-3xl font-black text-brand leading-tight">
-                                {priceMain}
-                            </span>
-                            {priceSub && (
-                                <span className="text-base sm:text-lg font-bold text-secondary-600">
-                                    {priceSub}
-                                </span>
-                            )}
-                        </div>
 
                         <h1 className="text-lg sm:text-2xl font-bold text-text-main mt-3">
                             {ad.title}

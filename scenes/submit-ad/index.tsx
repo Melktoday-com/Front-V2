@@ -14,6 +14,7 @@ import {
 import { AdPublicationFeeModal } from "@/components/wallet/AdPublicationFeeModal";
 import { useAd, useCategories } from "@/hooks/useAds";
 import { useGeoHierarchy } from "@/hooks/useGeoHierarchy";
+import { useSafeBack } from "@/hooks/useSafeBack";
 import { useEntitlements } from "@/hooks/useSubscription";
 import { useUserStatus } from "@/hooks/useUserStatus";
 import { isInsufficientBalanceError, normalizeApiError } from "@/lib/api/error-handler";
@@ -66,6 +67,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
     const router = useRouter();
     const searchParams = useSearchParams();
     const editAdId = searchParams.get("edit");
+    const handlePageBack = useSafeBack(adminMode ? "/admin/ads" : editAdId ? "/profile/ads" : "/");
     const [activeAdId, setActiveAdId] = useState<string | null>(editAdId || null);
     const activeAdIdRef = useRef<string | null>(editAdId || null);
 
@@ -811,7 +813,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
     return (
         <div className="min-h-screen bg-surface-secondary/50 py-3 sm:py-8 px-2.5 sm:px-6 lg:px-8 pb-24 sm:pb-32 lg:pb-12">
             <div className="max-w-3xl mx-auto">
-                <header className="mb-3 sm:mb-6 flex items-start justify-between">
+                <header className="mb-3 sm:mb-6 flex items-start justify-between gap-4">
                     <div>
                         <h1 className="text-lg sm:text-2xl font-black text-brand">
                             {adminMode
@@ -826,6 +828,17 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                 : "اطلاعات ملک خود را تکمیل نمایید تا در سریع‌ترین زمان متقاضیان واقعی با شما تماس بگیرند."}
                         </p>
                     </div>
+
+                    <button
+                        type="button"
+                        onClick={() => handlePageBack()}
+                        className="flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl bg-surface hover:bg-surface-secondary active:scale-95 border border-border-subtle text-text-light hover:text-brand transition-all shrink-0 cursor-pointer shadow-2xs text-xs font-bold"
+                        aria-label="بازگشت"
+                        title="بازگشت"
+                    >
+                        <ChevronRight className="w-4 h-4" />
+                        <span>بازگشت</span>
+                    </button>
                 </header>
 
                 {/* Mobile Compact Step Indicator */}
@@ -1354,15 +1367,25 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
 
                     {/* Navigation Buttons */}
                     <div className="mt-6 sm:mt-10 flex items-center justify-between border-t border-border-subtle pt-4 sm:pt-6">
-                        <button
-                            type="button"
-                            onClick={handleBack}
-                            disabled={step === "BASIC_INFO"}
-                            className="flex items-center text-text-light hover:text-brand disabled:opacity-30 font-bold text-xs"
-                        >
-                            <ChevronRight className="h-4 w-4 ml-1" />
-                            مرحله قبل
-                        </button>
+                        {step === "BASIC_INFO" ? (
+                            <button
+                                type="button"
+                                onClick={() => handlePageBack()}
+                                className="flex items-center text-text-light hover:text-brand font-bold text-xs transition-colors"
+                            >
+                                <ChevronRight className="h-4 w-4 ml-1" />
+                                <span>انصراف و بازگشت</span>
+                            </button>
+                        ) : (
+                            <button
+                                type="button"
+                                onClick={handleBack}
+                                className="flex items-center text-text-light hover:text-brand font-bold text-xs transition-colors"
+                            >
+                                <ChevronRight className="h-4 w-4 ml-1" />
+                                <span>مرحله قبل</span>
+                            </button>
+                        )}
 
                         {step === "REVIEW" ? (
                             adminMode ? (
