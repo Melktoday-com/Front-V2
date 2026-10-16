@@ -3,7 +3,7 @@
 import { useAuth } from "@/hooks/useAuth";
 import { Permission, RoleName } from "@/types/access";
 import { authService } from "@/services/auth.service";
-import { setCookie } from "cookies-next";
+import { storeAuthTokens } from "@/lib/api/token-manager";
 import { usePathname, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -64,10 +64,11 @@ export const AccessGuard: React.FC<AccessGuardProps> = ({
                         roleName: RoleName.Admin,
                     }).then((data) => {
                         if (data.accessToken) {
-                            setCookie("access_token", data.accessToken, { maxAge: data.expiresIn });
-                            if (data.refreshToken) {
-                                setCookie("refresh_token", data.refreshToken, { maxAge: 30 * 24 * 60 * 60 });
-                            }
+                            storeAuthTokens({
+                                accessToken: data.accessToken,
+                                refreshToken: data.refreshToken,
+                                expiresIn: data.expiresIn,
+                            });
                             window.location.reload();
                         } else {
                             router.push(redirectTo);

@@ -1,35 +1,11 @@
 import { JsonValue } from "@/types/common";
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
-import { deleteCookie, getCookie, setCookie } from "cookies-next";
+import { getCookie } from "cookies-next";
+import { getClientApiUrl, refreshAuthTokens } from "./token-manager";
 
-function getClientApiUrl(): string {
-    let url = process.env.NEXT_PUBLIC_API_URL || "";
-    if (!url && typeof window !== "undefined") {
-        return `${window.location.origin}/backend/api`;
-    }
-    url = (url || "http://localhost:3000/api").trim().replace(/\/+$/, "");
-
-    if (url.includes("109.122.254.238")) {
-        url = url.replace(/https?:\/\/109\.122\.254\.238(:\d+)?/, "https://melktoday.com");
-    }
-
-    if (!url.endsWith("/api") && !url.includes("/api/")) {
-        url = `${url}/backend/api`;
-    }
-
-    if (typeof window !== "undefined" && window.location.protocol === "https:" && url.startsWith("http:")) {
-        url = url.replace(/^http:/, "https:");
-    }
-
-    return url;
-}
+export { getClientApiUrl };
 
 const API_URL = getClientApiUrl();
-
-interface FailedRequest {
-    resolve: (token: string | null) => void;
-    reject: (error: Error | AxiosError | null) => void;
-}
 
 interface StandardResponse<T = JsonValue> {
     success: boolean;
@@ -48,20 +24,20 @@ export const apiClient = axios.create({
     },
 });
 
-let isRefreshing = false;
-let failedQueue: FailedRequest[] = [];
-
-const processQueue = (error: Error | AxiosError | null, token: string | null = null) => {
-    failedQueue.forEach((prom) => {
-        if (error) {
-            prom.reject(error);
-        } else {
-            prom.resolve(token);
+// Synchronize default Authorization header with token manager events
+if (typeof window !== "undefined") {
+    window.addEventListener("auth:token-refreshed", (event: Event) => {
+        const customEvent = event as CustomEvent<{ accessToken: string }>;
+        const token = customEvent.detail?.accessToken;
+        if (token) {
+            apiClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
         }
     });
 
-    failedQueue = [];
-};
+    window.addEventListener("auth:session-expired", () => {
+        delete apiClient.defaults.headers.common["Authorization"];
+    });
+}
 
 // Request Interceptor: Add Authorization Header
 apiClient.interceptors.request.use((config) => {
@@ -115,68 +91,23 @@ apiClient.interceptors.response.use(
         const isAuthEndpoint = originalRequest?.url?.includes("/auth/");
 
         if (error.response?.status === 401 && originalRequest && !originalRequest._retry && !isAuthEndpoint) {
-            if (isRefreshing) {
-                return new Promise<string | null>(function (resolve, reject) {
-                    failedQueue.push({ resolve, reject });
-                })
-                    .then((token) => {
-                        if (originalRequest.headers) {
-                            originalRequest.headers["Authorization"] = "Bearer " + token;
-                        }
-                        return apiClient(originalRequest);
-                    })
-                    .catch((err) => {
-                        return Promise.reject(err);
-                    });
-            }
-
             originalRequest._retry = true;
-            isRefreshing = true;
 
-            const refreshToken = getCookie("refresh_token");
+            const newAccessToken = await refreshAuthTokens();
 
-            if (refreshToken) {
-                try {
-                    const response = await axios.post<StandardResponse<{
-                        accessToken: string;
-                        refreshToken: string;
-                        expiresIn: number;
-                    }>>(`${API_URL}/auth/refresh`, {
-                        refreshToken,
-                    });
-
-                    const { accessToken, refreshToken: newRefreshToken, expiresIn } = response.data.data;
-
-                    setCookie("access_token", accessToken, { maxAge: expiresIn });
-                    setCookie("refresh_token", newRefreshToken, { maxAge: 30 * 24 * 60 * 60 });
-
-                    apiClient.defaults.headers.common["Authorization"] = "Bearer " + accessToken;
-                    if (originalRequest.headers) {
-                        originalRequest.headers["Authorization"] = "Bearer " + accessToken;
+            if (newAccessToken) {
+                apiClient.defaults.headers.common["Authorization"] = `Bearer ${newAccessToken}`;
+                if (originalRequest.headers) {
+                    if (typeof originalRequest.headers.set === "function") {
+                        originalRequest.headers.set("Authorization", `Bearer ${newAccessToken}`);
+                    } else {
+                        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
                     }
-
-                    processQueue(null, accessToken);
-                    return apiClient(originalRequest);
-                } catch (refreshError) {
-                    const error = refreshError instanceof Error ? refreshError : new Error(String(refreshError));
-                    processQueue(error, null);
-                    deleteCookie("access_token");
-                    deleteCookie("refresh_token");
-                    // Only redirect if not already on /auth
-                    if (typeof window !== "undefined" && !window.location.pathname.startsWith("/auth")) {
-                        window.location.href = "/auth";
-                    }
-                    return Promise.reject(refreshError);
-                } finally {
-                    isRefreshing = false;
                 }
-            } else {
-                deleteCookie("access_token");
-                processQueue(error, null);
-                // When there is no refresh token, user is unauthenticated.
-                // Do NOT force window.location.href = "/auth" here because public pages and background queries must not trigger page reloads.
-                return Promise.reject(error);
+                return apiClient(originalRequest);
             }
+
+            return Promise.reject(error);
         }
 
         return Promise.reject(error);

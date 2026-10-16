@@ -1,11 +1,12 @@
+import { clearAuthTokens, refreshAuthTokens, storeAuthTokens } from "@/lib/api/token-manager";
 import { authService } from "@/services/auth.service";
 import { Permission, ROLE_PERMISSIONS, RoleName, tryRoleNameFrom } from "@/types/access";
 import { JwtPayload } from "@/types/api/auth.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { deleteCookie, getCookie, setCookie } from "cookies-next";
+import { getCookie } from "cookies-next";
 import { jwtDecode } from "jwt-decode";
 import { useRouter } from "next/navigation";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 
 export function useRequestOtp() {
     return useMutation({
@@ -21,11 +22,27 @@ export function useVerifyOtp(redirectTarget?: string) {
         mutationFn: authService.verifyOtp,
         onSuccess: (data) => {
             // Store tokens in cookies
-            setCookie("access_token", data.accessToken, { maxAge: data.expiresIn });
-            setCookie("refresh_token", data.refreshToken, { maxAge: 30 * 24 * 60 * 60 }); // 30 days
+            storeAuthTokens({
+                accessToken: data.accessToken,
+                refreshToken: data.refreshToken,
+                expiresIn: data.expiresIn,
+            });
 
-            // Invalidate auth session to update all components
+            try {
+                const decoded = jwtDecode<JwtPayload>(data.accessToken);
+                queryClient.setQueryData(["auth-session"], {
+                    userId: decoded.sub,
+                    sessionId: decoded.sessionId,
+                    activeRole: tryRoleNameFrom(decoded.activeRoleName),
+                });
+            } catch (e) {
+                console.error("Failed to decode token on verify", e);
+            }
+
+            // Invalidate auth session and user caches
             queryClient.invalidateQueries({ queryKey: ["auth-session"] });
+            queryClient.invalidateQueries({ queryKey: ["user"] });
+            queryClient.invalidateQueries({ queryKey: ["me"] });
 
             // Redirect to target or home
             router.replace(redirectTarget || "/");
@@ -49,8 +66,8 @@ export function useLogout() {
         } catch (e) {
             console.error("Session termination error:", e);
         }
-        deleteCookie("access_token");
-        deleteCookie("refresh_token");
+
+        clearAuthTokens();
 
         // Immediately update auth-session cache so all components know the user is logged out
         queryClient.setQueryData(["auth-session"], null);
@@ -72,10 +89,12 @@ export function useSwitchRole() {
         mutationFn: authService.switchRole,
         onSuccess: (data) => {
             if (data.accessToken) {
-                setCookie("access_token", data.accessToken, { maxAge: data.expiresIn });
-                if (data.refreshToken) {
-                    setCookie("refresh_token", data.refreshToken, { maxAge: 30 * 24 * 60 * 60 });
-                }
+                storeAuthTokens({
+                    accessToken: data.accessToken,
+                    refreshToken: data.refreshToken,
+                    expiresIn: data.expiresIn,
+                });
+
                 try {
                     const decoded = jwtDecode<JwtPayload>(data.accessToken);
                     queryClient.setQueryData(["auth-session"], {
@@ -93,7 +112,7 @@ export function useSwitchRole() {
             queryClient.invalidateQueries({ queryKey: ["me"] });
             queryClient.invalidateQueries({ queryKey: ["my-agency"] });
             queryClient.invalidateQueries({ queryKey: ["hosts"] });
-        }
+        },
     });
 }
 
@@ -104,27 +123,100 @@ interface AuthUser {
 }
 
 export function useAuth() {
+    const queryClient = useQueryClient();
+
     const { data: user, isLoading, refetch } = useQuery({
         queryKey: ["auth-session"],
-        queryFn: (): AuthUser | null => {
-            const token = getCookie("access_token");
-            if (token && typeof token === "string") {
+        queryFn: async (): Promise<AuthUser | null> => {
+            const rawToken = getCookie("access_token");
+            const token = typeof rawToken === "string" ? rawToken : undefined;
+
+            if (token) {
                 try {
                     const decoded = jwtDecode<JwtPayload>(token);
-                    return {
-                        userId: decoded.sub,
-                        sessionId: decoded.sessionId,
-                        activeRole: tryRoleNameFrom(decoded.activeRoleName)
-                    };
+                    // Check if access token is still valid for at least 15 more seconds
+                    if (decoded.exp && decoded.exp * 1000 > Date.now() + 15_000) {
+                        return {
+                            userId: decoded.sub,
+                            sessionId: decoded.sessionId,
+                            activeRole: tryRoleNameFrom(decoded.activeRoleName),
+                        };
+                    }
                 } catch (e) {
-                    console.error("Failed to decode token", e);
-                    return null;
+                    console.error("Failed to decode access token", e);
                 }
             }
+
+            // Access token missing or expired; attempt recovery via refresh token
+            const rawRefreshToken = getCookie("refresh_token");
+            const refreshToken = typeof rawRefreshToken === "string" ? rawRefreshToken : undefined;
+
+            if (refreshToken) {
+                try {
+                    const newAccessToken = await refreshAuthTokens();
+                    if (newAccessToken) {
+                        const decoded = jwtDecode<JwtPayload>(newAccessToken);
+                        return {
+                            userId: decoded.sub,
+                            sessionId: decoded.sessionId,
+                            activeRole: tryRoleNameFrom(decoded.activeRoleName),
+                        };
+                    }
+                } catch (e) {
+                    console.error("Silent session recovery failed in useAuth", e);
+                }
+            }
+
             return null;
         },
-        staleTime: Infinity,
+        staleTime: 60 * 1000,
+        refetchOnWindowFocus: true,
     });
+
+    // Proactive background refresh timer and cross-window sync
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+
+        const handleTokenRefreshed = () => {
+            queryClient.invalidateQueries({ queryKey: ["auth-session"] });
+        };
+
+        const handleSessionExpired = () => {
+            queryClient.setQueryData(["auth-session"], null);
+        };
+
+        window.addEventListener("auth:token-refreshed", handleTokenRefreshed);
+        window.addEventListener("auth:session-expired", handleSessionExpired);
+
+        const rawToken = getCookie("access_token");
+        const token = typeof rawToken === "string" ? rawToken : undefined;
+
+        let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
+        if (token) {
+            try {
+                const decoded = jwtDecode<JwtPayload>(token);
+                if (decoded.exp) {
+                    const msUntilExpiry = decoded.exp * 1000 - Date.now();
+                    // Schedule refresh 60 seconds before expiration, minimum 5 seconds
+                    const delay = Math.max(msUntilExpiry - 60_000, 5_000);
+
+                    timeoutId = setTimeout(async () => {
+                        const refreshed = await refreshAuthTokens();
+                        if (refreshed) {
+                            queryClient.invalidateQueries({ queryKey: ["auth-session"] });
+                        }
+                    }, delay);
+                }
+            } catch {}
+        }
+
+        return () => {
+            window.removeEventListener("auth:token-refreshed", handleTokenRefreshed);
+            window.removeEventListener("auth:session-expired", handleSessionExpired);
+            if (timeoutId) clearTimeout(timeoutId);
+        };
+    }, [user, queryClient]);
 
     const hasPermission = (permission: Permission): boolean => {
         if (!user?.activeRole) return false;
@@ -143,7 +235,6 @@ export function useAuth() {
         isLoading,
         hasPermission,
         hasRole,
-        refresh: refetch
+        refresh: refetch,
     };
 }
-
