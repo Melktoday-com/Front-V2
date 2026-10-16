@@ -502,6 +502,20 @@ body {
   outline-offset: 2px;
 }
 
+/* =============================================================================
+   ICON COLOR RULES
+   All icons (SVGs) rendered on dark brand / navy backgrounds (bg-brand, bg-primary, etc.)
+   stand out in vibrant Teal (--color-accent), unless explicitly styled with feedback colors.
+   ============================================================================= */
+.bg-brand svg:not([class*="text-error"]):not([class*="text-destructive"]):not([class*="text-success"]):not([class*="text-warning"]),
+.bg-brand-navy svg:not([class*="text-error"]):not([class*="text-destructive"]):not([class*="text-success"]):not([class*="text-warning"]),
+.bg-brand-navy-dark svg:not([class*="text-error"]):not([class*="text-destructive"]):not([class*="text-success"]):not([class*="text-warning"]),
+.bg-surface-inverse svg:not([class*="text-error"]):not([class*="text-destructive"]):not([class*="text-success"]):not([class*="text-warning"]),
+.bg-primary svg:not([class*="text-error"]):not([class*="text-destructive"]):not([class*="text-success"]):not([class*="text-warning"]) {
+  color: var(--color-accent);
+}
+
+
 /* Utility classes */
 .no-scrollbar::-webkit-scrollbar {
   display: none;

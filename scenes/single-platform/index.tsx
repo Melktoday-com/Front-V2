@@ -165,7 +165,7 @@ export default function SinglePlatformScene() {
                   <Image src={getMediaUrl(header.avatarUrl)} alt="Logo" fill className="object-contain p-2" />
                 ) : (
                   <span className="text-xl sm:text-2xl font-black text-white tracking-tighter">
-                    MELK<span className="text-primary">TODAY</span>
+                    MELK<span className="text-accent">TODAY</span>
                   </span>
                 )}
               </div>

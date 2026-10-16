@@ -388,8 +388,8 @@ export function TicketFloatingWidget() {
                         aria-expanded={isOpen}
                         className="group relative flex items-center justify-center sm:gap-3 bg-brand text-white p-2 sm:px-4 sm:py-3.5 rounded-full shadow-lg sm:shadow-2xl hover:bg-brand/90 hover:scale-105 active:scale-95 transition-all duration-300 border border-white/20"
                     >
-                        <span className="relative flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary/20 text-primary">
-                            <Headphones className="w-4 h-4 sm:w-5 sm:h-5 text-white group-hover:rotate-12 transition-transform" />
+                        <span className="relative flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-accent/20 text-accent">
+                            <Headphones className="w-4 h-4 sm:w-5 sm:h-5 text-accent group-hover:rotate-12 transition-transform" />
                         </span>
                         <span className="text-sm font-black hidden sm:inline-block pr-0.5">
                             پشتیبانی
@@ -422,7 +422,7 @@ export function TicketFloatingWidget() {
                                     <ArrowLeft className="w-5 h-5" />
                                 </button>
                             )}
-                            <div className="w-9 h-9 rounded-2xl bg-surface/10 flex items-center justify-center text-primary">
+                            <div className="w-9 h-9 rounded-2xl bg-surface/10 flex items-center justify-center text-accent">
                                 <LifeBuoy className="w-5 h-5" />
                             </div>
                             <div>
@@ -549,7 +549,7 @@ export function TicketFloatingWidget() {
                                                     onClick={handleStartNewTicket}
                                                     className="px-4 py-2.5 rounded-2xl bg-brand text-white text-xs font-black shadow-md hover:bg-brand/90 transition-all flex items-center gap-2"
                                                 >
-                                                    <Plus className="w-4 h-4 text-primary" />
+                                                    <Plus className="w-4 h-4 text-accent" />
                                                     <span>ثبت اولین تیکت</span>
                                                 </button>
                                             </div>

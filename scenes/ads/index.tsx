@@ -891,7 +891,7 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                                 aria-label={isMobile ? "مشاهده فهرست" : "خروج از نقشه تمام‌صفحه"}
                                 className="ads-floating-map-btn absolute bottom-24 lg:bottom-6 left-1/2 -translate-x-1/2 z-[500] bg-brand text-white px-3.5 py-1.5 sm:px-5 sm:py-2.5 rounded-full shadow-2xl flex items-center gap-1.5 sm:gap-2 font-bold text-xs sm:text-sm active:scale-95 hover:bg-brand/90 transition-all border border-white/20 backdrop-blur-md cursor-pointer"
                             >
-                                <X className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
+                                <X className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-accent" />
                                 <span>{isMobile ? "مشاهده فهرست" : "خروج از تمام‌صفحه"}</span>
                             </button>
                         ) : (
@@ -900,7 +900,7 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                                 aria-label="بستن نقشه"
                                 className="ads-floating-map-btn lg:hidden absolute bottom-24 left-1/2 -translate-x-1/2 z-[500] bg-brand text-white px-3.5 py-1.5 sm:px-5 sm:py-2.5 rounded-full shadow-2xl flex items-center gap-1.5 sm:gap-2 font-bold text-xs sm:text-sm active:scale-95 hover:bg-brand/90 transition-all border border-white/20 backdrop-blur-md cursor-pointer"
                             >
-                                <X className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
+                                <X className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-accent" />
                                 <span>بستن نقشه</span>
                             </button>
                         )
@@ -914,7 +914,7 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                         aria-label="نمایش نقشه"
                         className="ads-floating-map-btn fixed bottom-24 lg:bottom-8 left-1/2 -translate-x-1/2 z-30 bg-brand text-white px-3.5 py-1.5 sm:px-5 sm:py-2.5 rounded-full shadow-2xl flex items-center gap-1.5 sm:gap-2 font-bold text-xs sm:text-sm active:scale-95 hover:bg-brand/90 transition-all border border-white/20 hover:shadow-brand/25 cursor-pointer backdrop-blur-md"
                     >
-                        <MapIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
+                        <MapIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-accent" />
                         <span>مشاهده روی نقشه</span>
                     </button>
                 )}

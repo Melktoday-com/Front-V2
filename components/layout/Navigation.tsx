@@ -99,7 +99,7 @@ export function Sidebar() {
                 href="/ads/submit"
                 className="flex items-center justify-center gap-2 w-full py-3.5 px-4 rounded-2xl border-2 border-primary text-primary font-bold text-sm bg-transparent hover:bg-primary/5 active:bg-primary/10 transition-all mb-6 group"
             >
-                <PlusCircle className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
+                <PlusCircle className="w-5 h-5 text-accent group-hover:scale-110 transition-transform" />
                 <span>ثبت آگهی</span>
             </Link>
 
@@ -120,7 +120,7 @@ export function Sidebar() {
                             <item.icon
                                 className={cn(
                                     "w-5 h-5",
-                                    active ? "text-primary-foreground" : "text-foreground-secondary group-hover:text-primary"
+                                    active ? "text-accent" : "text-foreground-secondary group-hover:text-primary"
                                 )}
                             />
                             <span className="text-sm">{item.label}</span>
@@ -144,7 +144,7 @@ export function Sidebar() {
                                     className={cn(
                                         "w-5 h-5",
                                         pathname.startsWith("/profile/chat")
-                                            ? "text-primary-foreground"
+                                            ? "text-accent"
                                             : "text-foreground-secondary group-hover:text-primary"
                                     )}
                                 />
@@ -176,7 +176,7 @@ export function Sidebar() {
                                     className={cn(
                                         "w-5 h-5",
                                         pathname.startsWith("/notifications")
-                                            ? "text-primary-foreground"
+                                            ? "text-accent"
                                             : "text-foreground-secondary group-hover:text-primary"
                                     )}
                                 />
@@ -332,7 +332,7 @@ function MobileNavContent() {
                 className={cn(
                     "flex flex-col items-center justify-center w-11 h-11 rounded-full transition-all",
                     isHome
-                        ? "bg-primary text-primary-foreground shadow-sm"
+                        ? "bg-primary text-accent shadow-sm"
                         : "text-foreground-secondary hover:text-primary"
                 )}
             >
@@ -346,7 +346,7 @@ function MobileNavContent() {
                 className={cn(
                     "flex flex-col items-center justify-center w-11 h-11 rounded-full transition-all",
                     isExplore
-                        ? "bg-primary text-primary-foreground shadow-sm"
+                        ? "bg-primary text-accent shadow-sm"
                         : "text-foreground-secondary hover:text-primary"
                 )}
             >
@@ -361,7 +361,7 @@ function MobileNavContent() {
                     "flex items-center justify-center w-13 h-13 -mt-6 rounded-full transition-transform active:scale-90 border-4 border-surface shadow-lg",
                     isSubmit
                         ? "bg-accent text-accent-foreground shadow-accent/40"
-                        : "bg-primary text-primary-foreground shadow-primary/40 hover:bg-primary-hover"
+                        : "bg-primary text-accent shadow-primary/40 hover:bg-primary-hover"
                 )}
             >
                 <Plus className="w-7 h-7 stroke-[2.5]" />
@@ -374,7 +374,7 @@ function MobileNavContent() {
                 className={cn(
                     "flex flex-col items-center justify-center w-11 h-11 rounded-full transition-all",
                     isFavorites
-                        ? "bg-primary text-primary-foreground shadow-sm"
+                        ? "bg-primary text-accent shadow-sm"
                         : "text-foreground-secondary hover:text-primary"
                 )}
             >
@@ -388,7 +388,7 @@ function MobileNavContent() {
                 className={cn(
                     "flex flex-col items-center justify-center w-11 h-11 rounded-full transition-all",
                     isProfile
-                        ? "bg-primary text-white shadow-md shadow-primary/30"
+                        ? "bg-primary text-accent shadow-md shadow-primary/30"
                         : "text-secondary hover:text-brand"
                 )}
             >

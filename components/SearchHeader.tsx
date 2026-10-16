@@ -143,7 +143,7 @@ export function SearchHeader({ isInitialOpen }: SearchHeaderProps) {
                     className="flex items-center gap-2 sm:gap-2.5 bg-surface px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-full border border-soft-border group hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300"
                 >
                     <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-soft-bg flex items-center justify-center group-hover:bg-primary/10 transition-colors">
-                        <MapPin className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-primary" />
+                        <MapPin className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-accent" />
                     </div>
                     <div className="flex items-center gap-1 sm:gap-1.5">
                         <span className="text-brand font-black text-xs sm:text-sm">
@@ -203,7 +203,7 @@ export function SearchHeader({ isInitialOpen }: SearchHeaderProps) {
                                 variant="outline"
                                 className="h-10 sm:h-11 px-3.5 sm:px-5 rounded-full flex items-center gap-1.5 sm:gap-2 border-soft-border bg-surface shadow-sm hover:shadow-md hover:border-primary/30 transition-all text-xs sm:text-sm font-black"
                             >
-                                <User className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
+                                <User className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-accent" />
                                 <span>{"ورود / ثبت‌نام"}</span>
                             </Button>
                         </Link>
@@ -224,7 +224,7 @@ export function SearchHeader({ isInitialOpen }: SearchHeaderProps) {
 
                 <form onSubmit={handleSearch} className="relative z-20 w-full lg:max-w-4xl">
                     <div className="relative group">
-                        <Search className="absolute right-3.5 sm:right-5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 sm:w-6 sm:h-6 text-secondary/50 group-focus-within:text-primary transition-all duration-300 pointer-events-none" />
+                        <Search className="absolute right-3.5 sm:right-5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 sm:w-6 sm:h-6 text-secondary/50 group-focus-within:text-accent transition-all duration-300 pointer-events-none" />
                         <input
                             type="text"
                             value={searchQuery}
@@ -255,7 +255,7 @@ export function SearchHeader({ isInitialOpen }: SearchHeaderProps) {
                                 aria-label="جستجو"
                                 className="bg-primary hover:bg-primary/90 text-white p-2 sm:p-2.5 rounded-xl sm:rounded-full shadow-md sm:shadow-lg shadow-primary/25 hover:scale-105 sm:hover:scale-110 active:scale-95 transition-all"
                             >
-                                <Search className="w-4 h-4 sm:w-5 sm:h-5" />
+                                <Search className="w-4 h-4 sm:w-5 sm:h-5 text-accent" />
                             </button>
                         </div>
                     </div>
@@ -269,7 +269,7 @@ export function SearchHeader({ isInitialOpen }: SearchHeaderProps) {
                                 {suggestions && suggestions.length > 0 && (
                                     <div className="mb-3 pb-2.5 sm:mb-3.5 sm:pb-3 border-b border-soft-border/60">
                                         <div className="flex items-center gap-1.5 text-[11px] sm:text-xs text-secondary font-bold mb-2">
-                                            <Sparkles className="w-3.5 h-3.5 text-primary" />
+                                            <Sparkles className="w-3.5 h-3.5 text-accent" />
                                             <span>پیشنهادهای هوشمند:</span>
                                         </div>
                                         <div className="flex flex-wrap gap-1 sm:gap-1.5">
@@ -367,7 +367,7 @@ export function SearchHeader({ isInitialOpen }: SearchHeaderProps) {
                                             <div className="space-y-1.5">
                                                 <div className="flex items-center justify-between px-2 text-xs font-black text-secondary">
                                                     <span className="flex items-center gap-1.5">
-                                                        <Building2 className="w-3.5 h-3.5 text-primary" />
+                                                        <Building2 className="w-3.5 h-3.5 text-accent" />
                                                         املاک و آگهی‌ها
                                                     </span>
                                                     <Link

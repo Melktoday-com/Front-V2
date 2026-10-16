@@ -25,7 +25,7 @@ export function ChatHeader() {
                         <LayoutGrid className="w-5 h-5 text-accent" />
                     </div>
                     <span className="text-xl font-black text-brand tracking-tighter">
-                        MELK<span className="text-primary">TODAY</span>
+                        MELK<span className="text-accent">TODAY</span>
                     </span>
                 </Link>
 
@@ -46,7 +46,7 @@ export function ChatHeader() {
                             >
                                 <item.icon className={cn(
                                     "w-4 h-4 md:w-5 h-5 transition-colors",
-                                    active ? "text-primary" : "text-secondary group-hover:text-primary"
+                                    active ? "text-accent" : "text-secondary group-hover:text-accent"
                                 )} />
                                 <span className={cn(
                                     "font-bold text-sm",

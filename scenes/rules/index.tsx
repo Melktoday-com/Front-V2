@@ -168,7 +168,7 @@ export default function RulesScene() {
                   dir="ltr"
                   className="inline-flex items-center justify-center gap-2 w-full bg-brand text-white font-black text-xs py-2 px-3 rounded-xl hover:bg-brand/90 transition-colors"
                 >
-                  <Phone className="w-3.5 h-3.5 text-primary" />
+                  <Phone className="w-3.5 h-3.5 text-accent" />
                   <span>{toPersianDigits("02191003417")}</span>
                 </a>
               </div>
@@ -889,7 +889,7 @@ export default function RulesScene() {
                 <div className="p-4 rounded-2xl bg-primary/5 border border-primary/20 flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-brand text-white flex items-center justify-center shrink-0">
-                      <Phone className="w-4 h-4 text-primary" />
+                      <Phone className="w-4 h-4 text-accent" />
                     </div>
                     <div>
                       <span className="text-[10px] text-secondary font-medium block">پشتیبانی تلفنی (۸ الی ۲۱)</span>

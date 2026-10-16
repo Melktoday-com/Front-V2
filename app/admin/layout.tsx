@@ -91,7 +91,7 @@ export default function AdminLayout({
                 <aside className="w-64 bg-surface border-l border-soft-border sticky top-0 h-screen overflow-y-auto p-6 flex flex-col">
                     <div className="mb-10 px-2">
                         <span className="text-2xl font-black text-brand tracking-tighter">
-                            MELK<span className="text-primary">TODAY</span>
+                            MELK<span className="text-accent">TODAY</span>
                             <span className="text-[10px] block font-bold text-secondary uppercase -mt-1 tracking-widest">Admin Panel</span>
                         </span>
                     </div>
@@ -114,7 +114,7 @@ export default function AdminLayout({
                                 >
                                     <Icon className={cn(
                                         "w-5 h-5",
-                                        isActive ? "text-white" : "text-secondary group-hover:text-brand"
+                                        isActive ? "text-accent" : "text-secondary group-hover:text-brand"
                                     )} />
                                     <span className="font-bold text-sm">{item.name}</span>
                                 </Link>

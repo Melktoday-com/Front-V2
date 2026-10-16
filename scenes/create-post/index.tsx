@@ -789,12 +789,12 @@ export default function CreatePostScene() {
                 )}
               >
                 <div className="flex items-center justify-between">
-                  <div className="w-12 h-12 rounded-2xl bg-brand text-primary flex items-center justify-center shadow-xs">
+                  <div className="w-12 h-12 rounded-2xl bg-brand text-accent flex items-center justify-center shadow-xs">
                     <Layers className="w-6 h-6" />
                   </div>
                   {postFormat === "instagram" && (
                     <span className="px-3 py-1 rounded-full bg-brand text-white text-[11px] font-black flex items-center gap-1">
-                      <Check className="w-3.5 h-3.5 text-primary" />
+                      <Check className="w-3.5 h-3.5 text-accent" />
                       <span>قالب فعال</span>
                     </span>
                   )}
@@ -811,15 +811,15 @@ export default function CreatePostScene() {
 
                 <div className="space-y-1.5 pt-2 border-t border-border-subtle/60 text-[11px] text-foreground-muted">
                   <div className="flex items-center gap-1.5">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-primary" />
+                    <CheckCircle2 className="w-3.5 h-3.5 text-accent" />
                     <span>پشتیبانی از ۱ تا ۱۰ تصویر باکیفیت در قالب اسلایدر</span>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-primary" />
+                    <CheckCircle2 className="w-3.5 h-3.5 text-accent" />
                     <span>کپشن روان با هشتگ‌های پربازدید ملکی</span>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-primary" />
+                    <CheckCircle2 className="w-3.5 h-3.5 text-accent" />
                     <span>نمایش مستقیم در گرید و فید کاوش اینستاگرامی</span>
                   </div>
                 </div>
@@ -837,12 +837,12 @@ export default function CreatePostScene() {
                 )}
               >
                 <div className="flex items-center justify-between">
-                  <div className="w-12 h-12 rounded-2xl bg-brand text-white flex items-center justify-center shadow-xs">
-                    <Feather className="w-6 h-6 text-primary" />
+                  <div className="w-12 h-12 rounded-2xl bg-brand text-accent flex items-center justify-center shadow-xs">
+                    <Feather className="w-6 h-6 text-accent" />
                   </div>
                   {postFormat === "medium" && (
                     <span className="px-3 py-1 rounded-full bg-brand text-white text-[11px] font-black flex items-center gap-1">
-                      <Check className="w-3.5 h-3.5 text-primary" />
+                      <Check className="w-3.5 h-3.5 text-accent" />
                       <span>قالب فعال</span>
                     </span>
                   )}

@@ -97,7 +97,7 @@ function ExplorePostCard({
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-3.5 text-white z-20">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5 text-xs font-bold text-slate-200">
-              {post.publisherType === "PLATFORM" && <ShieldCheck className="w-3.5 h-3.5 text-primary" />}
+              {post.publisherType === "PLATFORM" && <ShieldCheck className="w-3.5 h-3.5 text-accent" />}
               {post.publisherType === "HOST" && <Hotel className="w-3.5 h-3.5 text-emerald-400" />}
               {post.publisherType === "AGENCY" && <Building2 className="w-3.5 h-3.5 text-blue-400" />}
               <span className="truncate max-w-[120px]">{publisherName}</span>
@@ -334,7 +334,7 @@ export default function ExploreScene() {
             href="/posts/create"
             className="flex items-center justify-center gap-1.5 px-5 py-3 rounded-2xl bg-brand text-white text-xs font-bold hover:bg-brand/90 transition-all shrink-0 shadow-xs"
           >
-            <Plus className="w-4 h-4 text-primary" />
+            <Plus className="w-4 h-4 text-accent" />
             <span>ایجاد پست جدید</span>
           </Link>
         )}
