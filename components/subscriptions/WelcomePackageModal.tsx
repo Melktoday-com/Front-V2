@@ -15,12 +15,15 @@ import {
     Wallet,
     X,
 } from "lucide-react";
+import { isRoleAdmin, RoleName } from "@/types/access";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+const ELIGIBLE_WELCOME_ROLES = ["user", "landlord", "agent"];
+
 export function WelcomePackageModal() {
-    const { user, isLoggedIn } = useAuth();
-    const autoGrantMutation = useAutoGrantWelcomePackage();
+    const { user, isLoggedIn, activeRole } = useAuth();
+    const { mutate: autoGrant } = useAutoGrantWelcomePackage();
     const router = useRouter();
 
     const [isOpen, setIsOpen] = useState(false);
@@ -31,37 +34,58 @@ export function WelcomePackageModal() {
         setIsOpen(false);
     }, []);
 
+    // Reset triggered state on logout
+    useEffect(() => {
+        if (!isLoggedIn) {
+            hasTriggeredRef.current = false;
+            setIsOpen(false);
+            setPackageData(null);
+        }
+    }, [isLoggedIn]);
+
     useEffect(() => {
         if (!isLoggedIn || !user?.userId || hasTriggeredRef.current) {
             return;
         }
 
+        const effectiveRole = user.activeRole || activeRole || RoleName.User;
+
+        // Administrative roles do not receive welcome packages - skip completely
+        if (isRoleAdmin(effectiveRole) || !ELIGIBLE_WELCOME_ROLES.includes(effectiveRole)) {
+            hasTriggeredRef.current = true;
+            return;
+        }
+
         const sessionKey = `melktoday_welcome_seen_${user.userId}`;
         if (typeof window !== "undefined" && window.sessionStorage.getItem(sessionKey)) {
+            hasTriggeredRef.current = true;
             return;
         }
 
         hasTriggeredRef.current = true;
 
-        autoGrantMutation.mutate(
-            { targetRole: user.activeRole ?? undefined },
+        autoGrant(
+            { targetRole: effectiveRole },
             {
                 onSuccess: (data) => {
                     if (typeof window !== "undefined") {
                         window.sessionStorage.setItem(sessionKey, "true");
                     }
-                    if (data.claimed) {
+                    if (data?.claimed) {
                         setPackageData(data);
                         setIsOpen(true);
                     }
                 },
                 onError: () => {
-                    // On transient error (e.g. network timeout), allow retry on next mount/navigation
-                    hasTriggeredRef.current = false;
+                    // Mark as checked in sessionStorage on error or 404 to avoid repeated polling / calls
+                    if (typeof window !== "undefined") {
+                        window.sessionStorage.setItem(sessionKey, "true");
+                    }
+                    // Keep hasTriggeredRef.current = true so it never retries repeatedly in this mount
                 },
             }
         );
-    }, [isLoggedIn, user?.userId, user?.activeRole, autoGrantMutation]);
+    }, [isLoggedIn, user?.userId, user?.activeRole, activeRole, autoGrant]);
 
     // Handle escape key
     useEffect(() => {

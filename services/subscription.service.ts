@@ -64,11 +64,28 @@ export const subscriptionService = {
     autoGrantWelcomePackage: async (
         payload?: ClaimWelcomePackageRequest,
     ): Promise<ClaimWelcomePackageResponse> => {
-        const { data } = await api.post<ClaimWelcomePackageResponse>(
-            "/subscriptions/welcome-package/auto-grant",
-            payload || {},
-        );
-        return data;
+        try {
+            const { data } = await api.post<ClaimWelcomePackageResponse>(
+                "/subscriptions/welcome-package/auto-grant",
+                payload || {},
+            );
+            return data;
+        } catch (error: any) {
+            if (
+                error?.response?.status === 404 ||
+                error?.response?.data?.error?.code === "RESOURCE_NOT_FOUND"
+            ) {
+                return {
+                    claimed: false,
+                    packageTitle: "",
+                    targetRole: payload?.targetRole || "",
+                    message:
+                        error?.response?.data?.error?.message ||
+                        "بسته خوشآمدگویی فعالی یافت نشد.",
+                };
+            }
+            throw error;
+        }
     },
 
     adminListPlans: async (): Promise<SubscriptionPlan[]> => {

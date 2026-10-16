@@ -78,10 +78,13 @@ export function useAutoGrantWelcomePackage() {
     return useMutation({
         mutationFn: (payload?: ClaimWelcomePackageRequest) =>
             subscriptionService.autoGrantWelcomePackage(payload),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["subscription"] });
-            queryClient.invalidateQueries({ queryKey: ["wallet"] });
-            queryClient.invalidateQueries({ queryKey: ["notifications"] });
+        retry: false,
+        onSuccess: (data) => {
+            if (data?.claimed) {
+                queryClient.invalidateQueries({ queryKey: ["subscription"] });
+                queryClient.invalidateQueries({ queryKey: ["wallet"] });
+                queryClient.invalidateQueries({ queryKey: ["notifications"] });
+            }
         },
     });
 }
