@@ -164,7 +164,7 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
     const [search, setSearch] = useState(urlSearch);
     const [selectedCategory, setSelectedCategory] = useState(urlCategory);
     const [selectedSubcategory, setSelectedSubcategory] = useState(urlSubcategory);
-    const [sort, setSort] = useState<SearchSortOption>("relevance");
+    const [sort, setSort] = useState<SearchSortOption>("newest");
     const [startPage, setStartPage] = useState<number>(1);
 
     const debouncedSearch = useDebounce(search, 350);
