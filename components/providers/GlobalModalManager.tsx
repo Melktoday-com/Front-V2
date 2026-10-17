@@ -15,6 +15,8 @@ export function GlobalModalManager() {
         const activeModals = new Set<HTMLElement>();
         const historyPushedModals = new Set<HTMLElement>();
         let isHandlingPopState = false;
+        let programmaticPopsRemaining = 0;
+        let programmaticPopTimeout: NodeJS.Timeout | null = null;
         let previousActiveElement: HTMLElement | null = null;
         let originalBodyOverflow = "";
         let originalHtmlOverflow = "";
@@ -329,8 +331,15 @@ export function GlobalModalManager() {
                         window.history.state?.melktodayModal
                     ) {
                         try {
+                            programmaticPopsRemaining++;
+                            if (programmaticPopTimeout) clearTimeout(programmaticPopTimeout);
+                            programmaticPopTimeout = setTimeout(() => {
+                                programmaticPopsRemaining = 0;
+                            }, 500);
                             window.history.back();
-                        } catch {}
+                        } catch {
+                            programmaticPopsRemaining = Math.max(0, programmaticPopsRemaining - 1);
+                        }
                     }
                 }
             }
@@ -359,6 +368,16 @@ export function GlobalModalManager() {
 
         // Handle mobile phone / browser back button
         const handlePopState = () => {
+            // Ignore popstate events caused by programmatic cleanup via history.back()
+            if (programmaticPopsRemaining > 0) {
+                programmaticPopsRemaining--;
+                if (programmaticPopsRemaining === 0 && programmaticPopTimeout) {
+                    clearTimeout(programmaticPopTimeout);
+                    programmaticPopTimeout = null;
+                }
+                return;
+            }
+
             if (activeModals.size > 0) {
                 isHandlingPopState = true;
                 const remaining = Array.from(activeModals);
@@ -508,6 +527,7 @@ export function GlobalModalManager() {
             observer.disconnect();
             window.removeEventListener("popstate", handlePopState);
             window.removeEventListener("keydown", handleKeydown, true);
+            if (programmaticPopTimeout) clearTimeout(programmaticPopTimeout);
             activeModals.clear();
             historyPushedModals.clear();
             unlockBody();

@@ -285,7 +285,12 @@ export default function PriceModelsModal({
 
             {/* Submodal: Create / Edit Price Model */}
             {isFormModalOpen && (
-                <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-in fade-in duration-150" dir="rtl">
+                <div
+                    data-modal="true"
+                    data-history-handled="true"
+                    className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-in fade-in duration-150"
+                    dir="rtl"
+                >
                     <div className="bg-surface rounded-3xl w-full max-w-xl shadow-2xl overflow-hidden border border-border-subtle max-h-[90vh] flex flex-col">
                         <div className="p-5 border-b border-border-subtle flex items-center justify-between bg-surface-secondary">
                             <h3 className="font-bold text-foreground text-base">

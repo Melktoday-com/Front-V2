@@ -468,10 +468,11 @@ export default function SubcategoryConfigModal({
                                     <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
                                     در حال بارگذاری ویژگی‌ها...
                                 </div>
-                            ) : !attributes || attributes.filter((a: AttributeDefinition) => a.isActive !== false).length === 0 ? (
+                            ) : !attributes || !Array.isArray(attributes) || attributes.filter((a: AttributeDefinition) => a.isActive !== false).length === 0 ? (
                                 <div className="text-center py-16 bg-surface-secondary rounded-2xl border border-dashed border-border-subtle">
                                     <p className="text-foreground-muted text-sm mb-3">هنوز هیچ ویژگی داینامیکی برای این زیردسته تعریف نشده است.</p>
                                     <button
+                                        type="button"
                                         onClick={handleOpenCreateAttribute}
                                         className="inline-flex items-center gap-1.5 text-xs text-info font-bold hover:underline"
                                     >
@@ -481,7 +482,7 @@ export default function SubcategoryConfigModal({
                                 </div>
                             ) : (
                                 <div className="space-y-3">
-                                    {attributes.filter((a: AttributeDefinition) => a.isActive !== false).map((attr: AttributeDefinition) => (
+                                    {(Array.isArray(attributes) ? attributes : []).filter((a: AttributeDefinition) => a.isActive !== false).map((attr: AttributeDefinition) => (
                                         <div
                                             key={attr.id}
                                             className="bg-surface p-4 rounded-2xl border border-border-subtle hover:border-info/30 transition-all shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4"
@@ -567,13 +568,19 @@ export default function SubcategoryConfigModal({
 
             {/* Submodal: Create / Edit Attribute */}
             {isAttributeModalOpen && (
-                <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-in fade-in duration-150" dir="rtl">
+                <div
+                    data-modal="true"
+                    data-history-handled="true"
+                    className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-in fade-in duration-150"
+                    dir="rtl"
+                >
                     <div className="bg-surface rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden border border-border-subtle max-h-[90vh] flex flex-col">
                         <div className="p-5 border-b border-border-subtle flex items-center justify-between bg-surface-secondary">
                             <h3 className="font-bold text-foreground text-base">
                                 {attributeFormData.id ? "ویرایش ویژگی" : "افزودن ویژگی جدید"}
                             </h3>
                             <button
+                                type="button"
                                 onClick={() => setIsAttributeModalOpen(false)}
                                 className="p-1.5 text-foreground-muted hover:text-foreground-secondary rounded-lg"
                             >
@@ -751,6 +758,7 @@ export default function SubcategoryConfigModal({
 
                         <div className="p-4 bg-surface-secondary border-t border-border-subtle flex items-center gap-3">
                             <button
+                                type="button"
                                 onClick={() => saveAttributeMutation.mutate(attributeFormData)}
                                 disabled={!attributeFormData.key || !attributeFormData.label || saveAttributeMutation.isPending}
                                 className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl transition-all disabled:opacity-50 text-sm"
@@ -758,6 +766,7 @@ export default function SubcategoryConfigModal({
                                 {saveAttributeMutation.isPending ? "در حال ذخیره..." : "ذخیره ویژگی"}
                             </button>
                             <button
+                                type="button"
                                 onClick={() => setIsAttributeModalOpen(false)}
                                 className="px-5 py-2.5 font-bold text-foreground-muted hover:bg-slate-200 rounded-xl transition-all text-sm"
                             >
