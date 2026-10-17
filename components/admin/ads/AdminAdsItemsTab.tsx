@@ -55,6 +55,7 @@ export default function AdminAdsItemsTab() {
     const { getCategoryPathLabel } = useCategoryLookup();
     const { isSuperAdmin, hasPermission } = useAdminPermissions();
     const canReview = isSuperAdmin || hasPermission("ads.review");
+    const canArchive = isSuperAdmin || hasPermission("ads.review") || hasPermission("archive.manage") || hasPermission("ads.edit");
 
     // Filters
     const [selectedStatus, setSelectedStatus] = useState<string>(AdStatus.PENDING_APPROVAL);
@@ -68,6 +69,7 @@ export default function AdminAdsItemsTab() {
     const [detailModalAdId, setDetailModalAdId] = useState<string | null>(null);
     const [rejectTarget, setRejectTarget] = useState<{ id: string; title: string } | null>(null);
     const [approveConfirmTarget, setApproveConfirmTarget] = useState<{ id: string; title: string } | null>(null);
+    const [archiveConfirmTarget, setArchiveConfirmTarget] = useState<{ id: string; title: string } | null>(null);
 
     // Queries
     const queryParams = useMemo(() => {
@@ -145,6 +147,23 @@ export default function AdminAdsItemsTab() {
         },
     });
 
+    // Archive Mutation
+    const archiveMutation = useMutation({
+        mutationFn: (id: string) => adminService.archiveAd(id),
+        onSuccess: () => {
+            toast.success("آگهی با موفقیت بایگانی شد");
+            queryClient.invalidateQueries({ queryKey: ["ads"] });
+            setArchiveConfirmTarget(null);
+            if (detailModalAdId === archiveConfirmTarget?.id) {
+                setDetailModalAdId(null);
+            }
+            refetch();
+        },
+        onError: (err: Error) => {
+            toast.error(normalizeApiError(err, "خطا در بایگانی آگهی"));
+        },
+    });
+
     // Unarchive Mutation
     const unarchiveMutation = useMutation({
         mutationFn: (id: string) => adminService.unarchiveAd(id),
@@ -161,6 +180,11 @@ export default function AdminAdsItemsTab() {
     const handleCopy = (text: string, label: string) => {
         navigator.clipboard.writeText(text);
         toast.success(`${label} کپی شد`);
+    };
+
+    const handleExecuteArchive = async () => {
+        if (!archiveConfirmTarget) return;
+        await archiveMutation.mutateAsync(archiveConfirmTarget.id);
     };
 
     const handleExecuteReject = async (reason: string, note?: string) => {
@@ -650,8 +674,8 @@ export default function AdminAdsItemsTab() {
                                                         </button>
                                                     )}
 
-                                                     {/* Quick Reject — not for ARCHIVED or REJECTED */}
-                                                    {canReview && ad.status !== AdStatus.REJECTED && ad.status !== AdStatus.ARCHIVED && (
+                                                    {/* Quick Reject — only for PENDING_APPROVAL */}
+                                                    {canReview && ad.status === AdStatus.PENDING_APPROVAL && (
                                                         <button
                                                             type="button"
                                                             onClick={() => setRejectTarget({ id: ad.adId, title: ad.title })}
@@ -662,8 +686,20 @@ export default function AdminAdsItemsTab() {
                                                         </button>
                                                     )}
 
+                                                    {/* Quick Archive — for PUBLISHED ads */}
+                                                    {canArchive && ad.status === AdStatus.PUBLISHED && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setArchiveConfirmTarget({ id: ad.adId, title: ad.title })}
+                                                            title="بایگانی آگهی"
+                                                            className="p-2 rounded-xl text-amber-600 hover:bg-amber-500/10 transition-colors"
+                                                        >
+                                                            <Archive className="w-4 h-4" />
+                                                        </button>
+                                                    )}
+
                                                     {/* Unarchive — restore ARCHIVED → PUBLISHED */}
-                                                    {canReview && ad.status === AdStatus.ARCHIVED && (
+                                                    {canArchive && ad.status === AdStatus.ARCHIVED && (
                                                         <button
                                                             type="button"
                                                             onClick={() => unarchiveMutation.mutate(ad.adId)}
@@ -742,16 +778,24 @@ export default function AdminAdsItemsTab() {
                 adId={detailModalAdId}
                 isOpen={!!detailModalAdId}
                 onClose={() => setDetailModalAdId(null)}
-                onApprove={(id) => {
+                onApprove={canReview ? (id) => {
                     setApproveConfirmTarget({
                         id,
                         title: adsData?.items.find((i) => i.adId === id)?.title || "این آگهی",
                     });
-                }}
+                } : undefined}
                 isApproving={approveMutation.isPending}
-                onOpenReject={(id, title) => {
+                onOpenReject={canReview ? (id, title) => {
                     setRejectTarget({ id, title });
-                }}
+                } : undefined}
+                onArchive={canArchive ? (id, title) => {
+                    setArchiveConfirmTarget({ id, title });
+                } : undefined}
+                isArchiving={archiveMutation.isPending}
+                onUnarchive={canArchive ? (id) => {
+                    unarchiveMutation.mutate(id);
+                } : undefined}
+                isUnarchiving={unarchiveMutation.isPending}
             />
 
             {/* Rejection Modal */}
@@ -764,6 +808,50 @@ export default function AdminAdsItemsTab() {
                     onConfirm={handleExecuteReject}
                     isSubmitting={rejectMutation.isPending}
                 />
+            )}
+
+            {/* Archive Confirmation Modal */}
+            {archiveConfirmTarget && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
+                    <div className="bg-surface rounded-3xl w-full max-w-md p-6 shadow-2xl border border-border-subtle text-right space-y-4" dir="rtl">
+                        <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-600 flex items-center justify-center mx-auto">
+                            <Archive className="w-6 h-6" />
+                        </div>
+
+                        <div className="text-center space-y-1">
+                            <h3 className="text-base font-black text-foreground">
+                                بایگانی آگهی
+                            </h3>
+                            <p className="text-xs text-foreground-muted leading-relaxed">
+                                آیا از بایگانی آگهی «<span className="font-bold text-foreground-secondary">{archiveConfirmTarget.title}</span>» اطمینان دارید؟ این آگهی از فهرست عمومی خارج شده اما در پنل بایگانی قابل بازیابی خواهد بود.
+                            </p>
+                        </div>
+
+                        <div className="flex items-center gap-2 pt-2">
+                            <button
+                                type="button"
+                                onClick={handleExecuteArchive}
+                                disabled={archiveMutation.isPending}
+                                className="flex-1 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5"
+                            >
+                                {archiveMutation.isPending ? (
+                                    <RefreshCw className="w-4 h-4 animate-spin" />
+                                ) : (
+                                    <Archive className="w-4 h-4" />
+                                )}
+                                <span>بایگانی آگهی</span>
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setArchiveConfirmTarget(null)}
+                                disabled={archiveMutation.isPending}
+                                className="flex-1 py-2.5 bg-surface-secondary hover:bg-slate-200 text-foreground-secondary rounded-xl text-xs font-bold transition-colors"
+                            >
+                                انصراف
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
 
             {/* Approve Confirmation Modal */}

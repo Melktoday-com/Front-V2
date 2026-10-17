@@ -152,6 +152,16 @@ export const adminService = {
         return response.data;
     },
 
+    archiveListing: async (listingId: string) => {
+        const response = await api.post(`/admin/listings/${listingId}/archive`);
+        return response.data;
+    },
+
+    archiveAd: async (adId: string) => {
+        const response = await api.post(`/ads/${adId}/archive`);
+        return response.data;
+    },
+
     unarchiveAd: async (adId: string) => {
         const response = await api.post(`/ads/${adId}/unarchive`);
         return response.data;

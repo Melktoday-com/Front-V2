@@ -9,6 +9,8 @@ import { AdContactInfo } from "@/types/api/ads.types";
 import { AdStatus } from "@/types/api/enums";
 import {
     AlertCircle,
+    Archive,
+    ArchiveRestore,
     Building2,
     Calendar,
     Check,
@@ -39,6 +41,10 @@ interface AdminAdDetailModalProps {
     onApprove?: (adId: string) => void;
     isApproving?: boolean;
     onOpenReject?: (adId: string, title: string) => void;
+    onArchive?: (adId: string, title: string) => void;
+    isArchiving?: boolean;
+    onUnarchive?: (adId: string) => void;
+    isUnarchiving?: boolean;
 }
 
 const statusConfig: Record<string, { label: string; bg: string; text: string }> = {
@@ -66,6 +72,10 @@ export default function AdminAdDetailModal({
     onApprove,
     isApproving = false,
     onOpenReject,
+    onArchive,
+    isArchiving = false,
+    onUnarchive,
+    isUnarchiving = false,
 }: AdminAdDetailModalProps) {
     const [activeImageIndex, setActiveImageIndex] = useState(0);
     const [contactInfo, setContactInfo] = useState<AdContactInfo | null>(null);
@@ -443,7 +453,7 @@ export default function AdminAdDetailModal({
                             <span>مشاهده صفحه عمومی آگهی</span>
                         </Link>
 
-                        {onApprove && ad?.status !== AdStatus.PUBLISHED && (
+                        {onApprove && ad?.status === AdStatus.PENDING_APPROVAL && (
                             <button
                                 type="button"
                                 onClick={() => onApprove(adId)}
@@ -459,7 +469,7 @@ export default function AdminAdDetailModal({
                             </button>
                         )}
 
-                        {onOpenReject && ad?.status !== AdStatus.REJECTED && (
+                        {onOpenReject && ad?.status === AdStatus.PENDING_APPROVAL && (
                             <button
                                 type="button"
                                 onClick={() => onOpenReject(adId, ad?.title || "")}
@@ -467,6 +477,38 @@ export default function AdminAdDetailModal({
                             >
                                 <AlertCircle className="w-4 h-4" />
                                 <span>رد آگهی</span>
+                            </button>
+                        )}
+
+                        {onArchive && ad?.status === AdStatus.PUBLISHED && (
+                            <button
+                                type="button"
+                                onClick={() => onArchive(adId, ad?.title || "")}
+                                disabled={isArchiving}
+                                className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-700 dark:text-amber-400 rounded-xl text-xs font-bold transition-colors disabled:opacity-50"
+                            >
+                                {isArchiving ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                    <Archive className="w-4 h-4" />
+                                )}
+                                <span>بایگانی آگهی</span>
+                            </button>
+                        )}
+
+                        {onUnarchive && ad?.status === AdStatus.ARCHIVED && (
+                            <button
+                                type="button"
+                                onClick={() => onUnarchive(adId)}
+                                disabled={isUnarchiving}
+                                className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-violet-500/10 hover:bg-violet-500/20 border border-violet-500/30 text-violet-700 dark:text-violet-400 rounded-xl text-xs font-bold transition-colors disabled:opacity-50"
+                            >
+                                {isUnarchiving ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                    <ArchiveRestore className="w-4 h-4" />
+                                )}
+                                <span>خروج از بایگانی</span>
                             </button>
                         )}
                     </div>
