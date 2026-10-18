@@ -556,13 +556,28 @@ path.leaflet-interactive {
   transition: stroke 0.15s ease, fill 0.15s ease, stroke-width 0.15s ease;
 }
 
-/* Prevent auto-zooming on focus in iOS Safari and mobile browsers. */
+/* Prevent auto-zooming on focus in iOS Safari and mobile browsers, while keeping placeholders compact. */
 @media screen and (max-width: 768px) {
 
   input:not([type="checkbox"]):not([type="radio"]),
   textarea,
   select {
     font-size: 16px !important;
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    font-size: 13px !important;
+  }
+
+  input::-webkit-input-placeholder,
+  textarea::-webkit-input-placeholder {
+    font-size: 13px !important;
+  }
+
+  input::-moz-placeholder,
+  textarea::-moz-placeholder {
+    font-size: 13px !important;
   }
 }
 
