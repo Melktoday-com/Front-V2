@@ -1,47 +1,41 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
-import { useRouter } from "next/navigation";
-import { useAuth, useSwitchRole } from "@/hooks/useAuth";
-import { useMyAgency } from "@/hooks/useAgencies";
-import { useHostProfile } from "@/hooks/useShowcase";
-import { useMeProfile } from "@/hooks/useUser";
-import { useCreatePost } from "@/hooks/usePosts";
-import { RoleName, tryRoleNameFrom } from "@/types/access";
-import type { MediaReference } from "@/types/api/media.types";
 import { InstagramPostEditor } from "@/components/posts/InstagramPostEditor";
 import { MediumPostEditor } from "@/components/posts/MediumPostEditor";
-import { Button } from "@/components/ui/Button";
-import { getMediaUrl, toPersianDigits, cn } from "@/lib/utils";
-import { MarkdownRenderer } from "@/components/ui/MarkdownRenderer";
+import { useMyAgency } from "@/hooks/useAgencies";
+import { useAuth, useSwitchRole } from "@/hooks/useAuth";
+import { useCreatePost } from "@/hooks/usePosts";
+import { useHostProfile } from "@/hooks/useShowcase";
+import { useMeProfile } from "@/hooks/useUser";
+import { cn, getMediaUrl, toPersianDigits } from "@/lib/utils";
+import { RoleName, tryRoleNameFrom } from "@/types/access";
+import type { MediaReference } from "@/types/api/media.types";
+import { PublisherType } from "@/types/api/post.types";
+import { HostProfile, ShowcaseHeader } from "@/types/api/showcase.types";
+import axios from "axios";
 import {
-  BookOpen,
-  Send,
-  Save,
-  ArrowRight,
-  ShieldCheck,
-  Building2,
-  Hotel,
   AlertTriangle,
-  Lock,
-  ChevronLeft,
-  Trash2,
-  CheckCircle2,
-  Loader2,
-  Layers,
-  Feather,
-  Eye,
-  FileText,
-  Image as ImageIcon,
+  ArrowRight,
+  Building2,
   Check,
-  HelpCircle,
+  CheckCircle2,
+  ChevronLeft,
+  Eye,
+  Feather,
+  Hotel,
+  Layers,
+  Loader2,
+  Lock,
   RotateCcw,
+  Save,
+  Send,
+  ShieldCheck,
+  Trash2
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { PublisherType } from "@/types/api/post.types";
-import { ShowcaseResponse, HostAbout, HostProfile, ShowcaseHeader } from "@/types/api/showcase.types";
-import axios from "axios";
 
 type PostFormat = "instagram" | "medium";
 
@@ -358,8 +352,8 @@ export default function CreatePostScene() {
         axios.isAxiosError(err) && (err.response?.data as { message?: string } | undefined)?.message
           ? (err.response?.data as { message: string }).message
           : err instanceof Error
-          ? err.message
-          : "خطایی در انتشار پست رخ داد.";
+            ? err.message
+            : "خطایی در انتشار پست رخ داد.";
       toast.error(errorMsg);
     }
   };
@@ -601,8 +595,8 @@ export default function CreatePostScene() {
               currentStep === 1
                 ? "bg-slate-900 text-white border-slate-900 shadow-xs"
                 : currentStep > 1
-                ? "bg-success-subtle text-success border-success/30"
-                : "bg-surface-secondary text-foreground-muted border-border-subtle hover:bg-surface-secondary"
+                  ? "bg-success-subtle text-success border-success/30"
+                  : "bg-surface-secondary text-foreground-muted border-border-subtle hover:bg-surface-secondary"
             )}
           >
             <div
@@ -611,8 +605,8 @@ export default function CreatePostScene() {
                 currentStep === 1
                   ? "bg-primary text-foreground"
                   : currentStep > 1
-                  ? "bg-emerald-600 text-white"
-                  : "bg-slate-200 text-foreground-secondary"
+                    ? "bg-emerald-600 text-white"
+                    : "bg-slate-200 text-foreground-secondary"
               )}
             >
               {currentStep > 1 ? <Check className="w-4 h-4" /> : "۱"}
@@ -634,8 +628,8 @@ export default function CreatePostScene() {
               currentStep === 2
                 ? "bg-slate-900 text-white border-slate-900 shadow-xs"
                 : currentStep > 2
-                ? "bg-success-subtle text-success border-success/30"
-                : "bg-surface-secondary text-foreground-muted border-border-subtle hover:bg-surface-secondary"
+                  ? "bg-success-subtle text-success border-success/30"
+                  : "bg-surface-secondary text-foreground-muted border-border-subtle hover:bg-surface-secondary"
             )}
           >
             <div
@@ -644,8 +638,8 @@ export default function CreatePostScene() {
                 currentStep === 2
                   ? "bg-primary text-foreground"
                   : currentStep > 2
-                  ? "bg-emerald-600 text-white"
-                  : "bg-slate-200 text-foreground-secondary"
+                    ? "bg-emerald-600 text-white"
+                    : "bg-slate-200 text-foreground-secondary"
               )}
             >
               {currentStep > 2 ? <Check className="w-4 h-4" /> : "۲"}
@@ -1015,8 +1009,8 @@ export default function CreatePostScene() {
                       {postFormat === "instagram"
                         ? `${toPersianDigits(igMedia.length)} تصویر اسلایدی`
                         : medFeaturedImage
-                        ? "۱ تصویر شاخص + تصاویر داخل متن"
-                        : "بدون تصویر شاخص"}
+                          ? "۱ تصویر شاخص + تصاویر داخل متن"
+                          : "بدون تصویر شاخص"}
                     </span>
                   </div>
                 </div>
@@ -1027,7 +1021,7 @@ export default function CreatePostScene() {
                     type="button"
                     disabled={createPostMutation.isPending}
                     onClick={() => handlePublish(true)}
-                    className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-primary text-foreground font-black text-sm hover:bg-primary/90 transition-all shadow-md disabled:opacity-50"
+                    className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-primary text-[#ffff] font-black text-sm hover:bg-primary/90 transition-all shadow-md disabled:opacity-50"
                   >
                     {createPostMutation.isPending ? (
                       <>

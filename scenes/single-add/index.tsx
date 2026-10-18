@@ -661,7 +661,7 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
                                     <div className="flex items-center justify-between p-3 rounded-xl bg-surface border border-border-subtle/60">
                                         <span className="text-text-light">مبلغ ودیعه / رهن:</span>
                                         <span className="font-black text-brand">
-                                            {Number(pricing.depositPrice) > 0 ? `${formatPrice(Number(pricing.depositPrice))} تومان` : "توافقی"}
+                                            {Number(pricing.depositPrice) > 0 ? formatPrice(Number(pricing.depositPrice)) : "توافقی"}
                                         </span>
                                     </div>
                                 )}
@@ -669,7 +669,7 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
                                     <div className="flex items-center justify-between p-3 rounded-xl bg-surface border border-border-subtle/60">
                                         <span className="text-text-light">اجاره ماهیانه:</span>
                                         <span className="font-black text-brand">
-                                            {Number(pricing.monthlyRent) > 0 ? `${formatPrice(Number(pricing.monthlyRent))} تومان` : "توافقی"}
+                                            {Number(pricing.monthlyRent) > 0 ? formatPrice(Number(pricing.monthlyRent)) : "توافقی"}
                                         </span>
                                     </div>
                                 )}
@@ -685,7 +685,7 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
                                     <div className="flex items-center justify-between p-3 rounded-xl bg-surface border border-border-subtle/60">
                                         <span className="text-text-light">قیمت کل:</span>
                                         <span className="font-black text-brand">
-                                            {Number(pricing.totalPrice) > 0 ? `${formatPrice(Number(pricing.totalPrice))} تومان` : "توافقی"}
+                                            {Number(pricing.totalPrice) > 0 ? formatPrice(Number(pricing.totalPrice)) : "توافقی"}
                                         </span>
                                     </div>
                                 )}
@@ -693,7 +693,7 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
                                     <div className="flex items-center justify-between p-3 rounded-xl bg-surface border border-border-subtle/60">
                                         <span className="text-text-light">پیش‌پرداخت اولیه:</span>
                                         <span className="font-black text-brand">
-                                            {formatPrice(Number(pricing.prepaymentAmount))} تومان
+                                            {formatPrice(Number(pricing.prepaymentAmount))}
                                         </span>
                                     </div>
                                 )}
@@ -701,7 +701,7 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
                                     <div className="flex items-center justify-between p-3 rounded-xl bg-surface border border-border-subtle/60">
                                         <span className="text-text-light">قسط ماهانه:</span>
                                         <span className="font-black text-brand">
-                                            {formatPrice(Number(pricing.monthlyLeaseInstallment))} تومان
+                                            {formatPrice(Number(pricing.monthlyLeaseInstallment))}
                                         </span>
                                     </div>
                                 )}
@@ -709,7 +709,7 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
                                     <div className="flex items-center justify-between p-3 rounded-xl bg-surface border border-border-subtle/60">
                                         <span className="text-text-light">حق سرقفلی:</span>
                                         <span className="font-black text-brand">
-                                            {formatPrice(Number(pricing.goodwillPrice))} تومان
+                                            {formatPrice(Number(pricing.goodwillPrice))}
                                         </span>
                                     </div>
                                 )}
@@ -717,7 +717,7 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
                                     <div className="flex items-center justify-between p-3 rounded-xl bg-surface border border-border-subtle/60">
                                         <span className="text-text-light">قدرالسهم:</span>
                                         <span className="font-black text-brand">
-                                            {formatPrice(Number(pricing.fractionPrice))} تومان
+                                            {formatPrice(Number(pricing.fractionPrice))}
                                         </span>
                                     </div>
                                 )}
@@ -733,7 +733,7 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
                                     <div className="flex items-center justify-between p-3 rounded-xl bg-surface border border-border-subtle/60">
                                         <span className="text-text-light">مبلغ بلاعوض پیشنهادی:</span>
                                         <span className="font-black text-brand">
-                                            {formatPrice(Number(rawAttrs.developer_gratuitous_payment))} تومان
+                                            {formatPrice(Number(rawAttrs.developer_gratuitous_payment))}
                                         </span>
                                     </div>
                                 )}

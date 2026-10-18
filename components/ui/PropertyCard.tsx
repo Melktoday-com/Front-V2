@@ -21,6 +21,7 @@ interface PropertyCardProps {
     currency?: string;
     variant?: "vertical" | "horizontal" | "responsive";
     className?: string;
+    contentClassName?: string;
     href?: string;
     isSaved?: boolean;
     onToggleSave?: (adId: string) => Promise<{ isSaved: boolean } | void> | void;
@@ -54,6 +55,7 @@ export function PropertyCard({
     currency = "تومان",
     variant = "responsive",
     className,
+    contentClassName,
     href,
     area,
     rooms,
@@ -84,8 +86,14 @@ export function PropertyCard({
             return `${new Intl.NumberFormat("fa-IR").format(num)} ${currency}`;
         }
 
+        const persianPrice = toPersianDigits(priceStr);
+        // Avoid duplicate currency suffix if already present
+        if (currency && persianPrice.includes(currency)) {
+            return persianPrice;
+        }
+
         // Return as is if already a formatted Persian string
-        return `${toPersianDigits(priceStr)} ${currency}`;
+        return `${persianPrice} ${currency}`;
     };
 
     const isResponsive = variant === "responsive";
@@ -104,15 +112,16 @@ export function PropertyCard({
                 className
             )}
         >
-            {/* Details Section */}
+            {/* Details Section / Ads Information */}
             <div
                 className={cn(
                     "min-w-0 flex flex-col flex-1 text-right justify-between",
                     isResponsive
-                        ? "py-2.5 pl-3 pr-1 sm:p-3"
+                        ? "p-3.5 sm:p-4"
                         : isHorizontal
-                            ? "py-2.5 pl-3 pr-1"
-                            : "p-3"
+                            ? "p-3.5"
+                            : "p-4",
+                    contentClassName
                 )}
             >
                 <div className="min-w-0">
@@ -175,7 +184,9 @@ export function PropertyCard({
                         <span className="text-brand font-bold text-xs sm:text-sm truncate">
                             {formatDisplayPrice()}
                         </span>
-                        {unit && <span className="text-[10px] text-text-light shrink-0">{unit}</span>}
+                        {unit && unit !== currency && unit !== "تومان" && (
+                            <span className="text-[10px] text-text-light shrink-0">{unit}</span>
+                        )}
                     </div>
 
                     {location && (

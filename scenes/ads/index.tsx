@@ -464,20 +464,19 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
         if (dep !== undefined && rent !== undefined) {
             return {
                 price: `رهن ${formatPrice(Number(dep), "")} - اجاره ${formatPrice(Number(rent), "")}`,
-                unit: "تومان",
             };
         }
         if (pricing.totalPrice !== undefined || pricing.price !== undefined) {
             const total = Number(pricing.totalPrice ?? pricing.price);
-            return { price: total > 0 ? total : "توافقی", unit: "تومان" };
+            return { price: total > 0 ? total : "توافقی" };
         }
         if (dep !== undefined) {
             const depNum = Number(dep);
-            return { price: depNum > 0 ? `ودیعه ${formatPrice(depNum, "")}` : "توافقی", unit: "تومان" };
+            return { price: depNum > 0 ? `ودیعه ${formatPrice(depNum, "")}` : "توافقی" };
         }
         if (rent !== undefined) {
             const rentNum = Number(rent);
-            return { price: rentNum > 0 ? `اجاره ${formatPrice(rentNum, "")}` : "توافقی", unit: "تومان" };
+            return { price: rentNum > 0 ? `اجاره ${formatPrice(rentNum, "")}` : "توافقی" };
         }
         return { price: "توافقی" };
     };
