@@ -809,6 +809,7 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                                                     area={ad.area}
                                                     rooms={ad.rooms}
                                                     isUrgent={ad.isFeatured}
+                                                    date={ad.createdAt}
                                                 />
                                             );
                                         })}

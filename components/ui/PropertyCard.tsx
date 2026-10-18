@@ -2,11 +2,38 @@
 
 import { DEFAULT_CATEGORY_TRANSLATIONS } from "@/hooks/useCategoryLookup";
 import { cn, toPersianDigits } from "@/lib/utils";
-import { MapPin, Play, ShieldCheck, Sparkles } from "lucide-react";
+import { formatDistanceToNow } from "date-fns-jalali";
+import { Clock, MapPin, Play, ShieldCheck, Sparkles } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+
+function formatDisplayDate(dateVal?: string | Date | number | null): string {
+    if (!dateVal) return "";
+    try {
+        const d = new Date(dateVal);
+        if (isNaN(d.getTime())) return "";
+        return toPersianDigits(formatDistanceToNow(d, { addSuffix: true }));
+    } catch {
+        return "";
+    }
+}
+
+function getFullPersianDate(dateVal?: string | Date | number | null): string {
+    if (!dateVal) return "";
+    try {
+        const d = new Date(dateVal);
+        if (isNaN(d.getTime())) return "";
+        return d.toLocaleDateString("fa-IR", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+        });
+    } catch {
+        return "";
+    }
+}
 
 interface PropertyCardProps {
     id?: string;
@@ -30,6 +57,8 @@ interface PropertyCardProps {
     onToggleFavorite?: (adId: string) => Promise<{ isFavorited: boolean } | { isSaved: boolean } | void> | void;
     area?: number | string;
     rooms?: number | string;
+    date?: string | Date | number | null;
+    createdAt?: string | Date | number | null;
     badgeName?: string | null;
     badgeIcon?: string | null;
     isUrgent?: boolean;
@@ -59,6 +88,8 @@ export function PropertyCard({
     href,
     area,
     rooms,
+    date,
+    createdAt,
     badgeName,
     badgeIcon,
     isUrgent = false,
@@ -66,6 +97,7 @@ export function PropertyCard({
 }: PropertyCardProps) {
     const router = useRouter();
     const effectiveAdId = adId || id;
+    const effectiveDate = date ?? createdAt;
     const [imgSrc, setImgSrc] = useState(image || "/property-placeholder.svg");
 
     // Format price: handle string with commas or raw numbers
@@ -137,12 +169,24 @@ export function PropertyCard({
                         </h3>
                     </div>
 
-                    {/* Specs Row (area, rooms) */}
-                    {(area || rooms) && (
-                        <div className="flex items-center gap-2 text-[10px] sm:text-[11px] text-text-light mt-1 font-medium">
+                    {/* Specs & Date Row */}
+                    {(area || rooms || effectiveDate) && (
+                        <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] text-text-light mt-1 font-medium flex-wrap">
                             {area ? <span>{toPersianDigits(area)} متر</span> : null}
                             {area && rooms ? <span>•</span> : null}
                             {rooms ? <span>{toPersianDigits(rooms)} خوابه</span> : null}
+                            {(area || rooms) && effectiveDate && formatDisplayDate(effectiveDate) ? <span>•</span> : null}
+                            {effectiveDate && formatDisplayDate(effectiveDate) ? (
+                                <time
+                                    dateTime={typeof effectiveDate === "string" ? effectiveDate : undefined}
+                                    title={getFullPersianDate(effectiveDate)}
+                                    className="inline-flex items-center gap-1 shrink-0"
+                                    suppressHydrationWarning
+                                >
+                                    <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-text-light/70" />
+                                    <span>{formatDisplayDate(effectiveDate)}</span>
+                                </time>
+                            ) : null}
                         </div>
                     )}
 

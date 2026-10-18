@@ -184,6 +184,7 @@ export const HomeScene = () => {
                                         getCategoryName(property.categoryPath?.categoryKey)
                                     }
                                     className="w-[210px] lg:w-[250px]"
+                                    date={property.createdAt}
                                     isSaved={property.isSaved ?? isAdSaved(effectiveId)}
                                     onToggleSave={(id) => toggleSaveAdMutation.mutateAsync(id)}
                                 />
@@ -310,6 +311,7 @@ export const HomeScene = () => {
                                         getCategoryName(property.categoryPath?.categoryKey)
                                     }
                                     className="w-[210px] lg:w-[250px]"
+                                    date={property.createdAt}
                                     isSaved={property.isSaved ?? isAdSaved(effectiveId)}
                                     onToggleSave={(id) => toggleSaveAdMutation.mutateAsync(id)}
                                 />

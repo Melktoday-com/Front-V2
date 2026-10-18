@@ -999,6 +999,7 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
                                         item.categoryPath?.subcategoryKey
                                     }
                                     publisher={item.publisher}
+                                    date={item.createdAt}
                                 />
                             ))}
                     </div>
