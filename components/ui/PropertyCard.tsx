@@ -3,7 +3,7 @@
 import { DEFAULT_CATEGORY_TRANSLATIONS } from "@/hooks/useCategoryLookup";
 import { cn, toPersianDigits } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns-jalali";
-import { Clock, MapPin, Play, ShieldCheck, Sparkles } from "lucide-react";
+import { ChevronLeft, Clock, MapPin, Play, ShieldCheck, Sparkles } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -46,7 +46,7 @@ interface PropertyCardProps {
     category?: string;
     unit?: string;
     currency?: string;
-    variant?: "vertical" | "horizontal" | "responsive";
+    variant?: "vertical" | "horizontal" | "responsive" | "map";
     className?: string;
     contentClassName?: string;
     href?: string;
@@ -100,6 +100,11 @@ export function PropertyCard({
     const effectiveDate = date ?? createdAt;
     const [imgSrc, setImgSrc] = useState(image || "/property-placeholder.svg");
 
+    const isResponsive = variant === "responsive";
+    const isHorizontal = variant === "horizontal";
+    const isVertical = variant === "vertical";
+    const isMap = variant === "map";
+
     // Format price: handle string with commas or raw numbers
     const formatDisplayPrice = () => {
         if (!price && price !== 0) return "توافقی";
@@ -115,6 +120,19 @@ export function PropertyCard({
         const cleaned = priceStr.replace(/,/g, "");
         const num = Number(cleaned);
         if (!isNaN(num) && num > 0) {
+            // For map variant, show concise numbers for billions/millions so it stays minimal
+            if (isMap) {
+                if (num >= 1000000000) {
+                    const billions = num / 1000000000;
+                    const formatted = billions % 1 === 0 ? billions.toFixed(0) : billions.toFixed(1);
+                    return `${toPersianDigits(formatted)} میلیارد ${currency}`;
+                }
+                if (num >= 1000000) {
+                    const millions = num / 1000000;
+                    const formatted = millions % 1 === 0 ? millions.toFixed(0) : millions.toFixed(1);
+                    return `${toPersianDigits(formatted)} میلیون ${currency}`;
+                }
+            }
             return `${new Intl.NumberFormat("fa-IR").format(num)} ${currency}`;
         }
 
@@ -128,9 +146,128 @@ export function PropertyCard({
         return `${persianPrice} ${currency}`;
     };
 
-    const isResponsive = variant === "responsive";
-    const isHorizontal = variant === "horizontal";
-    const isVertical = variant === "vertical";
+    const finalHref = href || (effectiveAdId ? `/ads/${effectiveAdId}` : undefined);
+
+    // Dedicated Minimal Map Card Design
+    if (isMap) {
+        const mapCardContent = (
+            <div
+                className={cn(
+                    "group relative flex flex-row items-center gap-2.5 p-2 bg-surface hover:bg-surface-secondary/40 rounded-2xl border border-border-subtle/80 hover:border-border transition-all duration-200 cursor-pointer select-none text-right w-[275px] sm:w-[290px]",
+                    className
+                )}
+                dir="rtl"
+            >
+                {/* Thumbnail Image */}
+                <div className="relative w-[76px] h-[76px] shrink-0 rounded-xl overflow-hidden bg-surface-secondary border border-border-subtle/60">
+                    <Image
+                        src={imgSrc}
+                        alt={title || "ملک"}
+                        fill
+                        sizes="76px"
+                        className="object-cover group-hover:scale-105 transition-transform duration-300"
+                        onError={() => setImgSrc("/property-placeholder.svg")}
+                    />
+
+                    {/* Badges on Thumbnail */}
+                    <div className="absolute top-1 right-1 flex flex-col items-end gap-0.5 z-10 pointer-events-none">
+                        {isUrgent && (
+                            <div className="bg-rose-600 text-white text-[8px] font-black px-1.5 py-0.5 rounded shadow-xs leading-none">
+                                فوری
+                            </div>
+                        )}
+                        {badgeName && !isUrgent && (
+                            <div className="bg-surface/90 backdrop-blur-xs text-warning text-[8px] font-bold px-1 py-0.5 rounded shadow-xs leading-none">
+                                {badgeName}
+                            </div>
+                        )}
+                    </div>
+
+                    {isVideo && (
+                        <div className="absolute bottom-1 right-1 bg-black/60 backdrop-blur-xs text-white p-1 rounded-md flex items-center justify-center">
+                            <Play className="w-2.5 h-2.5 fill-white" />
+                        </div>
+                    )}
+                </div>
+
+                {/* Content Section */}
+                <div className={cn("flex-1 min-w-0 flex flex-col justify-between h-[76px] py-0.5", contentClassName)}>
+                    <div className="min-w-0">
+                        {/* Category & specs row */}
+                        <div className="flex items-center gap-1.5 text-[10px] text-accent font-bold truncate">
+                            {category && (
+                                <span className="truncate">
+                                    {DEFAULT_CATEGORY_TRANSLATIONS[category] || category}
+                                </span>
+                            )}
+                            {(area || rooms) && category && <span className="text-border-subtle">•</span>}
+                            {area && (
+                                <span className="text-foreground-muted font-medium shrink-0">
+                                    {toPersianDigits(area)} متر
+                                </span>
+                            )}
+                            {rooms && (
+                                <span className="text-foreground-muted font-medium shrink-0">
+                                    {toPersianDigits(rooms)} خ
+                                </span>
+                            )}
+                        </div>
+
+                        {/* Title */}
+                        <h4
+                            className="font-bold text-xs text-foreground group-hover:text-primary transition-colors truncate mt-0.5 leading-snug"
+                            title={title}
+                        >
+                            {title}
+                        </h4>
+
+                        {/* Location */}
+                        {location && (
+                            <div className="flex items-center gap-1 text-[10px] text-foreground-muted mt-0.5 truncate">
+                                <MapPin className="w-2.5 h-2.5 shrink-0 text-foreground-muted/70" />
+                                <span className="truncate">{location}</span>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Bottom Row: Price & Action */}
+                    <div className="mt-1 pt-1 border-t border-border-subtle/50 flex items-center justify-between gap-1">
+                        <div className="flex items-baseline gap-0.5 min-w-0">
+                            <span className="text-xs sm:text-[13px] font-black text-brand truncate">
+                                {formatDisplayPrice()}
+                            </span>
+                            {unit && unit !== currency && unit !== "تومان" && (
+                                <span className="text-[9px] text-foreground-muted shrink-0">{unit}</span>
+                            )}
+                        </div>
+
+                        <span className="inline-flex items-center text-[10px] font-bold text-accent group-hover:text-primary transition-colors shrink-0 gap-0.5">
+                            مشاهده
+                            <ChevronLeft className="w-3 h-3 transition-transform group-hover:-translate-x-0.5" />
+                        </span>
+                    </div>
+                </div>
+            </div>
+        );
+
+        if (finalHref) {
+            return (
+                <Link
+                    href={finalHref}
+                    className="block cursor-pointer no-underline text-inherit"
+                    onClick={(e) => {
+                        if ((e.target as HTMLElement).closest("button")) {
+                            e.preventDefault();
+                        }
+                    }}
+                >
+                    {mapCardContent}
+                </Link>
+            );
+        }
+
+        return mapCardContent;
+    }
 
     const cardContent = (
         <div
@@ -292,8 +429,6 @@ export function PropertyCard({
         </div>
     );
 
-    const finalHref = href || (effectiveAdId ? `/ads/${effectiveAdId}` : undefined);
-
     if (finalHref) {
         return (
             <Link
@@ -312,3 +447,8 @@ export function PropertyCard({
 
     return <div className="h-full">{cardContent}</div>;
 }
+
+export function MapPropertyCard(props: PropertyCardProps) {
+    return <PropertyCard {...props} variant="map" />;
+}
+

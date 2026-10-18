@@ -430,23 +430,26 @@ export default function Map({
                                 position={[marker.latitude, marker.longitude]}
                                 icon={createPriceIcon(priceLabel)}
                             >
-                                <Popup className="property-popup">
-                                    <div className="w-64 p-1">
-                                        <PropertyCard
-                                            adId={marker.id}
-                                            variant="vertical"
-                                            title={marker.title}
-                                            price={price ? price.toLocaleString('fa-IR') : "توافقی"}
-                                            location={
-                                                marker.neighbourhoodName
-                                                    ? `${marker.cityName || ''}، ${marker.neighbourhoodName}`
-                                                    : (marker.cityName || '')
-                                            }
-                                            image={getMediaPosterUrl(marker.mediaIds?.[0])}
-                                            isVideo={marker.mediaIds?.[0]?.type === "VIDEO"}
-                                            category={marker.subcategory || marker.category || ''}
-                                        />
-                                    </div>
+                                <Popup
+                                    className="property-popup"
+                                    offset={[0, -24]}
+                                    maxWidth={320}
+                                    minWidth={275}
+                                >
+                                    <PropertyCard
+                                        adId={marker.id}
+                                        variant="map"
+                                        title={marker.title}
+                                        price={marker.price ?? "توافقی"}
+                                        location={
+                                            marker.neighbourhoodName
+                                                ? (marker.cityName ? `${marker.cityName}، ${marker.neighbourhoodName}` : marker.neighbourhoodName)
+                                                : (marker.cityName || '')
+                                        }
+                                        image={getMediaPosterUrl(marker.mediaIds?.[0])}
+                                        isVideo={marker.mediaIds?.[0]?.type === "VIDEO"}
+                                        category={marker.subcategory || marker.category || ''}
+                                    />
                                 </Popup>
                             </Marker>
                         );
@@ -467,20 +470,27 @@ export default function Map({
                                 position={[ad.location.latitude, ad.location.longitude]}
                                 icon={createPriceIcon(priceLabel)}
                             >
-                                <Popup className="property-popup">
-                                    <div className="w-64 p-1">
-                                        <PropertyCard
-                                            adId={ad.adId}
-                                            variant="vertical"
-                                            title={ad.title}
-                                            price={priceInfo.price || "0"}
-                                            unit={priceInfo.unit}
-                                            location={ad.cityId}
-                                            image={getMediaPosterUrl(ad.mediaIds?.[0])}
-                                            isVideo={ad.mediaIds?.[0]?.type === "VIDEO"}
-                                            category={ad.subcategoryTitle || ad.categoryPath?.subcategoryTitle || ad.categoryPath?.subcategoryKey}
-                                        />
-                                    </div>
+                                <Popup
+                                    className="property-popup"
+                                    offset={[0, -24]}
+                                    maxWidth={320}
+                                    minWidth={275}
+                                >
+                                    <PropertyCard
+                                        adId={ad.adId}
+                                        variant="map"
+                                        title={ad.title}
+                                        price={numericPrice ?? priceInfo.price ?? "توافقی"}
+                                        unit={priceInfo.unit}
+                                        location={
+                                            ad.cityName
+                                                ? (ad.location?.area?.label ? `${ad.cityName}، ${ad.location.area.label}` : ad.cityName)
+                                                : (ad.city?.label || ad.cityId || '')
+                                        }
+                                        image={getMediaPosterUrl(ad.mediaIds?.[0])}
+                                        isVideo={ad.mediaIds?.[0]?.type === "VIDEO"}
+                                        category={ad.subcategoryTitle || ad.categoryPath?.subcategoryTitle || ad.categoryPath?.subcategoryKey}
+                                    />
                                 </Popup>
                             </Marker>
                         );

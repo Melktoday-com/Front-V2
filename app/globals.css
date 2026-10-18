@@ -556,6 +556,87 @@ path.leaflet-interactive {
   transition: stroke 0.15s ease, fill 0.15s ease, stroke-width 0.15s ease;
 }
 
+/* =============================================================================
+   LEAFLET POPUP - MelkToday Design System
+   Sleek minimal popup for map property markers
+   ============================================================================= */
+.leaflet-popup.property-popup {
+  margin-bottom: 4px;
+}
+
+.leaflet-popup.property-popup .leaflet-popup-content-wrapper {
+  padding: 0 !important;
+  background: var(--surface) !important;
+  border-radius: var(--radius-2xl, 18px) !important;
+  box-shadow: 0 12px 30px -4px rgba(32, 45, 62, 0.16), 0 4px 10px -2px rgba(32, 45, 62, 0.08) !important;
+  border: 1px solid var(--border-subtle) !important;
+  overflow: hidden !important;
+}
+
+.leaflet-popup.property-popup .leaflet-popup-content {
+  margin: 0 !important;
+  line-height: normal !important;
+  width: auto !important;
+  direction: rtl !important;
+  font-family: inherit !important;
+}
+
+.leaflet-popup.property-popup .leaflet-popup-content p {
+  margin: 0 !important;
+}
+
+.leaflet-popup.property-popup .leaflet-popup-tip-container {
+  width: 24px !important;
+  height: 12px !important;
+}
+
+.leaflet-popup.property-popup .leaflet-popup-tip {
+  background: var(--surface) !important;
+  border: 1px solid var(--border-subtle) !important;
+  box-shadow: 0 4px 8px rgba(32, 45, 62, 0.08) !important;
+  width: 12px !important;
+  height: 12px !important;
+  padding: 0 !important;
+  margin: -6px auto 0 !important;
+}
+
+/* Custom minimal close button (positioned on the left for Persian RTL) */
+.leaflet-container .property-popup a.leaflet-popup-close-button {
+  top: 6px !important;
+  left: 6px !important;
+  right: auto !important;
+  width: 20px !important;
+  height: 20px !important;
+  border-radius: 9999px !important;
+  background: var(--surface) !important;
+  border: 1px solid var(--border-subtle) !important;
+  color: var(--brand-navy-muted) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+  font-size: 13px !important;
+  font-family: inherit !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+  padding: 0 !important;
+  transition: all 0.15s ease !important;
+  z-index: 20 !important;
+  text-decoration: none !important;
+}
+
+.leaflet-container .property-popup a.leaflet-popup-close-button:hover {
+  background: var(--surface-secondary) !important;
+  color: var(--brand-navy) !important;
+  border-color: var(--border) !important;
+  transform: scale(1.08) !important;
+}
+
+.property-popup a {
+  color: inherit !important;
+  text-decoration: none !important;
+}
+
 /* Prevent auto-zooming on focus in iOS Safari and mobile browsers, while keeping placeholders compact. */
 @media screen and (max-width: 768px) {
 
