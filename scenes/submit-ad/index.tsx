@@ -813,32 +813,25 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
     return (
         <div className="min-h-screen bg-surface-secondary/50 py-3 sm:py-8 px-2.5 sm:px-6 lg:px-8 pb-24 sm:pb-32 lg:pb-12">
             <div className="max-w-3xl mx-auto">
-                <header className="mb-3 sm:mb-6 flex items-start justify-between gap-4">
-                    <div>
-                        <h1 className="text-lg sm:text-2xl font-black text-brand">
-                            {adminMode
-                                ? "ثبت آگهی ملک (پنل مدیریت)"
-                                : editAdId
-                                    ? "ویرایش آگهی ملک"
-                                    : "ثبت آگهی ملک"}
-                        </h1>
-                        <p className="text-xs text-text-light mt-1">
-                            {adminMode
-                                ? "ثبت مستقیم آگهی به عنوان آگهی سازمانی یا از طرف کاربر با امکان ثبت‌نام هوشمند مالک"
-                                : "اطلاعات ملک خود را تکمیل نمایید تا در سریع‌ترین زمان متقاضیان واقعی با شما تماس بگیرند."}
-                        </p>
-                    </div>
-
+                <header className="relative mb-3 sm:mb-6 flex items-center justify-center min-h-[40px]">
                     <button
                         type="button"
                         onClick={() => handlePageBack()}
-                        className="flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl bg-surface hover:bg-surface-secondary active:scale-95 border border-border-subtle text-text-light hover:text-brand transition-all shrink-0 cursor-pointer shadow-2xs text-xs font-bold"
+                        className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl bg-surface hover:bg-surface-secondary active:scale-95 border border-border-subtle text-text-light hover:text-brand transition-all shrink-0 cursor-pointer shadow-2xs text-xs font-bold"
                         aria-label="بازگشت"
                         title="بازگشت"
                     >
                         <ChevronRight className="w-4 h-4" />
                         <span>بازگشت</span>
                     </button>
+
+                    <h1 className="text-lg sm:text-2xl font-black text-brand text-center px-16 sm:px-24">
+                        {adminMode
+                            ? "ثبت آگهی ملک (پنل مدیریت)"
+                            : editAdId
+                                ? "ویرایش آگهی ملک"
+                                : "ثبت آگهی ملک"}
+                    </h1>
                 </header>
 
                 {/* Mobile Compact Step Indicator */}
