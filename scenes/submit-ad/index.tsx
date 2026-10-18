@@ -811,7 +811,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
     }
 
     return (
-        <div className="min-h-screen bg-surface-secondary/50 py-3 sm:py-8 px-2.5 sm:px-6 lg:px-8 pb-24 sm:pb-32 lg:pb-12">
+        <div className="min-h-screen bg-surface-secondary/50 py-3 sm:py-8 px-2.5 sm:px-6 lg:px-8 pb-35 sm:pb-32 lg:pb-12">
             <div className="max-w-3xl mx-auto">
                 <header className="relative mb-3 sm:mb-6 flex items-center justify-center min-h-[40px]">
                     <button
