@@ -333,7 +333,16 @@ export default function ProfileScene() {
                         <Button
                             className="w-full h-12 rounded-2xl"
                             disabled={isUpdating}
-                            onClick={() => updateProfile({ firstName, lastName })}
+                            onClick={() => {
+                                if (!firstName.trim() && !lastName.trim()) {
+                                    toast.error("لطفاً نام یا نام خانوادگی را وارد نمایید");
+                                    return;
+                                }
+                                updateProfile({
+                                    firstName: firstName.trim(),
+                                    lastName: lastName.trim(),
+                                });
+                            }}
                         >
                             {isUpdating ? "در حال ثبت..." : "بروزرسانی مشخصات"}
                         </Button>

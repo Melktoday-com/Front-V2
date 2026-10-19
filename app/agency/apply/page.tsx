@@ -102,8 +102,14 @@ export default function AgencyApplyPage() {
             experienceYears: myApp.experienceYears || 1,
             description: myApp.description || "",
         });
-        if (myApp.city?.name) {
-            setSelectedCityName(myApp.city.name);
+        if ((myApp as any).city?.name) {
+            setSelectedCityName((myApp as any).city.name);
+        } else if (myApp.cityId && citiesData) {
+            const citiesList = citiesData.items || citiesData.cities || [];
+            const found = citiesList.find((c: any) => c.id === myApp.cityId);
+            if (found?.name) {
+                setSelectedCityName(found.name);
+            }
         }
         setIsEditing(true);
     };

@@ -90,8 +90,8 @@ export default function HostApplyPage() {
       propertyCount: myApp.propertyCount || 1,
       description: myApp.description || "",
     });
-    if (myApp.city?.name) {
-      setSelectedCityName(myApp.city.name);
+    if ((myApp as any).city?.name) {
+      setSelectedCityName((myApp as any).city.name);
     }
     setIsEditing(true);
   };
