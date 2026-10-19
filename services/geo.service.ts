@@ -13,7 +13,13 @@ import {
 
 export const geoService = {
     async findZoneByPoint(params: FindZoneByPointParams): Promise<ZonePointResponse | null> {
-        const response = await apiClient.post<ZonePointResponse | null>("/geo/zones/by-point", params);
+        const latitude = Number(Number(params.latitude).toFixed(7));
+        const longitude = Number(Number(params.longitude).toFixed(7));
+        const response = await apiClient.post<ZonePointResponse | null>("/geo/zones/by-point", {
+            ...params,
+            latitude,
+            longitude,
+        });
         return response.data;
     },
 
