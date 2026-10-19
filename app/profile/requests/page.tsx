@@ -279,7 +279,7 @@ export default function UserRequestsPage() {
                             <div className="flex items-center justify-end gap-3 pt-1">
                                 {agencyApp.status === "PENDING" && (
                                     <Link
-                                        href="/agency/apply"
+                                        href="/agency/apply?edit=true"
                                         className="inline-flex items-center gap-2 px-5 py-2.5 bg-amber-500 text-white rounded-xl text-xs font-bold hover:bg-amber-600 transition shadow-sm"
                                     >
                                         <RotateCcw className="w-4 h-4" />
@@ -404,7 +404,7 @@ export default function UserRequestsPage() {
                             <div className="flex items-center justify-end gap-3 pt-1">
                                 {hostApp.status === "PENDING" && (
                                     <Link
-                                        href="/host/apply"
+                                        href="/host/apply?edit=true"
                                         className="inline-flex items-center gap-2 px-5 py-2.5 bg-amber-500 text-white rounded-xl text-xs font-bold hover:bg-amber-600 transition shadow-sm"
                                     >
                                         <RotateCcw className="w-4 h-4" />
