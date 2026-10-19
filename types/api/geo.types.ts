@@ -1,5 +1,18 @@
 export type ZoneType = 'PROVINCE' | 'COUNTY' | 'CITY' | 'DISTRICT' | 'RURAL_DISTRICT' | 'NEIGHBORHOOD' | 'CUSTOM';
 
+export interface FindZoneByPointParams {
+    latitude: number;
+    longitude: number;
+    type?: ZoneType;
+}
+
+export interface ZonePointResponse {
+    id: string;
+    name: string;
+    type?: ZoneType;
+    isConfirmed?: boolean;
+}
+
 export interface GeoCenterPoint {
     latitude: number;
     longitude: number;

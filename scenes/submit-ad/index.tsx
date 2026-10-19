@@ -21,6 +21,7 @@ import { isInsufficientBalanceError, normalizeApiError } from "@/lib/api/error-h
 import { cn, formatPrice, getMediaUrl, toPersianDigits } from "@/lib/utils";
 import { adminService } from "@/services/admin.service";
 import { adsService } from "@/services/ads.service";
+import { geoService } from "@/services/geo.service";
 import { AdminCreateAdRequest } from "@/types/api/admin.types";
 import { CreateAdDraftRequest, PriceModel, SubcategoryConfigResponse } from "@/types/api/ads.types";
 import { AdStatus } from "@/types/api/enums";
@@ -128,6 +129,33 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
 
     // Fetch ad if editing
     const { data: existingAd, isLoading: isLoadingExisting } = useAd(editAdId || "");
+
+    // Resolve neighborhood zone by coordinates via authoritative PostGIS polygon matching
+    const { data: detectedZone, isLoading: isDetectingZone } = useQuery({
+        queryKey: ["zone-by-point", formData.latitude, formData.longitude],
+        queryFn: async () => {
+            if (
+                formData.latitude === undefined ||
+                formData.longitude === undefined ||
+                isNaN(Number(formData.latitude)) ||
+                isNaN(Number(formData.longitude))
+            ) {
+                return null;
+            }
+            return geoService.findZoneByPoint({
+                latitude: Number(formData.latitude),
+                longitude: Number(formData.longitude),
+                type: "NEIGHBORHOOD",
+            });
+        },
+        enabled: Boolean(
+            formData.latitude !== undefined &&
+            formData.longitude !== undefined &&
+            !isNaN(Number(formData.latitude)) &&
+            !isNaN(Number(formData.longitude))
+        ),
+        staleTime: 1000 * 60 * 5,
+    });
 
     // Fetch dynamic subcategory config when subcategoryKey is selected
     const selectedSubcategoryKey = formData.categoryPath?.subcategoryKey;
@@ -1222,6 +1250,24 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                         }
                                     />
                                 </div>
+                                <div className="p-3 bg-surface-secondary/70 rounded-xl border border-border-subtle text-xs flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <MapPin className="w-4 h-4 text-primary shrink-0" />
+                                        <span className="text-text-light">محله شناسایی‌شده:</span>
+                                        <span className="font-bold text-brand">
+                                            {isDetectingZone ? (
+                                                <span className="inline-flex items-center gap-1.5 text-text-light">
+                                                    <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
+                                                    در حال تطبیق با محدوده محله‌ها...
+                                                </span>
+                                            ) : detectedZone?.name ? (
+                                                <span className="text-primary font-black">{detectedZone.name}</span>
+                                            ) : (
+                                                <span className="text-text-light font-normal">خارج از محدوده محله‌های ثبت‌شده</span>
+                                            )}
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
                         )}
 
@@ -1247,6 +1293,21 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                     <div className="flex justify-between pb-2 border-b border-border-subtle/50">
                                         <span className="text-text-light">شهر و منطقه:</span>
                                         <span className="font-bold text-brand">{cityName}</span>
+                                    </div>
+                                    <div className="flex justify-between pb-2 border-b border-border-subtle/50">
+                                        <span className="text-text-light">محله (تطبیق هوشمند نقشه):</span>
+                                        <span className="font-bold text-brand">
+                                            {isDetectingZone ? (
+                                                <span className="inline-flex items-center gap-1 text-xs text-text-light font-normal">
+                                                    <Loader2 className="w-3 h-3 animate-spin text-primary" />
+                                                    در حال تطبیق...
+                                                </span>
+                                            ) : detectedZone?.name ? (
+                                                <span className="text-primary font-black">{detectedZone.name}</span>
+                                            ) : (
+                                                <span className="text-xs text-text-light font-normal">خارج از محدوده محله‌های ثبت‌شده</span>
+                                            )}
+                                        </span>
                                     </div>
                                     <div className="flex justify-between pb-2 border-b border-border-subtle/50">
                                         <span className="text-text-light">دسته‌بندی:</span>

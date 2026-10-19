@@ -1,15 +1,22 @@
 import apiClient from "@/lib/api/client";
 import {
+    FindZoneByPointParams,
     GeoHierarchyResponse,
     GetGeoHierarchyParams,
     ListZonesParams,
     ListZonesResponse,
     PaginatedCitiesResponse,
     PaginatedProvincesResponse,
-    UpdateZoneStatusResponse
+    UpdateZoneStatusResponse,
+    ZonePointResponse
 } from "@/types/api/geo.types";
 
 export const geoService = {
+    async findZoneByPoint(params: FindZoneByPointParams): Promise<ZonePointResponse | null> {
+        const response = await apiClient.post<ZonePointResponse | null>("/geo/zones/by-point", params);
+        return response.data;
+    },
+
     async listZones(params?: ListZonesParams | string): Promise<ListZonesResponse> {
         const queryParams = typeof params === 'string' ? { parentId: params } : params;
         const response = await apiClient.get<ListZonesResponse>("/geo/zones", {
