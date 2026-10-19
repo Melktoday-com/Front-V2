@@ -46,7 +46,7 @@ export function useUser(userId?: string) {
             queryClient.invalidateQueries({ queryKey: ["hosts", "my-application"] });
             toast.success("پروفایل با موفقیت بروزرسانی شد");
         },
-        onError: (err: any) => {
+        onError: (err: Error) => {
             toast.error(normalizeApiError(err, "خطا در بروزرسانی مشخصات پروفایل"));
         },
     });

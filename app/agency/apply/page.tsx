@@ -102,17 +102,25 @@ export default function AgencyApplyPage() {
             experienceYears: myApp.experienceYears || 1,
             description: myApp.description || "",
         });
-        if ((myApp as any).city?.name) {
-            setSelectedCityName((myApp as any).city.name);
-        } else if (myApp.cityId && citiesData) {
-            const citiesList = citiesData.items || citiesData.cities || [];
-            const found = citiesList.find((c: any) => c.id === myApp.cityId);
+        if (myApp.cityId && citiesData) {
+            const citiesList: CityItem[] = citiesData.items || citiesData.cities || [];
+            const found = citiesList.find((c: CityItem) => c.id === myApp.cityId);
             if (found?.name) {
                 setSelectedCityName(found.name);
             }
         }
         setIsEditing(true);
     };
+
+    useEffect(() => {
+        if (formData.cityId && !selectedCityName && citiesData) {
+            const citiesList: CityItem[] = citiesData.items || citiesData.cities || [];
+            const found = citiesList.find((c: CityItem) => c.id === formData.cityId);
+            if (found?.name) {
+                setSelectedCityName(found.name);
+            }
+        }
+    }, [formData.cityId, selectedCityName, citiesData]);
 
     useEffect(() => {
         if (searchParams.get("edit") === "true" && myApp && myApp.status === "PENDING") {

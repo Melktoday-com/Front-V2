@@ -9,6 +9,8 @@ import { cn, toEnglishDigits, toOnlyDigits } from "@/lib/utils";
 import { showcaseService } from "@/services/showcase.service";
 import { userService } from "@/services/user.service";
 import { HostApplicationRequest } from "@/types/api/showcase.types";
+import { useCities } from "@/hooks/useGeo";
+import { CityItem } from "@/types/api/geo.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowRight,
@@ -36,6 +38,7 @@ export default function HostApplyPage() {
   const { isLoggedIn } = useAuth();
   const { isRestricted } = useUserStatus();
   const queryClient = useQueryClient();
+  const { data: citiesData } = useCities({ limit: 100 });
 
   const [isCitySelectorOpen, setIsCitySelectorOpen] = useState(false);
   const [selectedCityName, setSelectedCityName] = useState("");
@@ -90,11 +93,25 @@ export default function HostApplyPage() {
       propertyCount: myApp.propertyCount || 1,
       description: myApp.description || "",
     });
-    if ((myApp as any).city?.name) {
-      setSelectedCityName((myApp as any).city.name);
+    if (myApp.cityId && citiesData) {
+      const citiesList: CityItem[] = citiesData.items || citiesData.cities || [];
+      const found = citiesList.find((c: CityItem) => c.id === myApp.cityId);
+      if (found?.name) {
+        setSelectedCityName(found.name);
+      }
     }
     setIsEditing(true);
   };
+
+  useEffect(() => {
+    if (formData.cityId && !selectedCityName && citiesData) {
+      const citiesList: CityItem[] = citiesData.items || citiesData.cities || [];
+      const found = citiesList.find((c: CityItem) => c.id === formData.cityId);
+      if (found?.name) {
+        setSelectedCityName(found.name);
+      }
+    }
+  }, [formData.cityId, selectedCityName, citiesData]);
 
   useEffect(() => {
     if (searchParams.get("edit") === "true" && myApp && myApp.status === "PENDING") {
@@ -111,7 +128,7 @@ export default function HostApplyPage() {
       queryClient.invalidateQueries({ queryKey: ["hosts", "my-application"] });
       refetchMyApp();
     },
-    onError: (err: any) => {
+    onError: (err: Error) => {
       toast.error(normalizeApiError(err, "خطا در ثبت درخواست میزبانی. لطفاً ورودی‌ها را بررسی نمایید."));
     },
   });
@@ -124,7 +141,7 @@ export default function HostApplyPage() {
       queryClient.invalidateQueries({ queryKey: ["hosts", "my-application"] });
       refetchMyApp();
     },
-    onError: (err: any) => {
+    onError: (err: Error) => {
       toast.error(normalizeApiError(err, "خطا در بروزرسانی درخواست میزبانی. لطفاً ورودی‌ها را بررسی نمایید."));
     },
   });
