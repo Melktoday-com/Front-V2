@@ -612,10 +612,13 @@ export default function AgencyApplyPage() {
 
                         {/* Submit Button */}
                         <div className="pt-2 flex items-center justify-between gap-4">
-                            {isReapplying && (
+                            {(isReapplying || isEditing) && (
                                 <button
                                     type="button"
-                                    onClick={() => setIsReapplying(false)}
+                                    onClick={() => {
+                                        setIsReapplying(false);
+                                        setIsEditing(false);
+                                    }}
                                     className="py-3 px-5 border border-border-subtle rounded-xl text-xs font-bold text-foreground-secondary hover:bg-surface-secondary"
                                 >
                                     انصراف
@@ -624,11 +627,16 @@ export default function AgencyApplyPage() {
 
                             <button
                                 type="submit"
-                                disabled={submitMutation.isPending}
+                                disabled={isSaving}
                                 className="flex-1 py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-black transition-colors shadow-sm flex items-center justify-center gap-2"
                             >
-                                {submitMutation.isPending ? (
-                                    <span>در حال اعتبارسنجی و ثبت درخواست...</span>
+                                {isSaving ? (
+                                    <span>در حال اعتبارسنجی و ثبت تغییرات...</span>
+                                ) : isEditing ? (
+                                    <>
+                                        <FileCheck className="w-4 h-4" />
+                                        <span>بروزرسانی مشخصات درخواست املاک</span>
+                                    </>
                                 ) : (
                                     <>
                                         <FileCheck className="w-4 h-4" />
