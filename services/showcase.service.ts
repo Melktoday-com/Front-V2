@@ -135,6 +135,11 @@ export const showcaseService = {
     return response.data;
   },
 
+  async updateMyHostApplication(data: HostApplicationRequest): Promise<HostApplicationResponse> {
+    const response = await apiClient.put<HostApplicationResponse>('/hosts/applications/my', data);
+    return response.data;
+  },
+
   async getMyHostApplication(): Promise<HostApplicationResponse | null> {
     try {
       const response = await apiClient.get<HostApplicationResponse>('/hosts/my-application');

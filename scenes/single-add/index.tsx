@@ -535,6 +535,11 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
                                 {categoryTitle}
                             </span>
                         )}
+                        {ad.isDecorativeImages && (
+                            <span className="bg-amber-600/90 backdrop-blur-md text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">
+                                تصاویر تزئینی است
+                            </span>
+                        )}
                     </div>
                 </div>
 
@@ -613,9 +618,16 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
                     {/* Title & Price Header */}
                     <div className="border-b border-border-subtle pb-6">
 
-                        <h1 className="text-lg sm:text-2xl font-bold text-text-main mt-3">
-                            {ad.title}
-                        </h1>
+                        <div className="flex items-start justify-between gap-3 mt-3">
+                            <h1 className="text-lg sm:text-2xl font-bold text-text-main">
+                                {ad.title}
+                            </h1>
+                            {ad.isDecorativeImages && (
+                                <span className="shrink-0 px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 text-xs font-bold">
+                                    تصاویر تزئینی است
+                                </span>
+                            )}
+                        </div>
 
                         <div className="flex flex-wrap items-center gap-1.5 text-text-light text-sm mt-2">
                             <MapPin className="w-4 h-4 shrink-0 text-primary" />

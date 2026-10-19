@@ -21,10 +21,12 @@ import {
     ArrowRight,
     MapPin,
     AlertCircle,
+    Home,
+    RotateCcw,
 } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { AgentApplicationType, ApplyAgentRequest } from "@/types/api/agency.types";
 import { CityItem } from "@/types/api/geo.types";
@@ -32,11 +34,13 @@ import { normalizeApiError } from "@/lib/api/error-handler";
 
 export default function AgencyApplyPage() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const { isLoggedIn } = useAuth();
     const queryClient = useQueryClient();
     const { data: citiesData } = useCities({ limit: 100 });
 
     const [isReapplying, setIsReapplying] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
     const [agentType, setAgentType] = useState<AgentApplicationType>("CONSULTANT");
     const [isCitySelectorOpen, setIsCitySelectorOpen] = useState(false);
     const [selectedCityName, setSelectedCityName] = useState("");
@@ -61,8 +65,8 @@ export default function AgencyApplyPage() {
         userService.getMe().then((profile) => {
             setFormData((prev) => ({
                 ...prev,
-                firstName: profile.firstName || "",
-                lastName: profile.lastName || "",
+                firstName: prev.firstName || profile.firstName || "",
+                lastName: prev.lastName || profile.lastName || "",
             }));
         }).catch(() => {/* silently ignore */});
     }, [isLoggedIn]);
@@ -78,6 +82,38 @@ export default function AgencyApplyPage() {
         enabled: !!isLoggedIn,
     });
 
+    const startEditing = () => {
+        if (!myApp) return;
+        const nameParts = (myApp.fullName || "").trim().split(" ");
+        const first = nameParts[0] || "";
+        const last = nameParts.slice(1).join(" ") || "";
+
+        setAgentType(myApp.agentType || "CONSULTANT");
+        setFormData({
+            firstName: first,
+            lastName: last,
+            nationalCode: myApp.nationalCode || "",
+            agencyName: myApp.agencyName || "",
+            guildCode: myApp.guildCode || "",
+            licenseNumber: myApp.licenseNumber || "",
+            cityId: myApp.cityId || "",
+            phone: myApp.phone || "",
+            address: myApp.address || "",
+            experienceYears: myApp.experienceYears || 1,
+            description: myApp.description || "",
+        });
+        if (myApp.city?.name) {
+            setSelectedCityName(myApp.city.name);
+        }
+        setIsEditing(true);
+    };
+
+    useEffect(() => {
+        if (searchParams.get("edit") === "true" && myApp && myApp.status === "PENDING") {
+            startEditing();
+        }
+    }, [searchParams, myApp]);
+
     // Update user profile name silently on submit
     const updateProfileMutation = useMutation({
         mutationFn: (data: { firstName: string; lastName: string }) =>
@@ -92,12 +128,29 @@ export default function AgencyApplyPage() {
         onSuccess: () => {
             toast.success("درخواست شما با موفقیت ثبت شد و در صف بررسی کارشناسان قرار گرفت.");
             setIsReapplying(false);
+            setIsEditing(false);
             queryClient.invalidateQueries({ queryKey: ["agency", "my-application"] });
+            refetchMyApp();
         },
         onError: (err: Error) => {
             toast.error(normalizeApiError(err, "خطا در ثبت درخواست. لطفاً اطلاعات ورودی را بررسی نمایید."));
         },
     });
+
+    const updateMutation = useMutation({
+        mutationFn: (payload: ApplyAgentRequest) => agencyService.updateMyApplication(payload),
+        onSuccess: () => {
+            toast.success("اطلاعات درخواست شما با موفقیت بروزرسانی شد.");
+            setIsEditing(false);
+            queryClient.invalidateQueries({ queryKey: ["agency", "my-application"] });
+            refetchMyApp();
+        },
+        onError: (err: Error) => {
+            toast.error(normalizeApiError(err, "خطا در بروزرسانی درخواست. لطفاً اطلاعات ورودی را بررسی نمایید."));
+        },
+    });
+
+    const isSaving = submitMutation.isPending || updateMutation.isPending;
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -152,13 +205,17 @@ export default function AgencyApplyPage() {
             payload.licenseNumber = formData.licenseNumber.trim() || undefined;
         }
 
-        // Silently sync name to user profile
-        updateProfileMutation.mutate({
-            firstName: formData.firstName.trim(),
-            lastName: formData.lastName.trim(),
-        });
+        if (isEditing) {
+            updateMutation.mutate(payload);
+        } else {
+            // Silently sync name to user profile
+            updateProfileMutation.mutate({
+                firstName: formData.firstName.trim(),
+                lastName: formData.lastName.trim(),
+            });
 
-        submitMutation.mutate(payload);
+            submitMutation.mutate(payload);
+        }
     };
 
     const cities = citiesData?.items || citiesData?.cities || [];
@@ -282,17 +339,59 @@ export default function AgencyApplyPage() {
                                     ارسال مجدد درخواست با اطلاعات اصلاح‌شده
                                 </button>
                             ) : (
-                                <div className="text-xs font-medium text-foreground-muted flex items-center gap-1.5">
-                                    <Info className="w-4 h-4 text-amber-500" />
-                                    <span>درخواست شما در اسرع وقت بررسی خواهد شد. برای پیگیری نیازی به ارسال مجدد نیست.</span>
+                                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 w-full">
+                                    <div className="text-xs font-medium text-foreground-muted flex items-center gap-1.5">
+                                        <Info className="w-4 h-4 text-amber-500 shrink-0" />
+                                        <span>درخواست شما در حال حاضر در انتظار بررسی است. در صورت نیاز می‌توانید اطلاعات آن را ویرایش کنید.</span>
+                                    </div>
+                                    {!isEditing ? (
+                                        <button
+                                            type="button"
+                                            onClick={startEditing}
+                                            className="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-black transition-colors shadow-sm flex items-center gap-1.5 shrink-0"
+                                        >
+                                            <RotateCcw className="w-3.5 h-3.5" />
+                                            <span>ویرایش اطلاعات درخواست</span>
+                                        </button>
+                                    ) : (
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsEditing(false)}
+                                            className="px-5 py-2.5 bg-surface border border-border-subtle text-foreground-muted hover:text-foreground rounded-xl text-xs font-black transition-colors shrink-0"
+                                        >
+                                            انصراف از ویرایش
+                                        </button>
+                                    )}
                                 </div>
                             )}
                         </div>
                     </div>
                 )}
 
+                {/* Simultaneous Host Opportunity Banner */}
+                <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200/80 rounded-3xl p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-2xl bg-white text-emerald-600 flex items-center justify-center shadow-xs shrink-0">
+                            <Home className="w-6 h-6" />
+                        </div>
+                        <div>
+                            <h4 className="text-sm font-black text-emerald-900">ثبت‌نام همزمان به عنوان میزبان اقامتگاه</h4>
+                            <p className="text-xs text-emerald-700/80 mt-0.5 font-medium leading-relaxed">
+                                می‌توانید همزمان با فعالیت املاک، اقامتگاه‌ها و ویلاهای روزانه خود را نیز در ملک‌تودی اجاره دهید.
+                            </p>
+                        </div>
+                    </div>
+                    <Link
+                        href="/host/apply"
+                        className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 transition shadow-sm shrink-0"
+                    >
+                        <Home className="w-4 h-4" />
+                        <span>ثبت درخواست میزبانی</span>
+                    </Link>
+                </div>
+
                 {/* Application Form */}
-                {(!myApp || isReapplying) && (
+                {(!myApp || isReapplying || isEditing) && (
                     <form onSubmit={handleSubmit} className="bg-surface p-6 sm:p-8 rounded-3xl border border-border-subtle/80 shadow-xs space-y-6">
                         {/* Step 1: Select Agent Type */}
                         <div className="space-y-3">

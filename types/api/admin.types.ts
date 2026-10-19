@@ -338,6 +338,7 @@ export interface AdminCreateAdRequest {
     latitude: number;
     longitude: number;
     mediaIds?: MediaReference[];
+    isDecorativeImages?: boolean;
 }
 
 export interface AdminCreateTemporaryRentRequest {

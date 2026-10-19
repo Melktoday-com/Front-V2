@@ -56,6 +56,7 @@ export interface AdSummary {
     priceModelKey?: string;
     pricing: Record<string, number | boolean | string>;
     isFeatured: boolean;
+    isDecorativeImages?: boolean;
     isSaved?: boolean;
     mediaIds?: MediaReference[];
     createdAt: string;
@@ -126,6 +127,7 @@ export interface CreateAdDraftRequest {
     latitude: number;
     longitude: number;
     mediaIds?: MediaReference[];
+    isDecorativeImages?: boolean;
 }
 
 export interface EditAdRequest {
@@ -135,6 +137,7 @@ export interface EditAdRequest {
     pricingValues?: Record<string, number | boolean | string>;
     attributes?: JsonObject;
     mediaIds?: MediaReference[];
+    isDecorativeImages?: boolean;
 }
 
 export interface AdMutationResponse {
@@ -149,6 +152,7 @@ export interface CreateAdDraftResponse extends AdMutationResponse {
     categoryPath: CategoryPath;
     priceModelKey?: string;
     pricing: Record<string, number | boolean | string>;
+    isDecorativeImages?: boolean;
     createdAt: string;
 }
 

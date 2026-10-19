@@ -122,6 +122,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
         latitude: initialCoords.latitude,
         longitude: initialCoords.longitude,
         mediaIds: [] as MediaReference[],
+        isDecorativeImages: false,
     });
 
     const { data: categories } = useCategories();
@@ -381,6 +382,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                     latitude: existingAd.location?.coordinates?.latitude ?? 35.6892,
                     longitude: existingAd.location?.coordinates?.longitude ?? 51.389,
                     mediaIds: existingAd.mediaIds || [],
+                    isDecorativeImages: existingAd.isDecorativeImages || false,
                 });
                 if (existingAd.cityName) {
                     setCityName(existingAd.cityName);
@@ -491,6 +493,11 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
 
     const submitMutation = useMutation({
         mutationFn: async ({ shouldPublish }: { shouldPublish: boolean }) => {
+            if ((shouldPublish || adminMode) && (!formData.mediaIds || formData.mediaIds.length === 0)) {
+                toast.error("بارگذاری حداقل یک تصویر یا ویدئو برای ثبت آگهی الزامی است");
+                throw new Error("بارگذاری حداقل یک تصویر یا ویدئو برای ثبت آگهی الزامی است");
+            }
+
             const resolvedPriceModelKey = activePriceModel?.key || formData.categoryPath?.businessModelKey;
             const resolvedPricingValues = (formData.pricingValues as Record<string, number | boolean | string>) || {};
 
@@ -516,6 +523,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                     latitude: formData.latitude || 35.6892,
                     longitude: formData.longitude || 51.389,
                     mediaIds: formData.mediaIds || [],
+                    isDecorativeImages: Boolean(formData.isDecorativeImages),
                 };
                 const created = await adminService.createAd(payload);
                 // backend اکنون آگهی را مستقیماً به وضعیت PUBLISHED منتقل می‌کند
@@ -534,6 +542,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                     pricingValues: resolvedPricingValues,
                     attributes: formData.attributes,
                     mediaIds: formData.mediaIds,
+                    isDecorativeImages: Boolean(formData.isDecorativeImages),
                 });
             } else {
                 // Create draft
@@ -553,6 +562,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                     latitude: formData.latitude || 35.6892,
                     longitude: formData.longitude || 51.389,
                     mediaIds: formData.mediaIds || [],
+                    isDecorativeImages: Boolean(formData.isDecorativeImages),
                 };
                 const created = await adsService.createDraft(payload);
                 adId = created.adId;
@@ -724,6 +734,11 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                 }));
             } else if (!formData.categoryPath?.businessModelKey && !activePriceModel) {
                 toast.error("لطفاً نوع معامله ملک را انتخاب فرمایید");
+                return;
+            }
+
+            if (!formData.mediaIds || formData.mediaIds.length === 0) {
+                toast.error("بارگذاری حداقل یک تصویر یا ویدئو برای ثبت آگهی الزامی است");
                 return;
             }
 
@@ -1017,9 +1032,14 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
 
                                 {/* Section 2: Media Upload (Above Title Section) */}
                                 <div className="space-y-3 pt-1">
-                                    <h3 className="text-sm font-black text-brand pb-1 border-b border-border-subtle">
-                                        تصاویر و ویدئوهای ملک
-                                    </h3>
+                                    <div className="flex items-center justify-between pb-1 border-b border-border-subtle">
+                                        <h3 className="text-sm font-black text-brand">
+                                            تصاویر و ویدئوهای ملک <span className="text-error">*</span>
+                                        </h3>
+                                        <span className="text-[11px] text-text-light font-medium">
+                                            (حداقل ۱ فایل الزامی است)
+                                        </span>
+                                    </div>
                                     <MediaGalleryUpload
                                         value={formData.mediaIds}
                                         onChange={(media) =>
@@ -1028,11 +1048,35 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                                 mediaIds: media,
                                             }))
                                         }
-                                        label="تصاویر و ویدئوهای ملک"
-                                        helperText="آگهی‌های دارای تصویر و ویدئوی واقعی تا ۵ برابر بیشتر بازدید دریافت می‌کنند."
+                                        label="تصاویر و ویدئوهای ملک (اجباری)"
+                                        helperText="بارگذاری حداقل یک تصویر یا ویدئو برای ثبت آگهی الزامی است. آگهی‌های دارای تصویر و ویدئوی واقعی تا ۵ برابر بیشتر بازدید دریافت می‌کنند."
                                         maxFiles={15}
                                         allowVideos={true}
                                     />
+
+                                    {/* Decorative Images Option */}
+                                    <div className="flex items-center justify-between p-3.5 bg-surface-secondary rounded-xl border border-border-subtle mt-3">
+                                        <div className="space-y-0.5">
+                                            <label htmlFor="isDecorativeImages" className="text-xs font-bold text-brand cursor-pointer">
+                                                تصاویر تزئینی است
+                                            </label>
+                                            <p className="text-[11px] text-text-light">
+                                                در صورتی که تصاویر آپلود شده واقعی نبوده و صرفاً جنبه تزئینی، شماتیک یا نمونه دارند این گزینه را فعال کنید.
+                                            </p>
+                                        </div>
+                                        <input
+                                            id="isDecorativeImages"
+                                            type="checkbox"
+                                            checked={Boolean(formData.isDecorativeImages)}
+                                            onChange={(e) =>
+                                                setFormData((prev) => ({
+                                                    ...prev,
+                                                    isDecorativeImages: e.target.checked,
+                                                }))
+                                            }
+                                            className="w-5 h-5 text-primary border-border rounded-md focus:ring-primary focus:ring-2 cursor-pointer"
+                                        />
+                                    </div>
                                 </div>
 
                                 {/* Section 3: Title and Description */}
@@ -1373,11 +1417,18 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                     </div>
 
                                     {formData.mediaIds && formData.mediaIds.length > 0 && (
-                                        <div className="flex justify-between pt-2 border-t border-border-subtle/50">
+                                        <div className="flex justify-between items-center pt-2 border-t border-border-subtle/50">
                                             <span className="text-text-light">رسانه‌های ضمیمه:</span>
-                                            <span className="font-bold text-brand">
-                                                {toPersianDigits(formData.mediaIds.length)} تصویر/ویدئو
-                                            </span>
+                                            <div className="flex items-center gap-2">
+                                                {formData.isDecorativeImages && (
+                                                    <span className="px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 text-[11px] font-bold">
+                                                        تصاویر تزئینی است
+                                                    </span>
+                                                )}
+                                                <span className="font-bold text-brand">
+                                                    {toPersianDigits(formData.mediaIds.length)} تصویر/ویدئو
+                                                </span>
+                                            </div>
                                         </div>
                                     )}
                                 </div>

@@ -4,29 +4,35 @@ import { CitySelector } from "@/components/CitySelector";
 import { AccountStatusBanner } from "@/components/ui/AccountStatusBanner";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserStatus } from "@/hooks/useUserStatus";
+import { normalizeApiError } from "@/lib/api/error-handler";
 import { cn, toEnglishDigits, toOnlyDigits } from "@/lib/utils";
 import { showcaseService } from "@/services/showcase.service";
+import { userService } from "@/services/user.service";
 import { HostApplicationRequest } from "@/types/api/showcase.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowRight,
+  Building2,
   CheckCircle,
   Clock,
   FileCheck,
   Home,
+  Info,
   MapPin,
+  RotateCcw,
   ShieldCheck,
   Sparkles,
   UserCheck,
   XCircle
 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export default function HostApplyPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { isLoggedIn } = useAuth();
   const { isRestricted } = useUserStatus();
   const queryClient = useQueryClient();
@@ -34,6 +40,7 @@ export default function HostApplyPage() {
   const [isCitySelectorOpen, setIsCitySelectorOpen] = useState(false);
   const [selectedCityName, setSelectedCityName] = useState("");
   const [isReapplying, setIsReapplying] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   const [formData, setFormData] = useState<HostApplicationRequest>({
     fullName: "",
@@ -47,6 +54,18 @@ export default function HostApplyPage() {
     description: "",
   });
 
+  // Autofill user name and mobile if empty
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    userService.getMe().then((me) => {
+      setFormData((prev) => ({
+        ...prev,
+        fullName: prev.fullName || `${me.firstName || ''} ${me.lastName || ''}`.trim(),
+        mobileNumber: prev.mobileNumber || me.mobileNumber || '',
+      }));
+    }).catch(() => {/* ignore */});
+  }, [isLoggedIn]);
+
   // Check existing landlord application
   const {
     data: myApp,
@@ -58,18 +77,59 @@ export default function HostApplyPage() {
     enabled: !!isLoggedIn,
   });
 
+  const startEditing = () => {
+    if (!myApp) return;
+    setFormData({
+      fullName: myApp.fullName || "",
+      nationalCode: myApp.nationalCode || "",
+      hostName: myApp.hostName || "",
+      cityId: myApp.cityId || "",
+      mobileNumber: myApp.mobileNumber || "",
+      phone: myApp.phone || "",
+      address: myApp.address || "",
+      propertyCount: myApp.propertyCount || 1,
+      description: myApp.description || "",
+    });
+    if (myApp.city?.name) {
+      setSelectedCityName(myApp.city.name);
+    }
+    setIsEditing(true);
+  };
+
+  useEffect(() => {
+    if (searchParams.get("edit") === "true" && myApp && myApp.status === "PENDING") {
+      startEditing();
+    }
+  }, [searchParams, myApp]);
+
   const submitMutation = useMutation({
     mutationFn: (payload: HostApplicationRequest) => showcaseService.applyForHost(payload),
     onSuccess: () => {
       toast.success("درخواست میزبانی شما با موفقیت ثبت شد و در صف بررسی قرار گرفت.");
       setIsReapplying(false);
+      setIsEditing(false);
       queryClient.invalidateQueries({ queryKey: ["hosts", "my-application"] });
       refetchMyApp();
     },
     onError: (err: any) => {
-      toast.error(err.response?.data?.message || "خطا در ثبت درخواست میزبانی. لطفاً ورودی‌ها را بررسی نمایید.");
+      toast.error(normalizeApiError(err, "خطا در ثبت درخواست میزبانی. لطفاً ورودی‌ها را بررسی نمایید."));
     },
   });
+
+  const updateMutation = useMutation({
+    mutationFn: (payload: HostApplicationRequest) => showcaseService.updateMyHostApplication(payload),
+    onSuccess: () => {
+      toast.success("اطلاعات درخواست میزبانی شما با موفقیت بروزرسانی شد.");
+      setIsEditing(false);
+      queryClient.invalidateQueries({ queryKey: ["hosts", "my-application"] });
+      refetchMyApp();
+    },
+    onError: (err: any) => {
+      toast.error(normalizeApiError(err, "خطا در بروزرسانی درخواست میزبانی. لطفاً ورودی‌ها را بررسی نمایید."));
+    },
+  });
+
+  const isSaving = submitMutation.isPending || updateMutation.isPending;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -104,7 +164,11 @@ export default function HostApplyPage() {
       return;
     }
 
-    submitMutation.mutate(formData);
+    if (isEditing) {
+      updateMutation.mutate(formData);
+    } else {
+      submitMutation.mutate(formData);
+    }
   };
 
   return (
@@ -225,6 +289,29 @@ export default function HostApplyPage() {
                 </>
               )}
 
+              {myApp.status === "PENDING" && (
+                <div className="flex items-center gap-3">
+                  {!isEditing ? (
+                    <button
+                      type="button"
+                      onClick={startEditing}
+                      className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold transition-colors shadow-sm flex items-center gap-1.5"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      <span>ویرایش اطلاعات درخواست</span>
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setIsEditing(false)}
+                      className="px-4 py-2 bg-surface border border-border-subtle text-foreground-muted hover:text-foreground rounded-xl text-xs font-bold transition-colors"
+                    >
+                      انصراف از ویرایش
+                    </button>
+                  )}
+                </div>
+              )}
+
               {myApp.status === "REJECTED" && (
                 <button
                   onClick={() => setIsReapplying(true)}
@@ -237,11 +324,35 @@ export default function HostApplyPage() {
           </div>
         )}
 
+        {/* Simultaneous Application Opportunity Banner */}
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200/80 rounded-3xl p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-white text-blue-600 flex items-center justify-center shadow-xs shrink-0">
+              <Building2 className="w-6 h-6" />
+            </div>
+            <div>
+              <h4 className="text-sm font-black text-blue-900">عضویت همزمان به عنوان مشاور یا دفتر املاک</h4>
+              <p className="text-xs text-blue-700/80 mt-0.5 font-medium leading-relaxed">
+                می‌توانید همزمان با میزبانی اقامتگاه، به عنوان مشاور یا دفتر املاک نیز ثبت‌نام کرده و صفحه ویترین آژانس خود را داشته باشید.
+              </p>
+            </div>
+          </div>
+          <Link
+            href="/agency/apply"
+            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700 transition shadow-sm shrink-0"
+          >
+            <Building2 className="w-4 h-4" />
+            <span>ثبت درخواست املاک</span>
+          </Link>
+        </div>
+
         {/* Application Form */}
-        {(isReapplying || !myApp || myApp.status === "REJECTED") && (
+        {(isReapplying || isEditing || !myApp || myApp.status === "REJECTED") && (
           <form onSubmit={handleSubmit} className="bg-surface rounded-3xl p-6 sm:p-8 border border-border-subtle shadow-sm space-y-6">
             <div className="border-b border-border-subtle pb-4">
-              <h2 className="text-base font-black text-foreground">مشخصات متقاضی و عنوان میزبانی</h2>
+              <h2 className="text-base font-black text-foreground">
+                {isEditing ? "ویرایش مشخصات درخواست میزبانی" : "مشخصات متقاضی و عنوان میزبانی"}
+              </h2>
               <p className="text-xs text-foreground-muted mt-1">
                 اطلاعات هویتی با سامانه شاهکار تطبیق داده خواهد شد.
               </p>
@@ -363,10 +474,13 @@ export default function HostApplyPage() {
             </div>
 
             <div className="pt-4 border-t border-border-subtle flex items-center justify-end gap-3">
-              {isReapplying && (
+              {(isReapplying || isEditing) && (
                 <button
                   type="button"
-                  onClick={() => setIsReapplying(false)}
+                  onClick={() => {
+                    setIsReapplying(false);
+                    setIsEditing(false);
+                  }}
                   className="px-4 py-3 bg-surface-secondary hover:bg-slate-200 text-foreground-secondary rounded-xl text-xs font-bold transition-colors"
                 >
                   انصراف
@@ -374,11 +488,16 @@ export default function HostApplyPage() {
               )}
               <button
                 type="submit"
-                disabled={submitMutation.isPending}
+                disabled={isSaving}
                 className="flex-1 sm:flex-initial px-6 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black transition-colors shadow-sm flex items-center justify-center gap-2"
               >
-                {submitMutation.isPending ? (
-                  <span>در حال ثبت درخواست...</span>
+                {isSaving ? (
+                  <span>در حال ذخیره و پردازش...</span>
+                ) : isEditing ? (
+                  <>
+                    <FileCheck className="w-4 h-4" />
+                    <span>بروزرسانی مشخصات درخواست میزبانی</span>
+                  </>
                 ) : (
                   <>
                     <FileCheck className="w-4 h-4" />

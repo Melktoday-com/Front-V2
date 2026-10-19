@@ -1,5 +1,6 @@
 "use client";
 
+import { normalizeApiError } from "@/lib/api/error-handler";
 import { userService } from "@/services/user.service";
 import { UpdateUserProfileRequest, VerifyKycRequest } from "@/types/api/user.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -39,7 +40,14 @@ export function useUser(userId?: string) {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["user"] });
+            queryClient.invalidateQueries({ queryKey: ["me"] });
+            queryClient.invalidateQueries({ queryKey: ["auth-session"] });
+            queryClient.invalidateQueries({ queryKey: ["agency", "my-application"] });
+            queryClient.invalidateQueries({ queryKey: ["hosts", "my-application"] });
             toast.success("پروفایل با موفقیت بروزرسانی شد");
+        },
+        onError: (err: any) => {
+            toast.error(normalizeApiError(err, "خطا در بروزرسانی مشخصات پروفایل"));
         },
     });
 

@@ -69,6 +69,11 @@ export const agencyService = {
         return response.data;
     },
 
+    async updateMyApplication(data: ApplyAgentRequest): Promise<AgentApplicationResponse> {
+        const response = await apiClient.put<AgentApplicationResponse>("/agencies/applications/my", data);
+        return response.data;
+    },
+
     async getMyApplication(): Promise<AgentApplicationResponse | null> {
         try {
             const response = await apiClient.get<AgentApplicationResponse>("/agencies/applications/my");
