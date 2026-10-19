@@ -432,6 +432,98 @@ export default function UserRequestsPage() {
                             </div>
                         </div>
                     )}
+
+                    {/* Simultaneous Agency Opportunity in ALL tab */}
+                    {activeTab === "ALL" && hostApp && !agencyApp && (
+                        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200/80 rounded-3xl p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div className="flex items-center gap-3">
+                                <div className="w-12 h-12 rounded-2xl bg-white text-blue-600 flex items-center justify-center shadow-xs shrink-0">
+                                    <Building2 className="w-6 h-6" />
+                                </div>
+                                <div>
+                                    <h4 className="text-sm font-black text-blue-900">فرصت عضویت همزمان مشاور یا دفتر املاک</h4>
+                                    <p className="text-xs text-blue-700/80 mt-0.5 font-medium leading-relaxed">
+                                        شما می‌توانید به طور همزمان برای مشاور املاک یا ثبت دفتر املاک نیز درخواست دهید و از ویترین اختصاصی بهره‌مند شوید.
+                                    </p>
+                                </div>
+                            </div>
+                            <Link
+                                href="/agency/apply"
+                                className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700 transition shadow-sm shrink-0"
+                            >
+                                <Building2 className="w-4 h-4" />
+                                <span>ثبت درخواست املاک</span>
+                            </Link>
+                        </div>
+                    )}
+
+                    {/* Simultaneous Host Opportunity in ALL tab */}
+                    {activeTab === "ALL" && agencyApp && !hostApp && (
+                        <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200/80 rounded-3xl p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div className="flex items-center gap-3">
+                                <div className="w-12 h-12 rounded-2xl bg-white text-emerald-600 flex items-center justify-center shadow-xs shrink-0">
+                                    <Home className="w-6 h-6" />
+                                </div>
+                                <div>
+                                    <h4 className="text-sm font-black text-emerald-900">فرصت عضویت همزمان میزبانی اقامتگاه</h4>
+                                    <p className="text-xs text-emerald-700/80 mt-0.5 font-medium leading-relaxed">
+                                        شما می‌توانید همزمان با فعالیت املاک، به عنوان میزبان اقامتگاه‌های روزانه و بوم‌گردی نیز در ملک‌تودی فعالیت کنید.
+                                    </p>
+                                </div>
+                            </div>
+                            <Link
+                                href="/host/apply"
+                                className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 transition shadow-sm shrink-0"
+                            >
+                                <Home className="w-4 h-4" />
+                                <span>ثبت درخواست میزبانی</span>
+                            </Link>
+                        </div>
+                    )}
+
+                    {/* Empty State for AGENCY Tab */}
+                    {activeTab === "AGENCY" && !agencyApp && (
+                        <div className="bg-surface rounded-3xl p-8 border border-soft-border text-center space-y-4 shadow-xs">
+                            <div className="w-14 h-14 rounded-2xl bg-info-subtle text-info flex items-center justify-center mx-auto">
+                                <Building2 className="w-7 h-7" />
+                            </div>
+                            <div className="space-y-1">
+                                <h4 className="text-sm font-black text-brand">درخواستی برای مشاور یا دفتر املاک ثبت نشده است</h4>
+                                <p className="text-xs text-secondary max-w-sm mx-auto leading-relaxed">
+                                    با ثبت درخواست، صاحب ویترین صفحه اختصاصی املاک شده و بدون تداخل با میزبانی به عنوان مشاور فعالیت کنید.
+                                </p>
+                            </div>
+                            <Link
+                                href="/agency/apply"
+                                className="inline-flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700 transition shadow-sm"
+                            >
+                                <Building2 className="w-4 h-4" />
+                                <span>ثبت درخواست مشاور / دفتر املاک</span>
+                            </Link>
+                        </div>
+                    )}
+
+                    {/* Empty State for HOST Tab */}
+                    {activeTab === "HOST" && !hostApp && (
+                        <div className="bg-surface rounded-3xl p-8 border border-soft-border text-center space-y-4 shadow-xs">
+                            <div className="w-14 h-14 rounded-2xl bg-success-subtle text-success flex items-center justify-center mx-auto">
+                                <Home className="w-7 h-7" />
+                            </div>
+                            <div className="space-y-1">
+                                <h4 className="text-sm font-black text-brand">درخواستی برای میزبانی اقامتگاه ثبت نشده است</h4>
+                                <p className="text-xs text-secondary max-w-sm mx-auto leading-relaxed">
+                                    با ثبت درخواست میزبانی، اقامتگاه‌ها و ویلاهای روزانه خود را در سراسر کشور به مسافران اجاره دهید.
+                                </p>
+                            </div>
+                            <Link
+                                href="/host/apply"
+                                className="inline-flex items-center gap-2 px-6 py-2.5 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 transition shadow-sm"
+                            >
+                                <Home className="w-4 h-4" />
+                                <span>ثبت درخواست میزبانی اقامتگاه</span>
+                            </Link>
+                        </div>
+                    )}
                 </div>
             )}
         </div>
