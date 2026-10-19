@@ -15,6 +15,7 @@ import {
 } from "@/hooks/useShowcase";
 import { useAds } from "@/hooks/useAds";
 import { PropertyCard } from "@/components/ui/PropertyCard";
+import { getFloorArea } from "@/lib/location";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/Button";
 import {
@@ -445,7 +446,7 @@ export default function SingleHostScene({ idOrSlug, initialData }: SingleHostSce
                       title={ad.title}
                       price={pricing.price}
                       unit={pricing.unit}
-                      location={ad.cityName || ad.cityId}
+                      location={ad.location || ''}
                       image={
                         ad.mediaIds && ad.mediaIds.length > 0
                           ? getMediaPosterUrl(ad.mediaIds[0])
@@ -453,7 +454,7 @@ export default function SingleHostScene({ idOrSlug, initialData }: SingleHostSce
                       }
                       isVideo={ad.mediaIds?.[0]?.type === "VIDEO"}
                       category={categoryName}
-                      area={ad.area}
+                      area={getFloorArea(ad)}
                       rooms={ad.rooms}
                     />
                   );

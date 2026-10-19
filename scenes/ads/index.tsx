@@ -15,6 +15,7 @@ import { useFavorites, useToggleSaveAd } from "@/hooks/useFavorites";
 import { useGeoHierarchy } from "@/hooks/useGeoHierarchy";
 import { useDebounce } from "@/hooks/useDebounce";
 import { cn, formatPrice, getMediaUrl, getMediaPosterUrl, toPersianDigits } from "@/lib/utils";
+import { mapSearchDocToLocation, mapMarkerToLocation, getFloorArea } from "@/lib/location";
 import { geoService } from "@/services/geo.service";
 import { AdSummary } from "@/types/api/ads.types";
 import { AdStatus } from "@/types/api/enums";
@@ -57,24 +58,20 @@ function mapMarkerToAdSummary(m: MapMarkerDto): AdSummary {
         isFeatured: false,
         mediaIds: m.mediaIds ?? [],
         createdAt: new Date().toISOString(),
-        location: {
-            latitude: m.latitude,
-            longitude: m.longitude,
-        },
+        location: mapMarkerToLocation(m),
     };
 }
 
-
-
 function searchDocToAdSummary(doc: ListingSearchDocument): AdSummary {
     const primaryPrice = doc.pricing?.number?.price ?? doc.pricing?.number?.totalPrice ?? 0;
-    const area = doc.attributes?.number?.area || doc.attributes?.number?.meter || doc.attributes?.number?.metraj;
+    const location = mapSearchDocToLocation(doc);
     const rooms = doc.attributes?.number?.rooms || doc.attributes?.number?.bedrooms || doc.attributes?.number?.room;
+    const floorArea = getFloorArea(doc);
     return {
         adId: doc.id,
         ownerId: doc.ownerId,
-        cityId: doc.geo?.cityId || "",
-        cityName: doc.geo?.cityName || undefined,
+        cityId: doc.geo?.cityId || location.city?.id || "",
+        cityName: location.city?.name,
         status: AdStatus.PUBLISHED,
         title: doc.title,
         categoryPath: {
@@ -91,17 +88,8 @@ function searchDocToAdSummary(doc: ListingSearchDocument): AdSummary {
         isFeatured: doc.isFeatured,
         mediaIds: doc.mediaIds || [],
         createdAt: doc.createdAt,
-        location:
-            doc._geo && typeof doc._geo.lat === "number" && typeof doc._geo.lng === "number"
-                ? {
-                      latitude: doc._geo.lat,
-                      longitude: doc._geo.lng,
-                      area: doc.geo?.neighbourhoodName
-                          ? { id: doc.geo?.zoneIds?.[0] || "area", label: doc.geo.neighbourhoodName }
-                          : null,
-                  }
-                : null,
-        area: typeof area === "number" ? area : undefined,
+        location,
+        area: floorArea ?? undefined,
         rooms: typeof rooms === "number" ? rooms : undefined,
     };
 }
@@ -193,6 +181,30 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
     const selectedZoneIds = useMemo(() => selectedZones.map((z) => z.id), [selectedZones]);
     const selectedZoneNames = useMemo(() => selectedZones.map((z) => z.name), [selectedZones]);
 
+    const urlNeighbourhoodNames = useMemo(() => {
+        const fromAll = searchParams.getAll("neighbourhoodNames");
+        if (fromAll.length > 0) return fromAll;
+        const single = searchParams.get("neighbourhoodNames") || searchParams.get("neighbourhoodName");
+        return single ? [single] : [];
+    }, [searchParams]);
+
+    const urlZoneIds = useMemo(() => {
+        const fromAll = searchParams.getAll("zoneIds");
+        if (fromAll.length > 0) return fromAll;
+        const single = searchParams.get("zoneIds") || searchParams.get("zoneId");
+        return single ? [single] : [];
+    }, [searchParams]);
+
+    const effectiveNeighbourhoodNames = useMemo(() => {
+        if (selectedZoneNames.length > 0) return selectedZoneNames;
+        return urlNeighbourhoodNames.length > 0 ? urlNeighbourhoodNames : undefined;
+    }, [selectedZoneNames, urlNeighbourhoodNames]);
+
+    const effectiveZoneIds = useMemo(() => {
+        if (selectedZoneIds.length > 0) return selectedZoneIds;
+        return urlZoneIds.length > 0 ? urlZoneIds : undefined;
+    }, [selectedZoneIds, urlZoneIds]);
+
     const observerTargetRef = useRef<HTMLDivElement | null>(null);
     const listContainerRef = useRef<HTMLDivElement | null>(null);
 
@@ -212,10 +224,10 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
             query: debouncedSearch.trim() || undefined,
             cityId: effectiveCityId,
             cityName: effectiveCityName !== "همه شهرها" ? effectiveCityName : undefined,
-            neighbourhoodName: selectedZones.length === 1 ? selectedZones[0].name : undefined,
-            neighbourhoodNames: selectedZoneNames.length > 1 ? selectedZoneNames : undefined,
-            zoneId: selectedZones.length === 1 ? selectedZones[0].id : undefined,
-            zoneIds: selectedZoneIds.length > 0 ? selectedZoneIds : undefined,
+            neighbourhoodName: effectiveNeighbourhoodNames?.length === 1 ? effectiveNeighbourhoodNames[0] : undefined,
+            neighbourhoodNames: effectiveNeighbourhoodNames && effectiveNeighbourhoodNames.length > 0 ? effectiveNeighbourhoodNames : undefined,
+            zoneId: effectiveZoneIds?.length === 1 ? effectiveZoneIds[0] : undefined,
+            zoneIds: effectiveZoneIds && effectiveZoneIds.length > 0 ? effectiveZoneIds : undefined,
             categoryKey: selectedCategory || undefined,
             subcategoryKey: selectedSubcategory || undefined,
             sort,
@@ -259,6 +271,19 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
     });
     const neighborhoods = useMemo(() => zonesData || [], [zonesData]);
 
+    useEffect(() => {
+        if (zonesData && zonesData.length > 0 && selectedZones.length === 0) {
+            if (urlZoneIds.length > 0 || urlNeighbourhoodNames.length > 0) {
+                const matched = zonesData.filter(
+                    (z) => urlZoneIds.includes(z.id) || urlNeighbourhoodNames.includes(z.name)
+                );
+                if (matched.length > 0) {
+                    setSelectedZones(matched);
+                }
+            }
+        }
+    }, [zonesData, urlZoneIds, urlNeighbourhoodNames, selectedZones.length]);
+
     const { data: categoriesData, isLoading: isCategoriesLoading } = useCategories();
     const { getSubcategoryName, getCategoryName } = useCategoryLookup();
     const { data: hierarchy } = useGeoHierarchy();
@@ -272,8 +297,8 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                     (c) => (targetId && c.id === targetId) || (targetName && c.name === targetName)
                 );
                 if (city?.centerPoint) {
-                    const lat = Number(city.centerPoint.latitude ?? (city.centerPoint as any).lat);
-                    const lng = Number(city.centerPoint.longitude ?? (city.centerPoint as any).lng);
+                    const lat = Number(city.centerPoint.latitude ?? city.centerPoint.lat);
+                    const lng = Number(city.centerPoint.longitude ?? city.centerPoint.lng);
                     if (!isNaN(lat) && !isNaN(lng)) {
                         return { latitude: lat, longitude: lng };
                     }
@@ -281,8 +306,8 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
             }
         }
         if (selectedCity.centerPoint) {
-            const lat = Number(selectedCity.centerPoint.latitude ?? (selectedCity.centerPoint as any).lat);
-            const lng = Number(selectedCity.centerPoint.longitude ?? (selectedCity.centerPoint as any).lng);
+            const lat = Number(selectedCity.centerPoint.latitude ?? selectedCity.centerPoint.lat);
+            const lng = Number(selectedCity.centerPoint.longitude ?? selectedCity.centerPoint.lng);
             if (!isNaN(lat) && !isNaN(lng)) {
                 return { latitude: lat, longitude: lng };
             }
@@ -370,23 +395,14 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
         if (mapData?.markers && mapData.markers.length > 0) {
             return mapData.markers.map(mapMarkerToAdSummary);
         }
-        return displayedAds
-            .filter(
-                (ad): ad is AdSummary & { location: NonNullable<AdSummary['location']> } =>
-                    Boolean(
-                        ad.location &&
-                        (typeof ad.location.latitude === "number" || typeof ad.location.lat === "number") &&
-                        (typeof ad.location.longitude === "number" || typeof ad.location.lng === "number")
-                    )
-            )
-            .map((ad) => ({
-                ...ad,
-                location: {
-                    ...ad.location,
-                    latitude: (ad.location.latitude ?? ad.location.lat) as number,
-                    longitude: (ad.location.longitude ?? ad.location.lng) as number,
-                },
-            }));
+        return displayedAds.filter(
+            (ad): ad is AdSummary & { location: NonNullable<AdSummary['location']> } =>
+                Boolean(
+                    ad.location?.coordinates &&
+                    typeof ad.location.coordinates.latitude === "number" &&
+                    typeof ad.location.coordinates.longitude === "number"
+                )
+        );
     }, [mapData, displayedAds]);
 
     const handleCitySelect = (city: {
@@ -483,9 +499,9 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
             return [currentCityCoords.latitude, currentCityCoords.longitude];
         }
         if (adsForMap.length > 0) {
-            const firstLoc = adsForMap[0]?.location;
-            if (firstLoc && !isNaN(firstLoc.latitude) && !isNaN(firstLoc.longitude)) {
-                return [firstLoc.latitude, firstLoc.longitude];
+            const coords = adsForMap[0]?.location?.coordinates;
+            if (coords && !isNaN(coords.latitude) && !isNaN(coords.longitude)) {
+                return [coords.latitude, coords.longitude];
             }
         }
         return [35.6892, 51.389];
@@ -777,7 +793,7 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                                                 getCategoryName(catKey) ||
                                                 subKey;
 
-                                            const effectiveId = ad.adId || (ad as any).id;
+                                            const effectiveId = ad.adId;
 
                                             return (
                                                 <PropertyCard
@@ -788,11 +804,7 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                                                     title={ad.title}
                                                     price={pricing.price}
                                                     unit={pricing.unit}
-                                                    location={
-                                                        ad.location?.area?.label
-                                                            ? `${ad.cityName || effectiveCityName}، ${ad.location.area.label}`
-                                                            : (ad.cityName || effectiveCityName || ad.cityId)
-                                                    }
+                                                    location={ad.location || ''}
                                                     image={
                                                         ad.mediaIds && ad.mediaIds.length > 0
                                                             ? getMediaPosterUrl(ad.mediaIds[0])
@@ -802,7 +814,7 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                                                     category={subcategoryDisplay}
                                                     isSaved={ad.isSaved ?? isAdSaved(effectiveId)}
                                                     onToggleSave={(id) => toggleSaveMutation.mutateAsync(id)}
-                                                    area={ad.area}
+                                                    area={getFloorArea(ad)}
                                                     rooms={ad.rooms}
                                                     isUrgent={ad.isFeatured}
                                                     date={ad.createdAt}

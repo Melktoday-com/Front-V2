@@ -9,6 +9,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { MapContainer, Marker, Polygon, Popup, TileLayer, Tooltip, useMap } from "react-leaflet";
 import { PropertyCard } from "./PropertyCard";
 import { getMediaUrl, getMediaPosterUrl } from "@/lib/utils";
+import { mapMarkerToLocation } from "@/lib/location";
 
 // Fix for default marker icons in Leaflet with Next.js
 const DefaultIcon = L.icon({
@@ -288,11 +289,11 @@ export default function Map({
     // If there are ads with locations, we might want to fit the bounds
     const adsWithLocation = ads.filter((ad): ad is typeof ad & { location: NonNullable<typeof ad.location> } =>
         Boolean(
-            ad.location &&
-            typeof ad.location.latitude === 'number' &&
-            !isNaN(ad.location.latitude) &&
-            typeof ad.location.longitude === 'number' &&
-            !isNaN(ad.location.longitude)
+            ad.location?.coordinates &&
+            typeof ad.location.coordinates.latitude === 'number' &&
+            !isNaN(ad.location.coordinates.latitude) &&
+            typeof ad.location.coordinates.longitude === 'number' &&
+            !isNaN(ad.location.coordinates.longitude)
         )
     );
 
@@ -441,11 +442,7 @@ export default function Map({
                                         variant="map"
                                         title={marker.title}
                                         price={marker.price ?? "توافقی"}
-                                        location={
-                                            marker.neighbourhoodName
-                                                ? (marker.cityName ? `${marker.cityName}، ${marker.neighbourhoodName}` : marker.neighbourhoodName)
-                                                : (marker.cityName || '')
-                                        }
+                                        location={mapMarkerToLocation(marker)}
                                         image={getMediaPosterUrl(marker.mediaIds?.[0])}
                                         isVideo={marker.mediaIds?.[0]?.type === "VIDEO"}
                                         category={marker.subcategory || marker.category || ''}
@@ -467,7 +464,7 @@ export default function Map({
                         return (
                             <Marker
                                 key={ad.adId}
-                                position={[ad.location.latitude, ad.location.longitude]}
+                                position={[ad.location.coordinates!.latitude, ad.location.coordinates!.longitude]}
                                 icon={createPriceIcon(priceLabel)}
                             >
                                 <Popup
@@ -482,11 +479,7 @@ export default function Map({
                                         title={ad.title}
                                         price={numericPrice ?? priceInfo.price ?? "توافقی"}
                                         unit={priceInfo.unit}
-                                        location={
-                                            ad.cityName
-                                                ? (ad.location?.area?.label ? `${ad.cityName}، ${ad.location.area.label}` : ad.cityName)
-                                                : (ad.city?.label || ad.cityId || '')
-                                        }
+                                        location={ad.location}
                                         image={getMediaPosterUrl(ad.mediaIds?.[0])}
                                         isVideo={ad.mediaIds?.[0]?.type === "VIDEO"}
                                         category={ad.subcategoryTitle || ad.categoryPath?.subcategoryTitle || ad.categoryPath?.subcategoryKey}

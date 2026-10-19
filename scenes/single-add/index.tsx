@@ -10,8 +10,9 @@ import { useCityLookup } from "@/hooks/useCityLookup";
 import { useToggleSaveAd } from "@/hooks/useFavorites";
 import { useSafeBack } from "@/hooks/useSafeBack";
 import { cn, formatAdPrice, formatPrice, getMediaPosterUrl, getMediaUrl, toPersianDigits } from "@/lib/utils";
+import { getFloorArea } from "@/lib/location";
 import { adsService } from "@/services/ads.service";
-import { AdDetail, AdSummary, SubcategoryConfigResponse } from "@/types/api/ads.types";
+import { AdDetail, AdSummary, NamedReference, SubcategoryConfigResponse } from "@/types/api/ads.types";
 import { AdStatus } from "@/types/api/enums";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -40,7 +41,8 @@ import {
     ShieldCheck,
     Sparkles,
     Tag,
-    X
+    X,
+    LucideIcon
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
@@ -177,12 +179,11 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
     const { getCityName } = useCityLookup();
     const { getSubcategoryName, getCategoryName, getCategoryPathLabel } = useCategoryLookup();
 
-    const cityName = ad?.cityName || getCityName(ad?.cityId);
-    const provinceName = ad?.provinceName;
-    const areaName =
-        ad?.location?.area?.label ||
-        (typeof (ad as any)?.area === "object" ? (ad as any)?.area?.label : undefined) ||
-        (ad as any)?.neighbourhoodName;
+    const location = ad?.location;
+    const cityName = location?.city?.name || ad?.cityName || getCityName(ad?.cityId);
+    const neighbourhoodName = location?.neighbourhood?.name;
+    const provinceName = location?.province?.name || ad?.provinceName;
+    const areaName = neighbourhoodName;
 
     const rawCatKey = ad?.categoryPath?.categoryKey;
     const rawSubKey = ad?.categoryPath?.subcategoryKey;
@@ -341,7 +342,7 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
     );
     const businessModelTitle =
         dynamicPriceModel?.displayName ||
-        (ad.categoryPath as any)?.businessModelTitle ||
+        ad.categoryPath?.businessModelTitle ||
         rawModel ||
         null;
 
@@ -421,9 +422,9 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
     };
 
     // Top Key Specs Chips (Dynamically adapt to any property category based on technicalSpecs)
-    const keyMetrics: { label: string; value: string; icon: any }[] = [];
+    const keyMetrics: { label: string; value: string; icon: LucideIcon }[] = [];
 
-    const topArea = (ad as any).area || rawAttrs.area || rawAttrs.land_area || rawAttrs.building_area || rawAttrs.shed_area || rawAttrs.meterage;
+    const topArea = getFloorArea(ad) || rawAttrs.land_area || rawAttrs.building_area || rawAttrs.shed_area || rawAttrs.meterage;
     if (topArea && !technicalSpecs.some(s => s.key.toLowerCase().includes("area"))) {
         keyMetrics.push({
             label: "متراژ",
@@ -457,9 +458,10 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
 
     const statusConfig = STATUS_CONFIG[ad.status] || STATUS_CONFIG.PUBLISHED;
 
-    const lat = ad.location?.latitude ?? ad.location?.lat;
-    const lng = ad.location?.longitude ?? ad.location?.lng;
-    const hasCoords = typeof lat === "number" && typeof lng === "number";
+    const coords = location?.coordinates;
+    const lat = coords?.latitude;
+    const lng = coords?.longitude;
+    const hasCoords = typeof lat === "number" && typeof lng === "number" && !(lat === 0 && lng === 0);
 
     const handleCopyId = () => {
         if (typeof navigator !== "undefined" && navigator.clipboard) {

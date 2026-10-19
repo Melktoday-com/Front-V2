@@ -1,7 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 
-const BASE = 'https://beta.melktoday.ir/backend/api';
+const BASE = process.env.PLAYWRIGHT_API_URL || 'http://localhost:3000/api';
+const COOKIE_DOMAIN = process.env.PLAYWRIGHT_COOKIE_DOMAIN || 'localhost';
 const XSRF = '5caaf73c6ff916f018fd3addeab3c201dc8529078f5db6349a0ad3c875127a22';
 
 interface TokenPayload {
@@ -81,20 +82,20 @@ export default async function globalSetup() {
       {
         name: 'access_token',
         value: token,
-        domain: 'beta.melktoday.ir',
+        domain: COOKIE_DOMAIN,
         path: '/',
         httpOnly: false,
-        secure: true,
+        secure: COOKIE_DOMAIN !== 'localhost',
         sameSite: 'Lax',
         expires: Math.floor(Date.now() / 1000) + 86400 * 30,
       },
       {
         name: 'XSRF-TOKEN',
         value: XSRF,
-        domain: 'beta.melktoday.ir',
+        domain: COOKIE_DOMAIN,
         path: '/',
         httpOnly: false,
-        secure: true,
+        secure: COOKIE_DOMAIN !== 'localhost',
         sameSite: 'Lax',
         expires: Math.floor(Date.now() / 1000) + 86400 * 30,
       },

@@ -12,6 +12,7 @@ import { useSafeBack } from "@/hooks/useSafeBack";
 import { useShowcase } from "@/hooks/useShowcase";
 import { useTemporaryRentAdDetail, useTemporaryRentAds } from "@/hooks/useTemporaryRent";
 import { cn, formatPrice, getMediaPosterUrl, getMediaUrl, toPersianDigits } from "@/lib/utils";
+import { formatLocationDisplay } from "@/lib/location";
 import { temporaryRentService } from "@/services/temporary-rent.service";
 import type { TemporaryRentAd, TemporaryRentContactInfo, TemporaryRentPricingReadModel } from "@/types/api/temporary-rent.types";
 import {
@@ -244,9 +245,10 @@ function getResidenceRate(pricing?: TemporaryRentPricingReadModel | null): numbe
 
     const nightlyPrice = getResidenceRate(residence.pricing);
     const totalPrice = nightlyPrice * nights;
-    const lat = residence.latitude;
-    const lng = residence.longitude;
-    const hasCoords = typeof lat === "number" && typeof lng === "number";
+    const coords = residence.location?.coordinates;
+    const lat = coords?.latitude ?? residence.latitude;
+    const lng = coords?.longitude ?? residence.longitude;
+    const hasCoords = typeof lat === "number" && typeof lng === "number" && !(lat === 0 && lng === 0);
 
     const renderBookingCard = (isMobile = false) => (
         <div
@@ -432,7 +434,9 @@ function getResidenceRate(pricing?: TemporaryRentPricingReadModel | null): numbe
                     <span>•</span>
                     <div className="flex items-center gap-1">
                         <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
-                        <span>{cityName}</span>
+                        <span>
+                            {formatLocationDisplay(residence.location, cityName)}
+                        </span>
                     </div>
                     {residence.address && (
                         <>
@@ -698,7 +702,7 @@ function getResidenceRate(pricing?: TemporaryRentPricingReadModel | null): numbe
                                     id={item.id}
                                     title={item.title}
                                     nightlyPrice={getResidenceRate(item.pricing)}
-                                    location={item.cityName || getCityName(item.cityId) || cityName || "ایران"}
+                                    location={formatLocationDisplay(item.location, item.cityName || getCityName(item.cityId) || cityName || "ایران")}
                                     mediaIds={item.mediaIds}
                                     maxGuests={item.maxGuests}
                                 />

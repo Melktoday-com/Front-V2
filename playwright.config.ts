@@ -14,7 +14,7 @@ export default defineConfig({
     ['html', { outputFolder: 'playwright-report', open: 'never' }],
   ],
   use: {
-    baseURL: 'https://beta.melktoday.ir',
+    baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3001',
     channel: 'chrome',
     headless: true,
     viewport: { width: 1280, height: 800 },

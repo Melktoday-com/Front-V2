@@ -350,8 +350,8 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                     description: existingAd.description,
                     attributes: existingAd.attributes || {},
                     pricingValues: existingAd.pricing || {},
-                    latitude: existingAd.location?.latitude ?? 35.6892,
-                    longitude: existingAd.location?.longitude ?? 51.389,
+                    latitude: existingAd.location?.coordinates?.latitude ?? 35.6892,
+                    longitude: existingAd.location?.coordinates?.longitude ?? 51.389,
                     mediaIds: existingAd.mediaIds || [],
                 });
                 if (existingAd.cityName) {

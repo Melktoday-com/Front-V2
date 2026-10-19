@@ -8,6 +8,7 @@ export interface CategoryPath {
     attributeSchemaVersion: number;
     categoryTitle?: string;
     subcategoryTitle?: string;
+    businessModelTitle?: string;
 }
 
 export interface NamedReference {
@@ -22,15 +23,9 @@ export interface AttributeItem {
     displayValue: string;
 }
 
-export interface AdLocation {
-    latitude: number;
-    longitude: number;
-    lat?: number;
-    lng?: number;
-    province?: NamedReference | null;
-    city?: NamedReference | null;
-    area?: NamedReference | null;
-}
+import type { ResolvedLocation } from "../location.types";
+
+export type AdLocation = ResolvedLocation;
 
 export interface AdPublisher {
     type: 'host' | 'agency' | 'platform' | 'user';
@@ -49,6 +44,7 @@ export interface AdSummary {
     provinceName?: string;
     province?: NamedReference | null;
     city?: NamedReference | null;
+    neighbourhood?: NamedReference | null;
     category?: NamedReference | null;
     subcategory?: NamedReference | null;
     attributeList?: AttributeItem[];
@@ -63,8 +59,8 @@ export interface AdSummary {
     isSaved?: boolean;
     mediaIds?: MediaReference[];
     createdAt: string;
-    location?: AdLocation | null;
-    area?: number | string;
+    location?: ResolvedLocation | null;
+    area?: number | null;
     rooms?: number | string;
     publisher?: AdPublisher;
 }

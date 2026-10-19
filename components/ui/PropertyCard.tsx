@@ -9,6 +9,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import type { ResolvedLocation } from "@/types/location.types";
+import { formatLocationDisplay } from "@/lib/location";
+
 function formatDisplayDate(dateVal?: string | Date | number | null): string {
     if (!dateVal) return "";
     try {
@@ -40,7 +43,7 @@ interface PropertyCardProps {
     adId?: string;
     title: string;
     price: string | number;
-    location: string;
+    location: string | ResolvedLocation;
     image: string;
     isVideo?: boolean;
     category?: string;
@@ -55,8 +58,8 @@ interface PropertyCardProps {
     // Backward compatibility aliases
     isFavorited?: boolean;
     onToggleFavorite?: (adId: string) => Promise<{ isFavorited: boolean } | { isSaved: boolean } | void> | void;
-    area?: number | string;
-    rooms?: number | string;
+    area?: number | string | null;
+    rooms?: number | string | null;
     date?: string | Date | number | null;
     createdAt?: string | Date | number | null;
     badgeName?: string | null;
@@ -98,6 +101,9 @@ export function PropertyCard({
     const router = useRouter();
     const effectiveAdId = adId || id;
     const effectiveDate = date ?? createdAt;
+    const displayLocation = typeof location === "string" ? location : formatLocationDisplay(location);
+    const effectiveArea = area !== null && area !== undefined && typeof area !== "object" ? area : undefined;
+    const effectiveRooms = rooms ?? undefined;
     const [imgSrc, setImgSrc] = useState(image || "/property-placeholder.svg");
 
     const isResponsive = variant === "responsive";
@@ -200,15 +206,15 @@ export function PropertyCard({
                                     {DEFAULT_CATEGORY_TRANSLATIONS[category] || category}
                                 </span>
                             )}
-                            {(area || rooms) && category && <span className="text-border-subtle">•</span>}
-                            {area && (
+                            {(effectiveArea || effectiveRooms) && category && <span className="text-border-subtle">•</span>}
+                            {effectiveArea && (
                                 <span className="text-foreground-muted font-medium shrink-0">
-                                    {toPersianDigits(area)} متر
+                                    {toPersianDigits(effectiveArea)} متر
                                 </span>
                             )}
-                            {rooms && (
+                            {effectiveRooms && (
                                 <span className="text-foreground-muted font-medium shrink-0">
-                                    {toPersianDigits(rooms)} خ
+                                    {toPersianDigits(effectiveRooms)} خ
                                 </span>
                             )}
                         </div>
@@ -222,10 +228,10 @@ export function PropertyCard({
                         </h4>
 
                         {/* Location */}
-                        {location && (
+                        {displayLocation && (
                             <div className="flex items-center gap-1 text-[10px] text-foreground-muted mt-0.5 truncate">
                                 <MapPin className="w-2.5 h-2.5 shrink-0 text-foreground-muted/70" />
-                                <span className="truncate">{location}</span>
+                                <span className="truncate">{displayLocation}</span>
                             </div>
                         )}
                     </div>
@@ -307,12 +313,12 @@ export function PropertyCard({
                     </div>
 
                     {/* Specs & Date Row */}
-                    {(area || rooms || effectiveDate) && (
+                    {(effectiveArea || effectiveRooms || effectiveDate) && (
                         <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] text-text-light mt-1 font-medium flex-wrap">
-                            {area ? <span>{toPersianDigits(area)} متر</span> : null}
-                            {area && rooms ? <span>•</span> : null}
-                            {rooms ? <span>{toPersianDigits(rooms)} خوابه</span> : null}
-                            {(area || rooms) && effectiveDate && formatDisplayDate(effectiveDate) ? <span>•</span> : null}
+                            {effectiveArea ? <span>{toPersianDigits(effectiveArea)} متر</span> : null}
+                            {effectiveArea && effectiveRooms ? <span>•</span> : null}
+                            {effectiveRooms ? <span>{toPersianDigits(effectiveRooms)} خوابه</span> : null}
+                            {(effectiveArea || effectiveRooms) && effectiveDate && formatDisplayDate(effectiveDate) ? <span>•</span> : null}
                             {effectiveDate && formatDisplayDate(effectiveDate) ? (
                                 <time
                                     dateTime={typeof effectiveDate === "string" ? effectiveDate : undefined}
@@ -370,10 +376,10 @@ export function PropertyCard({
                         )}
                     </div>
 
-                    {location && (
+                    {displayLocation && (
                         <div className="flex items-center gap-1 text-text-light text-[10px] sm:text-[11px] min-w-0 shrink-0 max-w-[50%]">
                             <MapPin className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0 text-text-light/70" />
-                            <span className="truncate">{location}</span>
+                            <span className="truncate">{displayLocation}</span>
                         </div>
                     )}
                 </div>

@@ -20,6 +20,7 @@ export interface TemporaryRentAdSummary {
     title: string;
     pricing: TemporaryRentPricingReadModel;
     mediaIds?: MediaReference[];
+    location?: import("@/types/location.types").ResolvedLocation | null;
     createdAt: string;
     maxGuests?: number;
     isSaved?: boolean;

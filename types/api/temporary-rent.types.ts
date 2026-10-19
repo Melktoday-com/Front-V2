@@ -96,6 +96,8 @@ export interface TemporaryRentAd {
         slug?: string;
     };
     cityName?: string;
+    neighbourhoodName?: string | null;
+    location?: import("../location.types").ResolvedLocation | null;
     publisher?: AdPublisher;
 }
 

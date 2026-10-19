@@ -306,8 +306,8 @@ export default function AdminAdDetailModal({
                                         شهر: {getCityName(ad.cityId)}
                                     </span>
                                     <span className="text-[10px] text-foreground-muted block font-mono">
-                                        {ad.location?.latitude && ad.location?.longitude
-                                            ? `${ad.location.latitude.toFixed(3)}, ${ad.location.longitude.toFixed(3)}`
+                                        {ad.location?.coordinates?.latitude && ad.location?.coordinates?.longitude
+                                            ? `${ad.location.coordinates.latitude.toFixed(3)}, ${ad.location.coordinates.longitude.toFixed(3)}`
                                             : "بدون مختصات"}
                                     </span>
                                 </div>
