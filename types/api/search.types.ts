@@ -201,6 +201,8 @@ export interface SearchListingsQueryDto {
   categorySlug?: string;
   categoryKey?: string;
   subcategoryKey?: string;
+  businessModelKey?: string;
+  isFeatured?: boolean;
   provinceId?: number | string;
   cityId?: string;
   cityName?: string;
@@ -210,6 +212,11 @@ export interface SearchListingsQueryDto {
   zoneIds?: string[];
   minPrice?: number;
   maxPrice?: number;
+  minDeposit?: number;
+  maxDeposit?: number;
+  minRent?: number;
+  maxRent?: number;
+  priceModelKey?: string;
   lat?: number;
   lng?: number;
   radiusKm?: number;
@@ -228,8 +235,11 @@ export interface SearchListingsQueryDto {
 
 export interface SearchMapQueryDto {
   query?: string;
+  categorySlug?: string;
   categoryKey?: string;
   subcategoryKey?: string;
+  businessModelKey?: string;
+  isFeatured?: boolean;
   provinceId?: number | string;
   cityId?: string;
   cityName?: string;
@@ -244,6 +254,11 @@ export interface SearchMapQueryDto {
   zoom?: number;
   minPrice?: number;
   maxPrice?: number;
+  minDeposit?: number;
+  maxDeposit?: number;
+  minRent?: number;
+  maxRent?: number;
+  priceModelKey?: string;
   minArea?: number;
   maxArea?: number;
   minRooms?: number;

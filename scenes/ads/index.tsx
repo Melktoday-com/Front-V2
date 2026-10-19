@@ -148,6 +148,17 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
     const urlSubcategory = searchParams.get("subcategoryKey") || "";
     const urlDealType = searchParams.get("businessModelKey") || "";
     const urlIsFeatured = searchParams.get("isFeatured") === "true";
+    const urlPriceModel = searchParams.get("priceModelKey") || undefined;
+    const urlMinPrice = searchParams.get("minPrice") ? Number(searchParams.get("minPrice")) : undefined;
+    const urlMaxPrice = searchParams.get("maxPrice") ? Number(searchParams.get("maxPrice")) : undefined;
+    const urlMinDeposit = searchParams.get("minDeposit") ? Number(searchParams.get("minDeposit")) : undefined;
+    const urlMaxDeposit = searchParams.get("maxDeposit") ? Number(searchParams.get("maxDeposit")) : undefined;
+    const urlMinRent = searchParams.get("minRent") ? Number(searchParams.get("minRent")) : undefined;
+    const urlMaxRent = searchParams.get("maxRent") ? Number(searchParams.get("maxRent")) : undefined;
+    const urlMinArea = searchParams.get("minArea") ? Number(searchParams.get("minArea")) : undefined;
+    const urlMaxArea = searchParams.get("maxArea") ? Number(searchParams.get("maxArea")) : undefined;
+    const urlMinRooms = searchParams.get("minRooms") ? Number(searchParams.get("minRooms")) : undefined;
+    const urlMaxRooms = searchParams.get("maxRooms") ? Number(searchParams.get("maxRooms")) : undefined;
 
     const [search, setSearch] = useState(urlSearch);
     const [selectedCategory, setSelectedCategory] = useState(urlCategory);
@@ -230,6 +241,19 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
             zoneIds: effectiveZoneIds && effectiveZoneIds.length > 0 ? effectiveZoneIds : undefined,
             categoryKey: selectedCategory || undefined,
             subcategoryKey: selectedSubcategory || undefined,
+            businessModelKey: urlDealType || undefined,
+            isFeatured: urlIsFeatured ? true : undefined,
+            priceModelKey: urlPriceModel,
+            minPrice: !isNaN(Number(urlMinPrice)) ? urlMinPrice : undefined,
+            maxPrice: !isNaN(Number(urlMaxPrice)) ? urlMaxPrice : undefined,
+            minDeposit: !isNaN(Number(urlMinDeposit)) ? urlMinDeposit : undefined,
+            maxDeposit: !isNaN(Number(urlMaxDeposit)) ? urlMaxDeposit : undefined,
+            minRent: !isNaN(Number(urlMinRent)) ? urlMinRent : undefined,
+            maxRent: !isNaN(Number(urlMaxRent)) ? urlMaxRent : undefined,
+            minArea: !isNaN(Number(urlMinArea)) ? urlMinArea : undefined,
+            maxArea: !isNaN(Number(urlMaxArea)) ? urlMaxArea : undefined,
+            minRooms: !isNaN(Number(urlMinRooms)) ? urlMinRooms : undefined,
+            maxRooms: !isNaN(Number(urlMaxRooms)) ? urlMaxRooms : undefined,
             sort,
         },
         { startPage, maxPages: 7, enabled: true }
@@ -342,8 +366,25 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
             zoom: debouncedMapViewport?.zoom ?? mapZoom,
             cityId: effectiveCityId,
             cityName: effectiveCityName !== "همه شهرها" ? effectiveCityName : undefined,
+            neighbourhoodName: effectiveNeighbourhoodNames?.length === 1 ? effectiveNeighbourhoodNames[0] : undefined,
+            neighbourhoodNames: effectiveNeighbourhoodNames && effectiveNeighbourhoodNames.length > 0 ? effectiveNeighbourhoodNames : undefined,
+            zoneId: effectiveZoneIds?.length === 1 ? effectiveZoneIds[0] : undefined,
+            zoneIds: effectiveZoneIds && effectiveZoneIds.length > 0 ? effectiveZoneIds : undefined,
             categoryKey: selectedCategory || undefined,
             subcategoryKey: selectedSubcategory || undefined,
+            businessModelKey: urlDealType || undefined,
+            isFeatured: urlIsFeatured ? true : undefined,
+            priceModelKey: urlPriceModel,
+            minPrice: !isNaN(Number(urlMinPrice)) ? urlMinPrice : undefined,
+            maxPrice: !isNaN(Number(urlMaxPrice)) ? urlMaxPrice : undefined,
+            minDeposit: !isNaN(Number(urlMinDeposit)) ? urlMinDeposit : undefined,
+            maxDeposit: !isNaN(Number(urlMaxDeposit)) ? urlMaxDeposit : undefined,
+            minRent: !isNaN(Number(urlMinRent)) ? urlMinRent : undefined,
+            maxRent: !isNaN(Number(urlMaxRent)) ? urlMaxRent : undefined,
+            minArea: !isNaN(Number(urlMinArea)) ? urlMinArea : undefined,
+            maxArea: !isNaN(Number(urlMaxArea)) ? urlMaxArea : undefined,
+            minRooms: !isNaN(Number(urlMinRooms)) ? urlMinRooms : undefined,
+            maxRooms: !isNaN(Number(urlMaxRooms)) ? urlMaxRooms : undefined,
             query: debouncedSearch.trim() || undefined,
             limit: 500,
         },
@@ -405,6 +446,21 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
         );
     }, [mapData, displayedAds]);
 
+    const updateZoneParams = (newZones: ZoneSummary[]) => {
+        const params = new URLSearchParams(searchParams.toString());
+        params.delete("zoneId");
+        params.delete("zoneIds");
+        params.delete("neighbourhoodName");
+        params.delete("neighbourhoodNames");
+        if (newZones.length > 0) {
+            newZones.forEach((z) => {
+                params.append("zoneIds", z.id);
+                params.append("neighbourhoodNames", z.name);
+            });
+        }
+        router.replace(`/ads?${params.toString()}`, { scroll: false });
+    };
+
     const handleCitySelect = (city: {
         id: string;
         name: string;
@@ -421,6 +477,10 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
             params.delete("cityId");
             params.delete("cityName");
         }
+        params.delete("zoneId");
+        params.delete("zoneIds");
+        params.delete("neighbourhoodName");
+        params.delete("neighbourhoodNames");
         router.replace(`/ads?${params.toString()}`, { scroll: false });
     };
 
@@ -458,14 +518,26 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
     const handleZoneToggle = (zone: ZoneSummary) => {
         setSelectedZones((prev) => {
             const exists = prev.some((z) => z.id === zone.id);
-            return exists ? prev.filter((z) => z.id !== zone.id) : [...prev, zone];
+            const next = exists ? prev.filter((z) => z.id !== zone.id) : [...prev, zone];
+            updateZoneParams(next);
+            return next;
         });
         setStartPage(1);
     };
 
     const handleRemoveZone = (zoneId: string) => {
-        setSelectedZones((prev) => prev.filter((z) => z.id !== zoneId));
+        setSelectedZones((prev) => {
+            const next = prev.filter((z) => z.id !== zoneId);
+            updateZoneParams(next);
+            return next;
+        });
         setStartPage(1);
+    };
+
+    const handleClearZones = () => {
+        setSelectedZones([]);
+        setStartPage(1);
+        updateZoneParams([]);
     };
 
     const getPricingDisplay = (ad: AdSummary): { price: string | number; unit?: string } => {
@@ -548,7 +620,7 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                         ))}
                         <button
                             type="button"
-                            onClick={() => setSelectedZones([])}
+                            onClick={handleClearZones}
                             className="text-[11px] text-secondary hover:text-error font-semibold transition-colors cursor-pointer"
                         >
                             پاک کردن همه
@@ -935,10 +1007,7 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                 neighborhoods={neighborhoods}
                 selectedIds={selectedZoneIds}
                 onToggle={handleZoneToggle}
-                onClear={() => {
-                    setSelectedZones([]);
-                    setStartPage(1);
-                }}
+                onClear={handleClearZones}
             />
 
             {/* Category Tree Dialog / Drawer */}

@@ -153,6 +153,7 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
     const isPublished = ad?.status === AdStatus.PUBLISHED || (ad?.status as string) === "PUBLISHED";
     const isPromoted = Boolean(ad?.isFeatured);
     const isEligibleForPromotion = isOwner && isPublished && !isPromoted;
+    const isRegularUser = !ad?.publisher || ad?.publisher?.type === "user" || ad?.publisher?.type === "platform";
 
     useEffect(() => {
         if (ad?.isSaved !== undefined) {
@@ -840,7 +841,7 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
                 </div>
 
                 {/* Left column (Desktop Contact Card & Actions) */}
-                <div className="space-y-6">
+                <div className={cn("space-y-6", isRegularUser && "hidden lg:block")}>
                     <div className="sticky top-6 bg-surface p-6 rounded-3xl border border-border-subtle shadow-lg space-y-5">
                         <h3 className="font-black text-brand text-base border-b border-border-subtle pb-3">
                             اطلاعات تماس آگهی‌دهنده

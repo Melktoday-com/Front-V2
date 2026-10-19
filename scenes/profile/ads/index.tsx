@@ -564,11 +564,6 @@ export default function MyAdsScene() {
                         <div>
                             <div className="flex items-center gap-2">
                                 <h1 className="text-lg sm:text-xl font-black text-brand">آگهی‌های من</h1>
-                                {!isLoading && (
-                                    <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-brand/5 text-brand">
-                                        {toPersianDigits(totalCount)} آگهی
-                                    </span>
-                                )}
                             </div>
                             <p className="text-xs text-secondary mt-0.5 hidden sm:block">
                                 مدیریت، ویرایش و مشاهده وضعیت آگهی‌های ثبت شده شما
