@@ -9,8 +9,7 @@ import { cn, toEnglishDigits, toOnlyDigits } from "@/lib/utils";
 import { showcaseService } from "@/services/showcase.service";
 import { userService } from "@/services/user.service";
 import { HostApplicationRequest } from "@/types/api/showcase.types";
-import { useCities } from "@/hooks/useGeo";
-import { CityItem } from "@/types/api/geo.types";
+import { useCityLookup } from "@/hooks/useCityLookup";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowRight,
@@ -38,7 +37,7 @@ export default function HostApplyPage() {
   const { isLoggedIn } = useAuth();
   const { isRestricted } = useUserStatus();
   const queryClient = useQueryClient();
-  const { data: citiesData } = useCities({ limit: 100 });
+  const { getCityName } = useCityLookup();
 
   const [isCitySelectorOpen, setIsCitySelectorOpen] = useState(false);
   const [selectedCityName, setSelectedCityName] = useState("");
@@ -93,25 +92,23 @@ export default function HostApplyPage() {
       propertyCount: myApp.propertyCount || 1,
       description: myApp.description || "",
     });
-    if (myApp.cityId && citiesData) {
-      const citiesList: CityItem[] = citiesData.items || citiesData.cities || [];
-      const found = citiesList.find((c: CityItem) => c.id === myApp.cityId);
-      if (found?.name) {
-        setSelectedCityName(found.name);
+    if (myApp.cityId) {
+      const name = getCityName(myApp.cityId);
+      if (name && name !== "نامشخص" && name !== "در حال بارگذاری...") {
+        setSelectedCityName(name);
       }
     }
     setIsEditing(true);
   };
 
   useEffect(() => {
-    if (formData.cityId && !selectedCityName && citiesData) {
-      const citiesList: CityItem[] = citiesData.items || citiesData.cities || [];
-      const found = citiesList.find((c: CityItem) => c.id === formData.cityId);
-      if (found?.name) {
-        setSelectedCityName(found.name);
+    if (formData.cityId && !selectedCityName) {
+      const name = getCityName(formData.cityId);
+      if (name && name !== "نامشخص" && name !== "در حال بارگذاری...") {
+        setSelectedCityName(name);
       }
     }
-  }, [formData.cityId, selectedCityName, citiesData]);
+  }, [formData.cityId, selectedCityName, getCityName]);
 
   useEffect(() => {
     if (searchParams.get("edit") === "true" && myApp && myApp.status === "PENDING") {

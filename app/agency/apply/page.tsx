@@ -2,13 +2,12 @@
 
 import { CitySelector } from "@/components/CitySelector";
 import { useAuth } from "@/hooks/useAuth";
-import { useCities } from "@/hooks/useGeo";
+import { useCityLookup } from "@/hooks/useCityLookup";
 import { normalizeApiError } from "@/lib/api/error-handler";
 import { toEnglishDigits, toOnlyDigits } from "@/lib/utils";
 import { agencyService } from "@/services/agency.service";
 import { userService } from "@/services/user.service";
 import { AgentApplicationType, ApplyAgentRequest } from "@/types/api/agency.types";
-import { CityItem } from "@/types/api/geo.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
     ArrowRight,
@@ -34,7 +33,7 @@ export default function AgencyApplyPage() {
     const searchParams = useSearchParams();
     const { isLoggedIn } = useAuth();
     const queryClient = useQueryClient();
-    const { data: citiesData } = useCities({ limit: 100 });
+    const { getCityName } = useCityLookup();
 
     const [isReapplying, setIsReapplying] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
@@ -99,25 +98,23 @@ export default function AgencyApplyPage() {
             experienceYears: myApp.experienceYears || 1,
             description: myApp.description || "",
         });
-        if (myApp.cityId && citiesData) {
-            const citiesList: CityItem[] = citiesData.items || citiesData.cities || [];
-            const found = citiesList.find((c: CityItem) => c.id === myApp.cityId);
-            if (found?.name) {
-                setSelectedCityName(found.name);
+        if (myApp.cityId) {
+            const name = getCityName(myApp.cityId);
+            if (name && name !== "نامشخص" && name !== "در حال بارگذاری...") {
+                setSelectedCityName(name);
             }
         }
         setIsEditing(true);
     };
 
     useEffect(() => {
-        if (formData.cityId && !selectedCityName && citiesData) {
-            const citiesList: CityItem[] = citiesData.items || citiesData.cities || [];
-            const found = citiesList.find((c: CityItem) => c.id === formData.cityId);
-            if (found?.name) {
-                setSelectedCityName(found.name);
+        if (formData.cityId && !selectedCityName) {
+            const name = getCityName(formData.cityId);
+            if (name && name !== "نامشخص" && name !== "در حال بارگذاری...") {
+                setSelectedCityName(name);
             }
         }
-    }, [formData.cityId, selectedCityName, citiesData]);
+    }, [formData.cityId, selectedCityName, getCityName]);
 
     useEffect(() => {
         if (searchParams.get("edit") === "true" && myApp && myApp.status === "PENDING") {
@@ -228,8 +225,6 @@ export default function AgencyApplyPage() {
             submitMutation.mutate(payload);
         }
     };
-
-    const cities = citiesData?.items || citiesData?.cities || [];
 
     return (
         <div className="min-h-screen bg-surface-secondary py-10 px-4 sm:px-6 lg:px-8" dir="rtl">

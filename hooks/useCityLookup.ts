@@ -1,6 +1,6 @@
 import { useGeoHierarchy } from "@/hooks/useGeoHierarchy";
 import { useCities } from "@/hooks/useGeo";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 
 export function useCityLookup() {
     const { data: hierarchy, isLoading: isHierarchyLoading } = useGeoHierarchy();
@@ -32,12 +32,12 @@ export function useCityLookup() {
 
     const isLoading = isHierarchyLoading && isCitiesLoading;
 
-    const getCityName = (cityId?: string, fallback = "نامشخص") => {
+    const getCityName = useCallback((cityId?: string, fallback = "نامشخص") => {
         if (!cityId) return fallback;
         if (cityNameMap[cityId]) return cityNameMap[cityId];
         if (isLoading) return "در حال بارگذاری...";
         return fallback;
-    };
+    }, [cityNameMap, isLoading]);
 
     return {
         cityNameMap,
