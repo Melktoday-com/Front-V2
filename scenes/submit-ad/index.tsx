@@ -1032,57 +1032,13 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
 
                                 {/* Section 2: Media Upload (Above Title Section) */}
                                 <div className="space-y-3 pt-1">
-                                    <div className="flex flex-wrap items-center justify-between gap-2 pb-1.5 border-b border-border-subtle">
-                                        <div className="flex items-center gap-2">
-                                            <h3 className="text-sm font-black text-brand">
-                                                تصاویر و ویدئوهای ملک <span className="text-error">*</span>
-                                            </h3>
-                                            <span className="text-[11px] text-text-light font-medium">
-                                                (حداقل ۱ فایل الزامی است)
-                                            </span>
-                                        </div>
-
-                                        {/* Decorative Images Toggle Switch */}
-                                        <button
-                                            type="button"
-                                            role="switch"
-                                            aria-checked={Boolean(formData.isDecorativeImages)}
-                                            onClick={() =>
-                                                setFormData((prev) => ({
-                                                    ...prev,
-                                                    isDecorativeImages: !prev.isDecorativeImages,
-                                                }))
-                                            }
-                                            className="flex items-center gap-2.5 cursor-pointer group select-none py-1"
-                                        >
-                                            <span
-                                                className={cn(
-                                                    "text-xs font-bold transition-colors",
-                                                    formData.isDecorativeImages
-                                                        ? "text-primary"
-                                                        : "text-foreground-secondary group-hover:text-foreground"
-                                                )}
-                                            >
-                                                تصاویر تزئینی است
-                                            </span>
-                                            <span
-                                                className={cn(
-                                                    "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors duration-200 ease-in-out p-0.5 shadow-inner",
-                                                    formData.isDecorativeImages
-                                                        ? "bg-primary"
-                                                        : "bg-slate-200 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 group-hover:bg-slate-300"
-                                                )}
-                                            >
-                                                <span
-                                                    className={cn(
-                                                        "pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-md ring-1 ring-black/5 transition duration-200 ease-in-out",
-                                                        formData.isDecorativeImages
-                                                            ? "-translate-x-5"
-                                                            : "translate-x-0"
-                                                    )}
-                                                />
-                                            </span>
-                                        </button>
+                                    <div className="flex items-center justify-between pb-1 border-b border-border-subtle">
+                                        <h3 className="text-sm font-black text-brand">
+                                            تصاویر و ویدئوهای ملک <span className="text-error">*</span>
+                                        </h3>
+                                        <span className="text-[11px] text-text-light font-medium">
+                                            (حداقل ۱ فایل الزامی است)
+                                        </span>
                                     </div>
                                     <MediaGalleryUpload
                                         value={formData.mediaIds}
@@ -1097,6 +1053,64 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                         maxFiles={15}
                                         allowVideos={true}
                                     />
+
+                                    {/* Decorative Images Toggle Button (Below Media Section) */}
+                                    <div
+                                        role="button"
+                                        tabIndex={0}
+                                        onClick={() =>
+                                            setFormData((prev) => ({
+                                                ...prev,
+                                                isDecorativeImages: !prev.isDecorativeImages,
+                                            }))
+                                        }
+                                        onKeyDown={(e) => {
+                                            if (e.key === "Enter" || e.key === " ") {
+                                                e.preventDefault();
+                                                setFormData((prev) => ({
+                                                    ...prev,
+                                                    isDecorativeImages: !prev.isDecorativeImages,
+                                                }));
+                                            }
+                                        }}
+                                        className="flex items-center justify-between p-3 bg-surface-secondary/70 hover:bg-surface-secondary rounded-xl border border-border-subtle transition-colors cursor-pointer select-none"
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <span
+                                                className={cn(
+                                                    "text-xs font-bold transition-colors",
+                                                    formData.isDecorativeImages ? "text-brand" : "text-text-main"
+                                                )}
+                                            >
+                                                تصاویر تزئینی است
+                                            </span>
+                                            {formData.isDecorativeImages && (
+                                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#14B8A6]/10 text-[#0F766E] border border-[#14B8A6]/30">
+                                                    فعال
+                                                </span>
+                                            )}
+                                        </div>
+
+                                        <div
+                                            role="switch"
+                                            aria-checked={Boolean(formData.isDecorativeImages)}
+                                            className={cn(
+                                                "relative inline-flex h-6 w-11 shrink-0 rounded-full transition-colors duration-200 ease-in-out",
+                                                formData.isDecorativeImages
+                                                    ? "bg-[#14B8A6]"
+                                                    : "bg-[#CBD5E1] dark:bg-[#475569]"
+                                            )}
+                                        >
+                                            <span
+                                                className={cn(
+                                                    "pointer-events-none absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-md transition-all duration-200 ease-in-out",
+                                                    formData.isDecorativeImages
+                                                        ? "right-[22px]"
+                                                        : "right-0.5"
+                                                )}
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
 
                                 {/* Section 3: Title and Description */}
