@@ -186,8 +186,8 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
     const provinceName = location?.province?.name || ad?.provinceName;
     const areaName = neighbourhoodName;
 
-    const rawCatKey = ad?.categoryPath?.categoryKey;
-    const rawSubKey = ad?.categoryPath?.subcategoryKey;
+    const rawCatKey = ad?.categoryPath?.categoryKey || ad?.category?.id;
+    const rawSubKey = ad?.categoryPath?.subcategoryKey || ad?.subcategory?.id;
 
     const categoryTitle =
         ad?.categoryTitle ||
@@ -207,14 +207,16 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
         staleTime: 1000 * 60 * 60,
     });
 
-    // Nearby / similar ads in the same city
+    // Similar ads filtered by subcategory and city
     const { data: similarAds } = useAds(
         {
             cityId: ad?.cityId,
-            limit: 4,
+            categoryKey: rawCatKey,
+            subcategoryKey: rawSubKey,
+            limit: 6,
             status: "PUBLISHED",
         },
-        { enabled: !!ad?.cityId }
+        { enabled: Boolean(ad && (rawSubKey || ad?.cityId)) }
     );
 
     // Collect all media items
@@ -993,7 +995,7 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
             {/* Similar Ads Section */}
             {similarAds?.items && similarAds.items.filter((a) => a.adId !== id).length > 0 && (
                 <section className="mt-14 pt-8 border-t border-border-subtle">
-                    <h2 className="text-xl font-black text-brand mb-6">آگهی‌های مشابه در این شهر</h2>
+                    <h2 className="text-xl font-black text-brand mb-6">آگهی‌های مشابه</h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                         {similarAds.items
                             .filter((a) => a.adId !== id)
