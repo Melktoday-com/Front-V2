@@ -1032,13 +1032,57 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
 
                                 {/* Section 2: Media Upload (Above Title Section) */}
                                 <div className="space-y-3 pt-1">
-                                    <div className="flex items-center justify-between pb-1 border-b border-border-subtle">
-                                        <h3 className="text-sm font-black text-brand">
-                                            تصاویر و ویدئوهای ملک <span className="text-error">*</span>
-                                        </h3>
-                                        <span className="text-[11px] text-text-light font-medium">
-                                            (حداقل ۱ فایل الزامی است)
-                                        </span>
+                                    <div className="flex flex-wrap items-center justify-between gap-2 pb-1.5 border-b border-border-subtle">
+                                        <div className="flex items-center gap-2">
+                                            <h3 className="text-sm font-black text-brand">
+                                                تصاویر و ویدئوهای ملک <span className="text-error">*</span>
+                                            </h3>
+                                            <span className="text-[11px] text-text-light font-medium">
+                                                (حداقل ۱ فایل الزامی است)
+                                            </span>
+                                        </div>
+
+                                        {/* Decorative Images Toggle Switch */}
+                                        <button
+                                            type="button"
+                                            role="switch"
+                                            aria-checked={Boolean(formData.isDecorativeImages)}
+                                            onClick={() =>
+                                                setFormData((prev) => ({
+                                                    ...prev,
+                                                    isDecorativeImages: !prev.isDecorativeImages,
+                                                }))
+                                            }
+                                            className="flex items-center gap-2 cursor-pointer group select-none py-0.5"
+                                        >
+                                            <span
+                                                className={cn(
+                                                    "text-xs font-bold transition-colors",
+                                                    formData.isDecorativeImages
+                                                        ? "text-primary"
+                                                        : "text-text-light group-hover:text-text-main"
+                                                )}
+                                            >
+                                                تصاویر تزئینی است
+                                            </span>
+                                            <span
+                                                className={cn(
+                                                    "relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors duration-200 ease-in-out p-0.5",
+                                                    formData.isDecorativeImages
+                                                        ? "bg-primary"
+                                                        : "bg-surface-secondary border border-border"
+                                                )}
+                                            >
+                                                <span
+                                                    className={cn(
+                                                        "pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-xs transition duration-200 ease-in-out",
+                                                        formData.isDecorativeImages
+                                                            ? "-translate-x-4"
+                                                            : "translate-x-0"
+                                                    )}
+                                                />
+                                            </span>
+                                        </button>
                                     </div>
                                     <MediaGalleryUpload
                                         value={formData.mediaIds}
@@ -1048,35 +1092,11 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                                 mediaIds: media,
                                             }))
                                         }
-                                        label="تصاویر و ویدئوهای ملک (اجباری)"
+                                        label=""
                                         helperText="بارگذاری حداقل یک تصویر یا ویدئو برای ثبت آگهی الزامی است. آگهی‌های دارای تصویر و ویدئوی واقعی تا ۵ برابر بیشتر بازدید دریافت می‌کنند."
                                         maxFiles={15}
                                         allowVideos={true}
                                     />
-
-                                    {/* Decorative Images Option */}
-                                    <div className="flex items-center justify-between p-3.5 bg-surface-secondary rounded-xl border border-border-subtle mt-3">
-                                        <div className="space-y-0.5">
-                                            <label htmlFor="isDecorativeImages" className="text-xs font-bold text-brand cursor-pointer">
-                                                تصاویر تزئینی است
-                                            </label>
-                                            <p className="text-[11px] text-text-light">
-                                                در صورتی که تصاویر آپلود شده واقعی نبوده و صرفاً جنبه تزئینی، شماتیک یا نمونه دارند این گزینه را فعال کنید.
-                                            </p>
-                                        </div>
-                                        <input
-                                            id="isDecorativeImages"
-                                            type="checkbox"
-                                            checked={Boolean(formData.isDecorativeImages)}
-                                            onChange={(e) =>
-                                                setFormData((prev) => ({
-                                                    ...prev,
-                                                    isDecorativeImages: e.target.checked,
-                                                }))
-                                            }
-                                            className="w-5 h-5 text-primary border-border rounded-md focus:ring-primary focus:ring-2 cursor-pointer"
-                                        />
-                                    </div>
                                 </div>
 
                                 {/* Section 3: Title and Description */}
