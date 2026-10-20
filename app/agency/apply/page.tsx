@@ -1,36 +1,33 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { CitySelector } from "@/components/CitySelector";
+import { useAuth } from "@/hooks/useAuth";
+import { useCities } from "@/hooks/useGeo";
+import { normalizeApiError } from "@/lib/api/error-handler";
+import { toEnglishDigits, toOnlyDigits } from "@/lib/utils";
 import { agencyService } from "@/services/agency.service";
 import { userService } from "@/services/user.service";
-import { CitySelector } from "@/components/CitySelector";
-import { useCities } from "@/hooks/useGeo";
-import { toEnglishDigits, toOnlyDigits } from "@/lib/utils";
+import { AgentApplicationType, ApplyAgentRequest } from "@/types/api/agency.types";
+import { CityItem } from "@/types/api/geo.types";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+    ArrowRight,
     Award,
     Building2,
     CheckCircle,
     Clock,
     FileCheck,
-    Info,
-    Phone,
-    ShieldCheck,
-    UserCheck,
-    XCircle,
-    ArrowRight,
-    MapPin,
-    AlertCircle,
     Home,
+    Info,
+    MapPin,
     RotateCcw,
+    ShieldCheck,
+    XCircle
 } from "lucide-react";
-import { toast } from "sonner";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useAuth } from "@/hooks/useAuth";
-import { AgentApplicationType, ApplyAgentRequest } from "@/types/api/agency.types";
-import { CityItem } from "@/types/api/geo.types";
-import { normalizeApiError } from "@/lib/api/error-handler";
+import React, { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export default function AgencyApplyPage() {
     const router = useRouter();
@@ -68,7 +65,7 @@ export default function AgencyApplyPage() {
                 firstName: prev.firstName || profile.firstName || "",
                 lastName: prev.lastName || profile.lastName || "",
             }));
-        }).catch(() => {/* silently ignore */});
+        }).catch(() => {/* silently ignore */ });
     }, [isLoggedIn]);
 
     // Check existing application
@@ -288,8 +285,8 @@ export default function AgencyApplyPage() {
                                         myApp.status === "PENDING"
                                             ? "text-warning"
                                             : myApp.status === "APPROVED"
-                                            ? "text-success"
-                                            : "text-error"
+                                                ? "text-success"
+                                                : "text-error"
                                     }>
                                         {myApp.status === "PENDING" && "در انتظار بررسی توسط مدیریت"}
                                         {myApp.status === "APPROVED" && "تأیید شده و حساب شما ارتقا یافت"}
@@ -416,19 +413,17 @@ export default function AgencyApplyPage() {
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div
                                     onClick={() => setAgentType("CONSULTANT")}
-                                    className={`p-5 rounded-2xl border-2 cursor-pointer transition-all space-y-2 ${
-                                        agentType === "CONSULTANT"
-                                            ? "border-blue-600 bg-info-subtle/40 shadow-xs"
-                                            : "border-border-subtle hover:border-border bg-surface"
-                                    }`}
+                                    className={`p-5 rounded-2xl border-2 cursor-pointer transition-all space-y-2 ${agentType === "CONSULTANT"
+                                        ? "border-blue-600 bg-info-subtle/40 shadow-xs"
+                                        : "border-border-subtle hover:border-border bg-surface"
+                                        }`}
                                 >
                                     <div className="flex items-center justify-between">
                                         <div className="w-10 h-10 rounded-xl bg-info-subtle/70 text-info flex items-center justify-center font-bold">
                                             <Award className="w-5 h-5" />
                                         </div>
-                                        <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                                            agentType === "CONSULTANT" ? "border-blue-600 bg-blue-600" : "border-border"
-                                        }`}>
+                                        <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${agentType === "CONSULTANT" ? "border-blue-600 bg-blue-600" : "border-border"
+                                            }`}>
                                             {agentType === "CONSULTANT" && <span className="w-1.5 h-1.5 rounded-full bg-surface" />}
                                         </span>
                                     </div>
@@ -440,19 +435,17 @@ export default function AgencyApplyPage() {
 
                                 <div
                                     onClick={() => setAgentType("AGENCY")}
-                                    className={`p-5 rounded-2xl border-2 cursor-pointer transition-all space-y-2 ${
-                                        agentType === "AGENCY"
-                                            ? "border-purple-600 bg-purple-50/40 shadow-xs"
-                                            : "border-border-subtle hover:border-border bg-surface"
-                                    }`}
+                                    className={`p-5 rounded-2xl border-2 cursor-pointer transition-all space-y-2 ${agentType === "AGENCY"
+                                        ? "border-purple-600 bg-purple-50/40 shadow-xs"
+                                        : "border-border-subtle hover:border-border bg-surface"
+                                        }`}
                                 >
                                     <div className="flex items-center justify-between">
                                         <div className="w-10 h-10 rounded-xl bg-purple-100/70 text-purple-700 flex items-center justify-center font-bold">
                                             <Building2 className="w-5 h-5" />
                                         </div>
-                                        <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                                            agentType === "AGENCY" ? "border-purple-600 bg-purple-600" : "border-border"
-                                        }`}>
+                                        <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${agentType === "AGENCY" ? "border-purple-600 bg-purple-600" : "border-border"
+                                            }`}>
                                             {agentType === "AGENCY" && <span className="w-1.5 h-1.5 rounded-full bg-surface" />}
                                         </span>
                                     </div>
@@ -611,7 +604,7 @@ export default function AgencyApplyPage() {
                         <div className="p-4 bg-info-subtle/60 border border-info/30 rounded-2xl flex items-start gap-3">
                             <Info className="w-5 h-5 text-info shrink-0 mt-0.5" />
                             <div className="text-xs text-foreground leading-relaxed">
-                                <span className="font-black block mb-0.5">احراز هویت هوشمند از طریق درگاه جیبیت (Jibit):</span>
+                                <span className="font-black block mb-0.5">احراز هویت هوشمند:</span>
                                 {agentType === "CONSULTANT" ? (
                                     <span>
                                         کد ملی وارد شده با شماره همراه ثبت‌نامی شما در سامانه شاهکار تطبیق داده خواهد شد تا از صحت مالکیت و هویت مشاور اطمینان حاصل شود.
