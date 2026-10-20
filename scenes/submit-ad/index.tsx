@@ -1053,31 +1053,31 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                                     isDecorativeImages: !prev.isDecorativeImages,
                                                 }))
                                             }
-                                            className="flex items-center gap-2 cursor-pointer group select-none py-0.5"
+                                            className="flex items-center gap-2.5 cursor-pointer group select-none py-1"
                                         >
                                             <span
                                                 className={cn(
                                                     "text-xs font-bold transition-colors",
                                                     formData.isDecorativeImages
                                                         ? "text-primary"
-                                                        : "text-text-light group-hover:text-text-main"
+                                                        : "text-foreground-secondary group-hover:text-foreground"
                                                 )}
                                             >
                                                 تصاویر تزئینی است
                                             </span>
                                             <span
                                                 className={cn(
-                                                    "relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors duration-200 ease-in-out p-0.5",
+                                                    "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors duration-200 ease-in-out p-0.5 shadow-inner",
                                                     formData.isDecorativeImages
                                                         ? "bg-primary"
-                                                        : "bg-surface-secondary border border-border"
+                                                        : "bg-slate-200 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 group-hover:bg-slate-300"
                                                 )}
                                             >
                                                 <span
                                                     className={cn(
-                                                        "pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-xs transition duration-200 ease-in-out",
+                                                        "pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-md ring-1 ring-black/5 transition duration-200 ease-in-out",
                                                         formData.isDecorativeImages
-                                                            ? "-translate-x-4"
+                                                            ? "-translate-x-5"
                                                             : "translate-x-0"
                                                     )}
                                                 />
