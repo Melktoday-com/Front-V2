@@ -213,7 +213,7 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
             cityId: ad?.cityId,
             categoryKey: rawCatKey,
             subcategoryKey: rawSubKey,
-            limit: 6,
+            limit: 12,
             status: "PUBLISHED",
         },
         { enabled: Boolean(ad && (rawSubKey || ad?.cityId)) }
@@ -993,35 +993,47 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
             </div>
 
             {/* Similar Ads Section */}
-            {similarAds?.items && similarAds.items.filter((a) => a.adId !== id).length > 0 && (
-                <section className="mt-14 pt-8 border-t border-border-subtle">
-                    <h2 className="text-xl font-black text-brand mb-6">آگهی‌های مشابه</h2>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        {similarAds.items
-                            .filter((a) => a.adId !== id)
-                            .slice(0, 4)
-                            .map((item: AdSummary) => (
-                                <PropertyCard
-                                    key={item.adId}
-                                    adId={item.adId}
-                                    title={item.title}
-                                    price={getAdSummaryPricing(item.pricing).price}
-                                    unit={getAdSummaryPricing(item.pricing).unit}
-                                    location={getCityName(item.cityId || ad.cityId)}
-                                    image={getMediaPosterUrl(item.mediaIds?.[0])}
-                                    isVideo={item.mediaIds?.[0]?.type === "VIDEO"}
-                                    category={
-                                        getSubcategoryName(item.categoryPath?.subcategoryKey, item.categoryPath?.categoryKey) ||
-                                        getCategoryName(item.categoryPath?.categoryKey) ||
-                                        item.categoryPath?.subcategoryKey
-                                    }
-                                    publisher={item.publisher}
-                                    date={item.createdAt}
-                                />
-                            ))}
-                    </div>
-                </section>
-            )}
+            {(() => {
+                const filteredSimilar = (similarAds?.items || []).filter((a) => {
+                    if (a.adId === id) return false;
+                    const itemSubKey = a.categoryPath?.subcategoryKey || a.subcategory?.id;
+                    const itemCatKey = a.categoryPath?.categoryKey || a.category?.id;
+                    if (rawSubKey && itemSubKey && itemSubKey !== rawSubKey) return false;
+                    if (rawCatKey && itemCatKey && itemCatKey !== rawCatKey) return false;
+                    return true;
+                });
+
+                if (filteredSimilar.length === 0) return null;
+
+                return (
+                    <section className="mt-14 pt-8 border-t border-border-subtle">
+                        <h2 className="text-xl font-black text-brand mb-6">آگهی‌های مشابه</h2>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            {filteredSimilar
+                                .slice(0, 4)
+                                .map((item: AdSummary) => (
+                                    <PropertyCard
+                                        key={item.adId}
+                                        adId={item.adId}
+                                        title={item.title}
+                                        price={getAdSummaryPricing(item.pricing).price}
+                                        unit={getAdSummaryPricing(item.pricing).unit}
+                                        location={getCityName(item.cityId || ad.cityId)}
+                                        image={getMediaPosterUrl(item.mediaIds?.[0])}
+                                        isVideo={item.mediaIds?.[0]?.type === "VIDEO"}
+                                        category={
+                                            getSubcategoryName(item.categoryPath?.subcategoryKey, item.categoryPath?.categoryKey) ||
+                                            getCategoryName(item.categoryPath?.categoryKey) ||
+                                            item.categoryPath?.subcategoryKey
+                                        }
+                                        publisher={item.publisher}
+                                        date={item.createdAt}
+                                    />
+                                ))}
+                        </div>
+                    </section>
+                );
+            })()}
 
             {/* Sticky Mobile Bottom Bar (Zillow mobile pattern) */}
             <div className="fixed bottom-0 left-0 right-0 p-3.5 bg-surface/95 backdrop-blur-xl border-t border-border-subtle/70 flex items-center justify-between gap-3 z-40 lg:hidden shadow-2xl">
