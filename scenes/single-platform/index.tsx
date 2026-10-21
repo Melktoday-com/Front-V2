@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
+import { lightLogo } from "@/assets/branding";
 import Link from "next/link";
 import { useSafeBack } from "@/hooks/useSafeBack";
 import { useRouter } from "next/navigation";
@@ -164,9 +165,11 @@ export default function SinglePlatformScene() {
                 {header?.avatarUrl ? (
                   <Image src={getMediaUrl(header.avatarUrl)} alt="Logo" fill className="object-contain p-2" />
                 ) : (
-                  <span className="text-xl sm:text-2xl font-black text-white tracking-tighter">
-                    MELK<span className="text-accent">TODAY</span>
-                  </span>
+                  <Image
+                    src={lightLogo}
+                    alt="MELKTODAY"
+                    className="w-full h-auto object-contain"
+                  />
                 )}
               </div>
 

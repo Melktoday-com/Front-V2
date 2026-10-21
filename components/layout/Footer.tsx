@@ -14,6 +14,8 @@ import {
   Smartphone
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
+import { lightLogo } from "@/assets/branding";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -45,10 +47,12 @@ export function Footer() {
           {/* Brand & Mission Column (5 cols on lg) */}
           <div className="lg:col-span-5 space-y-5">
             <div className="flex items-center gap-3">
-              <Link href="/" className="inline-flex items-center gap-2 group">
-                <span className="text-2xl md:text-3xl font-black text-primary-foreground tracking-tighter">
-                  MELK<span className="text-accent group-hover:opacity-90 transition-opacity">TODAY</span>
-                </span>
+              <Link href="/" className="inline-flex items-center gap-3 group">
+                <Image
+                  src={lightLogo}
+                  alt="MELKTODAY"
+                  className="h-8 md:h-9 w-auto object-contain"
+                />
                 <span className="text-[11px] font-black bg-accent/20 text-accent px-2.5 py-0.5 rounded-full border border-accent/30">
                   ملک تودی
                 </span>

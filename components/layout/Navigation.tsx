@@ -25,6 +25,8 @@ import {
     User,
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
+import { darkLogo } from "@/assets/branding";
 import { usePathname, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { toast } from "sonner";
@@ -89,8 +91,13 @@ export function Sidebar() {
     return (
         <aside className="hidden lg:flex flex-col w-64 bg-surface border-l border-border-subtle h-screen sticky top-0 p-6 z-30">
             <div className="mb-8 px-2 flex items-center justify-between">
-                <Link href="/" className="text-2xl font-black text-brand tracking-tighter">
-                    MELK<span className="text-accent">TODAY</span>
+                <Link href="/" className="block">
+                    <Image
+                        src={darkLogo}
+                        alt="MELKTODAY"
+                        className="h-8 w-auto max-w-full object-contain"
+                        priority
+                    />
                 </Link>
             </div>
 

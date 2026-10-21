@@ -1,9 +1,11 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { ChevronLeft, Compass, Home, LayoutGrid, Search, User } from "lucide-react";
+import { ChevronLeft, Compass, Home, Search, User } from "lucide-react";
 import { useSafeBack } from "@/hooks/useSafeBack";
 import Link from "next/link";
+import Image from "next/image";
+import { darkLogo } from "@/assets/branding";
 import { usePathname } from "next/navigation";
 
 export function ChatHeader() {
@@ -20,13 +22,13 @@ export function ChatHeader() {
     return (
         <header className="h-16 md:h-18 bg-surface border-b border-soft-border flex items-center justify-between px-4 md:px-8 shrink-0 z-70 sticky top-0" dir="rtl">
             <div className="flex items-center gap-4 md:gap-10">
-                <Link href="/" className="flex items-center gap-2">
-                    <div className="w-9 h-9 bg-brand rounded-xl flex items-center justify-center shadow-lg shadow-brand/20">
-                        <LayoutGrid className="w-5 h-5 text-accent" />
-                    </div>
-                    <span className="text-xl font-black text-brand tracking-tighter">
-                        MELK<span className="text-accent">TODAY</span>
-                    </span>
+                <Link href="/" className="flex items-center">
+                    <Image
+                        src={darkLogo}
+                        alt="MELKTODAY"
+                        className="h-7 md:h-8 w-auto object-contain"
+                        priority
+                    />
                 </Link>
 
                 {/* Hide in mobile view because bottom navbar is present */}

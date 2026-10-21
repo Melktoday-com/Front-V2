@@ -27,6 +27,8 @@ import {
     Zap,
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
+import { darkLogo } from "@/assets/branding";
 import { usePathname } from "next/navigation";
 import React from "react";
 
@@ -90,10 +92,15 @@ export default function AdminLayout({
                 {/* Sidebar */}
                 <aside className="w-64 bg-surface border-l border-soft-border sticky top-0 h-screen overflow-y-auto p-6 flex flex-col">
                     <div className="mb-10 px-2">
-                        <span className="text-2xl font-black text-brand tracking-tighter">
-                            MELK<span className="text-accent">TODAY</span>
-                            <span className="text-[10px] block font-bold text-secondary uppercase -mt-1 tracking-widest">Admin Panel</span>
-                        </span>
+                        <Link href="/admin" className="block">
+                            <Image
+                                src={darkLogo}
+                                alt="MELKTODAY"
+                                className="h-8 w-auto max-w-full object-contain"
+                                priority
+                            />
+                            <span className="text-[10px] block font-bold text-secondary uppercase mt-2 tracking-widest">Admin Panel</span>
+                        </Link>
                     </div>
 
                     <nav className="flex-1 space-y-2">
