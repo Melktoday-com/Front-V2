@@ -217,9 +217,6 @@ export function SearchHeader({ isInitialOpen }: SearchHeaderProps) {
                     <h1 className="text-brand text-xl sm:text-2xl lg:text-4xl font-black tracking-tight leading-[1.2] sm:leading-[1.1]">
                         اینجا، داستان <span className="text-accent">خانه</span> شما آغاز می‌شود
                     </h1>
-                    <p className="text-secondary text-xs sm:text-sm lg:text-base font-medium sm:font-bold opacity-75 sm:opacity-70">
-                        هوشمندانه جستجو کنید، با اطمینان انتخاب کنید
-                    </p>
                 </div>
 
                 <form onSubmit={handleSearch} className="relative z-20 w-full lg:max-w-4xl">
@@ -296,8 +293,8 @@ export function SearchHeader({ isInitialOpen }: SearchHeaderProps) {
                                         type="button"
                                         onClick={() => setActiveTab("ALL")}
                                         className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full transition-all shrink-0 ${activeTab === "ALL"
-                                                ? "bg-primary text-white shadow-sm"
-                                                : "bg-soft-bg text-secondary hover:text-brand"
+                                            ? "bg-primary text-white shadow-sm"
+                                            : "bg-soft-bg text-secondary hover:text-brand"
                                             }`}
                                     >
                                         همه نتایج ({toPersianDigits(totalResultsCount)})
@@ -306,8 +303,8 @@ export function SearchHeader({ isInitialOpen }: SearchHeaderProps) {
                                         type="button"
                                         onClick={() => setActiveTab("LISTINGS")}
                                         className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full transition-all shrink-0 ${activeTab === "LISTINGS"
-                                                ? "bg-primary text-white shadow-sm"
-                                                : "bg-soft-bg text-secondary hover:text-brand"
+                                            ? "bg-primary text-white shadow-sm"
+                                            : "bg-soft-bg text-secondary hover:text-brand"
                                             }`}
                                     >
                                         املاک ({toPersianDigits(listings.length)})
@@ -316,8 +313,8 @@ export function SearchHeader({ isInitialOpen }: SearchHeaderProps) {
                                         type="button"
                                         onClick={() => setActiveTab("RENTALS")}
                                         className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full transition-all shrink-0 ${activeTab === "RENTALS"
-                                                ? "bg-primary text-white shadow-sm"
-                                                : "bg-soft-bg text-secondary hover:text-brand"
+                                            ? "bg-primary text-white shadow-sm"
+                                            : "bg-soft-bg text-secondary hover:text-brand"
                                             }`}
                                     >
                                         اجاره روزانه ({toPersianDigits(rentals.length)})
@@ -326,8 +323,8 @@ export function SearchHeader({ isInitialOpen }: SearchHeaderProps) {
                                         type="button"
                                         onClick={() => setActiveTab("PROFILES")}
                                         className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full transition-all shrink-0 ${activeTab === "PROFILES"
-                                                ? "bg-primary text-white shadow-sm"
-                                                : "bg-soft-bg text-secondary hover:text-brand"
+                                            ? "bg-primary text-white shadow-sm"
+                                            : "bg-soft-bg text-secondary hover:text-brand"
                                             }`}
                                     >
                                         دفاتر و میزبان‌ها ({toPersianDigits(profiles.length)})
@@ -336,8 +333,8 @@ export function SearchHeader({ isInitialOpen }: SearchHeaderProps) {
                                         type="button"
                                         onClick={() => setActiveTab("POSTS")}
                                         className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full transition-all shrink-0 ${activeTab === "POSTS"
-                                                ? "bg-primary text-white shadow-sm"
-                                                : "bg-soft-bg text-secondary hover:text-brand"
+                                            ? "bg-primary text-white shadow-sm"
+                                            : "bg-soft-bg text-secondary hover:text-brand"
                                             }`}
                                     >
                                         مقالات ({toPersianDigits(posts.length)})
