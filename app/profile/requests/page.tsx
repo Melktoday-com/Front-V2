@@ -1,29 +1,24 @@
 "use client";
 
-import React, { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { toPersianDigits } from "@/lib/utils";
 import { agencyService } from "@/services/agency.service";
 import { showcaseService } from "@/services/showcase.service";
+import { useQuery } from "@tanstack/react-query";
 import {
-    FileText,
-    Building2,
-    Home,
-    Clock,
-    CheckCircle2,
-    XCircle,
-    AlertCircle,
     ArrowRight,
+    Building2,
+    CheckCircle2,
+    Clock,
+    FileText,
+    Home,
     RefreshCw,
-    UserCheck,
     RotateCcw,
-    ChevronLeft,
-    Phone,
-    MapPin,
     ShieldAlert,
+    XCircle
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { toPersianDigits } from "@/lib/utils";
+import { useState } from "react";
 
 type ActiveTab = "ALL" | "AGENCY" | "HOST";
 
@@ -81,7 +76,7 @@ export default function UserRequestsPage() {
         <div className="max-w-4xl mx-auto px-4 pt-8 pb-36 lg:pb-8 space-y-6" dir="rtl">
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-surface p-6 rounded-3xl border border-soft-border shadow-xs">
-                <div className="flex items-center gap-3.5">
+                <div className="flex items-justify gap-3.5">
                     <Link
                         href="/profile"
                         className="p-2.5 rounded-2xl bg-soft-bg hover:bg-soft-border/50 text-secondary transition-colors"
@@ -89,15 +84,6 @@ export default function UserRequestsPage() {
                     >
                         <ArrowRight className="w-5 h-5" />
                     </Link>
-                    <div>
-                        <h1 className="text-xl font-black text-brand">درخواست‌های من</h1>
-                        <p className="text-xs text-secondary mt-0.5">
-                            پیگیری وضعیت درخواست‌های عضویت املاک، دفاتر مشاور و میزبانی اقامتگاه
-                        </p>
-                    </div>
-                </div>
-
-                <div className="flex items-center gap-2">
                     <button
                         onClick={handleRefreshAll}
                         disabled={isRefreshing}
@@ -113,31 +99,28 @@ export default function UserRequestsPage() {
             <div className="flex items-center gap-2 bg-soft-bg p-1.5 rounded-2xl border border-soft-border w-fit text-xs font-bold">
                 <button
                     onClick={() => setActiveTab("ALL")}
-                    className={`px-4 py-2 rounded-xl transition-all ${
-                        activeTab === "ALL"
-                            ? "bg-surface text-brand shadow-xs font-black"
-                            : "text-secondary hover:text-brand"
-                    }`}
+                    className={`px-4 py-2 rounded-xl transition-all ${activeTab === "ALL"
+                        ? "bg-surface text-brand shadow-xs font-black"
+                        : "text-secondary hover:text-brand"
+                        }`}
                 >
                     همه درخواست‌ها
                 </button>
                 <button
                     onClick={() => setActiveTab("AGENCY")}
-                    className={`px-4 py-2 rounded-xl transition-all ${
-                        activeTab === "AGENCY"
-                            ? "bg-surface text-brand shadow-xs font-black"
-                            : "text-secondary hover:text-brand"
-                    }`}
+                    className={`px-4 py-2 rounded-xl transition-all ${activeTab === "AGENCY"
+                        ? "bg-surface text-brand shadow-xs font-black"
+                        : "text-secondary hover:text-brand"
+                        }`}
                 >
                     املاک و مشاوران
                 </button>
                 <button
                     onClick={() => setActiveTab("HOST")}
-                    className={`px-4 py-2 rounded-xl transition-all ${
-                        activeTab === "HOST"
-                            ? "bg-surface text-brand shadow-xs font-black"
-                            : "text-secondary hover:text-brand"
-                    }`}
+                    className={`px-4 py-2 rounded-xl transition-all ${activeTab === "HOST"
+                        ? "bg-surface text-brand shadow-xs font-black"
+                        : "text-secondary hover:text-brand"
+                        }`}
                 >
                     میزبانی اقامتگاه
                 </button>
