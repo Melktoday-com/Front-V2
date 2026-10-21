@@ -3,13 +3,13 @@
 import { CitySelector } from "@/components/CitySelector";
 import { AccountStatusBanner } from "@/components/ui/AccountStatusBanner";
 import { useAuth } from "@/hooks/useAuth";
+import { useCityLookup } from "@/hooks/useCityLookup";
 import { useUserStatus } from "@/hooks/useUserStatus";
 import { normalizeApiError } from "@/lib/api/error-handler";
 import { cn, toEnglishDigits, toOnlyDigits } from "@/lib/utils";
 import { showcaseService } from "@/services/showcase.service";
 import { userService } from "@/services/user.service";
 import { HostApplicationRequest } from "@/types/api/showcase.types";
-import { useCityLookup } from "@/hooks/useCityLookup";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowRight,
@@ -18,11 +18,9 @@ import {
   Clock,
   FileCheck,
   Home,
-  Info,
   MapPin,
   RotateCcw,
   ShieldCheck,
-  Sparkles,
   UserCheck,
   XCircle
 } from "lucide-react";
@@ -65,7 +63,7 @@ export default function HostApplyPage() {
         fullName: prev.fullName || `${me.firstName || ''} ${me.lastName || ''}`.trim(),
         mobileNumber: prev.mobileNumber || me.mobileNumber || '',
       }));
-    }).catch(() => {/* ignore */});
+    }).catch(() => {/* ignore */ });
   }, [isLoggedIn]);
 
   // Check existing landlord application
@@ -205,10 +203,6 @@ export default function HostApplyPage() {
         {/* Hero Section */}
         <div className="bg-gradient-to-br from-emerald-600 to-teal-800 text-white rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden">
           <div className="relative z-10 max-w-xl space-y-3">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface/10 backdrop-blur-md text-emerald-200 text-xs font-bold">
-              <Sparkles className="w-4 h-4 text-emerald-300" />
-              <span>پیوستن به جمع میزبانان معتبر ملک‌تودی</span>
-            </div>
             <h1 className="text-2xl sm:text-3xl font-black leading-tight">
               درخواست میزبانی و ثبت اقامتگاه‌های روزانه
             </h1>
