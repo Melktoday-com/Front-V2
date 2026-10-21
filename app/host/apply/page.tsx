@@ -332,27 +332,7 @@ export default function HostApplyPage() {
           </div>
         )}
 
-        {/* Simultaneous Application Opportunity Banner */}
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200/80 rounded-3xl p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-white text-blue-600 flex items-center justify-center shadow-xs shrink-0">
-              <Building2 className="w-6 h-6" />
-            </div>
-            <div>
-              <h4 className="text-sm font-black text-blue-900">عضویت همزمان به عنوان مشاور یا دفتر املاک</h4>
-              <p className="text-xs text-blue-700/80 mt-0.5 font-medium leading-relaxed">
-                می‌توانید همزمان با میزبانی اقامتگاه، به عنوان مشاور یا دفتر املاک نیز ثبت‌نام کرده و صفحه ویترین آژانس خود را داشته باشید.
-              </p>
-            </div>
-          </div>
-          <Link
-            href="/agency/apply"
-            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700 transition shadow-sm shrink-0"
-          >
-            <Building2 className="w-4 h-4" />
-            <span>ثبت درخواست املاک</span>
-          </Link>
-        </div>
+
 
         {/* Application Form */}
         {(isReapplying || isEditing || !myApp || myApp.status === "REJECTED") && (
