@@ -76,7 +76,7 @@ export default function UserRequestsPage() {
         <div className="max-w-4xl mx-auto px-4 pt-8 pb-36 lg:pb-8 space-y-6" dir="rtl">
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-surface p-6 rounded-3xl border border-soft-border shadow-xs">
-                <div className="flex items-justify gap-3.5">
+                <div className="flex items-center gap-3.5">
                     <Link
                         href="/profile"
                         className="p-2.5 rounded-2xl bg-soft-bg hover:bg-soft-border/50 text-secondary transition-colors"
@@ -84,15 +84,17 @@ export default function UserRequestsPage() {
                     >
                         <ArrowRight className="w-5 h-5" />
                     </Link>
+                    <h1 className="text-xl font-black text-brand">درخواست‌های من</h1>
                     <button
                         onClick={handleRefreshAll}
                         disabled={isRefreshing}
-                        className="p-2.5 text-secondary hover:text-brand hover:bg-soft-bg rounded-2xl border border-soft-border transition"
+                        className="p-2.5 text-secondary mr-auto hover:text-brand hover:bg-soft-bg rounded-2xl border border-soft-border transition"
                         title="بروزرسانی وضعیت"
                     >
                         <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin text-primary" : ""}`} />
                     </button>
                 </div>
+
             </div>
 
             {/* Filter Tabs */}
