@@ -227,7 +227,7 @@ export default function AgencyApplyPage() {
     };
 
     return (
-        <div className="min-h-screen bg-surface-secondary py-10 px-4 sm:px-6 lg:px-8" dir="rtl">
+        <div className="min-h-screen bg-surface-secondary pb-24 lg:pb-10 pt-10 px-4 sm:px-6 lg:px-8" dir="rtl">
             <div className="max-w-3xl mx-auto space-y-8">
                 {/* Top Header */}
                 <div className="bg-surface p-6 sm:p-8 rounded-3xl border border-border-subtle/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
