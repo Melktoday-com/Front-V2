@@ -212,7 +212,7 @@ export async function preloadCityMapTiles(
         const doFetch = async () => {
           try {
             if (cache) {
-              const cached = await cache.match(url);
+              const cached = await cache.match(url, { ignoreVary: true });
               if (cached) {
                 return;
               }

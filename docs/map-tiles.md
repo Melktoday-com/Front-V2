@@ -123,7 +123,30 @@ To purge the browser cache:
 
 ---
 
-## 5. Raw Measured Benchmark Results
+## 5. PWA & Service Worker Lifecycle in Production
+
+### A. Registration & Scope
+- **Script**: `public/sw.js`
+- **Scope**: Registered from `lib/map-preloader.ts` with `{ scope: "/" }`.
+- **Timing**: Registered via `requestIdleCallback` after document load so SW registration never blocks First Contentful Paint (FCP) or Largest Contentful Paint (LCP).
+
+### B. Worker Update & Activation Flow
+1. **Immediate Takeover**: The `install` event executes `self.skipWaiting()`, bypassing the `waiting` worker phase.
+2. **Immediate Client Claim**: The `activate` event executes `self.clients.claim()`, binding the new worker to all active tabs and installed PWA standalone windows without requiring a restart.
+3. **Legacy Cache Version Purging**: During `activate`, all Cache Storage keys matching `melktoday-map-tiles*` that do not equal the active `melktoday-map-tiles-v2` (e.g. `melktoday-map-tiles-v1`) are deleted automatically.
+
+### C. Cache API Vary Header Optimization
+- **Problem**: Next.js App Router attaches `vary: rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch` to dynamic route handlers.
+- **Solution**: All Service Worker lookups and preloader checks invoke `cache.match(req, { ignoreVary: true })`. This guarantees that tiles cached during background preloading or router prefetching match Leaflet `<img>` requests.
+
+### D. Standalone PWA Sizing & Visibility Transitions
+- In mobile standalone display mode (`display-mode: standalone`), map scenes default to list view where the map container is initially hidden.
+- When toggling to full-screen map mode, Leaflet's `getSize()` returns cached `Point(0, 0)` unless `map.invalidateSize()` is invoked.
+- `Map.tsx` monitors container DOM content dimensions via `ResizeObserver` (`entry.contentRect.width > 0 && entry.contentRect.height > 0`) and multi-stage timers on mount, guaranteeing tiles fill the entire viewport immediately upon becoming visible.
+
+---
+
+## 6. Raw Measured Benchmark Results
 
 All figures below are actual, unsimulated measurements recorded during this session against the production server (`next start` on Node.js 24 / Linux x86_64).
 

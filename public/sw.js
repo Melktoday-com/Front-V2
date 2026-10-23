@@ -48,8 +48,8 @@ self.addEventListener('fetch', (event) => {
     if (url.origin === self.location.origin && url.pathname.startsWith('/api/tiles/')) {
         event.respondWith(
             caches.open(TILE_CACHE_NAME).then(async (cache) => {
-                // 1. Cache First: Return immediately if available locally in Cache Storage
-                const cachedResponse = await cache.match(req);
+                // 1. Cache First: Return immediately if available locally in Cache Storage (ignoreVary for Next.js RSC headers)
+                const cachedResponse = await cache.match(req, { ignoreVary: true });
                 if (cachedResponse) {
                     return cachedResponse;
                 }
