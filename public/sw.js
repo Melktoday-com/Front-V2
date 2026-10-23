@@ -58,10 +58,14 @@ self.addEventListener('fetch', (event) => {
                 try {
                     const networkResponse = await fetch(req);
 
-                    // Only cache successful 200 image responses; never cache errors or non-images
+                    // Only cache genuine tiles: 200 OK, image content, not a FALLBACK tile, not no-store
+                    const isFallback = networkResponse.headers.get('x-tile-cache') === 'FALLBACK';
+                    const cacheControl = networkResponse.headers.get('cache-control') || '';
                     if (
                         networkResponse &&
                         networkResponse.status === 200 &&
+                        !isFallback &&
+                        !cacheControl.includes('no-store') &&
                         networkResponse.headers.get('content-type')?.includes('image/')
                     ) {
                         await cache.put(req, networkResponse.clone());

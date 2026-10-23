@@ -544,6 +544,23 @@ export default function Map({
                     ))
                 )}
             </MapContainer>
+
+            {/* OpenStreetMap Attribution (RTL-friendly, small) */}
+            <div
+                className="absolute bottom-1 right-2 z-[400] text-[10px] text-text-light/80 bg-surface/85 backdrop-blur-xs px-2 py-0.5 rounded shadow-2xs pointer-events-auto select-none border border-border-subtle/50"
+                dir="ltr"
+            >
+                ©{" "}
+                <a
+                    href="https://www.openstreetmap.org/copyright"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:underline text-text-main font-medium"
+                >
+                    OpenStreetMap
+                </a>{" "}
+                contributors
+            </div>
         </div>
     );
 }

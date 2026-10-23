@@ -89,4 +89,71 @@ describe("Frontend map preloader behavior", () => {
     // Because it was aborted immediately, active requests should be aborted or 0/minimal
     expect(controller.signal.aborted).toBe(true);
   });
+
+  it("never caches FALLBACK or no-store responses into Cache Storage", async () => {
+    const putMock = vi.fn();
+    const mockCache = {
+      match: vi.fn().mockResolvedValue(null),
+      put: putMock,
+    };
+    const mockCaches = {
+      open: vi.fn().mockResolvedValue(mockCache),
+    };
+    vi.stubGlobal("caches", mockCaches);
+    vi.stubGlobal("window", {
+      localStorage: {
+        getItem: () => null,
+        setItem: () => {},
+      },
+      caches: mockCaches,
+    });
+
+    // 1. Fetch returns FALLBACK header
+    const fallbackResponse = {
+      ok: true,
+      headers: {
+        get: (h: string) => (h === "x-tile-cache" ? "FALLBACK" : null),
+      },
+      clone: () => fallbackResponse,
+    };
+    const fetchMock = vi.fn().mockResolvedValue(fallbackResponse);
+    vi.stubGlobal("fetch", fetchMock);
+
+    await preloadCityMapTiles("isfahan-4", 32.65, 51.66, [12]);
+
+    // cache.put MUST NOT have been called for FALLBACK tiles
+    expect(putMock).not.toHaveBeenCalled();
+
+    // 2. Fetch returns Cache-Control: no-store
+    putMock.mockClear();
+    const noStoreResponse = {
+      ok: true,
+      headers: {
+        get: (h: string) => (h === "cache-control" ? "no-store, must-revalidate" : null),
+      },
+      clone: () => noStoreResponse,
+    };
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(noStoreResponse));
+
+    await preloadCityMapTiles("shiraz-5", 29.59, 52.58, [12]);
+    expect(putMock).not.toHaveBeenCalled();
+
+    // 3. Genuine response (200 OK, HIT-DISK or MISS, public cache)
+    putMock.mockClear();
+    const genuineResponse = {
+      ok: true,
+      headers: {
+        get: (h: string) => {
+          if (h === "x-tile-cache") return "MISS";
+          if (h === "cache-control") return "public, max-age=2592000";
+          return null;
+        },
+      },
+      clone: () => genuineResponse,
+    };
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(genuineResponse));
+
+    await preloadCityMapTiles("yazd-6", 31.89, 54.36, [12]);
+    expect(putMock).toHaveBeenCalled();
+  });
 });

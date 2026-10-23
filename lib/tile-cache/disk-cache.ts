@@ -142,10 +142,16 @@ interface FileStatInfo {
 export async function maybeRunDiskEviction(
   cacheDir: string,
   maxGb: number,
-  intervalMs: number = 10 * 60 * 1000
+  intervalMs?: number
 ): Promise<void> {
+  const actualIntervalMs =
+    intervalMs ??
+    (process.env.TILE_EVICTION_INTERVAL_SEC
+      ? parseInt(process.env.TILE_EVICTION_INTERVAL_SEC, 10) * 1000
+      : 60 * 1000);
+
   const now = Date.now();
-  if (isEvicting || now - lastEvictionRun < intervalMs) {
+  if (isEvicting || now - lastEvictionRun < actualIntervalMs) {
     return;
   }
 

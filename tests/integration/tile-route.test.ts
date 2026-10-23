@@ -70,6 +70,7 @@ describe("Tile Route Handler Integration (with Mock Upstream Server)", () => {
       memCacheMaxMb: 16,
       rateLimitBurst: 500,
       rateLimitRefill: 100,
+      trustedIpHeader: "x-real-ip",
     };
 
     memoryCache = new MemoryTileCache(16);
@@ -267,7 +268,7 @@ describe("Tile Route Handler Integration (with Mock Upstream Server)", () => {
     expect(res.headers.get("X-Tile-Cache")).toBe("STALE");
   });
 
-  it("handles upstream 404 with negative cache and transparent fallback", async () => {
+  it("handles upstream 404 with negative cache, FALLBACK header, and no-store", async () => {
     mockHandler = (req, res) => {
       res.writeHead(404);
       res.end("Not Found");
@@ -282,6 +283,8 @@ describe("Tile Route Handler Integration (with Mock Upstream Server)", () => {
     });
 
     expect(res1.status).toBe(200);
+    expect(res1.headers.get("X-Tile-Cache")).toBe("FALLBACK");
+    expect(res1.headers.get("Cache-Control")).toBe("no-store");
     expect(res1.headers.get("X-Tile-Fallback")).toBe("404");
 
     // Subsequent request should hit negative cache directly without upstream call
@@ -294,8 +297,68 @@ describe("Tile Route Handler Integration (with Mock Upstream Server)", () => {
     });
 
     expect(res2.status).toBe(200);
+    expect(res2.headers.get("X-Tile-Cache")).toBe("FALLBACK");
+    expect(res2.headers.get("Cache-Control")).toBe("no-store");
     expect(res2.headers.get("X-Tile-Fallback")).toBe("404-negative");
     expect(upstreamRequests.length).toBe(0);
+  });
+
+  it("handles upstream 500 error with FALLBACK header and no-store", async () => {
+    mockHandler = (req, res) => {
+      res.writeHead(500);
+      res.end("Internal Server Error");
+    };
+
+    const headers = new Headers();
+    const res = await processTileRequest("12", "500", "500", headers, {
+      config: testConfig,
+      memoryCache,
+      rateLimiter,
+      upstreamFetcher,
+    });
+
+    expect(res.status).toBe(200);
+    expect(res.headers.get("X-Tile-Cache")).toBe("FALLBACK");
+    expect(res.headers.get("Cache-Control")).toBe("no-store");
+    expect(res.headers.get("X-Tile-Fallback")).toContain("upstream-500");
+  });
+
+  it("reads client IP strictly from trusted header (X-Real-IP) and ignores spoofed X-Forwarded-For", async () => {
+    const strictLimiter = new TileRateLimiter(3, 1);
+
+    // Send 3 requests with the same X-Real-IP but rotating/spoofed X-Forwarded-For
+    for (let i = 1; i <= 3; i++) {
+      const spoofedHeaders = new Headers({
+        "x-real-ip": "198.51.100.42",
+        "x-forwarded-for": `spoofed-ip-${i}.attacker.com, 10.0.0.1`,
+        "client-ip": `another-fake-${i}`,
+      });
+
+      const res = await processTileRequest("12", "1", "1", spoofedHeaders, {
+        config: testConfig,
+        memoryCache,
+        rateLimiter: strictLimiter,
+        upstreamFetcher,
+      });
+
+      expect(res.status).toBe(200);
+    }
+
+    // 4th request from same X-Real-IP with yet another spoofed X-Forwarded-For must be BLOCKED (429)
+    const fourthHeaders = new Headers({
+      "x-real-ip": "198.51.100.42",
+      "x-forwarded-for": "brand-new-spoofed-ip.attacker.com",
+    });
+
+    const fourthRes = await processTileRequest("12", "1", "1", fourthHeaders, {
+      config: testConfig,
+      memoryCache,
+      rateLimiter: strictLimiter,
+      upstreamFetcher,
+    });
+
+    expect(fourthRes.status).toBe(429);
+    expect(await fourthRes.text()).toBe("Too Many Requests");
   });
 
   it("backs off on upstream 429", async () => {

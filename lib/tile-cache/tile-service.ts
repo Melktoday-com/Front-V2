@@ -41,11 +41,10 @@ export async function processTileRequest(
     options.rateLimiter || getTileRateLimiter(config.rateLimitBurst, config.rateLimitRefill);
   const upstreamFetcher = options.upstreamFetcher || getUpstreamFetcher(config);
 
-  // 1. IP Rate Limiting
-  const clientIp =
-    headers.get("x-forwarded-for")?.split(",")[0].trim() ||
-    headers.get("x-real-ip") ||
-    "127.0.0.1";
+  // 1. IP Rate Limiting - read ONLY from trusted reverse proxy header, never client-supplied X-Forwarded-For
+  const trustedHeader = config.trustedIpHeader || "x-real-ip";
+  const rawIp = headers.get(trustedHeader)?.trim();
+  const clientIp = rawIp ? rawIp.split(",")[0].trim() : "127.0.0.1";
 
   const rateCheck = rateLimiter.consume(clientIp);
   if (!rateCheck.allowed) {
@@ -75,8 +74,8 @@ export async function processTileRequest(
       status: 200,
       headers: {
         "Content-Type": "image/png",
-        "Cache-Control": "public, max-age=300",
-        "X-Tile-Cache": "MISS",
+        "Cache-Control": "no-store",
+        "X-Tile-Cache": "FALLBACK",
         "X-Tile-Fallback": "404-negative",
       },
     });
@@ -260,20 +259,20 @@ export async function processTileRequest(
       status: 200,
       headers: {
         "Content-Type": "image/png",
-        "Cache-Control": "public, max-age=300",
-        "X-Tile-Cache": "MISS",
+        "Cache-Control": "no-store",
+        "X-Tile-Cache": "FALLBACK",
         "X-Tile-Fallback": "404",
       },
     });
   }
 
-  // If upstream failed and returned non-200, provide transparent fallback so map does not show broken tiles
+  // If upstream failed and returned non-200, provide transparent fallback with no-store and FALLBACK
   return new Response(toUint8Array(TRANSPARENT_1X1_PNG), {
     status: 200,
     headers: {
       "Content-Type": "image/png",
-      "Cache-Control": "no-cache, no-store, must-revalidate",
-      "X-Tile-Cache": "MISS",
+      "Cache-Control": "no-store",
+      "X-Tile-Cache": "FALLBACK",
       "X-Tile-Fallback": `upstream-${upstream.status}`,
     },
   });

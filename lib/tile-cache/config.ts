@@ -11,6 +11,7 @@ export interface TileProxyConfig {
   memCacheMaxMb: number;
   rateLimitBurst: number;
   rateLimitRefill: number;
+  trustedIpHeader: string;
 }
 
 export function getTileConfig(): TileProxyConfig {
@@ -21,6 +22,8 @@ export function getTileConfig(): TileProxyConfig {
     process.env.TILE_USER_AGENT ||
     "MelktodayTileProxy/2.0 (+https://melktoday.com; contact@melktoday.com)";
 
+  const trustedIpHeader = (process.env.TILE_TRUSTED_IP_HEADER || "x-real-ip").toLowerCase();
+
   // Default cache dir: resolve from env, or fallback to '.tile-cache' under process.cwd()
   const rawCacheDir =
     process.env.TILE_CACHE_DIR || path.join(/*turbopackIgnore: true*/ process.cwd(), ".tile-cache");
@@ -29,7 +32,7 @@ export function getTileConfig(): TileProxyConfig {
     : path.join(/*turbopackIgnore: true*/ process.cwd(), rawCacheDir);
 
   const ttlDays = Math.max(1, parseInt(process.env.TILE_TTL_DAYS || "30", 10));
-  const cacheMaxGb = Math.max(0.1, parseFloat(process.env.TILE_CACHE_MAX_GB || "5"));
+  const cacheMaxGb = Math.max(0.001, parseFloat(process.env.TILE_CACHE_MAX_GB || "5"));
   const maxZoom = Math.min(19, Math.max(1, parseInt(process.env.TILE_MAX_ZOOM || "17", 10)));
   const upstreamConcurrency = Math.max(
     1,
@@ -39,13 +42,14 @@ export function getTileConfig(): TileProxyConfig {
     8,
     parseInt(process.env.TILE_MEM_CACHE_MAX_MB || "64", 10)
   );
+  // Generous token-bucket defaults for NAT environments (many users sharing single public IP)
   const rateLimitBurst = Math.max(
-    10,
-    parseInt(process.env.TILE_RATE_LIMIT_BURST || "150", 10)
+    50,
+    parseInt(process.env.TILE_RATE_LIMIT_BURST || "1200", 10)
   );
   const rateLimitRefill = Math.max(
-    1,
-    parseInt(process.env.TILE_RATE_LIMIT_REFILL || "30", 10)
+    10,
+    parseInt(process.env.TILE_RATE_LIMIT_REFILL || "150", 10)
   );
 
   return {
@@ -59,5 +63,6 @@ export function getTileConfig(): TileProxyConfig {
     memCacheMaxMb,
     rateLimitBurst,
     rateLimitRefill,
+    trustedIpHeader,
   };
 }

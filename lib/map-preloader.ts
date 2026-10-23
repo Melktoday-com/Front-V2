@@ -219,7 +219,9 @@ export async function preloadCityMapTiles(
             }
 
             const res = await fetch(url, fetchOptions);
-            if (res.ok && cache) {
+            const isFallback = res.headers.get("x-tile-cache") === "FALLBACK";
+            const cacheControl = res.headers.get("cache-control") || "";
+            if (res.ok && !isFallback && !cacheControl.includes("no-store") && cache) {
               await cache.put(url, res.clone());
             }
           } catch {
