@@ -41,7 +41,6 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "beta.melktoday.ir", pathname: "/**" },
       { protocol: "https", hostname: "**.melktoday.ir", pathname: "/**" },
       { protocol: "https", hostname: "images.unsplash.com", pathname: "/**" },
-      { protocol: "https", hostname: "unpkg.com", pathname: "/**" },
     ],
   },
 };

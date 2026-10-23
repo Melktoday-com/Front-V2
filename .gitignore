@@ -26,6 +26,7 @@ playwright/.auth/
 # misc
 .DS_Store
 *.pem
+.tile-cache/
 
 # debug
 npm-debug.log*

@@ -8,10 +8,10 @@ import { MapContainer, Marker, TileLayer, useMap, useMapEvents } from "react-lea
 import { toast } from "sonner";
 import { cn, toPersianDigits } from "@/lib/utils";
 
-// Leaflet default icon fix for Next.js SSR
+// Leaflet default icon fix for Next.js SSR using local self-hosted assets
 const DefaultIcon = L.icon({
-    iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-    shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+    iconUrl: "/leaflet/marker-icon.png",
+    shadowUrl: "/leaflet/marker-shadow.png",
     iconSize: [25, 41],
     iconAnchor: [12, 41],
     popupAnchor: [1, -34],
@@ -322,11 +322,11 @@ export default function MapPicker({
                     className="w-full h-full"
                 >
                     <TileLayer
-                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                        keepBuffer={8}
+                        url="/api/tiles/{z}/{x}/{y}.png"
+                        maxZoom={17}
+                        keepBuffer={3}
                         updateWhenIdle={false}
-                        updateInterval={100}
-                        crossOrigin="anonymous"
+                        updateInterval={150}
                     />
                     <MapController
                         targetCenter={effectiveCityCenter}

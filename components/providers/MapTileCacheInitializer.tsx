@@ -4,32 +4,47 @@ import { useCity } from "@/components/providers/CityProvider";
 import { initMapTileServiceWorker, preloadCityMapTiles } from "@/lib/map-preloader";
 import { useEffect } from "react";
 
-// Default coordinate fallbacks for major cities (Tehran & Mashhad)
-const FALLBACK_CITIES = [
-    { name: "تهران", lat: 35.6892, lng: 51.3890 },
-    { name: "مشهد", lat: 36.2972, lng: 59.6067 },
-];
-
 export function MapTileCacheInitializer() {
-    const { selectedCity } = useCity();
+  const { selectedCity } = useCity();
 
-    useEffect(() => {
-        // 1. Register background tile-caching service worker
-        initMapTileServiceWorker();
+  useEffect(() => {
+    // 1. Register background tile-caching service worker once
+    initMapTileServiceWorker();
+  }, []);
 
-        // 2. Preload tiles for the active city in background idle time
-        const lat = selectedCity?.centerPoint?.latitude;
-        const lng = selectedCity?.centerPoint?.longitude;
+  useEffect(() => {
+    const lat = selectedCity?.centerPoint?.latitude;
+    const lng = selectedCity?.centerPoint?.longitude;
+    const cityId = selectedCity?.id;
 
-        if (typeof lat === "number" && !isNaN(lat) && typeof lng === "number" && !isNaN(lng)) {
-            preloadCityMapTiles(lat, lng, [12, 13]);
-        } else {
-            // Preload default popular cities (Tehran & Mashhad)
-            FALLBACK_CITIES.forEach((c) => {
-                preloadCityMapTiles(c.lat, c.lng, [12]);
-            });
-        }
-    }, [selectedCity?.id, selectedCity?.centerPoint?.latitude, selectedCity?.centerPoint?.longitude]);
+    if (!cityId || typeof lat !== "number" || isNaN(lat) || typeof lng !== "number" || isNaN(lng)) {
+      return;
+    }
 
-    return null;
+    const abortController = new AbortController();
+    let idleHandle: number | undefined;
+    let timerHandle: NodeJS.Timeout | undefined;
+
+    const startPreload = () => {
+      preloadCityMapTiles(cityId, lat, lng, [12, 13], abortController.signal).catch(() => {});
+    };
+
+    if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+      idleHandle = (window as any).requestIdleCallback(startPreload, { timeout: 3000 });
+    } else {
+      timerHandle = setTimeout(startPreload, 1500);
+    }
+
+    return () => {
+      abortController.abort();
+      if (idleHandle !== undefined && typeof window !== "undefined" && "cancelIdleCallback" in window) {
+        (window as any).cancelIdleCallback(idleHandle);
+      }
+      if (timerHandle !== undefined) {
+        clearTimeout(timerHandle);
+      }
+    };
+  }, [selectedCity?.id, selectedCity?.centerPoint?.latitude, selectedCity?.centerPoint?.longitude]);
+
+  return null;
 }

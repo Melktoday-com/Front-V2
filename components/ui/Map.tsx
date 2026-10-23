@@ -1,20 +1,20 @@
 "use client";
 
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { AdSummary } from "@/types/api/ads.types";
 import { ZoneSummary } from "@/types/api/geo.types";
 import { MapClusterDto, MapMarkerDto } from "@/types/api/search.types";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { useEffect, useMemo, useRef } from "react";
 import { MapContainer, Marker, Polygon, Popup, TileLayer, Tooltip, useMap } from "react-leaflet";
 import { PropertyCard } from "./PropertyCard";
-import { getMediaUrl, getMediaPosterUrl } from "@/lib/utils";
+import { getMediaPosterUrl } from "@/lib/utils";
 import { mapMarkerToLocation } from "@/lib/location";
 
-// Fix for default marker icons in Leaflet with Next.js
+// Use local self-hosted marker icons to eliminate external CDN network requests
 const DefaultIcon = L.icon({
-    iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-    shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+    iconUrl: "/leaflet/marker-icon.png",
+    shadowUrl: "/leaflet/marker-shadow.png",
     iconSize: [25, 41],
     iconAnchor: [12, 41],
 });
@@ -56,38 +56,57 @@ function getMapAdPricing(pricing?: Record<string, number | boolean | string> | n
     return { price: "توافقی" };
 }
 
-const createPriceIcon = (price: string) => L.divIcon({
-    className: 'price-tag-icon',
-    html: `
-        <div class="flex flex-col items-center transform -translate-x-1/2 -translate-y-full">
-            <div class="bg-brand text-white px-2 py-1 rounded-full shadow-lg border-2 border-white text-[10px] font-black whitespace-nowrap mb-0.5 hover:scale-110 transition-transform duration-200">
-                ${price}
-            </div>
-            <div class="w-2 h-2 bg-brand rounded-full border border-white shadow-sm"></div>
-        </div>
-    `,
-    iconSize: [0, 0],
-    iconAnchor: [0, 0],
-});
+// In-memory cache for created divIcons to avoid recreating L.divIcon on every render
+const priceIconCache = new globalThis.Map<string, L.DivIcon>();
 
-const createClusterIcon = (count: number) => {
-    const size = count < 10 ? 38 : count < 100 ? 46 : 54;
-    return L.divIcon({
-        className: 'custom-cluster-icon',
-        html: `
-            <div style="width: ${size}px; height: ${size}px;" 
-                 class="flex items-center justify-center rounded-full bg-brand/90 hover:bg-brand text-white font-black text-xs sm:text-sm shadow-xl border-2 border-white transform -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-transform duration-200 hover:scale-110 active:scale-95">
-                <span>${count.toLocaleString('fa-IR')}</span>
-            </div>
-        `,
-        iconSize: [0, 0],
-        iconAnchor: [0, 0],
-    });
-};
+function getPriceIcon(price: string): L.DivIcon {
+    let icon = priceIconCache.get(price);
+    if (!icon) {
+        icon = L.divIcon({
+            className: 'price-tag-icon',
+            html: `
+                <div class="flex flex-col items-center transform -translate-x-1/2 -translate-y-full pointer-events-auto">
+                    <div class="bg-brand text-white px-2 py-1 rounded-full shadow-lg border-2 border-white text-[10px] font-black whitespace-nowrap mb-0.5 hover:scale-110 transition-transform duration-200">
+                        ${price}
+                    </div>
+                    <div class="w-2 h-2 bg-brand rounded-full border border-white shadow-sm"></div>
+                </div>
+            `,
+            iconSize: [0, 0],
+            iconAnchor: [0, 0],
+        });
+        priceIconCache.set(price, icon);
+    }
+    return icon;
+}
 
-function ClusterMarker({ cluster }: { cluster: MapClusterDto }) {
+const clusterIconCache = new globalThis.Map<number, L.DivIcon>();
+
+function getClusterIcon(count: number): L.DivIcon {
+    let icon = clusterIconCache.get(count);
+    if (!icon) {
+        const size = count < 10 ? 38 : count < 100 ? 46 : 54;
+        icon = L.divIcon({
+            className: 'custom-cluster-icon',
+            html: `
+                <div class="transform -translate-x-1/2 -translate-y-1/2 pointer-events-auto">
+                    <div style="width: ${size}px; height: ${size}px;" 
+                         class="flex items-center justify-center rounded-full bg-brand/90 hover:bg-brand text-white font-black text-xs sm:text-sm shadow-xl border-2 border-white cursor-pointer transition-transform duration-200 hover:scale-110 active:scale-95">
+                        <span>${count.toLocaleString('fa-IR')}</span>
+                    </div>
+                </div>
+            `,
+            iconSize: [0, 0],
+            iconAnchor: [0, 0],
+        });
+        clusterIconCache.set(count, icon);
+    }
+    return icon;
+}
+
+const ClusterMarker = React.memo(function ClusterMarker({ cluster }: { cluster: MapClusterDto }) {
     const map = useMap();
-    const icon = useMemo(() => createClusterIcon(cluster.count), [cluster.count]);
+    const icon = useMemo(() => getClusterIcon(cluster.count), [cluster.count]);
 
     const handleClick = () => {
         if (
@@ -105,7 +124,7 @@ function ClusterMarker({ cluster }: { cluster: MapClusterDto }) {
         } else {
             map.setView(
                 [cluster.latitude, cluster.longitude],
-                cluster.expansionZoom || Math.min(18, map.getZoom() + 2),
+                cluster.expansionZoom || Math.min(17, map.getZoom() + 2),
                 { animate: true }
             );
         }
@@ -120,7 +139,89 @@ function ClusterMarker({ cluster }: { cluster: MapClusterDto }) {
             }}
         />
     );
-}
+});
+
+const PriceMarker = React.memo(function PriceMarker({ marker }: { marker: MapMarkerDto }) {
+    const price = marker.price;
+    const priceLabel = useMemo(() => {
+        if (!price) return "توافقی";
+        if (price >= 1000000000) return `${(price / 1000000000).toFixed(1)} میلیارد`;
+        if (price >= 1000000) return `${(price / 1000000).toFixed(0)} میلیون`;
+        return price.toLocaleString('fa-IR');
+    }, [price]);
+
+    const icon = useMemo(() => getPriceIcon(priceLabel), [priceLabel]);
+
+    return (
+        <Marker
+            position={[marker.latitude, marker.longitude]}
+            icon={icon}
+        >
+            <Popup
+                className="property-popup"
+                offset={[0, -24]}
+                maxWidth={320}
+                minWidth={275}
+            >
+                <PropertyCard
+                    adId={marker.id}
+                    variant="map"
+                    title={marker.title}
+                    price={marker.price ?? "توافقی"}
+                    location={mapMarkerToLocation(marker)}
+                    image={getMediaPosterUrl(marker.mediaIds?.[0])}
+                    isVideo={marker.mediaIds?.[0]?.type === "VIDEO"}
+                    category={marker.subcategory || marker.category || ''}
+                />
+            </Popup>
+        </Marker>
+    );
+});
+
+const LegacyAdMarker = React.memo(function LegacyAdMarker({
+    ad,
+}: {
+    ad: AdSummary & { location: NonNullable<AdSummary['location']> };
+}) {
+    const priceInfo = getMapAdPricing(ad.pricing);
+    const numericPrice = typeof priceInfo.price === "number" ? priceInfo.price : undefined;
+    const priceLabel = useMemo(() => {
+        if (numericPrice) {
+            if (numericPrice >= 1000000000) return `${(numericPrice / 1000000000).toFixed(1)} میلیارد`;
+            if (numericPrice >= 1000000) return `${(numericPrice / 1000000).toFixed(0)} میلیون`;
+            return numericPrice.toLocaleString('fa-IR');
+        }
+        return priceInfo.price ? String(priceInfo.price) : "توافقی";
+    }, [numericPrice, priceInfo.price]);
+
+    const icon = useMemo(() => getPriceIcon(priceLabel), [priceLabel]);
+
+    return (
+        <Marker
+            position={[ad.location.coordinates!.latitude, ad.location.coordinates!.longitude]}
+            icon={icon}
+        >
+            <Popup
+                className="property-popup"
+                offset={[0, -24]}
+                maxWidth={320}
+                minWidth={275}
+            >
+                <PropertyCard
+                    adId={ad.adId}
+                    variant="map"
+                    title={ad.title}
+                    price={numericPrice ?? priceInfo.price ?? "توافقی"}
+                    unit={priceInfo.unit}
+                    location={ad.location}
+                    image={getMediaPosterUrl(ad.mediaIds?.[0])}
+                    isVideo={ad.mediaIds?.[0]?.type === "VIDEO"}
+                    category={ad.subcategoryTitle || ad.categoryPath?.subcategoryTitle || ad.categoryPath?.subcategoryKey}
+                />
+            </Popup>
+        </Marker>
+    );
+});
 
 function MapViewHandler({ center, zoom, bounds }: { center: [number, number]; zoom: number; bounds?: L.LatLngBoundsExpression }) {
     const map = useMap();
@@ -155,8 +256,7 @@ function MapViewHandler({ center, zoom, bounds }: { center: [number, number]; zo
             prevCenterRef.current = center;
             prevZoomRef.current = zoom;
 
-            // Only use flyTo if map has valid non-zero dimensions!
-            // When hidden on mobile list view (display: none), flyTo produces NaN division in Leaflet
+            // Only use flyTo if map has valid non-zero dimensions
             if (hasValidSize) {
                 try {
                     map.flyTo(center, zoom, {
@@ -172,18 +272,7 @@ function MapViewHandler({ center, zoom, bounds }: { center: [number, number]; zo
         }
     }, [center, zoom, bounds, map]);
 
-    // Multi-stage size recalculation on mount to guarantee tiles fill the entire container
-    useEffect(() => {
-        const triggers = [50, 150, 300, 600];
-        const timers = triggers.map((ms) =>
-            setTimeout(() => {
-                map.invalidateSize({ pan: false });
-            }, ms)
-        );
-        return () => timers.forEach(clearTimeout);
-    }, [map]);
-
-    // When the map container transitions from hidden to visible (e.g. user toggles to map on mobile/desktop), recalculate size
+    // When the map container transitions from hidden to visible, recalculate size via ResizeObserver
     useEffect(() => {
         const container = map.getContainer();
         if (!container || typeof ResizeObserver === "undefined") return;
@@ -219,25 +308,38 @@ function MapEventsHandler({
     onBoundsChange?: (bounds: { northEast: { lat: number; lng: number }; southWest: { lat: number; lng: number } }) => void;
 }) {
     const map = useMap();
+    const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
     useEffect(() => {
         if (!onViewportChange && !onBoundsChange) return;
+
         const handleMoveEnd = () => {
-            const b = map.getBounds();
-            const z = map.getZoom();
-            const bounds = {
-                northEast: { lat: b.getNorthEast().lat, lng: b.getNorthEast().lng },
-                southWest: { lat: b.getSouthWest().lat, lng: b.getSouthWest().lng },
-            };
-            if (onViewportChange) {
-                onViewportChange({ bounds, zoom: z });
+            if (debounceTimerRef.current) {
+                clearTimeout(debounceTimerRef.current);
             }
-            if (onBoundsChange) {
-                onBoundsChange(bounds);
-            }
+
+            debounceTimerRef.current = setTimeout(() => {
+                const b = map.getBounds();
+                const z = map.getZoom();
+                const bounds = {
+                    northEast: { lat: b.getNorthEast().lat, lng: b.getNorthEast().lng },
+                    southWest: { lat: b.getSouthWest().lat, lng: b.getSouthWest().lng },
+                };
+                if (onViewportChange) {
+                    onViewportChange({ bounds, zoom: z });
+                }
+                if (onBoundsChange) {
+                    onBoundsChange(bounds);
+                }
+            }, 250);
         };
+
         map.on('moveend', handleMoveEnd);
         return () => {
             map.off('moveend', handleMoveEnd);
+            if (debounceTimerRef.current) {
+                clearTimeout(debounceTimerRef.current);
+            }
         };
     }, [map, onViewportChange, onBoundsChange]);
 
@@ -276,6 +378,17 @@ export default function Map({
     onViewportChange,
     onBoundsChange,
 }: MapProps) {
+    const [isMobile, setIsMobile] = useState<boolean>(false);
+
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+        const mql = window.matchMedia("(max-width: 1023px)");
+        setIsMobile(mql.matches);
+        const listener = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+        mql.addEventListener("change", listener);
+        return () => mql.removeEventListener("change", listener);
+    }, []);
+
     // Sanitize center - if it contains undefined/NaN or isn't a valid pair, use default
     const sanitizedCenter: [number, number] = (
         Array.isArray(center) &&
@@ -287,15 +400,17 @@ export default function Map({
     ) ? center : [35.6892, 51.3890];
 
     // If there are ads with locations, we might want to fit the bounds
-    const adsWithLocation = ads.filter((ad): ad is typeof ad & { location: NonNullable<typeof ad.location> } =>
-        Boolean(
-            ad.location?.coordinates &&
-            typeof ad.location.coordinates.latitude === 'number' &&
-            !isNaN(ad.location.coordinates.latitude) &&
-            typeof ad.location.coordinates.longitude === 'number' &&
-            !isNaN(ad.location.coordinates.longitude)
-        )
-    );
+    const adsWithLocation = useMemo(() => {
+        return ads.filter((ad): ad is typeof ad & { location: NonNullable<typeof ad.location> } =>
+            Boolean(
+                ad.location?.coordinates &&
+                typeof ad.location.coordinates.latitude === 'number' &&
+                !isNaN(ad.location.coordinates.latitude) &&
+                typeof ad.location.coordinates.longitude === 'number' &&
+                !isNaN(ad.location.coordinates.longitude)
+            )
+        );
+    }, [ads]);
 
     return (
         <div className="relative w-full h-full rounded-[25px] overflow-hidden border border-soft-bg shadow-sm z-0">
@@ -307,11 +422,11 @@ export default function Map({
                 className="w-full h-full"
             >
                 <TileLayer
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    keepBuffer={8}
-                    updateWhenIdle={false}
-                    updateInterval={100}
-                    crossOrigin="anonymous"
+                    url="/api/tiles/{z}/{x}/{y}.png"
+                    maxZoom={17}
+                    keepBuffer={isMobile ? 2 : 3}
+                    updateWhenIdle={isMobile}
+                    updateInterval={150}
                 />
                 <MapViewHandler center={sanitizedCenter} zoom={zoom} bounds={bounds} />
                 <MapEventsHandler onViewportChange={onViewportChange} onBoundsChange={onBoundsChange} />
@@ -411,6 +526,7 @@ export default function Map({
                         </Polygon>
                     );
                 })}
+
                 {/* Render Adaptive Clusters */}
                 {clusters?.map((cluster) => (
                     <ClusterMarker key={cluster.id} cluster={cluster} />
@@ -418,76 +534,14 @@ export default function Map({
 
                 {/* Render Individual Markers (if provided) */}
                 {markers && markers.length > 0 ? (
-                    markers.map((marker) => {
-                        const price = marker.price;
-                        const priceLabel = price ?
-                            (price >= 1000000000 ? `${(price / 1000000000).toFixed(1)} میلیارد` :
-                                (price >= 1000000 ? `${(price / 1000000).toFixed(0)} میلیون` : price.toLocaleString('fa-IR')))
-                            : "توافقی";
-
-                        return (
-                            <Marker
-                                key={marker.id}
-                                position={[marker.latitude, marker.longitude]}
-                                icon={createPriceIcon(priceLabel)}
-                            >
-                                <Popup
-                                    className="property-popup"
-                                    offset={[0, -24]}
-                                    maxWidth={320}
-                                    minWidth={275}
-                                >
-                                    <PropertyCard
-                                        adId={marker.id}
-                                        variant="map"
-                                        title={marker.title}
-                                        price={marker.price ?? "توافقی"}
-                                        location={mapMarkerToLocation(marker)}
-                                        image={getMediaPosterUrl(marker.mediaIds?.[0])}
-                                        isVideo={marker.mediaIds?.[0]?.type === "VIDEO"}
-                                        category={marker.subcategory || marker.category || ''}
-                                    />
-                                </Popup>
-                            </Marker>
-                        );
-                    })
+                    markers.map((marker) => (
+                        <PriceMarker key={marker.id} marker={marker} />
+                    ))
                 ) : (
                     /* Fallback to legacy ads list if markers not provided */
-                    adsWithLocation.map((ad) => {
-                        const priceInfo = getMapAdPricing(ad.pricing);
-                        const numericPrice = typeof priceInfo.price === "number" ? priceInfo.price : undefined;
-                        const priceLabel = numericPrice ?
-                            (numericPrice >= 1000000000 ? `${(numericPrice / 1000000000).toFixed(1)} میلیارد` :
-                                (numericPrice >= 1000000 ? `${(numericPrice / 1000000).toFixed(0)} میلیون` : numericPrice.toLocaleString('fa-IR')))
-                            : (priceInfo.price ? String(priceInfo.price) : "توافقی");
-
-                        return (
-                            <Marker
-                                key={ad.adId}
-                                position={[ad.location.coordinates!.latitude, ad.location.coordinates!.longitude]}
-                                icon={createPriceIcon(priceLabel)}
-                            >
-                                <Popup
-                                    className="property-popup"
-                                    offset={[0, -24]}
-                                    maxWidth={320}
-                                    minWidth={275}
-                                >
-                                    <PropertyCard
-                                        adId={ad.adId}
-                                        variant="map"
-                                        title={ad.title}
-                                        price={numericPrice ?? priceInfo.price ?? "توافقی"}
-                                        unit={priceInfo.unit}
-                                        location={ad.location}
-                                        image={getMediaPosterUrl(ad.mediaIds?.[0])}
-                                        isVideo={ad.mediaIds?.[0]?.type === "VIDEO"}
-                                        category={ad.subcategoryTitle || ad.categoryPath?.subcategoryTitle || ad.categoryPath?.subcategoryKey}
-                                    />
-                                </Popup>
-                            </Marker>
-                        );
-                    })
+                    adsWithLocation.map((ad) => (
+                        <LegacyAdMarker key={ad.adId} ad={ad} />
+                    ))
                 )}
             </MapContainer>
         </div>
