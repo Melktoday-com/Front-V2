@@ -10,6 +10,8 @@ import { MapContainer, Marker, Polygon, Popup, TileLayer, Tooltip, useMap } from
 import { PropertyCard } from "./PropertyCard";
 import { getMediaPosterUrl } from "@/lib/utils";
 import { mapMarkerToLocation } from "@/lib/location";
+import { isMapDebugActive, captureMapSystemDiagnostics, logMapDebug } from "@/lib/map-debugger";
+import { MapDebugOverlay } from "./MapDebugOverlay";
 
 // Use local self-hosted marker icons to eliminate external CDN network requests
 const DefaultIcon = L.icon({
@@ -272,17 +274,35 @@ function MapViewHandler({ center, zoom, bounds }: { center: [number, number]; zo
         }
     }, [center, zoom, bounds, map]);
 
+    // Multi-stage size recalculation on mount to guarantee tiles fill container after layout settles
+    useEffect(() => {
+        const timer1 = setTimeout(() => {
+            map.invalidateSize({ pan: false });
+        }, 100);
+        const timer2 = setTimeout(() => {
+            map.invalidateSize({ pan: false });
+        }, 300);
+        return () => {
+            clearTimeout(timer1);
+            clearTimeout(timer2);
+        };
+    }, [map]);
+
     // When the map container transitions from hidden to visible, recalculate size via ResizeObserver
     useEffect(() => {
         const container = map.getContainer();
         if (!container || typeof ResizeObserver === "undefined") return;
 
-        const observer = new ResizeObserver(() => {
-            const size = map.getSize();
-            if (size.x > 0 && size.y > 0) {
-                map.invalidateSize({ pan: false });
-                if (prevCenterRef.current) {
-                    map.setView(prevCenterRef.current, prevZoomRef.current || zoom);
+        const observer = new ResizeObserver((entries) => {
+            for (const entry of entries) {
+                const width = entry.contentRect?.width || container.clientWidth;
+                const height = entry.contentRect?.height || container.clientHeight;
+                if (width > 0 && height > 0) {
+                    map.invalidateSize({ pan: false });
+                    if (prevCenterRef.current) {
+                        map.setView(prevCenterRef.current, prevZoomRef.current || zoom);
+                    }
+                    break;
                 }
             }
         });
@@ -344,6 +364,36 @@ function MapEventsHandler({
     }, [map, onViewportChange, onBoundsChange]);
 
     return null;
+}
+
+function MapDebugController() {
+    const map = useMap();
+    useEffect(() => {
+        if (!isMapDebugActive()) return;
+        captureMapSystemDiagnostics(map.getContainer(), map);
+
+        const onTileLoadStart = (e: any) => {
+            logMapDebug("tile", "tileloadstart", { coords: e.coords });
+        };
+        const onTileLoad = (e: any) => {
+            logMapDebug("tile", "tileload", { url: e.tile?.src });
+        };
+        const onTileError = (e: any) => {
+            logMapDebug("error", "tileerror", { url: e.tile?.src });
+        };
+
+        map.on("tileloadstart", onTileLoadStart);
+        map.on("tileload", onTileLoad);
+        map.on("tileerror", onTileError);
+
+        return () => {
+            map.off("tileloadstart", onTileLoadStart);
+            map.off("tileload", onTileLoad);
+            map.off("tileerror", onTileError);
+        };
+    }, [map]);
+
+    return <MapDebugOverlay map={map} />;
 }
 
 interface MapProps {
@@ -428,6 +478,7 @@ export default function Map({
                     updateWhenIdle={isMobile}
                     updateInterval={150}
                 />
+                <MapDebugController />
                 <MapViewHandler center={sanitizedCenter} zoom={zoom} bounds={bounds} />
                 <MapEventsHandler onViewportChange={onViewportChange} onBoundsChange={onBoundsChange} />
 
