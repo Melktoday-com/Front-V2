@@ -1,30 +1,11 @@
 import apiClient from "@/lib/api/client";
-import { JsonValue } from "@/types/common";
+import type {
+    FavoriteItem,
+    FavoriteItemDetails,
+    FavoriteItemType,
+} from "@/types/api/favorites.types";
 
-export type FavoriteItemType = 'AD' | 'TEMPORARY_RENT';
-
-export interface FavoriteItemDetails {
-    price?: number | string;
-    nightlyPrice?: number;
-    category?: string;
-    actionUrl?: string;
-    location?: string;
-    rooms?: number;
-    maxGuests?: number;
-    [key: string]: JsonValue | undefined;
-}
-
-export interface FavoriteItem {
-    id: string;
-    type: FavoriteItemType;
-    title: string;
-    subtitle?: string;
-    imageUrl?: string;
-    referenceId?: string;
-    timestamp: string;
-    isSaved: boolean;
-    details?: FavoriteItemDetails;
-}
+export type { FavoriteItem, FavoriteItemDetails, FavoriteItemType };
 
 export const favoritesService = {
     async getFavorites(type?: 'AD' | 'TEMPORARY_RENT' | 'ALL'): Promise<FavoriteItem[]> {

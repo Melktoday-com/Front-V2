@@ -1,13 +1,14 @@
 "use client";
 
 import { DEFAULT_CATEGORY_TRANSLATIONS } from "@/hooks/useCategoryLookup";
-import { cn, toPersianDigits } from "@/lib/utils";
+import { cn, toPersianDigits, getMediaUrl, getMediaPosterUrl } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns-jalali";
 import { ChevronLeft, Clock, MapPin, Play, ShieldCheck, Sparkles } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import type { MediaReference } from "@/types/api/media.types";
 
 import type { ResolvedLocation } from "@/types/location.types";
 import { formatLocationDisplay } from "@/lib/location";
@@ -44,7 +45,9 @@ interface PropertyCardProps {
     title: string;
     price: string | number;
     location: string | ResolvedLocation;
-    image: string;
+    image?: string;
+    mediaIds?: MediaReference[];
+    imageIds?: string[];
     isVideo?: boolean;
     category?: string;
     unit?: string;
@@ -81,7 +84,9 @@ export function PropertyCard({
     price,
     location,
     image,
-    isVideo = false,
+    mediaIds,
+    imageIds,
+    isVideo,
     category,
     unit,
     currency = "تومان",
@@ -104,7 +109,20 @@ export function PropertyCard({
     const displayLocation = typeof location === "string" ? location : formatLocationDisplay(location);
     const effectiveArea = area !== null && area !== undefined && typeof area !== "object" ? area : undefined;
     const effectiveRooms = rooms ?? undefined;
-    const [imgSrc, setImgSrc] = useState(image || "/property-placeholder.svg");
+    const effectiveIsVideo = isVideo !== undefined ? isVideo : (mediaIds?.[0]?.type === "VIDEO");
+    const effectiveImage =
+        image ||
+        (mediaIds && mediaIds.length > 0
+            ? getMediaPosterUrl(mediaIds[0])
+            : imageIds && imageIds.length > 0
+            ? getMediaUrl(imageIds[0])
+            : "/property-placeholder.svg");
+
+    const [imgSrc, setImgSrc] = useState(effectiveImage);
+
+    useEffect(() => {
+        setImgSrc(effectiveImage);
+    }, [effectiveImage]);
 
     const isResponsive = variant === "responsive";
     const isHorizontal = variant === "horizontal";
@@ -189,7 +207,7 @@ export function PropertyCard({
                         )}
                     </div>
 
-                    {isVideo && (
+                    {effectiveIsVideo && (
                         <div className="absolute bottom-1 right-1 bg-black/60 backdrop-blur-xs text-white p-1 rounded-md flex items-center justify-center">
                             <Play className="w-2.5 h-2.5 fill-white" />
                         </div>
@@ -417,7 +435,7 @@ export function PropertyCard({
                             <span>{badgeName}</span>
                         </div>
                     )}
-                    {isVideo && (
+                    {effectiveIsVideo && (
                         <div className="bg-black/60 backdrop-blur-xs text-white text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 rounded-full flex items-center gap-1 font-medium">
                             <Play className="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-white" />
                             <span>ویدیو</span>

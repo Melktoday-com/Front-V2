@@ -16,6 +16,7 @@ interface TemporaryRentCardProps {
     nightlyPrice: number;
     location: string;
     mediaIds?: MediaReference[];
+    imageIds?: string[];
     imageUrl?: string;
     rating?: number;
     maxGuests?: number;
@@ -43,6 +44,7 @@ export function TemporaryRentCard({
     nightlyPrice,
     location,
     mediaIds = [],
+    imageIds = [],
     imageUrl,
     rating,
     maxGuests,
@@ -66,10 +68,12 @@ export function TemporaryRentCard({
         setSaved(effectiveIsSaved);
     }, [effectiveIsSaved]);
 
-    const images = imageUrl
-        ? [imageUrl]
-        : mediaIds && mediaIds.length > 0
+    const images = (mediaIds && mediaIds.length > 0)
         ? mediaIds.map((mId) => (mId.type === "VIDEO" ? getMediaPosterUrl(mId) : getMediaUrl(mId)))
+        : (imageIds && imageIds.length > 0)
+        ? imageIds.map((img) => getMediaUrl(img))
+        : imageUrl
+        ? [imageUrl.startsWith('http') || imageUrl.startsWith('/') ? imageUrl : getMediaUrl(imageUrl)]
         : ["/property-placeholder.svg"];
 
     const handlePrevImage = (e: React.MouseEvent) => {
