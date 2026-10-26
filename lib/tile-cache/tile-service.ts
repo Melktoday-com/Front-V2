@@ -17,6 +17,8 @@ import {
 
 const COMMON_CACHE_CONTROL = "public, max-age=2592000, stale-while-revalidate=86400, immutable";
 
+let lastDiskWriteErrorLog = 0;
+
 function toUint8Array(buf: Buffer): BodyInit {
   return new Uint8Array(buf.buffer, buf.byteOffset, buf.byteLength) as unknown as BodyInit;
 }
@@ -218,7 +220,11 @@ export async function processTileRequest(
       upstream.buffer,
       etag
     ).catch((err) => {
-      console.error("[TileProxy] Disk write error:", err);
+      const now = Date.now();
+      if (now - lastDiskWriteErrorLog > 10000) {
+        lastDiskWriteErrorLog = now;
+        console.error("[TileProxy] Disk write error (throttled):", err);
+      }
     });
 
     // Save to memory cache

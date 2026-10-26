@@ -11,10 +11,17 @@ services:
       NODE_ENV: production
       HOSTNAME: 0.0.0.0
       PORT: 3000
+      TILE_CACHE_DIR: /app/.cache/tiles
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:?NEXT_PUBLIC_API_URL is required}
       NEXT_PUBLIC_BASE_URL: ${NEXT_PUBLIC_BASE_URL:?NEXT_PUBLIC_BASE_URL is required}
+    volumes:
+      - melktoday-tile-cache:/app/.cache/tiles
     networks:
       - melktoday-frontend-network
+
+volumes:
+  melktoday-tile-cache:
+    name: melktoday-tile-cache
 
 networks:
   melktoday-frontend-network:

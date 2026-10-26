@@ -26,11 +26,12 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV HOSTNAME=0.0.0.0
 ENV PORT=3000
+ENV TILE_CACHE_DIR=/app/.cache/tiles
 
 RUN addgroup -g 1001 -S nodejs \
   && adduser -S nextjs -u 1001 -G nodejs \
-  && mkdir -p /app/.cache/tiles \
-  && chown -R nextjs:nodejs /app/.cache
+  && mkdir -p /app/.cache/tiles /app/.tile-cache \
+  && chown -R nextjs:nodejs /app/.cache /app/.tile-cache
 
 COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
