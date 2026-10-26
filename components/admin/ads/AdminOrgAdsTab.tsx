@@ -124,7 +124,7 @@ export default function AdminOrgAdsTab() {
         mutationFn: ({ id, reason, note }: { id: string; reason: string; note?: string }) =>
             adminService.rejectListing(id, { reason, note }),
         onSuccess: () => {
-            toast.success("آگهی با موفقیت رد شد");
+            toast.success("آگهی با موفقیت رد شد و تعرفه انتشار به کیف پول کاربر بازگردانده شد");
             queryClient.invalidateQueries({ queryKey: ["ads"] });
             setRejectTarget(null);
             refetch();

@@ -286,6 +286,19 @@ function MyAdCard({
                     </div>
                 </div>
 
+                {/* Rejection Notice & Refund Information */}
+                {ad.status === AdStatus.REJECTED && (
+                    <div className="mt-3 p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-800 dark:text-amber-300 space-y-1">
+                        <div className="font-bold flex items-center gap-1.5">
+                            <AlertCircle className="w-4 h-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                            <span>آگهی تایید نشد</span>
+                        </div>
+                        <p className="text-[11px] text-text-light dark:text-amber-200/80 leading-relaxed">
+                            تعرفه مسدود شده به موجودی در دسترس کیف پول شما بازگردانده شد. می‌توانید پس از ویرایش، مجدداً آگهی را ارسال فرمایید.
+                        </p>
+                    </div>
+                )}
+
                 {/* Action Bar Footer */}
                 <div className="border-t border-border-subtle/90 pt-3 mt-4 flex items-center justify-between gap-2">
                     {/* Primary Action Button */}
@@ -301,7 +314,7 @@ function MyAdCard({
                                 ) : (
                                     <Send className="w-3.5 h-3.5" />
                                 )}
-                                <span>ارسال برای تایید</span>
+                                <span>{ad.status === AdStatus.REJECTED ? "ارسال مجدد برای تایید" : "ارسال برای تایید"}</span>
                             </button>
                         )}
 
@@ -442,6 +455,7 @@ export default function MyAdsScene() {
             toast.success("آگهی با موفقیت برای بررسی ارسال شد");
             queryClient.invalidateQueries({ queryKey: ["my-ads"] });
             queryClient.invalidateQueries({ queryKey: ["my-ads-infinite"] });
+            queryClient.invalidateQueries({ queryKey: ["wallet", "balance"] });
         },
         onError: (err: Error, adId: string) => {
             if (isInsufficientBalanceError(err)) {
