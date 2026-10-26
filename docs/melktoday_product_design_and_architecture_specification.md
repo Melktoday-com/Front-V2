@@ -437,7 +437,7 @@ In the current implementation, there are **three primary access points** to the 
    - User taps the **User** icon in the Bottom Nav (or sidebar on desktop).
    - In `/profile`, the user selects the **«آگهی‌های من» (My Ads)** button (`/profile/ads`).
    - If the user has zero ads, an empty state renders with a prominent CTA button: **«ثبت آگهی جدید»**, which routes to the creation wizard at `/ads/submit`.
-   - Existing ads have an edit button leading to `/submit-ad?edit={adId}`.
+   - Existing ads have an edit button leading to `/ads/submit?edit={adId}`.
 2. **Via Agency Manager Panel (`/agency/panel`):**
    - For users with the `Agent` role, the profile displays **«مدیریت آژانس من»**.
    - Inside the agency panel dashboard, a highlighted callout card provides a direct CTA button: **«ثبت آگهی جدید»**, triggering `router.push('/ads/submit')`.

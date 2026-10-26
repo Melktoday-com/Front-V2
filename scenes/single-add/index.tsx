@@ -9,10 +9,10 @@ import { useCreateConversation } from "@/hooks/useChat";
 import { useCityLookup } from "@/hooks/useCityLookup";
 import { useToggleSaveAd } from "@/hooks/useFavorites";
 import { useSafeBack } from "@/hooks/useSafeBack";
-import { cn, formatAdPrice, formatPrice, getMediaPosterUrl, getMediaUrl, toPersianDigits } from "@/lib/utils";
 import { getFloorArea } from "@/lib/location";
+import { cn, formatAdPrice, formatPrice, getMediaPosterUrl, getMediaUrl, toPersianDigits } from "@/lib/utils";
 import { adsService } from "@/services/ads.service";
-import { AdDetail, AdSummary, NamedReference, SubcategoryConfigResponse } from "@/types/api/ads.types";
+import { AdDetail, AdSummary, SubcategoryConfigResponse } from "@/types/api/ads.types";
 import { AdStatus } from "@/types/api/enums";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -29,6 +29,7 @@ import {
     Heart,
     Layers,
     Lock,
+    LucideIcon,
     MapPin,
     Maximize2,
     MessageCircle,
@@ -41,8 +42,7 @@ import {
     ShieldCheck,
     Sparkles,
     Tag,
-    X,
-    LucideIcon
+    X
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
@@ -607,7 +607,7 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
                             </div>
                             {isOwner && (
                                 <button
-                                    onClick={() => router.push(`/submit-ad?edit=${ad.adId}`)}
+                                    onClick={() => router.push(`/ads/submit?edit=${ad.adId}`)}
                                     className="flex items-center justify-center gap-1.5 px-4 py-2 bg-brand text-white rounded-xl text-xs font-bold hover:bg-brand/90 transition-colors shrink-0 shadow-xs cursor-pointer"
                                 >
                                     <Pencil className="w-3.5 h-3.5" />
