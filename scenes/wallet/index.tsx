@@ -104,8 +104,16 @@ export default function WalletScene() {
 
     // Backend wallet stores balance in IRR (currency: "IRR").
     // Convert to Toman for user display (1 Toman = 10 IRR).
-    const rawBalanceIrr = Number(balanceData?.availableBalance ?? balanceData?.balance ?? 0);
-    const balanceToman = rialToToman(rawBalanceIrr);
+    const rawBalanceIrr = Number(balanceData?.balance ?? 0);
+    const rawFrozenIrr = Number(balanceData?.frozenAmount ?? balanceData?.heldAmount ?? 0);
+    const rawAvailableIrr = Number(
+        balanceData?.availableBalance !== undefined
+            ? balanceData.availableBalance
+            : Math.max(0, rawBalanceIrr - rawFrozenIrr)
+    );
+    const balanceToman = rialToToman(rawAvailableIrr);
+    const totalBalanceToman = rialToToman(rawBalanceIrr);
+    const frozenToman = rialToToman(rawFrozenIrr);
 
     return (
         <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6 pb-28 lg:pb-10">
@@ -151,8 +159,14 @@ export default function WalletScene() {
                                     <span className="text-sm font-bold text-white/80">تومان</span>
                                 </div>
                                 <div className="text-xs text-white/60 font-medium">
-                                    معادل {formatCurrency(rawBalanceIrr)} ریال
+                                    معادل {formatCurrency(rawAvailableIrr)} ریال
                                 </div>
+                                {rawFrozenIrr > 0 && (
+                                    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-surface/15 text-[11px] text-amber-300 font-medium mt-1">
+                                        <span>مجموع موجودی: {formatCurrency(totalBalanceToman)} تومان</span>
+                                        <span className="opacity-70">({formatCurrency(frozenToman)} تومان در انتظار انتشار)</span>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>

@@ -3,8 +3,11 @@ export interface WalletBalance {
     walletId: string;
     balance: number;
     currency: string;
+    frozen?: boolean;
     heldAmount?: number;
+    frozenAmount?: number;
     availableBalance?: number;
+    createdAt?: string | Date;
 }
 
 import { JsonObject } from "../common";

@@ -33,9 +33,16 @@ export function AdPublicationFeeModal({
     adId,
 }: AdPublicationFeeModalProps) {
     const router = useRouter();
-    const { data: walletData, isLoading: isLoadingBalance } = useWalletBalance();
+    const { data: walletData, isLoading: isLoadingBalance, refetch: refetchBalance } = useWalletBalance();
     const { data: tariffs = [], isLoading: isLoadingTariffs } = useTariffs();
     const initiateMutation = useInitiateTopUp();
+
+    // Re-fetch wallet balance on modal open to ensure accurate available balance
+    React.useEffect(() => {
+        if (isOpen) {
+            refetchBalance();
+        }
+    }, [isOpen, refetchBalance]);
 
     // 1. Resolve listing publication tariff
     const publicationTariff = useMemo(() => {
@@ -51,10 +58,22 @@ export function AdPublicationFeeModal({
         return isNaN(amountIrr) || amountIrr <= 0 ? 10000 : rialToToman(amountIrr);
     }, [publicationTariff]);
 
-    // Available wallet balance in Tomans
-    const balanceTomans = useMemo(() => {
-        const rawIrr = Number(walletData?.availableBalance ?? walletData?.balance ?? 0);
-        return isNaN(rawIrr) ? 0 : Math.max(0, rialToToman(rawIrr));
+    // Available and frozen wallet balance in Tomans
+    const { balanceTomans, totalBalanceTomans, frozenTomans, hasFrozenFunds } = useMemo(() => {
+        const rawBalanceIrr = Number(walletData?.balance ?? 0);
+        const rawFrozenIrr = Number(walletData?.frozenAmount ?? walletData?.heldAmount ?? 0);
+        const rawAvailableIrr = Number(
+            walletData?.availableBalance !== undefined
+                ? walletData.availableBalance
+                : Math.max(0, rawBalanceIrr - rawFrozenIrr)
+        );
+
+        return {
+            balanceTomans: isNaN(rawAvailableIrr) ? 0 : Math.max(0, rialToToman(rawAvailableIrr)),
+            totalBalanceTomans: isNaN(rawBalanceIrr) ? 0 : Math.max(0, rialToToman(rawBalanceIrr)),
+            frozenTomans: isNaN(rawFrozenIrr) ? 0 : Math.max(0, rialToToman(rawFrozenIrr)),
+            hasFrozenFunds: rawFrozenIrr > 0,
+        };
     }, [walletData]);
 
     // Deficit needed to fulfill the publication fee
@@ -201,6 +220,15 @@ export function AdPublicationFeeModal({
                             )}
                         </span>
                     </div>
+
+                    {hasFrozenFunds && (
+                        <div className="flex items-center justify-between text-xs text-amber-600 dark:text-amber-400">
+                            <span className="font-medium">مبالغ در تعلیق/رزرو آگهی‌ها:</span>
+                            <span className="font-black">
+                                {formatCurrency(frozenTomans)} تومان
+                            </span>
+                        </div>
+                    )}
 
                     <div className="pt-2 border-t border-border-subtle flex items-center justify-between text-xs">
                         <span className="text-error font-black">حداقل کسری مورد نیاز:</span>
