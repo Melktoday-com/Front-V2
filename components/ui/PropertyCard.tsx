@@ -3,7 +3,7 @@
 import { DEFAULT_CATEGORY_TRANSLATIONS } from "@/hooks/useCategoryLookup";
 import { cn, toPersianDigits, getMediaUrl, getMediaPosterUrl } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns-jalali";
-import { ChevronLeft, Clock, MapPin, Play, ShieldCheck, Sparkles } from "lucide-react";
+import { ChevronLeft, Clock, MapPin, Play, ShieldCheck, Sparkles, Zap } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -12,6 +12,28 @@ import type { MediaReference } from "@/types/api/media.types";
 
 import type { ResolvedLocation } from "@/types/location.types";
 import { formatLocationDisplay } from "@/lib/location";
+
+export function LadderIcon({ className, ...props }: React.ComponentProps<"svg">) {
+    return (
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className={className}
+            {...props}
+        >
+            <path d="M7 2v20" />
+            <path d="M17 2v20" />
+            <path d="M7 7h10" />
+            <path d="M7 12h10" />
+            <path d="M7 17h10" />
+        </svg>
+    );
+}
 
 function formatDisplayDate(dateVal?: string | Date | number | null): string {
     if (!dateVal) return "";
@@ -68,6 +90,10 @@ interface PropertyCardProps {
     badgeName?: string | null;
     badgeIcon?: string | null;
     isUrgent?: boolean;
+    isLadder?: boolean;
+    isFeatured?: boolean;
+    ladderIcon?: React.ReactNode;
+    urgentIcon?: React.ReactNode;
     publisher?: {
         type: 'host' | 'agency' | 'platform' | 'user';
         name: string;
@@ -101,11 +127,21 @@ export function PropertyCard({
     badgeName,
     badgeIcon,
     isUrgent = false,
+    isLadder = false,
+    isFeatured = false,
+    ladderIcon,
+    urgentIcon,
     publisher,
 }: PropertyCardProps) {
     const router = useRouter();
     const effectiveAdId = adId || id;
     const effectiveDate = date ?? createdAt;
+    const isUrgentEffective = Boolean(isUrgent || badgeName === "فوری");
+    const isLadderEffective = Boolean(isLadder || badgeName === "نردبان");
+    const effectiveBadgeName =
+        badgeName === "نردبان" || badgeName === "فوری"
+            ? null
+            : (badgeName || (isFeatured ? "ویژه" : null));
     const displayLocation = typeof location === "string" ? location : formatLocationDisplay(location);
     const effectiveArea = area !== null && area !== undefined && typeof area !== "object" ? area : undefined;
     const effectiveRooms = rooms ?? undefined;
@@ -195,14 +231,22 @@ export function PropertyCard({
 
                     {/* Badges on Thumbnail */}
                     <div className="absolute top-1 right-1 flex flex-col items-end gap-0.5 z-10 pointer-events-none">
-                        {isUrgent && (
-                            <div className="bg-rose-600 text-white text-[8px] font-black px-1.5 py-0.5 rounded shadow-xs leading-none">
-                                فوری
+                        {isUrgentEffective && (
+                            <div className="bg-rose-600 text-white text-[8px] font-black px-1.5 py-0.5 rounded shadow-xs leading-none flex items-center gap-0.5">
+                                {urgentIcon || <Zap className="w-2 h-2 fill-white text-white shrink-0" />}
+                                <span>فوری</span>
                             </div>
                         )}
-                        {badgeName && !isUrgent && (
-                            <div className="bg-surface/90 backdrop-blur-xs text-warning text-[8px] font-bold px-1 py-0.5 rounded shadow-xs leading-none">
-                                {badgeName}
+                        {isLadderEffective && (
+                            <div className="bg-blue-600 text-white text-[8px] font-black px-1.5 py-0.5 rounded shadow-xs leading-none flex items-center gap-0.5">
+                                {ladderIcon || <LadderIcon className="w-2 h-2 shrink-0" />}
+                                <span>نردبان</span>
+                            </div>
+                        )}
+                        {effectiveBadgeName && (
+                            <div className="bg-surface/90 backdrop-blur-xs text-warning text-[8px] font-bold px-1 py-0.5 rounded shadow-xs leading-none flex items-center gap-0.5">
+                                <Sparkles className="w-2 h-2 text-amber-500 shrink-0" />
+                                <span>{effectiveBadgeName}</span>
                             </div>
                         )}
                     </div>
@@ -423,21 +467,28 @@ export function PropertyCard({
                 />
 
                 {/* Badges Container (Top Right) */}
-                <div className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 flex flex-col items-end gap-1 z-10">
-                    {isUrgent && (
-                        <div className="bg-rose-600 text-white text-[9px] sm:text-[10px] font-black px-1.5 sm:px-2 py-0.5 rounded-md sm:rounded-lg shadow-sm flex items-center gap-1">
+                <div className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 flex flex-col items-end gap-1 z-10 pointer-events-none">
+                    {isUrgentEffective && (
+                        <div className="bg-rose-600 text-white text-[9px] sm:text-[10px] font-black px-1.5 sm:px-2 py-0.5 rounded-md sm:rounded-lg shadow-sm flex items-center gap-1 leading-none">
+                            {urgentIcon || <Zap className="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-white text-white shrink-0" />}
                             <span>فوری</span>
                         </div>
                     )}
-                    {badgeName && (
-                        <div className="bg-surface/95 backdrop-blur-md text-warning border border-warning/30/80 shadow-xs px-1.5 sm:px-2 py-0.5 rounded-md sm:rounded-lg text-[9px] sm:text-[10px] font-black flex items-center gap-1">
-                            <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-amber-500" />
-                            <span>{badgeName}</span>
+                    {isLadderEffective && (
+                        <div className="bg-blue-600 text-white text-[9px] sm:text-[10px] font-black px-1.5 sm:px-2 py-0.5 rounded-md sm:rounded-lg shadow-sm flex items-center gap-1 leading-none">
+                            {ladderIcon || <LadderIcon className="w-2.5 h-2.5 sm:w-3 sm:h-3 shrink-0" />}
+                            <span>نردبان</span>
+                        </div>
+                    )}
+                    {effectiveBadgeName && (
+                        <div className="bg-surface/95 backdrop-blur-md text-warning border border-warning/30 shadow-xs px-1.5 sm:px-2 py-0.5 rounded-md sm:rounded-lg text-[9px] sm:text-[10px] font-black flex items-center gap-1 leading-none">
+                            <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-amber-500 shrink-0" />
+                            <span>{effectiveBadgeName}</span>
                         </div>
                     )}
                     {effectiveIsVideo && (
-                        <div className="bg-black/60 backdrop-blur-xs text-white text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 rounded-full flex items-center gap-1 font-medium">
-                            <Play className="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-white" />
+                        <div className="bg-black/60 backdrop-blur-xs text-white text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 rounded-full flex items-center gap-1 font-medium leading-none">
+                            <Play className="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-white shrink-0" />
                             <span>ویدیو</span>
                         </div>
                     )}

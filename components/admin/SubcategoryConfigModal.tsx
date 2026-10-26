@@ -181,6 +181,10 @@ export default function SubcategoryConfigModal({
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [...queryKeyPrefix, "subcategory-attributes", subcategoryId] });
+            queryClient.invalidateQueries({ queryKey: ["subcategory-config"] });
+            queryClient.invalidateQueries({ queryKey: ["temporary-rent-subcat-config"] });
+            queryClient.invalidateQueries({ queryKey: ["admin", "categories"] });
+            queryClient.invalidateQueries({ queryKey: ["categories"] });
             toast.success(attributeFormData.id ? "ویژگی با موفقیت ویرایش شد" : "ویژگی جدید با موفقیت اضافه شد");
             setIsAttributeModalOpen(false);
             setAttributeFormData(initialAttributeFormData);
@@ -198,6 +202,7 @@ export default function SubcategoryConfigModal({
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [...queryKeyPrefix, "subcategory-attributes", subcategoryId] });
             queryClient.invalidateQueries({ queryKey: ["subcategory-config"] });
+            queryClient.invalidateQueries({ queryKey: ["temporary-rent-subcat-config"] });
             queryClient.invalidateQueries({ queryKey: ["admin", "categories"] });
             queryClient.invalidateQueries({ queryKey: ["categories"] });
             toast.success("ویژگی با موفقیت حذف شد");

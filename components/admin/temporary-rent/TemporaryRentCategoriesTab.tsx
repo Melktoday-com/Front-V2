@@ -180,6 +180,7 @@ export default function TemporaryRentCategoriesTab() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["admin", "temporary-rent", "categories"] });
+            queryClient.invalidateQueries({ queryKey: ["temporary-rent-subcat-config"] });
             toast.success("زیردسته اقامتگاه با موفقیت ایجاد و مدل‌های قیمت‌گذاری تخصیص داده شد");
             setIsCreateSubcategoryModalOpen(false);
         },
@@ -202,6 +203,7 @@ export default function TemporaryRentCategoriesTab() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["admin", "temporary-rent", "categories"] });
+            queryClient.invalidateQueries({ queryKey: ["temporary-rent-subcat-config"] });
             toast.success("زیردسته با موفقیت بروزرسانی شد");
             setIsEditSubcategoryModalOpen(false);
             setSelectedSubcategory(null);
@@ -216,6 +218,7 @@ export default function TemporaryRentCategoriesTab() {
             adminService.archiveTemporaryRentSubcategory(subcategoryId),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["admin", "temporary-rent", "categories"] });
+            queryClient.invalidateQueries({ queryKey: ["temporary-rent-subcat-config"] });
             toast.success("زیردسته با موفقیت آرشیو شد");
         },
         onError: () => toast.error("خطا در آرشیو زیردسته")

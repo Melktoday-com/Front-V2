@@ -186,6 +186,8 @@ export const HomeScene = () => {
                                     className="w-[210px] lg:w-[250px]"
                                     date={property.createdAt}
                                     badgeName={property.isFeatured ? "ویژه" : undefined}
+                                    isUrgent={property.isUrgent}
+                                    isLadder={property.isLadder}
                                     isSaved={property.isSaved ?? isAdSaved(effectiveId)}
                                     onToggleSave={(id) => toggleSaveAdMutation.mutateAsync(id)}
                                 />
@@ -314,6 +316,8 @@ export const HomeScene = () => {
                                     className="w-[210px] lg:w-[250px]"
                                     date={property.createdAt}
                                     badgeName={property.isFeatured ? "ویژه" : undefined}
+                                    isUrgent={property.isUrgent}
+                                    isLadder={property.isLadder}
                                     isSaved={property.isSaved ?? isAdSaved(effectiveId)}
                                     onToggleSave={(id) => toggleSaveAdMutation.mutateAsync(id)}
                                 />

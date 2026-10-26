@@ -1028,6 +1028,9 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
                                         }
                                         publisher={item.publisher}
                                         date={item.createdAt}
+                                        badgeName={item.isFeatured ? "ویژه" : undefined}
+                                        isUrgent={item.isUrgent}
+                                        isLadder={item.isLadder}
                                     />
                                 ))}
                         </div>

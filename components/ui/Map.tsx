@@ -219,6 +219,9 @@ const LegacyAdMarker = React.memo(function LegacyAdMarker({
                     image={getMediaPosterUrl(ad.mediaIds?.[0])}
                     isVideo={ad.mediaIds?.[0]?.type === "VIDEO"}
                     category={ad.subcategoryTitle || ad.categoryPath?.subcategoryTitle || ad.categoryPath?.subcategoryKey}
+                    badgeName={ad.isFeatured ? "ویژه" : undefined}
+                    isUrgent={ad.isUrgent}
+                    isLadder={ad.isLadder}
                 />
             </Popup>
         </Marker>

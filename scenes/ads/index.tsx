@@ -889,6 +889,8 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                                                     area={getFloorArea(ad)}
                                                     rooms={ad.rooms}
                                                     badgeName={ad.isFeatured ? "ویژه" : undefined}
+                                                    isUrgent={ad.isUrgent}
+                                                    isLadder={ad.isLadder}
                                                     date={ad.createdAt}
                                                 />
                                             );

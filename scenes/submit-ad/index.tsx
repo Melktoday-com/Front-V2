@@ -166,7 +166,8 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
         queryKey: ["subcategory-config", selectedSubcategoryKey, selectedCategoryKey],
         queryFn: () => adsService.getSubcategoryConfig(selectedSubcategoryKey!, selectedCategoryKey),
         enabled: Boolean(selectedSubcategoryKey),
-        staleTime: 1000 * 60 * 5,
+        staleTime: 0,
+        refetchOnMount: "always",
     });
 
     // Active price model resolution
@@ -186,7 +187,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
         );
     }, [subcatConfig, formData.categoryPath?.businessModelKey]);
 
-    // Automatically set businessModelKey when subcatConfig loads and no key is set yet
+    // Automatically set businessModelKey and attributeSchemaVersion when subcatConfig loads
     useEffect(() => {
         if (
             activePriceModel &&
@@ -198,12 +199,24 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                 categoryPath: {
                     categoryKey: prev.categoryPath?.categoryKey || "",
                     subcategoryKey: prev.categoryPath?.subcategoryKey || "",
-                    attributeSchemaVersion: prev.categoryPath?.attributeSchemaVersion || 1,
+                    attributeSchemaVersion: subcatConfig?.subcategory?.version || prev.categoryPath?.attributeSchemaVersion || 1,
                     businessModelKey: activePriceModel.key,
                 },
             }));
+        } else if (
+            subcatConfig?.subcategory?.version &&
+            formData.categoryPath &&
+            formData.categoryPath.attributeSchemaVersion !== subcatConfig.subcategory.version
+        ) {
+            setFormData((prev) => ({
+                ...prev,
+                categoryPath: {
+                    ...prev.categoryPath!,
+                    attributeSchemaVersion: subcatConfig.subcategory.version!,
+                },
+            }));
         }
-    }, [activePriceModel]);
+    }, [activePriceModel, subcatConfig?.subcategory?.version]);
 
     // Options and change handlers for Step 1 Responsive Select / Drawer
     const cityOptions = useMemo<SelectDrawerOption<string>[]>(() => {
@@ -351,7 +364,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
             categoryPath: {
                 categoryKey: prev.categoryPath?.categoryKey || "",
                 subcategoryKey: prev.categoryPath?.subcategoryKey || "",
-                attributeSchemaVersion: prev.categoryPath?.attributeSchemaVersion || 1,
+                attributeSchemaVersion: subcatConfig?.subcategory?.version || prev.categoryPath?.attributeSchemaVersion || 1,
                 businessModelKey: pmKey,
             },
             pricingValues: {},
@@ -513,7 +526,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                         categoryKey: formData.categoryPath!.categoryKey,
                         subcategoryKey: formData.categoryPath!.subcategoryKey,
                         businessModelKey: formData.categoryPath!.businessModelKey,
-                        attributeSchemaVersion: formData.categoryPath!.attributeSchemaVersion || 1,
+                        attributeSchemaVersion: subcatConfig?.subcategory?.version || formData.categoryPath!.attributeSchemaVersion || 1,
                     },
                     title: formData.title!,
                     description: formData.description!,
@@ -552,7 +565,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                         categoryKey: formData.categoryPath!.categoryKey,
                         subcategoryKey: formData.categoryPath!.subcategoryKey,
                         businessModelKey: formData.categoryPath!.businessModelKey,
-                        attributeSchemaVersion: formData.categoryPath!.attributeSchemaVersion || 1,
+                        attributeSchemaVersion: subcatConfig?.subcategory?.version || formData.categoryPath!.attributeSchemaVersion || 1,
                     },
                     title: formData.title!,
                     description: formData.description!,
@@ -728,7 +741,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                     categoryPath: {
                         categoryKey: prev.categoryPath?.categoryKey || "",
                         subcategoryKey: prev.categoryPath?.subcategoryKey || "",
-                        attributeSchemaVersion: prev.categoryPath?.attributeSchemaVersion || 1,
+                        attributeSchemaVersion: subcatConfig?.subcategory?.version || prev.categoryPath?.attributeSchemaVersion || 1,
                         businessModelKey: activePriceModel.key,
                     },
                 }));

@@ -56,6 +56,8 @@ export interface AdSummary {
     priceModelKey?: string;
     pricing: Record<string, number | boolean | string>;
     isFeatured: boolean;
+    isUrgent?: boolean;
+    isLadder?: boolean;
     isDecorativeImages?: boolean;
     isSaved?: boolean;
     mediaIds?: MediaReference[];
@@ -288,6 +290,7 @@ export interface SubcategoryConfigResponse {
         categoryId: string;
         categoryKey: string;
         categoryDisplayName: string;
+        version?: number;
     };
     allowedPriceModels: PriceModel[];
     attributeDefinitions: AttributeDefinition[];

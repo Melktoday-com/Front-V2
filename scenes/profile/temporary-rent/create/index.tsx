@@ -159,7 +159,8 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
         queryKey: ["temporary-rent-subcat-config", selectedSubcategoryKey, selectedCategoryKey],
         queryFn: () => temporaryRentService.getSubcategoryConfig(selectedSubcategoryKey, selectedCategoryKey),
         enabled: Boolean(selectedSubcategoryKey),
-        staleTime: 1000 * 60 * 5,
+        staleTime: 0,
+        refetchOnMount: "always",
     });
 
     // Resolve active PriceModel
