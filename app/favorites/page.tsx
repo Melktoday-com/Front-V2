@@ -1,11 +1,9 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Image from 'next/image';
+import { LikedPostCard } from '@/components/ui/LikedPostCard';
 import { PropertyCard } from '@/components/ui/PropertyCard';
 import { TemporaryRentCard } from '@/components/ui/TemporaryRentCard';
-import { LikedPostCard } from '@/components/ui/LikedPostCard';
+import { useAuth } from '@/hooks/useAuth';
 import {
     useFavorites,
     useLikedPosts,
@@ -13,7 +11,7 @@ import {
     useToggleSaveAd,
     useToggleSaveTemporaryRent,
 } from '@/hooks/useFavorites';
-import { useAuth } from '@/hooks/useAuth';
+import { cn, getMediaPosterUrl, getMediaUrl, toPersianDigits } from '@/lib/utils';
 import { UnifiedPost } from '@/types/api/post.types';
 import {
     Bookmark,
@@ -22,10 +20,11 @@ import {
     Eye,
     Heart,
     Share2,
-    Sparkles,
-    X,
+    X
 } from 'lucide-react';
-import { cn, toPersianDigits, getMediaUrl, getMediaPosterUrl } from '@/lib/utils';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { toast } from 'sonner';
 
 type FilterTab = 'ALL' | 'AD' | 'TEMPORARY_RENT' | 'POST';
@@ -61,15 +60,15 @@ export default function FavoritesPage() {
         selectedTab === 'POST'
             ? isPostsLoading
             : selectedTab === 'ALL'
-            ? isFavoritesLoading || isPostsLoading
-            : isFavoritesLoading;
+                ? isFavoritesLoading || isPostsLoading
+                : isFavoritesLoading;
 
     const hasAnyContent =
         selectedTab === 'POST'
             ? likedPosts.length > 0
             : selectedTab === 'ALL'
-            ? filteredFavorites.length > 0 || likedPosts.length > 0
-            : filteredFavorites.length > 0;
+                ? filteredFavorites.length > 0 || likedPosts.length > 0
+                : filteredFavorites.length > 0;
 
     const handleSharePost = (post: UnifiedPost) => {
         if (typeof window !== 'undefined' && navigator.clipboard) {
@@ -139,10 +138,10 @@ export default function FavoritesPage() {
                         tab.id === 'ALL'
                             ? favorites.length + likedPosts.length
                             : tab.id === 'AD'
-                            ? favorites.filter((f) => f.type === 'AD').length
-                            : tab.id === 'TEMPORARY_RENT'
-                            ? favorites.filter((f) => f.type === 'TEMPORARY_RENT').length
-                            : likedPosts.length;
+                                ? favorites.filter((f) => f.type === 'AD').length
+                                : tab.id === 'TEMPORARY_RENT'
+                                    ? favorites.filter((f) => f.type === 'TEMPORARY_RENT').length
+                                    : likedPosts.length;
 
                     return (
                         <button
@@ -184,10 +183,10 @@ export default function FavoritesPage() {
                             {selectedTab === 'ALL'
                                 ? 'هنوز موردی ذخیره یا پسند نکرده‌اید'
                                 : selectedTab === 'AD'
-                                ? 'هیچ آگهی ملکی ذخیره نشده است'
-                                : selectedTab === 'TEMPORARY_RENT'
-                                ? 'هیچ اقامتگاه موقتی ذخیره نشده است'
-                                : 'هیچ پستی را پسند نکرده‌اید'}
+                                    ? 'هیچ آگهی ملکی ذخیره نشده است'
+                                    : selectedTab === 'TEMPORARY_RENT'
+                                        ? 'هیچ اقامتگاه موقتی ذخیره نشده است'
+                                        : 'هیچ پستی را پسند نکرده‌اید'}
                         </h2>
                         <p className="text-xs sm:text-sm text-foreground-muted max-w-sm leading-relaxed">
                             {selectedTab === 'POST'
@@ -238,7 +237,7 @@ export default function FavoritesPage() {
                                             key={`ad-${item.id}`}
                                             adId={item.referenceId || item.id}
                                             title={item.title}
-                                            image={item.imageUrl || '/property-placeholder.svg'}
+                                            image={getMediaUrl(item.imageUrl) || '/property-placeholder.svg'}
                                             price={item.details?.price?.toString() || 'توافقی'}
                                             category={item.details?.category || 'آگهی'}
                                             location={item.subtitle || 'نامشخص'}
@@ -330,8 +329,8 @@ export default function FavoritesPage() {
                                     readingPost.publisherType === 'PLATFORM'
                                         ? 'ملک‌تودی رسمی'
                                         : readingPost.publisherType === 'AGENCY'
-                                        ? 'دفتر املاک'
-                                        : 'میزبان اقامتگاه'
+                                            ? 'دفتر املاک'
+                                            : 'میزبان اقامتگاه'
                                 )}
                             </span>
                         </div>
