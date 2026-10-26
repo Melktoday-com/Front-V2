@@ -2,8 +2,10 @@ FROM node:24-alpine AS deps
 
 WORKDIR /app
 
+ENV NODE_ENV=development
+
 COPY package*.json ./
-RUN npm ci && npm cache clean --force
+RUN npm ci --no-audit
 
 FROM node:24-alpine AS builder
 
