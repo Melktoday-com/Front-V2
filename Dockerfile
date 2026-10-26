@@ -4,8 +4,16 @@ WORKDIR /app
 
 ENV NODE_ENV=development
 
+ARG NPM_REGISTRY="https://registry.npmjs.org/"
+
 COPY package*.json ./
-RUN npm ci --no-audit
+RUN npm config set registry ${NPM_REGISTRY} \
+  && npm config set fetch-retries 5 \
+  && npm config set fetch-retry-mintimeout 20000 \
+  && npm config set fetch-retry-maxtimeout 120000 \
+  && npm config set fetch-timeout 600000 \
+  && npm config set maxsockets 5 \
+  && npm ci --no-audit
 
 FROM node:24-alpine AS builder
 
