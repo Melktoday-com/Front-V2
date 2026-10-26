@@ -75,7 +75,7 @@ export default function ResidenceDetailScene({ initialData }: ResidenceDetailSce
     const isOwner = Boolean(user && residence?.ownerId && user.userId === residence.ownerId);
     const isPublished = residence?.status === 'PUBLISHED';
     const isPromoted = Boolean(residence?.isFeatured || residence?.isUrgent);
-    const isEligibleForPromotion = isOwner && isPublished && !isPromoted;
+    const isEligibleForPromotion = isOwner && isPublished;
 
     const { getCityName } = useCityLookup();
     const cityName = residence?.cityName || getCityName(residence?.cityId);
@@ -321,6 +321,14 @@ function getResidenceRate(pricing?: TemporaryRentPricingReadModel | null): numbe
                         <span>این اقامتگاه توسط شما ثبت شده است.</span>
                     </div>
 
+                    {/* Already promoted indicator */}
+                    {isPublished && isPromoted && (
+                        <div className="flex items-center justify-center gap-2 w-full py-3 bg-warning-subtle border border-warning/30 text-warning font-black text-xs rounded-2xl shadow-xs">
+                            <Sparkles className="w-4 h-4 text-warning" />
+                            <span>اقامتگاه شما ارتقا یافته است (فوری / ویژه)</span>
+                        </div>
+                    )}
+
                     {/* Owner Promotion CTA if eligible */}
                     {isEligibleForPromotion && (
                         <button
@@ -328,16 +336,8 @@ function getResidenceRate(pricing?: TemporaryRentPricingReadModel | null): numbe
                             className="w-full py-3.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-black text-sm rounded-2xl shadow-md shadow-amber-500/20 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer"
                         >
                             <Sparkles className="w-4 h-4" />
-                            <span>ارتقای اقامتگاه (فوری / نردبان)</span>
+                            <span>{isPromoted ? "نردبان مجدد اقامتگاه" : "ارتقای اقامتگاه (فوری / نردبان)"}</span>
                         </button>
-                    )}
-
-                    {/* Already promoted indicator */}
-                    {isPublished && isPromoted && (
-                        <div className="flex items-center justify-center gap-2 w-full py-3 bg-warning-subtle border border-warning/30 text-warning font-black text-xs rounded-2xl shadow-xs">
-                            <Sparkles className="w-4 h-4 text-warning" />
-                            <span>اقامتگاه شما ارتقا یافته است (فوری / ویژه)</span>
-                        </div>
                     )}
 
                     {!isPublished && (
@@ -723,20 +723,20 @@ function getResidenceRate(pricing?: TemporaryRentPricingReadModel | null): numbe
                 <div className="flex items-center gap-2">
                     {isOwner ? (
                         <>
+                            {isPublished && isPromoted && (
+                                <span className="flex items-center gap-1 px-2.5 py-2 bg-warning-subtle text-warning rounded-xl text-xs font-bold">
+                                    <Sparkles className="w-3.5 h-3.5 text-warning" />
+                                    <span>ارتقا یافته</span>
+                                </span>
+                            )}
                             {isEligibleForPromotion && (
                                 <button
                                     onClick={() => setIsPromotionModalOpen(true)}
                                     className="flex items-center gap-1 px-3 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl text-xs font-black shadow-md shadow-orange-500/20 active:scale-95 transition-transform cursor-pointer"
                                 >
                                     <Sparkles className="w-3.5 h-3.5" />
-                                    <span>ارتقا</span>
+                                    <span>{isPromoted ? "نردبان مجدد" : "ارتقا"}</span>
                                 </button>
-                            )}
-                            {isPublished && isPromoted && (
-                                <span className="flex items-center gap-1 px-2.5 py-2 bg-warning-subtle text-warning rounded-xl text-xs font-bold">
-                                    <Sparkles className="w-3.5 h-3.5 text-warning" />
-                                    <span>ارتقا یافته</span>
-                                </span>
                             )}
                             <button
                                 onClick={() => router.push('/profile/temporary-rent')}

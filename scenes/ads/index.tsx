@@ -888,7 +888,7 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                                                     onToggleSave={(id) => toggleSaveMutation.mutateAsync(id)}
                                                     area={getFloorArea(ad)}
                                                     rooms={ad.rooms}
-                                                    isUrgent={ad.isFeatured}
+                                                    badgeName={ad.isFeatured ? "ویژه" : undefined}
                                                     date={ad.createdAt}
                                                 />
                                             );

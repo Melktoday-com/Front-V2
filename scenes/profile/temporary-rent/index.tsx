@@ -785,14 +785,21 @@ export default function TemporaryRentPanelScene() {
                                                         </button>
                                                     )}
 
-                                                    {ad.status === "PUBLISHED" && !ad.isFeatured && !ad.isUrgent && (
+                                                    {ad.status === "PUBLISHED" && (ad.isFeatured || ad.isUrgent) && (
+                                                        <span className="px-2.5 py-1.5 rounded-xl bg-warning-subtle text-warning border border-warning/30 text-xs font-bold inline-flex items-center gap-1">
+                                                            <Award className="w-3.5 h-3.5 text-warning" />
+                                                            <span>ارتقا یافته</span>
+                                                        </span>
+                                                    )}
+
+                                                    {ad.status === "PUBLISHED" && (
                                                         <button
                                                             type="button"
                                                             onClick={() => setPromotingAd({ id: ad.id, title: ad.title })}
                                                             className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold transition-all inline-flex items-center gap-1 cursor-pointer shadow-2xs"
                                                         >
                                                             <Award className="w-3.5 h-3.5" />
-                                                            <span>ارتقا (فوری/نردبان)</span>
+                                                            <span>{ad.isFeatured || ad.isUrgent ? "نردبان مجدد" : "ارتقا (فوری/نردبان)"}</span>
                                                         </button>
                                                     )}
 

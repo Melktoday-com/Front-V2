@@ -152,7 +152,7 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
     const isOwner = isLoggedIn && !!user?.userId && user?.userId === ad?.ownerId;
     const isPublished = ad?.status === AdStatus.PUBLISHED || (ad?.status as string) === "PUBLISHED";
     const isPromoted = Boolean(ad?.isFeatured);
-    const isEligibleForPromotion = isOwner && isPublished && !isPromoted;
+    const isEligibleForPromotion = isOwner && isPublished;
     const isRegularUser = !ad?.publisher || ad?.publisher?.type === "user" || ad?.publisher?.type === "platform";
 
     useEffect(() => {
@@ -919,6 +919,14 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
                                         <span>این آگهی توسط شما ثبت شده است.</span>
                                     </div>
 
+                                    {/* Already promoted indicator */}
+                                    {isPublished && isPromoted && (
+                                        <div className="flex items-center justify-center gap-2 w-full py-3 bg-warning-subtle border border-warning/30 text-warning font-black text-xs rounded-2xl shadow-xs">
+                                            <Sparkles className="w-4 h-4 text-warning" />
+                                            <span>آگهی شما ارتقا یافته است (فوری / ویژه)</span>
+                                        </div>
+                                    )}
+
                                     {/* Promotion Action if eligible */}
                                     {isEligibleForPromotion && (
                                         <button
@@ -926,16 +934,8 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
                                             className="flex items-center justify-center gap-2 w-full py-3.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-black text-sm rounded-2xl shadow-md shadow-orange-500/20 active:scale-98 transition-all cursor-pointer"
                                         >
                                             <Sparkles className="w-4 h-4" />
-                                            <span>ارتقای آگهی (فوری / نردبان)</span>
+                                            <span>{isPromoted ? "نردبان مجدد آگهی" : "ارتقای آگهی (فوری / نردبان)"}</span>
                                         </button>
-                                    )}
-
-                                    {/* Already promoted indicator */}
-                                    {isPublished && isPromoted && (
-                                        <div className="flex items-center justify-center gap-2 w-full py-3 bg-warning-subtle border border-warning/30 text-warning font-black text-xs rounded-2xl shadow-xs">
-                                            <Sparkles className="w-4 h-4 text-warning" />
-                                            <span>آگهی شما ارتقا یافته است (فوری / ویژه)</span>
-                                        </div>
                                     )}
 
                                     {/* Not published notice */}
