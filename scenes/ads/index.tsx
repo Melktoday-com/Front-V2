@@ -67,6 +67,21 @@ function searchDocToAdSummary(doc: ListingSearchDocument): AdSummary {
     const location = mapSearchDocToLocation(doc);
     const rooms = doc.attributes?.number?.rooms || doc.attributes?.number?.bedrooms || doc.attributes?.number?.room;
     const floorArea = getFloorArea(doc);
+
+    const isLadder = Boolean(
+        (doc as any).isLadder ||
+        (doc.promotionBoostScore && doc.promotionBoostScore > 0) ||
+        (doc as any).promotions?.some((p: any) => p.type === 'LADDER' || p.promotionType === 'LADDER')
+    );
+
+    const isUrgent = Boolean(
+        (doc as any).isUrgent ||
+        (doc as any).promotions?.some((p: any) => p.type === 'URGENT_TAG' || p.promotionType === 'URGENT_TAG')
+    );
+
+    const isFeatured = Boolean(doc.isFeatured && !isLadder && !isUrgent);
+    const effectiveDate = isLadder ? (doc.updatedAt || doc.publishedAt || doc.createdAt) : (doc.publishedAt || doc.createdAt);
+
     return {
         adId: doc.id,
         ownerId: doc.ownerId,
@@ -85,9 +100,11 @@ function searchDocToAdSummary(doc: ListingSearchDocument): AdSummary {
         categoryTitle: doc.taxonomy.categoryName,
         subcategoryTitle: doc.taxonomy.subcategoryName,
         pricing: doc.pricing?.number || (primaryPrice > 0 ? { price: primaryPrice } : {}),
-        isFeatured: doc.isFeatured,
+        isFeatured,
+        isUrgent,
+        isLadder,
         mediaIds: doc.mediaIds || [],
-        createdAt: doc.createdAt,
+        createdAt: effectiveDate,
         location,
         area: floorArea ?? undefined,
         rooms: typeof rooms === "number" ? rooms : undefined,
@@ -837,6 +854,11 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                         >
                             {data?.pages.map((page, pageIndex) => {
                                 const pageAds = page.hits.map(searchDocToAdSummary);
+                                const sortedPageAds = [...pageAds].sort((a, b) => {
+                                    if (a.isLadder && !b.isLadder) return -1;
+                                    if (!a.isLadder && b.isLadder) return 1;
+                                    return 0;
+                                });
 
                                 if (pageAds.length === 0 && pageIndex > 0) return null;
 
@@ -852,7 +874,7 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                                             />
                                         )}
 
-                                        {pageAds.map((ad: AdSummary) => {
+                                        {sortedPageAds.map((ad: AdSummary) => {
                                             const pricing = getPricingDisplay(ad);
                                             const catKey = ad.categoryPath?.categoryKey;
                                             const subKey = ad.categoryPath?.subcategoryKey;
@@ -888,7 +910,7 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                                                     onToggleSave={(id) => toggleSaveMutation.mutateAsync(id)}
                                                     area={getFloorArea(ad)}
                                                     rooms={ad.rooms}
-                                                    badgeName={ad.isFeatured ? "ویژه" : undefined}
+                                                    badgeName={ad.isFeatured && !ad.isLadder && !ad.isUrgent ? "ویژه" : undefined}
                                                     isUrgent={ad.isUrgent}
                                                     isLadder={ad.isLadder}
                                                     date={ad.createdAt}

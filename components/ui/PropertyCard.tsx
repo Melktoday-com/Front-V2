@@ -141,6 +141,8 @@ export function PropertyCard({
     const effectiveBadgeName =
         badgeName === "نردبان" || badgeName === "فوری"
             ? null
+            : (isLadderEffective || isUrgentEffective) && (badgeName === "ویژه" || (!badgeName && isFeatured))
+            ? null
             : (badgeName || (isFeatured ? "ویژه" : null));
     const displayLocation = typeof location === "string" ? location : formatLocationDisplay(location);
     const effectiveArea = area !== null && area !== undefined && typeof area !== "object" ? area : undefined;
@@ -229,8 +231,8 @@ export function PropertyCard({
                         onError={() => setImgSrc("/property-placeholder.svg")}
                     />
 
-                    {/* Badges on Thumbnail */}
-                    <div className="absolute top-1 right-1 flex flex-col items-end gap-0.5 z-10 pointer-events-none">
+                    {/* Badges on Thumbnail (Top Left) */}
+                    <div className="absolute top-1 left-1 flex flex-col items-start gap-0.5 z-10 pointer-events-none">
                         {isUrgentEffective && (
                             <div className="bg-rose-600 text-white text-[8px] font-black px-1.5 py-0.5 rounded shadow-xs leading-none flex items-center gap-0.5">
                                 {urgentIcon || <Zap className="w-2 h-2 fill-white text-white shrink-0" />}
@@ -466,8 +468,8 @@ export function PropertyCard({
                     onError={() => setImgSrc("/property-placeholder.svg")}
                 />
 
-                {/* Badges Container (Top Right) */}
-                <div className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 flex flex-col items-end gap-1 z-10 pointer-events-none">
+                {/* Badges Container (Top Left) */}
+                <div className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 flex flex-col items-start gap-1 z-10 pointer-events-none">
                     {isUrgentEffective && (
                         <div className="bg-rose-600 text-white text-[9px] sm:text-[10px] font-black px-1.5 sm:px-2 py-0.5 rounded-md sm:rounded-lg shadow-sm flex items-center gap-1 leading-none">
                             {urgentIcon || <Zap className="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-white text-white shrink-0" />}

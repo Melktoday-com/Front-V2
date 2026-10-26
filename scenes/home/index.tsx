@@ -185,7 +185,7 @@ export const HomeScene = () => {
                                     }
                                     className="w-[210px] lg:w-[250px]"
                                     date={property.createdAt}
-                                    badgeName={property.isFeatured ? "ویژه" : undefined}
+                                    badgeName={property.isFeatured && !property.isLadder && !property.isUrgent ? "ویژه" : undefined}
                                     isUrgent={property.isUrgent}
                                     isLadder={property.isLadder}
                                     isSaved={property.isSaved ?? isAdSaved(effectiveId)}
@@ -315,7 +315,7 @@ export const HomeScene = () => {
                                     }
                                     className="w-[210px] lg:w-[250px]"
                                     date={property.createdAt}
-                                    badgeName={property.isFeatured ? "ویژه" : undefined}
+                                    badgeName={property.isFeatured && !property.isLadder && !property.isUrgent ? "ویژه" : undefined}
                                     isUrgent={property.isUrgent}
                                     isLadder={property.isLadder}
                                     isSaved={property.isSaved ?? isAdSaved(effectiveId)}
