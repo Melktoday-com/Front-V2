@@ -1,19 +1,26 @@
+
 FROM node:24-alpine AS deps
 
 WORKDIR /app
 
 ENV NODE_ENV=development
 
-ARG NPM_REGISTRY="https://registry.npmjs.org/"
+# Use the registry verified as reachable from the deployment server.
+# Can be overridden with --build-arg NPM_REGISTRY=...
+ARG NPM_REGISTRY="https://registry.npmmirror.com/"
 
 COPY package*.json ./
-RUN npm config set registry ${NPM_REGISTRY} \
-  && npm config set fetch-retries 5 \
-  && npm config set fetch-retry-mintimeout 20000 \
-  && npm config set fetch-retry-maxtimeout 120000 \
-  && npm config set fetch-timeout 600000 \
-  && npm config set maxsockets 5 \
-  && npm ci --no-audit
+
+RUN set -eux; \
+  npm config set registry "${NPM_REGISTRY}"; \
+  npm config set fetch-retries 3; \
+  npm config set fetch-retry-mintimeout 10000; \
+  npm config set fetch-retry-maxtimeout 60000; \
+  npm config set fetch-timeout 180000; \
+  npm config set maxsockets 5; \
+  npm config get registry; \
+  npm ci --no-audit --no-fund
+
 
 FROM node:24-alpine AS builder
 
@@ -21,13 +28,17 @@ WORKDIR /app
 
 ARG NEXT_PUBLIC_API_URL
 ARG NEXT_PUBLIC_BASE_URL
+
 ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 ENV NEXT_PUBLIC_BASE_URL=${NEXT_PUBLIC_BASE_URL}
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+
 RUN npm run build
+
 RUN npm prune --omit=dev
+
 
 FROM node:24-alpine AS production
 
