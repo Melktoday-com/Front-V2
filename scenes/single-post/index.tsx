@@ -10,7 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { usePostViewObserver } from "@/hooks/usePostViewObserver";
 import { MarkdownRenderer } from "@/components/ui/MarkdownRenderer";
 import { getMediaUrl, getMediaPosterUrl, toPersianDigits, cn } from "@/lib/utils";
-import { UnifiedPost } from "@/types/api/post.types";
+import { PUBLISHER_TYPES, UnifiedPost } from "@/types/api/post.types";
 import {
   Heart,
   Share2,
@@ -58,36 +58,40 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
   const publisherInfo = useMemo(() => {
     if (!post) return null;
 
-    if (post.publisherType === "PLATFORM" || post.publisherId === "melktoday-official") {
+    if (
+      post.publisherType === PUBLISHER_TYPES.PLATFORM ||
+      post.publisherId === "melktoday-official"
+    ) {
       return {
-        name: "ملک‌تودی (پلتفرم رسمی)",
+        name: post.publisher?.name || "ملک‌تودی (پلتفرم رسمی)",
         badge: "پلتفرم رسمی",
         link: "/platform",
-        logoUrl: null,
-        type: "PLATFORM" as const,
+        logoUrl: post.publisher?.logoUrl || post.publisher?.avatarUrl || "/logo.svg",
+        type: PUBLISHER_TYPES.PLATFORM,
         isVerified: true,
       };
     }
 
-    if (post.publisherType === "HOST") {
+    if (post.publisherType === PUBLISHER_TYPES.HOST) {
+      const host = post.publisher;
       return {
-        name: post.publisher?.name || "میزبان اقامتگاه",
+        name: host?.name || "میزبان اقامتگاه",
         badge: "میزبان اقامتگاه",
-        link: post.publisher?.slug ? `/host/${post.publisher.slug}` : "/temporary-rent",
-        logoUrl: post.publisher?.logoUrl || null,
-        type: "HOST" as const,
-        isVerified: post.publisher?.isVerified ?? false,
+        link: host?.slug ? `/host/${encodeURIComponent(host.slug)}` : `/host/${encodeURIComponent(post.publisherId)}`,
+        logoUrl: host?.logoUrl || host?.avatarUrl || null,
+        type: PUBLISHER_TYPES.HOST,
+        isVerified: host?.isVerified ?? false,
       };
     }
 
-    const agency = post.publisher;
-    const agencySlugOrId = agency?.slug || agency?.id || post.publisherId;
+    const agency = post.publisher || post.agency;
+    const agencySlugOrId = agency?.slug || agency?.id || post.agencyId || post.publisherId;
     return {
       name: agency?.name || "آژانس املاک",
       badge: "آژانس املاک",
       link: agencySlugOrId ? `/agency/showcase/${encodeURIComponent(agencySlugOrId)}` : "/agency",
-      logoUrl: agency?.logoUrl || null,
-      type: "AGENCY" as const,
+      logoUrl: agency?.logoUrl || agency?.avatarUrl || null,
+      type: PUBLISHER_TYPES.AGENCY,
       isVerified: agency?.isVerified ?? true,
     };
   }, [post]);

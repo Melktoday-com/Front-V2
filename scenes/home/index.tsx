@@ -8,7 +8,8 @@ import { SectionHeader } from "@/components/SectionHeader";
 import { PropertyCard } from "@/components/ui/PropertyCard";
 import { Slider } from "@/components/ui/Slider";
 import { EmptyState, ErrorState } from "@/components/ui/StatusStates";
-import { useAds, useCategories } from "@/hooks/useAds";
+import { useCategories } from "@/hooks/useAds";
+import { useSearchListings } from "@/hooks/useSearch";
 import { useAgencies } from "@/hooks/useAgencies";
 import { useCategoryLookup } from "@/hooks/useCategoryLookup";
 import { useFavorites, useToggleSaveAd, useToggleSaveTemporaryRent } from "@/hooks/useFavorites";
@@ -18,6 +19,7 @@ import { AdSummary } from "@/types/api/ads.types";
 import { AgencySummary } from "@/types/api/agency.types";
 import { TemporaryRentPricingReadModel } from "@/types/api/temporary-rent.types";
 import { getMediaUrl, getMediaPosterUrl, formatPrice } from "@/lib/utils";
+import { searchDocToAdSummary } from "@/lib/search-transformers";
 import { Footer } from "@/components/layout/Footer";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
@@ -84,16 +86,41 @@ export const HomeScene = () => {
     }, []);
 
     // Use real data from hooks
-    const { data: featuredData, isLoading: isFeaturedLoading, error: featuredError, refetch: refetchFeatured } = useAds({
-        isFeatured: true,
-        limit: 10,
-        cityId: selectedCity.id || undefined,
-    }, { enabled: !!selectedCity.id });
+    const {
+        data: featuredSearchData,
+        isLoading: isFeaturedLoading,
+        error: featuredError,
+        refetch: refetchFeatured,
+    } = useSearchListings(
+        {
+            isFeatured: true,
+            limit: 10,
+            cityId: selectedCity.id || undefined,
+        },
+        !!selectedCity.id
+    );
 
-    const { data: recentData, isLoading: isRecentLoading, error: recentError, refetch: refetchRecent } = useAds({
-        limit: 8,
-        cityId: selectedCity.id || undefined,
-    }, { enabled: !!selectedCity.id });
+    const featuredAds: AdSummary[] = useMemo(() => {
+        return (featuredSearchData?.hits || []).map(searchDocToAdSummary);
+    }, [featuredSearchData]);
+
+    const {
+        data: recentSearchData,
+        isLoading: isRecentLoading,
+        error: recentError,
+        refetch: refetchRecent,
+    } = useSearchListings(
+        {
+            limit: 8,
+            cityId: selectedCity.id || undefined,
+            sort: "newest",
+        },
+        !!selectedCity.id
+    );
+
+    const recentAds: AdSummary[] = useMemo(() => {
+        return (recentSearchData?.hits || []).map(searchDocToAdSummary);
+    }, [recentSearchData]);
 
     const { data: categoriesData, isLoading: isCategoriesLoading } = useCategories();
 
@@ -155,12 +182,12 @@ export const HomeScene = () => {
                     </div>
                 ) : featuredError ? (
                     <ErrorState onRetry={refetchFeatured} />
-                ) : !featuredData?.items.length ? (
+                ) : !featuredAds.length ? (
                     <EmptyState message="در حال حاضر آگهی ویژه‌ای در این شهر ثبت نشده است" />
                 ) : (
                     <Slider>
-                        {featuredData?.items.map((property: AdSummary) => {
-                            const effectiveId = property.adId || (property as any).id;
+                        {featuredAds.map((property: AdSummary) => {
+                            const effectiveId = property.adId;
                             const adPrice = getHomeAdPrice(property.pricing);
                             return (
                                 <PropertyCard
@@ -185,9 +212,10 @@ export const HomeScene = () => {
                                     }
                                     className="w-[210px] lg:w-[250px]"
                                     date={property.createdAt}
-                                    badgeName={property.isFeatured && !property.isLadder && !property.isUrgent ? "ویژه" : undefined}
+                                    badgeName={property.isFeatured ? "ویژه" : undefined}
                                     isUrgent={property.isUrgent}
                                     isLadder={property.isLadder}
+                                    isFeatured={property.isFeatured}
                                     isSaved={property.isSaved ?? isAdSaved(effectiveId)}
                                     onToggleSave={(id) => toggleSaveAdMutation.mutateAsync(id)}
                                 />
@@ -285,12 +313,12 @@ export const HomeScene = () => {
                     </div>
                 ) : recentError ? (
                     <ErrorState onRetry={refetchRecent} />
-                ) : !recentData?.items.length ? (
+                ) : !recentAds.length ? (
                     <EmptyState message="در حال حاضر آگهی جدیدی در این شهر ثبت نشده است" />
                 ) : (
                     <Slider>
-                        {recentData.items.map((property: AdSummary) => {
-                            const effectiveId = property.adId || (property as any).id;
+                        {recentAds.map((property: AdSummary) => {
+                            const effectiveId = property.adId;
                             const adPrice = getHomeAdPrice(property.pricing);
                             return (
                                 <PropertyCard
@@ -315,9 +343,10 @@ export const HomeScene = () => {
                                     }
                                     className="w-[210px] lg:w-[250px]"
                                     date={property.createdAt}
-                                    badgeName={property.isFeatured && !property.isLadder && !property.isUrgent ? "ویژه" : undefined}
+                                    badgeName={property.isFeatured ? "ویژه" : undefined}
                                     isUrgent={property.isUrgent}
                                     isLadder={property.isLadder}
+                                    isFeatured={property.isFeatured}
                                     isSaved={property.isSaved ?? isAdSaved(effectiveId)}
                                     onToggleSave={(id) => toggleSaveAdMutation.mutateAsync(id)}
                                 />

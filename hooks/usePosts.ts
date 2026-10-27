@@ -17,6 +17,10 @@ export const POSTS_QUERY_KEYS = {
   liked: (params?: { page?: number; limit?: number; publisherType?: string }) => ['posts', 'liked', params] as const,
   admin: (params?: { page?: number; limit?: number; category?: string; search?: string; isPublished?: boolean }) =>
     ['posts', 'admin', params] as const,
+  publisher: (type: string, idOrSlug: string, params?: { page?: number; limit?: number }) =>
+    ['posts', 'publisher', type, idOrSlug, params] as const,
+  agency: (agencyIdOrSlug: string, params?: { page?: number; limit?: number }) =>
+    ['posts', 'agency', agencyIdOrSlug, params] as const,
 };
 
 /**
@@ -79,6 +83,37 @@ export const useInfiniteExplorePosts = (
       }
       return undefined;
     },
+  });
+};
+
+/**
+ * Hook to fetch posts of a specific publisher (Agency, Host, Platform)
+ */
+export const usePublisherPosts = (
+  type: 'agency' | 'host' | 'platform' | 'AGENCY' | 'HOST' | 'PLATFORM',
+  idOrSlug: string,
+  params: { page?: number; limit?: number } = {},
+  options: { enabled?: boolean } = {},
+) => {
+  return useQuery({
+    queryKey: POSTS_QUERY_KEYS.publisher(type, idOrSlug, params),
+    queryFn: () => postService.getPublisherPosts(type, idOrSlug, params),
+    enabled: (options.enabled ?? true) && Boolean(idOrSlug),
+  });
+};
+
+/**
+ * Hook to fetch posts of a specific agency showcase
+ */
+export const useAgencyPosts = (
+  agencyIdOrSlug: string,
+  params: { page?: number; limit?: number } = {},
+  options: { enabled?: boolean } = {},
+) => {
+  return useQuery({
+    queryKey: POSTS_QUERY_KEYS.agency(agencyIdOrSlug, params),
+    queryFn: () => postService.getAgencyPosts(agencyIdOrSlug, params),
+    enabled: (options.enabled ?? true) && Boolean(agencyIdOrSlug),
   });
 };
 

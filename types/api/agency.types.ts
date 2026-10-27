@@ -144,11 +144,15 @@ export interface AgentApplicationResponse {
 
 export interface AgencyPost {
     id: string;
-    agencyId: string;
+    agencyId?: string;
+    authorUserId?: string;
+    publisherType?: string;
+    publisherId?: string;
     title: string;
-    slug: string;
+    slug?: string | null;
     content: string;
-    summary?: string;
+    summary?: string | null;
+    category?: string | null;
     mediaIds: MediaReference[];
     isPublished: boolean;
     viewCount: number;
@@ -161,6 +165,15 @@ export interface AgencyPost {
         name: string;
         slug?: string;
         logoUrl?: string;
+        avatarUrl?: string;
+        isVerified?: boolean;
+    } | null;
+    publisher?: {
+        id: string;
+        name: string;
+        slug?: string;
+        logoUrl?: string;
+        avatarUrl?: string;
         isVerified?: boolean;
     } | null;
 }

@@ -628,9 +628,9 @@ export default function SingleAgencyScene({ initialData }: SingleAgencySceneProp
                                         <h3 className="text-sm font-black text-foreground group-hover:text-info transition-colors">
                                             {post.title}
                                         </h3>
-                                        {post.summary && (
+                                        {(post.summary || post.content) && (
                                             <p className="text-xs text-foreground-muted line-clamp-2 leading-relaxed">
-                                                {post.summary}
+                                                {post.summary || post.content.slice(0, 100)}
                                             </p>
                                         )}
                                     </div>
@@ -738,7 +738,15 @@ export default function SingleAgencyScene({ initialData }: SingleAgencySceneProp
                             <MarkdownRenderer content={readingPost.content} />
                         </div>
 
-                        <div className="pt-3 border-t border-border-subtle flex justify-end">
+                        <div className="pt-3 border-t border-border-subtle flex items-center justify-between">
+                            <Link
+                                href={`/posts/${encodeURIComponent(readingPost.slug || readingPost.id)}`}
+                                className="inline-flex items-center gap-1.5 text-xs font-bold text-info hover:text-blue-700"
+                            >
+                                <ExternalLink className="w-3.5 h-3.5" />
+                                <span>مشاهده در صفحه اختصاصی</span>
+                            </Link>
+
                             <button
                                 type="button"
                                 onClick={() => setReadingPost(null)}

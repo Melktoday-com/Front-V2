@@ -1,13 +1,22 @@
 import type { MediaReference } from './media.types';
 
-export type PublisherType = 'AGENCY' | 'HOST' | 'PLATFORM';
+export const PUBLISHER_TYPES = {
+  AGENCY: 'AGENCY',
+  HOST: 'HOST',
+  PLATFORM: 'PLATFORM',
+} as const;
+
+export type PublisherType =
+  (typeof PUBLISHER_TYPES)[keyof typeof PUBLISHER_TYPES];
 
 export interface PostPublisher {
   id: string;
   name: string;
   slug?: string;
   logoUrl?: string;
-  isVerified: boolean;
+  avatarUrl?: string;
+  isVerified?: boolean;
+  type?: PublisherType;
 }
 
 export interface UnifiedPost {
@@ -15,6 +24,7 @@ export interface UnifiedPost {
   authorUserId: string;
   publisherType: PublisherType;
   publisherId: string;
+  agencyId?: string;
   title: string;
   slug?: string;
   summary?: string;
@@ -28,7 +38,8 @@ export interface UnifiedPost {
   createdAt: string;
   updatedAt: string;
   hasLiked?: boolean;
-  publisher?: PostPublisher;
+  agency?: PostPublisher | null;
+  publisher?: PostPublisher | null;
 }
 
 export interface ExploreParams {

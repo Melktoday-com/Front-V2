@@ -9,13 +9,14 @@ import { PaginationControls } from "@/components/ui/PaginationControls";
 import { PropertyCard } from "@/components/ui/PropertyCard";
 import { EmptyState } from "@/components/ui/StatusStates";
 import { useCategories } from "@/hooks/useAds";
-import { useInfiniteSearchListings, useSearchMap } from "@/hooks/useSearch";
+import { useInfiniteSearchListings, useSearchListings, useSearchMap } from "@/hooks/useSearch";
 import { useCategoryLookup } from "@/hooks/useCategoryLookup";
 import { useFavorites, useToggleSaveAd } from "@/hooks/useFavorites";
 import { useGeoHierarchy } from "@/hooks/useGeoHierarchy";
 import { useDebounce } from "@/hooks/useDebounce";
 import { cn, formatPrice, getMediaUrl, getMediaPosterUrl, toPersianDigits } from "@/lib/utils";
 import { mapSearchDocToLocation, mapMarkerToLocation, getFloorArea } from "@/lib/location";
+import { searchDocToAdSummary } from "@/lib/search-transformers";
 import { geoService } from "@/services/geo.service";
 import { AdSummary } from "@/types/api/ads.types";
 import { AdStatus } from "@/types/api/enums";
@@ -62,54 +63,7 @@ function mapMarkerToAdSummary(m: MapMarkerDto): AdSummary {
     };
 }
 
-function searchDocToAdSummary(doc: ListingSearchDocument): AdSummary {
-    const primaryPrice = doc.pricing?.number?.price ?? doc.pricing?.number?.totalPrice ?? 0;
-    const location = mapSearchDocToLocation(doc);
-    const rooms = doc.attributes?.number?.rooms || doc.attributes?.number?.bedrooms || doc.attributes?.number?.room;
-    const floorArea = getFloorArea(doc);
 
-    const isLadder = Boolean(
-        (doc as any).isLadder ||
-        (doc.promotionBoostScore && doc.promotionBoostScore > 0) ||
-        (doc as any).promotions?.some((p: any) => p.type === 'LADDER' || p.promotionType === 'LADDER')
-    );
-
-    const isUrgent = Boolean(
-        (doc as any).isUrgent ||
-        (doc as any).promotions?.some((p: any) => p.type === 'URGENT_TAG' || p.promotionType === 'URGENT_TAG')
-    );
-
-    const isFeatured = Boolean(doc.isFeatured && !isLadder && !isUrgent);
-    const effectiveDate = isLadder ? (doc.updatedAt || doc.publishedAt || doc.createdAt) : (doc.publishedAt || doc.createdAt);
-
-    return {
-        adId: doc.id,
-        ownerId: doc.ownerId,
-        cityId: doc.geo?.cityId || location.city?.id || "",
-        cityName: location.city?.name,
-        status: AdStatus.PUBLISHED,
-        title: doc.title,
-        categoryPath: {
-            categoryKey: doc.taxonomy.categoryId,
-            subcategoryKey: doc.taxonomy.subcategoryId || "",
-            businessModelKey: doc.taxonomy.businessModelId || "",
-            attributeSchemaVersion: 1,
-            categoryTitle: doc.taxonomy.categoryName,
-            subcategoryTitle: doc.taxonomy.subcategoryName,
-        },
-        categoryTitle: doc.taxonomy.categoryName,
-        subcategoryTitle: doc.taxonomy.subcategoryName,
-        pricing: doc.pricing?.number || (primaryPrice > 0 ? { price: primaryPrice } : {}),
-        isFeatured,
-        isUrgent,
-        isLadder,
-        mediaIds: doc.mediaIds || [],
-        createdAt: effectiveDate,
-        location,
-        area: floorArea ?? undefined,
-        rooms: typeof rooms === "number" ? rooms : undefined,
-    };
-}
 
 interface AdsSceneProps {
     initialViewMode?: "list" | "split" | "map";
@@ -276,6 +230,20 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
         { startPage, maxPages: 7, enabled: true }
     );
 
+    // Fetch promoted listings for this scope to guarantee ladder ads appear at the top from page 1
+    const { data: promotedSearchData } = useSearchListings(
+        {
+            isFeatured: true,
+            query: debouncedSearch.trim() || undefined,
+            cityId: effectiveCityId,
+            categoryKey: selectedCategory || undefined,
+            subcategoryKey: selectedSubcategory || undefined,
+            businessModelKey: urlDealType || undefined,
+            limit: 20,
+        },
+        true
+    );
+
     // Auto-scroll infinite scroll up to 7 pages
     useEffect(() => {
         const target = observerTargetRef.current;
@@ -360,6 +328,37 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
     const allLoadedAds = useMemo(() => {
         return data?.pages.flatMap((page) => page.hits.map(searchDocToAdSummary)) || [];
     }, [data]);
+
+    // Hoist all ladder ads across loaded pages & promoted index so they are guaranteed to appear first at the top
+    const allLadderAds = useMemo(() => {
+        if (sort !== "newest" && sort !== "relevance") return [];
+        const seen = new Set<string>();
+        const list: AdSummary[] = [];
+
+        // 1. First priority: active ladder listings from promoted search
+        if (promotedSearchData?.hits) {
+            for (const doc of promotedSearchData.hits) {
+                if (doc.promotionBoostScore === 40 && !seen.has(doc.id)) {
+                    seen.add(doc.id);
+                    list.push(searchDocToAdSummary(doc));
+                }
+            }
+        }
+
+        // 2. Any ladder listings present in current infinite search pages
+        for (const ad of allLoadedAds) {
+            if (ad.isLadder && !seen.has(ad.adId)) {
+                seen.add(ad.adId);
+                list.push(ad);
+            }
+        }
+
+        return list;
+    }, [sort, promotedSearchData, allLoadedAds]);
+
+    const ladderAdIds = useMemo(() => {
+        return new Set(allLadderAds.map((ad) => ad.adId));
+    }, [allLadderAds]);
 
     // Backend-driven results directly: zero client-side zone/polygon filtering
     const displayedAds = allLoadedAds;
@@ -852,13 +851,59 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                                     : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
                             )}
                         >
+                            {/* Pinned Ladder Ads: Guaranteed to show first at the very top of search results */}
+                            {allLadderAds.length > 0 && (
+                                <div key="ladder-pinned-ads" className="contents">
+                                    {allLadderAds.map((ad: AdSummary) => {
+                                        const pricing = getPricingDisplay(ad);
+                                        const catKey = ad.categoryPath?.categoryKey;
+                                        const subKey = ad.categoryPath?.subcategoryKey;
+                                        const subcategoryDisplay =
+                                            ad.subcategoryTitle ||
+                                            ad.categoryPath?.subcategoryTitle ||
+                                            getSubcategoryName(subKey, catKey) ||
+                                            ad.categoryTitle ||
+                                            ad.categoryPath?.categoryTitle ||
+                                            getCategoryName(catKey) ||
+                                            subKey;
+
+                                        const effectiveId = ad.adId;
+
+                                        return (
+                                            <PropertyCard
+                                                key={`ladder-${effectiveId}`}
+                                                id={effectiveId}
+                                                adId={effectiveId}
+                                                href={`/ads/${effectiveId}`}
+                                                title={ad.title}
+                                                price={pricing.price}
+                                                unit={pricing.unit}
+                                                location={ad.location || ''}
+                                                image={
+                                                    ad.mediaIds && ad.mediaIds.length > 0
+                                                        ? getMediaPosterUrl(ad.mediaIds[0])
+                                                        : "/property-placeholder.svg"
+                                                }
+                                                isVideo={ad.mediaIds?.[0]?.type === "VIDEO"}
+                                                category={subcategoryDisplay}
+                                                isSaved={ad.isSaved ?? isAdSaved(effectiveId)}
+                                                onToggleSave={(id) => toggleSaveMutation.mutateAsync(id)}
+                                                area={getFloorArea(ad)}
+                                                rooms={ad.rooms}
+                                                badgeName={ad.isFeatured && !ad.isLadder && !ad.isUrgent ? "ویژه" : undefined}
+                                                isUrgent={ad.isUrgent}
+                                                isLadder={ad.isLadder}
+                                                date={ad.createdAt}
+                                            />
+                                        );
+                                    })}
+                                </div>
+                            )}
+
                             {data?.pages.map((page, pageIndex) => {
-                                const pageAds = page.hits.map(searchDocToAdSummary);
-                                const sortedPageAds = [...pageAds].sort((a, b) => {
-                                    if (a.isLadder && !b.isLadder) return -1;
-                                    if (!a.isLadder && b.isLadder) return 1;
-                                    return 0;
-                                });
+                                const pageAds = page.hits
+                                    .map(searchDocToAdSummary)
+                                    .filter((ad) => !ladderAdIds.has(ad.adId));
 
                                 if (pageAds.length === 0 && pageIndex > 0) return null;
 
@@ -874,7 +919,7 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                                             />
                                         )}
 
-                                        {sortedPageAds.map((ad: AdSummary) => {
+                                        {pageAds.map((ad: AdSummary) => {
                                             const pricing = getPricingDisplay(ad);
                                             const catKey = ad.categoryPath?.categoryKey;
                                             const subKey = ad.categoryPath?.subcategoryKey;

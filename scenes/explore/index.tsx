@@ -5,9 +5,9 @@ import { PaginationControls } from "@/components/ui/PaginationControls";
 import { useAuth } from "@/hooks/useAuth";
 import { useInfiniteExplorePosts, useLikePost } from "@/hooks/usePosts";
 import { usePostViewObserver } from "@/hooks/usePostViewObserver";
-import { cn, getMediaPosterUrl, toPersianDigits } from "@/lib/utils";
+import { cn, getMediaPosterUrl, getMediaUrl, toPersianDigits } from "@/lib/utils";
 import { RoleName } from "@/types/access";
-import { UnifiedPost } from "@/types/api/post.types";
+import { PUBLISHER_TYPES, UnifiedPost } from "@/types/api/post.types";
 import {
   BookOpen,
   Building2,
@@ -48,10 +48,12 @@ function ExplorePostCard({
   const firstMedia = post.mediaIds?.[0];
   const coverUrl = firstMedia ? getMediaPosterUrl(firstMedia) : "/property-placeholder.svg";
 
+  const publisher = post.publisher || post.agency;
   const publisherName =
-    post.publisherType === "PLATFORM"
-      ? "پلتفرم رسمی"
-      : post.publisher?.name || (post.publisherType === "HOST" ? "میزبان" : "آژانس املاک");
+    post.publisherType === PUBLISHER_TYPES.PLATFORM
+      ? (publisher?.name || "پلتفرم رسمی")
+      : publisher?.name || (post.publisherType === PUBLISHER_TYPES.HOST ? "میزبان" : "آژانس املاک");
+  const publisherLogo = publisher?.logoUrl || publisher?.avatarUrl;
 
   return (
     <div
@@ -97,10 +99,20 @@ function ExplorePostCard({
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-3.5 text-white z-20">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5 text-xs font-bold text-slate-200">
-              {post.publisherType === "PLATFORM" && <ShieldCheck className="w-3.5 h-3.5 text-accent" />}
-              {post.publisherType === "HOST" && <Hotel className="w-3.5 h-3.5 text-emerald-400" />}
-              {post.publisherType === "AGENCY" && <Building2 className="w-3.5 h-3.5 text-blue-400" />}
+              {publisherLogo ? (
+                <img
+                  src={getMediaUrl(publisherLogo)}
+                  alt={publisherName}
+                  className="w-4 h-4 rounded-full object-cover shrink-0"
+                />
+              ) : null}
+              {post.publisherType === PUBLISHER_TYPES.PLATFORM && <ShieldCheck className="w-3.5 h-3.5 text-accent shrink-0" />}
+              {post.publisherType === PUBLISHER_TYPES.HOST && <Hotel className="w-3.5 h-3.5 text-emerald-400 shrink-0" />}
+              {post.publisherType === PUBLISHER_TYPES.AGENCY && <Building2 className="w-3.5 h-3.5 text-blue-400 shrink-0" />}
               <span className="truncate max-w-[120px]">{publisherName}</span>
+              {publisher?.isVerified && (
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0" title="تایید شده" />
+              )}
             </div>
           </div>
 
