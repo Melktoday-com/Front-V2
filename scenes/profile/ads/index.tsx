@@ -2,10 +2,13 @@
 
 import { useInfiniteMyAds, useMyAds } from "@/hooks/useAds";
 import { DEFAULT_CATEGORY_TRANSLATIONS } from "@/hooks/useCategoryLookup";
-import { cn, formatPrice, getMediaUrl, toPersianDigits } from "@/lib/utils";
+import { cn, formatPrice, getMediaUrl, getMediaPosterUrl, toPersianDigits } from "@/lib/utils";
+import { formatLocationDisplay } from "@/lib/location";
+import { formatDistanceToNow } from "date-fns-jalali";
 import { adsService } from "@/services/ads.service";
 import { AdSummary } from "@/types/api/ads.types";
 import { AdStatus } from "@/types/api/enums";
+import { LadderIcon } from "@/components/ui/PropertyCard";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
     AlertCircle,
@@ -17,15 +20,18 @@ import {
     Clock,
     ExternalLink,
     Eye,
+    ImageIcon,
     Layers,
     Loader2,
     MapPin,
     Pencil,
+    Play,
     Plus,
     Send,
     Share2,
     Sparkles,
     Trash2,
+    Zap,
 } from "lucide-react";
 import Image from "next/image";
 import { useSafeBack } from "@/hooks/useSafeBack";
@@ -57,19 +63,19 @@ const STATUS_CONFIG: Record<
         label: "منتشر شده",
         bg: "bg-success-subtle/95",
         text: "text-success",
-        border: "border-success/30/80",
+        border: "border-success/30",
         dot: "bg-emerald-500",
     },
     [AdStatus.PENDING_APPROVAL]: {
         label: "در حال بررسی",
         bg: "bg-warning-subtle/95",
         text: "text-warning",
-        border: "border-warning/30/80",
+        border: "border-warning/30",
         dot: "bg-amber-500 animate-pulse",
     },
     [AdStatus.DRAFT]: {
         label: "پیش‌نویس",
-        bg: "bg-surface-secondary/95",
+        bg: "bg-surface/95",
         text: "text-foreground-secondary",
         border: "border-border-subtle",
         dot: "bg-slate-400",
@@ -78,15 +84,15 @@ const STATUS_CONFIG: Record<
         label: "رد شده",
         bg: "bg-error-subtle/95",
         text: "text-error",
-        border: "border-error/30/80",
+        border: "border-error/30",
         dot: "bg-rose-500",
     },
     [AdStatus.ARCHIVED]: {
         label: "بایگانی شده",
-        bg: "bg-purple-50/95",
-        text: "text-purple-700",
-        border: "border-purple-200/80",
-        dot: "bg-purple-400",
+        bg: "bg-info-subtle/95",
+        text: "text-info",
+        border: "border-info/30",
+        dot: "bg-sky-400",
     },
     [AdStatus.DELETED]: {
         label: "حذف شده",
@@ -97,41 +103,109 @@ const STATUS_CONFIG: Record<
     },
 };
 
-const formatAdPrice = (pricing?: Record<string, number | boolean | string>): { price: string; unit?: string } => {
-    if (!pricing || Object.keys(pricing).length === 0) {
-        return { price: "توافقی" };
+function formatDisplayDate(dateVal?: string | Date | number | null): string {
+    if (!dateVal) return "";
+    try {
+        const d = new Date(dateVal);
+        if (isNaN(d.getTime())) return "";
+        return toPersianDigits(formatDistanceToNow(d, { addSuffix: true }));
+    } catch {
+        return "";
     }
-    if (pricing.depositPrice !== undefined && pricing.monthlyRent !== undefined) {
+}
+
+interface ParsedAdPrice {
+    isDualRent: boolean;
+    depositLabel?: string;
+    depositAmount?: string;
+    rentLabel?: string;
+    rentAmount?: string;
+    primaryLabel?: string;
+    primaryAmount: string;
+    unit?: string;
+}
+
+const parseAdPricing = (pricing?: Record<string, number | boolean | string>): ParsedAdPrice => {
+    if (!pricing || Object.keys(pricing).length === 0) {
+        return { isDualRent: false, primaryLabel: "قیمت", primaryAmount: "توافقی" };
+    }
+
+    const dep = pricing.depositPrice !== undefined ? Number(pricing.depositPrice) : undefined;
+    const rent = pricing.monthlyRent !== undefined ? Number(pricing.monthlyRent) : undefined;
+
+    if (dep !== undefined && rent !== undefined && (dep > 0 || rent > 0)) {
         return {
-            price: `رهن ${formatPrice(Number(pricing.depositPrice), "")} - اجاره ${formatPrice(Number(pricing.monthlyRent), "")}`,
+            isDualRent: true,
+            depositLabel: "ودیعه / رهن",
+            depositAmount: dep > 0 ? formatPrice(dep, "") : "رایگان",
+            rentLabel: "اجاره ماهانه",
+            rentAmount: rent > 0 ? formatPrice(rent, "") : "رایگان",
+            primaryAmount: "",
             unit: "تومان",
         };
     }
+
     if (pricing.totalPrice !== undefined) {
         const total = Number(pricing.totalPrice);
-        return { price: total > 0 ? formatPrice(total, "") : "توافقی", unit: total > 0 ? "تومان" : undefined };
+        return {
+            isDualRent: false,
+            primaryLabel: "قیمت کل",
+            primaryAmount: total > 0 ? formatPrice(total, "") : "توافقی",
+            unit: total > 0 ? "تومان" : undefined,
+        };
     }
-    if (pricing.depositPrice !== undefined) {
-        const dep = Number(pricing.depositPrice);
-        return { price: dep > 0 ? `ودیعه ${formatPrice(dep, "")}` : "توافقی", unit: dep > 0 ? "تومان" : undefined };
+
+    if (dep !== undefined) {
+        const d = Number(dep);
+        return {
+            isDualRent: false,
+            primaryLabel: "ودیعه / رهن",
+            primaryAmount: d > 0 ? formatPrice(d, "") : "توافقی",
+            unit: d > 0 ? "تومان" : undefined,
+        };
     }
-    if (pricing.monthlyRent !== undefined) {
-        const rent = Number(pricing.monthlyRent);
-        return { price: rent > 0 ? `اجاره ${formatPrice(rent, "")}` : "توافقی", unit: rent > 0 ? "تومان" : undefined };
+
+    if (rent !== undefined) {
+        const r = Number(rent);
+        return {
+            isDualRent: false,
+            primaryLabel: "اجاره ماهانه",
+            primaryAmount: r > 0 ? formatPrice(r, "") : "توافقی",
+            unit: r > 0 ? "تومان" : undefined,
+        };
     }
+
     if (pricing.estimatedTotalPrice !== undefined) {
         const est = Number(pricing.estimatedTotalPrice);
-        return { price: est > 0 ? `قیمت کل: ${formatPrice(est, "")}` : "توافقی", unit: est > 0 ? "تومان" : undefined };
+        return {
+            isDualRent: false,
+            primaryLabel: "قیمت تخمینی",
+            primaryAmount: est > 0 ? formatPrice(est, "") : "توافقی",
+            unit: est > 0 ? "تومان" : undefined,
+        };
     }
+
     if (pricing.goodwillPrice !== undefined) {
         const gw = Number(pricing.goodwillPrice);
-        return { price: gw > 0 ? `سرقفلی: ${formatPrice(gw, "")}` : "توافقی", unit: gw > 0 ? "تومان" : undefined };
+        return {
+            isDualRent: false,
+            primaryLabel: "سرقفلی",
+            primaryAmount: gw > 0 ? formatPrice(gw, "") : "توافقی",
+            unit: gw > 0 ? "تومان" : undefined,
+        };
     }
+
     if (pricing.fractionPrice !== undefined) {
         const fp = Number(pricing.fractionPrice);
-        return { price: fp > 0 ? `قدرالسهم: ${formatPrice(fp, "")}` : "توافقی", unit: fp > 0 ? "تومان" : undefined };
+        return {
+            isDualRent: false,
+            primaryLabel: "قدرالسهم",
+            primaryAmount: fp > 0 ? formatPrice(fp, "") : "توافقی",
+            unit: fp > 0 ? "تومان" : undefined,
+        };
     }
-    return { price: "توافقی" };
+
+    return { isDualRent: false, primaryLabel: "قیمت", primaryAmount: "توافقی" };
 };
 
 const getCategoryBadge = (ad: AdSummary): string => {
@@ -200,19 +274,29 @@ function MyAdCard({
     onPromote,
 }: MyAdCardProps) {
     const router = useRouter();
-    const [imgSrc, setImgSrc] = useState<string>(
-        ad.mediaIds && ad.mediaIds.length > 0
-            ? getMediaUrl(ad.mediaIds[0])
-            : "/property-placeholder.svg"
-    );
 
-    const pricingDisplay = formatAdPrice(ad.pricing);
+    const isVideo = Boolean(ad.mediaIds && ad.mediaIds.length > 0 && ad.mediaIds[0]?.type === "VIDEO");
+    const initialImgSrc = ad.mediaIds && ad.mediaIds.length > 0
+        ? (isVideo ? getMediaPosterUrl(ad.mediaIds[0]) : getMediaUrl(ad.mediaIds[0]))
+        : "/property-placeholder.svg";
+
+    const [imgSrc, setImgSrc] = useState<string>(initialImgSrc);
+
+    useEffect(() => {
+        setImgSrc(initialImgSrc);
+    }, [initialImgSrc]);
+
+    const pricing = parseAdPricing(ad.pricing);
     const statusConfig = STATUS_CONFIG[ad.status] || STATUS_CONFIG[AdStatus.DRAFT];
     const categoryBadge = getCategoryBadge(ad);
+    const mediaCount = ad.mediaIds?.length || 0;
+    const displayLocation = ad.location
+        ? formatLocationDisplay(ad.location)
+        : ad.cityName || ad.provinceName || "ایران";
 
     return (
-        <div className="group flex flex-col h-full bg-surface rounded-2xl border border-border-subtle hover:border-border-subtle/90 shadow-xs hover:shadow-md transition-all duration-300 overflow-hidden">
-            {/* Image Container */}
+        <div className="group relative flex flex-col h-full bg-surface rounded-2xl border border-border-subtle hover:border-border transition-all duration-300 shadow-2xs hover:shadow-card hover:-translate-y-1 overflow-hidden select-none">
+            {/* Image / Media Container */}
             <div className="relative aspect-[16/10] sm:aspect-[4/3] w-full overflow-hidden bg-surface-secondary">
                 <Image
                     src={imgSrc}
@@ -222,6 +306,10 @@ function MyAdCard({
                     className="object-cover transition-transform duration-500 group-hover:scale-105"
                     onError={() => setImgSrc("/property-placeholder.svg")}
                 />
+
+                {/* Subtle scrim gradients for overlay readability */}
+                <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-black/55 to-transparent pointer-events-none z-5" />
+                <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/60 to-transparent pointer-events-none z-5" />
 
                 {/* Top-Right: Status Pill */}
                 <div className="absolute top-2.5 right-2.5 z-10">
@@ -238,76 +326,159 @@ function MyAdCard({
                     </span>
                 </div>
 
-                {/* Top-Left: View quick action */}
-                <button
-                    onClick={() => window.open(`/ads/${ad.adId}`, "_blank")}
-                    title="مشاهده آگهی در صفحه جدید"
-                    className="absolute top-2.5 left-2.5 z-10 w-8 h-8 rounded-full bg-surface/85 hover:bg-surface text-brand/80 hover:text-brand shadow-xs flex items-center justify-center backdrop-blur-md transition-all active:scale-95"
-                >
-                    <ExternalLink className="w-4 h-4" />
-                </button>
+                {/* Top-Left: Quick Open + Badges */}
+                <div className="absolute top-2.5 left-2.5 z-10 flex items-center gap-1.5">
+                    <button
+                        type="button"
+                        onClick={() => window.open(`/ads/${ad.adId}`, "_blank")}
+                        title="مشاهده آگهی در تب جدید"
+                        className="w-8 h-8 rounded-xl bg-surface/90 hover:bg-surface text-foreground-muted hover:text-brand shadow-xs flex items-center justify-center backdrop-blur-md transition-all active:scale-95 border border-white/20 cursor-pointer"
+                    >
+                        <ExternalLink className="w-3.5 h-3.5" />
+                    </button>
 
-                {/* Bottom-Right: Category Badge */}
-                <div className="absolute bottom-2.5 right-2.5 z-10 bg-brand/85 backdrop-blur-md text-white text-[11px] font-bold px-2.5 py-0.5 rounded-lg shadow-xs">
-                    {categoryBadge}
-                </div>
-            </div>
-
-            {/* Content Section */}
-            <div className="p-4 flex flex-col flex-1 min-w-0">
-                {/* Zillow style: Price first in bold */}
-                <div className="flex items-baseline gap-1">
-                    <span className="text-brand font-black text-base lg:text-lg">
-                        {pricingDisplay.price}
-                    </span>
-                    {pricingDisplay.unit && (
-                        <span className="text-xs text-text-light">{pricingDisplay.unit}</span>
+                    {ad.isUrgent && (
+                        <div className="bg-rose-600 text-white text-[9px] sm:text-[10px] font-black px-2 py-1 rounded-lg shadow-xs flex items-center gap-0.5 leading-none pointer-events-none">
+                            <Zap className="w-2.5 h-2.5 fill-white text-white shrink-0" />
+                            <span>فوری</span>
+                        </div>
+                    )}
+                    {ad.isLadder && (
+                        <div className="bg-blue-600 text-white text-[9px] sm:text-[10px] font-black px-2 py-1 rounded-lg shadow-xs flex items-center gap-0.5 leading-none pointer-events-none">
+                            <LadderIcon className="w-2.5 h-2.5 shrink-0" />
+                            <span>نردبان</span>
+                        </div>
+                    )}
+                    {ad.isFeatured && (
+                        <div className="bg-surface/95 text-warning border border-warning/30 text-[9px] sm:text-[10px] font-black px-2 py-1 rounded-lg shadow-xs flex items-center gap-0.5 leading-none pointer-events-none">
+                            <Sparkles className="w-2.5 h-2.5 text-amber-500 shrink-0" />
+                            <span>ویژه</span>
+                        </div>
                     )}
                 </div>
 
-                {/* Title */}
-                <h3
-                    onClick={() => router.push(`/ads/${ad.adId}`)}
-                    className="text-brand font-bold text-sm lg:text-base line-clamp-1 mt-1.5 group-hover:text-primary transition-colors cursor-pointer"
-                    title={ad.title}
-                >
-                    {ad.title}
-                </h3>
-
-                {/* Location & Date */}
-                <div className="flex items-center justify-between gap-2 mt-2 text-text-light text-xs">
-                    <div className="flex items-center gap-1 min-w-0 truncate">
-                        <MapPin className="w-3.5 h-3.5 shrink-0 text-secondary" />
-                        <span className="truncate">{ad.cityName || ad.provinceName || "ایران"}</span>
-                    </div>
-                    <div className="flex items-center gap-1 shrink-0 text-[11px]">
-                        <Clock className="w-3 h-3 text-secondary" />
-                        <span>{new Date(ad.createdAt).toLocaleDateString("fa-IR")}</span>
-                    </div>
+                {/* Bottom-Right: Category Badge */}
+                <div className="absolute bottom-2.5 right-2.5 z-10 bg-brand/85 backdrop-blur-md text-white text-[10px] sm:text-[11px] font-bold px-2.5 py-1 rounded-lg shadow-xs pointer-events-none">
+                    {categoryBadge}
                 </div>
 
-                {/* Rejection Notice & Refund Information */}
-                {ad.status === AdStatus.REJECTED && (
-                    <div className="mt-3 p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-800 dark:text-amber-300 space-y-1">
-                        <div className="font-bold flex items-center gap-1.5">
-                            <AlertCircle className="w-4 h-4 shrink-0 text-amber-600 dark:text-amber-400" />
-                            <span>آگهی تایید نشد</span>
-                        </div>
-                        <p className="text-[11px] text-text-light dark:text-amber-200/80 leading-relaxed">
-                            تعرفه مسدود شده به موجودی در دسترس کیف پول شما بازگردانده شد. می‌توانید پس از ویرایش، مجدداً آگهی را ارسال فرمایید.
-                        </p>
+                {/* Bottom-Left: Media Type / Count */}
+                {isVideo ? (
+                    <div className="absolute bottom-2.5 left-2.5 z-10 bg-black/60 backdrop-blur-md text-white text-[10px] font-bold px-2 py-1 rounded-lg shadow-xs flex items-center gap-1 pointer-events-none">
+                        <Play className="w-2.5 h-2.5 fill-white" />
+                        <span>ویدیو</span>
                     </div>
-                )}
+                ) : mediaCount > 1 ? (
+                    <div className="absolute bottom-2.5 left-2.5 z-10 bg-black/60 backdrop-blur-md text-white text-[10px] font-bold px-2 py-1 rounded-lg shadow-xs flex items-center gap-1 pointer-events-none">
+                        <ImageIcon className="w-3 h-3 text-white/90" />
+                        <span>{toPersianDigits(mediaCount)} عکس</span>
+                    </div>
+                ) : null}
+            </div>
+
+            {/* Content Section */}
+            <div className="p-4 flex flex-col flex-1 justify-between gap-3 min-w-0">
+                <div className="space-y-2">
+                    {/* Title */}
+                    <h3
+                        onClick={() => router.push(`/ads/${ad.adId}`)}
+                        className="text-brand font-black text-sm sm:text-base line-clamp-1 group-hover:text-primary transition-colors cursor-pointer leading-snug"
+                        title={ad.title}
+                    >
+                        {ad.title}
+                    </h3>
+
+                    {/* Specs Row: Area & Rooms */}
+                    {(ad.area || ad.rooms) && (
+                        <div className="flex items-center gap-2 text-xs font-medium text-foreground-muted">
+                            {ad.area ? (
+                                <span className="inline-flex items-center gap-1">
+                                    <span className="font-bold text-foreground">{toPersianDigits(ad.area)}</span>
+                                    <span>متر مربع</span>
+                                </span>
+                            ) : null}
+                            {ad.area && ad.rooms ? <span className="text-border">•</span> : null}
+                            {ad.rooms ? (
+                                <span className="inline-flex items-center gap-1">
+                                    <span className="font-bold text-foreground">{toPersianDigits(ad.rooms)}</span>
+                                    <span>خوابه</span>
+                                </span>
+                            ) : null}
+                        </div>
+                    )}
+
+                    {/* Location & Registration Date */}
+                    <div className="flex items-center justify-between text-[11px] sm:text-xs text-foreground-muted pt-1">
+                        <div className="flex items-center gap-1 min-w-0 truncate" title={displayLocation}>
+                            <MapPin className="w-3.5 h-3.5 shrink-0 text-secondary" />
+                            <span className="truncate">{displayLocation}</span>
+                        </div>
+                        {ad.createdAt && (
+                            <div className="flex items-center gap-1 shrink-0 text-[11px]">
+                                <Clock className="w-3 h-3 text-secondary" />
+                                <span>{formatDisplayDate(ad.createdAt)}</span>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Pricing Box */}
+                    {pricing.isDualRent ? (
+                        <div className="rounded-xl bg-surface-secondary/70 border border-border-subtle/70 p-2.5 space-y-1.5 mt-1">
+                            <div className="flex items-center justify-between text-xs">
+                                <span className="text-foreground-muted font-medium">{pricing.depositLabel}:</span>
+                                <div className="flex items-baseline gap-1">
+                                    <span className="font-black text-brand text-xs sm:text-sm">{pricing.depositAmount}</span>
+                                    <span className="text-[10px] text-foreground-muted">{pricing.unit}</span>
+                                </div>
+                            </div>
+                            <div className="flex items-center justify-between text-xs border-t border-border-subtle/50 pt-1.5">
+                                <span className="text-foreground-muted font-medium">{pricing.rentLabel}:</span>
+                                <div className="flex items-baseline gap-1">
+                                    <span className="font-black text-brand text-xs sm:text-sm">{pricing.rentAmount}</span>
+                                    <span className="text-[10px] text-foreground-muted">{pricing.unit}</span>
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="rounded-xl bg-surface-secondary/70 border border-border-subtle/70 px-3 py-2 flex items-center justify-between mt-1">
+                            <span className="text-xs text-foreground-muted font-medium">
+                                {pricing.primaryLabel || "قیمت"}:
+                            </span>
+                            <div className="flex items-baseline gap-1">
+                                <span className="font-black text-brand text-sm sm:text-base">
+                                    {pricing.primaryAmount}
+                                </span>
+                                {pricing.unit && (
+                                    <span className="text-[11px] text-foreground-muted">{pricing.unit}</span>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Rejection Alert Notice */}
+                    {ad.status === AdStatus.REJECTED && (
+                        <div className="p-3 rounded-xl bg-error-subtle/90 border border-error/25 text-xs text-error space-y-1 animate-in fade-in">
+                            <div className="font-black flex items-center gap-1.5">
+                                <AlertCircle className="w-4 h-4 shrink-0 text-error" />
+                                <span>آگهی تایید نشد</span>
+                            </div>
+                            <p className="text-[11px] text-foreground-muted leading-relaxed">
+                                تعرفه مسدود شده به موجودی کیف پول شما بازگردانده شد. پس از اصلاح موارد، می‌توانید مجدداً آگهی را جهت بررسی ارسال نمایید.
+                            </p>
+                        </div>
+                    )}
+                </div>
 
                 {/* Action Bar Footer */}
-                <div className="border-t border-border-subtle/90 pt-3 mt-4 flex items-center justify-between gap-2">
-                    {/* Primary Action Button */}
-                    <div className="flex items-center gap-2">
+                <div className="border-t border-border-subtle/80 pt-3 flex items-center justify-between gap-2 mt-auto">
+                    {/* Primary Action Buttons */}
+                    <div className="flex items-center gap-1.5 flex-wrap min-w-0">
                         {(ad.status === AdStatus.DRAFT || ad.status === AdStatus.REJECTED) && (
                             <button
+                                type="button"
                                 onClick={() => onSubmitReview(ad.adId)}
                                 disabled={isSubmitting}
-                                className="bg-primary hover:bg-primary/90 text-white font-bold text-xs px-3.5 py-2 rounded-xl flex items-center gap-1.5 shadow-xs transition-all active:scale-95 disabled:opacity-50"
+                                className="bg-primary hover:bg-primary-hover active:bg-primary-active text-primary-foreground font-bold text-xs px-3.5 py-2 rounded-xl flex items-center gap-1.5 shadow-xs transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
                             >
                                 {isSubmitting ? (
                                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -318,57 +489,55 @@ function MyAdCard({
                             </button>
                         )}
 
-                        {ad.status === AdStatus.PUBLISHED && ad.isFeatured && (
-                            <span className="bg-warning-subtle text-warning border border-warning/30 font-bold text-xs px-2.5 py-1.5 rounded-xl flex items-center gap-1">
-                                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                                <span>ارتقا یافته</span>
-                            </span>
-                        )}
-
                         {ad.status === AdStatus.PUBLISHED && onPromote && (
                             <button
+                                type="button"
                                 onClick={() => onPromote(ad)}
-                                className="bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs px-3 py-2 rounded-xl flex items-center gap-1.5 transition-colors active:scale-95 shadow-xs"
+                                className="bg-accent hover:bg-accent-hover active:bg-accent-active text-accent-foreground font-black text-xs px-3 py-2 rounded-xl flex items-center gap-1.5 shadow-xs transition-all active:scale-95 cursor-pointer"
                             >
                                 <Sparkles className="w-3.5 h-3.5" />
-                                <span>{ad.isFeatured ? "نردبان مجدد" : "ارتقا"}</span>
+                                <span>{ad.isFeatured ? "نردبان مجدد" : "ارتقا و نردبان"}</span>
                             </button>
                         )}
 
                         {[AdStatus.DRAFT, AdStatus.PENDING_APPROVAL, AdStatus.REJECTED, AdStatus.PUBLISHED].includes(ad.status) && (
                             <button
+                                type="button"
                                 onClick={() => router.push(`/ads/submit?edit=${ad.adId}`)}
-                                className="bg-brand/5 hover:bg-brand/10 text-brand font-bold text-xs px-3 py-2 rounded-xl flex items-center gap-1.5 transition-colors active:scale-95"
+                                className="bg-surface-secondary hover:bg-border/30 text-foreground border border-border-subtle font-bold text-xs px-3 py-2 rounded-xl flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer"
                             >
-                                <Pencil className="w-3.5 h-3.5" />
+                                <Pencil className="w-3.5 h-3.5 text-foreground-muted" />
                                 <span>ویرایش</span>
                             </button>
                         )}
                     </div>
 
-                    {/* Secondary Actions */}
-                    <div className="flex items-center gap-1">
+                    {/* Secondary Action Icons */}
+                    <div className="flex items-center gap-1 shrink-0">
                         <button
+                            type="button"
                             onClick={() => router.push(`/ads/${ad.adId}`)}
-                            title="مشاهده آگهی"
-                            className="p-2 text-secondary hover:text-brand hover:bg-soft-bg rounded-xl transition-colors"
+                            title="مشاهده جزئیات آگهی"
+                            className="p-2 text-foreground-muted hover:text-brand hover:bg-surface-secondary rounded-xl transition-colors cursor-pointer"
                         >
                             <Eye className="w-4 h-4" />
                         </button>
 
                         <button
+                            type="button"
                             onClick={() => onShare(ad.adId)}
-                            title="اشتراک‌گذاری"
-                            className="p-2 text-secondary hover:text-brand hover:bg-soft-bg rounded-xl transition-colors"
+                            title="اشتراک‌گذاری آگهی"
+                            className="p-2 text-foreground-muted hover:text-brand hover:bg-surface-secondary rounded-xl transition-colors cursor-pointer"
                         >
                             <Share2 className="w-4 h-4" />
                         </button>
 
                         {ad.status === AdStatus.PUBLISHED && (
                             <button
+                                type="button"
                                 onClick={() => onArchive(ad)}
                                 title="بایگانی کردن آگهی"
-                                className="p-2 text-secondary hover:text-warning hover:bg-warning-subtle rounded-xl transition-colors"
+                                className="p-2 text-foreground-muted hover:text-warning hover:bg-warning-subtle rounded-xl transition-colors cursor-pointer"
                             >
                                 <Archive className="w-4 h-4" />
                             </button>
@@ -376,9 +545,10 @@ function MyAdCard({
 
                         {[AdStatus.DRAFT, AdStatus.ARCHIVED, AdStatus.REJECTED, AdStatus.PENDING_APPROVAL, AdStatus.PUBLISHED].includes(ad.status) && (
                             <button
+                                type="button"
                                 onClick={() => onDelete(ad)}
-                                title="حذف آگهی"
-                                className="p-2 text-secondary hover:text-error hover:bg-error-subtle rounded-xl transition-colors"
+                                title="حذف دائمی آگهی"
+                                className="p-2 text-foreground-muted hover:text-error hover:bg-error-subtle rounded-xl transition-colors cursor-pointer"
                             >
                                 <Trash2 className="w-4 h-4" />
                             </button>
@@ -589,8 +759,10 @@ export default function MyAdsScene() {
                         onClick={() => router.push("/ads/submit")}
                         disabled={isRestricted}
                         className={cn(
-                            "text-white font-bold text-xs sm:text-sm px-4 py-2.5 rounded-xl shadow-xs transition-all active:scale-95 flex items-center gap-1.5 shrink-0",
-                            isRestricted ? "bg-gray-400 cursor-not-allowed opacity-60" : "bg-primary hover:bg-primary/90"
+                            "font-bold text-xs sm:text-sm px-4 py-2.5 rounded-xl shadow-xs transition-all active:scale-95 flex items-center gap-1.5 shrink-0 cursor-pointer",
+                            isRestricted
+                                ? "bg-gray-400 text-white cursor-not-allowed opacity-60"
+                                : "bg-primary hover:bg-primary-hover active:bg-primary-active text-primary-foreground"
                         )}
                     >
                         <Plus className="w-4 h-4" />
@@ -614,7 +786,7 @@ export default function MyAdsScene() {
                                         key={tab.key}
                                         onClick={() => handleFilterChange(tab.key)}
                                         className={cn(
-                                            "px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5",
+                                            "px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 cursor-pointer",
                                             isActive
                                                 ? "bg-brand text-white shadow-xs"
                                                 : "bg-surface text-secondary hover:bg-surface-secondary border border-border-subtle/60"
@@ -650,19 +822,28 @@ export default function MyAdsScene() {
                         {Array.from({ length: 6 }).map((_, i) => (
                             <div
                                 key={i}
-                                className="bg-surface rounded-2xl border border-border-subtle overflow-hidden shadow-xs animate-pulse"
+                                className="bg-surface rounded-2xl border border-border-subtle overflow-hidden shadow-2xs animate-pulse flex flex-col"
                             >
                                 <div className="aspect-[16/10] sm:aspect-[4/3] bg-surface-secondary w-full" />
-                                <div className="p-4 space-y-3">
-                                    <div className="h-5 bg-surface-secondary rounded-md w-1/3" />
-                                    <div className="h-4 bg-surface-secondary rounded-md w-3/4" />
-                                    <div className="flex justify-between pt-2">
-                                        <div className="h-3 bg-surface-secondary rounded-md w-1/4" />
-                                        <div className="h-3 bg-surface-secondary rounded-md w-1/4" />
+                                <div className="p-4 space-y-3 flex-1 flex flex-col justify-between">
+                                    <div className="space-y-2">
+                                        <div className="h-4 bg-surface-secondary rounded-md w-3/4" />
+                                        <div className="h-3 bg-surface-secondary rounded-md w-1/2" />
+                                        <div className="flex justify-between pt-1">
+                                            <div className="h-3 bg-surface-secondary rounded-md w-1/3" />
+                                            <div className="h-3 bg-surface-secondary rounded-md w-1/4" />
+                                        </div>
                                     </div>
-                                    <div className="border-t border-border-subtle pt-3 flex justify-between">
-                                        <div className="h-8 bg-surface-secondary rounded-xl w-1/3" />
-                                        <div className="h-8 bg-surface-secondary rounded-xl w-1/4" />
+                                    <div className="h-12 bg-surface-secondary/70 rounded-xl w-full" />
+                                    <div className="border-t border-border-subtle/80 pt-3 flex items-center justify-between">
+                                        <div className="flex gap-2">
+                                            <div className="h-8 bg-surface-secondary rounded-xl w-24" />
+                                            <div className="h-8 bg-surface-secondary rounded-xl w-16" />
+                                        </div>
+                                        <div className="flex gap-1">
+                                            <div className="h-8 w-8 bg-surface-secondary rounded-xl" />
+                                            <div className="h-8 w-8 bg-surface-secondary rounded-xl" />
+                                        </div>
                                     </div>
                                 </div>
                             </div>
