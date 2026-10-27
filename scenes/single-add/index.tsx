@@ -28,6 +28,7 @@ import {
     FileText,
     Heart,
     Layers,
+    Loader2,
     Lock,
     LucideIcon,
     MapPin,
@@ -856,138 +857,209 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
 
                 {/* Left column (Desktop Contact Card & Actions) */}
                 <div className={cn("space-y-6", isRegularUser && "hidden lg:block")}>
-                    <div className="sticky top-6 bg-surface p-6 rounded-3xl border border-border-subtle shadow-lg space-y-5">
-                        <h3 className="font-black text-brand text-base border-b border-border-subtle pb-3">
-                            اطلاعات تماس آگهی‌دهنده
-                        </h3>
-
-                        {/* Publisher Info */}
-                        <div className="flex items-center gap-3">
-                            {ad.publisher?.avatar ? (
-                                <img
-                                    src={ad.publisher.avatar}
-                                    alt={ad.publisher.name}
-                                    className="w-12 h-12 rounded-full object-cover border border-border-subtle shadow-xs shrink-0"
-                                />
-                            ) : (
-                                <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center font-black text-lg shrink-0">
-                                    {ad.publisher?.name ? ad.publisher.name.charAt(0) : "م"}
+                    <div className="sticky top-6 bg-surface p-5 sm:p-6 rounded-2xl border border-border-subtle shadow-card space-y-5">
+                        {/* Header */}
+                        <div className="flex items-center justify-between pb-3.5 border-b border-border-subtle/80">
+                            <div className="flex items-center gap-2.5">
+                                <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                                    {isOwner ? (
+                                        <ShieldCheck className="w-5 h-5" />
+                                    ) : !isRegularUser ? (
+                                        <Building2 className="w-5 h-5" />
+                                    ) : (
+                                        <Phone className="w-5 h-5" />
+                                    )}
                                 </div>
-                            )}
-                            <div className="min-w-0 flex-1">
-                                <h4 className="font-bold text-sm text-brand truncate">
-                                    {ad.publisher?.name || "آگهی‌دهنده ملک‌تودی"}
-                                </h4>
-                                <div className="flex items-center gap-1.5 mt-0.5">
-                                    {ad.publisher?.type === "agency" && (
-                                        <span className="text-[11px] text-text-light font-medium">مشاور املاک / آژانس</span>
-                                    )}
-                                    {ad.publisher?.type === "host" && (
-                                        <span className="text-[11px] text-text-light font-medium">میزبان اقامتگاه</span>
-                                    )}
-                                    {(!ad.publisher || ad.publisher.type === "user" || ad.publisher.type === "platform") && (
-                                        <span className="text-[11px] text-text-light font-medium">
-                                            {ad.publisher?.type === "platform" ? "سامانه ملک‌تودی" : "کاربر ملک‌تودی"}
-                                        </span>
-                                    )}
-                                    {ad.publisher?.isVerified && (
-                                        <span className="text-[11px] text-primary flex items-center gap-0.5 font-bold">
-                                            <ShieldCheck className="w-3.5 h-3.5" />
-                                            تایید شده
-                                        </span>
-                                    )}
+                                <div>
+                                    <h3 className="font-black text-brand text-base leading-tight">
+                                        {isOwner
+                                            ? "مدیریت آگهی"
+                                            : !isRegularUser && ad.publisher?.type === "host"
+                                                ? "اطلاعات میزبان اقامتگاه"
+                                                : !isRegularUser && ad.publisher?.type === "agency"
+                                                    ? "اطلاعات مشاور و آژانس"
+                                                    : "اطلاعات تماس آگهی‌دهنده"}
+                                    </h3>
+                                    <p className="text-[11px] text-foreground-muted mt-0.5">
+                                        {isOwner
+                                            ? "پنل اختصاصی ثبت‌کننده ملک"
+                                            : !isRegularUser
+                                                ? "ارتباط مستقیم با کارگزار رسمی"
+                                                : "تماس و هماهنگی با ارائه‌دهنده ملک"}
+                                    </p>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Showcase link if publisher is host or agency */}
-                        {ad.publisher && ad.publisher.type !== "user" && ad.publisher.slug && (
-                            <button
-                                onClick={() => router.push(ad.publisher!.type === "host" ? `/host/${ad.publisher!.slug}` : `/agency/showcase/${ad.publisher!.slug}`)}
-                                className="w-full py-2.5 px-3 rounded-xl border border-border-subtle/80 hover:bg-surface-secondary text-xs font-bold text-brand flex items-center justify-between transition-colors cursor-pointer"
-                            >
-                                <span>{ad.publisher.type === "host" ? "مشاهده پروفایل و سایر اقامتگاه‌ها" : "مشاهده ویترین و آگهی‌های آژانس"}</span>
-                                <ChevronLeft className="w-4 h-4 text-foreground-muted" />
-                            </button>
+                        {/* Publisher Info: ONLY shown when publisher is an Agency or Host */}
+                        {!isRegularUser && ad.publisher && (ad.publisher.type === "agency" || ad.publisher.type === "host") && (
+                            <div className="p-3.5 rounded-xl bg-surface-secondary/70 border border-border-subtle/70 space-y-3">
+                                <div className="flex items-center gap-3">
+                                    {ad.publisher.avatar ? (
+                                        <img
+                                            src={getMediaUrl(ad.publisher.avatar)}
+                                            alt={ad.publisher.name}
+                                            className="w-12 h-12 rounded-xl object-cover border border-border-subtle shadow-xs shrink-0"
+                                        />
+                                    ) : (
+                                        <div className="w-12 h-12 rounded-xl bg-brand text-white flex items-center justify-center font-black text-lg shrink-0">
+                                            {ad.publisher.name ? ad.publisher.name.charAt(0) : "م"}
+                                        </div>
+                                    )}
+                                    <div className="min-w-0 flex-1">
+                                        <div className="flex items-center gap-1.5">
+                                            <h4 className="font-black text-sm text-brand truncate">
+                                                {ad.publisher.name}
+                                            </h4>
+                                            {ad.publisher.isVerified && (
+                                                <span className="text-primary shrink-0" title="تایید شده">
+                                                    <ShieldCheck className="w-4 h-4" />
+                                                </span>
+                                            )}
+                                        </div>
+                                        <span className="text-[11px] text-foreground-muted block mt-0.5">
+                                            {ad.publisher.type === "host" ? "میزبان اقامتگاه" : "مشاور املاک / آژانس"}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {ad.publisher.slug && (
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            router.push(
+                                                ad.publisher!.type === "host"
+                                                    ? `/host/${ad.publisher!.slug}`
+                                                    : `/agency/showcase/${ad.publisher!.slug}`
+                                            )
+                                        }
+                                        className="w-full py-2 px-3 rounded-xl bg-surface hover:bg-border/30 border border-border-subtle text-xs font-bold text-brand flex items-center justify-between transition-colors cursor-pointer"
+                                    >
+                                        <span>
+                                            {ad.publisher.type === "host"
+                                                ? "مشاهده پروفایل و سایر اقامتگاه‌ها"
+                                                : "مشاهده ویترین و آگهی‌های آژانس"}
+                                        </span>
+                                        <ChevronLeft className="w-4 h-4 text-foreground-muted" />
+                                    </button>
+                                )}
+                            </div>
                         )}
 
-                        <div className="space-y-3 pt-2">
+                        {/* Actions Area */}
+                        <div className="space-y-3 pt-1">
                             {isOwner ? (
                                 <>
-                                    <div className="p-3.5 bg-warning-subtle/70 border border-warning/30/80 rounded-2xl flex items-center gap-2.5 text-xs font-bold text-amber-950">
-                                        <ShieldCheck className="w-4 h-4 text-warning shrink-0" />
-                                        <span>این آگهی توسط شما ثبت شده است.</span>
+                                    {/* Owner Badge */}
+                                    <div className="p-3 bg-primary/10 border border-primary/20 rounded-xl flex items-center gap-2.5 text-xs font-bold text-primary">
+                                        <ShieldCheck className="w-4 h-4 text-primary shrink-0" />
+                                        <span>این آگهی توسط حساب کاربری شما ثبت شده است.</span>
                                     </div>
 
-                                    {/* Already promoted indicator */}
+                                    {/* Already promoted banner */}
                                     {isPublished && isPromoted && (
-                                        <div className="flex items-center justify-center gap-2 w-full py-3 bg-warning-subtle border border-warning/30 text-warning font-black text-xs rounded-2xl shadow-xs">
-                                            <Sparkles className="w-4 h-4 text-warning" />
-                                            <span>آگهی شما ارتقا یافته است (فوری / ویژه)</span>
+                                        <div className="p-3 bg-warning-subtle border border-warning/30 rounded-xl flex items-center justify-between text-xs">
+                                            <div className="flex items-center gap-2 font-black text-warning">
+                                                <Sparkles className="w-4 h-4 shrink-0" />
+                                                <span>آگهی شما ارتقا یافته است</span>
+                                            </div>
+                                            <span className="text-[10px] font-bold bg-warning text-white px-2 py-0.5 rounded-md">
+                                                {ad.isUrgent ? "فوری" : ad.isLadder ? "نردبان" : "ویژه"}
+                                            </span>
                                         </div>
                                     )}
 
-                                    {/* Promotion Action if eligible */}
+                                    {/* Promotion Action */}
                                     {isEligibleForPromotion && (
                                         <button
+                                            type="button"
                                             onClick={() => setIsPromotionModalOpen(true)}
-                                            className="flex items-center justify-center gap-2 w-full py-3.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-black text-sm rounded-2xl shadow-md shadow-orange-500/20 active:scale-98 transition-all cursor-pointer"
+                                            className="w-full py-3 px-4 bg-accent hover:bg-accent-hover active:bg-accent-active text-accent-foreground font-black text-sm rounded-xl shadow-xs flex items-center justify-center gap-2 transition-all active:scale-98 cursor-pointer"
                                         >
-                                            <Sparkles className="w-4 h-4" />
-                                            <span>{isPromoted ? "نردبان مجدد آگهی" : "ارتقای آگهی (فوری / نردبان)"}</span>
+                                            <Sparkles className="w-4 h-4 shrink-0" />
+                                            <span>{isPromoted ? "نردبان مجدد آگهی" : "ارتقای آگهی (نردبان / ویژه)"}</span>
                                         </button>
                                     )}
 
-                                    {/* Not published notice */}
+                                    {/* Unpublished Notice */}
                                     {!isPublished && (
-                                        <div className="p-2.5 bg-surface-secondary border border-border-subtle text-foreground-secondary text-xs text-center rounded-xl font-medium">
-                                            {ad?.status === AdStatus.PENDING_APPROVAL
-                                                ? "آگهی در انتظار بررسی و تایید کارشناسان است"
-                                                : "آگهی در حالت فعال نمی‌باشد"}
+                                        <div className="p-3 bg-surface-secondary border border-border-subtle text-foreground-secondary text-xs rounded-xl space-y-1 font-medium">
+                                            <div className="font-black text-foreground">
+                                                {ad?.status === AdStatus.PENDING_APPROVAL
+                                                    ? "در انتظار تایید"
+                                                    : ad?.status === AdStatus.REJECTED
+                                                        ? "رد شده"
+                                                        : "پیش‌نویس"}
+                                            </div>
+                                            <p className="text-[11px] text-foreground-muted leading-relaxed">
+                                                {ad?.status === AdStatus.PENDING_APPROVAL
+                                                    ? "آگهی شما هم‌اکنون در انتظار بررسی و تایید توسط تیم پشتیبانی ملک‌تودی است."
+                                                    : ad?.status === AdStatus.REJECTED
+                                                        ? "این آگهی تایید نشده است. لطفاً پس از اصلاح موارد، مجدداً آن را ارسال فرمایید."
+                                                        : "این آگهی هنوز منتشر نشده و در وضعیت پیش‌نویس قرار دارد."}
+                                            </p>
                                         </div>
                                     )}
 
-                                    {/* Owner edit action */}
+                                    {/* Owner edit button */}
                                     <button
+                                        type="button"
                                         onClick={() => router.push(`/ads/submit?edit=${ad.adId}`)}
-                                        className="flex items-center justify-center gap-2 w-full py-3 bg-brand/5 hover:bg-brand/10 text-brand font-bold text-xs rounded-2xl border border-brand/20 transition-all cursor-pointer active:scale-98"
+                                        className="w-full py-2.5 px-4 bg-surface-secondary hover:bg-border/30 text-foreground border border-border-subtle font-bold text-xs rounded-xl flex items-center justify-center gap-2 transition-all active:scale-98 cursor-pointer"
                                     >
-                                        <Pencil className="w-4 h-4" />
+                                        <Pencil className="w-3.5 h-3.5 text-foreground-muted" />
                                         <span>ویرایش اطلاعات آگهی</span>
                                     </button>
 
+                                    {/* Link to profile ads */}
                                     <button
+                                        type="button"
                                         onClick={() => router.push(`/profile/ads`)}
-                                        className="w-full py-2 text-center text-xs text-secondary hover:text-brand font-bold transition-colors cursor-pointer"
+                                        className="w-full py-2 text-center text-xs text-foreground-muted hover:text-brand font-bold transition-colors cursor-pointer flex items-center justify-center gap-1"
                                     >
-                                        مدیریت در پنل کاربری
+                                        <span>مشاهده در لیست آگهی‌های من</span>
+                                        <ChevronLeft className="w-3.5 h-3.5" />
                                     </button>
+
+                                    {/* Owner help text */}
+                                    <div className="text-[11px] text-foreground-muted text-center leading-relaxed pt-2 border-t border-border-subtle/50">
+                                        برای اعمال تغییرات در قیمت، تصاویر یا سایر مشخصات از دکمه ویرایش استفاده نمایید.
+                                    </div>
                                 </>
                             ) : (
                                 <>
+                                    {/* Contact & Chat CTA Buttons for Prospects */}
                                     <button
+                                        type="button"
                                         onClick={() => setIsContactModalOpen(true)}
-                                        className="flex items-center justify-center gap-2 w-full py-3.5 bg-primary text-white font-bold text-sm rounded-2xl shadow-md hover:bg-primary/90 transition-all cursor-pointer"
+                                        className="w-full py-3.5 px-4 bg-primary hover:bg-primary-hover active:bg-primary-active text-primary-foreground font-bold text-sm rounded-xl shadow-xs flex items-center justify-center gap-2 transition-all active:scale-98 cursor-pointer"
                                     >
                                         <Phone className="w-4 h-4" />
                                         <span>اطلاعات تماس آگهی‌دهنده</span>
                                     </button>
 
                                     <button
+                                        type="button"
                                         onClick={handleChat}
                                         disabled={chatMutation.isPending}
-                                        className="flex items-center justify-center gap-2 w-full py-3.5 bg-brand text-white font-bold text-sm rounded-2xl shadow-md hover:bg-brand/90 transition-all disabled:opacity-50 cursor-pointer"
+                                        className="w-full py-3 px-4 bg-brand hover:bg-brand-hover active:bg-brand-active text-white font-bold text-sm rounded-xl shadow-xs flex items-center justify-center gap-2 transition-all active:scale-98 disabled:opacity-50 cursor-pointer"
                                     >
-                                        <MessageCircle className="w-4 h-4" />
+                                        {chatMutation.isPending ? (
+                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                        ) : (
+                                            <MessageCircle className="w-4 h-4" />
+                                        )}
                                         <span>شروع گفتگوی آنلاین</span>
                                     </button>
+
+                                    {/* Safety disclaimer only for prospects */}
+                                    <div className="pt-2 border-t border-border-subtle/50 flex items-start gap-1.5 text-[11px] text-foreground-muted leading-relaxed">
+                                        <ShieldAlert className="w-3.5 h-3.5 text-warning shrink-0 mt-0.5" />
+                                        <span>قبل از انجام معامله حضوری یا پرداخت ودیعه، حتماً از اصالت سند و هویت مالک اطمینان حاصل فرمایید.</span>
+                                    </div>
                                 </>
                             )}
                         </div>
-
-                        <p className="text-[11px] text-text-light text-center leading-relaxed">
-                            قبل از انجام معامله حضوری یا پرداخت ودیعه، حتماً از اصالت سند و هویت مالک اطمینان حاصل فرمایید.
-                        </p>
                     </div>
                 </div>
             </div>
@@ -1050,10 +1122,10 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
                             {isEligibleForPromotion && (
                                 <button
                                     onClick={() => setIsPromotionModalOpen(true)}
-                                    className="flex items-center gap-1 px-3 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl text-xs font-black shadow-md shadow-orange-500/20 active:scale-95 transition-transform cursor-pointer"
+                                    className="flex items-center gap-1 px-3 py-2.5 bg-accent text-accent-foreground rounded-xl text-xs font-black shadow-xs active:scale-95 transition-transform cursor-pointer"
                                 >
                                     <Sparkles className="w-3.5 h-3.5" />
-                                    <span>ارتقا</span>
+                                    <span>{isPromoted ? "نردبان" : "ارتقا"}</span>
                                 </button>
                             )}
                             {isPublished && isPromoted && (
