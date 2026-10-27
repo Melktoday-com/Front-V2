@@ -24,6 +24,7 @@ import {
     Layers,
     Loader2,
     MapPin,
+    MoreVertical,
     Pencil,
     Play,
     Plus,
@@ -274,6 +275,8 @@ function MyAdCard({
     onPromote,
 }: MyAdCardProps) {
     const router = useRouter();
+    const [menuOpen, setMenuOpen] = useState(false);
+    const menuRef = useRef<HTMLDivElement | null>(null);
 
     const isVideo = Boolean(ad.mediaIds && ad.mediaIds.length > 0 && ad.mediaIds[0]?.type === "VIDEO");
     const initialImgSrc = ad.mediaIds && ad.mediaIds.length > 0
@@ -286,6 +289,22 @@ function MyAdCard({
         setImgSrc(initialImgSrc);
     }, [initialImgSrc]);
 
+    // Close mobile dropdown on outside tap or click
+    useEffect(() => {
+        if (!menuOpen) return;
+        const handleClickOutside = (e: MouseEvent | TouchEvent) => {
+            if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+                setMenuOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        document.addEventListener("touchstart", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+            document.removeEventListener("touchstart", handleClickOutside);
+        };
+    }, [menuOpen]);
+
     const pricing = parseAdPricing(ad.pricing);
     const statusConfig = STATUS_CONFIG[ad.status] || STATUS_CONFIG[AdStatus.DRAFT];
     const categoryBadge = getCategoryBadge(ad);
@@ -295,225 +314,247 @@ function MyAdCard({
         : ad.cityName || ad.provinceName || "ایران";
 
     return (
-        <div className="group relative flex flex-col h-full bg-surface rounded-2xl border border-border-subtle hover:border-border transition-all duration-300 shadow-2xs hover:shadow-card hover:-translate-y-1 overflow-hidden select-none">
-            {/* Image / Media Container */}
-            <div className="relative aspect-[16/10] sm:aspect-[4/3] w-full overflow-hidden bg-surface-secondary">
-                <Image
-                    src={imgSrc}
-                    alt={ad.title || "ملک"}
-                    fill
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
-                    onError={() => setImgSrc("/property-placeholder.svg")}
-                />
+        <div className="group relative flex flex-col h-full bg-surface rounded-2xl border border-border-subtle hover:border-border transition-all duration-300 shadow-2xs hover:shadow-card hover:-translate-y-0.5 overflow-hidden select-none">
+            {/* Main Section: Horizontal layout on mobile (< sm), Vertical layout on tablet/desktop (sm+) */}
+            <div className="flex flex-row sm:flex-col p-3 sm:p-0 gap-3 sm:gap-0 flex-1 min-w-0">
+                {/* Image / Thumbnail Container */}
+                <div
+                    onClick={() => router.push(`/ads/${ad.adId}`)}
+                    className="relative shrink-0 w-28 h-28 min-[380px]:w-32 min-[380px]:h-32 sm:w-full sm:h-auto sm:aspect-[4/3] rounded-xl sm:rounded-none overflow-hidden bg-surface-secondary cursor-pointer"
+                >
+                    <Image
+                        src={imgSrc}
+                        alt={ad.title || "ملک"}
+                        fill
+                        sizes="(max-width: 640px) 140px, (max-width: 1024px) 50vw, 33vw"
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                        onError={() => setImgSrc("/property-placeholder.svg")}
+                    />
 
-                {/* Subtle scrim gradients for overlay readability */}
-                <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-black/55 to-transparent pointer-events-none z-5" />
-                <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/60 to-transparent pointer-events-none z-5" />
+                    {/* Scrim gradients on desktop */}
+                    <div className="hidden sm:block absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-black/55 to-transparent pointer-events-none z-5" />
+                    <div className="hidden sm:block absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/60 to-transparent pointer-events-none z-5" />
 
-                {/* Top-Right: Status Pill */}
-                <div className="absolute top-2.5 right-2.5 z-10">
-                    <span
-                        className={cn(
-                            "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold shadow-xs backdrop-blur-md border",
-                            statusConfig.bg,
-                            statusConfig.text,
-                            statusConfig.border
+                    {/* Desktop Top-Right: Status Pill */}
+                    <div className="hidden sm:block absolute top-2.5 right-2.5 z-10">
+                        <span
+                            className={cn(
+                                "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold shadow-xs backdrop-blur-md border",
+                                statusConfig.bg,
+                                statusConfig.text,
+                                statusConfig.border
+                            )}
+                        >
+                            <span className={cn("w-2 h-2 rounded-full", statusConfig.dot)} />
+                            {statusConfig.label}
+                        </span>
+                    </div>
+
+                    {/* Top-Left: Badges & Desktop Quick View */}
+                    <div className="absolute top-1.5 left-1.5 sm:top-2.5 sm:left-2.5 z-10 flex items-center gap-1 sm:gap-1.5">
+                        <button
+                            type="button"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                window.open(`/ads/${ad.adId}`, "_blank");
+                            }}
+                            title="مشاهده آگهی در تب جدید"
+                            className="hidden sm:flex w-8 h-8 rounded-xl bg-surface/90 hover:bg-surface text-foreground-muted hover:text-brand shadow-xs items-center justify-center backdrop-blur-md transition-all active:scale-95 border border-white/20 cursor-pointer"
+                        >
+                            <ExternalLink className="w-3.5 h-3.5" />
+                        </button>
+
+                        {ad.isUrgent && (
+                            <div className="bg-rose-600 text-white text-[8px] sm:text-[10px] font-black px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md sm:rounded-lg shadow-xs flex items-center gap-0.5 leading-none pointer-events-none">
+                                <Zap className="w-2 sm:w-2.5 h-2 sm:h-2.5 fill-white text-white shrink-0" />
+                                <span>فوری</span>
+                            </div>
                         )}
-                    >
-                        <span className={cn("w-2 h-2 rounded-full", statusConfig.dot)} />
-                        {statusConfig.label}
-                    </span>
-                </div>
-
-                {/* Top-Left: Quick Open + Badges */}
-                <div className="absolute top-2.5 left-2.5 z-10 flex items-center gap-1.5">
-                    <button
-                        type="button"
-                        onClick={() => window.open(`/ads/${ad.adId}`, "_blank")}
-                        title="مشاهده آگهی در تب جدید"
-                        className="w-8 h-8 rounded-xl bg-surface/90 hover:bg-surface text-foreground-muted hover:text-brand shadow-xs flex items-center justify-center backdrop-blur-md transition-all active:scale-95 border border-white/20 cursor-pointer"
-                    >
-                        <ExternalLink className="w-3.5 h-3.5" />
-                    </button>
-
-                    {ad.isUrgent && (
-                        <div className="bg-rose-600 text-white text-[9px] sm:text-[10px] font-black px-2 py-1 rounded-lg shadow-xs flex items-center gap-0.5 leading-none pointer-events-none">
-                            <Zap className="w-2.5 h-2.5 fill-white text-white shrink-0" />
-                            <span>فوری</span>
-                        </div>
-                    )}
-                    {ad.isLadder && (
-                        <div className="bg-blue-600 text-white text-[9px] sm:text-[10px] font-black px-2 py-1 rounded-lg shadow-xs flex items-center gap-0.5 leading-none pointer-events-none">
-                            <LadderIcon className="w-2.5 h-2.5 shrink-0" />
-                            <span>نردبان</span>
-                        </div>
-                    )}
-                    {ad.isFeatured && (
-                        <div className="bg-surface/95 text-warning border border-warning/30 text-[9px] sm:text-[10px] font-black px-2 py-1 rounded-lg shadow-xs flex items-center gap-0.5 leading-none pointer-events-none">
-                            <Sparkles className="w-2.5 h-2.5 text-amber-500 shrink-0" />
-                            <span>ویژه</span>
-                        </div>
-                    )}
-                </div>
-
-                {/* Bottom-Right: Category Badge */}
-                <div className="absolute bottom-2.5 right-2.5 z-10 bg-brand/85 backdrop-blur-md text-white text-[10px] sm:text-[11px] font-bold px-2.5 py-1 rounded-lg shadow-xs pointer-events-none">
-                    {categoryBadge}
-                </div>
-
-                {/* Bottom-Left: Media Type / Count */}
-                {isVideo ? (
-                    <div className="absolute bottom-2.5 left-2.5 z-10 bg-black/60 backdrop-blur-md text-white text-[10px] font-bold px-2 py-1 rounded-lg shadow-xs flex items-center gap-1 pointer-events-none">
-                        <Play className="w-2.5 h-2.5 fill-white" />
-                        <span>ویدیو</span>
+                        {ad.isLadder && (
+                            <div className="bg-blue-600 text-white text-[8px] sm:text-[10px] font-black px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md sm:rounded-lg shadow-xs flex items-center gap-0.5 leading-none pointer-events-none">
+                                <LadderIcon className="w-2 sm:w-2.5 h-2 sm:h-2.5 shrink-0" />
+                                <span>نردبان</span>
+                            </div>
+                        )}
+                        {ad.isFeatured && (
+                            <div className="bg-surface/95 text-warning border border-warning/30 text-[8px] sm:text-[10px] font-black px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md sm:rounded-lg shadow-xs flex items-center gap-0.5 leading-none pointer-events-none">
+                                <Sparkles className="w-2 sm:w-2.5 h-2 sm:h-2.5 text-amber-500 shrink-0" />
+                                <span>ویژه</span>
+                            </div>
+                        )}
                     </div>
-                ) : mediaCount > 1 ? (
-                    <div className="absolute bottom-2.5 left-2.5 z-10 bg-black/60 backdrop-blur-md text-white text-[10px] font-bold px-2 py-1 rounded-lg shadow-xs flex items-center gap-1 pointer-events-none">
-                        <ImageIcon className="w-3 h-3 text-white/90" />
-                        <span>{toPersianDigits(mediaCount)} عکس</span>
+
+                    {/* Desktop Bottom-Right: Category Badge */}
+                    <div className="hidden sm:block absolute bottom-2.5 right-2.5 z-10 bg-brand/85 backdrop-blur-md text-white text-[10px] sm:text-[11px] font-bold px-2.5 py-1 rounded-lg shadow-xs pointer-events-none">
+                        {categoryBadge}
                     </div>
-                ) : null}
-            </div>
 
-            {/* Content Section */}
-            <div className="p-4 flex flex-col flex-1 justify-between gap-3 min-w-0">
-                <div className="space-y-2">
-                    {/* Title */}
-                    <h3
-                        onClick={() => router.push(`/ads/${ad.adId}`)}
-                        className="text-brand font-black text-sm sm:text-base line-clamp-1 group-hover:text-primary transition-colors cursor-pointer leading-snug"
-                        title={ad.title}
-                    >
-                        {ad.title}
-                    </h3>
+                    {/* Bottom-Left: Media Type / Count */}
+                    {isVideo ? (
+                        <div className="absolute bottom-1.5 left-1.5 sm:bottom-2.5 sm:left-2.5 z-10 bg-black/65 backdrop-blur-md text-white text-[9px] sm:text-[10px] font-bold px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md sm:rounded-lg shadow-xs flex items-center gap-1 pointer-events-none">
+                            <Play className="w-2 sm:w-2.5 h-2 sm:h-2.5 fill-white" />
+                            <span>ویدیو</span>
+                        </div>
+                    ) : mediaCount > 1 ? (
+                        <div className="absolute bottom-1.5 left-1.5 sm:bottom-2.5 sm:left-2.5 z-10 bg-black/65 backdrop-blur-md text-white text-[9px] sm:text-[10px] font-bold px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md sm:rounded-lg shadow-xs flex items-center gap-1 pointer-events-none">
+                            <ImageIcon className="w-2.5 sm:w-3 h-2.5 sm:h-3 text-white/90" />
+                            <span>{toPersianDigits(mediaCount)}</span>
+                        </div>
+                    ) : null}
+                </div>
 
-                    {/* Specs Row: Area & Rooms */}
-                    {(ad.area || ad.rooms) && (
-                        <div className="flex items-center gap-2 text-xs font-medium text-foreground-muted">
-                            {ad.area ? (
-                                <span className="inline-flex items-center gap-1">
-                                    <span className="font-bold text-foreground">{toPersianDigits(ad.area)}</span>
-                                    <span>متر مربع</span>
-                                </span>
-                            ) : null}
+                {/* Content Section: Stacked & Responsive */}
+                <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5 sm:p-4 gap-2">
+                    <div className="space-y-1.5 min-w-0">
+                        {/* Mobile Status & Category Header */}
+                        <div className="sm:hidden flex items-center justify-between gap-1.5">
+                            <span
+                                className={cn(
+                                    "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border leading-tight shrink-0",
+                                    statusConfig.bg,
+                                    statusConfig.text,
+                                    statusConfig.border
+                                )}
+                            >
+                                <span className={cn("w-1.5 h-1.5 rounded-full", statusConfig.dot)} />
+                                {statusConfig.label}
+                            </span>
+                            <span className="text-[10px] font-medium text-foreground-muted truncate">
+                                {categoryBadge}
+                            </span>
+                        </div>
+
+                        {/* Title */}
+                        <h3
+                            onClick={() => router.push(`/ads/${ad.adId}`)}
+                            className="text-brand font-black text-xs min-[380px]:text-sm sm:text-base line-clamp-2 sm:line-clamp-1 leading-snug group-hover:text-primary transition-colors cursor-pointer"
+                            title={ad.title}
+                        >
+                            {ad.title}
+                        </h3>
+
+                        {/* Specs & Location Row */}
+                        <div className="flex items-center gap-1.5 text-[10px] min-[380px]:text-[11px] sm:text-xs text-foreground-muted font-medium truncate">
+                            {ad.area ? <span>{toPersianDigits(ad.area)} متر</span> : null}
                             {ad.area && ad.rooms ? <span className="text-border">•</span> : null}
-                            {ad.rooms ? (
-                                <span className="inline-flex items-center gap-1">
-                                    <span className="font-bold text-foreground">{toPersianDigits(ad.rooms)}</span>
-                                    <span>خوابه</span>
-                                </span>
-                            ) : null}
-                        </div>
-                    )}
-
-                    {/* Location & Registration Date */}
-                    <div className="flex items-center justify-between text-[11px] sm:text-xs text-foreground-muted pt-1">
-                        <div className="flex items-center gap-1 min-w-0 truncate" title={displayLocation}>
-                            <MapPin className="w-3.5 h-3.5 shrink-0 text-secondary" />
+                            {ad.rooms ? <span>{toPersianDigits(ad.rooms)} خواب</span> : null}
+                            {(ad.area || ad.rooms) && displayLocation ? <span className="text-border">•</span> : null}
                             <span className="truncate">{displayLocation}</span>
                         </div>
+
+                        {/* Date & Location (Desktop) */}
                         {ad.createdAt && (
-                            <div className="flex items-center gap-1 shrink-0 text-[11px]">
-                                <Clock className="w-3 h-3 text-secondary" />
-                                <span>{formatDisplayDate(ad.createdAt)}</span>
+                            <div className="hidden sm:flex items-center justify-between text-[11px] text-foreground-muted pt-1 border-t border-border-subtle/40">
+                                <div className="flex items-center gap-1 truncate" title={displayLocation}>
+                                    <MapPin className="w-3.5 h-3.5 shrink-0 text-secondary" />
+                                    <span className="truncate">{displayLocation}</span>
+                                </div>
+                                <div className="flex items-center gap-1 shrink-0">
+                                    <Clock className="w-3 h-3 text-secondary" />
+                                    <span>{formatDisplayDate(ad.createdAt)}</span>
+                                </div>
                             </div>
                         )}
                     </div>
 
                     {/* Pricing Box */}
-                    {pricing.isDualRent ? (
-                        <div className="rounded-xl bg-surface-secondary/70 border border-border-subtle/70 p-2.5 space-y-1.5 mt-1">
-                            <div className="flex items-center justify-between text-xs">
-                                <span className="text-foreground-muted font-medium">{pricing.depositLabel}:</span>
-                                <div className="flex items-baseline gap-1">
-                                    <span className="font-black text-brand text-xs sm:text-sm">{pricing.depositAmount}</span>
-                                    <span className="text-[10px] text-foreground-muted">{pricing.unit}</span>
+                    <div className="mt-auto">
+                        {pricing.isDualRent ? (
+                            <div className="sm:rounded-xl sm:bg-surface-secondary/70 sm:border sm:border-border-subtle/70 sm:p-2.5 space-y-0.5 sm:space-y-1.5">
+                                <div className="flex items-center justify-between text-[11px] sm:text-xs">
+                                    <span className="text-foreground-muted font-medium text-[10px] sm:text-xs">{pricing.depositLabel}:</span>
+                                    <div className="flex items-baseline gap-1">
+                                        <span className="font-black text-brand text-xs sm:text-sm">{pricing.depositAmount}</span>
+                                        <span className="text-[9px] sm:text-[10px] text-foreground-muted">{pricing.unit}</span>
+                                    </div>
+                                </div>
+                                <div className="flex items-center justify-between text-[11px] sm:text-xs border-t border-border-subtle/40 sm:border-border-subtle/50 pt-0.5 sm:pt-1.5">
+                                    <span className="text-foreground-muted font-medium text-[10px] sm:text-xs">{pricing.rentLabel}:</span>
+                                    <div className="flex items-baseline gap-1">
+                                        <span className="font-black text-brand text-xs sm:text-sm">{pricing.rentAmount}</span>
+                                        <span className="text-[9px] sm:text-[10px] text-foreground-muted">{pricing.unit}</span>
+                                    </div>
                                 </div>
                             </div>
-                            <div className="flex items-center justify-between text-xs border-t border-border-subtle/50 pt-1.5">
-                                <span className="text-foreground-muted font-medium">{pricing.rentLabel}:</span>
-                                <div className="flex items-baseline gap-1">
-                                    <span className="font-black text-brand text-xs sm:text-sm">{pricing.rentAmount}</span>
-                                    <span className="text-[10px] text-foreground-muted">{pricing.unit}</span>
-                                </div>
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="rounded-xl bg-surface-secondary/70 border border-border-subtle/70 px-3 py-2 flex items-center justify-between mt-1">
-                            <span className="text-xs text-foreground-muted font-medium">
-                                {pricing.primaryLabel || "قیمت"}:
-                            </span>
-                            <div className="flex items-baseline gap-1">
-                                <span className="font-black text-brand text-sm sm:text-base">
-                                    {pricing.primaryAmount}
+                        ) : (
+                            <div className="sm:rounded-xl sm:bg-surface-secondary/70 sm:border sm:border-border-subtle/70 sm:px-3 sm:py-2 flex items-center justify-between">
+                                <span className="text-xs text-foreground-muted font-medium hidden sm:inline">
+                                    {pricing.primaryLabel || "قیمت"}:
                                 </span>
-                                {pricing.unit && (
-                                    <span className="text-[11px] text-foreground-muted">{pricing.unit}</span>
-                                )}
+                                <div className="flex items-baseline gap-1">
+                                    <span className="font-black text-brand text-xs min-[380px]:text-sm sm:text-base">
+                                        {pricing.primaryAmount}
+                                    </span>
+                                    {pricing.unit && (
+                                        <span className="text-[10px] sm:text-[11px] text-foreground-muted">{pricing.unit}</span>
+                                    )}
+                                </div>
                             </div>
-                        </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            {/* Rejection Alert Notice: Full Width */}
+            {ad.status === AdStatus.REJECTED && (
+                <div className="mx-3 mb-2.5 sm:mx-4 sm:mb-3 p-2.5 sm:p-3 rounded-xl bg-error-subtle/90 border border-error/25 text-xs text-error space-y-1 animate-in fade-in">
+                    <div className="font-black flex items-center gap-1.5 text-xs">
+                        <AlertCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 text-error" />
+                        <span>آگهی تایید نشد</span>
+                    </div>
+                    <p className="text-[10px] sm:text-[11px] text-foreground-muted leading-relaxed">
+                        تعرفه مسدود شده به موجودی کیف پول شما بازگردانده شد. می‌توانید پس از ویرایش، مجدداً آگهی را ارسال فرمایید.
+                    </p>
+                </div>
+            )}
+
+            {/* Action Bar Footer */}
+            <div className="border-t border-border-subtle/80 px-3 py-2 sm:px-4 sm:py-3 bg-surface-secondary/25 sm:bg-transparent flex items-center justify-between gap-2 mt-auto">
+                {/* Primary Action Buttons */}
+                <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                    {(ad.status === AdStatus.DRAFT || ad.status === AdStatus.REJECTED) && (
+                        <button
+                            type="button"
+                            onClick={() => onSubmitReview(ad.adId)}
+                            disabled={isSubmitting}
+                            className="bg-primary hover:bg-primary-hover active:bg-primary-active text-primary-foreground font-bold text-[11px] sm:text-xs px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl flex items-center gap-1 sm:gap-1.5 shadow-xs transition-all active:scale-95 disabled:opacity-50 cursor-pointer shrink-0 truncate"
+                        >
+                            {isSubmitting ? (
+                                <Loader2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 animate-spin shrink-0" />
+                            ) : (
+                                <Send className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" />
+                            )}
+                            <span className="truncate">{ad.status === AdStatus.REJECTED ? "ارسال مجدد" : "ارسال برای تایید"}</span>
+                        </button>
                     )}
 
-                    {/* Rejection Alert Notice */}
-                    {ad.status === AdStatus.REJECTED && (
-                        <div className="p-3 rounded-xl bg-error-subtle/90 border border-error/25 text-xs text-error space-y-1 animate-in fade-in">
-                            <div className="font-black flex items-center gap-1.5">
-                                <AlertCircle className="w-4 h-4 shrink-0 text-error" />
-                                <span>آگهی تایید نشد</span>
-                            </div>
-                            <p className="text-[11px] text-foreground-muted leading-relaxed">
-                                تعرفه مسدود شده به موجودی کیف پول شما بازگردانده شد. پس از اصلاح موارد، می‌توانید مجدداً آگهی را جهت بررسی ارسال نمایید.
-                            </p>
-                        </div>
+                    {ad.status === AdStatus.PUBLISHED && onPromote && (
+                        <button
+                            type="button"
+                            onClick={() => onPromote(ad)}
+                            className="bg-accent hover:bg-accent-hover active:bg-accent-active text-accent-foreground font-black text-[11px] sm:text-xs px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl flex items-center gap-1 sm:gap-1.5 shadow-xs transition-all active:scale-95 cursor-pointer shrink-0"
+                        >
+                            <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" />
+                            <span>{ad.isFeatured ? "نردبان مجدد" : "ارتقا و نردبان"}</span>
+                        </button>
+                    )}
+
+                    {[AdStatus.DRAFT, AdStatus.PENDING_APPROVAL, AdStatus.REJECTED, AdStatus.PUBLISHED].includes(ad.status) && (
+                        <button
+                            type="button"
+                            onClick={() => router.push(`/ads/submit?edit=${ad.adId}`)}
+                            className="bg-surface-secondary hover:bg-border/30 text-foreground border border-border-subtle font-bold text-[11px] sm:text-xs px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl flex items-center gap-1 sm:gap-1.5 transition-all active:scale-95 cursor-pointer shrink-0"
+                        >
+                            <Pencil className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-foreground-muted shrink-0" />
+                            <span>ویرایش</span>
+                        </button>
                     )}
                 </div>
 
-                {/* Action Bar Footer */}
-                <div className="border-t border-border-subtle/80 pt-3 flex items-center justify-between gap-2 mt-auto">
-                    {/* Primary Action Buttons */}
-                    <div className="flex items-center gap-1.5 flex-wrap min-w-0">
-                        {(ad.status === AdStatus.DRAFT || ad.status === AdStatus.REJECTED) && (
-                            <button
-                                type="button"
-                                onClick={() => onSubmitReview(ad.adId)}
-                                disabled={isSubmitting}
-                                className="bg-primary hover:bg-primary-hover active:bg-primary-active text-primary-foreground font-bold text-xs px-3.5 py-2 rounded-xl flex items-center gap-1.5 shadow-xs transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
-                            >
-                                {isSubmitting ? (
-                                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                ) : (
-                                    <Send className="w-3.5 h-3.5" />
-                                )}
-                                <span>{ad.status === AdStatus.REJECTED ? "ارسال مجدد برای تایید" : "ارسال برای تایید"}</span>
-                            </button>
-                        )}
-
-                        {ad.status === AdStatus.PUBLISHED && onPromote && (
-                            <button
-                                type="button"
-                                onClick={() => onPromote(ad)}
-                                className="bg-accent hover:bg-accent-hover active:bg-accent-active text-accent-foreground font-black text-xs px-3 py-2 rounded-xl flex items-center gap-1.5 shadow-xs transition-all active:scale-95 cursor-pointer"
-                            >
-                                <Sparkles className="w-3.5 h-3.5" />
-                                <span>{ad.isFeatured ? "نردبان مجدد" : "ارتقا و نردبان"}</span>
-                            </button>
-                        )}
-
-                        {[AdStatus.DRAFT, AdStatus.PENDING_APPROVAL, AdStatus.REJECTED, AdStatus.PUBLISHED].includes(ad.status) && (
-                            <button
-                                type="button"
-                                onClick={() => router.push(`/ads/submit?edit=${ad.adId}`)}
-                                className="bg-surface-secondary hover:bg-border/30 text-foreground border border-border-subtle font-bold text-xs px-3 py-2 rounded-xl flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer"
-                            >
-                                <Pencil className="w-3.5 h-3.5 text-foreground-muted" />
-                                <span>ویرایش</span>
-                            </button>
-                        )}
-                    </div>
-
-                    {/* Secondary Action Icons */}
-                    <div className="flex items-center gap-1 shrink-0">
+                {/* Secondary Actions: Mobile 3-Dots Dropdown Menu + Desktop Icon Group */}
+                <div className="flex items-center gap-1 shrink-0">
+                    {/* Desktop Toolbar: Direct Icons */}
+                    <div className="hidden sm:flex items-center gap-1">
                         <button
                             type="button"
                             onClick={() => router.push(`/ads/${ad.adId}`)}
@@ -552,6 +593,80 @@ function MyAdCard({
                             >
                                 <Trash2 className="w-4 h-4" />
                             </button>
+                        )}
+                    </div>
+
+                    {/* Mobile Toolbar: Eye + More Menu Popover */}
+                    <div className="sm:hidden flex items-center gap-0.5 relative" ref={menuRef}>
+                        <button
+                            type="button"
+                            onClick={() => router.push(`/ads/${ad.adId}`)}
+                            title="مشاهده آگهی"
+                            className="p-1.5 text-foreground-muted hover:text-brand hover:bg-surface-secondary rounded-lg transition-colors cursor-pointer"
+                        >
+                            <Eye className="w-4 h-4" />
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={() => setMenuOpen((prev) => !prev)}
+                            title="سایر گزینه‌ها"
+                            className={cn(
+                                "p-1.5 rounded-lg text-foreground-muted hover:text-brand hover:bg-surface-secondary transition-colors cursor-pointer",
+                                menuOpen && "bg-surface-secondary text-brand"
+                            )}
+                        >
+                            <MoreVertical className="w-4 h-4" />
+                        </button>
+
+                        {/* Mobile Floating Action Sheet / Dropdown */}
+                        {menuOpen && (
+                            <div
+                                className="absolute left-0 bottom-full mb-1.5 w-44 bg-surface rounded-2xl border border-border-subtle shadow-2xl z-40 py-1.5 animate-in fade-in zoom-in-95 duration-150"
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setMenuOpen(false);
+                                        onShare(ad.adId);
+                                    }}
+                                    className="w-full px-3.5 py-2.5 text-right text-xs font-bold text-foreground hover:bg-surface-secondary flex items-center gap-2 transition-colors cursor-pointer"
+                                >
+                                    <Share2 className="w-4 h-4 text-foreground-muted" />
+                                    <span>اشتراک‌گذاری</span>
+                                </button>
+
+                                {ad.status === AdStatus.PUBLISHED && (
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setMenuOpen(false);
+                                            onArchive(ad);
+                                        }}
+                                        className="w-full px-3.5 py-2.5 text-right text-xs font-bold text-warning hover:bg-warning-subtle flex items-center gap-2 transition-colors cursor-pointer"
+                                    >
+                                        <Archive className="w-4 h-4" />
+                                        <span>بایگانی کردن</span>
+                                    </button>
+                                )}
+
+                                {[AdStatus.DRAFT, AdStatus.ARCHIVED, AdStatus.REJECTED, AdStatus.PENDING_APPROVAL, AdStatus.PUBLISHED].includes(ad.status) && (
+                                    <div className="border-t border-border-subtle/60 my-1 pt-1">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setMenuOpen(false);
+                                                onDelete(ad);
+                                            }}
+                                            className="w-full px-3.5 py-2.5 text-right text-xs font-bold text-error hover:bg-error-subtle flex items-center gap-2 transition-colors cursor-pointer"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                            <span>حذف دائمی</span>
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
                         )}
                     </div>
                 </div>
@@ -813,37 +928,34 @@ export default function MyAdsScene() {
             <div id="my-ads-top" />
 
             {/* Main Content */}
-            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <main className="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 py-4 sm:py-6">
                 {/* Account Status Alert if Suspended/Banned */}
                 <AccountStatusBanner className="mb-6" />
                 {isLoading ? (
                     /* Initial Skeleton Grid */
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-5">
                         {Array.from({ length: 6 }).map((_, i) => (
                             <div
                                 key={i}
                                 className="bg-surface rounded-2xl border border-border-subtle overflow-hidden shadow-2xs animate-pulse flex flex-col"
                             >
-                                <div className="aspect-[16/10] sm:aspect-[4/3] bg-surface-secondary w-full" />
-                                <div className="p-4 space-y-3 flex-1 flex flex-col justify-between">
-                                    <div className="space-y-2">
-                                        <div className="h-4 bg-surface-secondary rounded-md w-3/4" />
-                                        <div className="h-3 bg-surface-secondary rounded-md w-1/2" />
-                                        <div className="flex justify-between pt-1">
-                                            <div className="h-3 bg-surface-secondary rounded-md w-1/3" />
-                                            <div className="h-3 bg-surface-secondary rounded-md w-1/4" />
+                                <div className="flex flex-row sm:flex-col p-3 sm:p-0 gap-3 sm:gap-0">
+                                    <div className="w-28 h-28 min-[380px]:w-32 min-[380px]:h-32 sm:w-full sm:h-auto sm:aspect-[4/3] rounded-xl sm:rounded-none bg-surface-secondary shrink-0" />
+                                    <div className="p-0 sm:p-4 space-y-2 flex-1 flex flex-col justify-between py-1">
+                                        <div className="space-y-1.5">
+                                            <div className="h-3.5 bg-surface-secondary rounded-md w-3/4" />
+                                            <div className="h-3 bg-surface-secondary rounded-md w-1/2" />
                                         </div>
+                                        <div className="h-6 sm:h-10 bg-surface-secondary/70 rounded-lg sm:rounded-xl w-full" />
                                     </div>
-                                    <div className="h-12 bg-surface-secondary/70 rounded-xl w-full" />
-                                    <div className="border-t border-border-subtle/80 pt-3 flex items-center justify-between">
-                                        <div className="flex gap-2">
-                                            <div className="h-8 bg-surface-secondary rounded-xl w-24" />
-                                            <div className="h-8 bg-surface-secondary rounded-xl w-16" />
-                                        </div>
-                                        <div className="flex gap-1">
-                                            <div className="h-8 w-8 bg-surface-secondary rounded-xl" />
-                                            <div className="h-8 w-8 bg-surface-secondary rounded-xl" />
-                                        </div>
+                                </div>
+                                <div className="border-t border-border-subtle/80 px-3 py-2 sm:px-4 sm:py-3 flex items-center justify-between">
+                                    <div className="flex gap-2">
+                                        <div className="h-7 sm:h-8 bg-surface-secondary rounded-xl w-20 sm:w-24" />
+                                        <div className="h-7 sm:h-8 bg-surface-secondary rounded-xl w-14 sm:w-16" />
+                                    </div>
+                                    <div className="flex gap-1">
+                                        <div className="h-7 w-7 sm:h-8 sm:w-8 bg-surface-secondary rounded-xl" />
                                     </div>
                                 </div>
                             </div>
@@ -888,7 +1000,7 @@ export default function MyAdsScene() {
                     )
                 ) : (
                     /* Infinite Scroll Grid with Appended Sections up to Page 7 */
-                    <div id="my-ads-grid" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                    <div id="my-ads-grid" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-5">
                         {data?.pages.map((page, pageIndex) => {
                             const pageAds = page.items.filter((ad) => ad.status !== AdStatus.DELETED);
                             if (pageAds.length === 0 && pageIndex > 0) return null;

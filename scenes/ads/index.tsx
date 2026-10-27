@@ -338,9 +338,10 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
         // 1. First priority: active ladder listings from promoted search
         if (promotedSearchData?.hits) {
             for (const doc of promotedSearchData.hits) {
-                if (doc.promotionBoostScore === 40 && !seen.has(doc.id)) {
-                    seen.add(doc.id);
-                    list.push(searchDocToAdSummary(doc));
+                const summary = searchDocToAdSummary(doc);
+                if (summary.isLadder && !seen.has(summary.adId)) {
+                    seen.add(summary.adId);
+                    list.push(summary);
                 }
             }
         }
@@ -893,6 +894,7 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                                                 badgeName={ad.isFeatured && !ad.isLadder && !ad.isUrgent ? "ویژه" : undefined}
                                                 isUrgent={ad.isUrgent}
                                                 isLadder={ad.isLadder}
+                                                isFeatured={ad.isFeatured && !ad.isLadder && !ad.isUrgent}
                                                 date={ad.createdAt}
                                             />
                                         );
@@ -958,6 +960,7 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                                                     badgeName={ad.isFeatured && !ad.isLadder && !ad.isUrgent ? "ویژه" : undefined}
                                                     isUrgent={ad.isUrgent}
                                                     isLadder={ad.isLadder}
+                                                    isFeatured={ad.isFeatured && !ad.isLadder && !ad.isUrgent}
                                                     date={ad.createdAt}
                                                 />
                                             );

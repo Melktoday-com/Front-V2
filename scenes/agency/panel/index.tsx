@@ -2,13 +2,14 @@
 
 import { useAgencyStats, useMyAgency } from "@/hooks/useAgencies";
 import { useAuth } from "@/hooks/useAuth";
-import { cn, toPersianDigits, getMediaUrl, toEnglishDigits, toOnlyDigits } from "@/lib/utils";
+import { cn, toPersianDigits, getMediaUrl, getMediaPosterUrl, toEnglishDigits, toOnlyDigits } from "@/lib/utils";
 import { agencyService } from "@/services/agency.service";
 import MediaIconUpload from "@/components/admin/MediaIconUpload";
 import {
     AgencyPost,
     AgencyPostsListResponse,
     UpdateAgencyProfileRequest,
+    UpdateAgencyPostRequest,
 } from "@/types/api/agency.types";
 import { normalizeApiError } from "@/lib/api/error-handler";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -25,7 +26,9 @@ import {
     Edit3,
     ExternalLink,
     Eye,
+    EyeOff,
     Globe,
+    Heart,
     ImageIcon,
     LayoutDashboard,
     MapPin,
@@ -34,6 +37,7 @@ import {
     Phone,
     Plus,
     RotateCcw,
+    Search,
     Send,
     Settings,
     ShieldCheck,
@@ -41,6 +45,7 @@ import {
     Star,
     Trash2,
     Users,
+    X,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -186,11 +191,109 @@ export default function AgencyPanelScene() {
         return postsData?.items ?? [];
     }, [postsData]);
 
+    // Showcase post search & filter state
+    const [postSearch, setPostSearch] = useState("");
+    const [postStatusFilter, setPostStatusFilter] = useState<"all" | "published" | "draft">("all");
+
+    // Edit post modal state
+    const [editingPost, setEditingPost] = useState<AgencyPost | null>(null);
+    const [editForm, setEditForm] = useState<{
+        title: string;
+        slug: string;
+        summary: string;
+        content: string;
+        isPublished: boolean;
+    }>({
+        title: "",
+        slug: "",
+        summary: "",
+        content: "",
+        isPublished: true,
+    });
+
+    const togglePublishMutation = useMutation({
+        mutationFn: ({ postId, isPublished }: { postId: string; isPublished: boolean }) =>
+            agencyService.updateMyPost(postId, { isPublished }),
+        onSuccess: (_data, variables) => {
+            toast.success(variables.isPublished ? "پست با موفقیت منتشر شد." : "پست به حالت پیش‌نویس منتقل شد.");
+            refetchPosts();
+            queryClient.invalidateQueries({ queryKey: ["agency-posts"] });
+            queryClient.invalidateQueries({ queryKey: ["agency-public-posts"] });
+        },
+        onError: (err: Error) => {
+            toast.error(normalizeApiError(err, "خطا در تغییر وضعیت انتشار پست."));
+        },
+    });
+
+    const updatePostMutation = useMutation({
+        mutationFn: ({ postId, data }: { postId: string; data: UpdateAgencyPostRequest }) =>
+            agencyService.updateMyPost(postId, data),
+        onSuccess: () => {
+            toast.success("پست با موفقیت بروزرسانی شد.");
+            setEditingPost(null);
+            refetchPosts();
+            queryClient.invalidateQueries({ queryKey: ["agency-posts"] });
+            queryClient.invalidateQueries({ queryKey: ["agency-public-posts"] });
+        },
+        onError: (err: Error) => {
+            toast.error(normalizeApiError(err, "خطا در بروزرسانی پست."));
+        },
+    });
+
+    const handleOpenEdit = (post: AgencyPost) => {
+        setEditingPost(post);
+        setEditForm({
+            title: post.title || "",
+            slug: post.slug || "",
+            summary: post.summary || "",
+            content: post.content || "",
+            isPublished: post.isPublished ?? true,
+        });
+    };
+
+    const handleSaveEdit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!editingPost) return;
+        if (!editForm.title.trim()) {
+            toast.error("عنوان پست نمی‌تواند خالی باشد.");
+            return;
+        }
+        updatePostMutation.mutate({
+            postId: editingPost.id,
+            data: {
+                title: editForm.title.trim(),
+                slug: editForm.slug.trim() || undefined,
+                summary: editForm.summary.trim() || undefined,
+                content: editForm.content,
+                isPublished: editForm.isPublished,
+            },
+        });
+    };
+
+    const filteredPosts = useMemo(() => {
+        return posts.filter((p) => {
+            const matchesSearch =
+                !postSearch.trim() ||
+                p.title.toLowerCase().includes(postSearch.toLowerCase()) ||
+                (p.summary && p.summary.toLowerCase().includes(postSearch.toLowerCase())) ||
+                (p.content && p.content.toLowerCase().includes(postSearch.toLowerCase()));
+
+            const matchesStatus =
+                postStatusFilter === "all" ||
+                (postStatusFilter === "published" && p.isPublished) ||
+                (postStatusFilter === "draft" && !p.isPublished);
+
+            return matchesSearch && matchesStatus;
+        });
+    }, [posts, postSearch, postStatusFilter]);
+
     const deletePostMutation = useMutation({
         mutationFn: (postId: string) => agencyService.deleteMyPost(postId),
         onSuccess: () => {
             toast.success("پست با موفقیت حذف شد.");
             refetchPosts();
+            queryClient.invalidateQueries({ queryKey: ["agency-posts"] });
+            queryClient.invalidateQueries({ queryKey: ["agency-public-posts"] });
         },
         onError: (err: Error) => {
             toast.error(normalizeApiError(err, "خطا در حذف پست."));
@@ -1015,25 +1118,105 @@ export default function AgencyPanelScene() {
                 {/* SECTION 3: POSTS & ARTICLES                                  */}
                 {/* ───────────────────────────────────────────────────────────── */}
                 <section id="section-posts" className="space-y-6 scroll-mt-28">
-                    <div className="border-b border-soft-border/60 pb-3 flex items-center justify-between">
+                    {/* Header */}
+                    <div className="border-b border-soft-border/60 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <div className="flex items-center gap-2">
                             <BookOpen className="w-5 h-5 text-accent-foreground" />
                             <div>
-                                <h2 className="text-base sm:text-lg font-black text-brand">پست‌ها و مقالات اختصاصی</h2>
+                                <h2 className="text-base sm:text-lg font-black text-brand">پست‌ها و مقالات اختصاصی ویترین</h2>
                                 <p className="text-[11px] text-secondary">
-                                    {posts.length > 0 ? `${toPersianDigits(posts.length)} مطلب منتشر شده یا پیش‌نویس` : "مطالب تحلیلی و اخبار ویترین"}
+                                    {posts.length > 0
+                                        ? `${toPersianDigits(posts.length)} مطلب ثبت شده (${toPersianDigits(posts.filter((p) => p.isPublished).length)} منتشر شده)`
+                                        : "مطالب تحلیلی، اخبار و معرفی پروژه‌های ملکی"}
                                 </p>
                             </div>
                         </div>
 
-                        <Link
-                            href="/posts/create"
-                            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-brand hover:bg-brand/90 active:scale-95 text-white text-xs font-black transition-all shadow-2xs shrink-0"
-                        >
-                            <Plus className="w-3.5 h-3.5" />
-                            <span>پست جدید</span>
-                        </Link>
+                        <div className="flex items-center gap-2">
+                            <Link
+                                href={publicShowcasePath}
+                                target="_blank"
+                                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-soft-bg hover:bg-slate-200/60 text-secondary hover:text-brand text-xs font-bold transition-all border border-soft-border/70"
+                            >
+                                <ExternalLink className="w-3.5 h-3.5" />
+                                <span>مشاهده ویترین زنده</span>
+                            </Link>
+
+                            <Link
+                                href="/posts/create"
+                                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-brand hover:bg-brand/90 active:scale-95 text-white text-xs font-black transition-all shadow-2xs shrink-0"
+                            >
+                                <Plus className="w-3.5 h-3.5" />
+                                <span>پست جدید</span>
+                            </Link>
+                        </div>
                     </div>
+
+                    {/* Filter and Search Bar */}
+                    {posts.length > 0 && (
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-surface p-3 rounded-2xl border border-soft-border/60">
+                            {/* Search Input */}
+                            <div className="relative flex-1">
+                                <Search className="w-4 h-4 text-secondary absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                                <input
+                                    type="text"
+                                    value={postSearch}
+                                    onChange={(e) => setPostSearch(e.target.value)}
+                                    placeholder="جستجو در عنوان یا متن پست‌ها..."
+                                    className="w-full pr-9 pl-8 py-2 rounded-xl bg-soft-bg/50 border border-soft-border/60 text-xs sm:text-sm text-brand placeholder:text-secondary/60 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                                />
+                                {postSearch && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setPostSearch("")}
+                                        className="absolute left-2.5 top-1/2 -translate-y-1/2 text-secondary hover:text-brand p-1"
+                                    >
+                                        <X className="w-3.5 h-3.5" />
+                                    </button>
+                                )}
+                            </div>
+
+                            {/* Status Filter Tabs */}
+                            <div className="flex items-center gap-1 bg-soft-bg/70 p-1 rounded-xl self-end sm:self-auto shrink-0">
+                                <button
+                                    type="button"
+                                    onClick={() => setPostStatusFilter("all")}
+                                    className={cn(
+                                        "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer",
+                                        postStatusFilter === "all"
+                                            ? "bg-surface text-brand shadow-2xs"
+                                            : "text-secondary hover:text-brand"
+                                    )}
+                                >
+                                    همه ({toPersianDigits(posts.length)})
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setPostStatusFilter("published")}
+                                    className={cn(
+                                        "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer",
+                                        postStatusFilter === "published"
+                                            ? "bg-surface text-success shadow-2xs font-black"
+                                            : "text-secondary hover:text-brand"
+                                    )}
+                                >
+                                    منتشر شده ({toPersianDigits(posts.filter((p) => p.isPublished).length)})
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setPostStatusFilter("draft")}
+                                    className={cn(
+                                        "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer",
+                                        postStatusFilter === "draft"
+                                            ? "bg-surface text-amber-600 shadow-2xs font-black"
+                                            : "text-secondary hover:text-brand"
+                                    )}
+                                >
+                                    پیش‌نویس ({toPersianDigits(posts.filter((p) => !p.isPublished).length)})
+                                </button>
+                            </div>
+                        </div>
+                    )}
 
                     {isLoadingPosts ? (
                         <div className="rounded-2xl bg-surface border border-soft-border/70 p-10 text-center">
@@ -1048,79 +1231,301 @@ export default function AgencyPanelScene() {
                             <div className="space-y-1 max-w-sm mx-auto">
                                 <h4 className="text-sm font-black text-brand">هنوز پستی ثبت نشده است</h4>
                                 <p className="text-xs text-secondary">
-                                    با انتشار تحلیل‌های بازار، اعتبار ویترین دفتر خود را افزایش دهید.
+                                    با انتشار تحلیل‌های بازار و معرفی ملک‌ها، مشتریان بیشتری به ویترین دفتر خود جذب کنید.
                                 </p>
                             </div>
                             <div className="pt-1">
                                 <Link
                                     href="/posts/create"
-                                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand text-white text-xs font-black"
+                                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand text-white text-xs font-black shadow-sm"
                                 >
                                     <Plus className="w-3.5 h-3.5" />
                                     <span>نوشتن اولین پست</span>
                                 </Link>
                             </div>
                         </div>
+                    ) : filteredPosts.length === 0 ? (
+                        <div className="rounded-2xl bg-surface border border-soft-border/70 p-8 text-center space-y-2">
+                            <p className="text-xs font-bold text-secondary">پستی با مشخصات فیلتر یا جستجو شده یافت نشد.</p>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setPostSearch("");
+                                    setPostStatusFilter("all");
+                                }}
+                                className="text-xs font-black text-primary hover:underline cursor-pointer"
+                            >
+                                بازنشانی فیلترها
+                            </button>
+                        </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {posts.map((post) => (
-                                <div
-                                    key={post.id}
-                                    className="rounded-2xl bg-surface border border-soft-border/70 p-4 sm:p-5 shadow-2xs space-y-3 flex flex-col justify-between hover:border-soft-border transition-all"
-                                >
-                                    <div className="space-y-2">
-                                        <div className="flex items-center justify-between">
-                                            <span
-                                                className={cn(
-                                                    "text-[10px] font-bold px-2 py-0.5 rounded-full",
-                                                    post.isPublished
-                                                        ? "bg-emerald-500/10 text-success"
-                                                        : "bg-soft-bg text-secondary"
+                            {filteredPosts.map((post) => {
+                                const firstMedia = post.mediaIds?.[0];
+                                const liveUrl = `/posts/${encodeURIComponent(post.slug || post.id)}`;
+
+                                return (
+                                    <div
+                                        key={post.id}
+                                        className="rounded-2xl bg-surface border border-soft-border/70 p-4 sm:p-5 shadow-2xs space-y-4 flex flex-col justify-between hover:border-soft-border hover:shadow-sm transition-all"
+                                    >
+                                        <div className="space-y-3">
+                                            {/* Media Thumbnail */}
+                                            {firstMedia ? (
+                                                <div className="h-40 w-full rounded-xl overflow-hidden bg-soft-bg relative">
+                                                    <img
+                                                        src={getMediaPosterUrl(firstMedia)}
+                                                        alt={post.title}
+                                                        className="w-full h-full object-cover"
+                                                        loading="lazy"
+                                                    />
+                                                    <span
+                                                        className={cn(
+                                                            "absolute top-2 right-2 text-[10px] font-black px-2.5 py-1 rounded-lg backdrop-blur-xs shadow-xs",
+                                                            post.isPublished
+                                                                ? "bg-emerald-600/90 text-white"
+                                                                : "bg-amber-600/90 text-white"
+                                                        )}
+                                                    >
+                                                        {post.isPublished ? "منتشر شده" : "پیش‌نویس"}
+                                                    </span>
+                                                    {post.category && (
+                                                        <span className="absolute top-2 left-2 text-[10px] font-bold px-2.5 py-1 rounded-lg bg-black/60 text-white backdrop-blur-xs">
+                                                            {post.category}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            ) : (
+                                                <div className="h-24 w-full rounded-xl bg-gradient-to-r from-slate-800 to-indigo-900 p-3 flex items-start justify-between text-white relative">
+                                                    <span
+                                                        className={cn(
+                                                            "text-[10px] font-black px-2.5 py-1 rounded-lg backdrop-blur-xs shadow-xs",
+                                                            post.isPublished
+                                                                ? "bg-emerald-600/90 text-white"
+                                                                : "bg-amber-600/90 text-white"
+                                                        )}
+                                                    >
+                                                        {post.isPublished ? "منتشر شده" : "پیش‌نویس"}
+                                                    </span>
+                                                    <BookOpen className="w-4 h-4 text-white/60" />
+                                                </div>
+                                            )}
+
+                                            {/* Post Header Details */}
+                                            <div className="space-y-1.5">
+                                                <div className="flex items-center justify-between text-[11px] text-secondary">
+                                                    <span>
+                                                        تاریخ: {new Date(post.createdAt).toLocaleDateString("fa-IR")}
+                                                    </span>
+                                                    {post.slug && (
+                                                        <span className="font-mono text-[10px] text-secondary/70 truncate max-w-[140px]" dir="ltr">
+                                                            /{post.slug}
+                                                        </span>
+                                                    )}
+                                                </div>
+
+                                                <h4 className="text-xs sm:text-sm font-black text-brand line-clamp-2">
+                                                    {post.title}
+                                                </h4>
+
+                                                {(post.summary || post.content) && (
+                                                    <p className="text-xs text-secondary line-clamp-2 leading-relaxed">
+                                                        {post.summary || post.content.slice(0, 100)}
+                                                    </p>
                                                 )}
-                                            >
-                                                {post.isPublished ? "منتشر شده" : "پیش‌نویس"}
-                                            </span>
-                                            <span className="text-[10px] text-secondary">
-                                                {new Date(post.createdAt).toLocaleDateString("fa-IR")}
-                                            </span>
+                                            </div>
                                         </div>
 
-                                        <h4 className="text-xs sm:text-sm font-black text-brand line-clamp-2">
-                                            {post.title}
-                                        </h4>
+                                        {/* Stats and Action Buttons */}
+                                        <div className="pt-3 border-t border-soft-border/50 flex items-center justify-between text-xs">
+                                            {/* Metrics */}
+                                            <div className="flex items-center gap-3 text-secondary text-[11px]">
+                                                <span className="flex items-center gap-1">
+                                                    <Eye className="w-3.5 h-3.5" />
+                                                    <span>{toPersianDigits(post.viewCount || 0)}</span>
+                                                </span>
+                                                <span className="flex items-center gap-1">
+                                                    <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500/20" />
+                                                    <span>{toPersianDigits(post.likeCount || 0)}</span>
+                                                </span>
+                                            </div>
 
-                                        {post.summary && (
-                                            <p className="text-xs text-secondary line-clamp-2 leading-relaxed">
-                                                {post.summary}
-                                            </p>
-                                        )}
+                                            {/* Studio Actions */}
+                                            <div className="flex items-center gap-1">
+                                                {/* Live View */}
+                                                <Link
+                                                    href={liveUrl}
+                                                    target="_blank"
+                                                    className="p-1.5 text-secondary hover:text-brand hover:bg-soft-bg rounded-lg transition-colors"
+                                                    title="مشاهده صفحه زنده"
+                                                >
+                                                    <ExternalLink className="w-4 h-4" />
+                                                </Link>
+
+                                                {/* Toggle Publish / Draft */}
+                                                <button
+                                                    type="button"
+                                                    disabled={togglePublishMutation.isPending}
+                                                    onClick={() =>
+                                                        togglePublishMutation.mutate({
+                                                            postId: post.id,
+                                                            isPublished: !post.isPublished,
+                                                        })
+                                                    }
+                                                    className={cn(
+                                                        "p-1.5 rounded-lg transition-colors cursor-pointer",
+                                                        post.isPublished
+                                                            ? "text-emerald-600 hover:bg-emerald-500/10"
+                                                            : "text-amber-600 hover:bg-amber-500/10"
+                                                    )}
+                                                    title={post.isPublished ? "تغییر به پیش‌نویس" : "انتشار در ویترین"}
+                                                >
+                                                    {post.isPublished ? (
+                                                        <Eye className="w-4 h-4" />
+                                                    ) : (
+                                                        <EyeOff className="w-4 h-4" />
+                                                    )}
+                                                </button>
+
+                                                {/* Edit Post */}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleOpenEdit(post)}
+                                                    className="p-1.5 text-primary hover:bg-primary/10 rounded-lg transition-colors cursor-pointer"
+                                                    title="ویرایش مشخصات پست"
+                                                >
+                                                    <Edit3 className="w-4 h-4" />
+                                                </button>
+
+                                                {/* Delete Post */}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        if (window.confirm("آیا از حذف این پست اطمینان دارید؟")) {
+                                                            deletePostMutation.mutate(post.id);
+                                                        }
+                                                    }}
+                                                    disabled={deletePostMutation.isPending}
+                                                    className="p-1.5 text-status-error hover:bg-status-error/10 rounded-lg transition-colors cursor-pointer"
+                                                    title="حذف پست"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
-
-                                    <div className="pt-2.5 border-t border-soft-border/50 flex items-center justify-between text-xs">
-                                        <span className="text-secondary text-[11px]">
-                                            بازدید: {toPersianDigits(post.viewCount || 0)}
-                                        </span>
-
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                if (window.confirm("آیا از حذف این پست اطمینان دارید؟")) {
-                                                    deletePostMutation.mutate(post.id);
-                                                }
-                                            }}
-                                            disabled={deletePostMutation.isPending}
-                                            className="p-1.5 text-status-error hover:bg-status-error/10 rounded-lg transition-colors cursor-pointer"
-                                            title="حذف"
-                                        >
-                                            <Trash2 className="w-3.5 h-3.5" />
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     )}
                 </section>
             </main>
+
+            {/* Edit Post Modal Dialog */}
+            {editingPost && (
+                <div
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label="ویرایش پست"
+                    className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto"
+                >
+                    <div className="bg-surface rounded-3xl max-w-xl w-full p-6 sm:p-7 space-y-4 shadow-2xl border border-soft-border my-8 animate-in fade-in zoom-in-95">
+                        <div className="flex items-center justify-between border-b border-soft-border/70 pb-3">
+                            <div className="flex items-center gap-2">
+                                <Edit3 className="w-4 h-4 text-primary" />
+                                <h3 className="text-sm sm:text-base font-black text-brand">ویرایش پست ویترین</h3>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setEditingPost(null)}
+                                className="w-7 h-7 rounded-full bg-soft-bg text-secondary hover:bg-slate-200 flex items-center justify-center transition-colors cursor-pointer"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleSaveEdit} className="space-y-4 text-xs sm:text-sm">
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold text-brand block">عنوان پست *</label>
+                                <input
+                                    type="text"
+                                    value={editForm.title}
+                                    onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                                    placeholder="عنوان جذاب برای پست..."
+                                    className="w-full px-3.5 py-2.5 rounded-xl bg-surface border border-soft-border/80 text-brand focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                    required
+                                />
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold text-brand block">آدرس اینترنتی یکتا (Slug - اختیاری)</label>
+                                <input
+                                    type="text"
+                                    value={editForm.slug}
+                                    onChange={(e) => setEditForm({ ...editForm, slug: e.target.value })}
+                                    placeholder="villa-shomal-tehran"
+                                    dir="ltr"
+                                    className="w-full px-3.5 py-2.5 rounded-xl bg-surface border border-soft-border/80 text-brand font-mono text-left focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                />
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold text-brand block">خلاصه کوتاه</label>
+                                <textarea
+                                    value={editForm.summary}
+                                    onChange={(e) => setEditForm({ ...editForm, summary: e.target.value })}
+                                    placeholder="توضیح کوتاه ۱ الی ۲ خطی برای پیش‌نمایش در کارت‌ها..."
+                                    rows={2}
+                                    className="w-full px-3.5 py-2.5 rounded-xl bg-surface border border-soft-border/80 text-brand focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
+                                />
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold text-brand block">متن و محتوای پست</label>
+                                <textarea
+                                    value={editForm.content}
+                                    onChange={(e) => setEditForm({ ...editForm, content: e.target.value })}
+                                    placeholder="محتوای متنی کامل، نکات کارشناسی یا توضیحات ملک..."
+                                    rows={5}
+                                    className="w-full px-3.5 py-2.5 rounded-xl bg-surface border border-soft-border/80 text-brand focus:outline-none focus:ring-2 focus:ring-primary/20 resize-y"
+                                />
+                            </div>
+
+                            <div className="flex items-center justify-between p-3 rounded-xl bg-soft-bg/60 border border-soft-border/50">
+                                <div>
+                                    <span className="text-xs font-bold text-brand block">وضعیت انتشار عمومی</span>
+                                    <span className="text-[11px] text-secondary">
+                                        در صورت فعال بودن، پست در ویترین شما و کاوش سایت نمایش داده می‌شود.
+                                    </span>
+                                </div>
+                                <input
+                                    type="checkbox"
+                                    checked={editForm.isPublished}
+                                    onChange={(e) => setEditForm({ ...editForm, isPublished: e.target.checked })}
+                                    className="w-4 h-4 rounded text-primary focus:ring-primary cursor-pointer"
+                                />
+                            </div>
+
+                            <div className="flex items-center justify-end gap-2 pt-3 border-t border-soft-border/70">
+                                <button
+                                    type="button"
+                                    onClick={() => setEditingPost(null)}
+                                    className="px-4 py-2 rounded-xl border border-soft-border text-xs font-bold text-secondary hover:bg-soft-bg transition-colors cursor-pointer"
+                                >
+                                    انصراف
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={updatePostMutation.isPending}
+                                    className="px-5 py-2 rounded-xl bg-brand hover:bg-brand/90 text-white text-xs font-black transition-all cursor-pointer shadow-xs disabled:opacity-50"
+                                >
+                                    {updatePostMutation.isPending ? "در حال ذخیره..." : "ذخیره تغییرات"}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

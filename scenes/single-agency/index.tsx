@@ -25,12 +25,14 @@ import {
     Globe,
     Grid,
     Heart,
+    Layers,
     List,
     Mail,
     MapPin,
     MessageCircle,
     MessageSquare,
     Phone,
+    Play,
     Plus,
     Send,
     Share2,
@@ -45,7 +47,6 @@ import { useSafeBack } from "@/hooks/useSafeBack";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import { MarkdownRenderer } from "@/components/ui/MarkdownRenderer";
 function getAgencyAdPricing(pricing?: Record<string, number | boolean | string> | null): { price: string | number; unit?: string } {
     if (!pricing || Object.keys(pricing).length === 0) {
         return { price: "توافقی" };
@@ -94,9 +95,7 @@ export default function SingleAgencyScene({ initialData }: SingleAgencySceneProp
     const handleBack = useSafeBack("/");
 
     const [activeTab, setActiveTab] = useState<"listings" | "posts" | "about" | "reviews">("listings");
-    const [viewMode, setViewMode] = useState<"grid" | "feed">("feed");
-
-    // Post reader modal
+    const [viewMode, setViewMode] = useState<"grid" | "feed">("grid");
     const [readingPost, setReadingPost] = useState<AgencyPost | null>(null);
 
     const { isLoggedIn, user } = useAuth();
@@ -558,92 +557,276 @@ export default function SingleAgencyScene({ initialData }: SingleAgencySceneProp
                 </div>
             )}
 
-            {/* TAB 2: POSTS */}
+            {/* TAB 2: POSTS (INSTAGRAM-STYLE SHOWCASE) */}
             {activeTab === "posts" && (
                 <div className="space-y-4">
+                    {/* Creator Studio Quick Access for Agency Owner */}
                     {user?.userId && agency?.ownerUserId === user.userId && (
-                        <div className="flex items-center justify-between p-4 bg-gradient-to-l from-purple-50 to-indigo-50 border border-purple-200/80 rounded-2xl shadow-xs">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 bg-gradient-to-l from-purple-50 via-indigo-50 to-blue-50 border border-purple-200/80 rounded-2xl shadow-xs">
                             <div className="space-y-0.5">
-                                <h4 className="text-xs font-black text-purple-900 flex items-center gap-1.5">
-                                    <BookOpen className="w-4 h-4 text-purple-600" />
-                                    <span>استودیو تولید و انتشار محتوا</span>
+                                <h4 className="text-xs font-black text-purple-950 flex items-center gap-1.5">
+                                    <Sparkles className="w-4 h-4 text-purple-600" />
+                                    <span>استودیو و مدیریت محتوای ویترین</span>
                                 </h4>
-                                <p className="text-[11px] text-purple-700 font-medium">
-                                    پست‌های اسلایدی جدید یا مقالات تحلیلی را برای ویترین خود منتشر کنید.
+                                <p className="text-[11px] text-purple-800 font-medium">
+                                    شما مدیر این ویترین هستید. پست‌های اسلایدی جدید بسازید یا محتوای فعلی را مدیریت کنید.
                                 </p>
                             </div>
-                            <Link
-                                href="/posts/create"
-                                className="inline-flex items-center gap-1.5 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-black transition-colors shrink-0 shadow-xs"
-                            >
-                                <Plus className="w-3.5 h-3.5" />
-                                <span>ایجاد پست جدید</span>
-                            </Link>
+                            <div className="flex items-center gap-2 w-full sm:w-auto">
+                                <Link
+                                    href="/posts/create"
+                                    className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-black transition-all shadow-xs active:scale-95"
+                                >
+                                    <Plus className="w-3.5 h-3.5" />
+                                    <span>پست جدید</span>
+                                </Link>
+                                <Link
+                                    href="/agency/panel#section-posts"
+                                    className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-2 bg-surface hover:bg-slate-100 text-purple-950 border border-purple-300 rounded-xl text-xs font-bold transition-all"
+                                >
+                                    <BookOpen className="w-3.5 h-3.5 text-purple-600" />
+                                    <span>مدیریت پست‌ها</span>
+                                </Link>
+                            </div>
                         </div>
                     )}
 
-                    {isLoadingPosts ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            {Array.from({ length: 4 }).map((_, i) => (
-                                <div key={i} className="h-44 bg-surface-secondary animate-pulse rounded-3xl" />
-                            ))}
+                    {/* View Mode Switcher Header */}
+                    <div className="flex items-center justify-between py-1">
+                        <div className="flex items-center gap-2">
+                            <span className="text-xs font-black text-foreground">
+                                محتوای منتشر شده
+                            </span>
+                            <span className="text-xs text-foreground-muted bg-surface-secondary px-2 py-0.5 rounded-full font-bold">
+                                {toPersianDigits(posts.length)}
+                            </span>
                         </div>
+
+                        {/* Instagram-style View Switcher */}
+                        <div className="inline-flex items-center p-1 bg-surface-secondary border border-border-subtle rounded-xl gap-1">
+                            <button
+                                type="button"
+                                onClick={() => setViewMode("grid")}
+                                className={cn(
+                                    "p-1.5 rounded-lg text-xs transition-all flex items-center gap-1 cursor-pointer",
+                                    viewMode === "grid"
+                                        ? "bg-surface text-info shadow-xs font-black"
+                                        : "text-foreground-muted hover:text-foreground"
+                                )}
+                                title="نمایش شبکه‌ای (اینستاگرام)"
+                            >
+                                <Grid className="w-4 h-4" />
+                                <span className="hidden sm:inline text-[11px]">شبکه‌ای</span>
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setViewMode("feed")}
+                                className={cn(
+                                    "p-1.5 rounded-lg text-xs transition-all flex items-center gap-1 cursor-pointer",
+                                    viewMode === "feed"
+                                        ? "bg-surface text-info shadow-xs font-black"
+                                        : "text-foreground-muted hover:text-foreground"
+                                )}
+                                title="نمایش فید (کارت‌ها)"
+                            >
+                                <List className="w-4 h-4" />
+                                <span className="hidden sm:inline text-[11px]">فید</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    {isLoadingPosts ? (
+                        viewMode === "grid" ? (
+                            <div className="grid grid-cols-3 gap-1.5 sm:gap-3 lg:gap-4">
+                                {Array.from({ length: 6 }).map((_, i) => (
+                                    <div key={i} className="aspect-square bg-surface-secondary animate-pulse rounded-xl sm:rounded-2xl" />
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="space-y-4">
+                                {Array.from({ length: 3 }).map((_, i) => (
+                                    <div key={i} className="h-44 bg-surface-secondary animate-pulse rounded-2xl" />
+                                ))}
+                            </div>
+                        )
                     ) : posts.length === 0 ? (
                         <div className="py-20 text-center bg-surface rounded-3xl border border-dashed border-border-subtle space-y-3">
-                            <BookOpen className="w-12 h-12 text-slate-300 mx-auto" />
-                            <p className="text-foreground-muted font-bold text-sm">هنوز پستی در این صفحه منتشر نشده است.</p>
+                            <div className="w-14 h-14 mx-auto rounded-2xl bg-surface-secondary flex items-center justify-center text-foreground-muted">
+                                <Grid className="w-7 h-7" />
+                            </div>
+                            <h4 className="text-sm font-black text-foreground">هنوز پستی در این صفحه منتشر نشده است</h4>
+                            <p className="text-xs text-foreground-muted max-w-sm mx-auto leading-relaxed">
+                                تمام پست‌ها، مقالات و تحلیل‌های بازار ثبت شده توسط این صفحه در این بخش نمایش داده می‌شوند.
+                            </p>
                             {user?.userId && agency?.ownerUserId === user.userId && (
                                 <Link
                                     href="/posts/create"
-                                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-black transition-colors"
+                                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-black transition-colors shadow-xs"
                                 >
                                     <Plus className="w-4 h-4" />
                                     <span>اولین پست خود را بسازید</span>
                                 </Link>
                             )}
                         </div>
+                    ) : viewMode === "grid" ? (
+                        /* Instagram 3-Column Square Grid */
+                        <div className="grid grid-cols-3 gap-1.5 sm:gap-3 lg:gap-4">
+                            {posts.map((post: AgencyPost) => {
+                                const firstMedia = post.mediaIds?.[0];
+                                const hasMultipleMedia = (post.mediaIds?.length || 0) > 1;
+                                const isVideo = firstMedia?.type === "VIDEO";
+                                const postUrl = `/posts/${encodeURIComponent(post.slug || post.id)}`;
+
+                                return (
+                                    <Link
+                                        key={post.id}
+                                        href={postUrl}
+                                        className="group relative aspect-square rounded-xl sm:rounded-2xl overflow-hidden bg-surface-secondary block focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-2xs"
+                                    >
+                                        {/* Cover Image or Fallback */}
+                                        {firstMedia ? (
+                                            <img
+                                                src={getMediaPosterUrl(firstMedia)}
+                                                alt={post.title}
+                                                className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                                                loading="lazy"
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full bg-gradient-to-br from-slate-800 via-slate-900 to-indigo-950 p-2 sm:p-3 flex flex-col justify-between text-white">
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-[10px] font-bold text-white/70">
+                                                        {post.category || "مقاله ملکی"}
+                                                    </span>
+                                                    <BookOpen className="w-3.5 h-3.5 text-white/60" />
+                                                </div>
+                                                <p className="text-[11px] sm:text-xs font-bold line-clamp-3 text-white/95 leading-snug">
+                                                    {post.title}
+                                                </p>
+                                                <span className="text-[9px] text-white/50">ملک‌تودی</span>
+                                            </div>
+                                        )}
+
+                                        {/* Instagram Media Badges */}
+                                        <div className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 z-10 pointer-events-none">
+                                            {hasMultipleMedia ? (
+                                                <span className="p-1 sm:p-1.5 rounded-lg bg-black/60 text-white backdrop-blur-xs shadow-xs inline-flex items-center justify-center">
+                                                    <Layers className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                                                </span>
+                                            ) : isVideo ? (
+                                                <span className="p-1 sm:p-1.5 rounded-lg bg-black/60 text-white backdrop-blur-xs shadow-xs inline-flex items-center justify-center">
+                                                    <Play className="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-white" />
+                                                </span>
+                                            ) : null}
+                                        </div>
+
+                                        {/* Instagram Hover / Active Overlay */}
+                                        <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity duration-200 flex flex-col justify-between p-2 sm:p-3.5 text-white z-10 pointer-events-none">
+                                            {/* Top: Category Tag */}
+                                            <div className="flex items-center justify-end">
+                                                {post.category && (
+                                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/20 backdrop-blur-xs text-white max-w-[90%] truncate">
+                                                        {post.category}
+                                                    </span>
+                                                )}
+                                            </div>
+
+                                            {/* Center: Heart and Eye metrics */}
+                                            <div className="flex items-center justify-center gap-3 sm:gap-6 text-xs sm:text-sm font-black">
+                                                <span className="flex items-center gap-1 sm:gap-1.5 drop-shadow-sm">
+                                                    <Heart className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-white text-white" />
+                                                    <span>{toPersianDigits(post.likeCount || 0)}</span>
+                                                </span>
+                                                <span className="flex items-center gap-1 sm:gap-1.5 drop-shadow-sm">
+                                                    <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
+                                                    <span>{toPersianDigits(post.viewCount || 0)}</span>
+                                                </span>
+                                            </div>
+
+                                            {/* Bottom: Title */}
+                                            <p className="text-[10px] sm:text-xs font-bold line-clamp-2 leading-tight drop-shadow-sm text-right text-white/95">
+                                                {post.title}
+                                            </p>
+                                        </div>
+                                    </Link>
+                                );
+                            })}
+                        </div>
                     ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            {posts.map((post: AgencyPost) => (
-                                <div
-                                    key={post.id}
-                                    onClick={() => setReadingPost(post)}
-                                    className="bg-surface p-5 rounded-3xl border border-border-subtle/80 shadow-xs hover:border-blue-400 transition-all cursor-pointer flex flex-col justify-between space-y-3 group"
-                                >
-                                    {(() => {
-                                        const firstMedia = post.mediaIds?.[0];
-                                        if (!firstMedia) return null;
-                                        return (
-                                            <div className="h-40 w-full rounded-2xl overflow-hidden bg-surface-secondary">
+                        /* Feed View (Card Stream) */
+                        <div className="space-y-4">
+                            {posts.map((post: AgencyPost) => {
+                                const firstMedia = post.mediaIds?.[0];
+                                const postUrl = `/posts/${encodeURIComponent(post.slug || post.id)}`;
+
+                                return (
+                                    <Link
+                                        key={post.id}
+                                        href={postUrl}
+                                        className="bg-surface p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-border-subtle/80 shadow-xs hover:border-blue-400 hover:shadow-md transition-all flex flex-col sm:flex-row gap-4 group block"
+                                    >
+                                        {firstMedia && (
+                                            <div className="h-44 sm:h-36 sm:w-48 rounded-xl sm:rounded-2xl overflow-hidden bg-surface-secondary shrink-0 relative">
                                                 <img
                                                     src={getMediaPosterUrl(firstMedia)}
                                                     alt={post.title}
                                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                                    loading="lazy"
                                                 />
+                                                {firstMedia.type === "VIDEO" && (
+                                                    <span className="absolute top-2 left-2 p-1.5 rounded-lg bg-black/60 text-white backdrop-blur-xs">
+                                                        <Play className="w-3.5 h-3.5 fill-white" />
+                                                    </span>
+                                                )}
+                                                {(post.mediaIds?.length || 0) > 1 && (
+                                                    <span className="absolute top-2 left-2 p-1.5 rounded-lg bg-black/60 text-white backdrop-blur-xs">
+                                                        <Layers className="w-3.5 h-3.5" />
+                                                    </span>
+                                                )}
                                             </div>
-                                        );
-                                    })()}
-
-                                    <div className="space-y-1.5">
-                                        <h3 className="text-sm font-black text-foreground group-hover:text-info transition-colors">
-                                            {post.title}
-                                        </h3>
-                                        {(post.summary || post.content) && (
-                                            <p className="text-xs text-foreground-muted line-clamp-2 leading-relaxed">
-                                                {post.summary || post.content.slice(0, 100)}
-                                            </p>
                                         )}
-                                    </div>
 
-                                    <div className="flex items-center justify-between text-xs text-foreground-muted pt-2 border-t border-border-subtle">
-                                        <span>{new Date(post.createdAt).toLocaleDateString("fa-IR")}</span>
-                                        <span className="flex items-center gap-1">
-                                            <Eye className="w-3.5 h-3.5" />
-                                            <span>{post.viewCount || 0} بازدید</span>
-                                        </span>
-                                    </div>
-                                </div>
-                            ))}
+                                        <div className="flex-1 flex flex-col justify-between space-y-2">
+                                            <div className="space-y-1.5">
+                                                <div className="flex items-center justify-between text-xs">
+                                                    <span className="text-[11px] font-bold text-info bg-info-subtle px-2 py-0.5 rounded-full">
+                                                        {post.category || "پست ملکی"}
+                                                    </span>
+                                                    <span className="text-foreground-muted text-[11px]">
+                                                        {new Date(post.createdAt).toLocaleDateString("fa-IR")}
+                                                    </span>
+                                                </div>
+
+                                                <h3 className="text-sm sm:text-base font-black text-foreground group-hover:text-info transition-colors line-clamp-2">
+                                                    {post.title}
+                                                </h3>
+
+                                                {(post.summary || post.content) && (
+                                                    <p className="text-xs text-foreground-muted line-clamp-2 leading-relaxed">
+                                                        {post.summary || post.content.slice(0, 120)}
+                                                    </p>
+                                                )}
+                                            </div>
+
+                                            <div className="flex items-center justify-between text-xs text-foreground-muted pt-2 border-t border-border-subtle">
+                                                <div className="flex items-center gap-4">
+                                                    <span className="flex items-center gap-1">
+                                                        <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500/20" />
+                                                        <span>{toPersianDigits(post.likeCount || 0)} پسند</span>
+                                                    </span>
+                                                    <span className="flex items-center gap-1">
+                                                        <Eye className="w-3.5 h-3.5" />
+                                                        <span>{toPersianDigits(post.viewCount || 0)} بازدید</span>
+                                                    </span>
+                                                </div>
+                                                <span className="text-info font-bold group-hover:translate-x-[-2px] transition-transform inline-flex items-center gap-1">
+                                                    <span>مطالعه کامل</span>
+                                                    <ChevronRight className="w-3.5 h-3.5 rotate-180" />
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </Link>
+                                );
+                            })}
                         </div>
                     )}
                 </div>
@@ -687,75 +870,6 @@ export default function SingleAgencyScene({ initialData }: SingleAgencySceneProp
             {activeTab === "reviews" && (
                 <div className="bg-surface p-6 rounded-3xl border border-border-subtle/80 shadow-xs">
                     <ReviewsSection targetId={targetAgencyId} targetType="agency" />
-                </div>
-            )}
-
-            {/* Read Post Modal */}
-            {readingPost && (
-                <div role="dialog" aria-modal="true" aria-label="مشاهده پست" className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-                    <div className="bg-surface rounded-3xl max-w-2xl w-full p-6 sm:p-8 space-y-4 shadow-2xl border border-border-subtle my-8">
-                        <div className="flex items-center justify-between border-b border-border-subtle pb-3">
-                            <h3 className="text-base font-black text-foreground">{readingPost.title}</h3>
-                            <button
-                                type="button"
-                                onClick={() => setReadingPost(null)}
-                                className="w-8 h-8 rounded-full bg-surface-secondary text-foreground-muted hover:bg-slate-200 flex items-center justify-center"
-                            >
-                                ✕
-                            </button>
-                        </div>
-
-                        {(() => {
-                            const firstMedia = readingPost.mediaIds?.[0];
-                            if (!firstMedia) return null;
-                            const isVideo = firstMedia.type === "VIDEO";
-                            if (isVideo) {
-                                return (
-                                    <div className="h-60 w-full rounded-2xl overflow-hidden bg-slate-950">
-                                        <video
-                                            src={getMediaUrl(firstMedia)}
-                                            poster={getMediaPosterUrl(firstMedia)}
-                                            controls
-                                            playsInline
-                                            className="w-full h-full object-cover"
-                                        />
-                                    </div>
-                                );
-                            }
-                            return (
-                                <div className="h-60 w-full rounded-2xl overflow-hidden bg-surface-secondary">
-                                    <img src={getMediaUrl(firstMedia)} alt={readingPost.title} className="w-full h-full object-cover" />
-                                </div>
-                            );
-                        })()}
-
-                        <div className="text-xs text-foreground-muted flex items-center gap-3">
-                            <span>منتشر شده در: {new Date(readingPost.createdAt).toLocaleDateString("fa-IR")}</span>
-                            <span>بازدید: {readingPost.viewCount || 0}</span>
-                        </div>
-
-                        <div className="pt-2">
-                            <MarkdownRenderer content={readingPost.content} />
-                        </div>
-
-                        <div className="pt-3 border-t border-border-subtle flex items-center justify-between">
-                            <Link
-                                href={`/posts/${encodeURIComponent(readingPost.slug || readingPost.id)}`}
-                                className="inline-flex items-center gap-1.5 text-xs font-bold text-info hover:text-blue-700"
-                            >
-                                <ExternalLink className="w-3.5 h-3.5" />
-                                <span>مشاهده در صفحه اختصاصی</span>
-                            </Link>
-
-                            <button
-                                type="button"
-                                onClick={() => setReadingPost(null)}
-                                className="px-5 py-2 rounded-xl bg-surface-secondary hover:bg-slate-200 text-foreground-secondary text-xs font-bold"
-                            >
-                                بستن
-                            </button>
-                        </div>
-                    </div>
                 </div>
             )}
         </div>

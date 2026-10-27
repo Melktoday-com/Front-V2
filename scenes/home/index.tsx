@@ -8,8 +8,7 @@ import { SectionHeader } from "@/components/SectionHeader";
 import { PropertyCard } from "@/components/ui/PropertyCard";
 import { Slider } from "@/components/ui/Slider";
 import { EmptyState, ErrorState } from "@/components/ui/StatusStates";
-import { useCategories } from "@/hooks/useAds";
-import { useSearchListings } from "@/hooks/useSearch";
+import { useAds, useCategories } from "@/hooks/useAds";
 import { useAgencies } from "@/hooks/useAgencies";
 import { useCategoryLookup } from "@/hooks/useCategoryLookup";
 import { useFavorites, useToggleSaveAd, useToggleSaveTemporaryRent } from "@/hooks/useFavorites";
@@ -19,7 +18,6 @@ import { AdSummary } from "@/types/api/ads.types";
 import { AgencySummary } from "@/types/api/agency.types";
 import { TemporaryRentPricingReadModel } from "@/types/api/temporary-rent.types";
 import { getMediaUrl, getMediaPosterUrl, formatPrice } from "@/lib/utils";
-import { searchDocToAdSummary } from "@/lib/search-transformers";
 import { Footer } from "@/components/layout/Footer";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
@@ -87,40 +85,39 @@ export const HomeScene = () => {
 
     // Use real data from hooks
     const {
-        data: featuredSearchData,
+        data: featuredData,
         isLoading: isFeaturedLoading,
         error: featuredError,
         refetch: refetchFeatured,
-    } = useSearchListings(
+    } = useAds(
         {
             isFeatured: true,
             limit: 10,
             cityId: selectedCity.id || undefined,
         },
-        !!selectedCity.id
+        { enabled: !!selectedCity.id }
     );
 
     const featuredAds: AdSummary[] = useMemo(() => {
-        return (featuredSearchData?.hits || []).map(searchDocToAdSummary);
-    }, [featuredSearchData]);
+        return featuredData?.items || [];
+    }, [featuredData]);
 
     const {
-        data: recentSearchData,
+        data: recentData,
         isLoading: isRecentLoading,
         error: recentError,
         refetch: refetchRecent,
-    } = useSearchListings(
+    } = useAds(
         {
             limit: 8,
             cityId: selectedCity.id || undefined,
-            sort: "newest",
         },
-        !!selectedCity.id
+        { enabled: !!selectedCity.id }
     );
 
     const recentAds: AdSummary[] = useMemo(() => {
-        return (recentSearchData?.hits || []).map(searchDocToAdSummary);
-    }, [recentSearchData]);
+        return recentData?.items || [];
+    }, [recentData]);
 
     const { data: categoriesData, isLoading: isCategoriesLoading } = useCategories();
 
@@ -189,6 +186,16 @@ export const HomeScene = () => {
                         {featuredAds.map((property: AdSummary) => {
                             const effectiveId = property.adId;
                             const adPrice = getHomeAdPrice(property.pricing);
+                            const isUrgent = Boolean(property.isUrgent);
+                            const isLadder = Boolean(
+                                property.isLadder ||
+                                (!isUrgent &&
+                                 property.updatedAt &&
+                                 property.createdAt &&
+                                 new Date(property.updatedAt).getTime() - new Date(property.createdAt).getTime() > 120_000)
+                            );
+                            const isFeatured = Boolean(property.isFeatured && !isLadder && !isUrgent);
+
                             return (
                                 <PropertyCard
                                     key={effectiveId}
@@ -211,11 +218,11 @@ export const HomeScene = () => {
                                         getCategoryName(property.categoryPath?.categoryKey)
                                     }
                                     className="w-[210px] lg:w-[250px]"
-                                    date={property.createdAt}
-                                    badgeName={property.isFeatured ? "ویژه" : undefined}
-                                    isUrgent={property.isUrgent}
-                                    isLadder={property.isLadder}
-                                    isFeatured={property.isFeatured}
+                                    date={isLadder ? (property.updatedAt || property.createdAt) : property.createdAt}
+                                    badgeName={isFeatured ? "ویژه" : undefined}
+                                    isUrgent={isUrgent}
+                                    isLadder={isLadder}
+                                    isFeatured={isFeatured}
                                     isSaved={property.isSaved ?? isAdSaved(effectiveId)}
                                     onToggleSave={(id) => toggleSaveAdMutation.mutateAsync(id)}
                                 />
@@ -320,6 +327,16 @@ export const HomeScene = () => {
                         {recentAds.map((property: AdSummary) => {
                             const effectiveId = property.adId;
                             const adPrice = getHomeAdPrice(property.pricing);
+                            const isUrgent = Boolean(property.isUrgent);
+                            const isLadder = Boolean(
+                                property.isLadder ||
+                                (!isUrgent &&
+                                 property.updatedAt &&
+                                 property.createdAt &&
+                                 new Date(property.updatedAt).getTime() - new Date(property.createdAt).getTime() > 120_000)
+                            );
+                            const isFeatured = Boolean(property.isFeatured && !isLadder && !isUrgent);
+
                             return (
                                 <PropertyCard
                                     key={effectiveId}
@@ -342,11 +359,11 @@ export const HomeScene = () => {
                                         getCategoryName(property.categoryPath?.categoryKey)
                                     }
                                     className="w-[210px] lg:w-[250px]"
-                                    date={property.createdAt}
-                                    badgeName={property.isFeatured ? "ویژه" : undefined}
-                                    isUrgent={property.isUrgent}
-                                    isLadder={property.isLadder}
-                                    isFeatured={property.isFeatured}
+                                    date={isLadder ? (property.updatedAt || property.createdAt) : property.createdAt}
+                                    badgeName={isFeatured ? "ویژه" : undefined}
+                                    isUrgent={isUrgent}
+                                    isLadder={isLadder}
+                                    isFeatured={isFeatured}
                                     isSaved={property.isSaved ?? isAdSaved(effectiveId)}
                                     onToggleSave={(id) => toggleSaveAdMutation.mutateAsync(id)}
                                 />

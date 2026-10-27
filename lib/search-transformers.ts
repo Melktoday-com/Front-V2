@@ -19,8 +19,14 @@ export function searchDocToAdSummary(doc: ListingSearchDocument): AdSummary {
   const rooms = doc.attributes?.number?.rooms || doc.attributes?.number?.bedrooms || doc.attributes?.number?.room;
   const floorArea = getFloorArea(doc);
 
+  const hasUpdatedAfterCreated = Boolean(
+    doc.updatedAt &&
+    doc.createdAt &&
+    new Date(doc.updatedAt).getTime() - new Date(doc.createdAt).getTime() > 120_000
+  );
+
   const isUrgent = doc.promotionBoostScore === 80;
-  const isLadder = doc.promotionBoostScore === 40;
+  const isLadder = doc.promotionBoostScore === 40 || (!isUrgent && (Boolean(doc.isFeatured) || Boolean(doc.promotionBoostScore)) && hasUpdatedAfterCreated);
   const isFeatured = Boolean(doc.isFeatured && !isLadder && !isUrgent);
   const effectiveDate = isLadder
     ? (doc.updatedAt || doc.publishedAt || doc.createdAt)
@@ -49,6 +55,7 @@ export function searchDocToAdSummary(doc: ListingSearchDocument): AdSummary {
     isLadder,
     mediaIds: doc.mediaIds || [],
     createdAt: effectiveDate,
+    updatedAt: doc.updatedAt,
     location,
     area: floorArea ?? undefined,
     rooms: typeof rooms === "number" ? rooms : undefined,

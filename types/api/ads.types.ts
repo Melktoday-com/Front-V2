@@ -62,6 +62,7 @@ export interface AdSummary {
     isSaved?: boolean;
     mediaIds?: MediaReference[];
     createdAt: string;
+    updatedAt?: string;
     location?: ResolvedLocation | null;
     area?: number | null;
     rooms?: number | string;
