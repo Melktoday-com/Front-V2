@@ -5,6 +5,7 @@ import { ReviewsSection } from "@/components/ui/ReviewsSection";
 import { Select } from "@/components/ui/Select";
 import { ErrorState } from "@/components/ui/StatusStates";
 import { useAds } from "@/hooks/useAds";
+import { useShowcaseListings } from "@/hooks/useShowcase";
 import { useAgencyContact, useFollowAgency, useUnfollowAgency } from "@/hooks/useAgencies";
 import { useAuth } from "@/hooks/useAuth";
 import { useCreateConversation } from "@/hooks/useChat";
@@ -47,38 +48,42 @@ import { useSafeBack } from "@/hooks/useSafeBack";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-function getAgencyAdPricing(pricing?: Record<string, number | boolean | string> | null): { price: string | number; unit?: string } {
+function getAgencyAdPricing(pricing?: any): { price: string | number; unit?: string } {
     if (!pricing || Object.keys(pricing).length === 0) {
         return { price: "توافقی" };
     }
-    if (pricing.depositPrice !== undefined && pricing.monthlyRent !== undefined) {
+    const values = pricing.values || pricing;
+    const deposit = values.depositPrice ?? values.deposit;
+    const rent = values.monthlyRent ?? values.monthly_rent;
+    if (deposit !== undefined && rent !== undefined) {
         return {
-            price: `رهن ${formatPrice(Number(pricing.depositPrice), "")} - اجاره ${formatPrice(Number(pricing.monthlyRent), "")}`,
+            price: `رهن ${formatPrice(Number(deposit), "")} - اجاره ${formatPrice(Number(rent), "")}`,
             unit: "تومان",
         };
     }
-    if (pricing.totalPrice !== undefined) {
-        const total = Number(pricing.totalPrice);
-        return { price: total > 0 ? total : "توافقی", unit: total > 0 ? "تومان" : undefined };
+    const total = values.totalPrice ?? values.price;
+    if (total !== undefined) {
+        const num = Number(total);
+        return { price: num > 0 ? num : "توافقی", unit: num > 0 ? "تومان" : undefined };
     }
-    if (pricing.depositPrice !== undefined) {
-        const dep = Number(pricing.depositPrice);
+    if (deposit !== undefined) {
+        const dep = Number(deposit);
         return { price: dep > 0 ? `ودیعه ${formatPrice(dep, "")}` : "توافقی", unit: dep > 0 ? "تومان" : undefined };
     }
-    if (pricing.monthlyRent !== undefined) {
-        const rent = Number(pricing.monthlyRent);
-        return { price: rent > 0 ? `اجاره ${formatPrice(rent, "")}` : "توافقی", unit: rent > 0 ? "تومان" : undefined };
+    if (rent !== undefined) {
+        const r = Number(rent);
+        return { price: r > 0 ? `اجاره ${formatPrice(r, "")}` : "توافقی", unit: r > 0 ? "تومان" : undefined };
     }
-    if (pricing.estimatedTotalPrice !== undefined) {
-        const est = Number(pricing.estimatedTotalPrice);
+    if (values.estimatedTotalPrice !== undefined) {
+        const est = Number(values.estimatedTotalPrice);
         return { price: est > 0 ? `قیمت کل: ${formatPrice(est, "")}` : "توافقی", unit: est > 0 ? "تومان" : undefined };
     }
-    if (pricing.goodwillPrice !== undefined) {
-        const gw = Number(pricing.goodwillPrice);
+    if (values.goodwillPrice !== undefined) {
+        const gw = Number(values.goodwillPrice);
         return { price: gw > 0 ? `سرقفلی: ${formatPrice(gw, "")}` : "توافقی", unit: gw > 0 ? "تومان" : undefined };
     }
-    if (pricing.fractionPrice !== undefined) {
-        const fp = Number(pricing.fractionPrice);
+    if (values.fractionPrice !== undefined) {
+        const fp = Number(values.fractionPrice);
         return { price: fp > 0 ? `قدرالسهم: ${formatPrice(fp, "")}` : "توافقی", unit: fp > 0 ? "تومان" : undefined };
     }
     return { price: "توافقی" };
@@ -133,11 +138,12 @@ export default function SingleAgencyScene({ initialData }: SingleAgencySceneProp
         setContactRequested(true);
     };
 
-    // Ads query
-    const { data: adsResponse, isLoading: isLoadingAds } = useAds({
-        ownerId: targetAgencyId,
-        limit: 30,
-    });
+    // Ads / Listings query using official showcase listings endpoint
+    const { data: adsResponse, isLoading: isLoadingAds } = useShowcaseListings(
+        "agency",
+        idOrSlug,
+        { limit: 30 }
+    );
 
     // Posts query
     const { data: postsData, isLoading: isLoadingPosts } = useQuery({
@@ -533,20 +539,29 @@ export default function SingleAgencyScene({ initialData }: SingleAgencySceneProp
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {ads.map((ad) => {
+                            {ads.map((ad: any) => {
                                 const adPrice = getAgencyAdPricing(ad.pricing);
+                                const adId = ad.adId || ad.id;
+                                const mediaList = ad.mediaIds || ad.media_ids || [];
+                                const firstMedia = mediaList[0];
+                                const categoryName =
+                                    ad.subcategoryTitle ||
+                                    ad.categoryPath?.subcategoryTitle ||
+                                    ad.categoryPath?.subcategoryKey ||
+                                    ad.category_path?.subcategoryKey;
                                 return (
                                     <PropertyCard
-                                        key={ad.adId}
-                                        adId={ad.adId}
+                                        key={adId}
+                                        id={adId}
+                                        adId={adId}
                                         title={ad.title}
                                         price={adPrice.price}
                                         unit={adPrice.unit}
-                                        location={ad.cityName || ad.cityId}
-                                        image={getMediaPosterUrl(ad.mediaIds?.[0])}
-                                        isVideo={ad.mediaIds?.[0]?.type === "VIDEO"}
-                                        category={ad.subcategoryTitle || ad.categoryPath?.subcategoryTitle || ad.categoryPath?.subcategoryKey}
-                                        badgeName={ad.isFeatured ? "ویژه" : undefined}
+                                        location={ad.cityName || ad.cityId || ad.city_id}
+                                        image={getMediaPosterUrl(firstMedia)}
+                                        isVideo={firstMedia?.type === "VIDEO"}
+                                        category={categoryName}
+                                        badgeName={ad.isFeatured || ad.is_featured ? "ویژه" : undefined}
                                         isUrgent={ad.isUrgent}
                                         isLadder={ad.isLadder}
                                     />
