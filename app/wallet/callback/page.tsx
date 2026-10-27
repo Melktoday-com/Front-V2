@@ -35,6 +35,8 @@ function PaymentCallbackContent() {
         searchParams.get("clientReferenceNumber") ||
         "";
 
+    const returnUrl = searchParams.get("returnUrl") || "";
+
     const [resolvedId, setResolvedId] = useState<string>(paramPurchaseId);
     const [resolvedRef, setResolvedRef] = useState<string>(paramRef);
 
@@ -216,14 +218,26 @@ function PaymentCallbackContent() {
                     </div>
                 )}
 
-                <div className="pt-4">
+                <div className="pt-4 space-y-2.5">
+                    {returnUrl && (
+                        <Link
+                            href={returnUrl}
+                            className="w-full py-4 bg-primary text-white font-black text-sm rounded-2xl shadow-lg shadow-primary/25 hover:bg-primary/90 transition-all flex items-center justify-center gap-2"
+                        >
+                            <span>بازگشت به صفحه قبلی / آگهی</span>
+                            <ChevronLeft className="w-4 h-4" />
+                        </Link>
+                    )}
                     <Link
                         href="/wallet"
-                        className="w-full py-4 bg-primary text-white font-black text-sm rounded-2xl shadow-lg shadow-primary/25 hover:bg-primary/90 transition-all flex items-center justify-center gap-2"
+                        className={returnUrl
+                            ? "w-full py-3 bg-surface-secondary text-brand font-bold text-xs rounded-2xl hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
+                            : "w-full py-4 bg-primary text-white font-black text-sm rounded-2xl shadow-lg shadow-primary/25 hover:bg-primary/90 transition-all flex items-center justify-center gap-2"
+                        }
                     >
-                        <Wallet className="w-4 h-4" />
-                        <span>بازگشت به کیف پول</span>
-                        <ChevronLeft className="w-4 h-4" />
+                        <Wallet className="w-4 h-4 text-primary" />
+                        <span>مشاهده کیف پول</span>
+                        {!returnUrl && <ChevronLeft className="w-4 h-4" />}
                     </Link>
                 </div>
             </div>
