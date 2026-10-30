@@ -15,8 +15,15 @@ export const POSTS_QUERY_KEYS = {
   exploreInfinite: (params?: ExploreParams, startPage?: number) => ['posts', 'explore-infinite', params, startPage] as const,
   single: (idOrSlug: string) => ['posts', 'single', idOrSlug] as const,
   liked: (params?: { page?: number; limit?: number; publisherType?: string }) => ['posts', 'liked', params] as const,
-  admin: (params?: { page?: number; limit?: number; category?: string; search?: string; isPublished?: boolean }) =>
-    ['posts', 'admin', params] as const,
+  admin: (params?: {
+    page?: number;
+    limit?: number;
+    category?: string;
+    search?: string;
+    publisherType?: string;
+    publisherId?: string;
+    isPublished?: boolean;
+  }) => ['posts', 'admin', params] as const,
   publisher: (type: string, idOrSlug: string, params?: { page?: number; limit?: number }) =>
     ['posts', 'publisher', type, idOrSlug, params] as const,
   agency: (agencyIdOrSlug: string, params?: { page?: number; limit?: number }) =>
@@ -32,6 +39,8 @@ export const useAdminPosts = (
     limit?: number;
     category?: string;
     search?: string;
+    publisherType?: string;
+    publisherId?: string;
     isPublished?: boolean;
   } = {},
   options: { enabled?: boolean } = {}

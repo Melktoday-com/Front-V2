@@ -45,6 +45,8 @@ export interface IPostPort {
     limit?: number;
     category?: string;
     search?: string;
+    publisherType?: string;
+    publisherId?: string;
     isPublished?: boolean;
   }): Promise<PostsListResponse>;
 }
@@ -101,6 +103,8 @@ export class HttpPostAdapter implements IPostPort {
       limit?: number;
       category?: string;
       search?: string;
+      publisherType?: string;
+      publisherId?: string;
       isPublished?: boolean;
     } = {},
   ): Promise<PostsListResponse> {

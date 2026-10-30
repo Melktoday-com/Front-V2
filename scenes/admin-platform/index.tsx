@@ -66,6 +66,7 @@ export default function AdminPlatformScene() {
     isLoading: isPostsLoading,
     refetch: refetchPosts,
   } = useAdminPosts({
+    publisherType: "PLATFORM",
     search: debouncedPostSearch.trim() || undefined,
     isPublished: isPublishedParam,
     page: postPage,
