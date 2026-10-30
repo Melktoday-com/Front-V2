@@ -45,27 +45,18 @@ export type TemporaryRentPricingReadModel =
     | {
         priceModelKey: 'DAILY_RENT_STANDARD';
         pricing: TemporaryRentDailyRentStandardValues;
-        legacyNightlyPrice?: never;
     }
     | {
         priceModelKey: 'WEEKLY_MONTHLY_RENT';
         pricing: TemporaryRentWeeklyMonthlyRentValues;
-        legacyNightlyPrice?: never;
     }
     | {
         priceModelKey: 'WEEKEND_PEAK_RENT';
         pricing: TemporaryRentWeekendPeakRentValues;
-        legacyNightlyPrice?: never;
     }
     | {
         priceModelKey: 'EVENT_VENUE_RENT';
         pricing: TemporaryRentEventVenueRentValues;
-        legacyNightlyPrice?: never;
-    }
-    | {
-        priceModelKey: null;
-        pricing: null;
-        legacyNightlyPrice: number;
     };
 
 export interface TemporaryRentAd {

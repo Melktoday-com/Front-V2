@@ -131,10 +131,11 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
     const urlMinRooms = searchParams.get("minRooms") ? Number(searchParams.get("minRooms")) : undefined;
     const urlMaxRooms = searchParams.get("maxRooms") ? Number(searchParams.get("maxRooms")) : undefined;
 
+    const urlSort = (searchParams.get("sort") as SearchSortOption) || "newest";
     const [search, setSearch] = useState(urlSearch);
     const [selectedCategory, setSelectedCategory] = useState(urlCategory);
     const [selectedSubcategory, setSelectedSubcategory] = useState(urlSubcategory);
-    const [sort, setSort] = useState<SearchSortOption>("newest");
+    const [sort, setSort] = useState<SearchSortOption>(urlSort);
     const [startPage, setStartPage] = useState<number>(1);
 
     const debouncedSearch = useDebounce(search, 350);
@@ -144,6 +145,8 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
         setSelectedCategory(searchParams.get("categoryKey") || "");
         setSelectedSubcategory(searchParams.get("subcategoryKey") || "");
         setSearch(searchParams.get("search") || "");
+        const currentSort = (searchParams.get("sort") as SearchSortOption) || "newest";
+        setSort(currentSort);
         if (urlView === "map") {
             setViewModeState("map");
         } else if (urlView === "list") {
@@ -329,28 +332,28 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
         return data?.pages.flatMap((page) => page.hits.map(searchDocToAdSummary)) || [];
     }, [data]);
 
-    // Hoist all ladder ads across loaded pages & promoted index so they are guaranteed to appear first at the top
+    // Hoist all ladder & urgent ads across loaded pages & promoted index so they are guaranteed to appear first at the top
     const allLadderAds = useMemo(() => {
         if (sort !== "newest" && sort !== "relevance") return [];
         const seen = new Set<string>();
         const list: AdSummary[] = [];
 
-        // 1. First priority: active ladder listings from promoted search
-        if (promotedSearchData?.hits) {
-            for (const doc of promotedSearchData.hits) {
-                const summary = searchDocToAdSummary(doc);
-                if (summary.isLadder && !seen.has(summary.adId)) {
-                    seen.add(summary.adId);
-                    list.push(summary);
-                }
+        // 1. Any ladder/urgent listings present in current infinite search pages
+        for (const ad of allLoadedAds) {
+            if ((ad.isLadder || ad.isUrgent) && !seen.has(ad.adId)) {
+                seen.add(ad.adId);
+                list.push(ad);
             }
         }
 
-        // 2. Any ladder listings present in current infinite search pages
-        for (const ad of allLoadedAds) {
-            if (ad.isLadder && !seen.has(ad.adId)) {
-                seen.add(ad.adId);
-                list.push(ad);
+        // 2. Active promoted listings from promoted search
+        if (promotedSearchData?.hits) {
+            for (const doc of promotedSearchData.hits) {
+                const summary = searchDocToAdSummary(doc);
+                if ((summary.isLadder || summary.isUrgent) && !seen.has(summary.adId)) {
+                    seen.add(summary.adId);
+                    list.push(summary);
+                }
             }
         }
 
@@ -501,9 +504,9 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
         router.replace(`/ads?${params.toString()}`, { scroll: false });
     };
 
-    const handleCategorySelect = (catKey: string) => {
+    const handleCategorySelect = (catKey: string, subKey?: string) => {
         setSelectedCategory(catKey);
-        setSelectedSubcategory("");
+        setSelectedSubcategory(subKey || "");
         setStartPage(1);
         const params = new URLSearchParams(searchParams.toString());
         if (catKey) {
@@ -511,20 +514,28 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
         } else {
             params.delete("categoryKey");
         }
-        params.delete("subcategoryKey");
-        router.push(`/ads?${params.toString()}`);
-    };
-
-    const handleSubcategorySelect = (subKey: string) => {
-        setSelectedSubcategory(subKey);
-        setStartPage(1);
-        const params = new URLSearchParams(searchParams.toString());
         if (subKey) {
             params.set("subcategoryKey", subKey);
         } else {
             params.delete("subcategoryKey");
         }
-        router.push(`/ads?${params.toString()}`);
+        router.replace(`/ads?${params.toString()}`, { scroll: false });
+    };
+
+    const handleSubcategorySelect = (subKey: string) => {
+        handleCategorySelect(selectedCategory, subKey);
+    };
+
+    const handleSortChange = (newSort: SearchSortOption) => {
+        setSort(newSort);
+        setStartPage(1);
+        const params = new URLSearchParams(searchParams.toString());
+        if (newSort === "newest") {
+            params.delete("sort");
+        } else {
+            params.set("sort", newSort);
+        }
+        router.replace(`/ads?${params.toString()}`, { scroll: false });
     };
 
     const handleSearchChange = (val: string) => {
@@ -723,8 +734,7 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                         <select
                             value={sort}
                             onChange={(e) => {
-                                setSort(e.target.value as SearchSortOption);
-                                setStartPage(1);
+                                handleSortChange(e.target.value as SearchSortOption);
                             }}
                             aria-label="مرتب‌سازی"
                             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
@@ -905,7 +915,7 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                             {data?.pages.map((page, pageIndex) => {
                                 const pageAds = page.hits
                                     .map(searchDocToAdSummary)
-                                    .filter((ad) => !ladderAdIds.has(ad.adId));
+                                    .filter((ad) => allLadderAds.length === 0 || !ladderAdIds.has(ad.adId));
 
                                 if (pageAds.length === 0 && pageIndex > 0) return null;
 

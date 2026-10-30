@@ -12,8 +12,8 @@ interface CategoryTreeDialogProps {
     categories: CategoryListItem[];
     selectedCategoryKey: string;
     selectedSubcategoryKey: string;
-    onSelectCategory: (key: string) => void;
-    onSelectSubcategory: (key: string) => void;
+    onSelectCategory: (key: string, subKey?: string) => void;
+    onSelectSubcategory?: (key: string) => void;
 }
 
 export function CategoryTreeDialog({
@@ -53,27 +53,27 @@ export function CategoryTreeDialog({
             setExpandedCategory((prev) => (prev === category.key ? "" : category.key));
         } else {
             // Select directly and close
-            onSelectCategory(category.key);
-            onSelectSubcategory("");
+            onSelectCategory(category.key, "");
+            if (onSelectSubcategory) onSelectSubcategory("");
             onClose();
         }
     };
 
     const handleSelectAllForCategory = (categoryKey: string) => {
-        onSelectCategory(categoryKey);
-        onSelectSubcategory("");
+        onSelectCategory(categoryKey, "");
+        if (onSelectSubcategory) onSelectSubcategory("");
         onClose();
     };
 
     const handleSelectSubcategory = (categoryKey: string, subcategoryKey: string) => {
-        onSelectCategory(categoryKey);
-        onSelectSubcategory(subcategoryKey);
+        onSelectCategory(categoryKey, subcategoryKey);
+        if (onSelectSubcategory) onSelectSubcategory(subcategoryKey);
         onClose();
     };
 
     const handleClearAll = () => {
-        onSelectCategory("");
-        onSelectSubcategory("");
+        onSelectCategory("", "");
+        if (onSelectSubcategory) onSelectSubcategory("");
         onClose();
     };
 

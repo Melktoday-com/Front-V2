@@ -21,6 +21,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Clock,
+  Edit3,
   ExternalLink,
   Eye,
   EyeOff,
@@ -73,6 +74,60 @@ export default function AdminPlatformScene() {
 
   const updatePostMutation = useUpdatePost();
   const deletePostMutation = useDeletePost();
+
+  const [editingPost, setEditingPost] = useState<UnifiedPost | null>(null);
+  const [editForm, setEditForm] = useState({
+    title: "",
+    slug: "",
+    summary: "",
+    content: "",
+    category: "",
+    isPublished: true,
+  });
+
+  const handleOpenEdit = (post: UnifiedPost) => {
+    setEditingPost(post);
+    setEditForm({
+      title: post.title || "",
+      slug: post.slug || "",
+      summary: post.summary || "",
+      content: post.content || "",
+      category: post.category || "",
+      isPublished: post.isPublished ?? true,
+    });
+  };
+
+  const handleSaveEdit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingPost) return;
+    if (!editForm.title.trim()) {
+      toast.error("عنوان پست نمی‌تواند خالی باشد.");
+      return;
+    }
+    updatePostMutation.mutate(
+      {
+        id: editingPost.id,
+        data: {
+          title: editForm.title.trim(),
+          slug: editForm.slug.trim() || undefined,
+          summary: editForm.summary.trim() || undefined,
+          content: editForm.content,
+          category: editForm.category.trim() || undefined,
+          isPublished: editForm.isPublished,
+        },
+      },
+      {
+        onSuccess: () => {
+          toast.success("پست با موفقیت بروزرسانی شد.");
+          setEditingPost(null);
+          refetchPosts();
+        },
+        onError: () => {
+          toast.error("خطا در بروزرسانی پست.");
+        },
+      }
+    );
+  };
 
   // Profile Form state
   const [title, setTitle] = useState("");
@@ -511,34 +566,48 @@ export default function AdminPlatformScene() {
                   </Button>
 
                   {canEditPost && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      disabled={togglingPostId === post.id}
-                      onClick={() => handleTogglePublish(post)}
-                      className={cn(
-                        "h-8 px-2.5 rounded-xl text-xs gap-1.5 font-bold transition-colors",
-                        post.isPublished
-                          ? "hover:bg-warning-subtle hover:text-warning hover:border-amber-300"
-                          : "hover:bg-success-subtle hover:text-success hover:border-emerald-300"
-                      )}
-                      title={post.isPublished ? "تبدیل به پیش‌نویس" : "انتشار فوری"}
-                    >
-                      {togglingPostId === post.id ? (
-                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      ) : post.isPublished ? (
-                        <>
-                          <EyeOff className="w-3.5 h-3.5 text-warning" />
-                          <span>پیش‌نویس شود</span>
-                        </>
-                      ) : (
-                        <>
-                          <Eye className="w-3.5 h-3.5 text-success" />
-                          <span>انتشار</span>
-                        </>
-                      )}
-                    </Button>
+                    <>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleOpenEdit(post)}
+                        className="h-8 px-2.5 rounded-xl text-xs gap-1.5 font-bold hover:bg-primary/10 hover:text-primary transition-colors"
+                        title="ویرایش مشخصات مطلب"
+                      >
+                        <Edit3 className="w-3.5 h-3.5" />
+                        <span>ویرایش</span>
+                      </Button>
+
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={togglingPostId === post.id}
+                        onClick={() => handleTogglePublish(post)}
+                        className={cn(
+                          "h-8 px-2.5 rounded-xl text-xs gap-1.5 font-bold transition-colors",
+                          post.isPublished
+                            ? "hover:bg-warning-subtle hover:text-warning hover:border-amber-300"
+                            : "hover:bg-success-subtle hover:text-success hover:border-emerald-300"
+                        )}
+                        title={post.isPublished ? "تبدیل به پیش‌نویس" : "انتشار فوری"}
+                      >
+                        {togglingPostId === post.id ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : post.isPublished ? (
+                          <>
+                            <EyeOff className="w-3.5 h-3.5 text-warning" />
+                            <span>پیش‌نویس شود</span>
+                          </>
+                        ) : (
+                          <>
+                            <Eye className="w-3.5 h-3.5 text-success" />
+                            <span>انتشار</span>
+                          </>
+                        )}
+                      </Button>
+                    </>
                   )}
 
                   {canDeletePost && (
@@ -600,6 +669,125 @@ export default function AdminPlatformScene() {
           </div>
         )}
       </div>
+
+      {/* Edit Post Modal Dialog for Admin */}
+      {editingPost && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="ویرایش پست"
+          className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto"
+        >
+          <div className="bg-surface rounded-3xl max-w-xl w-full p-6 sm:p-7 space-y-4 shadow-2xl border border-soft-border my-8 animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between border-b border-soft-border/70 pb-3">
+              <div className="flex items-center gap-2">
+                <Edit3 className="w-4 h-4 text-primary" />
+                <h3 className="text-sm sm:text-base font-black text-brand">ویرایش مطلب</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingPost(null)}
+                className="w-7 h-7 rounded-full bg-soft-bg text-secondary hover:bg-slate-200 flex items-center justify-center transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEdit} className="space-y-4 text-xs sm:text-sm">
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-brand block">عنوان پست *</label>
+                <input
+                  type="text"
+                  value={editForm.title}
+                  onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                  placeholder="عنوان جذاب برای پست..."
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-surface border border-soft-border/80 text-brand focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-brand block">دسته‌بندی</label>
+                  <input
+                    type="text"
+                    value={editForm.category}
+                    onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}
+                    placeholder="اخبار / تحلیل مسکن / اطلاعیه"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-surface border border-soft-border/80 text-brand focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-brand block">نامک یکتا (Slug)</label>
+                  <input
+                    type="text"
+                    value={editForm.slug}
+                    onChange={(e) => setEditForm({ ...editForm, slug: e.target.value })}
+                    placeholder="post-slug-sample"
+                    dir="ltr"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-surface border border-soft-border/80 text-brand font-mono text-left focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-brand block">خلاصه کوتاه</label>
+                <textarea
+                  value={editForm.summary}
+                  onChange={(e) => setEditForm({ ...editForm, summary: e.target.value })}
+                  placeholder="توضیح کوتاه ۱ الی ۲ خطی برای پیش‌نمایش در کارت‌ها..."
+                  rows={2}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-surface border border-soft-border/80 text-brand focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-brand block">متن و محتوای پست</label>
+                <textarea
+                  value={editForm.content}
+                  onChange={(e) => setEditForm({ ...editForm, content: e.target.value })}
+                  placeholder="متن کامل خبر یا مقاله پلتفرم..."
+                  rows={6}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-surface border border-soft-border/80 text-brand focus:outline-none focus:ring-2 focus:ring-primary/20 resize-y"
+                />
+              </div>
+
+              <div className="flex items-center justify-between p-3 rounded-xl bg-soft-bg/60 border border-soft-border/50">
+                <div>
+                  <span className="text-xs font-bold text-brand block">وضعیت انتشار عمومی</span>
+                  <span className="text-[11px] text-secondary">
+                    در صورت فعال بودن، پست در وبلاگ رسمی و کاوش سایت نمایش داده می‌شود.
+                  </span>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={editForm.isPublished}
+                  onChange={(e) => setEditForm({ ...editForm, isPublished: e.target.checked })}
+                  className="w-4 h-4 rounded text-primary focus:ring-primary cursor-pointer"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-soft-border/70">
+                <button
+                  type="button"
+                  onClick={() => setEditingPost(null)}
+                  className="px-4 py-2 rounded-xl border border-soft-border text-xs font-bold text-secondary hover:bg-soft-bg transition-colors cursor-pointer"
+                >
+                  انصراف
+                </button>
+                <button
+                  type="submit"
+                  disabled={updatePostMutation.isPending}
+                  className="px-5 py-2 rounded-xl bg-brand hover:bg-brand/90 text-white text-xs font-black transition-all cursor-pointer shadow-xs disabled:opacity-50"
+                >
+                  {updatePostMutation.isPending ? "در حال ذخیره..." : "ذخیره تغییرات"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

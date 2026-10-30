@@ -12,6 +12,7 @@ import {
     SubscriptionTargetRole,
     UpdateSubscriptionPlanRequest,
     UpdateWelcomePackageRequest,
+    UserSubscriptionStatusResponse,
     WelcomePackage,
     WelcomePackageEligibilityResponse,
 } from "@/types/api/subscription.types";
@@ -31,6 +32,11 @@ export const subscriptionService = {
 
     getEntitlements: async (): Promise<SubscriptionEntitlement[]> => {
         const { data } = await api.get<SubscriptionEntitlement[]>("/subscriptions/entitlements");
+        return data;
+    },
+
+    getMySubscriptionStatus: async (): Promise<UserSubscriptionStatusResponse> => {
+        const { data } = await api.get<UserSubscriptionStatusResponse>("/subscriptions/my-status");
         return data;
     },
 

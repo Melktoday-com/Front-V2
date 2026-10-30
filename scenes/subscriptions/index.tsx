@@ -44,12 +44,13 @@ import {
     Zap,
 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export default function SubscriptionsScene() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const { user, activeRole, isLoggedIn } = useAuth();
     const { data: walletData, isLoading: isLoadingWallet } = useWalletBalance();
 
@@ -57,7 +58,15 @@ export default function SubscriptionsScene() {
     const [selectedRole, setSelectedRole] = useState<SubscriptionTargetRole>(
         activeRole === "agent" ? "agent" : "landlord",
     );
-    const [activeTab, setActiveTab] = useState<"plans" | "entitlements">("plans");
+    const initialTab = searchParams.get("tab") === "entitlements" ? "entitlements" : "plans";
+    const [activeTab, setActiveTab] = useState<"plans" | "entitlements">(initialTab);
+
+    useEffect(() => {
+        const tabParam = searchParams.get("tab");
+        if (tabParam === "entitlements" || tabParam === "plans") {
+            setActiveTab(tabParam);
+        }
+    }, [searchParams]);
 
     // Plans & Entitlements
     const { data: plans = [], isLoading: isLoadingPlans } = useSubscriptionPlans(
@@ -538,39 +547,40 @@ export default function SubscriptionsScene() {
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                                    {entitlements.map((ent) => {
+                                    {entitlements.map((ent, idx) => {
                                         const percentUsed =
                                             ent.totalQuota > 0
                                                 ? Math.min(100, Math.round((ent.usedQuota / ent.totalQuota) * 100))
                                                 : 0;
 
-                                        let label: string = ent.entitlementType;
+                                        const eType = ent.entitlementType || ent.type || "سهمیه ویژه";
+                                        let label: string = eType;
                                         let icon = <Layers className="w-4 h-4 text-primary" />;
 
-                                        if (ent.entitlementType === "LISTING_PUBLICATION") {
+                                        if (eType === "LISTING_PUBLICATION") {
                                             label = "انتشار آگهی ملکی";
                                             icon = <Home className="w-4 h-4 text-success" />;
-                                        } else if (ent.entitlementType === "TEMPORARY_RENTAL_PUBLICATION") {
+                                        } else if (eType === "TEMPORARY_RENTAL_PUBLICATION") {
                                             label = "انتشار اقامتگاه روزانه";
                                             icon = <Building2 className="w-4 h-4 text-info" />;
-                                        } else if (ent.entitlementType === "URGENT_PROMOTION") {
+                                        } else if (eType === "URGENT_PROMOTION") {
                                             label = "برچسب فوری";
                                             icon = <Flame className="w-4 h-4 text-amber-500" />;
-                                        } else if (ent.entitlementType === "LADDER_PROMOTION") {
+                                        } else if (eType === "LADDER_PROMOTION") {
                                             label = "نردبان آگهی";
                                             icon = <TrendingUp className="w-4 h-4 text-purple-600" />;
                                         }
 
                                         return (
                                             <div
-                                                key={ent.id}
+                                                key={ent.id || `${eType}-${idx}`}
                                                 className="bg-surface rounded-3xl border border-border-subtle/80 p-5 shadow-xs flex flex-col justify-between"
                                             >
                                                 <div>
                                                     <div className="flex items-center justify-between mb-3">
                                                         <span className="p-2 bg-surface-secondary rounded-xl">{icon}</span>
                                                         <span className="text-[11px] font-bold text-foreground-muted">
-                                                            انقضا: {new Date(ent.expiresAt).toLocaleDateString("fa-IR")}
+                                                            {ent.expiresAt ? `انقضا: ${new Date(ent.expiresAt).toLocaleDateString("fa-IR")}` : "همگام با اشتراک"}
                                                         </span>
                                                     </div>
                                                     <h4 className="font-bold text-foreground text-xs mb-2">

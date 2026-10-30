@@ -236,8 +236,6 @@ function getResidenceRate(pricing?: TemporaryRentPricingReadModel | null): numbe
             return pricing.pricing.midweekNightlyPrice || pricing.pricing.weekendNightlyPrice;
         case "EVENT_VENUE_RENT":
             return pricing.pricing.eventBasePrice;
-        case null:
-            return pricing.legacyNightlyPrice;
         default:
             return 0;
     }

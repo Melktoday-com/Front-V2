@@ -37,13 +37,33 @@ export interface SubscriptionPlan {
 }
 
 export interface SubscriptionEntitlement {
-    id: string;
-    userSubscriptionId: string;
-    entitlementType: EntitlementTypeName;
+    id?: string;
+    userSubscriptionId?: string;
+    type?: EntitlementTypeName;
+    entitlementType?: EntitlementTypeName;
     totalQuota: number;
     usedQuota: number;
     remainingQuota: number;
-    expiresAt: string;
+    expiresAt?: string | null;
+    planName?: string | null;
+}
+
+export interface UserSubscriptionDetailSummary {
+    id: string;
+    planId: string;
+    planName: string;
+    targetRole: string;
+    startsAt?: string;
+    expiresAt?: string;
+    daysRemaining: number;
+    status: string;
+}
+
+export interface UserSubscriptionStatusResponse {
+    hasActiveSubscription: boolean;
+    subscription: UserSubscriptionDetailSummary | null;
+    entitlements: SubscriptionEntitlement[];
+    badge: ActiveBadgeInfo | null;
 }
 
 export interface ActiveBadgeInfo {

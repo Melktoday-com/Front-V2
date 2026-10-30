@@ -59,8 +59,8 @@ function getHomeTemporaryRentPrice(pricing: TemporaryRentPricingReadModel): { am
             };
         case "EVENT_VENUE_RENT":
             return { amount: pricing.pricing.eventBasePrice, unit: "/رویداد" };
-        case null:
-            return { amount: pricing.legacyNightlyPrice, unit: "/شب" };
+        default:
+            return { amount: 0, unit: "/شب" };
     }
 }
 

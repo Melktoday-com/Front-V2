@@ -34,12 +34,6 @@ function getTemporaryRentPriceDisplay(pricing?: TemporaryRentPricingReadModel | 
                 formatted: formatPrice(pricing.pricing.eventBasePrice, ""),
                 hasCurrency: pricing.pricing.eventBasePrice > 0,
             };
-        case null:
-            return {
-                label: "اجاره هر شب",
-                formatted: formatPrice(pricing.legacyNightlyPrice, ""),
-                hasCurrency: pricing.legacyNightlyPrice > 0,
-            };
         default:
             return {
                 label: "قیمت",

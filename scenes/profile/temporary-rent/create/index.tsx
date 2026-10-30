@@ -268,6 +268,10 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
         } else if (step === "LOCATION") {
             setStep("MEDIA");
         } else if (step === "MEDIA") {
+            if (!formData.mediaIds || formData.mediaIds.length === 0) {
+                toast.error("درج حداقل یک تصویر برای ثبت اقامتگاه الزامی است");
+                return;
+            }
             setStep("REVIEW");
         } else if (step === "REVIEW") {
             handleSubmit();
@@ -282,6 +286,12 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
 
     const handleSubmit = async () => {
         try {
+            if (!formData.mediaIds || formData.mediaIds.length === 0) {
+                toast.error("درج حداقل یک تصویر برای ثبت اقامتگاه الزامی است");
+                setStep("MEDIA");
+                return;
+            }
+
             const resolvedNightlyPrice = pricing.nightlyPrice
                 ? Number(pricing.nightlyPrice)
                 : formData.nightlyPrice || 1000000;
@@ -327,9 +337,9 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
                 return;
             }
 
+            const { nightlyPrice: _ignored, ...cleanFormData } = formData;
             const payload: CreateTemporaryRentDraftRequest = {
-                ...formData,
-                nightlyPrice: resolvedNightlyPrice,
+                ...cleanFormData,
                 maxGuests: resolvedMaxGuests,
                 priceModelKey,
                 pricing,

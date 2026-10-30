@@ -13,6 +13,22 @@ export enum KYCStatus {
     REJECTED = 'rejected',
 }
 
+export enum CitizenType {
+    IRANIAN = 'IRANIAN',
+    FOREIGNER = 'FOREIGNER',
+}
+
+export enum ForeignIdType {
+    FIDA = 'FIDA',
+    PASSPORT = 'PASSPORT',
+    AMAYESH = 'AMAYESH',
+}
+
+export enum KycReviewAction {
+    APPROVE = 'APPROVE',
+    REJECT = 'REJECT',
+}
+
 export enum AdStatus {
     DRAFT = 'DRAFT',
     PENDING_APPROVAL = 'PENDING_APPROVAL',

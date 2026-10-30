@@ -5,8 +5,9 @@ import { useSafeBack } from "@/hooks/useSafeBack";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { useSinglePost, useLikePost } from "@/hooks/usePosts";
+import { useSinglePost, useLikePost, useUpdatePost } from "@/hooks/usePosts";
 import { useAuth } from "@/hooks/useAuth";
+import { useAdminPermissions } from "@/hooks/useAdminPermissions";
 import { usePostViewObserver } from "@/hooks/usePostViewObserver";
 import { MarkdownRenderer } from "@/components/ui/MarkdownRenderer";
 import { getMediaUrl, getMediaPosterUrl, toPersianDigits, cn } from "@/lib/utils";
@@ -33,6 +34,8 @@ import {
   ExternalLink,
   Loader2,
   AlertCircle,
+  Edit3,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -43,9 +46,69 @@ interface SinglePostSceneProps {
 export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
   const router = useRouter();
   const handleBack = useSafeBack("/");
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, user } = useAuth();
+  const { isSuperAdmin, hasPermission } = useAdminPermissions();
   const { data: post, isLoading, isError, refetch } = useSinglePost(idOrSlug);
   const likeMutation = useLikePost();
+  const updatePostMutation = useUpdatePost();
+
+  const isAuthor = Boolean(user?.userId && post?.authorUserId === user.userId);
+  const canEdit = isAuthor || isSuperAdmin || hasPermission("posts.edit");
+
+  const [editingPost, setEditingPost] = useState<UnifiedPost | null>(null);
+  const [editForm, setEditForm] = useState({
+    title: "",
+    slug: "",
+    summary: "",
+    content: "",
+    category: "",
+    isPublished: true,
+  });
+
+  const handleOpenEdit = () => {
+    if (!post) return;
+    setEditingPost(post);
+    setEditForm({
+      title: post.title || "",
+      slug: post.slug || "",
+      summary: post.summary || "",
+      content: post.content || "",
+      category: post.category || "",
+      isPublished: post.isPublished ?? true,
+    });
+  };
+
+  const handleSaveEdit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingPost) return;
+    if (!editForm.title.trim()) {
+      toast.error("عنوان مطلب نمی‌تواند خالی باشد.");
+      return;
+    }
+    updatePostMutation.mutate(
+      {
+        id: editingPost.id,
+        data: {
+          title: editForm.title.trim(),
+          slug: editForm.slug.trim() || undefined,
+          summary: editForm.summary.trim() || undefined,
+          content: editForm.content,
+          category: editForm.category.trim() || undefined,
+          isPublished: editForm.isPublished,
+        },
+      },
+      {
+        onSuccess: () => {
+          toast.success("مطلب با موفقیت بروزرسانی شد.");
+          setEditingPost(null);
+          refetch();
+        },
+        onError: () => {
+          toast.error("خطا در بروزرسانی مطلب.");
+        },
+      }
+    );
+  };
 
   // Active slide index for Instagram style
   const [activeSlide, setActiveSlide] = useState(0);
@@ -240,11 +303,24 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
           <ArrowRight className="w-4 h-4" />
         </button>
 
-        {post.category && (
-          <span className="px-3 py-1 rounded-full bg-surface-secondary text-foreground-secondary text-xs font-bold">
-            {post.category}
-          </span>
-        )}
+        <div className="flex items-center gap-2">
+          {canEdit && (
+            <button
+              type="button"
+              onClick={handleOpenEdit}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary text-xs font-black transition-colors"
+            >
+              <Edit3 className="w-3.5 h-3.5" />
+              <span>ویرایش این مطلب</span>
+            </button>
+          )}
+
+          {post.category && (
+            <span className="px-3 py-1 rounded-full bg-surface-secondary text-foreground-secondary text-xs font-bold">
+              {post.category}
+            </span>
+          )}
+        </div>
       </div>
 
       {/* ═══════════════════════════════════════════════════════════════════ */}
@@ -717,6 +793,125 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
           )}
 
         </article>
+      )}
+
+      {/* Edit Post Modal Dialog */}
+      {editingPost && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="ویرایش مطلب"
+          className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto"
+        >
+          <div className="bg-surface rounded-3xl max-w-xl w-full p-6 sm:p-7 space-y-4 shadow-2xl border border-border-subtle my-8 animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between border-b border-border-subtle/70 pb-3">
+              <div className="flex items-center gap-2">
+                <Edit3 className="w-4 h-4 text-primary" />
+                <h3 className="text-sm sm:text-base font-black text-brand">ویرایش مطلب</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingPost(null)}
+                className="w-7 h-7 rounded-full bg-surface-secondary text-foreground-secondary hover:bg-slate-200 flex items-center justify-center transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEdit} className="space-y-4 text-xs sm:text-sm">
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-brand block">عنوان مطلب *</label>
+                <input
+                  type="text"
+                  value={editForm.title}
+                  onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                  placeholder="عنوان مطلب..."
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-surface border border-border-subtle text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-brand block">دسته‌بندی</label>
+                  <input
+                    type="text"
+                    value={editForm.category}
+                    onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}
+                    placeholder="دسته‌بندی موضوعی"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-surface border border-border-subtle text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-brand block">نامک یکتا (Slug)</label>
+                  <input
+                    type="text"
+                    value={editForm.slug}
+                    onChange={(e) => setEditForm({ ...editForm, slug: e.target.value })}
+                    placeholder="post-slug"
+                    dir="ltr"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-surface border border-border-subtle text-foreground font-mono text-left focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-brand block">خلاصه کوتاه</label>
+                <textarea
+                  value={editForm.summary}
+                  onChange={(e) => setEditForm({ ...editForm, summary: e.target.value })}
+                  placeholder="توضیح کوتاه ۱ الی ۲ خطی..."
+                  rows={2}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-surface border border-border-subtle text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-brand block">متن کامل مطلب</label>
+                <textarea
+                  value={editForm.content}
+                  onChange={(e) => setEditForm({ ...editForm, content: e.target.value })}
+                  placeholder="متن کامل مطلب..."
+                  rows={6}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-surface border border-border-subtle text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 resize-y"
+                />
+              </div>
+
+              <div className="flex items-center justify-between p-3 rounded-xl bg-surface-secondary/60 border border-border-subtle/50">
+                <div>
+                  <span className="text-xs font-bold text-brand block">وضعیت انتشار عمومی</span>
+                  <span className="text-[11px] text-foreground-muted">
+                    در صورت فعال بودن، مطلب در صفحه عمومی و وبلاگ نمایش داده می‌شود.
+                  </span>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={editForm.isPublished}
+                  onChange={(e) => setEditForm({ ...editForm, isPublished: e.target.checked })}
+                  className="w-4 h-4 rounded text-primary focus:ring-primary cursor-pointer"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-border-subtle/70">
+                <button
+                  type="button"
+                  onClick={() => setEditingPost(null)}
+                  className="px-4 py-2 rounded-xl border border-border-subtle text-xs font-bold text-foreground-secondary hover:bg-surface-secondary transition-colors cursor-pointer"
+                >
+                  انصراف
+                </button>
+                <button
+                  type="submit"
+                  disabled={updatePostMutation.isPending}
+                  className="px-5 py-2 rounded-xl bg-brand hover:bg-brand/90 text-white text-xs font-black transition-all cursor-pointer shadow-xs disabled:opacity-50"
+                >
+                  {updatePostMutation.isPending ? "در حال ذخیره..." : "ذخیره تغییرات"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
 
     </div>

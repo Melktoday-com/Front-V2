@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { cn, toPersianDigits, getMediaUrl, getMediaPosterUrl, toEnglishDigits, toOnlyDigits } from "@/lib/utils";
 import { agencyService } from "@/services/agency.service";
 import MediaIconUpload from "@/components/admin/MediaIconUpload";
+import { SubscriptionQuotaWidget } from "@/components/subscriptions/SubscriptionQuotaWidget";
 import {
     AgencyPost,
     AgencyPostsListResponse,
@@ -603,6 +604,9 @@ export default function AgencyPanelScene() {
                             </div>
                         </div>
                     </div>
+
+                    {/* Subscription & Entitlements Widget */}
+                    <SubscriptionQuotaWidget targetRole="agent" title="وضعیت اشتراک و سهمیه‌های مشاور / دفتر املاک" />
 
                     {/* Apple KPI Metric Grid (Followers, Posts, Rating, Status) */}
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">

@@ -73,11 +73,6 @@ function formatTemporaryRentPrice(pricing?: TemporaryRentPricingReadModel | null
                 formatted: formatPrice(pricing.pricing.eventBasePrice, ""),
                 hasCurrency: pricing.pricing.eventBasePrice > 0,
             };
-        case null:
-            return {
-                formatted: formatPrice(pricing.legacyNightlyPrice, ""),
-                hasCurrency: pricing.legacyNightlyPrice > 0,
-            };
         default:
             return {
                 formatted: "توافقی",

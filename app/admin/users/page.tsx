@@ -1,6 +1,7 @@
 "use client";
 
 import { useAdminUsers } from "@/hooks/useAdmin";
+import { useDebounce } from "@/hooks/useDebounce";
 import { adminService } from "@/services/admin.service";
 import { AdminUser } from "@/types/api/admin.types";
 import { UserStatus } from "@/types/api/enums";
@@ -12,9 +13,11 @@ import {
     Ban,
     UserX,
     WalletIcon,
-    Loader2
+    Loader2,
+    Search,
+    X,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
@@ -22,7 +25,18 @@ export default function AdminUsersPage() {
     const router = useRouter();
     const queryClient = useQueryClient();
     const [page, setPage] = useState(1);
-    const { data, isLoading } = useAdminUsers({ page, limit: 10 });
+    const [searchQuery, setSearchQuery] = useState("");
+    const debouncedSearch = useDebounce(searchQuery.trim(), 400);
+
+    useEffect(() => {
+        setPage(1);
+    }, [debouncedSearch]);
+
+    const { data, isLoading } = useAdminUsers({
+        page,
+        limit: 10,
+        search: debouncedSearch || undefined,
+    });
 
     const banMutation = useMutation({
         mutationFn: ({ userId, reason }: { userId: string, reason: string }) =>
@@ -89,9 +103,31 @@ export default function AdminUsersPage() {
 
     return (
         <div className="space-y-6">
-            <div>
-                <h1 className="text-2xl font-bold text-foreground">مدیریت کاربران</h1>
-                <p className="text-foreground-muted">مشاهده، بررسی و مدیریت دسترسی‌های کاربران سیستم</p>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h1 className="text-2xl font-bold text-foreground">مدیریت کاربران</h1>
+                    <p className="text-foreground-muted">مشاهده، بررسی و مدیریت دسترسی‌های کاربران سیستم</p>
+                </div>
+
+                <div className="relative w-full md:w-80">
+                    <Search className="w-4 h-4 absolute right-3.5 top-1/2 -translate-y-1/2 text-foreground-muted pointer-events-none" />
+                    <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="جستجو بر اساس نام یا شماره..."
+                        className="w-full pr-10 pl-9 py-2.5 bg-surface border border-border-subtle rounded-xl text-sm font-medium text-foreground focus:ring-2 focus:ring-primary/20 outline-none transition"
+                    />
+                    {searchQuery && (
+                        <button
+                            type="button"
+                            onClick={() => setSearchQuery("")}
+                            className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground-muted hover:text-foreground p-0.5"
+                        >
+                            <X className="w-3.5 h-3.5" />
+                        </button>
+                    )}
+                </div>
             </div>
 
             <div className="bg-surface rounded-xl border border-border-subtle shadow-sm overflow-hidden">

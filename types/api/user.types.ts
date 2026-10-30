@@ -1,4 +1,4 @@
-import { KYCStatus, UserStatus } from "./enums";
+import { CitizenType, ForeignIdType, KYCStatus, UserStatus } from "./enums";
 
 export interface UserProfile {
     userId: string;
@@ -25,15 +25,19 @@ export interface RegisterUserRequest {
 }
 
 export interface VerifyKycRequest {
-    nationalCode: string;
-    birthDate: string; // YYYYMMDD
+    citizenType?: CitizenType;
+    nationalCode?: string;
+    foreignIdType?: ForeignIdType;
+    foreignId?: string;
+    documentUrl?: string;
+    birthDate?: string; // YYYYMMDD
     firstName?: string;
     lastName?: string;
 }
 
 export interface VerifyKycResponse {
     userId: string;
-    status: "verified" | "rejected" | "failed";
+    status: KYCStatus;
     similarityPercentage: number;
     reason?: string;
 }

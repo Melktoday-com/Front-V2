@@ -278,7 +278,7 @@ export function WelcomePackageModal() {
                                 type="button"
                                 onClick={() => {
                                     handleClose();
-                                    router.push("/subscriptions");
+                                    router.push("/subscriptions?tab=entitlements");
                                 }}
                                 className="w-full py-3.5 px-4 bg-primary hover:bg-primary/90 text-white rounded-button font-bold text-sm shadow-lg shadow-primary/25 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99]"
                             >

@@ -4,22 +4,33 @@ import { useAuth } from "@/hooks/useAuth";
 import { useConversation, useMessages, useSendMessage } from "@/hooks/useChat";
 import { useMeProfile } from "@/hooks/useUser";
 import { cn, getMediaUrl } from "@/lib/utils";
-import { ChatMessage, ListingMetadata } from "@/services/chat.service";
+import { ChatMessage, chatService, ListingMetadata } from "@/services/chat.service";
 import { mediaService } from "@/services/media.service";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
     Building2,
+    Check,
     CheckCheck,
+    Edit2,
     Image as ImageIcon,
     Loader2,
     MessageCircle,
     Send,
     Star,
-    User
+    Trash2,
+    User,
+    X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { ListingMessageCard } from "./ListingMessageCard";
 import { ReviewRequestCard } from "./ReviewRequestCard";
+
+/**
+ * Message retract / edit window: 1 hour in milliseconds
+ * Matches backend MESSAGE_RETRACT_WINDOW_MS
+ */
+const MESSAGE_RETRACT_WINDOW_MS = 60 * 60 * 1000;
 
 interface ChatWindowProps {
     conversationId: string | null;
@@ -44,6 +55,40 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
     const { activeRole } = useAuth();
     const { mutate: send, isPending: isSending } = useSendMessage();
     const scrollRef = useRef<HTMLDivElement>(null);
+    const queryClient = useQueryClient();
+
+    const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+    const [editingContent, setEditingContent] = useState<string>("");
+
+    const editMutation = useMutation({
+        mutationFn: ({ messageId, content }: { messageId: string; content: string }) => {
+            if (!conversationId) throw new Error("Conversation ID is required");
+            return chatService.editMessage(conversationId, messageId, content);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["messages", conversationId] });
+            setEditingMessageId(null);
+            setEditingContent("");
+            toast.success("پیام با موفقیت ویرایش شد");
+        },
+        onError: (err: any) => {
+            toast.error(err?.response?.data?.message || "خطا در ویرایش پیام");
+        },
+    });
+
+    const deleteMutation = useMutation({
+        mutationFn: (messageId: string) => {
+            if (!conversationId) throw new Error("Conversation ID is required");
+            return chatService.deleteMessage(conversationId, messageId);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["messages", conversationId] });
+            toast.success("پیام حذف شد");
+        },
+        onError: (err: any) => {
+            toast.error(err?.response?.data?.message || "خطا در حذف پیام");
+        },
+    });
 
     // Flatten pages of messages (reverse for chronological bottom-to-top rendering)
     const messages = data?.pages.flatMap((page) => page).reverse() || [];
@@ -256,17 +301,90 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
 
                 {messages.map((msg: ChatMessage, idx) => {
                     const isMine = msg.senderId === me?.userId;
+                    const canEditOrDelete =
+                        isMine &&
+                        !msg.isDeleted &&
+                        Date.now() - new Date(msg.createdAt).getTime() <= MESSAGE_RETRACT_WINDOW_MS;
+                    const isEditingThis = editingMessageId === msg.id;
 
                     return (
                         <div
                             key={msg.id || idx}
                             className={cn(
-                                "flex flex-col max-w-[85%] sm:max-w-[70%]",
+                                "group relative flex flex-col max-w-[85%] sm:max-w-[70%]",
                                 isMine ? "mr-auto items-end" : "ml-auto items-start"
                             )}
                         >
-                            {/* Message Type: LISTING */}
-                            {msg.type === "LISTING" ? (
+                            {/* Actions for editable/deletable messages */}
+                            {canEditOrDelete && !isEditingThis && (
+                                <div className="hidden group-hover:flex items-center gap-1 mb-1 bg-surface border border-soft-border rounded-xl px-1.5 py-0.5 shadow-xs transition-opacity z-10">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setEditingMessageId(msg.id);
+                                            setEditingContent(msg.content || "");
+                                        }}
+                                        title="ویرایش پیام"
+                                        className="p-1 hover:text-primary rounded-lg transition-colors text-secondary"
+                                    >
+                                        <Edit2 className="w-3 h-3" />
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            if (confirm("آیا از حذف این پیام اطمینان دارید؟")) {
+                                                deleteMutation.mutate(msg.id);
+                                            }
+                                        }}
+                                        title="حذف پیام"
+                                        className="p-1 hover:text-error rounded-lg transition-colors text-secondary"
+                                    >
+                                        <Trash2 className="w-3 h-3" />
+                                    </button>
+                                </div>
+                            )}
+
+                            {/* Inline Editing Form */}
+                            {isEditingThis ? (
+                                <div className="p-2.5 rounded-2xl bg-surface border border-primary/30 shadow-sm space-y-2 w-64 sm:w-80">
+                                    <textarea
+                                        value={editingContent}
+                                        onChange={(e) => setEditingContent(e.target.value)}
+                                        className="w-full bg-surface-secondary border border-soft-border rounded-xl p-2 text-xs text-brand outline-none focus:ring-1 focus:ring-primary resize-none"
+                                        rows={3}
+                                    />
+                                    <div className="flex items-center justify-end gap-1.5">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setEditingMessageId(null);
+                                                setEditingContent("");
+                                            }}
+                                            className="px-2.5 py-1 text-xs text-secondary hover:text-brand rounded-lg"
+                                        >
+                                            انصراف
+                                        </button>
+                                        <button
+                                            type="button"
+                                            disabled={!editingContent.trim() || editMutation.isPending}
+                                            onClick={() =>
+                                                editMutation.mutate({
+                                                    messageId: msg.id,
+                                                    content: editingContent.trim(),
+                                                })
+                                            }
+                                            className="px-3 py-1 bg-brand text-white rounded-lg text-xs font-bold disabled:opacity-50 flex items-center gap-1"
+                                        >
+                                            {editMutation.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : "ذخیره"}
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : msg.isDeleted ? (
+                                <div className="px-3.5 py-2 rounded-2xl text-[12px] italic text-secondary/70 bg-surface border border-dashed border-soft-border shadow-xs flex items-center gap-1.5">
+                                    <Trash2 className="w-3.5 h-3.5 opacity-60" />
+                                    <span>این پیام حذف شده است</span>
+                                </div>
+                            ) : msg.type === "LISTING" ? (
                                 <ListingMessageCard
                                     metadata={msg.metadata as ListingMetadata}
                                     mediaIds={msg.mediaIds}
@@ -334,6 +452,7 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
 
                             <span className="text-[9px] text-secondary mt-1 px-1 opacity-70 flex items-center gap-1 font-medium">
                                 <span>{formatTime(msg.createdAt)}</span>
+                                {msg.isEdited && <span className="text-[9px] text-secondary/80">(ویرایش شده)</span>}
                                 {isMine && <CheckCheck className="w-3 h-3 text-brand" />}
                             </span>
                         </div>

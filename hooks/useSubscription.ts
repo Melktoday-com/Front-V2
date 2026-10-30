@@ -27,6 +27,16 @@ export function useEntitlements() {
     });
 }
 
+export function useMySubscriptionStatus() {
+    const { isLoggedIn } = useAuth();
+
+    return useQuery({
+        queryKey: ["subscription", "my-status"],
+        queryFn: () => subscriptionService.getMySubscriptionStatus(),
+        enabled: isLoggedIn,
+    });
+}
+
 export function useActiveBadge() {
     const { isLoggedIn } = useAuth();
 

@@ -14,7 +14,9 @@ import { useWallet } from "@/hooks/useWallet";
 import { cn, formatCurrency, getMediaUrl, rialToToman, toEnglishDigits, toOnlyDigits, toPersianDigits } from "@/lib/utils";
 import { mediaService } from "@/services/media.service";
 import { userService } from "@/services/user.service";
+import MediaIconUpload from "@/components/admin/MediaIconUpload";
 import { RoleName, isRoleAdmin, tryRoleNameFrom } from "@/types/access";
+import { CitizenType, ForeignIdType, KYCStatus } from "@/types/api/enums";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
     Bell,
@@ -35,12 +37,13 @@ import {
     ShieldCheck,
     Sparkles,
     User,
-    X
+    X,
+    Zap,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 export default function ProfileScene() {
@@ -53,6 +56,10 @@ export default function ProfileScene() {
     const [lastName, setLastName] = useState("");
     const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
     const [isKycModalOpen, setIsKycModalOpen] = useState(false);
+    const [citizenType, setCitizenType] = useState<CitizenType>(CitizenType.IRANIAN);
+    const [foreignIdType, setForeignIdType] = useState<ForeignIdType>(ForeignIdType.FIDA);
+    const [foreignId, setForeignId] = useState("");
+    const [documentUrl, setDocumentUrl] = useState("");
     const [nationalCode, setNationalCode] = useState("");
     const [birthDate, setBirthDate] = useState("");
 
@@ -64,26 +71,55 @@ export default function ProfileScene() {
     const { data: hostProfile } = useHostProfile();
     const { updateProfile, isUpdating } = useUser(user?.userId);
 
+    const displayName = useMemo(() => {
+        if (activeRole === RoleName.Agent && (myAgency?.agencyName || myAgency?.name)) {
+            return myAgency.agencyName || myAgency.name;
+        }
+        if (activeRole === RoleName.Landlord && (hostProfile?.hostName || hostProfile?.title)) {
+            return hostProfile.hostName || hostProfile.title;
+        }
+        return [firstName, lastName].filter(Boolean).join(" ") || "کاربر ملک تودی";
+    }, [activeRole, myAgency?.agencyName, myAgency?.name, hostProfile?.hostName, hostProfile?.title, firstName, lastName]);
+
+    const displaySubtitle = useMemo(() => {
+        if ((activeRole === RoleName.Agent && (myAgency?.agencyName || myAgency?.name)) ||
+            (activeRole === RoleName.Landlord && (hostProfile?.hostName || hostProfile?.title))) {
+            const personalName = [firstName, lastName].filter(Boolean).join(" ");
+            return personalName ? `مدیر حساب: ${personalName}` : null;
+        }
+        return null;
+    }, [activeRole, myAgency?.agencyName, myAgency?.name, hostProfile?.hostName, hostProfile?.title, firstName, lastName]);
+
     const kycMutation = useMutation({
         mutationFn: () =>
             userService.verifyKyc(user!.userId, {
-                nationalCode,
+                citizenType,
+                nationalCode: citizenType === CitizenType.IRANIAN ? nationalCode : undefined,
+                foreignIdType: citizenType === CitizenType.FOREIGNER ? foreignIdType : undefined,
+                foreignId: citizenType === CitizenType.FOREIGNER ? foreignId : undefined,
+                documentUrl: citizenType === CitizenType.FOREIGNER ? documentUrl : undefined,
                 birthDate,
                 firstName,
                 lastName,
             }),
         onSuccess: (res) => {
-            if (res.status === "verified") {
+            if (res.status === KYCStatus.VERIFIED) {
                 toast.success("احراز هویت شما با موفقیت تایید شد.");
+                setIsKycModalOpen(false);
+                queryClient.invalidateQueries({ queryKey: ["user"] });
+                queryClient.invalidateQueries({ queryKey: ["me"] });
+            } else if (res.status === KYCStatus.IN_PROGRESS) {
+                toast.success(res.reason || "مدارک هویتی اتباع با موفقیت ثبت شد و در صف بررسی کارشناس قرار گرفت.");
+                setIsKycModalOpen(false);
                 queryClient.invalidateQueries({ queryKey: ["user"] });
                 queryClient.invalidateQueries({ queryKey: ["me"] });
             } else {
                 toast.error(res.reason || "اطلاعات با سامانه ثبت احوال همخوانی ندارد.");
             }
-            setIsKycModalOpen(false);
         },
-        onError: () => {
-            toast.error("خطا در ارسال استعلام احراز هویت");
+        onError: (err: any) => {
+            const msg = (err?.response?.data?.message || err?.message || "خطا در استعلام یا ثبت مدارک احراز هویت");
+            toast.error(msg);
         },
     });
 
@@ -221,8 +257,13 @@ export default function ProfileScene() {
                         </div>
                         <div className="flex-1 min-w-0">
                             <div className="text-brand font-black text-lg truncate">
-                                {firstName || "کاربر"} {lastName || "ملک تودی"}
+                                {displayName}
                             </div>
+                            {displaySubtitle && (
+                                <div className="text-xs text-foreground-muted font-medium truncate mt-0.5">
+                                    {displaySubtitle}
+                                </div>
+                            )}
                             <div className="flex items-center gap-2 flex-wrap mt-1">
                                 <span className={cn(
                                     "px-2 py-0.5 rounded-lg text-[10px] font-black uppercase",
@@ -499,6 +540,23 @@ export default function ProfileScene() {
                     <Button
                         variant="outline"
                         className="w-full h-16 rounded-[25px] flex items-center justify-between px-6 border-soft-border hover:bg-soft-bg"
+                        onClick={() => router.push('/subscriptions')}
+                    >
+                        <div className="flex items-center gap-4">
+                            <div className="p-3 rounded-2xl bg-primary/10 text-primary">
+                                <Zap className="w-6 h-6" />
+                            </div>
+                            <div className="text-right">
+                                <span className="font-bold text-brand block text-sm">پلن‌های اشتراک و سهمیه‌ها</span>
+                                <span className="text-[11px] text-secondary">سهمیه باقیمانده، نشان تایید، ارتقای پلن</span>
+                            </div>
+                        </div>
+                        <ChevronLeft className="w-5 h-5 text-secondary" />
+                    </Button>
+
+                    <Button
+                        variant="outline"
+                        className="w-full h-16 rounded-[25px] flex items-center justify-between px-6 border-soft-border hover:bg-soft-bg"
                         onClick={() => router.push('/profile/ads')}
                     >
                         <div className="flex items-center gap-4">
@@ -571,7 +629,7 @@ export default function ProfileScene() {
 
                     <button
                         onClick={() => {
-                            if (profile?.kycStatus === "verified") {
+                            if (profile?.kycStatus === KYCStatus.VERIFIED) {
                                 toast.info("هویت شما قبلاً با موفقیت تایید شده است.");
                             } else {
                                 setIsKycModalOpen(true);
@@ -588,12 +646,12 @@ export default function ProfileScene() {
                         <div className="flex items-center gap-2">
                             <span className={cn(
                                 "text-[10px] px-2 py-1 rounded-full font-bold",
-                                profile?.kycStatus === 'verified' ? "bg-success-subtle text-success" :
-                                    profile?.kycStatus === 'pending' || profile?.kycStatus === 'in_progress' ? "bg-orange-50 text-orange-600" :
+                                profile?.kycStatus === KYCStatus.VERIFIED ? "bg-success-subtle text-success" :
+                                    profile?.kycStatus === KYCStatus.PENDING || profile?.kycStatus === KYCStatus.IN_PROGRESS ? "bg-orange-50 text-orange-600" :
                                         "bg-error-subtle text-error"
                             )}>
-                                {profile?.kycStatus === 'verified' ? "تایید شده" :
-                                    profile?.kycStatus === 'pending' || profile?.kycStatus === 'in_progress' ? "در انتظار تایید" : "تایید نشده"}
+                                {profile?.kycStatus === KYCStatus.VERIFIED ? "تایید شده" :
+                                    profile?.kycStatus === KYCStatus.PENDING || profile?.kycStatus === KYCStatus.IN_PROGRESS ? "در انتظار تایید" : "تایید نشده"}
                             </span>
                             <ChevronLeft className="w-4 h-4 text-secondary" />
                         </div>
@@ -615,12 +673,12 @@ export default function ProfileScene() {
 
             {/* KYC Verification Modal */}
             {isKycModalOpen && (
-                <div role="dialog" aria-modal="true" aria-label="احراز هویت هوشمند" className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in">
-                    <div className="bg-surface rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-5 border border-border-subtle">
+                <div role="dialog" aria-modal="true" aria-label="احراز هویت هوشمند" className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in overflow-y-auto">
+                    <div className="bg-surface rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-4 border border-border-subtle my-8">
                         <div className="flex justify-between items-center border-b border-border-subtle pb-3">
                             <h3 className="font-black text-brand text-base flex items-center gap-2">
                                 <ShieldCheck className="w-5 h-5 text-primary" />
-                                <span>احراز هویت هوشمند (سامانه شاهکار)</span>
+                                <span>احراز هویت کاربران (ایرانی و اتباع)</span>
                             </h3>
                             <button
                                 onClick={() => setIsKycModalOpen(false)}
@@ -630,36 +688,140 @@ export default function ProfileScene() {
                             </button>
                         </div>
 
-                        <p className="text-xs text-text-light leading-relaxed">
-                            جهت افزایش اعتبار حساب کاربری و امکان ثبت نامحدود آگهی، کد ملی و تاریخ تولد خود را وارد نمایید.
-                        </p>
-
-                        <div className="space-y-4 text-xs">
-                            <div>
-                                <label className="block font-bold text-brand mb-1.5">کد ملی ۱۰ رقمی</label>
-                                <input
-                                    type="text"
-                                    maxLength={10}
-                                    placeholder="مثلاً: ۰۰۱۲۳۴۵۶۷۸"
-                                    dir="ltr"
-                                    value={nationalCode}
-                                    onChange={(e) => setNationalCode(toOnlyDigits(e.target.value))}
-                                    className="w-full p-3.5 border border-border-subtle rounded-xl bg-surface-secondary focus:bg-surface focus:ring-2 focus:ring-primary outline-hidden text-center text-base tracking-widest font-black"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block font-bold text-brand mb-1.5">تاریخ تولد (فرمت: YYYYMMDD یا سال/ماه/روز)</label>
-                                <input
-                                    type="text"
-                                    placeholder="مثلاً: 13700101"
-                                    dir="ltr"
-                                    value={birthDate}
-                                    onChange={(e) => setBirthDate(toEnglishDigits(e.target.value))}
-                                    className="w-full p-3.5 border border-border-subtle rounded-xl bg-surface-secondary focus:bg-surface focus:ring-2 focus:ring-primary outline-hidden text-center text-base tracking-wider font-bold"
-                                />
-                            </div>
+                        {/* Citizenship Tabs */}
+                        <div className="flex bg-surface-secondary p-1 rounded-2xl border border-border-subtle text-xs font-bold">
+                            <button
+                                type="button"
+                                onClick={() => setCitizenType(CitizenType.IRANIAN)}
+                                className={cn(
+                                    "flex-1 py-2 rounded-xl transition-all",
+                                    citizenType === CitizenType.IRANIAN
+                                        ? "bg-surface text-brand shadow-xs"
+                                        : "text-secondary hover:text-brand"
+                                )}
+                            >
+                                شهروند ایرانی (شاهکار)
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setCitizenType(CitizenType.FOREIGNER)}
+                                className={cn(
+                                    "flex-1 py-2 rounded-xl transition-all",
+                                    citizenType === CitizenType.FOREIGNER
+                                        ? "bg-surface text-brand shadow-xs"
+                                        : "text-secondary hover:text-brand"
+                                )}
+                            >
+                                اتباع خارجی (فراگیر / گذرنامه)
+                            </button>
                         </div>
+
+                        {citizenType === CitizenType.IRANIAN ? (
+                            <>
+                                <p className="text-xs text-text-light leading-relaxed">
+                                    جهت تایید آنی هویت و تطبیق با مالکیت شماره همراه، کد ملی ۱۰ رقمی و تاریخ تولد خود را وارد فرمایید.
+                                </p>
+
+                                <div className="space-y-3.5 text-xs">
+                                    <div>
+                                        <label className="block font-bold text-brand mb-1.5">کد ملی ۱۰ رقمی</label>
+                                        <input
+                                            type="text"
+                                            maxLength={10}
+                                            placeholder="مثلاً: ۰۰۱۲۳۴۵۶۷۸"
+                                            dir="ltr"
+                                            value={nationalCode}
+                                            onChange={(e) => setNationalCode(toOnlyDigits(e.target.value))}
+                                            className="w-full p-3.5 border border-border-subtle rounded-xl bg-surface-secondary focus:bg-surface focus:ring-2 focus:ring-primary outline-hidden text-center text-base tracking-widest font-black"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block font-bold text-brand mb-1.5">تاریخ تولد (فرمت: YYYYMMDD یا سال/ماه/روز)</label>
+                                        <input
+                                            type="text"
+                                            placeholder="مثلاً: 13700101"
+                                            dir="ltr"
+                                            value={birthDate}
+                                            onChange={(e) => setBirthDate(toEnglishDigits(e.target.value))}
+                                            className="w-full p-3.5 border border-border-subtle rounded-xl bg-surface-secondary focus:bg-surface focus:ring-2 focus:ring-primary outline-hidden text-center text-base tracking-wider font-bold"
+                                        />
+                                    </div>
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                <p className="text-xs text-text-light leading-relaxed">
+                                    اتباع محترم می‌توانند با وارد کردن کد فراگیر، شماره گذرنامه یا کارت آمایش، هویت حساب خود را احراز نمایند.
+                                </p>
+
+                                <div className="space-y-3.5 text-xs">
+                                    <div>
+                                        <label className="block font-bold text-brand mb-1.5">نوع مدرک هویتی</label>
+                                        <div className="grid grid-cols-3 gap-1.5">
+                                            {[
+                                                { id: ForeignIdType.FIDA, label: "کد فراگیر" },
+                                                { id: ForeignIdType.PASSPORT, label: "گذرنامه" },
+                                                { id: ForeignIdType.AMAYESH, label: "کارت آمایش" },
+                                            ].map((doc) => (
+                                                <button
+                                                    key={doc.id}
+                                                    type="button"
+                                                    onClick={() => setForeignIdType(doc.id)}
+                                                    className={cn(
+                                                        "py-2 px-2 text-center rounded-xl border text-[11px] font-bold transition-all",
+                                                        foreignIdType === doc.id
+                                                            ? "border-primary bg-primary/10 text-primary font-black"
+                                                            : "border-border-subtle bg-surface-secondary text-secondary hover:text-brand"
+                                                    )}
+                                                >
+                                                    {doc.label}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="block font-bold text-brand mb-1.5">
+                                            {foreignIdType === ForeignIdType.FIDA
+                                                ? "کد فراگیر ۱۰ یا ۱۲ رقمی اتباع"
+                                                : foreignIdType === ForeignIdType.PASSPORT
+                                                  ? "شماره گذرنامه معتبر"
+                                                  : "شماره کارت آمایش"}
+                                        </label>
+                                        <input
+                                            type="text"
+                                            placeholder={foreignIdType === ForeignIdType.FIDA ? "مثلاً: 987654321012" : "شماره مدرک..."}
+                                            dir="ltr"
+                                            value={foreignId}
+                                            onChange={(e) => setForeignId(e.target.value.trim())}
+                                            className="w-full p-3.5 border border-border-subtle rounded-xl bg-surface-secondary focus:bg-surface focus:ring-2 focus:ring-primary outline-hidden text-center text-base tracking-wider font-black"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block font-bold text-brand mb-1.5">تاریخ تولد</label>
+                                        <input
+                                            type="text"
+                                            placeholder="مثلاً: 1995/05/15 یا 13740225"
+                                            dir="ltr"
+                                            value={birthDate}
+                                            onChange={(e) => setBirthDate(e.target.value)}
+                                            className="w-full p-3.5 border border-border-subtle rounded-xl bg-surface-secondary focus:bg-surface focus:ring-2 focus:ring-primary outline-hidden text-center text-sm font-bold"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <MediaIconUpload
+                                            label="تصویر مدرک هویتی (گذرنامه، کارت آمایش یا برگه سرشماری)"
+                                            helperText="تصویر واضح با حداکثر حجم ۱۰ مگابایت"
+                                            value={documentUrl}
+                                            onChange={(mediaId) => setDocumentUrl(mediaId)}
+                                        />
+                                    </div>
+                                </div>
+                            </>
+                        )}
 
                         <div className="flex gap-2 pt-2">
                             <button
@@ -672,16 +834,25 @@ export default function ProfileScene() {
                             <button
                                 type="button"
                                 onClick={() => kycMutation.mutate()}
-                                disabled={kycMutation.isPending || nationalCode.length !== 10 || !birthDate}
+                                disabled={
+                                    kycMutation.isPending ||
+                                    (citizenType === CitizenType.IRANIAN
+                                        ? nationalCode.length !== 10 || !birthDate
+                                        : foreignId.trim().length < 6)
+                                }
                                 className="flex-1 py-3 rounded-xl bg-primary text-white font-black text-xs hover:bg-primary/90 shadow-md shadow-primary/20 disabled:opacity-50 transition-all flex items-center justify-center gap-1.5"
                             >
                                 {kycMutation.isPending ? (
                                     <>
                                         <Loader2 className="w-4 h-4 animate-spin" />
-                                        <span>استعلام شاهکار...</span>
+                                        <span>
+                                            {citizenType === CitizenType.IRANIAN ? "استعلام شاهکار..." : "در حال ثبت مدارک..."}
+                                        </span>
                                     </>
                                 ) : (
-                                    <span>استعلام و تایید هویت</span>
+                                    <span>
+                                        {citizenType === CitizenType.IRANIAN ? "استعلام و تایید هویت" : "ثبت و ارسال جهت بررسی"}
+                                    </span>
                                 )}
                             </button>
                         </div>

@@ -59,6 +59,8 @@ export interface ChatMessage {
     metadata?: ChatMessageMetadata | null;
     type: MessageType;
     createdAt: string;
+    isEdited?: boolean;
+    isDeleted?: boolean;
 }
 
 export interface ChatConversation {
@@ -155,6 +157,16 @@ export const chatService = {
 
     async markAsRead(conversationId: string, lastMessageId: string): Promise<void> {
         await apiClient.post(`/conversations/${conversationId}/read`, { lastMessageId });
+    },
+
+    async editMessage(conversationId: string, messageId: string, content: string): Promise<ChatMessage> {
+        const response = await apiClient.patch<ChatMessage>(`/conversations/${conversationId}/messages/${messageId}`, { content });
+        return response.data;
+    },
+
+    async deleteMessage(conversationId: string, messageId: string): Promise<{ success: boolean; messageId: string }> {
+        const response = await apiClient.delete<{ success: boolean; messageId: string }>(`/conversations/${conversationId}/messages/${messageId}`);
+        return response.data;
     },
 
     async getUnreadCounts(): Promise<{ total: number; bySubject: Record<string, number> }> {

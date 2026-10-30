@@ -354,6 +354,33 @@ export default function AdminHostsPage() {
                     </button>
                   </>
                 )}
+
+                {app.status === "APPROVED" && (
+                  <button
+                    onClick={() => {
+                      setRejectModalApp(app);
+                      setAdminNote("");
+                    }}
+                    disabled={reviewMutation.isPending}
+                    className="inline-flex items-center justify-center gap-1 py-2 px-3 bg-error-subtle hover:bg-rose-100 text-error rounded-xl text-xs font-bold transition-colors"
+                    title="تعلیق و لغو صلاحیت میزبان"
+                  >
+                    <XCircle className="w-3.5 h-3.5" />
+                    <span>تعلیق / رد</span>
+                  </button>
+                )}
+
+                {app.status === "REJECTED" && (
+                  <button
+                    onClick={() => handleApprove(app)}
+                    disabled={reviewMutation.isPending}
+                    className="inline-flex items-center justify-center gap-1 py-2 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-colors"
+                    title="تأیید مجدد صلاحیت"
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>تأیید مجدد</span>
+                  </button>
+                )}
               </div>
             </div>
           ))}
@@ -453,6 +480,28 @@ export default function AdminHostsPage() {
                     تأیید صلاحیت میزبان
                   </button>
                 </>
+              )}
+              {selectedApp.status === "APPROVED" && (
+                <button
+                  onClick={() => {
+                    const app = selectedApp;
+                    setSelectedApp(null);
+                    setRejectModalApp(app);
+                  }}
+                  className="px-4 py-2 bg-error-subtle hover:bg-rose-100 text-error rounded-xl text-xs font-bold transition-colors"
+                >
+                  تعلیق و لغو صلاحیت میزبان
+                </button>
+              )}
+              {selectedApp.status === "REJECTED" && (
+                <button
+                  onClick={() => {
+                    handleApprove(selectedApp);
+                  }}
+                  className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-colors"
+                >
+                  تأیید مجدد صلاحیت میزبان
+                </button>
               )}
             </div>
           </div>

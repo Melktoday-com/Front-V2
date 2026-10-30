@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { adminService } from "@/services/admin.service";
@@ -37,6 +37,7 @@ export default function AdminAgenciesPage() {
     // Applications filters
     const [appStatus, setAppStatus] = useState<string>("ALL");
     const [appType, setAppType] = useState<string>("ALL");
+    const [appSearchQuery, setAppSearchQuery] = useState<string>("");
     const [selectedApp, setSelectedApp] = useState<AgentApplicationResponse | null>(null);
     const [adminNote, setAdminNote] = useState<string>("");
 
@@ -107,6 +108,16 @@ export default function AdminAgenciesPage() {
     });
 
     const applications: AgentApplicationResponse[] = applicationsData || [];
+    const filteredApplications = useMemo(() => {
+        if (!appSearchQuery.trim()) return applications;
+        const q = appSearchQuery.toLowerCase().trim();
+        return applications.filter((app) =>
+            (app.fullName && app.fullName.toLowerCase().includes(q)) ||
+            (app.agencyName && app.agencyName.toLowerCase().includes(q)) ||
+            (app.phone && app.phone.includes(q)) ||
+            (app.nationalCode && app.nationalCode.includes(q))
+        );
+    }, [applications, appSearchQuery]);
     const agencies = agenciesData?.items || [];
 
     return (
@@ -197,7 +208,18 @@ export default function AdminAgenciesPage() {
                             ))}
                         </div>
 
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
+                            <div className="relative w-64">
+                                <Search className="w-3.5 h-3.5 absolute right-3 top-1/2 -translate-y-1/2 text-foreground-muted pointer-events-none" />
+                                <input
+                                    type="text"
+                                    value={appSearchQuery}
+                                    onChange={(e) => setAppSearchQuery(e.target.value)}
+                                    placeholder="جستجو متقاضی یا شماره..."
+                                    className="w-full pr-8 pl-3 py-1.5 bg-surface-secondary border border-border-subtle rounded-xl text-xs font-medium text-foreground focus:ring-2 focus:ring-primary/20 outline-none"
+                                />
+                            </div>
+
                             <span className="text-xs font-bold text-foreground-muted ml-1">نوع:</span>
                             {["ALL", "CONSULTANT", "AGENCY"].map((tp) => (
                                 <button
@@ -224,7 +246,7 @@ export default function AdminAgenciesPage() {
                             <RefreshCw className="w-8 h-8 text-info animate-spin mx-auto mb-3" />
                             <p className="text-sm font-bold text-foreground-secondary">در حال دریافت درخواست‌ها...</p>
                         </div>
-                    ) : applications.length === 0 ? (
+                    ) : filteredApplications.length === 0 ? (
                         <div className="bg-surface rounded-3xl border border-border-subtle/80 p-16 text-center">
                             <Clock className="w-12 h-12 text-foreground-muted mx-auto mb-3" />
                             <h3 className="text-base font-bold text-foreground">هیچ درخواستی با این فیلتر یافت نشد</h3>
@@ -246,7 +268,7 @@ export default function AdminAgenciesPage() {
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-100 text-foreground-secondary">
-                                        {applications.map((app) => (
+                                        {filteredApplications.map((app) => (
                                             <tr key={app.id} className="hover:bg-surface-secondary/50 transition-colors">
                                                 <td className="py-4 px-6">
                                                     <div className="font-bold text-foreground">{app.fullName}</div>
@@ -319,17 +341,33 @@ export default function AdminAgenciesPage() {
                                                     )}
                                                 </td>
                                                 <td className="py-4 px-6 text-left">
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => {
-                                                            setSelectedApp(app);
-                                                            setAdminNote(app.adminNote || "");
-                                                        }}
-                                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-surface-secondary hover:bg-slate-200 text-foreground rounded-lg text-xs font-bold transition-colors"
-                                                    >
-                                                        <Eye className="w-3.5 h-3.5" />
-                                                        <span>بررسی کامل</span>
-                                                    </button>
+                                                    <div className="flex items-center justify-end gap-2">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                setSelectedApp(app);
+                                                                setAdminNote(app.adminNote || "");
+                                                            }}
+                                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-surface-secondary hover:bg-slate-200 text-foreground rounded-lg text-xs font-bold transition-colors"
+                                                        >
+                                                            <Eye className="w-3.5 h-3.5" />
+                                                            <span>بررسی کامل</span>
+                                                        </button>
+                                                        {app.status === "APPROVED" && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    setSelectedApp(app);
+                                                                    setAdminNote(app.adminNote || "");
+                                                                }}
+                                                                className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-error-subtle hover:bg-rose-100 text-error rounded-lg text-xs font-bold transition-colors"
+                                                                title="تعلیق و لغو صلاحیت"
+                                                            >
+                                                                <XCircle className="w-3.5 h-3.5" />
+                                                                <span>تعلیق</span>
+                                                            </button>
+                                                        )}
+                                                    </div>
                                                 </td>
                                             </tr>
                                         ))}
@@ -601,6 +639,55 @@ export default function AdminAgenciesPage() {
                                         رد درخواست متقاضی
                                     </button>
                                 </div>
+                            </div>
+                        )}
+
+                        {selectedApp.status === "APPROVED" && (
+                            <div className="space-y-4 pt-2 border-t border-border-subtle">
+                                <div>
+                                    <label className="text-xs font-bold text-error block mb-1.5">
+                                        علت لغو صلاحیت یا تعلیق (برای کاربر ثبت و نمایش داده می‌شود):
+                                    </label>
+                                    <textarea
+                                        value={adminNote}
+                                        onChange={(e) => setAdminNote(e.target.value)}
+                                        rows={3}
+                                        placeholder="توضیحات و دلیل تعلیق دفتر املاک / مشاور..."
+                                        className="w-full p-3 bg-surface-secondary border border-rose-200 rounded-xl text-xs focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500"
+                                    />
+                                </div>
+
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        if (confirm(`آیا از لغو صلاحیت و تعلیق «${selectedApp.agencyName || selectedApp.fullName}» اطمینان دارید؟`)) {
+                                            reviewMutation.mutate({ id: selectedApp.id, status: "REJECTED", adminNote });
+                                        }
+                                    }}
+                                    disabled={reviewMutation.isPending}
+                                    className="w-full py-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-black transition-colors shadow-sm flex items-center justify-center gap-2"
+                                >
+                                    <XCircle className="w-4 h-4" />
+                                    <span>لغو تأیید، تعلیق املاک و عزل نقش مشاور</span>
+                                </button>
+                            </div>
+                        )}
+
+                        {selectedApp.status === "REJECTED" && (
+                            <div className="space-y-4 pt-2 border-t border-border-subtle">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        if (confirm(`آیا از تأیید مجدد صلاحیت «${selectedApp.agencyName || selectedApp.fullName}» اطمینان دارید؟`)) {
+                                            reviewMutation.mutate({ id: selectedApp.id, status: "APPROVED" });
+                                        }
+                                    }}
+                                    disabled={reviewMutation.isPending}
+                                    className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black transition-colors shadow-sm flex items-center justify-center gap-2"
+                                >
+                                    <CheckCircle className="w-4 h-4" />
+                                    <span>تأیید مجدد صلاحیت و فعال‌سازی نقش Agent</span>
+                                </button>
                             </div>
                         )}
                     </div>

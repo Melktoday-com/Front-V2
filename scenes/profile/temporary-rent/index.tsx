@@ -11,9 +11,12 @@ import {
 import { useHostProfile, useUpdateHostProfile, useShowcasePosts } from "@/hooks/useShowcase";
 import { showcaseService } from "@/services/showcase.service";
 import MediaIconUpload from "@/components/admin/MediaIconUpload";
+import { SubscriptionQuotaWidget } from "@/components/subscriptions/SubscriptionQuotaWidget";
 import { PromotionModal } from "@/components/promotions/PromotionModal";
 import { UpdateHostProfileRequest } from "@/types/api/showcase.types";
 import type { TemporaryRentPricingReadModel } from "@/types/api/temporary-rent.types";
+import type { UnifiedPost, UpdatePostRequest } from "@/types/api/post.types";
+import { normalizeApiError } from "@/lib/api/error-handler";
 import { cn, formatCurrency, getMediaUrl, toEnglishDigits, toOnlyDigits, toPersianDigits } from "@/lib/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -45,6 +48,7 @@ import {
     Star,
     Trash2,
     Users,
+    X,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -89,12 +93,6 @@ function formatTemporaryRentPricing(pricing?: TemporaryRentPricingReadModel | nu
                 label: "پایه برگزاری مراسم",
                 formatted: formatCurrency(pricing.pricing.eventBasePrice),
                 hasCurrency: pricing.pricing.eventBasePrice > 0,
-            };
-        case null:
-            return {
-                label: "اجاره هر شب",
-                formatted: formatCurrency(pricing.legacyNightlyPrice),
-                hasCurrency: pricing.legacyNightlyPrice > 0,
             };
         default:
             return {
@@ -179,6 +177,58 @@ export default function TemporaryRentPanelScene() {
             toast.error("خطا در حذف پست.");
         },
     });
+
+    const [editingPost, setEditingPost] = useState<UnifiedPost | null>(null);
+    const [editForm, setEditForm] = useState({
+        title: "",
+        slug: "",
+        summary: "",
+        content: "",
+        isPublished: true,
+    });
+
+    const updatePostMutation = useMutation({
+        mutationFn: ({ postId, data }: { postId: string; data: UpdatePostRequest }) =>
+            showcaseService.updatePost(postId, data),
+        onSuccess: () => {
+            toast.success("پست با موفقیت بروزرسانی شد.");
+            setEditingPost(null);
+            refetchPosts();
+        },
+        onError: (err: Error) => {
+            toast.error(normalizeApiError(err, "خطا در بروزرسانی پست."));
+        },
+    });
+
+    const handleOpenEdit = (post: UnifiedPost) => {
+        setEditingPost(post);
+        setEditForm({
+            title: post.title || "",
+            slug: post.slug || "",
+            summary: post.summary || "",
+            content: post.content || "",
+            isPublished: post.isPublished ?? true,
+        });
+    };
+
+    const handleSaveEdit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!editingPost) return;
+        if (!editForm.title.trim()) {
+            toast.error("عنوان پست نمی‌تواند خالی باشد.");
+            return;
+        }
+        updatePostMutation.mutate({
+            postId: editingPost.id,
+            data: {
+                title: editForm.title.trim(),
+                slug: editForm.slug.trim() || undefined,
+                summary: editForm.summary.trim() || undefined,
+                content: editForm.content,
+                isPublished: editForm.isPublished,
+            },
+        });
+    };
 
     // Temporary rent mutations
     const publishMutation = usePublishTemporaryRent();
@@ -534,6 +584,9 @@ export default function TemporaryRentPanelScene() {
                             </div>
                         </div>
                     </div>
+
+                    {/* Subscription & Entitlements Widget */}
+                    <SubscriptionQuotaWidget targetRole="landlord" title="وضعیت اشتراک و سهمیه‌های میزبان" />
 
                     {/* Apple KPI Metric Grid (Rentals, Posts, Rating, Status) */}
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -1196,19 +1249,29 @@ export default function TemporaryRentPanelScene() {
                                             پسندها: {toPersianDigits(post.likeCount || 0)}
                                         </span>
 
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                if (window.confirm("آیا از حذف این پست اطمینان دارید؟")) {
-                                                    deletePostMutation.mutate(post.id);
-                                                }
-                                            }}
-                                            disabled={deletePostMutation.isPending}
-                                            className="p-1.5 text-status-error hover:bg-status-error/10 rounded-lg transition-colors cursor-pointer"
-                                            title="حذف پست"
-                                        >
-                                            <Trash2 className="w-3.5 h-3.5" />
-                                        </button>
+                                        <div className="flex items-center gap-1.5">
+                                            <button
+                                                type="button"
+                                                onClick={() => handleOpenEdit(post)}
+                                                className="p-1.5 text-primary hover:bg-primary/10 rounded-lg transition-colors cursor-pointer"
+                                                title="ویرایش مشخصات پست"
+                                            >
+                                                <Edit3 className="w-3.5 h-3.5" />
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    if (window.confirm("آیا از حذف این پست اطمینان دارید؟")) {
+                                                        deletePostMutation.mutate(post.id);
+                                                    }
+                                                }}
+                                                disabled={deletePostMutation.isPending}
+                                                className="p-1.5 text-status-error hover:bg-status-error/10 rounded-lg transition-colors cursor-pointer"
+                                                title="حذف پست"
+                                            >
+                                                <Trash2 className="w-3.5 h-3.5" />
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             ))}
@@ -1216,6 +1279,112 @@ export default function TemporaryRentPanelScene() {
                     )}
                 </section>
             </main>
+
+            {/* Edit Host Post Modal Dialog */}
+            {editingPost && (
+                <div
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label="ویرایش پست میزبان"
+                    className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto"
+                >
+                    <div className="bg-surface rounded-3xl max-w-xl w-full p-6 sm:p-7 space-y-4 shadow-2xl border border-soft-border my-8 animate-in fade-in zoom-in-95">
+                        <div className="flex items-center justify-between border-b border-soft-border/70 pb-3">
+                            <div className="flex items-center gap-2">
+                                <Edit3 className="w-4 h-4 text-primary" />
+                                <h3 className="text-sm sm:text-base font-black text-brand">ویرایش پست اقامتگاه</h3>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setEditingPost(null)}
+                                className="w-7 h-7 rounded-full bg-soft-bg text-secondary hover:bg-slate-200 flex items-center justify-center transition-colors cursor-pointer"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleSaveEdit} className="space-y-4 text-xs sm:text-sm">
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold text-brand block">عنوان پست *</label>
+                                <input
+                                    type="text"
+                                    value={editForm.title}
+                                    onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                                    placeholder="عنوان جذاب برای پست..."
+                                    className="w-full px-3.5 py-2.5 rounded-xl bg-surface border border-soft-border/80 text-brand focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                    required
+                                />
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold text-brand block">آدرس اینترنتی یکتا (Slug - اختیاری)</label>
+                                <input
+                                    type="text"
+                                    value={editForm.slug}
+                                    onChange={(e) => setEditForm({ ...editForm, slug: e.target.value })}
+                                    placeholder="vila-ramsari"
+                                    dir="ltr"
+                                    className="w-full px-3.5 py-2.5 rounded-xl bg-surface border border-soft-border/80 text-brand font-mono text-left focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                />
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold text-brand block">خلاصه کوتاه</label>
+                                <textarea
+                                    value={editForm.summary}
+                                    onChange={(e) => setEditForm({ ...editForm, summary: e.target.value })}
+                                    placeholder="توضیح کوتاه ۱ الی ۲ خطی برای پیش‌نمایش در کارت‌ها..."
+                                    rows={2}
+                                    className="w-full px-3.5 py-2.5 rounded-xl bg-surface border border-soft-border/80 text-brand focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
+                                />
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold text-brand block">متن و محتوای پست</label>
+                                <textarea
+                                    value={editForm.content}
+                                    onChange={(e) => setEditForm({ ...editForm, content: e.target.value })}
+                                    placeholder="محتوای متنی کامل، نکات اقامتگاه یا جاذبه‌های اطراف..."
+                                    rows={5}
+                                    className="w-full px-3.5 py-2.5 rounded-xl bg-surface border border-soft-border/80 text-brand focus:outline-none focus:ring-2 focus:ring-primary/20 resize-y"
+                                />
+                            </div>
+
+                            <div className="flex items-center justify-between p-3 rounded-xl bg-soft-bg/60 border border-soft-border/50">
+                                <div>
+                                    <span className="text-xs font-bold text-brand block">وضعیت انتشار عمومی</span>
+                                    <span className="text-[11px] text-secondary">
+                                        در صورت فعال بودن، پست در ویترین اقامتگاه و اکسپلور نمایش داده می‌شود.
+                                    </span>
+                                </div>
+                                <input
+                                    type="checkbox"
+                                    checked={editForm.isPublished}
+                                    onChange={(e) => setEditForm({ ...editForm, isPublished: e.target.checked })}
+                                    className="w-4 h-4 rounded text-primary focus:ring-primary cursor-pointer"
+                                />
+                            </div>
+
+                            <div className="flex items-center justify-end gap-2 pt-3 border-t border-soft-border/70">
+                                <button
+                                    type="button"
+                                    onClick={() => setEditingPost(null)}
+                                    className="px-4 py-2 rounded-xl border border-soft-border text-xs font-bold text-secondary hover:bg-soft-bg transition-colors cursor-pointer"
+                                >
+                                    انصراف
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={updatePostMutation.isPending}
+                                    className="px-5 py-2 rounded-xl bg-brand hover:bg-brand/90 text-white text-xs font-black transition-all cursor-pointer shadow-xs disabled:opacity-50"
+                                >
+                                    {updatePostMutation.isPending ? "در حال ذخیره..." : "ذخیره تغییرات"}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
 
             {/* Promotion Modal for temporary rent boost */}
             <PromotionModal

@@ -359,9 +359,6 @@ export default function SingleHostScene({ idOrSlug, initialData }: SingleHostSce
                       case "EVENT_VENUE_RENT":
                         nightlyRate = p.pricing.eventBasePrice || 0;
                         break;
-                      case null:
-                        nightlyRate = p.legacyNightlyPrice || 0;
-                        break;
                     }
                   }
                   return (
