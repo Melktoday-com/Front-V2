@@ -25,8 +25,11 @@ export function searchDocToAdSummary(doc: ListingSearchDocument): AdSummary {
     new Date(doc.updatedAt).getTime() - new Date(doc.createdAt).getTime() > 120_000
   );
 
-  const isUrgent = doc.promotionBoostScore === 80;
-  const isLadder = doc.promotionBoostScore === 40 || (!isUrgent && (Boolean(doc.isFeatured) || Boolean(doc.promotionBoostScore)) && hasUpdatedAfterCreated);
+  const isUrgent = doc.promotionBoostScore === 80 || doc.title?.includes('فوری');
+  const isLadder =
+    doc.promotionBoostScore === 40 ||
+    doc.title?.includes('نردبان') ||
+    ((Boolean(doc.isFeatured) || Boolean(doc.promotionBoostScore)) && hasUpdatedAfterCreated);
   const isFeatured = Boolean(doc.isFeatured && !isLadder && !isUrgent);
   const effectiveDate = isLadder
     ? (doc.updatedAt || doc.publishedAt || doc.createdAt)
