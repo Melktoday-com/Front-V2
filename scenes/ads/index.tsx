@@ -8,6 +8,7 @@ import { PageSectionDivider } from "@/components/ui/PageSectionDivider";
 import { PaginationControls } from "@/components/ui/PaginationControls";
 import { PropertyCard } from "@/components/ui/PropertyCard";
 import { EmptyState } from "@/components/ui/StatusStates";
+import { SubcategoryFilterDrawer, SubcategoryFilterValues } from "@/components/ui/SubcategoryFilterDrawer";
 import { useCategories } from "@/hooks/useAds";
 import { useInfiniteSearchListings, useSearchMap } from "@/hooks/useSearch";
 import { useCategoryLookup } from "@/hooks/useCategoryLookup";
@@ -17,13 +18,14 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { cn, formatPrice, getMediaUrl, getMediaPosterUrl, toPersianDigits } from "@/lib/utils";
 import { mapSearchDocToLocation, mapMarkerToLocation, getFloorArea } from "@/lib/location";
 import { searchDocToAdSummary } from "@/lib/search-transformers";
+import { adsService } from "@/services/ads.service";
 import { geoService } from "@/services/geo.service";
 import { AdSummary } from "@/types/api/ads.types";
 import { AdStatus } from "@/types/api/enums";
 import { ZoneSummary } from "@/types/api/geo.types";
-import { ListingSearchDocument, MapMarkerDto, SearchSortOption } from "@/types/api/search.types";
+import { ListingSearchDocument, MapMarkerDto, NumericRangeFilterDto, SearchSortOption } from "@/types/api/search.types";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronDown, LayoutGrid, Loader2, Map as MapIcon, MapPin, SlidersHorizontal, Tag, X } from "lucide-react";
+import { ChevronDown, Filter, LayoutGrid, Loader2, Map as MapIcon, MapPin, SlidersHorizontal, Tag, X } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -110,7 +112,8 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
     const [selectedZones, setSelectedZones] = useState<ZoneSummary[]>([]);
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
-    const isAnyModalOpen = drawerOpen || categoryDialogOpen;
+    const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
+    const isAnyModalOpen = drawerOpen || categoryDialogOpen || filterDrawerOpen;
 
     const urlSearch = searchParams.get("search") || "";
     const effectiveCityId = searchParams.get("cityId") || selectedCity.id || undefined;
@@ -130,6 +133,58 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
     const urlMaxArea = searchParams.get("maxArea") ? Number(searchParams.get("maxArea")) : undefined;
     const urlMinRooms = searchParams.get("minRooms") ? Number(searchParams.get("minRooms")) : undefined;
     const urlMaxRooms = searchParams.get("maxRooms") ? Number(searchParams.get("maxRooms")) : undefined;
+    const urlMinFloor = searchParams.get("minFloor") ? Number(searchParams.get("minFloor")) : undefined;
+    const urlMaxFloor = searchParams.get("maxFloor") ? Number(searchParams.get("maxFloor")) : undefined;
+    const urlMinConstructionYear = searchParams.get("minConstructionYear") ? Number(searchParams.get("minConstructionYear")) : undefined;
+    const urlMaxConstructionYear = searchParams.get("maxConstructionYear") ? Number(searchParams.get("maxConstructionYear")) : undefined;
+    const urlHasParking = searchParams.get("hasParking") === "true" ? true : undefined;
+    const urlHasElevator = searchParams.get("hasElevator") === "true" ? true : undefined;
+    const urlHasStorage = searchParams.get("hasStorage") === "true" ? true : undefined;
+    const urlHasBalcony = searchParams.get("hasBalcony") === "true" ? true : undefined;
+
+    const urlNumericAttributes = useMemo<Record<string, NumericRangeFilterDto> | undefined>(() => {
+        const raw = searchParams.get("numericAttributes");
+        if (!raw) return undefined;
+        try {
+            const parsed = JSON.parse(raw);
+            return typeof parsed === "object" && parsed !== null ? parsed : undefined;
+        } catch {
+            return undefined;
+        }
+    }, [searchParams]);
+
+    const urlBooleanAttributes = useMemo<Record<string, boolean> | undefined>(() => {
+        const raw = searchParams.get("booleanAttributes");
+        if (!raw) return undefined;
+        try {
+            const parsed = JSON.parse(raw);
+            return typeof parsed === "object" && parsed !== null ? parsed : undefined;
+        } catch {
+            return undefined;
+        }
+    }, [searchParams]);
+
+    const urlSelectionAttributes = useMemo<Record<string, string> | undefined>(() => {
+        const raw = searchParams.get("selectionAttributes");
+        if (!raw) return undefined;
+        try {
+            const parsed = JSON.parse(raw);
+            return typeof parsed === "object" && parsed !== null ? parsed : undefined;
+        } catch {
+            return undefined;
+        }
+    }, [searchParams]);
+
+    const urlStringAttributes = useMemo<Record<string, string> | undefined>(() => {
+        const raw = searchParams.get("stringAttributes");
+        if (!raw) return undefined;
+        try {
+            const parsed = JSON.parse(raw);
+            return typeof parsed === "object" && parsed !== null ? parsed : undefined;
+        } catch {
+            return undefined;
+        }
+    }, [searchParams]);
 
     const urlSort = (searchParams.get("sort") as SearchSortOption) || "newest";
     const [search, setSearch] = useState(urlSearch);
@@ -193,6 +248,261 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
     const observerTargetRef = useRef<HTMLDivElement | null>(null);
     const listContainerRef = useRef<HTMLDivElement | null>(null);
 
+    // Subcategory configuration query for dynamic attributes and allowed price models
+    const { data: subcatConfig, isLoading: isLoadingSubcatConfig } = useQuery({
+        queryKey: ["subcategory-config", selectedSubcategory, selectedCategory],
+        queryFn: () => adsService.getSubcategoryConfig(selectedSubcategory, selectedCategory || undefined),
+        enabled: Boolean(selectedSubcategory),
+        staleTime: 5 * 60 * 1000,
+    });
+
+    const currentFilterValues = useMemo<SubcategoryFilterValues>(() => ({
+        priceModelKey: urlPriceModel,
+        minPrice: urlMinPrice,
+        maxPrice: urlMaxPrice,
+        minDeposit: urlMinDeposit,
+        maxDeposit: urlMaxDeposit,
+        minRent: urlMinRent,
+        maxRent: urlMaxRent,
+        minArea: urlMinArea,
+        maxArea: urlMaxArea,
+        minRooms: urlMinRooms,
+        maxRooms: urlMaxRooms,
+        minFloor: urlMinFloor,
+        maxFloor: urlMaxFloor,
+        minConstructionYear: urlMinConstructionYear,
+        maxConstructionYear: urlMaxConstructionYear,
+        hasParking: urlHasParking,
+        hasElevator: urlHasElevator,
+        hasStorage: urlHasStorage,
+        hasBalcony: urlHasBalcony,
+        numericAttributes: urlNumericAttributes,
+        booleanAttributes: urlBooleanAttributes,
+        selectionAttributes: urlSelectionAttributes,
+        stringAttributes: urlStringAttributes,
+    }), [
+        urlPriceModel,
+        urlMinPrice,
+        urlMaxPrice,
+        urlMinDeposit,
+        urlMaxDeposit,
+        urlMinRent,
+        urlMaxRent,
+        urlMinArea,
+        urlMaxArea,
+        urlMinRooms,
+        urlMaxRooms,
+        urlMinFloor,
+        urlMaxFloor,
+        urlMinConstructionYear,
+        urlMaxConstructionYear,
+        urlHasParking,
+        urlHasElevator,
+        urlHasStorage,
+        urlHasBalcony,
+        urlNumericAttributes,
+        urlBooleanAttributes,
+        urlSelectionAttributes,
+        urlStringAttributes,
+    ]);
+
+    const activeFiltersCount = useMemo(() => {
+        let count = 0;
+        if (urlPriceModel) count++;
+        if (urlMinPrice !== undefined || urlMaxPrice !== undefined) count++;
+        if (urlMinDeposit !== undefined || urlMaxDeposit !== undefined) count++;
+        if (urlMinRent !== undefined || urlMaxRent !== undefined) count++;
+        if (urlMinArea !== undefined || urlMaxArea !== undefined) count++;
+        if (urlMinRooms !== undefined || urlMaxRooms !== undefined) count++;
+        if (urlMinFloor !== undefined || urlMaxFloor !== undefined) count++;
+        if (urlMinConstructionYear !== undefined || urlMaxConstructionYear !== undefined) count++;
+        if (urlHasParking) count++;
+        if (urlHasElevator) count++;
+        if (urlHasStorage) count++;
+        if (urlHasBalcony) count++;
+        if (urlNumericAttributes) count += Object.keys(urlNumericAttributes).length;
+        if (urlBooleanAttributes) count += Object.keys(urlBooleanAttributes).length;
+        if (urlSelectionAttributes) count += Object.keys(urlSelectionAttributes).length;
+        if (urlStringAttributes) count += Object.keys(urlStringAttributes).length;
+        return count;
+    }, [
+        urlPriceModel,
+        urlMinPrice,
+        urlMaxPrice,
+        urlMinDeposit,
+        urlMaxDeposit,
+        urlMinRent,
+        urlMaxRent,
+        urlMinArea,
+        urlMaxArea,
+        urlMinRooms,
+        urlMaxRooms,
+        urlMinFloor,
+        urlMaxFloor,
+        urlMinConstructionYear,
+        urlMaxConstructionYear,
+        urlHasParking,
+        urlHasElevator,
+        urlHasStorage,
+        urlHasBalcony,
+        urlNumericAttributes,
+        urlBooleanAttributes,
+        urlSelectionAttributes,
+        urlStringAttributes,
+    ]);
+
+    const handleApplyFilters = (vals: SubcategoryFilterValues) => {
+        const params = new URLSearchParams(searchParams.toString());
+
+        const setOrDelete = (key: string, val: string | number | boolean | undefined) => {
+            if (val !== undefined && val !== null && val !== "") {
+                params.set(key, String(val));
+            } else {
+                params.delete(key);
+            }
+        };
+
+        setOrDelete("priceModelKey", vals.priceModelKey);
+        setOrDelete("minPrice", vals.minPrice);
+        setOrDelete("maxPrice", vals.maxPrice);
+        setOrDelete("minDeposit", vals.minDeposit);
+        setOrDelete("maxDeposit", vals.maxDeposit);
+        setOrDelete("minRent", vals.minRent);
+        setOrDelete("maxRent", vals.maxRent);
+        setOrDelete("minArea", vals.minArea);
+        setOrDelete("maxArea", vals.maxArea);
+        setOrDelete("minRooms", vals.minRooms);
+        setOrDelete("maxRooms", vals.maxRooms);
+        setOrDelete("minFloor", vals.minFloor);
+        setOrDelete("maxFloor", vals.maxFloor);
+        setOrDelete("minConstructionYear", vals.minConstructionYear);
+        setOrDelete("maxConstructionYear", vals.maxConstructionYear);
+        setOrDelete("hasParking", vals.hasParking);
+        setOrDelete("hasElevator", vals.hasElevator);
+        setOrDelete("hasStorage", vals.hasStorage);
+        setOrDelete("hasBalcony", vals.hasBalcony);
+
+        if (vals.numericAttributes && Object.keys(vals.numericAttributes).length > 0) {
+            params.set("numericAttributes", JSON.stringify(vals.numericAttributes));
+        } else {
+            params.delete("numericAttributes");
+        }
+
+        if (vals.booleanAttributes && Object.keys(vals.booleanAttributes).length > 0) {
+            params.set("booleanAttributes", JSON.stringify(vals.booleanAttributes));
+        } else {
+            params.delete("booleanAttributes");
+        }
+
+        if (vals.selectionAttributes && Object.keys(vals.selectionAttributes).length > 0) {
+            params.set("selectionAttributes", JSON.stringify(vals.selectionAttributes));
+        } else {
+            params.delete("selectionAttributes");
+        }
+
+        if (vals.stringAttributes && Object.keys(vals.stringAttributes).length > 0) {
+            params.set("stringAttributes", JSON.stringify(vals.stringAttributes));
+        } else {
+            params.delete("stringAttributes");
+        }
+
+        setStartPage(1);
+        router.replace(`/ads?${params.toString()}`, { scroll: false });
+    };
+
+    const handleClearAllFilters = () => {
+        const params = new URLSearchParams(searchParams.toString());
+        [
+            "priceModelKey",
+            "minPrice",
+            "maxPrice",
+            "minDeposit",
+            "maxDeposit",
+            "minRent",
+            "maxRent",
+            "minArea",
+            "maxArea",
+            "minRooms",
+            "maxRooms",
+            "minFloor",
+            "maxFloor",
+            "minConstructionYear",
+            "maxConstructionYear",
+            "hasParking",
+            "hasElevator",
+            "hasStorage",
+            "hasBalcony",
+            "numericAttributes",
+            "booleanAttributes",
+            "selectionAttributes",
+            "stringAttributes",
+        ].forEach((k) => params.delete(k));
+        setStartPage(1);
+        router.replace(`/ads?${params.toString()}`, { scroll: false });
+    };
+
+    const handleRemoveFilterItem = (type: string, key?: string) => {
+        const params = new URLSearchParams(searchParams.toString());
+        if (type === "price") {
+            params.delete("minPrice");
+            params.delete("maxPrice");
+        } else if (type === "deposit") {
+            params.delete("minDeposit");
+            params.delete("maxDeposit");
+        } else if (type === "rent") {
+            params.delete("minRent");
+            params.delete("maxRent");
+        } else if (type === "area") {
+            params.delete("minArea");
+            params.delete("maxArea");
+        } else if (type === "rooms") {
+            params.delete("minRooms");
+            params.delete("maxRooms");
+        } else if (type === "floor") {
+            params.delete("minFloor");
+            params.delete("maxFloor");
+        } else if (type === "year") {
+            params.delete("minConstructionYear");
+            params.delete("maxConstructionYear");
+        } else if (type === "priceModel") {
+            params.delete("priceModelKey");
+        } else if (type === "parking") {
+            params.delete("hasParking");
+        } else if (type === "elevator") {
+            params.delete("hasElevator");
+        } else if (type === "storage") {
+            params.delete("hasStorage");
+        } else if (type === "balcony") {
+            params.delete("hasBalcony");
+        } else if (type === "booleanAttr" && key && urlBooleanAttributes) {
+            const next = { ...urlBooleanAttributes };
+            delete next[key];
+            if (Object.keys(next).length > 0) {
+                params.set("booleanAttributes", JSON.stringify(next));
+            } else {
+                params.delete("booleanAttributes");
+            }
+        } else if (type === "selectionAttr" && key && urlSelectionAttributes) {
+            const next = { ...urlSelectionAttributes };
+            delete next[key];
+            if (Object.keys(next).length > 0) {
+                params.set("selectionAttributes", JSON.stringify(next));
+            } else {
+                params.delete("selectionAttributes");
+            }
+        } else if (type === "numericAttr" && key && urlNumericAttributes) {
+            const next = { ...urlNumericAttributes };
+            delete next[key];
+            if (Object.keys(next).length > 0) {
+                params.set("numericAttributes", JSON.stringify(next));
+            } else {
+                params.delete("numericAttributes");
+            }
+        }
+        setStartPage(1);
+        router.replace(`/ads?${params.toString()}`, { scroll: false });
+    };
+
     // Saved ads state for heart button on each card
     const { isAdSaved } = useFavorites();
     const toggleSaveMutation = useToggleSaveAd();
@@ -228,6 +538,18 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
             maxArea: !isNaN(Number(urlMaxArea)) ? urlMaxArea : undefined,
             minRooms: !isNaN(Number(urlMinRooms)) ? urlMinRooms : undefined,
             maxRooms: !isNaN(Number(urlMaxRooms)) ? urlMaxRooms : undefined,
+            minFloor: !isNaN(Number(urlMinFloor)) ? urlMinFloor : undefined,
+            maxFloor: !isNaN(Number(urlMaxFloor)) ? urlMaxFloor : undefined,
+            minConstructionYear: !isNaN(Number(urlMinConstructionYear)) ? urlMinConstructionYear : undefined,
+            maxConstructionYear: !isNaN(Number(urlMaxConstructionYear)) ? urlMaxConstructionYear : undefined,
+            hasParking: urlHasParking,
+            hasElevator: urlHasElevator,
+            hasStorage: urlHasStorage,
+            hasBalcony: urlHasBalcony,
+            numericAttributes: urlNumericAttributes,
+            booleanAttributes: urlBooleanAttributes,
+            selectionAttributes: urlSelectionAttributes,
+            stringAttributes: urlStringAttributes,
             sort,
         },
         { startPage, maxPages: 7, enabled: true }
@@ -359,6 +681,18 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
             maxArea: !isNaN(Number(urlMaxArea)) ? urlMaxArea : undefined,
             minRooms: !isNaN(Number(urlMinRooms)) ? urlMinRooms : undefined,
             maxRooms: !isNaN(Number(urlMaxRooms)) ? urlMaxRooms : undefined,
+            minFloor: !isNaN(Number(urlMinFloor)) ? urlMinFloor : undefined,
+            maxFloor: !isNaN(Number(urlMaxFloor)) ? urlMaxFloor : undefined,
+            minConstructionYear: !isNaN(Number(urlMinConstructionYear)) ? urlMinConstructionYear : undefined,
+            maxConstructionYear: !isNaN(Number(urlMaxConstructionYear)) ? urlMaxConstructionYear : undefined,
+            hasParking: urlHasParking,
+            hasElevator: urlHasElevator,
+            hasStorage: urlHasStorage,
+            hasBalcony: urlHasBalcony,
+            numericAttributes: urlNumericAttributes,
+            booleanAttributes: urlBooleanAttributes,
+            selectionAttributes: urlSelectionAttributes,
+            stringAttributes: urlStringAttributes,
             query: debouncedSearch.trim() || undefined,
             limit: 500,
         },
@@ -610,7 +944,246 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                     </div>
                 )}
 
-                {/* Filter row: Categories, Neighborhoods, Sort controls in one clean row */}
+                {/* Active filter chips (Price, Area, Rooms, Amenities, Dynamic Attributes) */}
+                {activeFiltersCount > 0 && (
+                    <div
+                        data-testid="active-filter-chips"
+                        className="flex flex-wrap items-center gap-2"
+                    >
+                        <span className="text-[11px] text-text-light font-medium shrink-0">فیلترهای فعال:</span>
+
+                        {urlPriceModel && (
+                            <span className="inline-flex items-center gap-1.5 bg-secondary/10 text-secondary text-xs font-semibold px-3 py-1 rounded-full border border-secondary/20">
+                                مدل: {subcatConfig?.allowedPriceModels.find((p) => p.key === urlPriceModel)?.displayName || urlPriceModel}
+                                <button
+                                    type="button"
+                                    onClick={() => handleRemoveFilterItem("priceModel")}
+                                    className="hover:opacity-70 transition-opacity cursor-pointer"
+                                >
+                                    <X className="w-3 h-3" />
+                                </button>
+                            </span>
+                        )}
+
+                        {(urlMinPrice !== undefined || urlMaxPrice !== undefined) && (
+                            <span className="inline-flex items-center gap-1.5 bg-primary/10 text-primary text-xs font-semibold px-3 py-1 rounded-full border border-primary/20">
+                                قیمت: {urlMinPrice ? `از ${formatPrice(urlMinPrice, "")}` : ""} {urlMaxPrice ? `تا ${formatPrice(urlMaxPrice, "")}` : ""} تومان
+                                <button
+                                    type="button"
+                                    onClick={() => handleRemoveFilterItem("price")}
+                                    className="hover:opacity-70 transition-opacity cursor-pointer"
+                                >
+                                    <X className="w-3 h-3" />
+                                </button>
+                            </span>
+                        )}
+
+                        {(urlMinDeposit !== undefined || urlMaxDeposit !== undefined) && (
+                            <span className="inline-flex items-center gap-1.5 bg-primary/10 text-primary text-xs font-semibold px-3 py-1 rounded-full border border-primary/20">
+                                ودیعه: {urlMinDeposit ? `از ${formatPrice(urlMinDeposit, "")}` : ""} {urlMaxDeposit ? `تا ${formatPrice(urlMaxDeposit, "")}` : ""} تومان
+                                <button
+                                    type="button"
+                                    onClick={() => handleRemoveFilterItem("deposit")}
+                                    className="hover:opacity-70 transition-opacity cursor-pointer"
+                                >
+                                    <X className="w-3 h-3" />
+                                </button>
+                            </span>
+                        )}
+
+                        {(urlMinRent !== undefined || urlMaxRent !== undefined) && (
+                            <span className="inline-flex items-center gap-1.5 bg-primary/10 text-primary text-xs font-semibold px-3 py-1 rounded-full border border-primary/20">
+                                اجاره: {urlMinRent ? `از ${formatPrice(urlMinRent, "")}` : ""} {urlMaxRent ? `تا ${formatPrice(urlMaxRent, "")}` : ""} تومان
+                                <button
+                                    type="button"
+                                    onClick={() => handleRemoveFilterItem("rent")}
+                                    className="hover:opacity-70 transition-opacity cursor-pointer"
+                                >
+                                    <X className="w-3 h-3" />
+                                </button>
+                            </span>
+                        )}
+
+                        {(urlMinArea !== undefined || urlMaxArea !== undefined) && (
+                            <span className="inline-flex items-center gap-1.5 bg-primary/10 text-primary text-xs font-semibold px-3 py-1 rounded-full border border-primary/20">
+                                متراژ: {urlMinArea ? `از ${toPersianDigits(urlMinArea)}` : ""} {urlMaxArea ? `تا ${toPersianDigits(urlMaxArea)}` : ""} متر
+                                <button
+                                    type="button"
+                                    onClick={() => handleRemoveFilterItem("area")}
+                                    className="hover:opacity-70 transition-opacity cursor-pointer"
+                                >
+                                    <X className="w-3 h-3" />
+                                </button>
+                            </span>
+                        )}
+
+                        {urlMinRooms !== undefined && (
+                            <span className="inline-flex items-center gap-1.5 bg-primary/10 text-primary text-xs font-semibold px-3 py-1 rounded-full border border-primary/20">
+                                {urlMinRooms === 0 ? "بدون اتاق" : `${toPersianDigits(urlMinRooms)} خواب`}
+                                <button
+                                    type="button"
+                                    onClick={() => handleRemoveFilterItem("rooms")}
+                                    className="hover:opacity-70 transition-opacity cursor-pointer"
+                                >
+                                    <X className="w-3 h-3" />
+                                </button>
+                            </span>
+                        )}
+
+                        {(urlMinFloor !== undefined || urlMaxFloor !== undefined) && (
+                            <span className="inline-flex items-center gap-1.5 bg-primary/10 text-primary text-xs font-semibold px-3 py-1 rounded-full border border-primary/20">
+                                طبقه: {urlMinFloor ? `از ${toPersianDigits(urlMinFloor)}` : ""} {urlMaxFloor ? `تا ${toPersianDigits(urlMaxFloor)}` : ""}
+                                <button
+                                    type="button"
+                                    onClick={() => handleRemoveFilterItem("floor")}
+                                    className="hover:opacity-70 transition-opacity cursor-pointer"
+                                >
+                                    <X className="w-3 h-3" />
+                                </button>
+                            </span>
+                        )}
+
+                        {(urlMinConstructionYear !== undefined || urlMaxConstructionYear !== undefined) && (
+                            <span className="inline-flex items-center gap-1.5 bg-primary/10 text-primary text-xs font-semibold px-3 py-1 rounded-full border border-primary/20">
+                                سال ساخت: {urlMinConstructionYear ? `از ${toPersianDigits(urlMinConstructionYear)}` : ""} {urlMaxConstructionYear ? `تا ${toPersianDigits(urlMaxConstructionYear)}` : ""}
+                                <button
+                                    type="button"
+                                    onClick={() => handleRemoveFilterItem("year")}
+                                    className="hover:opacity-70 transition-opacity cursor-pointer"
+                                >
+                                    <X className="w-3 h-3" />
+                                </button>
+                            </span>
+                        )}
+
+                        {urlHasParking && (
+                            <span className="inline-flex items-center gap-1.5 bg-primary/10 text-primary text-xs font-semibold px-3 py-1 rounded-full border border-primary/20">
+                                پارکینگ دارد
+                                <button
+                                    type="button"
+                                    onClick={() => handleRemoveFilterItem("parking")}
+                                    className="hover:opacity-70 transition-opacity cursor-pointer"
+                                >
+                                    <X className="w-3 h-3" />
+                                </button>
+                            </span>
+                        )}
+
+                        {urlHasElevator && (
+                            <span className="inline-flex items-center gap-1.5 bg-primary/10 text-primary text-xs font-semibold px-3 py-1 rounded-full border border-primary/20">
+                                آسانسور دارد
+                                <button
+                                    type="button"
+                                    onClick={() => handleRemoveFilterItem("elevator")}
+                                    className="hover:opacity-70 transition-opacity cursor-pointer"
+                                >
+                                    <X className="w-3 h-3" />
+                                </button>
+                            </span>
+                        )}
+
+                        {urlHasStorage && (
+                            <span className="inline-flex items-center gap-1.5 bg-primary/10 text-primary text-xs font-semibold px-3 py-1 rounded-full border border-primary/20">
+                                انباری دارد
+                                <button
+                                    type="button"
+                                    onClick={() => handleRemoveFilterItem("storage")}
+                                    className="hover:opacity-70 transition-opacity cursor-pointer"
+                                >
+                                    <X className="w-3 h-3" />
+                                </button>
+                            </span>
+                        )}
+
+                        {urlHasBalcony && (
+                            <span className="inline-flex items-center gap-1.5 bg-primary/10 text-primary text-xs font-semibold px-3 py-1 rounded-full border border-primary/20">
+                                بالکن دارد
+                                <button
+                                    type="button"
+                                    onClick={() => handleRemoveFilterItem("balcony")}
+                                    className="hover:opacity-70 transition-opacity cursor-pointer"
+                                >
+                                    <X className="w-3 h-3" />
+                                </button>
+                            </span>
+                        )}
+
+                        {urlBooleanAttributes &&
+                            Object.entries(urlBooleanAttributes).map(([k, v]) => {
+                                if (!v) return null;
+                                const label = subcatConfig?.attributeDefinitions.find((d) => d.key === k)?.label || k;
+                                return (
+                                    <span
+                                        key={k}
+                                        className="inline-flex items-center gap-1.5 bg-primary/10 text-primary text-xs font-semibold px-3 py-1 rounded-full border border-primary/20"
+                                    >
+                                        {label}
+                                        <button
+                                            type="button"
+                                            onClick={() => handleRemoveFilterItem("booleanAttr", k)}
+                                            className="hover:opacity-70 transition-opacity cursor-pointer"
+                                        >
+                                            <X className="w-3 h-3" />
+                                        </button>
+                                    </span>
+                                );
+                            })}
+
+                        {urlSelectionAttributes &&
+                            Object.entries(urlSelectionAttributes).map(([k, v]) => {
+                                if (!v) return null;
+                                const def = subcatConfig?.attributeDefinitions.find((d) => d.key === k);
+                                const label = def?.label || k;
+                                const optLabel = def?.options?.find((o) => o.key === v)?.label || v;
+                                return (
+                                    <span
+                                        key={k}
+                                        className="inline-flex items-center gap-1.5 bg-primary/10 text-primary text-xs font-semibold px-3 py-1 rounded-full border border-primary/20"
+                                    >
+                                        {label}: {optLabel}
+                                        <button
+                                            type="button"
+                                            onClick={() => handleRemoveFilterItem("selectionAttr", k)}
+                                            className="hover:opacity-70 transition-opacity cursor-pointer"
+                                        >
+                                            <X className="w-3 h-3" />
+                                        </button>
+                                    </span>
+                                );
+                            })}
+
+                        {urlNumericAttributes &&
+                            Object.entries(urlNumericAttributes).map(([k, v]) => {
+                                const def = subcatConfig?.attributeDefinitions.find((d) => d.key === k);
+                                const label = def?.label || k;
+                                return (
+                                    <span
+                                        key={k}
+                                        className="inline-flex items-center gap-1.5 bg-primary/10 text-primary text-xs font-semibold px-3 py-1 rounded-full border border-primary/20"
+                                    >
+                                        {label}: {v.min ? `از ${toPersianDigits(v.min)}` : ""} {v.max ? `تا ${toPersianDigits(v.max)}` : ""}
+                                        <button
+                                            type="button"
+                                            onClick={() => handleRemoveFilterItem("numericAttr", k)}
+                                            className="hover:opacity-70 transition-opacity cursor-pointer"
+                                        >
+                                            <X className="w-3 h-3" />
+                                        </button>
+                                    </span>
+                                );
+                            })}
+
+                        <button
+                            type="button"
+                            onClick={handleClearAllFilters}
+                            className="text-[11px] text-secondary hover:text-error font-semibold transition-colors cursor-pointer"
+                        >
+                            حذف همه فیلترها
+                        </button>
+                    </div>
+                )}
+
+                {/* Filter row: Categories, Neighborhoods, Subcategory Filters, Sort controls in one clean row */}
                 <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
                     {/* Category tree trigger button */}
                     <button
@@ -669,6 +1242,28 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                             <ChevronDown className="w-3 h-3 opacity-70 shrink-0" />
                         </button>
                     )}
+
+                    {/* Subcategory & Dynamic Filters Trigger Button */}
+                    <button
+                        data-testid="subcategory-filters-trigger"
+                        type="button"
+                        onClick={() => setFilterDrawerOpen(true)}
+                        className={cn(
+                            "shrink-0 flex items-center gap-1.5 px-3 h-8 sm:h-8.5 rounded-full text-[11px] sm:text-xs font-bold border transition-all whitespace-nowrap cursor-pointer",
+                            activeFiltersCount > 0
+                                ? "bg-primary text-white border-primary shadow-xs shadow-primary/25"
+                                : "bg-soft-bg text-secondary border-soft-border hover:border-primary/50 hover:text-primary"
+                        )}
+                    >
+                        <Filter className="w-3.5 h-3.5 shrink-0" />
+                        <span>فیلترها</span>
+                        {activeFiltersCount > 0 && (
+                            <span className="bg-surface/30 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full leading-none">
+                                {toPersianDigits(activeFiltersCount)}
+                            </span>
+                        )}
+                        <ChevronDown className="w-3 h-3 opacity-70 shrink-0" />
+                    </button>
 
                     {/* Sort selector */}
                     <div className="relative shrink-0 flex items-center gap-1.5 bg-soft-bg hover:border-primary/50 text-secondary hover:text-primary px-3 h-8 sm:h-8.5 rounded-full border border-soft-border transition-all cursor-pointer">
@@ -992,6 +1587,26 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                 selectedIds={selectedZoneIds}
                 onToggle={handleZoneToggle}
                 onClear={handleClearZones}
+            />
+
+            {/* Subcategory Dynamic Filters Drawer */}
+            <SubcategoryFilterDrawer
+                isOpen={filterDrawerOpen}
+                onClose={() => setFilterDrawerOpen(false)}
+                categoryKey={selectedCategory}
+                subcategoryKey={selectedSubcategory}
+                subcategoryName={
+                    selectedSubcategory
+                        ? getSubcategoryName(selectedSubcategory, selectedCategory)
+                        : selectedCategory
+                        ? getCategoryName(selectedCategory)
+                        : undefined
+                }
+                subcatConfig={subcatConfig}
+                isLoadingConfig={isLoadingSubcatConfig}
+                currentValues={currentFilterValues}
+                onApply={handleApplyFilters}
+                onClear={handleClearAllFilters}
             />
 
             {/* Category Tree Dialog / Drawer */}

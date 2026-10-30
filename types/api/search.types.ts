@@ -196,6 +196,11 @@ export interface MultiSearchResult<T = AnySearchDocument> {
 
 export type SearchSortOption = 'relevance' | 'price_asc' | 'price_desc' | 'newest';
 
+export interface NumericRangeFilterDto {
+  min?: number;
+  max?: number;
+}
+
 export interface SearchListingsQueryDto {
   query?: string;
   categorySlug?: string;
@@ -228,6 +233,18 @@ export interface SearchListingsQueryDto {
   maxArea?: number;
   minRooms?: number;
   maxRooms?: number;
+  minConstructionYear?: number;
+  maxConstructionYear?: number;
+  minFloor?: number;
+  maxFloor?: number;
+  hasParking?: boolean;
+  hasElevator?: boolean;
+  hasStorage?: boolean;
+  hasBalcony?: boolean;
+  numericAttributes?: Record<string, NumericRangeFilterDto>;
+  booleanAttributes?: Record<string, boolean>;
+  selectionAttributes?: Record<string, string>;
+  stringAttributes?: Record<string, string>;
   sort?: SearchSortOption;
   page?: number;
   limit?: number;
@@ -263,6 +280,18 @@ export interface SearchMapQueryDto {
   maxArea?: number;
   minRooms?: number;
   maxRooms?: number;
+  minConstructionYear?: number;
+  maxConstructionYear?: number;
+  minFloor?: number;
+  maxFloor?: number;
+  hasParking?: boolean;
+  hasElevator?: boolean;
+  hasStorage?: boolean;
+  hasBalcony?: boolean;
+  numericAttributes?: Record<string, NumericRangeFilterDto>;
+  booleanAttributes?: Record<string, boolean>;
+  selectionAttributes?: Record<string, string>;
+  stringAttributes?: Record<string, string>;
   limit?: number;
 }
 
