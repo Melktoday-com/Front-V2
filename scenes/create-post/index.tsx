@@ -746,7 +746,7 @@ export default function CreatePostScene() {
                       {isSelected ? (
                         <span className="px-2 py-0.5 rounded-md bg-primary text-foreground text-[10px] font-black flex items-center gap-1">
                           <Check className="w-3 h-3" />
-                          <span>انتخاب شده</span>
+                          <span className="text-white" >انتخاب شده</span>
                         </span>
                       ) : (
                         <span className="text-[10px] font-bold text-foreground-muted">انتخاب</span>
