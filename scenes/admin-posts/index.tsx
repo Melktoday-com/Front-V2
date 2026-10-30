@@ -9,7 +9,7 @@ import {
 } from "@/hooks/usePosts";
 import { useAdminPermissions } from "@/hooks/useAdminPermissions";
 import { useDebounce } from "@/hooks/useDebounce";
-import { UnifiedPost } from "@/types/api/post.types";
+import { PublisherType, UnifiedPost } from "@/types/api/post.types";
 import { Button } from "@/components/ui/Button";
 import {
   Building2,
@@ -37,7 +37,7 @@ import {
 import { toast } from "sonner";
 import { toPersianDigits, getMediaPosterUrl, cn } from "@/lib/utils";
 
-type PublisherFilterType = "ALL" | "PLATFORM" | "AGENCY" | "HOST";
+type PublisherFilterType = "ALL" | PublisherType;
 type StatusFilterType = "all" | "published" | "draft";
 
 export default function AdminPostsScene() {
@@ -184,10 +184,10 @@ export default function AdminPostsScene() {
   };
 
   const renderPublisherBadge = (post: UnifiedPost) => {
-    const pubType = post.publisherType || (post.agencyId ? "AGENCY" : "PLATFORM");
+    const pubType = post.publisherType || (post.agencyId ? PublisherType.AGENCY : PublisherType.PLATFORM);
     const pub = post.publisher || post.agency;
 
-    if (pubType === "PLATFORM") {
+    if (pubType === PublisherType.PLATFORM) {
       return (
         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200/80">
           <Globe className="w-3.5 h-3.5 text-blue-600" />
@@ -196,7 +196,7 @@ export default function AdminPostsScene() {
       );
     }
 
-    if (pubType === "AGENCY") {
+    if (pubType === PublisherType.AGENCY) {
       return (
         <a
           href={pub?.slug ? `/agency/${pub.slug}` : `/agency/${post.publisherId}`}
@@ -212,7 +212,7 @@ export default function AdminPostsScene() {
       );
     }
 
-    if (pubType === "HOST") {
+    if (pubType === PublisherType.HOST) {
       return (
         <a
           href={pub?.slug ? `/host/${pub.slug}` : `/host/${post.publisherId}`}
@@ -263,9 +263,9 @@ export default function AdminPostsScene() {
           <div className="flex flex-wrap items-center gap-2">
             {[
               { id: "ALL", label: "همه ناشران", icon: Filter },
-              { id: "PLATFORM", label: "پلتفرم رسمی", icon: Globe },
-              { id: "AGENCY", label: "آژانس‌های املاک", icon: Building2 },
-              { id: "HOST", label: "میزبانان اقامتگاه", icon: Home },
+              { id: PublisherType.PLATFORM, label: "پلتفرم رسمی", icon: Globe },
+              { id: PublisherType.AGENCY, label: "آژانس‌های املاک", icon: Building2 },
+              { id: PublisherType.HOST, label: "میزبانان اقامتگاه", icon: Home },
             ].map((tab) => {
               const Icon = tab.icon;
               const isActive = publisherFilter === tab.id;

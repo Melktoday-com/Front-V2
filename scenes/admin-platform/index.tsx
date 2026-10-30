@@ -13,7 +13,7 @@ import {
 } from "@/hooks/usePosts";
 import { useAdminPermissions } from "@/hooks/useAdminPermissions";
 import { useDebounce } from "@/hooks/useDebounce";
-import { UnifiedPost } from "@/types/api/post.types";
+import { PublisherType, UnifiedPost } from "@/types/api/post.types";
 import { Button } from "@/components/ui/Button";
 import {
   Calendar,
@@ -66,7 +66,7 @@ export default function AdminPlatformScene() {
     isLoading: isPostsLoading,
     refetch: refetchPosts,
   } = useAdminPosts({
-    publisherType: "PLATFORM",
+    publisherType: PublisherType.PLATFORM,
     search: debouncedPostSearch.trim() || undefined,
     isPublished: isPublishedParam,
     page: postPage,

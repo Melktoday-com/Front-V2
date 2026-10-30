@@ -92,7 +92,7 @@ export default function CreatePostScene() {
     // 1. Admin -> Platform publisher
     if (isAdmin) {
       options.push({
-        type: "PLATFORM",
+        type: PublisherType.PLATFORM,
         id: "melktoday-official",
         name: "ملک‌تودی (پلتفرم رسمی)",
         isVerified: true,
@@ -103,7 +103,7 @@ export default function CreatePostScene() {
     // 2. Real Estate Agency / Agent
     if (myAgency) {
       options.push({
-        type: "AGENCY",
+        type: PublisherType.AGENCY,
         id: myAgency.id,
         name: myAgency.name,
         avatarUrl: myAgency.logoUrl || undefined,
@@ -130,7 +130,7 @@ export default function CreatePostScene() {
         false;
 
       options.push({
-        type: "HOST",
+        type: PublisherType.HOST,
         id: hostId,
         name: hostName,
         avatarUrl,

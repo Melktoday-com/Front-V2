@@ -34,7 +34,7 @@ export interface IPostPort {
   getLikedPosts(params?: {
     page?: number;
     limit?: number;
-    publisherType?: string;
+    publisherType?: PublisherType;
   }): Promise<PostsListResponse>;
   toggleLike(postId: string): Promise<ToggleLikeResponse>;
   createPost(data: CreatePostRequest): Promise<UnifiedPost>;
@@ -45,7 +45,7 @@ export interface IPostPort {
     limit?: number;
     category?: string;
     search?: string;
-    publisherType?: string;
+    publisherType?: PublisherType;
     publisherId?: string;
     isPublished?: boolean;
   }): Promise<PostsListResponse>;
@@ -103,7 +103,7 @@ export class HttpPostAdapter implements IPostPort {
       limit?: number;
       category?: string;
       search?: string;
-      publisherType?: string;
+      publisherType?: PublisherType;
       publisherId?: string;
       isPublished?: boolean;
     } = {},
@@ -128,7 +128,7 @@ export class HttpPostAdapter implements IPostPort {
    * Get posts liked by the current authenticated user
    */
   async getLikedPosts(
-    params: { page?: number; limit?: number; publisherType?: string } = {},
+    params: { page?: number; limit?: number; publisherType?: PublisherType } = {},
   ): Promise<PostsListResponse> {
     const response = await apiClient.get<PostsListResponse>('/posts/liked', {
       params,

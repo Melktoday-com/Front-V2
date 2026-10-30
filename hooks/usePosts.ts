@@ -4,6 +4,7 @@ import {
   CreatePostRequest,
   ExploreParams,
   PostsListResponse,
+  PublisherType,
   ToggleLikeResponse,
   UnifiedPost,
   UpdatePostRequest,
@@ -14,13 +15,13 @@ export const POSTS_QUERY_KEYS = {
   explore: (params?: ExploreParams) => ['posts', 'explore', params] as const,
   exploreInfinite: (params?: ExploreParams, startPage?: number) => ['posts', 'explore-infinite', params, startPage] as const,
   single: (idOrSlug: string) => ['posts', 'single', idOrSlug] as const,
-  liked: (params?: { page?: number; limit?: number; publisherType?: string }) => ['posts', 'liked', params] as const,
+  liked: (params?: { page?: number; limit?: number; publisherType?: PublisherType }) => ['posts', 'liked', params] as const,
   admin: (params?: {
     page?: number;
     limit?: number;
     category?: string;
     search?: string;
-    publisherType?: string;
+    publisherType?: PublisherType;
     publisherId?: string;
     isPublished?: boolean;
   }) => ['posts', 'admin', params] as const,
@@ -39,7 +40,7 @@ export const useAdminPosts = (
     limit?: number;
     category?: string;
     search?: string;
-    publisherType?: string;
+    publisherType?: PublisherType;
     publisherId?: string;
     isPublished?: boolean;
   } = {},
@@ -140,7 +141,7 @@ export const useSinglePost = (idOrSlug: string, enabled = true) => {
 /**
  * Hook to fetch posts liked by current user
  */
-export const useLikedPosts = (params: { page?: number; limit?: number; publisherType?: string } = {}) => {
+export const useLikedPosts = (params: { page?: number; limit?: number; publisherType?: PublisherType } = {}) => {
   return useQuery({
     queryKey: POSTS_QUERY_KEYS.liked(params),
     queryFn: () => postService.getLikedPosts(params),

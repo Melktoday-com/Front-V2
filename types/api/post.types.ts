@@ -1,13 +1,16 @@
 import type { MediaReference } from './media.types';
 
-export const PUBLISHER_TYPES = {
-  AGENCY: 'AGENCY',
-  HOST: 'HOST',
-  PLATFORM: 'PLATFORM',
-} as const;
+export enum PublisherType {
+  AGENCY = 'AGENCY',
+  HOST = 'HOST',
+  PLATFORM = 'PLATFORM',
+}
 
-export type PublisherType =
-  (typeof PUBLISHER_TYPES)[keyof typeof PUBLISHER_TYPES];
+export const PUBLISHER_TYPES = {
+  AGENCY: PublisherType.AGENCY,
+  HOST: PublisherType.HOST,
+  PLATFORM: PublisherType.PLATFORM,
+} as const;
 
 export interface PostPublisher {
   id: string;
@@ -47,7 +50,7 @@ export interface ExploreParams {
   limit?: number;
   category?: string;
   search?: string;
-  publisherType?: string;
+  publisherType?: PublisherType;
 }
 
 export interface CreatePostRequest {
