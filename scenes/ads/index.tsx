@@ -9,7 +9,7 @@ import { PaginationControls } from "@/components/ui/PaginationControls";
 import { PropertyCard } from "@/components/ui/PropertyCard";
 import { EmptyState } from "@/components/ui/StatusStates";
 import { useCategories } from "@/hooks/useAds";
-import { useInfiniteSearchListings, useSearchListings, useSearchMap } from "@/hooks/useSearch";
+import { useInfiniteSearchListings, useSearchMap } from "@/hooks/useSearch";
 import { useCategoryLookup } from "@/hooks/useCategoryLookup";
 import { useFavorites, useToggleSaveAd } from "@/hooks/useFavorites";
 import { useGeoHierarchy } from "@/hooks/useGeoHierarchy";
@@ -233,20 +233,6 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
         { startPage, maxPages: 7, enabled: true }
     );
 
-    // Fetch promoted listings for this scope to guarantee ladder ads appear at the top from page 1
-    const { data: promotedSearchData } = useSearchListings(
-        {
-            isFeatured: true,
-            query: debouncedSearch.trim() || undefined,
-            cityId: effectiveCityId,
-            categoryKey: selectedCategory || undefined,
-            subcategoryKey: selectedSubcategory || undefined,
-            businessModelKey: urlDealType || undefined,
-            limit: 20,
-        },
-        true
-    );
-
     // Auto-scroll infinite scroll up to 7 pages
     useEffect(() => {
         const target = observerTargetRef.current;
@@ -331,38 +317,6 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
     const allLoadedAds = useMemo(() => {
         return data?.pages.flatMap((page) => page.hits.map(searchDocToAdSummary)) || [];
     }, [data]);
-
-    // Hoist all ladder & urgent ads across loaded pages & promoted index so they are guaranteed to appear first at the top
-    const allLadderAds = useMemo(() => {
-        if (sort !== "newest" && sort !== "relevance") return [];
-        const seen = new Set<string>();
-        const list: AdSummary[] = [];
-
-        // 1. Any ladder/urgent listings present in current infinite search pages
-        for (const ad of allLoadedAds) {
-            if ((ad.isLadder || ad.isUrgent) && !seen.has(ad.adId)) {
-                seen.add(ad.adId);
-                list.push(ad);
-            }
-        }
-
-        // 2. Active promoted listings from promoted search
-        if (promotedSearchData?.hits) {
-            for (const doc of promotedSearchData.hits) {
-                const summary = searchDocToAdSummary(doc);
-                if ((summary.isLadder || summary.isUrgent) && !seen.has(summary.adId)) {
-                    seen.add(summary.adId);
-                    list.push(summary);
-                }
-            }
-        }
-
-        return list;
-    }, [sort, promotedSearchData, allLoadedAds]);
-
-    const ladderAdIds = useMemo(() => {
-        return new Set(allLadderAds.map((ad) => ad.adId));
-    }, [allLadderAds]);
 
     // Backend-driven results directly: zero client-side zone/polygon filtering
     const displayedAds = allLoadedAds;
@@ -862,60 +816,8 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                                     : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
                             )}
                         >
-                            {/* Pinned Ladder Ads: Guaranteed to show first at the very top of search results */}
-                            {allLadderAds.length > 0 && (
-                                <div key="ladder-pinned-ads" className="contents">
-                                    {allLadderAds.map((ad: AdSummary) => {
-                                        const pricing = getPricingDisplay(ad);
-                                        const catKey = ad.categoryPath?.categoryKey;
-                                        const subKey = ad.categoryPath?.subcategoryKey;
-                                        const subcategoryDisplay =
-                                            ad.subcategoryTitle ||
-                                            ad.categoryPath?.subcategoryTitle ||
-                                            getSubcategoryName(subKey, catKey) ||
-                                            ad.categoryTitle ||
-                                            ad.categoryPath?.categoryTitle ||
-                                            getCategoryName(catKey) ||
-                                            subKey;
-
-                                        const effectiveId = ad.adId;
-
-                                        return (
-                                            <PropertyCard
-                                                key={`ladder-${effectiveId}`}
-                                                id={effectiveId}
-                                                adId={effectiveId}
-                                                href={`/ads/${effectiveId}`}
-                                                title={ad.title}
-                                                price={pricing.price}
-                                                unit={pricing.unit}
-                                                location={ad.location || ''}
-                                                image={
-                                                    ad.mediaIds && ad.mediaIds.length > 0
-                                                        ? getMediaPosterUrl(ad.mediaIds[0])
-                                                        : "/property-placeholder.svg"
-                                                }
-                                                isVideo={ad.mediaIds?.[0]?.type === "VIDEO"}
-                                                category={subcategoryDisplay}
-                                                isSaved={ad.isSaved ?? isAdSaved(effectiveId)}
-                                                onToggleSave={(id) => toggleSaveMutation.mutateAsync(id)}
-                                                area={getFloorArea(ad)}
-                                                rooms={ad.rooms}
-                                                badgeName={ad.isFeatured && !ad.isLadder && !ad.isUrgent ? "ویژه" : undefined}
-                                                isUrgent={ad.isUrgent}
-                                                isLadder={ad.isLadder}
-                                                isFeatured={ad.isFeatured && !ad.isLadder && !ad.isUrgent}
-                                                date={ad.createdAt}
-                                            />
-                                        );
-                                    })}
-                                </div>
-                            )}
-
                             {data?.pages.map((page, pageIndex) => {
-                                const pageAds = page.hits
-                                    .map(searchDocToAdSummary)
-                                    .filter((ad) => allLadderAds.length === 0 || !ladderAdIds.has(ad.adId));
+                                const pageAds = page.hits.map(searchDocToAdSummary);
 
                                 if (pageAds.length === 0 && pageIndex > 0) return null;
 
