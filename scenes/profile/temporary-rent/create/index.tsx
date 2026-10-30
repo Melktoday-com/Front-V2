@@ -326,10 +326,7 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
                     latitude: formData.latitude,
                     longitude: formData.longitude,
                     mediaIds: formData.mediaIds || [],
-                    attributes: {
-                        ...formData.attributes,
-                        ...pricing,
-                    },
+                    attributes: formData.attributes || {},
                 };
                 await adminService.createTemporaryRent(payload);
                 toast.success("اقامتگاه با موفقیت توسط ادمین ثبت گردید");
@@ -343,10 +340,7 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
                 maxGuests: resolvedMaxGuests,
                 priceModelKey,
                 pricing,
-                attributes: {
-                    ...formData.attributes,
-                    ...pricing,
-                },
+                attributes: formData.attributes || {},
             };
 
             await createDraftMutation.mutateAsync(payload);
