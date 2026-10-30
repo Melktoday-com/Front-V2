@@ -32,6 +32,18 @@ export function NeighborhoodDrawer({
         }
     }, [isOpen]);
 
+    // Close on Escape key
+    useEffect(() => {
+        if (!isOpen) return;
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === "Escape") onClose();
+        };
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [isOpen, onClose]);
+
+    if (!isOpen) return null;
+
     const filtered = neighborhoods.filter((z) =>
         z.name.toLowerCase().includes(query.toLowerCase())
     );
@@ -39,45 +51,38 @@ export function NeighborhoodDrawer({
     const selectedCount = selectedIds.length;
 
     return (
-        <>
+        <div
+            className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4"
+            role="dialog"
+            aria-modal="true"
+            data-modal="true"
+            aria-label="انتخاب محله"
+        >
             {/* Backdrop */}
             <div
-                className={cn(
-                    "fixed inset-0 z-50 bg-black/30 backdrop-blur-sm transition-opacity duration-300",
-                    isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-                )}
+                className="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
                 onClick={onClose}
-                data-modal="true"
             />
 
-            {/* Drawer — slides up from bottom on mobile, appears as right sidebar on lg+ */}
+            {/* Container: Bottom Drawer on mobile, Centered Dialog on desktop */}
             <div
                 className={cn(
-                    "fixed z-50 bg-surface shadow-2xl transition-transform duration-300 ease-out",
-                    // Mobile: bottom sheet
-                    "bottom-0 left-0 right-0 rounded-t-3xl max-h-[80vh] flex flex-col",
-                    // Desktop: right panel (RTL → right = near search)
-                    "lg:bottom-auto lg:top-0 lg:right-0 lg:left-auto lg:h-full lg:w-80 lg:rounded-none lg:rounded-l-3xl",
-                    isOpen
-                        ? "translate-y-0 lg:translate-x-0"
-                        : "translate-y-full lg:translate-x-full lg:translate-y-0"
+                    "relative z-10 w-full md:w-[480px] md:max-w-lg bg-surface rounded-t-3xl md:rounded-3xl shadow-2xl flex flex-col overflow-hidden",
+                    "h-[80vh] max-h-[85vh] md:h-[600px] md:max-h-[80vh]",
+                    "border-t md:border border-border-subtle",
+                    "animate-in slide-in-from-bottom md:slide-in-from-bottom-0 md:zoom-in-95 duration-200 text-right"
                 )}
-                role="dialog"
-                aria-modal="true"
-                data-modal="true"
-                aria-hidden={!isOpen}
-                aria-label="انتخاب محله"
             >
                 {/* Handle bar — mobile only */}
-                <div className="lg:hidden flex justify-center pt-3 pb-1 shrink-0">
-                    <div className="w-10 h-1 rounded-full bg-gray-200" />
+                <div className="md:hidden flex justify-center pt-3 pb-1 shrink-0">
+                    <div className="w-10 h-1 rounded-full bg-border-subtle" />
                 </div>
 
                 {/* Header */}
                 <div className="flex items-center justify-between px-5 py-4 border-b border-border-subtle shrink-0">
                     <div className="flex items-center gap-2">
                         <MapPin className="w-4 h-4 text-primary" />
-                        <span className="font-bold text-brand text-sm">انتخاب محله</span>
+                        <span className="font-bold text-brand text-sm sm:text-base">انتخاب محله</span>
                         {selectedCount > 0 && (
                             <span className="bg-primary text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
                                 {selectedCount}
@@ -89,7 +94,7 @@ export function NeighborhoodDrawer({
                             <button
                                 type="button"
                                 onClick={onClear}
-                                className="text-xs text-error font-semibold hover:text-error transition-colors"
+                                className="text-xs text-error font-semibold hover:text-error transition-colors px-2 py-1 rounded-lg hover:bg-error-subtle cursor-pointer"
                             >
                                 پاک کردن همه
                             </button>
@@ -97,18 +102,19 @@ export function NeighborhoodDrawer({
                         <button
                             type="button"
                             onClick={onClose}
-                            className="p-1.5 rounded-full hover:bg-soft-bg transition-colors"
+                            className="p-1.5 rounded-full hover:bg-soft-bg text-secondary hover:text-brand transition-colors cursor-pointer"
                             aria-label="بستن"
+                            data-modal-close="true"
                         >
-                            <X className="w-4 h-4 text-secondary" />
+                            <X className="w-4 h-4" />
                         </button>
                     </div>
                 </div>
 
-                {/* Search inside drawer */}
-                <div className="px-4 pt-3 pb-2 shrink-0">
+                {/* Search inside drawer/dialog */}
+                <div className="px-5 pt-3 pb-2 shrink-0">
                     <div className="relative">
-                        <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-secondary" />
+                        <Search className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-secondary pointer-events-none" />
                         <input
                             ref={inputRef}
                             type="text"
@@ -121,7 +127,7 @@ export function NeighborhoodDrawer({
                 </div>
 
                 {/* List */}
-                <div className="overflow-y-auto flex-1 px-4 pb-6 custom-scrollbar">
+                <div className="overflow-y-auto flex-1 px-5 pb-4 custom-scrollbar">
                     {filtered.length === 0 ? (
                         <p className="text-center text-secondary text-xs py-8">محله‌ای یافت نشد</p>
                     ) : (
@@ -134,7 +140,7 @@ export function NeighborhoodDrawer({
                                             type="button"
                                             onClick={() => onToggle(zone)}
                                             className={cn(
-                                                "w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-all text-right",
+                                                "w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-all text-right cursor-pointer",
                                                 isSelected
                                                     ? "bg-primary/10 text-primary border border-primary/20"
                                                     : "hover:bg-soft-bg text-brand border border-transparent"
@@ -163,17 +169,17 @@ export function NeighborhoodDrawer({
 
                 {/* Footer action */}
                 {selectedCount > 0 && (
-                    <div className="px-4 pb-5 pt-2 border-t border-border-subtle shrink-0">
+                    <div className="px-5 pb-5 pt-3 border-t border-border-subtle shrink-0 bg-surface">
                         <button
                             type="button"
                             onClick={onClose}
-                            className="w-full bg-primary text-white py-3 rounded-xl font-bold text-sm hover:bg-primary/90 transition-colors"
+                            className="w-full bg-primary text-white py-3 rounded-xl font-bold text-sm hover:bg-primary/90 transition-colors cursor-pointer shadow-xs"
                         >
                             نمایش نتایج ({selectedCount} محله انتخاب شده)
                         </button>
                     </div>
                 )}
             </div>
-        </>
+        </div>
     );
 }

@@ -320,36 +320,43 @@ export function SubcategoryFilterDrawer({
         onClear();
     };
 
+    // Close on Escape key
+    useEffect(() => {
+        if (!isOpen) return;
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === "Escape") onClose();
+        };
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [isOpen, onClose]);
+
+    if (!isOpen) return null;
+
     return (
-        <>
+        <div
+            className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4"
+            role="dialog"
+            aria-modal="true"
+            data-modal="true"
+            aria-label="فیلترهای پیشرفته"
+        >
             {/* Backdrop */}
             <div
-                className={cn(
-                    "fixed inset-0 z-50 bg-black/40 backdrop-blur-xs transition-opacity duration-300",
-                    isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-                )}
+                className="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
                 onClick={onClose}
-                data-modal="true"
             />
 
-            {/* Drawer */}
+            {/* Container: Bottom Drawer on mobile, Centered Dialog on desktop */}
             <div
                 className={cn(
-                    "fixed z-50 bg-surface shadow-2xl transition-transform duration-300 ease-out flex flex-col",
-                    // Mobile: bottom sheet
-                    "bottom-0 left-0 right-0 rounded-t-3xl max-h-[90vh]",
-                    // Desktop: right panel (RTL)
-                    "lg:bottom-auto lg:top-0 lg:right-0 lg:left-auto lg:h-full lg:w-[480px] lg:rounded-none lg:rounded-l-3xl",
-                    isOpen
-                        ? "translate-y-0 lg:translate-x-0"
-                        : "translate-y-full lg:translate-x-full lg:translate-y-0"
+                    "relative z-10 w-full md:w-[620px] md:max-w-2xl bg-surface rounded-t-3xl md:rounded-3xl shadow-2xl flex flex-col overflow-hidden",
+                    "h-[90vh] max-h-[92vh] md:h-[720px] md:max-h-[85vh]",
+                    "border-t md:border border-border-subtle",
+                    "animate-in slide-in-from-bottom md:slide-in-from-bottom-0 md:zoom-in-95 duration-200 text-right"
                 )}
-                role="dialog"
-                aria-modal="true"
-                aria-label="فیلترهای پیشرفته"
             >
                 {/* Mobile Drag Bar */}
-                <div className="lg:hidden flex justify-center pt-3 pb-1 shrink-0">
+                <div className="md:hidden flex justify-center pt-3 pb-1 shrink-0">
                     <div className="w-10 h-1 rounded-full bg-border-subtle" />
                 </div>
 
@@ -378,7 +385,7 @@ export function SubcategoryFilterDrawer({
                             <button
                                 type="button"
                                 onClick={handleResetAll}
-                                className="flex items-center gap-1 text-xs text-error font-semibold hover:opacity-80 transition-opacity cursor-pointer"
+                                className="flex items-center gap-1 text-xs text-error font-semibold hover:opacity-80 transition-opacity cursor-pointer px-2 py-1 rounded-lg hover:bg-error-subtle"
                             >
                                 <RotateCcw className="w-3 h-3" />
                                 <span>حذف همه</span>
@@ -387,8 +394,9 @@ export function SubcategoryFilterDrawer({
                         <button
                             type="button"
                             onClick={onClose}
-                            className="p-1.5 rounded-full hover:bg-soft-bg text-secondary transition-colors cursor-pointer"
+                            className="p-1.5 rounded-full hover:bg-soft-bg text-secondary hover:text-brand transition-colors cursor-pointer"
                             aria-label="بستن"
+                            data-modal-close="true"
                         >
                             <X className="w-5 h-5" />
                         </button>
@@ -396,7 +404,7 @@ export function SubcategoryFilterDrawer({
                 </div>
 
                 {/* Scrollable Body */}
-                <div className="flex-1 overflow-y-auto px-5 py-4 space-y-6">
+                <div className="flex-1 overflow-y-auto px-5 py-4 space-y-6 custom-scrollbar">
                     {/* 1. Price Model Selection (if multiple allowed price models exist) */}
                     {subcatConfig?.allowedPriceModels && subcatConfig.allowedPriceModels.length > 0 && (
                         <div className="space-y-2">
@@ -848,6 +856,6 @@ export function SubcategoryFilterDrawer({
                     )}
                 </div>
             </div>
-        </>
+        </div>
     );
 }
