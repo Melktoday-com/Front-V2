@@ -34,8 +34,6 @@ import {
     Layers,
     LucideIcon,
 } from "lucide-react";
-import { adminService } from "@/services/admin.service";
-import { PlanLimits } from "@/types/api/admin.types";
 import {
     SubscriptionPlan,
     WelcomePackage,
@@ -330,32 +328,13 @@ interface WelcomePackageFormState {
     isActive: boolean;
 }
 
-const INITIAL_LEGACY_LIMITS: Record<string, PlanLimits> = {
-    FREE: {
-        maxActiveListings: 3,
-        hasAnalytics: false,
-        hasPriorityRanking: false,
-        hasProBadge: false,
-        hasUnlimitedMessaging: false,
-        canBoost: false,
-    },
-    PRO: {
-        maxActiveListings: 20,
-        hasAnalytics: true,
-        hasPriorityRanking: true,
-        hasProBadge: true,
-        hasUnlimitedMessaging: true,
-        canBoost: true,
-    },
-};
-
 export default function AdminConfigPage() {
     const queryClient = useQueryClient();
     const { isSuperAdmin, hasPermission, isLoading: permissionsLoading } = useAdminPermissions();
     const canManageConfig = isSuperAdmin || hasPermission("config.manage");
 
     // Tabs
-    const [activeTab, setActiveTab] = useState<"plans" | "welcome" | "limits" | "tariffs">("plans");
+    const [activeTab, setActiveTab] = useState<"plans" | "welcome" | "tariffs">("plans");
     const [planRoleFilter, setPlanRoleFilter] = useState<"ALL" | "agent" | "landlord">("ALL");
 
     // Platform Tariffs Queries & Mutations
@@ -408,21 +387,6 @@ export default function AdminConfigPage() {
     } = useAdminWelcomePackages();
     const createPackageMutation = useAdminCreateWelcomePackage();
     const updatePackageMutation = useAdminUpdateWelcomePackage();
-
-    // Legacy limits state
-    const [legacyLimits, setLegacyLimits] = useState<Record<string, PlanLimits>>(INITIAL_LEGACY_LIMITS);
-    const [selectedLegacyPlan, setSelectedLegacyPlan] = useState<"FREE" | "PRO">("FREE");
-
-    const updateLegacyMutation = useMutation({
-        mutationFn: ({ plan, data }: { plan: "FREE" | "PRO"; data: PlanLimits }) =>
-            adminService.updatePlanLimits({ plan, limits: data }),
-        onSuccess: () => {
-            toast.success("تنظیمات محدودیت‌ها با موفقیت ذخیره شد");
-        },
-        onError: (error: Error) => {
-            toast.error("خطا در ذخیره تنظیمات: " + normalizeApiError(error));
-        },
-    });
 
     // Unpack plans and packages data safely without `any`
     const plans: SubscriptionPlan[] = useMemo(() => {
@@ -760,18 +724,6 @@ export default function AdminConfigPage() {
                     <span className="px-2 py-0.5 rounded-full text-xs bg-success-subtle text-success font-mono font-bold">
                         {toPersianDigits(packages.length)}
                     </span>
-                </button>
-
-                <button
-                    onClick={() => setActiveTab("limits")}
-                    className={`flex items-center gap-2.5 px-5 py-3 rounded-xl text-sm font-bold transition-all relative ${
-                        activeTab === "limits"
-                            ? "bg-surface text-info shadow-sm border border-border-subtle"
-                            : "text-foreground-secondary hover:text-foreground hover:bg-surface-secondary/60"
-                    }`}
-                >
-                    <ShieldCheck size={18} />
-                    <span>محدودیت‌های پایه سیستم</span>
                 </button>
 
                 <button
@@ -1194,170 +1146,7 @@ export default function AdminConfigPage() {
                 </div>
             )}
 
-            {/* TAB 3: LEGACY SYSTEM LIMITS (Preserved for compatibility) */}
-            {activeTab === "limits" && (
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                    <div className="lg:col-span-1 space-y-2">
-                        <button
-                            onClick={() => setSelectedLegacyPlan("FREE")}
-                            className={`w-full text-right p-3.5 rounded-xl flex items-center gap-3 transition-colors ${
-                                selectedLegacyPlan === "FREE"
-                                    ? "bg-info-subtle text-info font-bold border border-info/30"
-                                    : "hover:bg-surface-secondary text-foreground-secondary border border-transparent"
-                            }`}
-                        >
-                            <ShieldCheck size={20} />
-                            پلن رایگان پایه (FREE)
-                        </button>
-                        <button
-                            onClick={() => setSelectedLegacyPlan("PRO")}
-                            className={`w-full text-right p-3.5 rounded-xl flex items-center gap-3 transition-colors ${
-                                selectedLegacyPlan === "PRO"
-                                    ? "bg-info-subtle text-info font-bold border border-info/30"
-                                    : "hover:bg-surface-secondary text-foreground-secondary border border-transparent"
-                            }`}
-                        >
-                            <Zap size={20} />
-                            پلن پیشرفته (PRO)
-                        </button>
-
-                        <div className="mt-8 p-4 bg-warning-subtle rounded-xl border border-warning/30 flex gap-3 text-warning">
-                            <Info size={22} className="shrink-0 mt-0.5" />
-                            <p className="text-xs leading-relaxed">
-                                تنظیمات این بخش مربوط به سیستم احراز محدودیت‌های پایه سرویس است.
-                            </p>
-                        </div>
-                    </div>
-
-                    <div className="lg:col-span-3 bg-surface rounded-2xl border border-border-subtle shadow-sm p-6 space-y-6">
-                        <div className="flex justify-between items-center border-b pb-4">
-                            <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
-                                <Settings size={20} className="text-info" />
-                                پیکربندی محدودیت‌های پلن {selectedLegacyPlan}
-                            </h2>
-                            <button
-                                onClick={() =>
-                                    updateLegacyMutation.mutate({
-                                        plan: selectedLegacyPlan,
-                                        data: legacyLimits[selectedLegacyPlan],
-                                    })
-                                }
-                                disabled={!canManageConfig || updateLegacyMutation.isPending}
-                                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-xs font-bold rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
-                            >
-                                <Save size={16} />
-                                ذخیره تغییرات
-                            </button>
-                        </div>
-
-                        <div className="space-y-2 max-w-xs">
-                            <label className="block text-sm font-medium text-foreground-secondary">حداکثر آگهی‌های فعال</label>
-                            <input
-                                type="number"
-                                value={legacyLimits[selectedLegacyPlan].maxActiveListings ?? 0}
-                                onChange={(e) =>
-                                    setLegacyLimits((prev) => ({
-                                        ...prev,
-                                        [selectedLegacyPlan]: {
-                                            ...prev[selectedLegacyPlan],
-                                            maxActiveListings: parseInt(e.target.value) || 0,
-                                        },
-                                    }))
-                                }
-                                className="w-full p-2.5 rounded-lg border border-border focus:ring-2 focus:ring-blue-500 outline-none font-mono"
-                            />
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
-                            <div className="p-4 bg-surface-secondary rounded-xl border border-border-subtle flex items-center justify-between">
-                                <div>
-                                    <span className="text-sm font-bold text-foreground block">دسترسی به تحلیل و آمار</span>
-                                    <span className="text-xs text-foreground-muted">نمایش نمودارهای بازدید آگهی</span>
-                                </div>
-                                <input
-                                    type="checkbox"
-                                    checked={legacyLimits[selectedLegacyPlan].hasAnalytics}
-                                    onChange={(e) =>
-                                        setLegacyLimits((prev) => ({
-                                            ...prev,
-                                            [selectedLegacyPlan]: {
-                                                ...prev[selectedLegacyPlan],
-                                                hasAnalytics: e.target.checked,
-                                            },
-                                        }))
-                                    }
-                                    className="w-5 h-5 accent-blue-600 rounded"
-                                />
-                            </div>
-
-                            <div className="p-4 bg-surface-secondary rounded-xl border border-border-subtle flex items-center justify-between">
-                                <div>
-                                    <span className="text-sm font-bold text-foreground block">رتبه‌بندی اولویت‌دار</span>
-                                    <span className="text-xs text-foreground-muted">نمایش بالاتر در فهرست نتایج</span>
-                                </div>
-                                <input
-                                    type="checkbox"
-                                    checked={legacyLimits[selectedLegacyPlan].hasPriorityRanking}
-                                    onChange={(e) =>
-                                        setLegacyLimits((prev) => ({
-                                            ...prev,
-                                            [selectedLegacyPlan]: {
-                                                ...prev[selectedLegacyPlan],
-                                                hasPriorityRanking: e.target.checked,
-                                            },
-                                        }))
-                                    }
-                                    className="w-5 h-5 accent-blue-600 rounded"
-                                />
-                            </div>
-
-                            <div className="p-4 bg-surface-secondary rounded-xl border border-border-subtle flex items-center justify-between">
-                                <div>
-                                    <span className="text-sm font-bold text-foreground block">نشان حرفه‌ای (Pro)</span>
-                                    <span className="text-xs text-foreground-muted">نمایش نشان در کارت‌ها</span>
-                                </div>
-                                <input
-                                    type="checkbox"
-                                    checked={legacyLimits[selectedLegacyPlan].hasProBadge}
-                                    onChange={(e) =>
-                                        setLegacyLimits((prev) => ({
-                                            ...prev,
-                                            [selectedLegacyPlan]: {
-                                                ...prev[selectedLegacyPlan],
-                                                hasProBadge: e.target.checked,
-                                            },
-                                        }))
-                                    }
-                                    className="w-5 h-5 accent-blue-600 rounded"
-                                />
-                            </div>
-
-                            <div className="p-4 bg-surface-secondary rounded-xl border border-border-subtle flex items-center justify-between">
-                                <div>
-                                    <span className="text-sm font-bold text-foreground block">امکان بوست / ارتقا</span>
-                                    <span className="text-xs text-foreground-muted">قابلیت اعمال نردبان و ارتقا</span>
-                                </div>
-                                <input
-                                    type="checkbox"
-                                    checked={legacyLimits[selectedLegacyPlan].canBoost}
-                                    onChange={(e) =>
-                                        setLegacyLimits((prev) => ({
-                                            ...prev,
-                                            [selectedLegacyPlan]: {
-                                                ...prev[selectedLegacyPlan],
-                                                canBoost: e.target.checked,
-                                            },
-                                        }))
-                                    }
-                                    className="w-5 h-5 accent-blue-600 rounded"
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* TAB 4: PLATFORM TARIFFS */}
+            {/* TAB 3: PLATFORM TARIFFS */}
             {activeTab === "tariffs" && (
                 <div className="space-y-6">
                     {/* Information Box */}

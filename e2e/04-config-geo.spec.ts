@@ -4,7 +4,7 @@ import { attachTelemetry } from './helpers/auth';
 test.describe('Flow 4: Platform Config & Geo Zones UI Test', () => {
   test.use({ storageState: 'playwright/.auth/admin.json' });
 
-  test('Admin navigates to /admin/config and updates plan limits', async ({ page }) => {
+  test('Admin navigates to /admin/config and views platform configuration tabs', async ({ page }) => {
     const telemetry = attachTelemetry(page);
 
     await page.goto('/admin/config', { waitUntil: 'networkidle' });
@@ -14,20 +14,16 @@ test.describe('Flow 4: Platform Config & Geo Zones UI Test', () => {
     const heading = page.locator('h1');
     await expect(heading).toContainText('تنظیمات');
 
-    // Plan selector tabs (FREE / PRO)
-    const proTab = page.locator('button:has-text("PRO")').or(page.locator('button:has-text("حرفه‌ای")')).first();
-    if (await proTab.isVisible()) {
-      await proTab.click();
-    }
+    // Verify main dynamic configuration tabs
+    const plansTab = page.locator('button:has-text("پلن‌های اشتراک")').first();
+    await expect(plansTab).toBeVisible({ timeout: 10000 });
 
-    // Save button
-    const saveBtn = page.locator('button:has-text("ذخیره")').first();
-    await expect(saveBtn).toBeVisible();
-    await saveBtn.click();
+    const tariffsTab = page.locator('button:has-text("تعرفه‌های ۶گانه سیستم")').first();
+    await expect(tariffsTab).toBeVisible({ timeout: 10000 });
+    await tariffsTab.click();
 
-    // Verify toast notification appears
-    const toast = page.locator('[data-sonner-toast]');
-    await expect(toast).toBeVisible({ timeout: 10000 });
+    // Verify tariffs tab content rendered
+    await expect(page.locator('text=Platform Monetary Tariffs').first()).toBeVisible({ timeout: 10000 });
   });
 
   test('Admin navigates to /admin/geo and views zones list and tabs', async ({ page }) => {
