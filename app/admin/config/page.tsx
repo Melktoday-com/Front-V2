@@ -609,7 +609,7 @@ export default function AdminConfigPage() {
         setPackageForm({
             title: pkg.title,
             targetRole: pkg.targetRole,
-            walletBonusIrr: pkg.walletBonusIrr || "0",
+            walletBonusIrr: String(pkg.walletBonusIrr ?? "0"),
             publicationQuota: pkg.publicationQuota || 0,
             tempRentQuota: pkg.tempRentQuota || 0,
             urgentQuota: pkg.urgentQuota || 0,
@@ -651,10 +651,9 @@ export default function AdminConfigPage() {
         try {
             if (editingPackageId) {
                 const payload: UpdateWelcomePackageRequest = {
-                    id: editingPackageId,
                     title: packageForm.title.trim(),
                     targetRole: packageForm.targetRole,
-                    walletBonusIrr: packageForm.walletBonusIrr,
+                    walletBonusIrr: String(packageForm.walletBonusIrr || "0"),
                     publicationQuota: Number(packageForm.publicationQuota),
                     tempRentQuota: Number(packageForm.tempRentQuota),
                     urgentQuota: Number(packageForm.urgentQuota),
@@ -668,7 +667,7 @@ export default function AdminConfigPage() {
                 const payload: CreateWelcomePackageRequest = {
                     title: packageForm.title.trim(),
                     targetRole: packageForm.targetRole,
-                    walletBonusIrr: packageForm.walletBonusIrr,
+                    walletBonusIrr: String(packageForm.walletBonusIrr || "0"),
                     publicationQuota: Number(packageForm.publicationQuota),
                     tempRentQuota: Number(packageForm.tempRentQuota),
                     urgentQuota: Number(packageForm.urgentQuota),

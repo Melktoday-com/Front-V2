@@ -14,6 +14,7 @@
 /coverage
 /test-results/
 /playwright-report/
+/playwright-report-live/
 playwright/.auth/
 
 # next.js

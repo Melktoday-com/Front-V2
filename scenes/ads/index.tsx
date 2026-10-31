@@ -75,6 +75,22 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
     const searchParams = useSearchParams();
     const router = useRouter();
     const { selectedCity, setSelectedCity } = useCity();
+
+    const effectiveCityId = searchParams.get("cityId") || selectedCity.id || undefined;
+    const effectiveCityName = searchParams.get("cityName") || selectedCity.name || "همه شهرها";
+
+    // Synchronize CityProvider when URL specifies cityId
+    useEffect(() => {
+        const urlCityId = searchParams.get("cityId");
+        const urlCityName = searchParams.get("cityName");
+        if (urlCityId && urlCityId !== selectedCity.id) {
+            setSelectedCity({
+                id: urlCityId,
+                name: urlCityName || "همه شهرها",
+            });
+        }
+    }, [searchParams, selectedCity.id, setSelectedCity]);
+
     const urlView = searchParams.get("view") as "list" | "split" | "map" | null;
     const [isMobile, setIsMobile] = useState<boolean>(false);
     const [viewMode, setViewModeState] = useState<"list" | "split" | "map">(
@@ -96,18 +112,19 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
 
     const setViewMode = useCallback(
         (mode: "list" | "split" | "map") => {
-            const defaultMode = isMobile ? "list" : "split";
             const targetMode = isMobile && mode === "split" ? "list" : mode;
             setViewModeState(targetMode);
             const params = new URLSearchParams(searchParams.toString());
-            if (targetMode === defaultMode) {
-                params.delete("view");
-            } else {
-                params.set("view", targetMode);
+            params.set("view", targetMode);
+            if (effectiveCityId && !params.has("cityId")) {
+                params.set("cityId", effectiveCityId);
+                if (effectiveCityName && effectiveCityName !== "همه شهرها") {
+                    params.set("cityName", effectiveCityName);
+                }
             }
             router.replace(`/ads?${params.toString()}`, { scroll: false });
         },
-        [searchParams, router, isMobile]
+        [searchParams, router, isMobile, effectiveCityId, effectiveCityName]
     );
     const [selectedZones, setSelectedZones] = useState<ZoneSummary[]>([]);
     const [drawerOpen, setDrawerOpen] = useState(false);
@@ -116,8 +133,6 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
     const isAnyModalOpen = drawerOpen || categoryDialogOpen || filterDrawerOpen;
 
     const urlSearch = searchParams.get("search") || "";
-    const effectiveCityId = searchParams.get("cityId") || selectedCity.id || undefined;
-    const effectiveCityName = searchParams.get("cityName") || selectedCity.name || "همه شهرها";
     const urlCategory = searchParams.get("categoryKey") || "";
     const urlSubcategory = searchParams.get("subcategoryKey") || "";
     const urlDealType = searchParams.get("businessModelKey") || "";
@@ -217,6 +232,27 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
     useEffect(() => {
         setStartPage(1);
     }, [debouncedSearch, effectiveCityId, selectedZones]);
+
+    // Synchronize debouncedSearch to URL query param
+    useEffect(() => {
+        const currentUrlSearch = searchParams.get("search") || "";
+        const trimmed = debouncedSearch.trim();
+        if (trimmed !== currentUrlSearch) {
+            const params = new URLSearchParams(searchParams.toString());
+            if (trimmed) {
+                params.set("search", trimmed);
+            } else {
+                params.delete("search");
+            }
+            if (effectiveCityId && !params.has("cityId")) {
+                params.set("cityId", effectiveCityId);
+                if (effectiveCityName && effectiveCityName !== "همه شهرها") {
+                    params.set("cityName", effectiveCityName);
+                }
+            }
+            router.replace(`/ads?${params.toString()}`, { scroll: false });
+        }
+    }, [debouncedSearch, searchParams, router, effectiveCityId, effectiveCityName]);
 
     const selectedZoneIds = useMemo(() => selectedZones.map((z) => z.id), [selectedZones]);
     const selectedZoneNames = useMemo(() => selectedZones.map((z) => z.name), [selectedZones]);
@@ -406,6 +442,13 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
             params.delete("stringAttributes");
         }
 
+        if (effectiveCityId && !params.has("cityId")) {
+            params.set("cityId", effectiveCityId);
+            if (effectiveCityName && effectiveCityName !== "همه شهرها") {
+                params.set("cityName", effectiveCityName);
+            }
+        }
+
         setStartPage(1);
         router.replace(`/ads?${params.toString()}`, { scroll: false });
     };
@@ -437,6 +480,12 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
             "selectionAttributes",
             "stringAttributes",
         ].forEach((k) => params.delete(k));
+        if (effectiveCityId && !params.has("cityId")) {
+            params.set("cityId", effectiveCityId);
+            if (effectiveCityName && effectiveCityName !== "همه شهرها") {
+                params.set("cityName", effectiveCityName);
+            }
+        }
         setStartPage(1);
         router.replace(`/ads?${params.toString()}`, { scroll: false });
     };
@@ -497,6 +546,12 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                 params.set("numericAttributes", JSON.stringify(next));
             } else {
                 params.delete("numericAttributes");
+            }
+        }
+        if (effectiveCityId && !params.has("cityId")) {
+            params.set("cityId", effectiveCityId);
+            if (effectiveCityName && effectiveCityName !== "همه شهرها") {
+                params.set("cityName", effectiveCityName);
             }
         }
         setStartPage(1);
@@ -591,18 +646,53 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
     });
     const neighborhoods = useMemo(() => zonesData || [], [zonesData]);
 
+    // Synchronize selectedZones with urlZoneIds & urlNeighbourhoodNames
     useEffect(() => {
-        if (zonesData && zonesData.length > 0 && selectedZones.length === 0) {
-            if (urlZoneIds.length > 0 || urlNeighbourhoodNames.length > 0) {
-                const matched = zonesData.filter(
-                    (z) => urlZoneIds.includes(z.id) || urlNeighbourhoodNames.includes(z.name)
-                );
-                if (matched.length > 0) {
-                    setSelectedZones(matched);
+        if (urlZoneIds.length === 0 && urlNeighbourhoodNames.length === 0) {
+            setSelectedZones([]);
+            return;
+        }
+
+        if (zonesData && zonesData.length > 0) {
+            const matched = zonesData.filter(
+                (z) => urlZoneIds.includes(z.id) || urlNeighbourhoodNames.includes(z.name)
+            );
+            const matchedIds = new Set(matched.map((m) => m.id));
+            const extra: ZoneSummary[] = [];
+            for (let i = 0; i < urlZoneIds.length; i++) {
+                const id = urlZoneIds[i];
+                const name = urlNeighbourhoodNames[i] || urlNeighbourhoodNames[0] || id;
+                if (!matchedIds.has(id)) {
+                    extra.push({
+                        id,
+                        name,
+                        type: "NEIGHBORHOOD",
+                        parentId: effectiveCityId || "",
+                    } as ZoneSummary);
                 }
             }
+            setSelectedZones([...matched, ...extra]);
+        } else {
+            // If zonesData is loading or not available, create placeholders so tags display immediately
+            const placeholders: ZoneSummary[] = [];
+            const count = Math.max(urlZoneIds.length, urlNeighbourhoodNames.length);
+            for (let i = 0; i < count; i++) {
+                const id = urlZoneIds[i] || `zone-${i}`;
+                const name = urlNeighbourhoodNames[i] || urlZoneIds[i] || "";
+                if (name || id) {
+                    placeholders.push({
+                        id,
+                        name: name || id,
+                        type: "NEIGHBORHOOD",
+                        parentId: effectiveCityId || "",
+                    } as ZoneSummary);
+                }
+            }
+            if (placeholders.length > 0) {
+                setSelectedZones(placeholders);
+            }
         }
-    }, [zonesData, urlZoneIds, urlNeighbourhoodNames, selectedZones.length]);
+    }, [zonesData, urlZoneIds, urlNeighbourhoodNames, effectiveCityId]);
 
     const { data: categoriesData, isLoading: isCategoriesLoading } = useCategories();
     const { getSubcategoryName, getCategoryName } = useCategoryLookup();
@@ -766,6 +856,12 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                 params.append("neighbourhoodNames", z.name);
             });
         }
+        if (effectiveCityId && !params.has("cityId")) {
+            params.set("cityId", effectiveCityId);
+            if (effectiveCityName && effectiveCityName !== "همه شهرها") {
+                params.set("cityName", effectiveCityName);
+            }
+        }
         router.replace(`/ads?${params.toString()}`, { scroll: false });
     };
 
@@ -807,6 +903,12 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
         } else {
             params.delete("subcategoryKey");
         }
+        if (effectiveCityId && !params.has("cityId")) {
+            params.set("cityId", effectiveCityId);
+            if (effectiveCityName && effectiveCityName !== "همه شهرها") {
+                params.set("cityName", effectiveCityName);
+            }
+        }
         router.replace(`/ads?${params.toString()}`, { scroll: false });
     };
 
@@ -822,6 +924,12 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
             params.delete("sort");
         } else {
             params.set("sort", newSort);
+        }
+        if (effectiveCityId && !params.has("cityId")) {
+            params.set("cityId", effectiveCityId);
+            if (effectiveCityName && effectiveCityName !== "همه شهرها") {
+                params.set("cityName", effectiveCityName);
+            }
         }
         router.replace(`/ads?${params.toString()}`, { scroll: false });
     };
@@ -1220,7 +1328,7 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                     </button>
 
                     {/* Filter (Neighborhoods) control */}
-                    {neighborhoods.length > 0 && (
+                    {(neighborhoods.length > 0 || !!effectiveCityId) && (
                         <button
                             data-testid="neighborhood-drawer-trigger"
                             type="button"
