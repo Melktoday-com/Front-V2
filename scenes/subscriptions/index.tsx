@@ -9,44 +9,88 @@ import {
     useSubscriptionPlans,
 } from "@/hooks/useSubscription";
 import { useWalletBalance } from "@/hooks/useWallet";
-import { cn, formatCurrency, formatPrice, rialToToman, toPersianDigits } from "@/lib/utils";
 import { normalizeApiError } from "@/lib/api/error-handler";
+import { cn, formatCurrency, rialToToman, toPersianDigits } from "@/lib/utils";
 import {
-    ActiveBadgeInfo,
-    EntitlementTypeName,
     SubscriptionPlan,
-    SubscriptionTargetRole,
+    SubscriptionTargetRole
 } from "@/types/api/subscription.types";
 import {
     AlertCircle,
     ArrowLeft,
     Award,
     Building2,
-    Calendar,
     Check,
     CheckCircle2,
-    Clock,
-    CreditCard,
     Flame,
     Gift,
-    HelpCircle,
     Home,
     Layers,
     Loader2,
-    RefreshCw,
     ShieldCheck,
     Sparkles,
     Star,
     TrendingUp,
-    UserCheck,
     Wallet,
-    X,
-    Zap,
+    X
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+
+interface FeatureMeta {
+    label: string;
+    description: string;
+    icon: (className?: string) => React.ReactNode;
+    iconBg: string;
+    progressBar: string;
+    badge: string;
+}
+
+const FEATURE_META: Record<string, FeatureMeta> = {
+    LISTING_PUBLICATION: {
+        label: "انتشار آگهی ملکی",
+        description: "ظرفیت انتشار آگهی‌های فروش و رهن/اجاره",
+        icon: (cls) => <Home className={cls || "w-4 h-4 text-emerald-600"} />,
+        iconBg: "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600",
+        progressBar: "bg-emerald-500",
+        badge: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20",
+    },
+    TEMPORARY_RENTAL_PUBLICATION: {
+        label: "انتشار اقامتگاه روزانه",
+        description: "ظرفیت ثبت ویلا، سوئیت و بوم‌گردی",
+        icon: (cls) => <Building2 className={cls || "w-4 h-4 text-info"} />,
+        iconBg: "bg-blue-50 dark:bg-blue-950/40 text-info",
+        progressBar: "bg-blue-500",
+        badge: "bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/20",
+    },
+    URGENT_PROMOTION: {
+        label: "برچسب فوری",
+        description: "نشان فوری برای دیده‌شدن سریع‌تر آگهی",
+        icon: (cls) => <Flame className={cls || "w-4 h-4 text-amber-500"} />,
+        iconBg: "bg-amber-50 dark:bg-amber-950/40 text-amber-500",
+        progressBar: "bg-amber-500",
+        badge: "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20",
+    },
+    LADDER_PROMOTION: {
+        label: "نردبان آگهی",
+        description: "انتقال آگهی به صدر فهرست جستجو",
+        icon: (cls) => <TrendingUp className={cls || "w-4 h-4 text-purple-600"} />,
+        iconBg: "bg-purple-50 dark:bg-purple-950/40 text-purple-600",
+        progressBar: "bg-purple-600",
+        badge: "bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/20",
+    },
+};
+
+const DEFAULT_FEATURE_META: FeatureMeta = {
+    label: "سهمیه ویژه",
+    description: "سهمیه اختصاصی خدمات پلتفرم",
+    icon: (cls) => <Layers className={cls || "w-4 h-4 text-primary"} />,
+    iconBg: "bg-primary/10 text-primary",
+    progressBar: "bg-primary",
+    badge: "bg-primary/10 text-primary border-primary/20",
+};
 
 export default function SubscriptionsScene() {
     const router = useRouter();
@@ -74,6 +118,104 @@ export default function SubscriptionsScene() {
     );
     const { data: entitlements = [], isLoading: isLoadingEntitlements } = useEntitlements();
     const { data: activeBadge, isLoading: isLoadingBadge } = useActiveBadge();
+
+    // Aggregated Entitlements by Feature (prevents duplicate cards when user has multiple plans)
+    const aggregatedEntitlements = useMemo(() => {
+        if (!Array.isArray(entitlements) || entitlements.length === 0) return [];
+
+        const map = new Map<
+            string,
+            {
+                type: string;
+                totalQuota: number;
+                usedQuota: number;
+                remainingQuota: number;
+                plans: {
+                    planName: string;
+                    totalQuota: number;
+                    usedQuota: number;
+                    remainingQuota: number;
+                    expiresAt?: string | null;
+                }[];
+            }
+        >();
+
+        for (const ent of entitlements) {
+            const eType = ent.entitlementType || ent.type;
+            if (!eType || eType === "BADGE") continue;
+
+            const total = Number(ent.totalQuota) || 0;
+            const used = Number(ent.usedQuota) || 0;
+            const remaining =
+                typeof ent.remainingQuota === "number"
+                    ? ent.remainingQuota
+                    : Math.max(0, total - used);
+            const planName = ent.planName?.trim() || "اشتراک فعال";
+            const expiresAt = ent.expiresAt || null;
+
+            if (!map.has(eType)) {
+                map.set(eType, {
+                    type: eType,
+                    totalQuota: 0,
+                    usedQuota: 0,
+                    remainingQuota: 0,
+                    plans: [],
+                });
+            }
+
+            const group = map.get(eType)!;
+            group.totalQuota += total;
+            group.usedQuota += used;
+            group.remainingQuota += remaining;
+
+            const existingPlan = group.plans.find((p) => p.planName === planName);
+            if (existingPlan) {
+                existingPlan.totalQuota += total;
+                existingPlan.usedQuota += used;
+                existingPlan.remainingQuota += remaining;
+                if (
+                    expiresAt &&
+                    (!existingPlan.expiresAt ||
+                        new Date(expiresAt) < new Date(existingPlan.expiresAt))
+                ) {
+                    existingPlan.expiresAt = expiresAt;
+                }
+            } else {
+                group.plans.push({
+                    planName,
+                    totalQuota: total,
+                    usedQuota: used,
+                    remainingQuota: remaining,
+                    expiresAt,
+                });
+            }
+        }
+
+        const FEATURE_ORDER: Record<string, number> = {
+            LISTING_PUBLICATION: 1,
+            TEMPORARY_RENTAL_PUBLICATION: 2,
+            URGENT_PROMOTION: 3,
+            LADDER_PROMOTION: 4,
+        };
+
+        return Array.from(map.values())
+            .map((group) => {
+                const validDates = group.plans
+                    .map((p) => p.expiresAt)
+                    .filter((d): d is string => !!d && !isNaN(new Date(d).getTime()))
+                    .map((d) => new Date(d).getTime())
+                    .sort((a, b) => a - b);
+
+                const nearestExpiresAt =
+                    validDates.length > 0 ? new Date(validDates[0]).toISOString() : null;
+
+                return {
+                    ...group,
+                    nearestExpiresAt,
+                };
+            })
+            .sort((a, b) => (FEATURE_ORDER[a.type] ?? 99) - (FEATURE_ORDER[b.type] ?? 99));
+    }, [entitlements]);
 
     // Mutations
     const purchaseMutation = usePurchasePlan();
@@ -291,7 +433,7 @@ export default function SubscriptionsScene() {
                             )}
                         >
                             <Layers className="w-4 h-4" />
-                            <span>پلن‌های قابل خرید</span>
+                            <span>خرید پلن</span>
                         </button>
                         <button
                             onClick={() => setActiveTab("entitlements")}
@@ -303,7 +445,7 @@ export default function SubscriptionsScene() {
                             )}
                         >
                             <ShieldCheck className="w-4 h-4" />
-                            <span>سهمیه‌ها و نشان‌های فعال شما</span>
+                            <span>پلن ها</span>
                         </button>
                     </div>
                 )}
@@ -530,78 +672,148 @@ export default function SubscriptionsScene() {
                             </div>
                         )}
 
-                        {/* Entitlement Quotas Grid */}
+                        {/* Entitlement Quotas Grid (Aggregated per feature with per-plan breakdown) */}
                         <div>
-                            <h3 className="text-sm font-black text-foreground mb-3 flex items-center gap-2">
-                                <TrendingUp className="w-4 h-4 text-primary" />
-                                <span>سهمیه‌های باقی‌مانده شما</span>
-                            </h3>
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3.5">
+                                <h3 className="text-sm font-black text-foreground flex items-center gap-2">
+                                    <TrendingUp className="w-4 h-4 text-primary" />
+                                    <span>مجموع سهمیه‌های فعال شما</span>
+                                </h3>
+                                {aggregatedEntitlements.length > 0 && (
+                                    <span className="text-xs text-foreground-muted">
+                                        تعداد فیچرهای فعال: {toPersianDigits(aggregatedEntitlements.length)} مورد
+                                    </span>
+                                )}
+                            </div>
 
                             {isLoadingEntitlements ? (
                                 <div className="py-12 flex justify-center text-foreground-muted">
                                     <Loader2 className="w-6 h-6 animate-spin text-primary" />
                                 </div>
-                            ) : entitlements.length === 0 ? (
+                            ) : aggregatedEntitlements.length === 0 ? (
                                 <div className="py-12 bg-surface rounded-3xl border border-border-subtle/80 text-center p-6 text-xs text-foreground-muted">
                                     سهمیه فعالی ندارید. با خرید اشتراک سهمیه‌های انتشار و ارتقای فوری دریافت خواهید کرد.
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                                    {entitlements.map((ent, idx) => {
-                                        const percentUsed =
-                                            ent.totalQuota > 0
-                                                ? Math.min(100, Math.round((ent.usedQuota / ent.totalQuota) * 100))
+                                    {aggregatedEntitlements.map((group) => {
+                                        const meta = FEATURE_META[group.type] || {
+                                            ...DEFAULT_FEATURE_META,
+                                            label: group.type,
+                                        };
+                                        const percentRemaining =
+                                            group.totalQuota > 0
+                                                ? Math.min(
+                                                      100,
+                                                      Math.max(
+                                                          0,
+                                                          Math.round(
+                                                              (group.remainingQuota / group.totalQuota) * 100,
+                                                          ),
+                                                      ),
+                                                  )
                                                 : 0;
-
-                                        const eType = ent.entitlementType || ent.type || "سهمیه ویژه";
-                                        let label: string = eType;
-                                        let icon = <Layers className="w-4 h-4 text-primary" />;
-
-                                        if (eType === "LISTING_PUBLICATION") {
-                                            label = "انتشار آگهی ملکی";
-                                            icon = <Home className="w-4 h-4 text-success" />;
-                                        } else if (eType === "TEMPORARY_RENTAL_PUBLICATION") {
-                                            label = "انتشار اقامتگاه روزانه";
-                                            icon = <Building2 className="w-4 h-4 text-info" />;
-                                        } else if (eType === "URGENT_PROMOTION") {
-                                            label = "برچسب فوری";
-                                            icon = <Flame className="w-4 h-4 text-amber-500" />;
-                                        } else if (eType === "LADDER_PROMOTION") {
-                                            label = "نردبان آگهی";
-                                            icon = <TrendingUp className="w-4 h-4 text-purple-600" />;
-                                        }
 
                                         return (
                                             <div
-                                                key={ent.id || `${eType}-${idx}`}
-                                                className="bg-surface rounded-3xl border border-border-subtle/80 p-5 shadow-xs flex flex-col justify-between"
+                                                key={group.type}
+                                                className="bg-surface rounded-3xl border border-border-subtle/80 p-5 shadow-xs flex flex-col justify-between hover:shadow-md transition-all"
                                             >
                                                 <div>
-                                                    <div className="flex items-center justify-between mb-3">
-                                                        <span className="p-2 bg-surface-secondary rounded-xl">{icon}</span>
-                                                        <span className="text-[11px] font-bold text-foreground-muted">
-                                                            {ent.expiresAt ? `انقضا: ${new Date(ent.expiresAt).toLocaleDateString("fa-IR")}` : "همگام با اشتراک"}
+                                                    {/* Top Row: Icon, Multi-plan badge, Expiry */}
+                                                    <div className="flex items-center justify-between mb-3.5">
+                                                        <div className="flex items-center gap-2">
+                                                            <span
+                                                                className={cn(
+                                                                    "p-2 rounded-xl shrink-0",
+                                                                    meta.iconBg,
+                                                                )}
+                                                            >
+                                                                {meta.icon("w-4 h-4")}
+                                                            </span>
+                                                            {group.plans.length > 1 && (
+                                                                <span className="text-[10px] font-bold text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-full">
+                                                                    {toPersianDigits(group.plans.length)} پلن
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <span className="text-[11px] font-medium text-foreground-muted">
+                                                            {group.nearestExpiresAt
+                                                                ? `انقضا: ${new Date(group.nearestExpiresAt).toLocaleDateString("fa-IR")}`
+                                                                : "همگام با اشتراک"}
                                                         </span>
                                                     </div>
-                                                    <h4 className="font-bold text-foreground text-xs mb-2">
-                                                        {label}
-                                                    </h4>
-                                                    <div className="flex items-baseline justify-between mb-2">
-                                                        <span className="text-2xl font-black text-foreground">
-                                                            {toPersianDigits(ent.remainingQuota)}
-                                                        </span>
-                                                        <span className="text-xs text-foreground-muted">
-                                                            از کل {toPersianDigits(ent.totalQuota)} عدد
-                                                        </span>
-                                                    </div>
-                                                </div>
 
-                                                {/* Progress Bar */}
-                                                <div className="w-full bg-surface-secondary rounded-full h-2 overflow-hidden mt-3">
-                                                    <div
-                                                        className="bg-primary h-full transition-all duration-300 rounded-full"
-                                                        style={{ width: `${100 - percentUsed}%` }}
-                                                    />
+                                                    {/* Feature Title */}
+                                                    <h4 className="font-bold text-foreground text-sm mb-1">
+                                                        {meta.label}
+                                                    </h4>
+
+                                                    {/* Quota Numbers (Aggregated Sum) */}
+                                                    <div className="flex items-baseline justify-between mb-2">
+                                                        <div className="flex items-baseline gap-1">
+                                                            <span className="text-2xl font-black text-foreground">
+                                                                {toPersianDigits(group.remainingQuota)}
+                                                            </span>
+                                                            <span className="text-xs text-foreground-muted font-normal">
+                                                                باقی‌مانده
+                                                            </span>
+                                                        </div>
+                                                        <span className="text-xs text-foreground-muted">
+                                                            از کل {toPersianDigits(group.totalQuota)} عدد
+                                                        </span>
+                                                    </div>
+
+                                                    {/* Progress Bar */}
+                                                    <div className="w-full bg-surface-secondary rounded-full h-2 overflow-hidden my-3">
+                                                        <div
+                                                            className={cn(
+                                                                "h-full transition-all duration-300 rounded-full",
+                                                                meta.progressBar,
+                                                            )}
+                                                            style={{ width: `${percentRemaining}%` }}
+                                                        />
+                                                    </div>
+
+                                                    {/* Plan Breakdown */}
+                                                    <div className="mt-4 pt-3.5 border-t border-border-subtle/60">
+                                                        <span className="text-[11px] font-bold text-foreground-muted block mb-2">
+                                                            سهمیه به تفکیک پلن:
+                                                        </span>
+                                                        <div className="space-y-1.5">
+                                                            {group.plans.map((plan, pIdx) => (
+                                                                <div
+                                                                    key={pIdx}
+                                                                    className="bg-surface-secondary/70 hover:bg-surface-secondary px-2.5 py-1.5 rounded-xl flex items-center justify-between text-xs gap-2 transition-colors"
+                                                                    title={
+                                                                        plan.expiresAt
+                                                                            ? `تاریخ انقضا: ${new Date(plan.expiresAt).toLocaleDateString("fa-IR")}`
+                                                                            : undefined
+                                                                    }
+                                                                >
+                                                                    <div className="flex items-center gap-1.5 min-w-0">
+                                                                        <span
+                                                                            className={cn(
+                                                                                "w-1.5 h-1.5 rounded-full shrink-0",
+                                                                                meta.progressBar,
+                                                                            )}
+                                                                        />
+                                                                        <span className="font-medium text-foreground truncate text-[11px]">
+                                                                            {plan.planName}
+                                                                        </span>
+                                                                    </div>
+                                                                    <div className="flex items-center gap-1 shrink-0 text-[11px]">
+                                                                        <span className="font-black text-foreground">
+                                                                            {toPersianDigits(plan.remainingQuota)}
+                                                                        </span>
+                                                                        <span className="text-foreground-muted text-[10px]">
+                                                                            از {toPersianDigits(plan.totalQuota)}
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         );
@@ -669,7 +881,7 @@ export default function SubscriptionsScene() {
                                         Math.max(
                                             0,
                                             availableBalanceToman -
-                                                rialToToman(selectedPlanForPurchase.priceIrr),
+                                            rialToToman(selectedPlanForPurchase.priceIrr),
                                         ),
                                     )}{" "}
                                     تومان

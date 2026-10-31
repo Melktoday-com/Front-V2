@@ -60,15 +60,19 @@ export function PromotionModal({
         }
     }, [isOpen, refetchWalletBalance]);
 
-    // Check available entitlements
+    // Check available entitlements (sum across multiple plans)
     const urgentQuota = useMemo(() => {
-        const ent = entitlements.find((e) => e.entitlementType === "URGENT_PROMOTION");
-        return ent?.remainingQuota ?? 0;
+        if (!Array.isArray(entitlements)) return 0;
+        return entitlements
+            .filter((e) => (e.entitlementType || e.type) === "URGENT_PROMOTION")
+            .reduce((sum, e) => sum + (e.remainingQuota ?? 0), 0);
     }, [entitlements]);
 
     const ladderQuota = useMemo(() => {
-        const ent = entitlements.find((e) => e.entitlementType === "LADDER_PROMOTION");
-        return ent?.remainingQuota ?? 0;
+        if (!Array.isArray(entitlements)) return 0;
+        return entitlements
+            .filter((e) => (e.entitlementType || e.type) === "LADDER_PROMOTION")
+            .reduce((sum, e) => sum + (e.remainingQuota ?? 0), 0);
     }, [entitlements]);
 
     // Dynamic 6-Tariff Resolution based on itemType and operation

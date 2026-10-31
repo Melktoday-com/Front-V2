@@ -82,11 +82,12 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
     const { isRestricted, restrictionTitle, restrictionMessage } = useUserStatus();
     const { data: entitlements = [] } = useEntitlements();
 
-    const publicationEntitlement = useMemo(() => {
-        if (!Array.isArray(entitlements)) return null;
-        return entitlements.find((e) => e.entitlementType === "LISTING_PUBLICATION") || null;
+    const remainingQuota = useMemo(() => {
+        if (!Array.isArray(entitlements)) return 0;
+        return entitlements
+            .filter((e) => (e.entitlementType || e.type) === "LISTING_PUBLICATION")
+            .reduce((sum, e) => sum + (e.remainingQuota ?? 0), 0);
     }, [entitlements]);
-    const remainingQuota = publicationEntitlement?.remainingQuota ?? 0;
 
     const [adminOwnership, setAdminOwnership] = useState<AdminOwnershipData>({
         isPlatform: true,
