@@ -1113,14 +1113,6 @@ export default function ProfileScene() {
                                                             "w-4 h-4 transition-colors",
                                                             selectedYear && selectedMonth && selectedDay ? "text-primary" : "text-secondary group-hover:text-primary"
                                                         )} />
-                                                        <span className={cn(
-                                                            "text-sm font-bold",
-                                                            selectedYear && selectedMonth && selectedDay ? "text-brand font-black tracking-wider" : "text-text-light font-normal"
-                                                        )}>
-                                                            {selectedYear && selectedMonth && selectedDay
-                                                                ? toPersianDigits(`${selectedYear} / ${String(selectedMonth).padStart(2, "0")} / ${String(selectedDay).padStart(2, "0")}`)
-                                                                : "برای انتخاب تاریخ تولد کلیک کنید"}
-                                                        </span>
                                                     </div>
                                                     <span className="text-[11px] text-primary font-bold bg-primary/10 hover:bg-primary/20 px-2.5 py-1 rounded-lg transition-colors">
                                                         {selectedYear && selectedMonth && selectedDay ? "تغییر تاریخ" : "انتخاب تاریخ"}
