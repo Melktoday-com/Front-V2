@@ -348,4 +348,53 @@ test.describe('2. Frontend Query Parameter Synchronization & View State Persiste
     expect(currentUrl.searchParams.get('hasParking')).toBe('true');
     expect(currentUrl.searchParams.get('categoryKey')).toBe('residential_sale');
   });
+
+  test('SubcategoryFilterDrawer: opening modal, changing filters and applying updates URL query params and triggers refetch', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+
+    const targetUrl = `/ads?cityId=${mashhadCityId}&cityName=%D9%85%D8%B4%D9%87%D8%AF&categoryKey=residential_sale&subcategoryKey=apartment`;
+    await page.goto(targetUrl, { waitUntil: 'domcontentloaded' });
+
+    // Open SubcategoryFilterDrawer by clicking "فیلترها"
+    const filterBtn = page.locator('[data-testid="subcategory-filters-trigger"]').first();
+    await expect(filterBtn).toBeVisible({ timeout: 10000 });
+    await filterBtn.click();
+
+    // Verify modal is open
+    const modal = page.locator('[role="dialog"][data-modal="true"]');
+    await expect(modal).toBeVisible();
+
+    // Select "۲ خواب"
+    const twoRoomsBtn = modal.locator('button:has-text("۲ خواب")').first();
+    await expect(twoRoomsBtn).toBeVisible();
+    await twoRoomsBtn.click();
+
+    // Select "پارکینگ"
+    const parkingBtn = modal.locator('button:has-text("پارکینگ")').first();
+    await expect(parkingBtn).toBeVisible();
+    await parkingBtn.click();
+
+    // Setup network listener for search listings request
+    const searchRequestPromise = page.waitForRequest((req) => 
+      req.url().includes('/backend/api/search/listings') && 
+      (req.url().includes('minRooms=2') || req.url().includes('hasParking=true')),
+      { timeout: 10000 }
+    ).catch(() => null);
+
+    // Click "اعمال فیلترها"
+    const applyBtn = modal.locator('button:has-text("اعمال فیلترها")').first();
+    await expect(applyBtn).toBeVisible();
+    await applyBtn.click();
+
+    // Check URL after click
+    await page.waitForURL((url) => url.searchParams.get('minRooms') === '2', { timeout: 10000 });
+
+    const currentUrl = new URL(page.url());
+    expect(currentUrl.searchParams.get('minRooms')).toBe('2');
+    expect(currentUrl.searchParams.get('hasParking')).toBe('true');
+
+    // Verify refetch network request was dispatched with the updated query parameters
+    const searchRequest = await searchRequestPromise;
+    expect(searchRequest).not.toBeNull();
+  });
 });

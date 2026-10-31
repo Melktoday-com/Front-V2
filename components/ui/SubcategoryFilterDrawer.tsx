@@ -56,6 +56,8 @@ const ROOM_OPTIONS = [
     { label: "۴+ خواب", value: 4 },
 ];
 
+const toStr = (v: number | undefined | null) => (v !== undefined && v !== null && !isNaN(v) ? String(v) : "");
+
 export function SubcategoryFilterDrawer({
     isOpen,
     onClose,
@@ -70,23 +72,19 @@ export function SubcategoryFilterDrawer({
 }: SubcategoryFilterDrawerProps) {
     // Local editable state
     const [priceModelKey, setPriceModelKey] = useState<string | undefined>(currentValues.priceModelKey);
-    const [minPrice, setMinPrice] = useState<string>(currentValues.minPrice ? String(currentValues.minPrice) : "");
-    const [maxPrice, setMaxPrice] = useState<string>(currentValues.maxPrice ? String(currentValues.maxPrice) : "");
-    const [minDeposit, setMinDeposit] = useState<string>(currentValues.minDeposit ? String(currentValues.minDeposit) : "");
-    const [maxDeposit, setMaxDeposit] = useState<string>(currentValues.maxDeposit ? String(currentValues.maxDeposit) : "");
-    const [minRent, setMinRent] = useState<string>(currentValues.minRent ? String(currentValues.minRent) : "");
-    const [maxRent, setMaxRent] = useState<string>(currentValues.maxRent ? String(currentValues.maxRent) : "");
-    const [minArea, setMinArea] = useState<string>(currentValues.minArea ? String(currentValues.minArea) : "");
-    const [maxArea, setMaxArea] = useState<string>(currentValues.maxArea ? String(currentValues.maxArea) : "");
+    const [minPrice, setMinPrice] = useState<string>(toStr(currentValues.minPrice));
+    const [maxPrice, setMaxPrice] = useState<string>(toStr(currentValues.maxPrice));
+    const [minDeposit, setMinDeposit] = useState<string>(toStr(currentValues.minDeposit));
+    const [maxDeposit, setMaxDeposit] = useState<string>(toStr(currentValues.maxDeposit));
+    const [minRent, setMinRent] = useState<string>(toStr(currentValues.minRent));
+    const [maxRent, setMaxRent] = useState<string>(toStr(currentValues.maxRent));
+    const [minArea, setMinArea] = useState<string>(toStr(currentValues.minArea));
+    const [maxArea, setMaxArea] = useState<string>(toStr(currentValues.maxArea));
     const [rooms, setRooms] = useState<number | undefined>(currentValues.minRooms);
-    const [minFloor, setMinFloor] = useState<string>(currentValues.minFloor ? String(currentValues.minFloor) : "");
-    const [maxFloor, setMaxFloor] = useState<string>(currentValues.maxFloor ? String(currentValues.maxFloor) : "");
-    const [minConstructionYear, setMinConstructionYear] = useState<string>(
-        currentValues.minConstructionYear ? String(currentValues.minConstructionYear) : ""
-    );
-    const [maxConstructionYear, setMaxConstructionYear] = useState<string>(
-        currentValues.maxConstructionYear ? String(currentValues.maxConstructionYear) : ""
-    );
+    const [minFloor, setMinFloor] = useState<string>(toStr(currentValues.minFloor));
+    const [maxFloor, setMaxFloor] = useState<string>(toStr(currentValues.maxFloor));
+    const [minConstructionYear, setMinConstructionYear] = useState<string>(toStr(currentValues.minConstructionYear));
+    const [maxConstructionYear, setMaxConstructionYear] = useState<string>(toStr(currentValues.maxConstructionYear));
 
     // Booleans
     const [hasParking, setHasParking] = useState<boolean | undefined>(currentValues.hasParking);
@@ -105,19 +103,19 @@ export function SubcategoryFilterDrawer({
         if (!isOpen) return;
 
         setPriceModelKey(currentValues.priceModelKey);
-        setMinPrice(currentValues.minPrice ? String(currentValues.minPrice) : "");
-        setMaxPrice(currentValues.maxPrice ? String(currentValues.maxPrice) : "");
-        setMinDeposit(currentValues.minDeposit ? String(currentValues.minDeposit) : "");
-        setMaxDeposit(currentValues.maxDeposit ? String(currentValues.maxDeposit) : "");
-        setMinRent(currentValues.minRent ? String(currentValues.minRent) : "");
-        setMaxRent(currentValues.maxRent ? String(currentValues.maxRent) : "");
-        setMinArea(currentValues.minArea ? String(currentValues.minArea) : "");
-        setMaxArea(currentValues.maxArea ? String(currentValues.maxArea) : "");
+        setMinPrice(toStr(currentValues.minPrice));
+        setMaxPrice(toStr(currentValues.maxPrice));
+        setMinDeposit(toStr(currentValues.minDeposit));
+        setMaxDeposit(toStr(currentValues.maxDeposit));
+        setMinRent(toStr(currentValues.minRent));
+        setMaxRent(toStr(currentValues.maxRent));
+        setMinArea(toStr(currentValues.minArea));
+        setMaxArea(toStr(currentValues.maxArea));
         setRooms(currentValues.minRooms);
-        setMinFloor(currentValues.minFloor ? String(currentValues.minFloor) : "");
-        setMaxFloor(currentValues.maxFloor ? String(currentValues.maxFloor) : "");
-        setMinConstructionYear(currentValues.minConstructionYear ? String(currentValues.minConstructionYear) : "");
-        setMaxConstructionYear(currentValues.maxConstructionYear ? String(currentValues.maxConstructionYear) : "");
+        setMinFloor(toStr(currentValues.minFloor));
+        setMaxFloor(toStr(currentValues.maxFloor));
+        setMinConstructionYear(toStr(currentValues.minConstructionYear));
+        setMaxConstructionYear(toStr(currentValues.maxConstructionYear));
 
         setHasParking(currentValues.hasParking);
         setHasElevator(currentValues.hasElevator);

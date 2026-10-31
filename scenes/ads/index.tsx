@@ -74,6 +74,13 @@ interface AdsSceneProps {
 export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
     const searchParams = useSearchParams();
     const router = useRouter();
+
+    const adsNavigate = useCallback((targetUrl: string, _source?: string) => {
+        if (typeof window !== "undefined") {
+            window.history.replaceState(null, "", targetUrl);
+        }
+        router.replace(targetUrl, { scroll: false });
+    }, [router]);
     const { selectedCity, setSelectedCity } = useCity();
 
     const effectiveCityId = searchParams.get("cityId") || selectedCity.id || undefined;
@@ -122,9 +129,9 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                     params.set("cityName", effectiveCityName);
                 }
             }
-            router.replace(`/ads?${params.toString()}`, { scroll: false });
+            adsNavigate(`/ads?${params.toString()}`, "setViewMode");
         },
-        [searchParams, router, isMobile, effectiveCityId, effectiveCityName]
+        [searchParams, adsNavigate, isMobile, effectiveCityId, effectiveCityName]
     );
     const [selectedZones, setSelectedZones] = useState<ZoneSummary[]>([]);
     const [drawerOpen, setDrawerOpen] = useState(false);
@@ -250,9 +257,9 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                     params.set("cityName", effectiveCityName);
                 }
             }
-            router.replace(`/ads?${params.toString()}`, { scroll: false });
+            adsNavigate(`/ads?${params.toString()}`, "debouncedSearchEffect");
         }
-    }, [debouncedSearch, searchParams, router, effectiveCityId, effectiveCityName]);
+    }, [debouncedSearch, searchParams, adsNavigate, effectiveCityId, effectiveCityName]);
 
     const selectedZoneIds = useMemo(() => selectedZones.map((z) => z.id), [selectedZones]);
     const selectedZoneNames = useMemo(() => selectedZones.map((z) => z.name), [selectedZones]);
@@ -450,7 +457,7 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
         }
 
         setStartPage(1);
-        router.replace(`/ads?${params.toString()}`, { scroll: false });
+        adsNavigate(`/ads?${params.toString()}`, "handleApplyFilters");
     };
 
     const handleClearAllFilters = () => {
@@ -487,7 +494,7 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
             }
         }
         setStartPage(1);
-        router.replace(`/ads?${params.toString()}`, { scroll: false });
+        adsNavigate(`/ads?${params.toString()}`, "handleClearAllFilters");
     };
 
     const handleRemoveFilterItem = (type: string, key?: string) => {
@@ -555,7 +562,7 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
             }
         }
         setStartPage(1);
-        router.replace(`/ads?${params.toString()}`, { scroll: false });
+        adsNavigate(`/ads?${params.toString()}`, "handleRemoveFilterItem");
     };
 
     // Saved ads state for heart button on each card
@@ -862,7 +869,7 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                 params.set("cityName", effectiveCityName);
             }
         }
-        router.replace(`/ads?${params.toString()}`, { scroll: false });
+        adsNavigate(`/ads?${params.toString()}`, "updateZoneParams");
     };
 
     const handleCitySelect = (city: {
@@ -885,7 +892,7 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
         params.delete("zoneIds");
         params.delete("neighbourhoodName");
         params.delete("neighbourhoodNames");
-        router.replace(`/ads?${params.toString()}`, { scroll: false });
+        adsNavigate(`/ads?${params.toString()}`, "handleCitySelect");
     };
 
     const handleCategorySelect = (catKey: string, subKey?: string) => {
@@ -909,7 +916,7 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                 params.set("cityName", effectiveCityName);
             }
         }
-        router.replace(`/ads?${params.toString()}`, { scroll: false });
+        adsNavigate(`/ads?${params.toString()}`, "handleCategorySelect");
     };
 
     const handleSubcategorySelect = (subKey: string) => {
@@ -931,7 +938,7 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                 params.set("cityName", effectiveCityName);
             }
         }
-        router.replace(`/ads?${params.toString()}`, { scroll: false });
+        adsNavigate(`/ads?${params.toString()}`, "handleSortChange");
     };
 
     const handleSearchChange = (val: string) => {
