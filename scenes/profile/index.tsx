@@ -112,6 +112,8 @@ export default function ProfileScene() {
 
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
+    const [kycFirstName, setKycFirstName] = useState("");
+    const [kycLastName, setKycLastName] = useState("");
     const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
     const [isKycModalOpen, setIsKycModalOpen] = useState(false);
     const [citizenType, setCitizenType] = useState<CitizenType>(CitizenType.IRANIAN);
@@ -243,6 +245,9 @@ export default function ProfileScene() {
                     ? `${selectedYear}${String(selectedMonth).padStart(2, "0")}${String(selectedDay).padStart(2, "0")}`
                     : (birthDate ? toEnglishDigits(birthDate).replace(/\D/g, "") : undefined);
 
+            const finalFirstName = kycFirstName.trim() || firstName.trim() || undefined;
+            const finalLastName = kycLastName.trim() || lastName.trim() || undefined;
+
             return userService.verifyKyc(user!.userId, {
                 citizenType,
                 nationalCode: citizenType === CitizenType.IRANIAN ? nationalCode : undefined,
@@ -250,19 +255,23 @@ export default function ProfileScene() {
                 foreignId: citizenType === CitizenType.FOREIGNER ? foreignId : undefined,
                 documentUrl: citizenType === CitizenType.FOREIGNER ? documentUrl : undefined,
                 birthDate: formattedBirthDate,
-                firstName,
-                lastName,
+                firstName: finalFirstName,
+                lastName: finalLastName,
             });
         },
         onSuccess: (res) => {
             if (res.status === KYCStatus.VERIFIED) {
                 toast.success("احراز هویت شما با موفقیت تایید شد.");
+                if (kycFirstName.trim()) setFirstName(kycFirstName.trim());
+                if (kycLastName.trim()) setLastName(kycLastName.trim());
                 setIsKycModalOpen(false);
                 setIsDatePickerView(false);
                 queryClient.invalidateQueries({ queryKey: ["user"] });
                 queryClient.invalidateQueries({ queryKey: ["me"] });
             } else if (res.status === KYCStatus.IN_PROGRESS) {
                 toast.success(res.reason || "مدارک هویتی اتباع با موفقیت ثبت شد و در صف بررسی کارشناس قرار گرفت.");
+                if (kycFirstName.trim()) setFirstName(kycFirstName.trim());
+                if (kycLastName.trim()) setLastName(kycLastName.trim());
                 setIsKycModalOpen(false);
                 setIsDatePickerView(false);
                 queryClient.invalidateQueries({ queryKey: ["user"] });
@@ -310,6 +319,8 @@ export default function ProfileScene() {
         if (profile) {
             setFirstName(profile.firstName || "");
             setLastName(profile.lastName || "");
+            setKycFirstName((prev) => prev || profile.firstName || "");
+            setKycLastName((prev) => prev || profile.lastName || "");
         }
     }, [profile]);
 
@@ -786,6 +797,8 @@ export default function ProfileScene() {
                             if (profile?.kycStatus === KYCStatus.VERIFIED) {
                                 toast.info("هویت شما قبلاً با موفقیت تایید شده است.");
                             } else {
+                                setKycFirstName(profile?.firstName || firstName || "");
+                                setKycLastName(profile?.lastName || lastName || "");
                                 setIsKycModalOpen(true);
                             }
                         }}
@@ -1041,7 +1054,7 @@ export default function ProfileScene() {
                                                 : "text-secondary hover:text-brand"
                                         )}
                                     >
-                                        شهروند ایرانی (شاهکار)
+                                        شهروند ایرانی
                                     </button>
                                     <button
                                         type="button"
@@ -1053,21 +1066,50 @@ export default function ProfileScene() {
                                                 : "text-secondary hover:text-brand"
                                         )}
                                     >
-                                        اتباع خارجی (فراگیر / گذرنامه)
+                                        اتباع خارجی
                                     </button>
                                 </div>
 
                                 {citizenType === CitizenType.IRANIAN ? (
                                     <>
                                         <p className="text-xs text-text-light leading-relaxed">
-                                            جهت تایید آنی هویت و تطبیق با مالکیت شماره همراه، کد ملی ۱۰ رقمی و تاریخ تولد خود را وارد فرمایید.
+                                            جهت تایید آنی هویت و تطبیق با مالکیت شماره همراه و سازمان ثبت احوال، اطلاعات هویتی خود را وارد فرمایید.
                                         </p>
 
                                         <div className="space-y-3.5 text-xs">
+                                            <div className="grid grid-cols-2 gap-2.5">
+                                                <div>
+                                                    <label className="block font-bold text-brand mb-1.5 flex items-center gap-1.5">
+                                                        <User className="w-3.5 h-3.5 text-primary" />
+                                                        <span>نام (مطابق شناسنامه) *</span>
+                                                    </label>
+                                                    <input
+                                                        type="text"
+                                                        placeholder="مثلاً: علی"
+                                                        value={kycFirstName}
+                                                        onChange={(e) => setKycFirstName(e.target.value)}
+                                                        className="w-full p-3.5 border border-border-subtle rounded-xl bg-surface-secondary focus:bg-surface focus:ring-2 focus:ring-primary outline-hidden text-right text-sm font-bold"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block font-bold text-brand mb-1.5 flex items-center gap-1.5">
+                                                        <User className="w-3.5 h-3.5 text-primary" />
+                                                        <span>نام خانوادگی *</span>
+                                                    </label>
+                                                    <input
+                                                        type="text"
+                                                        placeholder="مثلاً: محمدی"
+                                                        value={kycLastName}
+                                                        onChange={(e) => setKycLastName(e.target.value)}
+                                                        className="w-full p-3.5 border border-border-subtle rounded-xl bg-surface-secondary focus:bg-surface focus:ring-2 focus:ring-primary outline-hidden text-right text-sm font-bold"
+                                                    />
+                                                </div>
+                                            </div>
+
                                             <div>
                                                 <label className="block font-bold text-brand mb-1.5 flex items-center gap-1.5">
                                                     <CreditCard className="w-3.5 h-3.5 text-primary" />
-                                                    <span>کد ملی ۱۰ رقمی</span>
+                                                    <span>کد ملی ۱۰ رقمی *</span>
                                                 </label>
                                                 <input
                                                     type="text"
@@ -1084,7 +1126,7 @@ export default function ProfileScene() {
                                                 <div className="flex items-center justify-between mb-1.5">
                                                     <label className="font-bold text-brand flex items-center gap-1.5">
                                                         <Calendar className="w-3.5 h-3.5 text-primary" />
-                                                        <span>تاریخ تولد</span>
+                                                        <span>تاریخ تولد *</span>
                                                     </label>
                                                     {userAge !== null && (
                                                         <span className={cn(
@@ -1113,6 +1155,14 @@ export default function ProfileScene() {
                                                             "w-4 h-4 transition-colors",
                                                             selectedYear && selectedMonth && selectedDay ? "text-primary" : "text-secondary group-hover:text-primary"
                                                         )} />
+                                                        <span className={cn(
+                                                            "text-sm font-bold",
+                                                            selectedYear && selectedMonth && selectedDay ? "text-brand font-black tracking-wider" : "text-text-light font-normal"
+                                                        )}>
+                                                            {selectedYear && selectedMonth && selectedDay
+                                                                ? toPersianDigits(`${selectedYear} / ${String(selectedMonth).padStart(2, "0")} / ${String(selectedDay).padStart(2, "0")}`)
+                                                                : "برای انتخاب تاریخ تولد کلیک کنید"}
+                                                        </span>
                                                     </div>
                                                     <span className="text-[11px] text-primary font-bold bg-primary/10 hover:bg-primary/20 px-2.5 py-1 rounded-lg transition-colors">
                                                         {selectedYear && selectedMonth && selectedDay ? "تغییر تاریخ" : "انتخاب تاریخ"}
@@ -1128,6 +1178,35 @@ export default function ProfileScene() {
                                         </p>
 
                                         <div className="space-y-3.5 text-xs">
+                                            <div className="grid grid-cols-2 gap-2.5">
+                                                <div>
+                                                    <label className="block font-bold text-brand mb-1.5 flex items-center gap-1.5">
+                                                        <User className="w-3.5 h-3.5 text-primary" />
+                                                        <span>نام (لاتین یا فارسی)</span>
+                                                    </label>
+                                                    <input
+                                                        type="text"
+                                                        placeholder="مثلاً: احمد"
+                                                        value={kycFirstName}
+                                                        onChange={(e) => setKycFirstName(e.target.value)}
+                                                        className="w-full p-3.5 border border-border-subtle rounded-xl bg-surface-secondary focus:bg-surface focus:ring-2 focus:ring-primary outline-hidden text-right text-sm font-bold"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block font-bold text-brand mb-1.5 flex items-center gap-1.5">
+                                                        <User className="w-3.5 h-3.5 text-primary" />
+                                                        <span>نام خانوادگی</span>
+                                                    </label>
+                                                    <input
+                                                        type="text"
+                                                        placeholder="مثلاً: خاوری"
+                                                        value={kycLastName}
+                                                        onChange={(e) => setKycLastName(e.target.value)}
+                                                        className="w-full p-3.5 border border-border-subtle rounded-xl bg-surface-secondary focus:bg-surface focus:ring-2 focus:ring-primary outline-hidden text-right text-sm font-bold"
+                                                    />
+                                                </div>
+                                            </div>
+
                                             <div>
                                                 <label className="block font-bold text-brand mb-1.5">نوع مدرک هویتی</label>
                                                 <div className="grid grid-cols-3 gap-1.5">
@@ -1248,7 +1327,7 @@ export default function ProfileScene() {
                                         disabled={
                                             kycMutation.isPending ||
                                             (citizenType === CitizenType.IRANIAN
-                                                ? nationalCode.length !== 10 || !selectedYear || !selectedMonth || !selectedDay
+                                                ? nationalCode.length !== 10 || !selectedYear || !selectedMonth || !selectedDay || !kycFirstName.trim() || !kycLastName.trim()
                                                 : foreignId.trim().length < 6)
                                         }
                                         className="flex-1 py-3 rounded-xl bg-primary text-white font-black text-xs hover:bg-primary/90 shadow-md shadow-primary/20 disabled:opacity-50 transition-all flex items-center justify-center gap-1.5"
