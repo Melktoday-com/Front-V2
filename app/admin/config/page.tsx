@@ -618,14 +618,16 @@ export default function AdminConfigPage() {
         }
     };
 
-    const handleArchivePackage = async (pkg: WelcomePackage) => {
+    const handleArchivePackage = async (pkg?: WelcomePackage) => {
+        const target = pkg || packageToArchive;
+        if (!target) return;
         if (!canManageConfig) {
             toast.error("شما مجوز حذف یا آرشیو بسته را ندارید.");
             return;
         }
         try {
-            await archivePackageMutation.mutateAsync(pkg.id);
-            toast.success(`بسته خوش‌آمدگویی «${pkg.title}» با موفقیت به آرشیو منتقل شد.`);
+            await archivePackageMutation.mutateAsync(target.id);
+            toast.success(`بسته خوش‌آمدگویی «${target.title}» با موفقیت به آرشیو منتقل شد.`);
             setPackageToArchive(null);
         } catch (err: unknown) {
             toast.error("خطا در انتقال بسته به آرشیو: " + normalizeApiError(err instanceof Error ? err : new Error(String(err))));
@@ -1035,6 +1037,67 @@ export default function AdminConfigPage() {
                         </div>
                     </div>
 
+                    {/* Filter toolbar */}
+                    <div className="flex flex-wrap items-center justify-between gap-4 bg-surface p-3.5 rounded-2xl border border-border-subtle">
+                        <div className="flex items-center gap-1.5 p-1 bg-surface-secondary rounded-xl">
+                            <button
+                                onClick={() => setPackageFilter("ACTIVE")}
+                                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                                    packageFilter === "ACTIVE"
+                                        ? "bg-surface text-foreground shadow-sm"
+                                        : "text-foreground-muted hover:text-foreground"
+                                }`}
+                            >
+                                <span>بسته‌های جاری / فعال</span>
+                                <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${
+                                    packageFilter === "ACTIVE" ? "bg-primary/10 text-primary" : "bg-border-subtle text-foreground-muted"
+                                }`}>
+                                    {toPersianDigits(packages.filter((p) => !p.isArchived).length)}
+                                </span>
+                            </button>
+                            <button
+                                onClick={() => setPackageFilter("ARCHIVED")}
+                                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                                    packageFilter === "ARCHIVED"
+                                        ? "bg-surface text-foreground shadow-sm"
+                                        : "text-foreground-muted hover:text-foreground"
+                                }`}
+                            >
+                                <Archive size={13} />
+                                <span>بسته‌های آرشیو شده</span>
+                                <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${
+                                    packageFilter === "ARCHIVED" ? "bg-amber-100 text-amber-800" : "bg-border-subtle text-foreground-muted"
+                                }`}>
+                                    {toPersianDigits(packages.filter((p) => p.isArchived).length)}
+                                </span>
+                            </button>
+                            <button
+                                onClick={() => setPackageFilter("ALL")}
+                                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                                    packageFilter === "ALL"
+                                        ? "bg-surface text-foreground shadow-sm"
+                                        : "text-foreground-muted hover:text-foreground"
+                                }`}
+                            >
+                                <span>همه بسته‌ها</span>
+                                <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${
+                                    packageFilter === "ALL" ? "bg-primary/10 text-primary" : "bg-border-subtle text-foreground-muted"
+                                }`}>
+                                    {toPersianDigits(packages.length)}
+                                </span>
+                            </button>
+                        </div>
+
+                        <button
+                            onClick={() => refetchPackages()}
+                            disabled={packagesLoading}
+                            className="flex items-center gap-1.5 text-xs text-foreground-muted hover:text-foreground transition-colors px-2 py-1"
+                        >
+                            <RefreshCcw size={14} className={packagesLoading ? "animate-spin" : ""} />
+                            به‌روزرسانی فهرست
+                        </button>
+                    </div>
+
                     {/* Packages Grid */}
                     {packagesLoading ? (
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -1048,20 +1111,39 @@ export default function AdminConfigPage() {
                             <p className="font-bold">خطا در دریافت فهرست بسته‌های خوش‌آمدگویی</p>
                             <p className="text-xs mt-1 text-error">لطفاً مجدداً تلاش کنید.</p>
                         </div>
+                    ) : filteredPackages.length === 0 ? (
+                        <div className="p-12 bg-surface rounded-2xl border border-border-subtle text-center text-foreground-muted space-y-3">
+                            <Archive size={40} className="mx-auto text-foreground-muted/60" />
+                            <p className="font-bold text-foreground text-sm">
+                                {packageFilter === "ARCHIVED"
+                                    ? "هیچ بسته آرشیو شده‌ای یافت نشد."
+                                    : packageFilter === "ACTIVE"
+                                    ? "هیچ بسته فعالی یافت نشد."
+                                    : "هیچ بسته‌ای ثبت نشده است."}
+                            </p>
+                            <p className="text-xs text-foreground-muted">
+                                {packageFilter === "ARCHIVED"
+                                    ? "بسته‌هایی که به آرشیو منتقل شوند در این بخش نمایش داده می‌شوند و قابل بازگردانی هستند."
+                                    : "می‌توانید با دکمه «افزودن بسته خوش‌آمدگویی جدید» یک بسته جدید ثبت نمایید."}
+                            </p>
+                        </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            {packages.map((pkg) => {
+                            {filteredPackages.map((pkg) => {
                                 const isUser = pkg.targetRole === "user";
                                 const isAgent = pkg.targetRole === "agent";
+                                const isArchived = Boolean(pkg.isArchived);
 
                                 return (
                                     <div
                                         key={pkg.id}
-                                        className="bg-surface rounded-2xl border border-border-subtle shadow-sm flex flex-col justify-between overflow-hidden"
+                                        className={`bg-surface rounded-2xl border ${
+                                            isArchived ? "border-amber-200/80 bg-amber-50/20 opacity-90" : "border-border-subtle"
+                                        } shadow-sm flex flex-col justify-between overflow-hidden`}
                                     >
                                         <div className="p-6 space-y-4">
                                             {/* Role & Status */}
-                                            <div className="flex justify-between items-start">
+                                            <div className="flex justify-between items-start gap-2">
                                                 <span
                                                     className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold ${
                                                         isUser
@@ -1079,23 +1161,30 @@ export default function AdminConfigPage() {
                                                         : "میزبان (Landlord)"}
                                                 </span>
 
-                                                <button
-                                                    onClick={() => handleTogglePackageActive(pkg)}
-                                                    disabled={!canManageConfig}
-                                                    title={pkg.isActive ? "کلیک برای غیرفعال‌سازی" : "کلیک برای فعال‌سازی"}
-                                                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold transition-all ${
-                                                        pkg.isActive
-                                                            ? "bg-success-subtle text-success border border-success/30 hover:bg-success-subtle"
-                                                            : "bg-surface-secondary text-foreground-muted border border-border hover:bg-gray-200"
-                                                    }`}
-                                                >
-                                                    <span
-                                                        className={`w-2 h-2 rounded-full ${
-                                                            pkg.isActive ? "bg-emerald-500 animate-pulse" : "bg-gray-400"
+                                                {isArchived ? (
+                                                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300">
+                                                        <Archive size={12} />
+                                                        آرشیو شده
+                                                    </span>
+                                                ) : (
+                                                    <button
+                                                        onClick={() => handleTogglePackageActive(pkg)}
+                                                        disabled={!canManageConfig}
+                                                        title={pkg.isActive ? "کلیک برای غیرفعال‌سازی" : "کلیک برای فعال‌سازی (بسته‌های قبلی این نقش غیرفعال خواهند شد)"}
+                                                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold transition-all ${
+                                                            pkg.isActive
+                                                                ? "bg-success-subtle text-success border border-success/30 hover:bg-success-subtle"
+                                                                : "bg-surface-secondary text-foreground-muted border border-border hover:bg-gray-200"
                                                         }`}
-                                                    />
-                                                    {pkg.isActive ? "فعال" : "غیرفعال"}
-                                                </button>
+                                                    >
+                                                        <span
+                                                            className={`w-2 h-2 rounded-full ${
+                                                                pkg.isActive ? "bg-emerald-500 animate-pulse" : "bg-gray-400"
+                                                            }`}
+                                                        />
+                                                        {pkg.isActive ? "فعال" : "غیرفعال"}
+                                                    </button>
+                                                )}
                                             </div>
 
                                             <div>
@@ -1176,14 +1265,35 @@ export default function AdminConfigPage() {
                                         </div>
 
                                         {/* Action Button */}
-                                        <div className="p-4 bg-surface-secondary/80 border-t border-border-subtle rounded-b-2xl flex justify-end">
+                                        <div className="p-4 bg-surface-secondary/80 border-t border-border-subtle rounded-b-2xl flex items-center justify-between gap-2">
+                                            {isArchived ? (
+                                                <button
+                                                    onClick={() => handleRestorePackage(pkg)}
+                                                    disabled={!canManageConfig || updatePackageMutation.isPending}
+                                                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg hover:bg-emerald-100 transition-colors disabled:opacity-50"
+                                                >
+                                                    <RotateCcw size={14} />
+                                                    بازگردانی از آرشیو
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    onClick={() => setPackageToArchive(pkg)}
+                                                    disabled={!canManageConfig || archivePackageMutation.isPending}
+                                                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-error bg-surface border border-error/30 rounded-lg hover:bg-error-subtle transition-colors disabled:opacity-50"
+                                                    title="انتقال بسته به آرشیو"
+                                                >
+                                                    <Trash2 size={14} />
+                                                    انتقال به آرشیو
+                                                </button>
+                                            )}
+
                                             <button
                                                 onClick={() => openEditPackageModal(pkg)}
                                                 disabled={!canManageConfig}
                                                 className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-foreground-secondary bg-surface border border-border rounded-lg hover:bg-surface-secondary transition-colors"
                                             >
                                                 <Edit3 size={14} />
-                                                ویرایش بسته خوش‌آمدگویی
+                                                ویرایش بسته
                                             </button>
                                         </div>
                                     </div>
@@ -1811,6 +1921,50 @@ export default function AdminConfigPage() {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Archive Confirmation Modal */}
+            {packageToArchive && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+                    <div className="bg-surface rounded-2xl max-w-md w-full p-6 shadow-xl border border-border-subtle space-y-4">
+                        <div className="flex items-center gap-3 text-warning">
+                            <div className="p-3 bg-warning-subtle rounded-xl">
+                                <Archive size={24} className="text-warning" />
+                            </div>
+                            <div>
+                                <h3 className="font-black text-foreground">انتقال بسته به آرشیو</h3>
+                                <p className="text-xs text-foreground-muted">تایید حذف و انتقال به بخش آرشیو</p>
+                            </div>
+                        </div>
+                        <p className="text-xs text-foreground-secondary leading-relaxed">
+                            آیا از انتقال بسته خوش‌آمدگویی <strong className="text-foreground">«{packageToArchive.title}»</strong> به آرشیو اطمینان دارید؟
+                            این بسته غیرفعال شده و به کاربران جدید اختصاص نخواهد یافت، اما در صورت نیاز می‌توانید آن را از زبانه «بسته‌های آرشیو شده» بازگردانی کنید.
+                        </p>
+                        <div className="flex justify-end gap-3 pt-2">
+                            <button
+                                type="button"
+                                onClick={() => setPackageToArchive(null)}
+                                disabled={archivePackageMutation.isPending}
+                                className="px-4 py-2 text-xs font-bold text-foreground-secondary hover:bg-surface-secondary rounded-xl transition-colors"
+                            >
+                                انصراف
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => handleArchivePackage()}
+                                disabled={archivePackageMutation.isPending}
+                                className="flex items-center gap-1.5 px-4 py-2 bg-error text-white text-xs font-bold rounded-xl shadow-md hover:bg-error/90 transition-all disabled:opacity-50"
+                            >
+                                {archivePackageMutation.isPending ? (
+                                    <RefreshCcw size={14} className="animate-spin" />
+                                ) : (
+                                    <Trash2 size={14} />
+                                )}
+                                تایید و انتقال به آرشیو
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
