@@ -53,8 +53,8 @@ test.describe('1. Live Backend Search API - Filter Accuracy & Data Inspection', 
     }
   });
 
-  test('Rooms count inspection: validates attribute storage and isolates live minRooms mapping bug', async ({ request }) => {
-    // 1. Correct canonical attribute filtering directly on Meilisearch: returns 600+ listings
+  test('Rooms count inspection: validates attribute storage and query.minRooms filtering', async ({ request }) => {
+    // 1. Direct canonical attribute filtering directly on Meilisearch: returns 600+ listings
     const resValid = await request.get(`${LIVE_API_BASE}/search/listings`, {
       params: {
         numericAttributes: JSON.stringify({ rooms_count: { min: 2, max: 2 } }),
@@ -69,19 +69,21 @@ test.describe('1. Live Backend Search API - Filter Accuracy & Data Inspection', 
       expect(hit.attributes?.number?.rooms_count).toBe(2);
     }
 
-    // 2. Demonstrates the live backend bug before our fix: query.minRooms adds conflicting `rooms` clause
-    const resBuggy = await request.get(`${LIVE_API_BASE}/search/listings`, {
+    // 2. Query param minRooms and maxRooms filtering
+    const resRooms = await request.get(`${LIVE_API_BASE}/search/listings`, {
       params: {
         minRooms: '2',
         maxRooms: '2',
         limit: '20',
       },
     });
-    expect(resBuggy.status()).toBe(200);
-    const bodyBuggy = await resBuggy.json();
-    expect(bodyBuggy.success).toBe(true);
-    // On the unpatched live backend, this returns 0 because of conflicting `rooms` AND `rooms_count` filter
-    expect(bodyBuggy.data.total).toBe(0);
+    expect(resRooms.status()).toBe(200);
+    const bodyRooms = await resRooms.json();
+    expect(bodyRooms.success).toBe(true);
+    expect(bodyRooms.data.total).toBeGreaterThan(0);
+    for (const hit of bodyRooms.data.hits) {
+      expect(hit.attributes?.number?.rooms_count).toBe(2);
+    }
   });
 
   test('Amenities filtering: returns ads matching parking and elevator criteria', async ({ request }) => {

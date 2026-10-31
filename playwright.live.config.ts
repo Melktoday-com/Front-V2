@@ -23,6 +23,12 @@ export default defineConfig({
     video: 'off',
     ignoreHTTPSErrors: true,
   },
+  webServer: {
+    command: 'PORT=3001 NEXT_PUBLIC_API_URL=https://melktoday.com/backend/api npm run dev',
+    url: 'http://localhost:3001',
+    reuseExistingServer: !process.env.CI,
+    timeout: 60000,
+  },
   projects: [
     {
       name: 'desktop-chrome',
