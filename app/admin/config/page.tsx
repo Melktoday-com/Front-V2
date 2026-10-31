@@ -33,6 +33,9 @@ import {
     Filter,
     Layers,
     LucideIcon,
+    Archive,
+    Trash2,
+    RotateCcw,
 } from "lucide-react";
 import {
     SubscriptionPlan,
@@ -50,6 +53,7 @@ import {
     useAdminWelcomePackages,
     useAdminCreateWelcomePackage,
     useAdminUpdateWelcomePackage,
+    useAdminArchiveWelcomePackage,
 } from "@/hooks/useSubscription";
 import { useAdminPermissions } from "@/hooks/useAdminPermissions";
 import { useAdminTariffs, useUpdateTariff } from "@/hooks/useTariffs";
@@ -387,6 +391,10 @@ export default function AdminConfigPage() {
     } = useAdminWelcomePackages();
     const createPackageMutation = useAdminCreateWelcomePackage();
     const updatePackageMutation = useAdminUpdateWelcomePackage();
+    const archivePackageMutation = useAdminArchiveWelcomePackage();
+
+    const [packageFilter, setPackageFilter] = useState<"ACTIVE" | "ARCHIVED" | "ALL">("ACTIVE");
+    const [packageToArchive, setPackageToArchive] = useState<WelcomePackage | null>(null);
 
     // Unpack plans and packages data safely without `any`
     const plans: SubscriptionPlan[] = useMemo(() => {
@@ -406,6 +414,12 @@ export default function AdminConfigPage() {
         }
         return [];
     }, [rawPackages]);
+
+    const filteredPackages = useMemo(() => {
+        if (packageFilter === "ACTIVE") return packages.filter((p) => !p.isArchived);
+        if (packageFilter === "ARCHIVED") return packages.filter((p) => p.isArchived);
+        return packages;
+    }, [packages, packageFilter]);
 
     // Modal state for Plan
     const [isPlanModalOpen, setIsPlanModalOpen] = useState(false);
@@ -594,9 +608,43 @@ export default function AdminConfigPage() {
                 id: pkg.id,
                 payload: { isActive: !pkg.isActive },
             });
-            toast.success(pkg.isActive ? "بسته غیرفعال شد." : "بسته فعال شد.");
+            toast.success(
+                !pkg.isActive
+                    ? "بسته فعال شد و سایر بسته‌های این نقش به صورت خودکار غیرفعال شدند."
+                    : "بسته غیرفعال شد."
+            );
         } catch (err: unknown) {
             toast.error("خطا در تغییر وضعیت بسته: " + normalizeApiError(err instanceof Error ? err : new Error(String(err))));
+        }
+    };
+
+    const handleArchivePackage = async (pkg: WelcomePackage) => {
+        if (!canManageConfig) {
+            toast.error("شما مجوز حذف یا آرشیو بسته را ندارید.");
+            return;
+        }
+        try {
+            await archivePackageMutation.mutateAsync(pkg.id);
+            toast.success(`بسته خوش‌آمدگویی «${pkg.title}» با موفقیت به آرشیو منتقل شد.`);
+            setPackageToArchive(null);
+        } catch (err: unknown) {
+            toast.error("خطا در انتقال بسته به آرشیو: " + normalizeApiError(err instanceof Error ? err : new Error(String(err))));
+        }
+    };
+
+    const handleRestorePackage = async (pkg: WelcomePackage) => {
+        if (!canManageConfig) {
+            toast.error("شما مجوز بازیابی بسته را ندارید.");
+            return;
+        }
+        try {
+            await updatePackageMutation.mutateAsync({
+                id: pkg.id,
+                payload: { isArchived: false, isActive: false },
+            });
+            toast.success(`بسته خوش‌آمدگویی «${pkg.title}» از آرشیو بازیابی شد (به صورت غیرفعال).`);
+        } catch (err: unknown) {
+            toast.error("خطا در بازیابی بسته: " + normalizeApiError(err instanceof Error ? err : new Error(String(err))));
         }
     };
 

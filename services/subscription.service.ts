@@ -137,4 +137,11 @@ export const subscriptionService = {
         );
         return data;
     },
+
+    adminArchiveWelcomePackage: async (id: string): Promise<WelcomePackage> => {
+        const { data } = await api.delete<WelcomePackage>(
+            `/subscriptions/admin/welcome-packages/${id}`,
+        );
+        return data;
+    },
 };

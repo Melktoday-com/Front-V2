@@ -277,7 +277,11 @@ export default function ProfileScene() {
                 queryClient.invalidateQueries({ queryKey: ["user"] });
                 queryClient.invalidateQueries({ queryKey: ["me"] });
             } else {
-                toast.error(res.reason || "اطلاعات با سامانه ثبت احوال همخوانی ندارد.");
+                const failureMsg =
+                    res.similarityPercentage !== undefined && res.similarityPercentage > 0
+                        ? `میزان تطابق اطلاعات وارد شده با ثبت احوال (${toPersianDigits(res.similarityPercentage)}٪) کمتر از حد نصاب مجاز است. لطفاً نام و نام‌خانوادگی را دقیقاً مطابق با شناسنامه (با پیشوند یا پسوند) وارد نمایید.`
+                        : res.reason || "اطلاعات با سامانه ثبت احوال همخوانی ندارد. لطفاً صحت مشخصات را بررسی فرمایید.";
+                toast.error(failureMsg);
             }
         },
         onError: (err: any) => {
@@ -1075,6 +1079,10 @@ export default function ProfileScene() {
                                         <p className="text-xs text-text-light leading-relaxed">
                                             جهت تایید آنی هویت و تطبیق با مالکیت شماره همراه و سازمان ثبت احوال، اطلاعات هویتی خود را وارد فرمایید.
                                         </p>
+
+                                        <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-2.5 text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed">
+                                            نکته: نام و نام خانوادگی باید دقیقاً مطابق با شناسنامه (با پیشوندهایی مانند «سید» یا پسوندهای فامیلی) وارد شود.
+                                        </div>
 
                                         <div className="space-y-3.5 text-xs">
                                             <div className="grid grid-cols-2 gap-2.5">

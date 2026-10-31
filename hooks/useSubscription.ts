@@ -161,3 +161,14 @@ export function useAdminUpdateWelcomePackage() {
         },
     });
 }
+
+export function useAdminArchiveWelcomePackage() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (id: string) => subscriptionService.adminArchiveWelcomePackage(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["admin", "subscription", "welcome-packages"] });
+        },
+    });
+}

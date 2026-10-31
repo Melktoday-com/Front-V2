@@ -145,6 +145,7 @@ export interface WelcomePackage {
     ladderQuota: number;
     durationDays: number;
     isActive: boolean;
+    isArchived?: boolean;
     createdAt?: string;
     updatedAt?: string;
 }
@@ -199,6 +200,7 @@ export interface UpdateWelcomePackageRequest {
     ladderQuota?: number;
     durationDays?: number;
     isActive?: boolean;
+    isArchived?: boolean;
 }
 
 export interface CreateWelcomePackageRequest {
@@ -212,4 +214,5 @@ export interface CreateWelcomePackageRequest {
     ladderQuota?: number;
     durationDays?: number;
     isActive?: boolean;
+    isArchived?: boolean;
 }
