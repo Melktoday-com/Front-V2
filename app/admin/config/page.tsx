@@ -526,8 +526,8 @@ export default function AdminConfigPage() {
                     targetRole: planForm.targetRole,
                     priceIrr: planForm.priceIrr,
                     durationDays: Number(planForm.durationDays),
-                    publicationQuota: Number(planForm.publicationQuota),
-                    tempRentQuota: Number(planForm.tempRentQuota),
+                    publicationQuota: planForm.targetRole === "landlord" ? 0 : Number(planForm.publicationQuota),
+                    tempRentQuota: planForm.targetRole === "agent" ? 0 : Number(planForm.tempRentQuota),
                     urgentQuota: Number(planForm.urgentQuota),
                     ladderQuota: Number(planForm.ladderQuota),
                     badgeName: planForm.badgeName.trim() || undefined,
@@ -548,8 +548,8 @@ export default function AdminConfigPage() {
                     targetRole: planForm.targetRole,
                     priceIrr: planForm.priceIrr,
                     durationDays: Number(planForm.durationDays),
-                    publicationQuota: Number(planForm.publicationQuota),
-                    tempRentQuota: Number(planForm.tempRentQuota),
+                    publicationQuota: planForm.targetRole === "landlord" ? 0 : Number(planForm.publicationQuota),
+                    tempRentQuota: planForm.targetRole === "agent" ? 0 : Number(planForm.tempRentQuota),
                     urgentQuota: Number(planForm.urgentQuota),
                     ladderQuota: Number(planForm.ladderQuota),
                     badgeName: planForm.badgeName.trim() || undefined,
@@ -714,15 +714,19 @@ export default function AdminConfigPage() {
         }
 
         try {
+            const isAgent = packageForm.targetRole === "agent";
+            const isLandlord = packageForm.targetRole === "landlord";
+            const isUser = packageForm.targetRole === "user";
+
             if (editingPackageId) {
                 const payload: UpdateWelcomePackageRequest = {
                     title: packageForm.title.trim(),
                     targetRole: packageForm.targetRole,
                     walletBonusIrr: String(packageForm.walletBonusIrr || "0"),
-                    publicationQuota: Number(packageForm.publicationQuota),
-                    tempRentQuota: Number(packageForm.tempRentQuota),
-                    urgentQuota: Number(packageForm.urgentQuota),
-                    ladderQuota: Number(packageForm.ladderQuota),
+                    publicationQuota: isUser || isLandlord ? 0 : Number(packageForm.publicationQuota),
+                    tempRentQuota: isUser || isAgent ? 0 : Number(packageForm.tempRentQuota),
+                    urgentQuota: isUser ? 0 : Number(packageForm.urgentQuota),
+                    ladderQuota: isUser ? 0 : Number(packageForm.ladderQuota),
                     durationDays: Number(packageForm.durationDays),
                     isActive: packageForm.isActive,
                 };
@@ -733,10 +737,10 @@ export default function AdminConfigPage() {
                     title: packageForm.title.trim(),
                     targetRole: packageForm.targetRole,
                     walletBonusIrr: String(packageForm.walletBonusIrr || "0"),
-                    publicationQuota: Number(packageForm.publicationQuota),
-                    tempRentQuota: Number(packageForm.tempRentQuota),
-                    urgentQuota: Number(packageForm.urgentQuota),
-                    ladderQuota: Number(packageForm.ladderQuota),
+                    publicationQuota: isUser || isLandlord ? 0 : Number(packageForm.publicationQuota),
+                    tempRentQuota: isUser || isAgent ? 0 : Number(packageForm.tempRentQuota),
+                    urgentQuota: isUser ? 0 : Number(packageForm.urgentQuota),
+                    ladderQuota: isUser ? 0 : Number(packageForm.ladderQuota),
                     durationDays: Number(packageForm.durationDays),
                     isActive: packageForm.isActive,
                 };
@@ -1094,18 +1098,21 @@ export default function AdminConfigPage() {
 
                                             {/* Entitlements Grid */}
                                             <div className="grid grid-cols-2 gap-2 text-xs">
-                                                <div className="bg-surface-secondary/70 p-2.5 rounded-lg border border-border-subtle flex items-center justify-between">
-                                                    <span className="text-foreground-muted">ثبت آگهی عادی</span>
-                                                    <span className="font-bold text-foreground font-mono">
-                                                        {toPersianDigits(plan.publicationQuota)}
-                                                    </span>
-                                                </div>
-                                                <div className="bg-surface-secondary/70 p-2.5 rounded-lg border border-border-subtle flex items-center justify-between">
-                                                    <span className="text-foreground-muted">اجاره موقت/روزانه</span>
-                                                    <span className="font-bold text-foreground font-mono">
-                                                        {toPersianDigits(plan.tempRentQuota)}
-                                                    </span>
-                                                </div>
+                                                {plan.targetRole === "agent" ? (
+                                                    <div className="bg-surface-secondary/70 p-2.5 rounded-lg border border-border-subtle flex items-center justify-between">
+                                                        <span className="text-foreground-muted">ثبت آگهی عادی</span>
+                                                        <span className="font-bold text-foreground font-mono">
+                                                            {toPersianDigits(plan.publicationQuota)}
+                                                        </span>
+                                                    </div>
+                                                ) : (
+                                                    <div className="bg-surface-secondary/70 p-2.5 rounded-lg border border-border-subtle flex items-center justify-between">
+                                                        <span className="text-foreground-muted">اجاره روزانه</span>
+                                                        <span className="font-bold text-foreground font-mono">
+                                                            {toPersianDigits(plan.tempRentQuota)}
+                                                        </span>
+                                                    </div>
+                                                )}
                                                 <div className="bg-surface-secondary/70 p-2.5 rounded-lg border border-border-subtle flex items-center justify-between">
                                                     <span className="text-warning font-medium">ارتقای فوری</span>
                                                     <span className="font-bold text-warning font-mono">
@@ -1378,18 +1385,21 @@ export default function AdminConfigPage() {
                                                         </div>
 
                                                         <div className="grid grid-cols-2 gap-2 text-xs pt-1">
-                                                            <div className="flex justify-between items-center">
-                                                                <span className="text-foreground-muted">ثبت آگهی:</span>
-                                                                <span className="font-bold text-foreground font-mono">
-                                                                    {toPersianDigits(pkg.publicationQuota)}
-                                                                </span>
-                                                            </div>
-                                                            <div className="flex justify-between items-center">
-                                                                <span className="text-foreground-muted">اجاره روزانه:</span>
-                                                                <span className="font-bold text-foreground font-mono">
-                                                                    {toPersianDigits(pkg.tempRentQuota)}
-                                                                </span>
-                                                            </div>
+                                                            {pkg.targetRole === "agent" ? (
+                                                                <div className="flex justify-between items-center">
+                                                                    <span className="text-foreground-muted">ثبت آگهی:</span>
+                                                                    <span className="font-bold text-foreground font-mono">
+                                                                        {toPersianDigits(pkg.publicationQuota)}
+                                                                    </span>
+                                                                </div>
+                                                            ) : (
+                                                                <div className="flex justify-between items-center">
+                                                                    <span className="text-foreground-muted">اجاره روزانه:</span>
+                                                                    <span className="font-bold text-foreground font-mono">
+                                                                        {toPersianDigits(pkg.tempRentQuota)}
+                                                                    </span>
+                                                                </div>
+                                                            )}
                                                             <div className="flex justify-between items-center">
                                                                 <span className="text-warning">فوری:</span>
                                                                 <span className="font-bold text-warning font-mono">
@@ -1606,12 +1616,15 @@ export default function AdminConfigPage() {
                                         <label className="text-xs font-bold text-foreground-secondary">نقش هدف *</label>
                                         <select
                                             value={planForm.targetRole}
-                                            onChange={(e) =>
+                                            onChange={(e) => {
+                                                const nextRole = e.target.value as SubscriptionTargetRole;
                                                 setPlanForm({
                                                     ...planForm,
-                                                    targetRole: e.target.value as SubscriptionTargetRole,
-                                                })
-                                            }
+                                                    targetRole: nextRole,
+                                                    tempRentQuota: nextRole === "agent" ? 0 : planForm.tempRentQuota,
+                                                    publicationQuota: nextRole === "landlord" ? 0 : planForm.publicationQuota,
+                                                });
+                                            }}
                                             className="w-full p-3 rounded-xl border border-border text-sm focus:ring-2 focus:ring-blue-500 outline-none"
                                         >
                                             <option value="agent">مشاور / آژانس املاک (Agent)</option>
@@ -1688,32 +1701,44 @@ export default function AdminConfigPage() {
                                 <h4 className="text-xs font-bold text-foreground-muted uppercase tracking-wider">
                                     سهمیه‌ها و ظرفیت‌های پلن (Entitlements)
                                 </h4>
-                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                                    <div className="space-y-1">
-                                        <label className="text-xs font-medium text-foreground-secondary">ثبت آگهی عادی</label>
-                                        <input
-                                            type="number"
-                                            min={0}
-                                            value={planForm.publicationQuota}
-                                            onChange={(e) =>
-                                                setPlanForm({ ...planForm, publicationQuota: parseInt(e.target.value) || 0 })
-                                            }
-                                            className="w-full p-2.5 rounded-xl border border-border text-sm font-mono focus:ring-2 focus:ring-blue-500 outline-none"
-                                        />
-                                    </div>
-
-                                    <div className="space-y-1">
-                                        <label className="text-xs font-medium text-foreground-secondary">اجاره موقت/روزانه</label>
-                                        <input
-                                            type="number"
-                                            min={0}
-                                            value={planForm.tempRentQuota}
-                                            onChange={(e) =>
-                                                setPlanForm({ ...planForm, tempRentQuota: parseInt(e.target.value) || 0 })
-                                            }
-                                            className="w-full p-2.5 rounded-xl border border-border text-sm font-mono focus:ring-2 focus:ring-blue-500 outline-none"
-                                        />
-                                    </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                    {planForm.targetRole === "agent" ? (
+                                        <div className="space-y-1">
+                                            <label className="text-xs font-medium text-foreground-secondary">ثبت آگهی عادی *</label>
+                                            <input
+                                                type="number"
+                                                min={0}
+                                                value={planForm.publicationQuota}
+                                                onChange={(e) =>
+                                                    setPlanForm({
+                                                        ...planForm,
+                                                        publicationQuota: parseInt(e.target.value) || 0,
+                                                        tempRentQuota: 0,
+                                                    })
+                                                }
+                                                className="w-full p-2.5 rounded-xl border border-border text-sm font-mono focus:ring-2 focus:ring-blue-500 outline-none"
+                                            />
+                                            <p className="text-[10px] text-foreground-muted">ظرفیت انتشار آگهی‌های فروش، رهن و اجاره</p>
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-1">
+                                            <label className="text-xs font-medium text-foreground-secondary">ثبت اقامتگاه روزانه *</label>
+                                            <input
+                                                type="number"
+                                                min={0}
+                                                value={planForm.tempRentQuota}
+                                                onChange={(e) =>
+                                                    setPlanForm({
+                                                        ...planForm,
+                                                        tempRentQuota: parseInt(e.target.value) || 0,
+                                                        publicationQuota: 0,
+                                                    })
+                                                }
+                                                className="w-full p-2.5 rounded-xl border border-border text-sm font-mono focus:ring-2 focus:ring-blue-500 outline-none"
+                                            />
+                                            <p className="text-[10px] text-foreground-muted">ظرفیت ثبت ویلا، سوئیت و بوم‌گردی</p>
+                                        </div>
+                                    )}
 
                                     <div className="space-y-1">
                                         <label className="text-xs font-medium text-warning">ارتقای فوری</label>
@@ -1726,6 +1751,7 @@ export default function AdminConfigPage() {
                                             }
                                             className="w-full p-2.5 rounded-xl border border-amber-300 text-sm font-mono focus:ring-2 focus:ring-amber-500 outline-none"
                                         />
+                                        <p className="text-[10px] text-foreground-muted">برچسب فوری برای دیده‌شدن سریع‌تر</p>
                                     </div>
 
                                     <div className="space-y-1">
@@ -1739,6 +1765,7 @@ export default function AdminConfigPage() {
                                             }
                                             className="w-full p-2.5 rounded-xl border border-blue-300 text-sm font-mono focus:ring-2 focus:ring-blue-500 outline-none"
                                         />
+                                        <p className="text-[10px] text-foreground-muted">انتقال آگهی به صدر فهرست جستجو</p>
                                     </div>
                                 </div>
                             </div>
@@ -1889,7 +1916,15 @@ export default function AdminConfigPage() {
                                     <label className="text-xs font-bold text-foreground-secondary">نقش هدف بسته *</label>
                                     <select
                                         value={packageForm.targetRole}
-                                        onChange={(e) => setPackageForm({ ...packageForm, targetRole: e.target.value })}
+                                        onChange={(e) => {
+                                            const role = e.target.value;
+                                            setPackageForm({
+                                                ...packageForm,
+                                                targetRole: role,
+                                                publicationQuota: role === "landlord" || role === "user" ? 0 : packageForm.publicationQuota,
+                                                tempRentQuota: role === "agent" || role === "user" ? 0 : packageForm.tempRentQuota,
+                                            });
+                                        }}
                                         className="w-full p-3 rounded-xl border border-border text-sm focus:ring-2 focus:ring-blue-500 outline-none"
                                     >
                                         <option value="user">کاربر عادی (user) - هدیه کیف پول</option>
@@ -1935,38 +1970,42 @@ export default function AdminConfigPage() {
                             ) : (
                                 /* If Host / Agent -> Starter Quotas & Duration */
                                 <div className="space-y-4">
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <div className="space-y-1">
-                                            <label className="text-xs font-medium text-foreground-secondary">ثبت آگهی عادی</label>
-                                            <input
-                                                type="number"
-                                                min={0}
-                                                value={packageForm.publicationQuota}
-                                                onChange={(e) =>
-                                                    setPackageForm({
-                                                        ...packageForm,
-                                                        publicationQuota: parseInt(e.target.value) || 0,
-                                                    })
-                                                }
-                                                className="w-full p-2.5 rounded-xl border border-border text-sm font-mono focus:ring-2 focus:ring-blue-500 outline-none"
-                                            />
-                                        </div>
-
-                                        <div className="space-y-1">
-                                            <label className="text-xs font-medium text-foreground-secondary">اجاره روزانه</label>
-                                            <input
-                                                type="number"
-                                                min={0}
-                                                value={packageForm.tempRentQuota}
-                                                onChange={(e) =>
-                                                    setPackageForm({
-                                                        ...packageForm,
-                                                        tempRentQuota: parseInt(e.target.value) || 0,
-                                                    })
-                                                }
-                                                className="w-full p-2.5 rounded-xl border border-border text-sm font-mono focus:ring-2 focus:ring-blue-500 outline-none"
-                                            />
-                                        </div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                        {packageForm.targetRole === "agent" ? (
+                                            <div className="space-y-1">
+                                                <label className="text-xs font-medium text-foreground-secondary">ثبت آگهی عادی *</label>
+                                                <input
+                                                    type="number"
+                                                    min={0}
+                                                    value={packageForm.publicationQuota}
+                                                    onChange={(e) =>
+                                                        setPackageForm({
+                                                            ...packageForm,
+                                                            publicationQuota: parseInt(e.target.value) || 0,
+                                                            tempRentQuota: 0,
+                                                        })
+                                                    }
+                                                    className="w-full p-2.5 rounded-xl border border-border text-sm font-mono focus:ring-2 focus:ring-blue-500 outline-none"
+                                                />
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-1">
+                                                <label className="text-xs font-medium text-foreground-secondary">اجاره روزانه *</label>
+                                                <input
+                                                    type="number"
+                                                    min={0}
+                                                    value={packageForm.tempRentQuota}
+                                                    onChange={(e) =>
+                                                        setPackageForm({
+                                                            ...packageForm,
+                                                            tempRentQuota: parseInt(e.target.value) || 0,
+                                                            publicationQuota: 0,
+                                                        })
+                                                    }
+                                                    className="w-full p-2.5 rounded-xl border border-border text-sm font-mono focus:ring-2 focus:ring-blue-500 outline-none"
+                                                />
+                                            </div>
+                                        )}
 
                                         <div className="space-y-1">
                                             <label className="text-xs font-medium text-warning">فوری</label>

@@ -79,6 +79,7 @@ export function SubscriptionQuotaWidget({
                 typeof ent.remainingQuota === "number"
                     ? ent.remainingQuota
                     : Math.max(0, total - used);
+            if (total <= 0 && remaining <= 0 && used <= 0) continue;
             const planName = ent.planName?.trim() || "اشتراک فعال";
             const expiresAt = ent.expiresAt || null;
 
