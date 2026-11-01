@@ -663,7 +663,7 @@ export default function AgencyPanelScene() {
                             </div>
                             <div>
                                 <h3 className="text-xs sm:text-sm font-black text-brand">تولید محتوا</h3>
-                                <p className="text-[11px] text-secondary">نگارش پست‌های تحلیلی، معرفی پروژه‌ها و مقالات ویژه املاک</p>
+                                <p className="text-[11px] text-secondary">پستی که در کاوش می‌گذارید برای همه نمایش داده می‌شود</p>
                             </div>
                         </div>
                         <Link
