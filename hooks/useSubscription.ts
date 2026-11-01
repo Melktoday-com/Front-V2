@@ -131,6 +131,18 @@ export function useAdminUpdatePlan() {
     });
 }
 
+export function useAdminArchivePlan() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: subscriptionService.adminArchivePlan,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["admin", "subscription", "plans"] });
+            queryClient.invalidateQueries({ queryKey: ["subscription", "plans"] });
+        },
+    });
+}
+
 export function useAdminWelcomePackages() {
     return useQuery({
         queryKey: ["admin", "subscription", "welcome-packages"],

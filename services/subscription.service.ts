@@ -112,6 +112,11 @@ export const subscriptionService = {
         return data;
     },
 
+    adminArchivePlan: async (id: string): Promise<SubscriptionPlan> => {
+        const { data } = await api.delete<SubscriptionPlan>(`/subscriptions/admin/plans/${id}`);
+        return data;
+    },
+
     adminListWelcomePackages: async (): Promise<WelcomePackage[]> => {
         const { data } = await api.get<WelcomePackage[]>("/subscriptions/admin/welcome-packages");
         return data;

@@ -50,6 +50,7 @@ import {
     useAdminSubscriptionPlans,
     useAdminCreatePlan,
     useAdminUpdatePlan,
+    useAdminArchivePlan,
     useAdminWelcomePackages,
     useAdminCreateWelcomePackage,
     useAdminUpdateWelcomePackage,
@@ -381,6 +382,10 @@ export default function AdminConfigPage() {
     } = useAdminSubscriptionPlans();
     const createPlanMutation = useAdminCreatePlan();
     const updatePlanMutation = useAdminUpdatePlan();
+    const archivePlanMutation = useAdminArchivePlan();
+
+    const [planStatusFilter, setPlanStatusFilter] = useState<"ACTIVE" | "ARCHIVED" | "ALL">("ACTIVE");
+    const [planToArchive, setPlanToArchive] = useState<SubscriptionPlan | null>(null);
 
     // Welcome Packages Queries & Mutations
     const {
@@ -443,15 +448,29 @@ export default function AdminConfigPage() {
 
     // Filtered plans
     const filteredPlans = useMemo(() => {
-        if (planRoleFilter === "ALL") return plans;
-        return plans.filter((p) => p.targetRole === planRoleFilter);
-    }, [plans, planRoleFilter]);
+        let result = plans;
+        if (planRoleFilter !== "ALL") {
+            result = result.filter((p) => p.targetRole === planRoleFilter);
+        }
+        if (planStatusFilter === "ACTIVE") {
+            result = result.filter((p) => !p.isArchived);
+        } else if (planStatusFilter === "ARCHIVED") {
+            result = result.filter((p) => p.isArchived);
+        }
+        return result;
+    }, [plans, planRoleFilter, planStatusFilter]);
 
     // Handlers for Plan
     const openCreatePlanModal = () => {
         setEditingPlanId(null);
         setPlanForm(DEFAULT_PLAN_FORM);
         setIsPlanModalOpen(true);
+    };
+
+    const closePlanModal = () => {
+        setIsPlanModalOpen(false);
+        setEditingPlanId(null);
+        setPlanForm(DEFAULT_PLAN_FORM);
     };
 
     const openEditPlanModal = (plan: SubscriptionPlan) => {
@@ -543,9 +562,41 @@ export default function AdminConfigPage() {
                 await createPlanMutation.mutateAsync(payload);
                 toast.success("پلن جدید با موفقیت ایجاد شد.");
             }
-            setIsPlanModalOpen(false);
+            closePlanModal();
         } catch (err: unknown) {
             toast.error("خطا در ذخیره پلن: " + normalizeApiError(err instanceof Error ? err : new Error(String(err))));
+        }
+    };
+
+    const handleArchivePlan = async (plan?: SubscriptionPlan) => {
+        const target = plan || planToArchive;
+        if (!target) return;
+        if (!canManageConfig) {
+            toast.error("شما مجوز حذف یا آرشیو پلن را ندارید.");
+            return;
+        }
+        try {
+            await archivePlanMutation.mutateAsync(target.id);
+            toast.success(`پلن اشتراک «${target.name}» با موفقیت به آرشیو منتقل شد.`);
+            setPlanToArchive(null);
+        } catch (err: unknown) {
+            toast.error("خطا در انتقال پلن به آرشیو: " + normalizeApiError(err instanceof Error ? err : new Error(String(err))));
+        }
+    };
+
+    const handleRestorePlan = async (plan: SubscriptionPlan) => {
+        if (!canManageConfig) {
+            toast.error("شما مجوز بازیابی پلن را ندارید.");
+            return;
+        }
+        try {
+            await updatePlanMutation.mutateAsync({
+                id: plan.id,
+                payload: { isArchived: false, isActive: false },
+            });
+            toast.success(`پلن اشتراک «${plan.name}» از آرشیو بازیابی شد (به صورت غیرفعال).`);
+        } catch (err: unknown) {
+            toast.error("خطا در بازیابی پلن: " + normalizeApiError(err instanceof Error ? err : new Error(String(err))));
         }
     };
 
@@ -795,10 +846,10 @@ export default function AdminConfigPage() {
             {/* TAB 1: SUBSCRIPTION PLANS */}
             {activeTab === "plans" && (
                 <div className="space-y-6">
-                    {/* Role Filter & Counter Bar */}
-                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-surface p-4 rounded-xl border border-border-subtle">
-                        <div className="flex items-center gap-2">
-                            <span className="text-xs font-bold text-foreground-muted ml-2 flex items-center gap-1">
+                    {/* Role Filter & Status Filter Bar */}
+                    <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-surface p-4 rounded-xl border border-border-subtle">
+                        <div className="flex flex-wrap items-center gap-2">
+                            <span className="text-xs font-bold text-foreground-muted ml-1 flex items-center gap-1">
                                 <Filter size={14} /> فیلتر نقش:
                             </span>
                             <button
@@ -833,10 +884,60 @@ export default function AdminConfigPage() {
                             </button>
                         </div>
 
+                        {/* Status Filter (Active / Archived / All) */}
+                        <div className="flex items-center gap-1.5 p-1 bg-surface-secondary rounded-xl self-stretch lg:self-auto justify-center">
+                            <button
+                                onClick={() => setPlanStatusFilter("ACTIVE")}
+                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                                    planStatusFilter === "ACTIVE"
+                                        ? "bg-surface text-foreground shadow-sm"
+                                        : "text-foreground-muted hover:text-foreground"
+                                }`}
+                            >
+                                <span>پلن‌های جاری / فعال</span>
+                                <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${
+                                    planStatusFilter === "ACTIVE" ? "bg-primary/10 text-primary" : "bg-border-subtle text-foreground-muted"
+                                }`}>
+                                    {toPersianDigits(plans.filter((p) => !p.isArchived).length)}
+                                </span>
+                            </button>
+                            <button
+                                onClick={() => setPlanStatusFilter("ARCHIVED")}
+                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                                    planStatusFilter === "ARCHIVED"
+                                        ? "bg-surface text-foreground shadow-sm"
+                                        : "text-foreground-muted hover:text-foreground"
+                                }`}
+                            >
+                                <Archive size={13} />
+                                <span>آرشیو شده</span>
+                                <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${
+                                    planStatusFilter === "ARCHIVED" ? "bg-amber-100 text-amber-800" : "bg-border-subtle text-foreground-muted"
+                                }`}>
+                                    {toPersianDigits(plans.filter((p) => p.isArchived).length)}
+                                </span>
+                            </button>
+                            <button
+                                onClick={() => setPlanStatusFilter("ALL")}
+                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                                    planStatusFilter === "ALL"
+                                        ? "bg-surface text-foreground shadow-sm"
+                                        : "text-foreground-muted hover:text-foreground"
+                                }`}
+                            >
+                                <span>همه پلن‌ها</span>
+                                <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${
+                                    planStatusFilter === "ALL" ? "bg-primary/10 text-primary" : "bg-border-subtle text-foreground-muted"
+                                }`}>
+                                    {toPersianDigits(plans.length)}
+                                </span>
+                            </button>
+                        </div>
+
                         <button
                             onClick={() => refetchPlans()}
                             disabled={plansLoading}
-                            className="flex items-center gap-1.5 text-xs text-foreground-muted hover:text-foreground transition-colors"
+                            className="flex items-center gap-1.5 text-xs text-foreground-muted hover:text-foreground transition-colors self-end lg:self-auto"
                         >
                             <RefreshCcw size={14} className={plansLoading ? "animate-spin" : ""} />
                             به‌روزرسانی فهرست
@@ -857,15 +958,26 @@ export default function AdminConfigPage() {
                             <p className="text-xs mt-1 text-error">لطفاً اتصال اینترنت خود را بررسی و دوباره تلاش نمایید.</p>
                         </div>
                     ) : filteredPlans.length === 0 ? (
-                        <div className="p-12 bg-surface rounded-2xl border border-dashed border-border text-center text-foreground-muted">
-                            <Package size={44} className="mx-auto mb-3 text-gray-300" />
-                            <h3 className="font-bold text-foreground-secondary">هیچ پلنی در این دسته یافت نشد</h3>
-                            <p className="text-xs text-foreground-muted mt-1">با کلیک روی «افزودن پلن جدید»، اولین پلن را تعریف کنید.</p>
+                        <div className="p-12 bg-surface rounded-2xl border border-dashed border-border text-center text-foreground-muted space-y-3">
+                            <Archive size={40} className="mx-auto text-foreground-muted/60" />
+                            <h3 className="font-bold text-foreground-secondary">
+                                {planStatusFilter === "ARCHIVED"
+                                    ? "هیچ پلن آرشیو شده‌ای یافت نشد"
+                                    : planStatusFilter === "ACTIVE"
+                                    ? "هیچ پلن فعالی در این بخش یافت نشد"
+                                    : "هیچ پلنی یافت نشد"}
+                            </h3>
+                            <p className="text-xs text-foreground-muted mt-1">
+                                {planStatusFilter === "ARCHIVED"
+                                    ? "پلن‌هایی که به آرشیو منتقل شوند در این بخش نمایش داده می‌شوند و قابل بازگردانی هستند."
+                                    : "با کلیک روی «افزودن پلن جدید»، پلن جدید تعریف کنید."}
+                            </p>
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                             {filteredPlans.map((plan) => {
                                 const isAgent = plan.targetRole === "agent";
+                                const isArchived = Boolean(plan.isArchived);
                                 const badgeColorInfo = AVAILABLE_COLORS.find(
                                     (c) => c.id === (plan.badgeMetadata?.color || "blue")
                                 );
@@ -874,7 +986,11 @@ export default function AdminConfigPage() {
                                     <div
                                         key={plan.id}
                                         className={`bg-surface rounded-2xl border transition-all hover:shadow-md flex flex-col justify-between ${
-                                            plan.isActive ? "border-border-subtle" : "border-border-subtle bg-surface-secondary/60 opacity-80"
+                                            isArchived
+                                                ? "border-amber-200/80 bg-amber-50/20 opacity-90"
+                                                : plan.isActive
+                                                ? "border-border-subtle"
+                                                : "border-border-subtle bg-surface-secondary/60 opacity-80"
                                         }`}
                                     >
                                         <div className="p-6 space-y-4">
@@ -900,23 +1016,30 @@ export default function AdminConfigPage() {
                                                 </div>
 
                                                 {/* Active Badge / Toggle */}
-                                                <button
-                                                    onClick={() => handleTogglePlanActive(plan)}
-                                                    disabled={!canManageConfig}
-                                                    title={plan.isActive ? "کلیک برای غیرفعال‌سازی" : "کلیک برای فعال‌سازی"}
-                                                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold transition-all ${
-                                                        plan.isActive
-                                                            ? "bg-success-subtle text-success border border-success/30 hover:bg-success-subtle"
-                                                            : "bg-surface-secondary text-foreground-muted border border-border hover:bg-gray-200"
-                                                    }`}
-                                                >
-                                                    <span
-                                                        className={`w-2 h-2 rounded-full ${
-                                                            plan.isActive ? "bg-emerald-500 animate-pulse" : "bg-gray-400"
+                                                {isArchived ? (
+                                                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300">
+                                                        <Archive size={12} />
+                                                        آرشیو شده
+                                                    </span>
+                                                ) : (
+                                                    <button
+                                                        onClick={() => handleTogglePlanActive(plan)}
+                                                        disabled={!canManageConfig}
+                                                        title={plan.isActive ? "کلیک برای غیرفعال‌سازی" : "کلیک برای فعال‌سازی"}
+                                                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold transition-all ${
+                                                            plan.isActive
+                                                                ? "bg-success-subtle text-success border border-success/30 hover:bg-success-subtle"
+                                                                : "bg-surface-secondary text-foreground-muted border border-border hover:bg-gray-200"
                                                         }`}
-                                                    />
-                                                    {plan.isActive ? "فعال" : "غیرفعال"}
-                                                </button>
+                                                    >
+                                                        <span
+                                                            className={`w-2 h-2 rounded-full ${
+                                                                plan.isActive ? "bg-emerald-500 animate-pulse" : "bg-gray-400"
+                                                            }`}
+                                                        />
+                                                        {plan.isActive ? "فعال" : "غیرفعال"}
+                                                    </button>
+                                                )}
                                             </div>
 
                                             {/* Description */}
@@ -999,11 +1122,32 @@ export default function AdminConfigPage() {
                                         </div>
 
                                         {/* Actions Footer */}
-                                        <div className="p-4 bg-surface-secondary/80 border-t border-border-subtle rounded-b-2xl flex justify-end">
+                                        <div className="p-4 bg-surface-secondary/80 border-t border-border-subtle rounded-b-2xl flex items-center justify-between gap-2">
+                                            {isArchived ? (
+                                                <button
+                                                    onClick={() => handleRestorePlan(plan)}
+                                                    disabled={!canManageConfig || updatePlanMutation.isPending}
+                                                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg hover:bg-emerald-100 transition-colors disabled:opacity-50"
+                                                >
+                                                    <RotateCcw size={14} />
+                                                    بازگردانی از آرشیو
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    onClick={() => setPlanToArchive(plan)}
+                                                    disabled={!canManageConfig || archivePlanMutation.isPending}
+                                                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-error bg-surface border border-error/30 rounded-lg hover:bg-error-subtle transition-colors disabled:opacity-50"
+                                                    title="انتقال پلن به آرشیو"
+                                                >
+                                                    <Trash2 size={14} />
+                                                    انتقال به آرشیو
+                                                </button>
+                                            )}
+
                                             <button
                                                 onClick={() => openEditPlanModal(plan)}
                                                 disabled={!canManageConfig}
-                                                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-foreground-secondary bg-surface border border-border rounded-lg hover:bg-surface-secondary transition-colors"
+                                                className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-foreground-secondary bg-surface border border-border rounded-lg hover:bg-surface-secondary transition-colors"
                                             >
                                                 <Edit3 size={14} />
                                                 ویرایش پلن
@@ -1419,7 +1563,7 @@ export default function AdminConfigPage() {
                                 </p>
                             </div>
                             <button
-                                onClick={() => setIsPlanModalOpen(false)}
+                                onClick={closePlanModal}
                                 className="p-2 text-foreground-muted hover:text-foreground-secondary rounded-full hover:bg-surface-secondary transition-colors"
                             >
                                 <X size={20} />
@@ -1695,7 +1839,7 @@ export default function AdminConfigPage() {
                             <div className="flex justify-end gap-3 pt-4 border-t">
                                 <button
                                     type="button"
-                                    onClick={() => setIsPlanModalOpen(false)}
+                                    onClick={closePlanModal}
                                     className="px-5 py-2.5 text-sm font-bold text-foreground-secondary hover:bg-surface-secondary rounded-xl transition-colors"
                                 >
                                     انصراف
@@ -1958,6 +2102,49 @@ export default function AdminConfigPage() {
                                 className="flex items-center gap-1.5 px-4 py-2 bg-error text-white text-xs font-bold rounded-xl shadow-md hover:bg-error/90 transition-all disabled:opacity-50"
                             >
                                 {archivePackageMutation.isPending ? (
+                                    <RefreshCcw size={14} className="animate-spin" />
+                                ) : (
+                                    <Trash2 size={14} />
+                                )}
+                                تایید و انتقال به آرشیو
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* Plan Archive Confirmation Modal */}
+            {planToArchive && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+                    <div className="bg-surface rounded-2xl max-w-md w-full p-6 shadow-xl border border-border-subtle space-y-4">
+                        <div className="flex items-center gap-3 text-warning">
+                            <div className="p-3 bg-warning-subtle rounded-xl">
+                                <Archive size={24} className="text-warning" />
+                            </div>
+                            <div>
+                                <h3 className="font-black text-foreground">انتقال پلن به آرشیو</h3>
+                                <p className="text-xs text-foreground-muted">تایید حذف و انتقال به بخش آرشیو</p>
+                            </div>
+                        </div>
+                        <p className="text-xs text-foreground-secondary leading-relaxed">
+                            آیا از انتقال پلن اشتراک <strong className="text-foreground">«{planToArchive.name}»</strong> به آرشیو اطمینان دارید؟
+                            این پلن غیرفعال شده و در کاتالوگ خرید کاربران نمایش داده نخواهد شد، اما در صورت نیاز می‌توانید آن را از زبانه «پلن‌های آرشیو شده» بازگردانی کنید.
+                        </p>
+                        <div className="flex justify-end gap-3 pt-2">
+                            <button
+                                type="button"
+                                onClick={() => setPlanToArchive(null)}
+                                disabled={archivePlanMutation.isPending}
+                                className="px-4 py-2 text-xs font-bold text-foreground-secondary hover:bg-surface-secondary rounded-xl transition-colors"
+                            >
+                                انصراف
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => handleArchivePlan()}
+                                disabled={archivePlanMutation.isPending}
+                                className="flex items-center gap-1.5 px-4 py-2 bg-error text-white text-xs font-bold rounded-xl shadow-md hover:bg-error/90 transition-all disabled:opacity-50"
+                            >
+                                {archivePlanMutation.isPending ? (
                                     <RefreshCcw size={14} className="animate-spin" />
                                 ) : (
                                     <Trash2 size={14} />

@@ -18,6 +18,7 @@ export interface SubscriptionBadgeMetadata {
 export interface SubscriptionPlan {
     id: string;
     name: string;
+    slug?: string;
     description: string;
     targetRole: SubscriptionTargetRole;
     priceIrr: string;
@@ -31,6 +32,7 @@ export interface SubscriptionPlan {
     badgeIconType: string | null;
     badgeMetadata: SubscriptionBadgeMetadata | null;
     isActive: boolean;
+    isArchived?: boolean;
     sortOrder: number;
     createdAt?: string;
     updatedAt?: string;
@@ -166,6 +168,7 @@ export interface CreateSubscriptionPlanRequest {
     badgeIconType?: string;
     badgeMetadata?: SubscriptionBadgeMetadata;
     isActive?: boolean;
+    isArchived?: boolean;
     sortOrder?: number;
 }
 
@@ -185,6 +188,7 @@ export interface UpdateSubscriptionPlanRequest {
     badgeIconType?: string;
     badgeMetadata?: SubscriptionBadgeMetadata;
     isActive?: boolean;
+    isArchived?: boolean;
     sortOrder?: number;
 }
 
