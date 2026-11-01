@@ -1,27 +1,25 @@
 "use client";
 
-import React, { useMemo } from "react";
-import Link from "next/link";
+import { useMySubscriptionStatus } from "@/hooks/useSubscription";
+import { cn, toPersianDigits } from "@/lib/utils";
 import {
     Award,
     Building2,
-    Calendar,
     CheckCircle2,
     ChevronLeft,
     Clock,
     Flame,
     Home,
     Layers,
-    Loader2,
     PlusCircle,
     ShieldCheck,
     Sparkles,
     Star,
     TrendingUp,
-    Zap,
+    Zap
 } from "lucide-react";
-import { useMySubscriptionStatus } from "@/hooks/useSubscription";
-import { cn, toPersianDigits } from "@/lib/utils";
+import Link from "next/link";
+import { useMemo } from "react";
 
 interface SubscriptionQuotaWidgetProps {
     className?: string;
@@ -35,39 +33,6 @@ export function SubscriptionQuotaWidget({
     title = "وضعیت اشتراک و سهمیه‌های باقیمانده",
 }: SubscriptionQuotaWidgetProps) {
     const { data, isLoading } = useMySubscriptionStatus();
-
-    const renderBadgeIcon = (iconName?: string | null) => {
-        switch (iconName?.toLowerCase()) {
-            case "star":
-                return <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />;
-            case "sparkles":
-                return <Sparkles className="w-3.5 h-3.5 text-amber-500" />;
-            case "award":
-                return <Award className="w-3.5 h-3.5 text-info" />;
-            case "check":
-            case "checkcircle":
-                return <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />;
-            default:
-                return <ShieldCheck className="w-3.5 h-3.5 text-primary" />;
-        }
-    };
-
-    if (isLoading) {
-        return (
-            <div className={cn("p-5 sm:p-6 rounded-[24px] sm:rounded-[28px] bg-surface border border-soft-border/70 animate-pulse", className)}>
-                <div className="flex items-center justify-between mb-4">
-                    <div className="h-5 bg-surface-secondary rounded-lg w-48" />
-                    <div className="h-5 bg-surface-secondary rounded-lg w-20" />
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    <div className="h-20 bg-surface-secondary rounded-2xl" />
-                    <div className="h-20 bg-surface-secondary rounded-2xl" />
-                    <div className="h-20 bg-surface-secondary rounded-2xl" />
-                    <div className="h-20 bg-surface-secondary rounded-2xl" />
-                </div>
-            </div>
-        );
-    }
 
     const hasActiveSubscription = data?.hasActiveSubscription;
     const subscription = data?.subscription;
@@ -187,6 +152,21 @@ export function SubscriptionQuotaWidget({
         return [];
     }, [entitlements, subscription]);
 
+    const renderBadgeIcon = (iconName?: string | null) => {
+        switch (iconName?.toLowerCase()) {
+            case "star":
+                return <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />;
+            case "sparkles":
+                return <Sparkles className="w-3.5 h-3.5 text-amber-500" />;
+            case "award":
+                return <Award className="w-3.5 h-3.5 text-info" />;
+            case "check":
+            case "checkcircle":
+                return <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />;
+            default:
+                return <ShieldCheck className="w-3.5 h-3.5 text-primary" />;
+        }
+    };
     const getEntitlementMeta = (type?: string) => {
         switch (type) {
             case "LISTING_PUBLICATION":
@@ -226,6 +206,24 @@ export function SubscriptionQuotaWidget({
                 };
         }
     };
+    if (isLoading) {
+        return (
+            <div className={cn("p-5 sm:p-6 rounded-[24px] sm:rounded-[28px] bg-surface border border-soft-border/70 animate-pulse", className)}>
+                <div className="flex items-center justify-between mb-4">
+                    <div className="h-5 bg-surface-secondary rounded-lg w-48" />
+                    <div className="h-5 bg-surface-secondary rounded-lg w-20" />
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div className="h-20 bg-surface-secondary rounded-2xl" />
+                    <div className="h-20 bg-surface-secondary rounded-2xl" />
+                    <div className="h-20 bg-surface-secondary rounded-2xl" />
+                    <div className="h-20 bg-surface-secondary rounded-2xl" />
+                </div>
+            </div>
+        );
+    }
+
+
 
     return (
         <div className={cn("p-5 sm:p-6 rounded-[24px] sm:rounded-[28px] bg-surface border border-soft-border/70 shadow-xs space-y-4", className)}>
@@ -335,8 +333,8 @@ export function SubscriptionQuotaWidget({
                                                 percentUsed >= 90
                                                     ? "bg-rose-500"
                                                     : percentUsed >= 70
-                                                      ? "bg-amber-500"
-                                                      : "bg-emerald-500",
+                                                        ? "bg-amber-500"
+                                                        : "bg-emerald-500",
                                             )}
                                             style={{ width: `${percentUsed}%` }}
                                         />
