@@ -6,7 +6,7 @@ import { useAgencyStats, useMyAgency } from "@/hooks/useAgencies";
 import { useAuth } from "@/hooks/useAuth";
 import { useSafeBack } from "@/hooks/useSafeBack";
 import { normalizeApiError } from "@/lib/api/error-handler";
-import { cn, getMediaPosterUrl, getMediaUrl, toEnglishDigits, toOnlyDigits, toPersianDigits } from "@/lib/utils";
+import { cn, getMediaPosterUrl, getMediaUrl, getSiteBaseUrl, toEnglishDigits, toOnlyDigits, toPersianDigits } from "@/lib/utils";
 import { agencyService } from "@/services/agency.service";
 import {
     AgencyPost,
@@ -302,11 +302,12 @@ export default function AgencyPanelScene() {
     });
 
     const publicShowcasePath = `/agency/showcase/${agency?.slug || agency?.id || ""}`;
-    const fullPublicUrl = typeof window !== "undefined" ? `${window.location.origin}${publicShowcasePath}` : publicShowcasePath;
+    const fullPublicUrl = `${getSiteBaseUrl()}${publicShowcasePath}`;
 
     const handleCopyLink = () => {
         if (typeof navigator !== "undefined" && navigator.clipboard) {
-            navigator.clipboard.writeText(fullPublicUrl);
+            const url = typeof window !== "undefined" && window.location?.origin ? `${window.location.origin}${publicShowcasePath}` : fullPublicUrl;
+            navigator.clipboard.writeText(url);
             setCopiedLink(true);
             toast.success("لینک صفحه ویترین با موفقیت کپی شد");
             setTimeout(() => setCopiedLink(false), 2500);
@@ -575,7 +576,7 @@ export default function AgencyPanelScene() {
                                 )}
 
                                 <div className="pt-1 flex items-center gap-2">
-                                    <span className="text-[11px] text-secondary font-mono truncate max-w-xs" dir="ltr">
+                                    <span className="text-[11px] text-secondary font-mono truncate max-w-xs" dir="ltr" suppressHydrationWarning>
                                         {fullPublicUrl}
                                     </span>
                                 </div>
@@ -1310,7 +1311,7 @@ export default function AgencyPanelScene() {
                                             {/* Post Header Details */}
                                             <div className="space-y-1.5">
                                                 <div className="flex items-center justify-between text-[11px] text-secondary">
-                                                    <span>
+                                                    <span suppressHydrationWarning>
                                                         تاریخ: {new Date(post.createdAt).toLocaleDateString("fa-IR")}
                                                     </span>
                                                     {post.slug && (

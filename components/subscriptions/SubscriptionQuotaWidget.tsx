@@ -351,6 +351,7 @@ export function SubscriptionQuotaWidget({
                                             <div
                                                 key={pIdx}
                                                 className="flex items-center justify-between text-[10px] bg-surface/70 px-2 py-1 rounded-lg border border-soft-border/40"
+                                                suppressHydrationWarning
                                                 title={
                                                     p.expiresAt
                                                         ? `انقضا: ${new Date(p.expiresAt).toLocaleDateString("fa-IR")}`
