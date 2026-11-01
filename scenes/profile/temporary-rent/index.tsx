@@ -1,23 +1,24 @@
 "use client";
 
-import { useAuth } from "@/hooks/useAuth";
-import { useUserStatus } from "@/hooks/useUserStatus";
-import { AccountStatusBanner } from "@/components/ui/AccountStatusBanner";
-import {
-    useTemporaryRentAds,
-    usePublishTemporaryRent,
-    useDeleteTemporaryRent,
-} from "@/hooks/useTemporaryRent";
-import { useHostProfile, useUpdateHostProfile, useShowcasePosts } from "@/hooks/useShowcase";
-import { showcaseService } from "@/services/showcase.service";
 import MediaIconUpload from "@/components/admin/MediaIconUpload";
-import { SubscriptionQuotaWidget } from "@/components/subscriptions/SubscriptionQuotaWidget";
 import { PromotionModal } from "@/components/promotions/PromotionModal";
-import { UpdateHostProfileRequest } from "@/types/api/showcase.types";
-import type { TemporaryRentPricingReadModel } from "@/types/api/temporary-rent.types";
-import type { UnifiedPost, UpdatePostRequest } from "@/types/api/post.types";
+import { SubscriptionQuotaWidget } from "@/components/subscriptions/SubscriptionQuotaWidget";
+import { AccountStatusBanner } from "@/components/ui/AccountStatusBanner";
+import { useAuth } from "@/hooks/useAuth";
+import { useSafeBack } from "@/hooks/useSafeBack";
+import { useHostProfile, useShowcasePosts, useUpdateHostProfile } from "@/hooks/useShowcase";
+import {
+    useDeleteTemporaryRent,
+    usePublishTemporaryRent,
+    useTemporaryRentAds,
+} from "@/hooks/useTemporaryRent";
+import { useUserStatus } from "@/hooks/useUserStatus";
 import { normalizeApiError } from "@/lib/api/error-handler";
 import { cn, formatCurrency, getMediaUrl, toEnglishDigits, toOnlyDigits, toPersianDigits } from "@/lib/utils";
+import { showcaseService } from "@/services/showcase.service";
+import type { UnifiedPost, UpdatePostRequest } from "@/types/api/post.types";
+import { UpdateHostProfileRequest } from "@/types/api/showcase.types";
+import type { TemporaryRentPricingReadModel } from "@/types/api/temporary-rent.types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
     Award,
@@ -52,13 +53,12 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useSafeBack } from "@/hooks/useSafeBack";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { FreeMode } from "swiper/modules";
 import type { Swiper as SwiperType } from "swiper";
+import { FreeMode } from "swiper/modules";
+import { Swiper, SwiperSlide } from "swiper/react";
 
 import "swiper/css";
 import "swiper/css/free-mode";
@@ -485,8 +485,8 @@ export default function TemporaryRentPanelScene() {
                                 tab.id === "rentals" && rentals.length > 0
                                     ? rentals.length
                                     : tab.id === "posts" && posts.length > 0
-                                    ? posts.length
-                                    : null;
+                                        ? posts.length
+                                        : null;
 
                             return (
                                 <SwiperSlide key={tab.id} className="!w-auto">
@@ -1206,15 +1206,7 @@ export default function TemporaryRentPanelScene() {
                                     با انتشار راهنماهای سفر و جاذبه‌های اطراف اقامتگاه، رزروهای بیشتری دریافت کنید.
                                 </p>
                             </div>
-                            <div className="pt-1">
-                                <Link
-                                    href="/posts/create"
-                                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand text-white text-xs font-black"
-                                >
-                                    <Plus className="w-3.5 h-3.5" />
-                                    <span>نوشتن اولین پست</span>
-                                </Link>
-                            </div>
+
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -24,6 +24,7 @@ import {
     Check,
     ChevronLeft,
     Clock,
+    Compass,
     Copy,
     Edit3,
     ExternalLink,
@@ -35,7 +36,6 @@ import {
     LayoutDashboard,
     MapPin,
     MessageCircle,
-    PenTool,
     Phone,
     Plus,
     RotateCcw,
@@ -47,7 +47,7 @@ import {
     Star,
     Trash2,
     Users,
-    X,
+    X
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -659,7 +659,7 @@ export default function AgencyPanelScene() {
                     <div className="rounded-2xl bg-soft-bg/60 border border-soft-border/70 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <div className="flex items-center gap-3">
                             <div className="w-9 h-9 rounded-xl bg-brand text-accent flex items-center justify-center shrink-0">
-                                <PenTool className="w-4 h-4" />
+                                <Compass className="w-4 h-4" />
                             </div>
                             <div>
                                 <h3 className="text-xs sm:text-sm font-black text-brand">تولید محتوا</h3>
@@ -1238,15 +1238,7 @@ export default function AgencyPanelScene() {
                                     با انتشار تحلیل‌های بازار و معرفی ملک‌ها، مشتریان بیشتری به ویترین دفتر خود جذب کنید.
                                 </p>
                             </div>
-                            <div className="pt-1">
-                                <Link
-                                    href="/posts/create"
-                                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand text-white text-xs font-black shadow-sm"
-                                >
-                                    <Plus className="w-3.5 h-3.5" />
-                                    <span>نوشتن اولین پست</span>
-                                </Link>
-                            </div>
+
                         </div>
                     ) : filteredPosts.length === 0 ? (
                         <div className="rounded-2xl bg-surface border border-soft-border/70 p-8 text-center space-y-2">

@@ -805,7 +805,7 @@ export default function CreatePostScene() {
 
                 <div className="space-y-1">
                   <h3 className="text-sm font-black text-brand">
-                    سبک اینستاگرام (چندرسانه‌ای و اسلایدی)
+                    سبک اینستاگرام
                   </h3>
                   <p className="text-xs text-foreground-secondary leading-relaxed">
                     مناسب معرفی سریع املاک، تورهای ویدیویی و تصویری، آگهی‌های ویژه و اسلایدهای آموزشی با تصاویر متعدد و کپشن کوتاه.
@@ -853,7 +853,7 @@ export default function CreatePostScene() {
 
                 <div className="space-y-1">
                   <h3 className="text-sm font-black text-brand">
-                    سبک مدیوم (مقاله و تحلیل تخصصی)
+                    مقاله
                   </h3>
                   <p className="text-xs text-foreground-secondary leading-relaxed">
                     مناسب مقالات بلند، تحلیل روند بازار مسکن، راهنماهای جامع خرید و فروش، نکات حقوقی و گزارش‌های پژوهشی.
