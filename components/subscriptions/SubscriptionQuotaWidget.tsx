@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import Link from "next/link";
 import {
     Award,
@@ -74,14 +74,118 @@ export function SubscriptionQuotaWidget({
     const entitlements = data?.entitlements || [];
     const badge = data?.badge;
 
-    // Filter entitlements relevant to the current panel context if specified
-    const displayEntitlements = entitlements.filter((ent) => {
-        const type = ent.entitlementType || ent.type;
-        if (!type || type === "BADGE") return false;
-        if (targetRole === "agent" && type === "TEMPORARY_RENTAL_PUBLICATION") return false;
-        if (targetRole === "landlord" && type === "LISTING_PUBLICATION") return false;
-        return true;
-    });
+    // Aggregate entitlements by feature type to prevent duplicate cards when user has multiple plans
+    const aggregatedEntitlements = useMemo(() => {
+        if (!entitlements || entitlements.length === 0) return [];
+
+        const filtered = entitlements.filter((ent) => {
+            const type = ent.entitlementType || ent.type;
+            if (!type || type === "BADGE") return false;
+            if (targetRole === "agent" && type === "TEMPORARY_RENTAL_PUBLICATION") return false;
+            if (targetRole === "landlord" && type === "LISTING_PUBLICATION") return false;
+            return true;
+        });
+
+        const map = new Map<
+            string,
+            {
+                type: string;
+                totalQuota: number;
+                usedQuota: number;
+                remainingQuota: number;
+                percentUsed: number;
+                plans: {
+                    planName: string;
+                    totalQuota: number;
+                    usedQuota: number;
+                    remainingQuota: number;
+                    expiresAt?: string | null;
+                }[];
+            }
+        >();
+
+        for (const ent of filtered) {
+            const type = ent.entitlementType || ent.type;
+            if (!type) continue;
+
+            const total = Number(ent.totalQuota) || 0;
+            const used = Number(ent.usedQuota) || 0;
+            const remaining =
+                typeof ent.remainingQuota === "number"
+                    ? ent.remainingQuota
+                    : Math.max(0, total - used);
+            const planName = ent.planName?.trim() || "اشتراک فعال";
+            const expiresAt = ent.expiresAt || null;
+
+            if (!map.has(type)) {
+                map.set(type, {
+                    type,
+                    totalQuota: 0,
+                    usedQuota: 0,
+                    remainingQuota: 0,
+                    percentUsed: 0,
+                    plans: [],
+                });
+            }
+
+            const group = map.get(type)!;
+            group.totalQuota += total;
+            group.usedQuota += used;
+            group.remainingQuota += remaining;
+
+            const existingPlan = group.plans.find((p) => p.planName === planName);
+            if (existingPlan) {
+                existingPlan.totalQuota += total;
+                existingPlan.usedQuota += used;
+                existingPlan.remainingQuota += remaining;
+                if (
+                    expiresAt &&
+                    (!existingPlan.expiresAt ||
+                        new Date(expiresAt) < new Date(existingPlan.expiresAt))
+                ) {
+                    existingPlan.expiresAt = expiresAt;
+                }
+            } else {
+                group.plans.push({
+                    planName,
+                    totalQuota: total,
+                    usedQuota: used,
+                    remainingQuota: remaining,
+                    expiresAt,
+                });
+            }
+        }
+
+        const FEATURE_ORDER: Record<string, number> = {
+            LISTING_PUBLICATION: 1,
+            TEMPORARY_RENTAL_PUBLICATION: 2,
+            URGENT_PROMOTION: 3,
+            LADDER_PROMOTION: 4,
+        };
+
+        return Array.from(map.values())
+            .map((group) => ({
+                ...group,
+                percentUsed:
+                    group.totalQuota > 0
+                        ? Math.min(100, Math.round((group.usedQuota / group.totalQuota) * 100))
+                        : 0,
+            }))
+            .sort((a, b) => (FEATURE_ORDER[a.type] ?? 99) - (FEATURE_ORDER[b.type] ?? 99));
+    }, [entitlements, targetRole]);
+
+    const activePlanNames = useMemo(() => {
+        const names = Array.from(
+            new Set(
+                entitlements
+                    .map((e) => e.planName?.trim())
+                    .filter((n): n is string => !!n),
+            ),
+        );
+        if (names.length > 0) return names;
+        if (subscription?.planName) return [subscription.planName];
+        return [];
+    }, [entitlements, subscription]);
 
     const getEntitlementMeta = (type?: string) => {
         switch (type) {
@@ -135,17 +239,21 @@ export function SubscriptionQuotaWidget({
                         <h3 className="text-sm font-black text-brand tracking-tight">
                             {title}
                         </h3>
-                        <div className="flex items-center gap-2 mt-0.5">
-                            {hasActiveSubscription && subscription ? (
+                        <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                            {hasActiveSubscription || activePlanNames.length > 0 ? (
                                 <>
                                     <span className="text-[11px] font-bold text-primary">
-                                        {subscription.planName}
+                                        {activePlanNames.join(" + ") || subscription?.planName}
                                     </span>
-                                    <span className="text-secondary text-[11px]">•</span>
-                                    <span className="text-[11px] font-bold text-success flex items-center gap-1">
-                                        <Clock className="w-3 h-3 text-success" />
-                                        <span>{toPersianDigits(subscription.daysRemaining)} روز اعتبار باقی‌مانده</span>
-                                    </span>
+                                    {subscription?.daysRemaining !== undefined && (
+                                        <>
+                                            <span className="text-secondary text-[11px]">•</span>
+                                            <span className="text-[11px] font-bold text-success flex items-center gap-1">
+                                                <Clock className="w-3 h-3 text-success" />
+                                                <span>{toPersianDigits(subscription.daysRemaining)} روز اعتبار باقی‌مانده</span>
+                                            </span>
+                                        </>
+                                    )}
                                 </>
                             ) : (
                                 <span className="text-[11px] font-bold text-secondary">
@@ -173,61 +281,96 @@ export function SubscriptionQuotaWidget({
                 </div>
             </div>
 
-            {/* Quotas Grid */}
-            {displayEntitlements.length > 0 ? (
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    {displayEntitlements.map((ent, idx) => {
-                        const type = ent.entitlementType || ent.type;
-                        const meta = getEntitlementMeta(type);
-                        const percentUsed =
-                            ent.totalQuota > 0
-                                ? Math.min(100, Math.round((ent.usedQuota / ent.totalQuota) * 100))
-                                : 0;
+            {/* Quotas Grid (Aggregated per feature with per-plan breakdown) */}
+            {aggregatedEntitlements.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    {aggregatedEntitlements.map((group) => {
+                        const meta = getEntitlementMeta(group.type);
+                        const percentUsed = group.percentUsed;
 
                         return (
                             <div
-                                key={ent.id || `${type}-${idx}`}
+                                key={group.type}
                                 className={cn(
-                                    "p-3.5 rounded-2xl bg-surface-secondary/70 border border-soft-border/60 flex flex-col justify-between space-y-2",
+                                    "p-3.5 rounded-2xl bg-surface-secondary/70 border border-soft-border/60 flex flex-col justify-between space-y-2.5",
                                     meta.border,
                                 )}
                             >
-                                <div className="flex items-center justify-between">
-                                    <span className={cn("p-1.5 rounded-lg", meta.bg)}>
-                                        {meta.icon}
-                                    </span>
-                                    <span className="text-[10px] text-secondary font-bold">
-                                        {percentUsed}% مصرف
-                                    </span>
-                                </div>
-
                                 <div>
-                                    <span className="block text-[11px] font-bold text-secondary truncate">
-                                        {meta.label}
-                                    </span>
-                                    <div className="flex items-baseline justify-between mt-0.5">
-                                        <span className="text-xl font-black text-brand">
-                                            {toPersianDigits(ent.remainingQuota)}
+                                    <div className="flex items-center justify-between mb-1.5">
+                                        <div className="flex items-center gap-1.5">
+                                            <span className={cn("p-1.5 rounded-lg", meta.bg)}>
+                                                {meta.icon}
+                                            </span>
+                                            {group.plans.length > 1 && (
+                                                <span className="text-[9px] font-bold text-primary bg-primary/10 border border-primary/20 px-1.5 py-0.5 rounded-full">
+                                                    {toPersianDigits(group.plans.length)} پلن
+                                                </span>
+                                            )}
+                                        </div>
+                                        <span className="text-[10px] text-secondary font-bold">
+                                            {toPersianDigits(percentUsed)}% مصرف
                                         </span>
-                                        <span className="text-[10px] text-secondary">
-                                            از {toPersianDigits(ent.totalQuota)}
+                                    </div>
+
+                                    <div>
+                                        <span className="block text-[11px] font-bold text-secondary truncate">
+                                            {meta.label}
                                         </span>
+                                        <div className="flex items-baseline justify-between mt-0.5">
+                                            <span className="text-xl font-black text-brand">
+                                                {toPersianDigits(group.remainingQuota)}
+                                            </span>
+                                            <span className="text-[10px] text-secondary">
+                                                از کل {toPersianDigits(group.totalQuota)}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    {/* Mini Progress bar */}
+                                    <div className="w-full bg-soft-border/70 rounded-full h-1.5 overflow-hidden mt-2">
+                                        <div
+                                            className={cn(
+                                                "h-full rounded-full transition-all duration-500",
+                                                percentUsed >= 90
+                                                    ? "bg-rose-500"
+                                                    : percentUsed >= 70
+                                                      ? "bg-amber-500"
+                                                      : "bg-emerald-500",
+                                            )}
+                                            style={{ width: `${percentUsed}%` }}
+                                        />
                                     </div>
                                 </div>
 
-                                {/* Mini Progress bar */}
-                                <div className="w-full bg-soft-border/70 rounded-full h-1.5 overflow-hidden">
-                                    <div
-                                        className={cn(
-                                            "h-full rounded-full transition-all duration-500",
-                                            percentUsed >= 90
-                                                ? "bg-rose-500"
-                                                : percentUsed >= 70
-                                                  ? "bg-amber-500"
-                                                  : "bg-emerald-500",
-                                        )}
-                                        style={{ width: `${percentUsed}%` }}
-                                    />
+                                {/* Per-Plan Breakdown */}
+                                <div className="pt-2 border-t border-soft-border/50 space-y-1">
+                                    <span className="text-[9px] font-bold text-secondary block">
+                                        سهمیه به تفکیک پلن:
+                                    </span>
+                                    <div className="space-y-1">
+                                        {group.plans.map((p, pIdx) => (
+                                            <div
+                                                key={pIdx}
+                                                className="flex items-center justify-between text-[10px] bg-surface/70 px-2 py-1 rounded-lg border border-soft-border/40"
+                                                title={
+                                                    p.expiresAt
+                                                        ? `انقضا: ${new Date(p.expiresAt).toLocaleDateString("fa-IR")}`
+                                                        : undefined
+                                                }
+                                            >
+                                                <span className="truncate max-w-[110px] font-medium text-brand">
+                                                    {p.planName}
+                                                </span>
+                                                <span className="shrink-0 font-bold text-brand">
+                                                    {toPersianDigits(p.remainingQuota)}
+                                                    <span className="font-normal text-[9px] text-secondary mr-0.5">
+                                                        /{toPersianDigits(p.totalQuota)}
+                                                    </span>
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
                         );

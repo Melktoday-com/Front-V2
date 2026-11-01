@@ -98,7 +98,9 @@ export default function SubscriptionsScene() {
     const { user, activeRole, isLoggedIn } = useAuth();
     const { data: walletData, isLoading: isLoadingWallet } = useWalletBalance();
 
+    const isPrivileged = activeRole === "super-admin" || activeRole === "admin";
     const isHostOrAgent = activeRole === "landlord" || activeRole === "agent";
+    const canPurchase = isHostOrAgent || isPrivileged;
     const [selectedRole, setSelectedRole] = useState<SubscriptionTargetRole>(
         activeRole === "agent" ? "agent" : "landlord",
     );
@@ -113,9 +115,10 @@ export default function SubscriptionsScene() {
     }, [searchParams]);
 
     // Plans & Entitlements
-    const { data: plans = [], isLoading: isLoadingPlans } = useSubscriptionPlans(
-        isHostOrAgent ? (activeRole as SubscriptionTargetRole) : selectedRole,
-    );
+    const effectivePlanRole = isHostOrAgent
+        ? (activeRole as SubscriptionTargetRole)
+        : selectedRole;
+    const { data: plans = [], isLoading: isLoadingPlans } = useSubscriptionPlans(effectivePlanRole);
     const { data: entitlements = [], isLoading: isLoadingEntitlements } = useEntitlements();
     const { data: activeBadge, isLoading: isLoadingBadge } = useActiveBadge();
 
@@ -237,7 +240,7 @@ export default function SubscriptionsScene() {
             return;
         }
 
-        if (!isHostOrAgent) {
+        if (!canPurchase) {
             toast.error("خرید اشتراک فقط برای نقش‌های میزبان و مشاور املاک مجاز است.");
             return;
         }
@@ -356,7 +359,7 @@ export default function SubscriptionsScene() {
                 </div>
 
                 {/* Non-Host / Non-Agent Banner (Regular User Guidance) */}
-                {!isHostOrAgent && (
+                {!isHostOrAgent && !isPrivileged && (
                     <div className="mb-8 p-5 bg-gradient-to-r from-amber-50 to-orange-50/70 border border-warning/30/80 rounded-3xl">
                         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                             <div className="flex items-start gap-3.5">
@@ -420,8 +423,41 @@ export default function SubscriptionsScene() {
                     </div>
                 )}
 
-                {/* Navigation Tabs (For Host/Agent) */}
-                {isHostOrAgent && (
+                {/* Privileged Admin Role Switcher */}
+                {isPrivileged && (
+                    <div className="mb-6 p-4 bg-surface rounded-2xl border border-border-subtle flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xs">
+                        <span className="text-xs font-bold text-foreground">
+                            مشاهده پلن‌ها به عنوان مدیر ارشد سیستم:
+                        </span>
+                        <div className="inline-flex p-1 bg-surface-secondary rounded-xl">
+                            <button
+                                onClick={() => setSelectedRole("landlord")}
+                                className={cn(
+                                    "px-3 py-1 rounded-lg text-xs font-bold transition",
+                                    selectedRole === "landlord"
+                                        ? "bg-primary text-white shadow-xs"
+                                        : "text-foreground-muted hover:text-foreground",
+                                )}
+                            >
+                                میزبان اقامتگاه
+                            </button>
+                            <button
+                                onClick={() => setSelectedRole("agent")}
+                                className={cn(
+                                    "px-3 py-1 rounded-lg text-xs font-bold transition",
+                                    selectedRole === "agent"
+                                        ? "bg-primary text-white shadow-xs"
+                                        : "text-foreground-muted hover:text-foreground",
+                                )}
+                            >
+                                مشاور املاک
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {/* Navigation Tabs (Accessible to Host/Agent, Admins, or any user with active entitlements) */}
+                {(canPurchase || (Array.isArray(entitlements) && entitlements.length > 0)) && (
                     <div className="flex items-center gap-2 mb-6 border-b border-border-subtle">
                         <button
                             onClick={() => setActiveTab("plans")}
@@ -445,7 +481,12 @@ export default function SubscriptionsScene() {
                             )}
                         >
                             <ShieldCheck className="w-4 h-4" />
-                            <span>پلن ها</span>
+                            <span>سهمیه‌ها و پلن‌های من</span>
+                            {aggregatedEntitlements.length > 0 && (
+                                <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-primary/10 text-primary">
+                                    {toPersianDigits(aggregatedEntitlements.length)}
+                                </span>
+                            )}
                         </button>
                     </div>
                 )}
@@ -576,16 +617,16 @@ export default function SubscriptionsScene() {
                                             {/* Action Button */}
                                             <button
                                                 onClick={() => handleSelectPlan(plan)}
-                                                disabled={!isHostOrAgent}
+                                                disabled={!canPurchase}
                                                 className={cn(
                                                     "w-full py-3 rounded-2xl font-black text-xs transition flex items-center justify-center gap-2 shadow-xs",
-                                                    isHostOrAgent
+                                                    canPurchase
                                                         ? "bg-primary hover:bg-primary-hover text-white cursor-pointer"
                                                         : "bg-surface-secondary text-foreground-muted cursor-not-allowed",
                                                 )}
                                             >
-                                                <span>{isHostOrAgent ? "انتخاب و خرید اشتراک" : "مخصوص میزبانان و مشاوران"}</span>
-                                                {isHostOrAgent && <ArrowLeft className="w-3.5 h-3.5" />}
+                                                <span>{canPurchase ? "انتخاب و خرید اشتراک" : "مخصوص میزبانان و مشاوران"}</span>
+                                                {canPurchase && <ArrowLeft className="w-3.5 h-3.5" />}
                                             </button>
                                         </div>
                                     );
