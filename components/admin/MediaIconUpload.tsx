@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useRef } from 'react';
 import { useUploadMedia } from '@/hooks/useMedia';
 import { getMediaUrl } from '@/lib/utils';
-import { Loader2, ImagePlus, Trash2, RefreshCw } from 'lucide-react';
+import { ImagePlus, Loader2, RefreshCw, Trash2 } from 'lucide-react';
+import React, { useRef } from 'react';
 import { toast } from 'sonner';
 
 interface MediaIconUploadProps {
@@ -99,14 +99,6 @@ export default function MediaIconUpload({
                                 }}
                             />
                         </div>
-                        <div className="min-w-0 text-right">
-                            <span className="font-bold text-foreground block text-xs truncate">
-                                آیکون آپلود شده
-                            </span>
-                            <span className="text-[10px] font-mono text-foreground-muted block truncate" dir="ltr">
-                                {value}
-                            </span>
-                        </div>
                     </div>
 
                     <div className="flex items-center gap-1.5 shrink-0">
@@ -137,11 +129,10 @@ export default function MediaIconUpload({
             ) : (
                 <div
                     onClick={() => !isUploading && !disabled && fileInputRef.current?.click()}
-                    className={`flex flex-col items-center justify-center p-4 border-2 border-dashed rounded-2xl cursor-pointer transition-all ${
-                        isUploading
+                    className={`flex flex-col items-center justify-center p-4 border-2 border-dashed rounded-2xl cursor-pointer transition-all ${isUploading
                             ? 'bg-info-subtle/50 border-blue-300 pointer-events-none'
                             : 'bg-surface-secondary/60 hover:bg-surface-secondary/60 border-border-subtle hover:border-blue-400'
-                    }`}
+                        }`}
                 >
                     {isUploading ? (
                         <div className="flex flex-col items-center gap-2 text-info">
