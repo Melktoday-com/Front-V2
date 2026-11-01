@@ -15,6 +15,7 @@ import { useCategoryLookup } from "@/hooks/useCategoryLookup";
 import { useFavorites, useToggleSaveAd, useToggleSaveTemporaryRent } from "@/hooks/useFavorites";
 import { useTemporaryRentAds } from "@/hooks/useTemporaryRent";
 import { formatPrice, getMediaPosterUrl } from "@/lib/utils";
+import { getFloorArea } from "@/lib/location";
 import { TemporaryRentAdSummary } from "@/services/temporary-rent.service";
 import { AdSummary } from "@/types/api/ads.types";
 import { AgencySummary } from "@/types/api/agency.types";
@@ -218,6 +219,13 @@ export const HomeScene = () => {
                                         getCategoryName(property.categoryPath?.categoryKey)
                                     }
                                     className="w-[210px] lg:w-[250px]"
+                                    area={getFloorArea(property) ?? undefined}
+                                    rooms={
+                                        property.rooms ??
+                                        (property.attributes as Record<string, any>)?.rooms_count ??
+                                        (property.attributes as Record<string, any>)?.rooms ??
+                                        undefined
+                                    }
                                     date={isLadder ? (property.updatedAt || property.createdAt) : property.createdAt}
                                     badgeName={isFeatured ? "ویژه" : undefined}
                                     isUrgent={isUrgent}
@@ -359,6 +367,13 @@ export const HomeScene = () => {
                                         getCategoryName(property.categoryPath?.categoryKey)
                                     }
                                     className="w-[210px] lg:w-[250px]"
+                                    area={getFloorArea(property) ?? undefined}
+                                    rooms={
+                                        property.rooms ??
+                                        (property.attributes as Record<string, any>)?.rooms_count ??
+                                        (property.attributes as Record<string, any>)?.rooms ??
+                                        undefined
+                                    }
                                     date={isLadder ? (property.updatedAt || property.createdAt) : property.createdAt}
                                     badgeName={isFeatured ? "ویژه" : undefined}
                                     isUrgent={isUrgent}

@@ -508,15 +508,23 @@ function getResidenceRate(pricing?: TemporaryRentPricingReadModel | null): numbe
                     <div className="flex flex-wrap items-center gap-3 py-4 border-y border-border-subtle text-xs font-bold text-brand">
                         <div className="flex items-center gap-2 bg-orange-50/60 text-orange-950 px-4 py-2.5 rounded-full border border-orange-100">
                             <Users className="w-4 h-4 text-orange-600" />
-                            <span>ظرفیت تا {toPersianDigits(residence.maxGuests || residence.guestCapacity || 2)} نفر</span>
+                            <span>ظرفیت تا {toPersianDigits((residence.attributes as Record<string, any>)?.max_guests || residence.maxGuests || residence.guestCapacity || 2)} نفر</span>
                         </div>
                         <div className="flex items-center gap-2 bg-surface-secondary px-4 py-2.5 rounded-full border border-border-subtle text-text-light">
                             <Bed className="w-4 h-4 text-primary" />
-                            <span>{toPersianDigits(residence.attributes?.rooms ? String(residence.attributes.rooms) : 1)} اتاق خواب</span>
+                            <span>
+                                {toPersianDigits(
+                                    (residence.attributes as Record<string, any>)?.rooms_count ||
+                                    (residence.attributes as Record<string, any>)?.rooms ||
+                                    (residence.attributes as Record<string, any>)?.single_beds ||
+                                    (residence.attributes as Record<string, any>)?.double_beds ||
+                                    1
+                                )} اتاق خواب / تخت
+                            </span>
                         </div>
                         <div className="flex items-center gap-2 bg-surface-secondary px-4 py-2.5 rounded-full border border-border-subtle text-text-light">
                             <Bath className="w-4 h-4 text-primary" />
-                            <span>{toPersianDigits(residence.attributes?.bathrooms ? String(residence.attributes.bathrooms) : 1)} سرویس بهداشتی</span>
+                            <span>{toPersianDigits((residence.attributes as Record<string, any>)?.bathrooms || 1)} سرویس بهداشتی</span>
                         </div>
                     </div>
 
@@ -643,14 +651,22 @@ function getResidenceRate(pricing?: TemporaryRentPricingReadModel | null): numbe
                                 <Clock className="w-5 h-5 text-orange-600 shrink-0" />
                                 <div>
                                     <span className="font-black text-brand block">ساعت ورود</span>
-                                    <span className="text-text-light">از ساعت ۱۴:۰۰ به بعد</span>
+                                    <span className="text-text-light">
+                                        {(residence.attributes as Record<string, any>)?.check_in_time
+                                            ? `از ساعت ${toPersianDigits((residence.attributes as Record<string, any>).check_in_time)} به بعد`
+                                            : "از ساعت ۱۴:۰۰ به بعد"}
+                                    </span>
                                 </div>
                             </div>
                             <div className="flex items-center gap-3">
                                 <Clock className="w-5 h-5 text-orange-600 shrink-0" />
                                 <div>
                                     <span className="font-black text-brand block">ساعت خروج</span>
-                                    <span className="text-text-light">تا قبل از ساعت ۱۲:۰۰ ظهر</span>
+                                    <span className="text-text-light">
+                                        {(residence.attributes as Record<string, any>)?.check_out_time
+                                            ? `تا قبل از ساعت ${toPersianDigits((residence.attributes as Record<string, any>).check_out_time)}`
+                                            : "تا قبل از ساعت ۱۲:۰۰ ظهر"}
+                                    </span>
                                 </div>
                             </div>
                         </div>

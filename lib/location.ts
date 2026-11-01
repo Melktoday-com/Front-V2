@@ -25,9 +25,14 @@ export function getFloorArea(source: unknown): number | null {
     if (typeof numAttrs.meter === 'number' && !isNaN(numAttrs.meter)) return numAttrs.meter;
 
     if (typeof attrs.area === 'number' && !isNaN(attrs.area)) return attrs.area;
+    if (typeof attrs.meterage === 'number' && !isNaN(attrs.meterage)) return attrs.meterage;
+    if (typeof attrs.building_area === 'number' && !isNaN(attrs.building_area)) return attrs.building_area;
+    if (typeof attrs.land_area === 'number' && !isNaN(attrs.land_area)) return attrs.land_area;
+    if (typeof attrs.shed_area === 'number' && !isNaN(attrs.shed_area)) return attrs.shed_area;
     if (typeof attrs.metraj === 'number' && !isNaN(attrs.metraj)) return attrs.metraj;
     if (typeof attrs.meter === 'number' && !isNaN(attrs.meter)) return attrs.meter;
     if (typeof attrs.area === 'string' && !isNaN(Number(attrs.area))) return Number(attrs.area);
+    if (typeof attrs.meterage === 'string' && !isNaN(Number(attrs.meterage))) return Number(attrs.meterage);
   }
 
   if (typeof s.area === 'number' && !isNaN(s.area)) {

@@ -1578,7 +1578,11 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                                                     isSaved={ad.isSaved ?? isAdSaved(effectiveId)}
                                                     onToggleSave={(id) => toggleSaveMutation.mutateAsync(id)}
                                                     area={getFloorArea(ad)}
-                                                    rooms={ad.rooms}
+                                                    rooms={
+                                                        ad.rooms ??
+                                                        (ad.attributes as Record<string, any>)?.rooms_count ??
+                                                        (ad.attributes as Record<string, any>)?.rooms
+                                                    }
                                                     badgeName={ad.isFeatured && !ad.isLadder && !ad.isUrgent ? "ویژه" : undefined}
                                                     isUrgent={ad.isUrgent}
                                                     isLadder={ad.isLadder}

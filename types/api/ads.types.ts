@@ -47,6 +47,7 @@ export interface AdSummary {
     neighbourhood?: NamedReference | null;
     category?: NamedReference | null;
     subcategory?: NamedReference | null;
+    attributes?: Record<string, any>;
     attributeList?: AttributeItem[];
     status: AdStatus;
     title: string;

@@ -16,7 +16,11 @@ import { ListingSearchDocument } from '@/types/api/search.types';
 export function searchDocToAdSummary(doc: ListingSearchDocument): AdSummary {
   const primaryPrice = doc.pricing?.number?.price ?? doc.pricing?.number?.totalPrice ?? 0;
   const location = mapSearchDocToLocation(doc);
-  const rooms = doc.attributes?.number?.rooms || doc.attributes?.number?.bedrooms || doc.attributes?.number?.room;
+  const rooms =
+    doc.attributes?.number?.rooms_count ??
+    doc.attributes?.number?.rooms ??
+    doc.attributes?.number?.bedrooms ??
+    doc.attributes?.number?.room;
   const floorArea = getFloorArea(doc);
 
   const hasUpdatedAfterCreated = Boolean(
@@ -62,5 +66,11 @@ export function searchDocToAdSummary(doc: ListingSearchDocument): AdSummary {
     location,
     area: floorArea ?? undefined,
     rooms: typeof rooms === "number" ? rooms : undefined,
+    attributes: {
+      ...(doc.attributes?.number || {}),
+      ...(doc.attributes?.boolean || {}),
+      ...(doc.attributes?.selection || {}),
+      ...(doc.attributes?.string || {}),
+    },
   };
 }
