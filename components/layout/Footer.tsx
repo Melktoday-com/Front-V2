@@ -1,21 +1,21 @@
 "use client";
 
+import { lightLogo } from "@/assets/branding";
 import { toPersianDigits } from "@/lib/utils";
 import {
   ArrowUp,
   Check,
   CheckCircle2,
   ChevronLeft,
-  Compass,
   Copy,
   MapPin,
   Phone,
   PlusCircle,
+  Search,
   Smartphone
 } from "lucide-react";
-import Link from "next/link";
 import Image from "next/image";
-import { lightLogo } from "@/assets/branding";
+import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -91,8 +91,8 @@ export function Footer() {
                 href="/ads"
                 className="inline-flex items-center gap-2 bg-surface/10 hover:bg-surface/15 text-white font-bold text-xs sm:text-sm py-2.5 px-4 rounded-xl transition-all"
               >
-                <Compass className="w-4 h-4 text-primary" />
-                <span>کاوش در املاک</span>
+                <Search className="w-4 h-4 text-primary" />
+                <span>جستجو در املاک</span>
               </Link>
             </div>
           </div>
