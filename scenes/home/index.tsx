@@ -2,6 +2,7 @@
 
 import { AgentAvatar } from "@/components/AgentAvatar";
 import { CategoryDirectory } from "@/components/CategoryDirectory";
+import { Footer } from "@/components/layout/Footer";
 import { useCity } from "@/components/providers/CityProvider";
 import { SearchHeader } from "@/components/SearchHeader";
 import { SectionHeader } from "@/components/SectionHeader";
@@ -13,12 +14,11 @@ import { useAgencies } from "@/hooks/useAgencies";
 import { useCategoryLookup } from "@/hooks/useCategoryLookup";
 import { useFavorites, useToggleSaveAd, useToggleSaveTemporaryRent } from "@/hooks/useFavorites";
 import { useTemporaryRentAds } from "@/hooks/useTemporaryRent";
+import { formatPrice, getMediaPosterUrl } from "@/lib/utils";
 import { TemporaryRentAdSummary } from "@/services/temporary-rent.service";
 import { AdSummary } from "@/types/api/ads.types";
 import { AgencySummary } from "@/types/api/agency.types";
 import { TemporaryRentPricingReadModel } from "@/types/api/temporary-rent.types";
-import { getMediaUrl, getMediaPosterUrl, formatPrice } from "@/lib/utils";
-import { Footer } from "@/components/layout/Footer";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
@@ -167,7 +167,7 @@ export const HomeScene = () => {
             {/* Featured Properties */}
             <section className="container mx-auto px-4">
                 <SectionHeader
-                    title="املاک ویژه"
+                    title="املاک برتر"
                     subtitle="منتخب آگهی‌های برتر"
                     link={selectedCity.id ? `/ads?isFeatured=true&cityId=${selectedCity.id}&cityName=${encodeURIComponent(selectedCity.name)}` : "/ads?isFeatured=true"}
                 />
@@ -190,9 +190,9 @@ export const HomeScene = () => {
                             const isLadder = Boolean(
                                 property.isLadder ||
                                 (!isUrgent &&
-                                 property.updatedAt &&
-                                 property.createdAt &&
-                                 new Date(property.updatedAt).getTime() - new Date(property.createdAt).getTime() > 120_000)
+                                    property.updatedAt &&
+                                    property.createdAt &&
+                                    new Date(property.updatedAt).getTime() - new Date(property.createdAt).getTime() > 120_000)
                             );
                             const isFeatured = Boolean(property.isFeatured && !isLadder && !isUrgent);
 
@@ -263,8 +263,8 @@ export const HomeScene = () => {
             {/* Temporary Rentals */}
             <section className="container mx-auto px-4">
                 <SectionHeader
-                    title="اجاره روزانه"
-                    subtitle="بهترین گزینه‌ها برای سفرهای کوتاه"
+                    title="اقامتگاه‌های برتر "
+                    subtitle="بهترین گزینه برای اجاره روزانه و سفرهای کوتاه"
                     link="/temporary-rent"
                 />
                 {isTempRentLoading ? (
@@ -331,9 +331,9 @@ export const HomeScene = () => {
                             const isLadder = Boolean(
                                 property.isLadder ||
                                 (!isUrgent &&
-                                 property.updatedAt &&
-                                 property.createdAt &&
-                                 new Date(property.updatedAt).getTime() - new Date(property.createdAt).getTime() > 120_000)
+                                    property.updatedAt &&
+                                    property.createdAt &&
+                                    new Date(property.updatedAt).getTime() - new Date(property.createdAt).getTime() > 120_000)
                             );
                             const isFeatured = Boolean(property.isFeatured && !isLadder && !isUrgent);
 

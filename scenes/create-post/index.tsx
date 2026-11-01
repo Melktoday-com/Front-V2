@@ -144,8 +144,13 @@ export default function CreatePostScene() {
 
   // Set default selected publisher
   useEffect(() => {
-    if (publisherOptions.length > 0 && !selectedPublisherKey) {
-      setSelectedPublisherKey(`${publisherOptions[0].type}:${publisherOptions[0].id}`);
+    if (publisherOptions.length > 0) {
+      const exists = publisherOptions.some(
+        (p) => `${p.type}:${p.id}` === selectedPublisherKey
+      );
+      if (!selectedPublisherKey || !exists) {
+        setSelectedPublisherKey(`${publisherOptions[0].type}:${publisherOptions[0].id}`);
+      }
     }
   }, [publisherOptions, selectedPublisherKey]);
 
@@ -613,7 +618,9 @@ export default function CreatePostScene() {
             </div>
             <div className="min-w-0">
               <p className="text-xs font-black truncate">مرحله اول</p>
-              <p className="text-[10px] opacity-80 truncate hidden sm:block">ناشر و قالب محتوا</p>
+              <p className="text-[10px] opacity-80 truncate hidden sm:block">
+                {publisherOptions.length > 1 ? "ناشر و قالب محتوا" : "قالب محتوا"}
+              </p>
             </div>
           </button>
 
@@ -689,81 +696,83 @@ export default function CreatePostScene() {
       {/* ── STEP 1: CHOOSE PUBLISHER & FORMAT ──────────────────────────── */}
       {currentStep === 1 && (
         <div className="space-y-6">
-          {/* 1.1 Publisher Identity Selection */}
-          <div className="bg-surface p-5 sm:p-6 rounded-3xl border border-border-subtle shadow-xs space-y-4">
-            <div>
-              <h2 className="text-sm sm:text-base font-black text-brand flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-primary" />
-                <span>۱. انتخاب هویت ناشر (انتشار از طرف کدام صفحه؟)</span>
-              </h2>
-              <p className="text-xs text-foreground-muted mt-1">
-                مشخص کنید این محتوا در کدام پروفایل رسمی و با چه نشانی به کاربران اکسپلور نمایش داده شود.
-              </p>
-            </div>
+          {/* 1.1 Publisher Identity Selection (Only shown when multiple publishers are available) */}
+          {publisherOptions.length > 1 && (
+            <div className="bg-surface p-5 sm:p-6 rounded-3xl border border-border-subtle shadow-xs space-y-4">
+              <div>
+                <h2 className="text-sm sm:text-base font-black text-brand flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-primary" />
+                  <span>۱. انتخاب هویت ناشر (انتشار از طرف کدام صفحه؟)</span>
+                </h2>
+                <p className="text-xs text-foreground-muted mt-1">
+                  مشخص کنید این محتوا در کدام پروفایل رسمی و با چه نشانی به کاربران اکسپلور نمایش داده شود.
+                </p>
+              </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-              {publisherOptions.map((pub) => {
-                const key = `${pub.type}:${pub.id}`;
-                const isSelected = selectedPublisherKey === key;
-                return (
-                  <button
-                    key={key}
-                    type="button"
-                    onClick={() => setSelectedPublisherKey(key)}
-                    className={cn(
-                      "p-4 rounded-2xl border text-right transition-all relative flex flex-col justify-between gap-3",
-                      isSelected
-                        ? "border-primary bg-primary/5 ring-2 ring-primary/20 shadow-xs"
-                        : "border-border-subtle hover:border-border bg-surface"
-                    )}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-surface-secondary flex items-center justify-center text-foreground-secondary shrink-0 font-black text-xs overflow-hidden">
-                        {pub.avatarUrl ? (
-                          <img
-                            src={getMediaUrl(pub.avatarUrl)}
-                            alt={pub.name}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : pub.type === "PLATFORM" ? (
-                          <ShieldCheck className="w-5 h-5 text-brand" />
-                        ) : pub.type === "HOST" ? (
-                          <Hotel className="w-5 h-5 text-success" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                {publisherOptions.map((pub) => {
+                  const key = `${pub.type}:${pub.id}`;
+                  const isSelected = selectedPublisherKey === key;
+                  return (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => setSelectedPublisherKey(key)}
+                      className={cn(
+                        "p-4 rounded-2xl border text-right transition-all relative flex flex-col justify-between gap-3",
+                        isSelected
+                          ? "border-primary bg-primary/5 ring-2 ring-primary/20 shadow-xs"
+                          : "border-border-subtle hover:border-border bg-surface"
+                      )}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-surface-secondary flex items-center justify-center text-foreground-secondary shrink-0 font-black text-xs overflow-hidden">
+                          {pub.avatarUrl ? (
+                            <img
+                              src={getMediaUrl(pub.avatarUrl)}
+                              alt={pub.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : pub.type === "PLATFORM" ? (
+                            <ShieldCheck className="w-5 h-5 text-brand" />
+                          ) : pub.type === "HOST" ? (
+                            <Hotel className="w-5 h-5 text-success" />
+                          ) : (
+                            <Building2 className="w-5 h-5 text-info" />
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs font-black text-brand truncate">{pub.name}</p>
+                          <p className="text-[11px] text-foreground-muted">{pub.label}</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between pt-2 border-t border-border-subtle">
+                        <span className="text-[10px] font-bold text-foreground-muted">
+                          {pub.type === "PLATFORM" ? "پلتفرم رسمی" : pub.type === "HOST" ? "میزبان اقامتگاه" : "آژانس املاک"}
+                        </span>
+                        {isSelected ? (
+                          <span className="px-2 py-0.5 rounded-md bg-primary text-foreground text-[10px] font-black flex items-center gap-1">
+                            <Check className="w-3 h-3" />
+                            <span className="text-white" >انتخاب شده</span>
+                          </span>
                         ) : (
-                          <Building2 className="w-5 h-5 text-info" />
+                          <span className="text-[10px] font-bold text-foreground-muted">انتخاب</span>
                         )}
                       </div>
-                      <div className="min-w-0">
-                        <p className="text-xs font-black text-brand truncate">{pub.name}</p>
-                        <p className="text-[11px] text-foreground-muted">{pub.label}</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between pt-2 border-t border-border-subtle">
-                      <span className="text-[10px] font-bold text-foreground-muted">
-                        {pub.type === "PLATFORM" ? "پلتفرم رسمی" : pub.type === "HOST" ? "میزبان اقامتگاه" : "آژانس املاک"}
-                      </span>
-                      {isSelected ? (
-                        <span className="px-2 py-0.5 rounded-md bg-primary text-foreground text-[10px] font-black flex items-center gap-1">
-                          <Check className="w-3 h-3" />
-                          <span className="text-white" >انتخاب شده</span>
-                        </span>
-                      ) : (
-                        <span className="text-[10px] font-bold text-foreground-muted">انتخاب</span>
-                      )}
-                    </div>
-                  </button>
-                );
-              })}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* 1.2 Content Format Selection */}
           <div className="bg-surface p-5 sm:p-6 rounded-3xl border border-border-subtle shadow-xs space-y-4">
             <div>
               <h2 className="text-sm sm:text-base font-black text-brand flex items-center gap-2">
                 <Layers className="w-4 h-4 text-primary" />
-                <span>۲. انتخاب فرمت و سبک پست</span>
+                <span>{publisherOptions.length > 1 ? "۲. انتخاب فرمت و سبک پست" : "انتخاب فرمت و سبک پست"}</span>
               </h2>
               <p className="text-xs text-foreground-muted mt-1">
                 قالب مناسب محتوای خود را جهت نمایش جذاب در فید اکسپلور انتخاب کنید.
@@ -899,7 +908,7 @@ export default function CreatePostScene() {
               onClick={() => setCurrentStep(1)}
               className="text-xs font-bold text-brand hover:text-primary transition-colors flex items-center gap-1"
             >
-              <span>تغییر ناشر یا قالب</span>
+              <span>{publisherOptions.length > 1 ? "تغییر ناشر یا قالب" : "تغییر قالب"}</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>

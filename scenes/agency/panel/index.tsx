@@ -1,18 +1,19 @@
 "use client";
 
-import { useAgencyStats, useMyAgency } from "@/hooks/useAgencies";
-import { useAuth } from "@/hooks/useAuth";
-import { cn, toPersianDigits, getMediaUrl, getMediaPosterUrl, toEnglishDigits, toOnlyDigits } from "@/lib/utils";
-import { agencyService } from "@/services/agency.service";
 import MediaIconUpload from "@/components/admin/MediaIconUpload";
 import { SubscriptionQuotaWidget } from "@/components/subscriptions/SubscriptionQuotaWidget";
+import { useAgencyStats, useMyAgency } from "@/hooks/useAgencies";
+import { useAuth } from "@/hooks/useAuth";
+import { useSafeBack } from "@/hooks/useSafeBack";
+import { normalizeApiError } from "@/lib/api/error-handler";
+import { cn, getMediaPosterUrl, getMediaUrl, toEnglishDigits, toOnlyDigits, toPersianDigits } from "@/lib/utils";
+import { agencyService } from "@/services/agency.service";
 import {
     AgencyPost,
     AgencyPostsListResponse,
-    UpdateAgencyProfileRequest,
     UpdateAgencyPostRequest,
+    UpdateAgencyProfileRequest,
 } from "@/types/api/agency.types";
-import { normalizeApiError } from "@/lib/api/error-handler";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
     ArrowUpRight,
@@ -50,13 +51,12 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useSafeBack } from "@/hooks/useSafeBack";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { FreeMode } from "swiper/modules";
 import type { Swiper as SwiperType } from "swiper";
+import { FreeMode } from "swiper/modules";
+import { Swiper, SwiperSlide } from "swiper/react";
 
 import "swiper/css";
 import "swiper/css/free-mode";
@@ -662,7 +662,7 @@ export default function AgencyPanelScene() {
                                 <PenTool className="w-4 h-4" />
                             </div>
                             <div>
-                                <h3 className="text-xs sm:text-sm font-black text-brand">استودیو انتشار محتوا و تحلیل بازار</h3>
+                                <h3 className="text-xs sm:text-sm font-black text-brand">تولید محتوا</h3>
                                 <p className="text-[11px] text-secondary">نگارش پست‌های تحلیلی، معرفی پروژه‌ها و مقالات ویژه املاک</p>
                             </div>
                         </div>
@@ -685,7 +685,7 @@ export default function AgencyPanelScene() {
                         <div className="flex items-center gap-2">
                             <Settings className="w-5 h-5 text-secondary" />
                             <div>
-                                <h2 className="text-base sm:text-lg font-black text-brand">تنظیمات و هویت صفحه ویترین</h2>
+                                <h2 className="text-base sm:text-lg font-black text-brand">شخصی سازی ویترین</h2>
                                 <p className="text-[11px] text-secondary">
                                     {isEditing
                                         ? "در حال ویرایش اطلاعات ویترین - پس از اعمال تغییرات، دکمه ذخیره فعال خواهد شد."
