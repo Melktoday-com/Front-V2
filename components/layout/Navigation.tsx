@@ -35,6 +35,7 @@ const navItems = [
     { icon: Home, label: "خانه", href: "/" },
     { icon: Compass, label: "کاوش", href: "/explore" },
     { icon: Search, label: "جستجو", href: "/ads" },
+    { icon: Hotel, label: "اقامتگاه‌ها", href: "/temporary-rent" },
     { icon: Building2, label: "آژانس‌ها", href: "/agency" },
     { icon: Heart, label: "علاقه‌مندی‌ها", href: "/favorites" },
     { icon: User, label: "پروفایل", href: "/profile" },
@@ -85,6 +86,7 @@ export function Sidebar() {
         if (href === "/profile") return currentPath === "/profile";
         if (href === "/agency") return currentPath.startsWith("/agency") && !currentPath.startsWith("/agency/panel");
         if (href === "/ads") return currentPath.startsWith("/ads") && currentPath !== "/ads/submit";
+        if (href === "/temporary-rent") return currentPath.startsWith("/temporary-rent") && currentPath !== "/temporary-rent/create";
         return currentPath.startsWith(href);
     };
 
