@@ -74,6 +74,9 @@ async function getRoleToken(phone: string, targetRole?: string): Promise<string>
 }
 
 export default async function globalSetup() {
+  if (process.env.SKIP_AUTH_SETUP === 'true') {
+    return;
+  }
   const authDir = path.join(__dirname, '../playwright/.auth');
   fs.mkdirSync(authDir, { recursive: true });
 

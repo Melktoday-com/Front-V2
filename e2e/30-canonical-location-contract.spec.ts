@@ -169,9 +169,11 @@ test.describe('Canonical Location Contract & Architecture', () => {
   });
 });
 
+const API_BASE = process.env.LIVE_API_URL || 'https://melktoday.com/backend/api';
+
 test.describe('Live Backend Location API Contracts', () => {
   test('GET /api/search/listings returns geo.zoneIds and coordinates', async ({ request }) => {
-    const res = await request.get('http://localhost:3000/api/search/listings?limit=5');
+    const res = await request.get(`${API_BASE}/search/listings?limit=5`);
     expect(res.status()).toBe(200);
 
     const body = await res.json();
@@ -194,7 +196,7 @@ test.describe('Live Backend Location API Contracts', () => {
   });
 
   test('GET /api/search/map returns clustered or discrete markers', async ({ request }) => {
-    const res = await request.get('http://localhost:3000/api/search/map?zoom=13');
+    const res = await request.get(`${API_BASE}/search/map?zoom=13`);
     expect(res.status()).toBe(200);
 
     const body = await res.json();
@@ -206,7 +208,7 @@ test.describe('Live Backend Location API Contracts', () => {
   });
 
   test('GET /api/geo/zones?type=NEIGHBORHOOD returns authoritative neighborhood polygons', async ({ request }) => {
-    const res = await request.get('http://localhost:3000/api/geo/zones?type=NEIGHBORHOOD&limit=10');
+    const res = await request.get(`${API_BASE}/geo/zones?type=NEIGHBORHOOD&limit=10`);
     expect(res.status()).toBe(200);
 
     const body = await res.json();
@@ -221,7 +223,7 @@ test.describe('Live Backend Location API Contracts', () => {
   });
 
   test('GET /api/ads returns canonical location and strictly no legacy duplicates', async ({ request }) => {
-    const res = await request.get('http://localhost:3000/api/ads?limit=5');
+    const res = await request.get(`${API_BASE}/ads?limit=5`);
     expect(res.status()).toBe(200);
 
     const body = await res.json();
@@ -251,7 +253,7 @@ test.describe('Live Backend Location API Contracts', () => {
   });
 
   test('GET /api/temporary-rent returns canonical location and strictly no legacy duplicates', async ({ request }) => {
-    const res = await request.get('http://localhost:3000/api/temporary-rent?limit=5');
+    const res = await request.get(`${API_BASE}/temporary-rent?limit=5`);
     expect(res.status()).toBe(200);
 
     const body = await res.json();

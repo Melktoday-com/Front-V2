@@ -208,9 +208,9 @@ test.describe('Comprehensive Live Platform E2E Suite Across Roles', () => {
       const body = page.locator('body');
       await expect(body).toBeVisible();
 
-      // Check header or search bar
-      const searchOrNav = page.locator('header').or(page.locator('nav')).first();
-      await expect(searchOrNav).toBeVisible({ timeout: 10000 });
+      // Check main content container
+      const mainContent = page.locator('main').first();
+      await expect(mainContent).toBeVisible({ timeout: 10000 });
 
       const fatalErrors = telemetry.errors.filter(
         (err) => !err.includes('Failed to load resource') && !err.includes('ResizeObserver')
