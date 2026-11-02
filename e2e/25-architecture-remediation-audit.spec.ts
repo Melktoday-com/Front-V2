@@ -110,15 +110,21 @@ test.describe('Full-Stack Architecture Remediation & Live Audit Verification', (
     expect(body.success).toBe(true);
     const ad = body.data;
 
-    // Check location labels
-    expect(ad.province).toEqual(expect.objectContaining({ id: expect.any(String), label: 'خراسان رضوی' }));
-    expect(ad.city).toEqual(expect.objectContaining({ id: expect.any(String), label: 'مشهد' }));
-    expect(ad.category).toEqual(expect.objectContaining({ id: 'residential_sale', label: 'فروش مسکونی' }));
+    // Check location labels (canonical location)
+    expect(ad.location.province).toEqual(expect.objectContaining({ id: expect.any(String), name: 'خراسان رضوی' }));
+    expect(ad.location.city).toEqual(expect.objectContaining({ id: expect.any(String), name: 'مشهد' }));
+    expect(ad.categoryPath.categoryTitle).toBe('فروش مسکونی');
 
     // Check attributeList with Persian labels
     expect(Array.isArray(ad.attributeList)).toBe(true);
     expect(ad.attributeList.length).toBeGreaterThan(0);
-    const areaAttr = ad.attributeList.find((a: any) => a.key === 'area');
+    interface AttributeItemTestShape {
+      key: string;
+      label: string;
+      value: string | number | boolean;
+      displayValue: string;
+    }
+    const areaAttr = (ad.attributeList as AttributeItemTestShape[]).find((a) => a.key === 'area');
     expect(areaAttr).toEqual(expect.objectContaining({
       key: 'area',
       label: 'متراژ',

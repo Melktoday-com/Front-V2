@@ -187,19 +187,17 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
     const provinceName = location?.province?.name || ad?.provinceName;
     const areaName = neighbourhoodName;
 
-    const rawCatKey = ad?.categoryPath?.categoryKey || ad?.category?.id;
-    const rawSubKey = ad?.categoryPath?.subcategoryKey || ad?.subcategory?.id;
+    const rawCatKey = ad?.categoryPath?.categoryKey;
+    const rawSubKey = ad?.categoryPath?.subcategoryKey;
 
     const categoryTitle =
-        ad?.category?.label ||
-        ad?.categoryTitle ||
         ad?.categoryPath?.categoryTitle ||
+        ad?.categoryTitle ||
         getCategoryName(rawCatKey);
 
     const subcategoryTitle =
-        ad?.subcategory?.label ||
-        ad?.subcategoryTitle ||
         ad?.categoryPath?.subcategoryTitle ||
+        ad?.subcategoryTitle ||
         getSubcategoryName(rawSubKey, rawCatKey);
 
     // Fetch dynamic subcategory config to support any subcategory schema

@@ -15,7 +15,9 @@
 /test-results/
 /playwright-report/
 /playwright-report-live/
+/playwright-report-live-prod/
 playwright/.auth/
+/scratch/
 
 # next.js
 /.next/

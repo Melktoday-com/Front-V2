@@ -1,6 +1,5 @@
 "use client";
 
-import { DEFAULT_CATEGORY_TRANSLATIONS } from "@/hooks/useCategoryLookup";
 import { cn, toPersianDigits, getMediaUrl, getMediaPosterUrl } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns-jalali";
 import { ChevronLeft, Clock, MapPin, Play, ShieldCheck, Sparkles, Zap } from "lucide-react";
