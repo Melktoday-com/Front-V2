@@ -248,6 +248,81 @@ function getResidenceRate(pricing?: TemporaryRentPricingReadModel | null): numbe
     const lng = coords?.longitude ?? residence.longitude;
     const hasCoords = typeof lat === "number" && typeof lng === "number" && !(lat === 0 && lng === 0);
 
+    const rawAttrs = (residence.attributes as Record<string, any>) || {};
+    const attributeList = ((residence as any).attributeList as Array<{ key: string; label: string; value: unknown; displayValue: string }>) || [];
+
+    const booleanFeatures: { key: string; label: string; value: boolean }[] = [];
+    const technicalSpecs: { key: string; label: string; displayValue: string }[] = [];
+    const processedKeys = new Set<string>();
+
+    if (attributeList.length > 0) {
+        for (const item of attributeList) {
+            processedKeys.add(item.key);
+            const isBool = typeof item.value === "boolean" ||
+                item.displayValue === "دارد" ||
+                item.displayValue === "ندارد";
+
+            if (isBool) {
+                const val = typeof item.value === "boolean" ? item.value : item.displayValue === "دارد";
+                booleanFeatures.push({ key: item.key, label: item.label, value: val });
+            } else {
+                technicalSpecs.push({
+                    key: item.key,
+                    label: item.label,
+                    displayValue: item.displayValue || String(item.value ?? "—"),
+                });
+            }
+        }
+    }
+
+    const FALLBACK_LABELS: Record<string, string> = {
+        rooms_count: "تعداد اتاق خواب",
+        single_beds: "تعداد تخت یک‌نفره",
+        double_beds: "تعداد تخت دونفره",
+        bathrooms: "سرویس بهداشتی",
+        area: "متراژ زیربنا",
+        max_guests: "ظرفیت مهمان",
+        max_extra_guests: "ظرفیت نفر اضافه",
+        check_in_time: "ساعت تحویل (ورود)",
+        check_out_time: "ساعت تخلیه (خروج)",
+        has_pool: "استخر اختصاصی",
+        has_wifi: "اینترنت وای‌فای",
+        has_parking: "پارکینگ اختصاصی",
+        has_elevator: "آسانسور",
+        has_cooling: "سیستم سرمایشی",
+        has_heating: "سیستم گرمایشی",
+        has_kitchen_appliances: "لوازم آشپزخانه",
+        has_tv: "تلویزیون",
+        has_balcony: "تراس / بالکن",
+    };
+
+    for (const [key, rawVal] of Object.entries(rawAttrs)) {
+        if (processedKeys.has(key)) continue;
+        if (rawVal === undefined || rawVal === null || rawVal === "") continue;
+        if (key === "availability_window") continue;
+
+        processedKeys.add(key);
+        const label = FALLBACK_LABELS[key] || key;
+        const isBool = typeof rawVal === "boolean";
+
+        if (isBool) {
+            booleanFeatures.push({ key, label, value: Boolean(rawVal) });
+        } else {
+            const displayVal = typeof rawVal === "number" ? toPersianDigits(rawVal) : String(rawVal);
+            technicalSpecs.push({ key, label, displayValue: displayVal });
+        }
+    }
+
+    const categoryTitle =
+        residence.category?.label ||
+        residence.categoryTitle ||
+        residence.categoryPath?.categoryTitle;
+
+    const subcategoryTitle =
+        residence.subcategory?.label ||
+        residence.subcategoryTitle ||
+        residence.categoryPath?.subcategoryTitle;
+
     const renderBookingCard = (isMobile = false) => (
         <div
             className={cn(
@@ -420,6 +495,20 @@ function getResidenceRate(pricing?: TemporaryRentPricingReadModel | null): numbe
 
             {/* Header Titles */}
             <div className="mb-6">
+                {(categoryTitle || subcategoryTitle) && (
+                    <div className="flex items-center gap-2 mb-2.5">
+                        {categoryTitle && (
+                            <span className="px-3 py-1 rounded-full text-xs font-bold bg-orange-100 text-orange-950 border border-orange-200">
+                                {categoryTitle}
+                            </span>
+                        )}
+                        {subcategoryTitle && (
+                            <span className="px-3 py-1 rounded-full text-xs font-bold bg-surface-secondary text-brand border border-border-subtle">
+                                {subcategoryTitle}
+                            </span>
+                        )}
+                    </div>
+                )}
                 <h1 className="text-xl sm:text-3xl font-black text-brand leading-tight">
                     {residence.title}
                 </h1>
@@ -508,23 +597,28 @@ function getResidenceRate(pricing?: TemporaryRentPricingReadModel | null): numbe
                     <div className="flex flex-wrap items-center gap-3 py-4 border-y border-border-subtle text-xs font-bold text-brand">
                         <div className="flex items-center gap-2 bg-orange-50/60 text-orange-950 px-4 py-2.5 rounded-full border border-orange-100">
                             <Users className="w-4 h-4 text-orange-600" />
-                            <span>ظرفیت تا {toPersianDigits((residence.attributes as Record<string, any>)?.max_guests || residence.maxGuests || residence.guestCapacity || 2)} نفر</span>
+                            <span>ظرفیت تا {toPersianDigits(rawAttrs.max_guests || residence.maxGuests || residence.guestCapacity || 2)} نفر</span>
                         </div>
+                        {rawAttrs.area && (
+                            <div className="flex items-center gap-2 bg-surface-secondary px-4 py-2.5 rounded-full border border-border-subtle text-text-light">
+                                <span>{toPersianDigits(rawAttrs.area)} متر زیربنا</span>
+                            </div>
+                        )}
                         <div className="flex items-center gap-2 bg-surface-secondary px-4 py-2.5 rounded-full border border-border-subtle text-text-light">
                             <Bed className="w-4 h-4 text-primary" />
                             <span>
                                 {toPersianDigits(
-                                    (residence.attributes as Record<string, any>)?.rooms_count ||
-                                    (residence.attributes as Record<string, any>)?.rooms ||
-                                    (residence.attributes as Record<string, any>)?.single_beds ||
-                                    (residence.attributes as Record<string, any>)?.double_beds ||
+                                    rawAttrs.rooms_count ||
+                                    rawAttrs.rooms ||
+                                    rawAttrs.single_beds ||
+                                    rawAttrs.double_beds ||
                                     1
                                 )} اتاق خواب / تخت
                             </span>
                         </div>
                         <div className="flex items-center gap-2 bg-surface-secondary px-4 py-2.5 rounded-full border border-border-subtle text-text-light">
                             <Bath className="w-4 h-4 text-primary" />
-                            <span>{toPersianDigits((residence.attributes as Record<string, any>)?.bathrooms || 1)} سرویس بهداشتی</span>
+                            <span>{toPersianDigits(rawAttrs.bathrooms || 1)} سرویس بهداشتی</span>
                         </div>
                     </div>
 
@@ -612,36 +706,86 @@ function getResidenceRate(pricing?: TemporaryRentPricingReadModel | null): numbe
                         </div>
                     </div>
 
-                    {/* Amenities Grid */}
-                    <div className="space-y-4">
-                        <h2 className="text-lg font-black text-brand">امکانات اقامتگاه</h2>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs font-bold">
-                            <div className="flex items-center gap-2.5 p-3.5 rounded-2xl bg-surface-secondary border border-border-subtle text-text-main">
-                                <Wifi className="w-4 h-4 text-primary shrink-0" />
-                                <span>اینترنت وای‌فای</span>
-                            </div>
-                            <div className="flex items-center gap-2.5 p-3.5 rounded-2xl bg-surface-secondary border border-border-subtle text-text-main">
-                                <Wind className="w-4 h-4 text-primary shrink-0" />
-                                <span>سیستم سرمایش و گرمایش</span>
-                            </div>
-                            <div className="flex items-center gap-2.5 p-3.5 rounded-2xl bg-surface-secondary border border-border-subtle text-text-main">
-                                <Utensils className="w-4 h-4 text-primary shrink-0" />
-                                <span>وسایل پخت و پز آشپزخانه</span>
-                            </div>
-                            <div className="flex items-center gap-2.5 p-3.5 rounded-2xl bg-surface-secondary border border-border-subtle text-text-main">
-                                <Tv className="w-4 h-4 text-primary shrink-0" />
-                                <span>تلویزیون</span>
-                            </div>
-                            <div className="flex items-center gap-2.5 p-3.5 rounded-2xl bg-surface-secondary border border-border-subtle text-text-main">
-                                <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
-                                <span>پارکینگ اختصاصی</span>
-                            </div>
-                            <div className="flex items-center gap-2.5 p-3.5 rounded-2xl bg-surface-secondary border border-border-subtle text-text-main">
-                                <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
-                                <span>ملحفه و روبالشتی بهداشتی</span>
+                    {/* Dynamic Amenities Grid */}
+                    {booleanFeatures.length > 0 ? (
+                        <div className="space-y-4">
+                            <h2 className="text-lg font-black text-brand">امکانات اقامتگاه</h2>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs font-bold">
+                                {booleanFeatures.map((feat) => (
+                                    <div
+                                        key={feat.key}
+                                        className={cn(
+                                            "flex items-center justify-between p-3.5 rounded-2xl border transition-colors",
+                                            feat.value
+                                                ? "bg-orange-50/40 border-orange-200 text-orange-950 font-bold"
+                                                : "bg-surface-secondary border-border-subtle text-foreground-muted"
+                                        )}
+                                    >
+                                        <span>{feat.label}</span>
+                                        {feat.value ? (
+                                            <span className="flex items-center gap-1 text-[11px] font-black text-orange-600">
+                                                دارد
+                                                <CheckCircle2 className="w-3.5 h-3.5 text-orange-600" />
+                                            </span>
+                                        ) : (
+                                            <span className="flex items-center gap-1 text-[11px] text-foreground-muted">
+                                                ندارد
+                                                <Minus className="w-3.5 h-3.5" />
+                                            </span>
+                                        )}
+                                    </div>
+                                ))}
                             </div>
                         </div>
-                    </div>
+                    ) : (
+                        <div className="space-y-4">
+                            <h2 className="text-lg font-black text-brand">امکانات اقامتگاه</h2>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs font-bold">
+                                <div className="flex items-center gap-2.5 p-3.5 rounded-2xl bg-surface-secondary border border-border-subtle text-text-main">
+                                    <Wifi className="w-4 h-4 text-primary shrink-0" />
+                                    <span>اینترنت وای‌فای</span>
+                                </div>
+                                <div className="flex items-center gap-2.5 p-3.5 rounded-2xl bg-surface-secondary border border-border-subtle text-text-main">
+                                    <Wind className="w-4 h-4 text-primary shrink-0" />
+                                    <span>سیستم سرمایش و گرمایش</span>
+                                </div>
+                                <div className="flex items-center gap-2.5 p-3.5 rounded-2xl bg-surface-secondary border border-border-subtle text-text-main">
+                                    <Utensils className="w-4 h-4 text-primary shrink-0" />
+                                    <span>وسایل پخت و پز آشپزخانه</span>
+                                </div>
+                                <div className="flex items-center gap-2.5 p-3.5 rounded-2xl bg-surface-secondary border border-border-subtle text-text-main">
+                                    <Tv className="w-4 h-4 text-primary shrink-0" />
+                                    <span>تلویزیون</span>
+                                </div>
+                                <div className="flex items-center gap-2.5 p-3.5 rounded-2xl bg-surface-secondary border border-border-subtle text-text-main">
+                                    <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
+                                    <span>پارکینگ اختصاصی</span>
+                                </div>
+                                <div className="flex items-center gap-2.5 p-3.5 rounded-2xl bg-surface-secondary border border-border-subtle text-text-main">
+                                    <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
+                                    <span>ملحفه و روبالشتی بهداشتی</span>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Technical Specifications */}
+                    {technicalSpecs.length > 0 && (
+                        <div className="space-y-4">
+                            <h2 className="text-lg font-black text-brand">مشخصات فنی و شرایط اقامت</h2>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm">
+                                {technicalSpecs.map((spec) => (
+                                    <div
+                                        key={spec.key}
+                                        className="flex items-center justify-between p-3.5 rounded-2xl bg-surface-secondary/60 border border-border-subtle"
+                                    >
+                                        <span className="text-text-light font-medium">{spec.label}</span>
+                                        <span className="font-bold text-brand">{spec.displayValue}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
 
                     {/* House Rules & Check-in info */}
                     <div className="space-y-4">

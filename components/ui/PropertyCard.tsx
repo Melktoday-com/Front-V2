@@ -266,7 +266,7 @@ export function PropertyCard({
                         <div className="flex items-center gap-1.5 text-[10px] text-accent font-bold truncate">
                             {category && (
                                 <span className="truncate">
-                                    {DEFAULT_CATEGORY_TRANSLATIONS[category] || category}
+                                    {category}
                                 </span>
                             )}
                             {(effectiveArea || effectiveRooms) && category && <span className="text-border-subtle">•</span>}
@@ -500,7 +500,7 @@ export function PropertyCard({
                 {/* Category Badge */}
                 {category && (
                     <div className="absolute bottom-1.5 right-1.5 sm:bottom-2 sm:right-2 bg-brand/80 backdrop-blur-md text-white text-[9px] sm:text-[10px] font-bold px-1.5 sm:px-2 py-0.5 rounded-md sm:rounded-lg shadow-xs max-w-[85%] truncate">
-                        {DEFAULT_CATEGORY_TRANSLATIONS[category] || category}
+                        {category}
                     </div>
                 )}
             </div>

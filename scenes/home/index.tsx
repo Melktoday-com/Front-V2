@@ -211,11 +211,13 @@ export const HomeScene = () => {
                                     image={getMediaPosterUrl(property.mediaIds?.[0])}
                                     isVideo={property.mediaIds?.[0]?.type === "VIDEO"}
                                     category={
+                                        property.subcategory?.label ||
                                         property.subcategoryTitle ||
                                         property.categoryPath?.subcategoryTitle ||
-                                        getSubcategoryName(property.categoryPath?.subcategoryKey, property.categoryPath?.categoryKey) ||
+                                        property.category?.label ||
                                         property.categoryTitle ||
                                         property.categoryPath?.categoryTitle ||
+                                        getSubcategoryName(property.categoryPath?.subcategoryKey, property.categoryPath?.categoryKey) ||
                                         getCategoryName(property.categoryPath?.categoryKey)
                                     }
                                     className="w-[210px] lg:w-[250px]"
@@ -359,11 +361,13 @@ export const HomeScene = () => {
                                     image={getMediaPosterUrl(property.mediaIds?.[0])}
                                     isVideo={property.mediaIds?.[0]?.type === "VIDEO"}
                                     category={
+                                        property.subcategory?.label ||
                                         property.subcategoryTitle ||
                                         property.categoryPath?.subcategoryTitle ||
-                                        getSubcategoryName(property.categoryPath?.subcategoryKey, property.categoryPath?.categoryKey) ||
+                                        property.category?.label ||
                                         property.categoryTitle ||
                                         property.categoryPath?.categoryTitle ||
+                                        getSubcategoryName(property.categoryPath?.subcategoryKey, property.categoryPath?.categoryKey) ||
                                         getCategoryName(property.categoryPath?.categoryKey)
                                     }
                                     className="w-[210px] lg:w-[250px]"

@@ -1548,11 +1548,13 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                                             const catKey = ad.categoryPath?.categoryKey;
                                             const subKey = ad.categoryPath?.subcategoryKey;
                                             const subcategoryDisplay =
+                                                ad.subcategory?.label ||
                                                 ad.subcategoryTitle ||
                                                 ad.categoryPath?.subcategoryTitle ||
-                                                getSubcategoryName(subKey, catKey) ||
+                                                ad.category?.label ||
                                                 ad.categoryTitle ||
                                                 ad.categoryPath?.categoryTitle ||
+                                                getSubcategoryName(subKey, catKey) ||
                                                 getCategoryName(catKey) ||
                                                 subKey;
 

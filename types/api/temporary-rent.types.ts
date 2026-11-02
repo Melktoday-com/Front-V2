@@ -90,6 +90,20 @@ export interface TemporaryRentAd {
     neighbourhoodName?: string | null;
     location?: import("../location.types").ResolvedLocation | null;
     publisher?: AdPublisher;
+    category?: { id: string; label: string } | null;
+    subcategory?: { id: string; label: string } | null;
+    categoryTitle?: string;
+    subcategoryTitle?: string;
+    categoryPath?: TemporaryRentCategoryPath & {
+        categoryTitle?: string;
+        subcategoryTitle?: string;
+    };
+    attributeList?: Array<{
+        key: string;
+        label: string;
+        value: unknown;
+        displayValue: string;
+    }>;
 }
 
 export type TemporaryRentPricingPayload =

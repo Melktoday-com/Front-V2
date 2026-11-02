@@ -142,6 +142,8 @@ export default function TemporaryRentScene() {
                                 location={ad.geo?.cityName || effectiveCityName}
                                 mediaIds={ad.mediaIds}
                                 maxGuests={ad.attributes?.number?.max_guests || ad.attributes?.number?.capacity}
+                                rooms={ad.attributes?.number?.rooms_count || ad.attributes?.number?.rooms}
+                                category={ad.taxonomy?.subcategoryName || ad.taxonomy?.categoryName}
                             />
                         ))}
                     </div>

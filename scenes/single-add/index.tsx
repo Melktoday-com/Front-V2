@@ -191,11 +191,13 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
     const rawSubKey = ad?.categoryPath?.subcategoryKey || ad?.subcategory?.id;
 
     const categoryTitle =
+        ad?.category?.label ||
         ad?.categoryTitle ||
         ad?.categoryPath?.categoryTitle ||
         getCategoryName(rawCatKey);
 
     const subcategoryTitle =
+        ad?.subcategory?.label ||
         ad?.subcategoryTitle ||
         ad?.categoryPath?.subcategoryTitle ||
         getSubcategoryName(rawSubKey, rawCatKey);
@@ -1094,6 +1096,12 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
                                         image={getMediaPosterUrl(item.mediaIds?.[0])}
                                         isVideo={item.mediaIds?.[0]?.type === "VIDEO"}
                                         category={
+                                            item.subcategory?.label ||
+                                            item.subcategoryTitle ||
+                                            item.categoryPath?.subcategoryTitle ||
+                                            item.category?.label ||
+                                            item.categoryTitle ||
+                                            item.categoryPath?.categoryTitle ||
                                             getSubcategoryName(item.categoryPath?.subcategoryKey, item.categoryPath?.categoryKey) ||
                                             getCategoryName(item.categoryPath?.categoryKey) ||
                                             item.categoryPath?.subcategoryKey

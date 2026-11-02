@@ -210,8 +210,12 @@ const parseAdPricing = (pricing?: Record<string, number | boolean | string>): Pa
 };
 
 const getCategoryBadge = (ad: AdSummary): string => {
+    if (ad.subcategory?.label) return ad.subcategory.label;
     if (ad.subcategoryTitle) return ad.subcategoryTitle;
+    if (ad.categoryPath?.subcategoryTitle) return ad.categoryPath.subcategoryTitle;
+    if (ad.category?.label) return ad.category.label;
     if (ad.categoryTitle) return ad.categoryTitle;
+    if (ad.categoryPath?.categoryTitle) return ad.categoryPath.categoryTitle;
     if (ad.categoryPath?.subcategoryKey) {
         return DEFAULT_CATEGORY_TRANSLATIONS[ad.categoryPath.subcategoryKey] || ad.categoryPath.subcategoryKey;
     }

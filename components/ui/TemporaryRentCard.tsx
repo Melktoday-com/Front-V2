@@ -21,6 +21,7 @@ interface TemporaryRentCardProps {
     rating?: number;
     maxGuests?: number;
     rooms?: number;
+    category?: string;
     isSaved?: boolean;
     onToggleSave?: (id: string) => Promise<{ isSaved: boolean } | void> | void;
     // Backward compatibility aliases
@@ -49,6 +50,7 @@ export function TemporaryRentCard({
     rating,
     maxGuests,
     rooms,
+    category,
     isSaved,
     onToggleSave,
     isFavorited = false,
@@ -175,6 +177,13 @@ export function TemporaryRentCard({
                             <ChevronLeft className="w-4 h-4" />
                         </button>
                     </>
+                )}
+
+                {/* Category Badge */}
+                {category && (
+                    <div className="absolute bottom-2.5 right-2.5 bg-orange-600/90 backdrop-blur-md text-white text-[10px] font-bold px-2 py-0.5 rounded-lg shadow-xs z-10 max-w-[70%] truncate">
+                        {category}
+                    </div>
                 )}
 
                 {/* Pagination Dots */}
