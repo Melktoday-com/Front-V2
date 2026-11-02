@@ -76,9 +76,6 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
     const router = useRouter();
 
     const adsNavigate = useCallback((targetUrl: string, _source?: string) => {
-        if (typeof window !== "undefined") {
-            window.history.replaceState(null, "", targetUrl);
-        }
         router.replace(targetUrl, { scroll: false });
     }, [router]);
     const { selectedCity, setSelectedCity } = useCity();
@@ -257,9 +254,15 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                     params.set("cityName", effectiveCityName);
                 }
             }
+            if (selectedCategory && !params.has("categoryKey")) {
+                params.set("categoryKey", selectedCategory);
+            }
+            if (selectedSubcategory && !params.has("subcategoryKey")) {
+                params.set("subcategoryKey", selectedSubcategory);
+            }
             adsNavigate(`/ads?${params.toString()}`, "debouncedSearchEffect");
         }
-    }, [debouncedSearch, searchParams, adsNavigate, effectiveCityId, effectiveCityName]);
+    }, [debouncedSearch, searchParams, adsNavigate, effectiveCityId, effectiveCityName, selectedCategory, selectedSubcategory]);
 
     const selectedZoneIds = useMemo(() => selectedZones.map((z) => z.id), [selectedZones]);
     const selectedZoneNames = useMemo(() => selectedZones.map((z) => z.name), [selectedZones]);
@@ -397,6 +400,17 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
     const handleApplyFilters = (vals: SubcategoryFilterValues) => {
         const params = new URLSearchParams(searchParams.toString());
 
+        if (selectedCategory) {
+            params.set("categoryKey", selectedCategory);
+        } else {
+            params.delete("categoryKey");
+        }
+        if (selectedSubcategory) {
+            params.set("subcategoryKey", selectedSubcategory);
+        } else {
+            params.delete("subcategoryKey");
+        }
+
         const setOrDelete = (key: string, val: string | number | boolean | undefined) => {
             if (val !== undefined && val !== null && val !== "") {
                 params.set(key, String(val));
@@ -487,6 +501,14 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
             "selectionAttributes",
             "stringAttributes",
         ].forEach((k) => params.delete(k));
+
+        if (selectedCategory) {
+            params.set("categoryKey", selectedCategory);
+        }
+        if (selectedSubcategory) {
+            params.set("subcategoryKey", selectedSubcategory);
+        }
+
         if (effectiveCityId && !params.has("cityId")) {
             params.set("cityId", effectiveCityId);
             if (effectiveCityName && effectiveCityName !== "همه شهرها") {
@@ -554,6 +576,12 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
             } else {
                 params.delete("numericAttributes");
             }
+        }
+        if (selectedCategory && !params.has("categoryKey")) {
+            params.set("categoryKey", selectedCategory);
+        }
+        if (selectedSubcategory && !params.has("subcategoryKey")) {
+            params.set("subcategoryKey", selectedSubcategory);
         }
         if (effectiveCityId && !params.has("cityId")) {
             params.set("cityId", effectiveCityId);
@@ -863,6 +891,12 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                 params.append("neighbourhoodNames", z.name);
             });
         }
+        if (selectedCategory && !params.has("categoryKey")) {
+            params.set("categoryKey", selectedCategory);
+        }
+        if (selectedSubcategory && !params.has("subcategoryKey")) {
+            params.set("subcategoryKey", selectedSubcategory);
+        }
         if (effectiveCityId && !params.has("cityId")) {
             params.set("cityId", effectiveCityId);
             if (effectiveCityName && effectiveCityName !== "همه شهرها") {
@@ -892,21 +926,29 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
         params.delete("zoneIds");
         params.delete("neighbourhoodName");
         params.delete("neighbourhoodNames");
+        if (selectedCategory) {
+            params.set("categoryKey", selectedCategory);
+        }
+        if (selectedSubcategory) {
+            params.set("subcategoryKey", selectedSubcategory);
+        }
         adsNavigate(`/ads?${params.toString()}`, "handleCitySelect");
     };
 
     const handleCategorySelect = (catKey: string, subKey?: string) => {
-        setSelectedCategory(catKey);
-        setSelectedSubcategory(subKey || "");
+        const nextCategory = catKey || "";
+        const nextSubcategory = subKey || "";
+        setSelectedCategory(nextCategory);
+        setSelectedSubcategory(nextSubcategory);
         setStartPage(1);
         const params = new URLSearchParams(searchParams.toString());
-        if (catKey) {
-            params.set("categoryKey", catKey);
+        if (nextCategory) {
+            params.set("categoryKey", nextCategory);
         } else {
             params.delete("categoryKey");
         }
-        if (subKey) {
-            params.set("subcategoryKey", subKey);
+        if (nextSubcategory) {
+            params.set("subcategoryKey", nextSubcategory);
         } else {
             params.delete("subcategoryKey");
         }
@@ -916,11 +958,14 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                 params.set("cityName", effectiveCityName);
             }
         }
+        // If subcategory or category changed or cleared, clear obsolete dynamic attributes
+        if (!nextSubcategory || nextSubcategory !== selectedSubcategory) {
+            params.delete("numericAttributes");
+            params.delete("booleanAttributes");
+            params.delete("selectionAttributes");
+            params.delete("stringAttributes");
+        }
         adsNavigate(`/ads?${params.toString()}`, "handleCategorySelect");
-    };
-
-    const handleSubcategorySelect = (subKey: string) => {
-        handleCategorySelect(selectedCategory, subKey);
     };
 
     const handleSortChange = (newSort: SearchSortOption) => {
@@ -931,6 +976,12 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
             params.delete("sort");
         } else {
             params.set("sort", newSort);
+        }
+        if (selectedCategory && !params.has("categoryKey")) {
+            params.set("categoryKey", selectedCategory);
+        }
+        if (selectedSubcategory && !params.has("subcategoryKey")) {
+            params.set("subcategoryKey", selectedSubcategory);
         }
         if (effectiveCityId && !params.has("cityId")) {
             params.set("cityId", effectiveCityId);
@@ -1740,7 +1791,6 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                 selectedCategoryKey={selectedCategory}
                 selectedSubcategoryKey={selectedSubcategory}
                 onSelectCategory={handleCategorySelect}
-                onSelectSubcategory={handleSubcategorySelect}
             />
         </div>
     );

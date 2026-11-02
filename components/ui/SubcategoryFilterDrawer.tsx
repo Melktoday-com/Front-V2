@@ -142,13 +142,13 @@ export function SubcategoryFilterDrawer({
     const hasConfig = defs.length > 0;
 
     const hasAreaAttr = !hasConfig || defs.some((d) => d.key === "area" || d.key === "land_area");
-    const hasRoomsAttr = defs.some((d) => d.key === "rooms_count" || d.key === "rooms");
-    const hasFloorAttr = defs.some((d) => d.key === "floor_number" || d.key === "floor");
-    const hasYearAttr = defs.some((d) => d.key === "construction_year" || d.key === "year_of_construction");
-    const hasElevatorAttr = defs.some((d) => d.key === "has_elevator" || d.key === "elevator");
-    const hasParkingAttr = defs.some((d) => d.key === "has_parking" || d.key === "parking");
-    const hasStorageAttr = defs.some((d) => d.key === "has_storage" || d.key === "storage");
-    const hasBalconyAttr = defs.some((d) => d.key === "has_balcony" || d.key === "balcony");
+    const hasRoomsAttr = !hasConfig || defs.some((d) => d.key === "rooms_count" || d.key === "rooms");
+    const hasFloorAttr = !hasConfig || defs.some((d) => d.key === "floor_number" || d.key === "floor");
+    const hasYearAttr = !hasConfig || defs.some((d) => d.key === "construction_year" || d.key === "year_of_construction");
+    const hasElevatorAttr = !hasConfig || defs.some((d) => d.key === "has_elevator" || d.key === "elevator");
+    const hasParkingAttr = !hasConfig || defs.some((d) => d.key === "has_parking" || d.key === "parking");
+    const hasStorageAttr = !hasConfig || defs.some((d) => d.key === "has_storage" || d.key === "storage");
+    const hasBalconyAttr = !hasConfig || defs.some((d) => d.key === "has_balcony" || d.key === "balcony");
     const hasCoreAmenities = hasElevatorAttr || hasParkingAttr || hasStorageAttr || hasBalconyAttr;
 
     // Partition subcategory attributes dynamically based on defined catalog attributes

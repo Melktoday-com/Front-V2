@@ -13,7 +13,6 @@ interface CategoryTreeDialogProps {
     selectedCategoryKey: string;
     selectedSubcategoryKey: string;
     onSelectCategory: (key: string, subKey?: string) => void;
-    onSelectSubcategory?: (key: string) => void;
 }
 
 export function CategoryTreeDialog({
@@ -23,7 +22,6 @@ export function CategoryTreeDialog({
     selectedCategoryKey,
     selectedSubcategoryKey,
     onSelectCategory,
-    onSelectSubcategory,
 }: CategoryTreeDialogProps) {
     // Keep track of which category accordion is expanded
     const [expandedCategory, setExpandedCategory] = useState<string>(selectedCategoryKey || "");
@@ -54,26 +52,22 @@ export function CategoryTreeDialog({
         } else {
             // Select directly and close
             onSelectCategory(category.key, "");
-            if (onSelectSubcategory) onSelectSubcategory("");
             onClose();
         }
     };
 
     const handleSelectAllForCategory = (categoryKey: string) => {
         onSelectCategory(categoryKey, "");
-        if (onSelectSubcategory) onSelectSubcategory("");
         onClose();
     };
 
     const handleSelectSubcategory = (categoryKey: string, subcategoryKey: string) => {
         onSelectCategory(categoryKey, subcategoryKey);
-        if (onSelectSubcategory) onSelectSubcategory(subcategoryKey);
         onClose();
     };
 
     const handleClearAll = () => {
         onSelectCategory("", "");
-        if (onSelectSubcategory) onSelectSubcategory("");
         onClose();
     };
 
