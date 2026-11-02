@@ -1548,15 +1548,14 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                                             const catKey = ad.categoryPath?.categoryKey;
                                             const subKey = ad.categoryPath?.subcategoryKey;
                                             const subcategoryDisplay =
-                                                ad.subcategory?.label ||
                                                 ad.subcategoryTitle ||
+                                                ad.subcategory?.label ||
                                                 ad.categoryPath?.subcategoryTitle ||
-                                                ad.category?.label ||
                                                 ad.categoryTitle ||
+                                                ad.category?.label ||
                                                 ad.categoryPath?.categoryTitle ||
-                                                getSubcategoryName(subKey, catKey) ||
-                                                getCategoryName(catKey) ||
-                                                subKey;
+                                                subKey ||
+                                                "";
 
                                             const effectiveId = ad.adId;
 
@@ -1582,8 +1581,11 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                                                     area={getFloorArea(ad)}
                                                     rooms={
                                                         ad.rooms ??
-                                                        (ad.attributes as Record<string, any>)?.rooms_count ??
-                                                        (ad.attributes as Record<string, any>)?.rooms
+                                                        (typeof ad.attributes?.rooms_count === "number"
+                                                            ? ad.attributes.rooms_count
+                                                            : typeof ad.attributes?.rooms === "number"
+                                                            ? ad.attributes.rooms
+                                                            : undefined)
                                                     }
                                                     badgeName={ad.isFeatured && !ad.isLadder && !ad.isUrgent ? "ویژه" : undefined}
                                                     isUrgent={ad.isUrgent}

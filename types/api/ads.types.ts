@@ -1,5 +1,6 @@
 import { AdStatus } from "./enums";
 import type { MediaReference } from "./media.types";
+import type { JsonObject, JsonValue } from "../common";
 
 export interface CategoryPath {
     categoryKey: string;
@@ -19,7 +20,7 @@ export interface NamedReference {
 export interface AttributeItem {
     key: string;
     label: string;
-    value: unknown;
+    value: JsonValue;
     displayValue: string;
 }
 
@@ -47,7 +48,7 @@ export interface AdSummary {
     neighbourhood?: NamedReference | null;
     category?: NamedReference | null;
     subcategory?: NamedReference | null;
-    attributes?: Record<string, any>;
+    attributes?: JsonObject;
     attributeList?: AttributeItem[];
     status: AdStatus;
     title: string;
@@ -91,8 +92,6 @@ export interface PaginatedResponse<T> {
 }
 
 export type PaginatedAdsResponse = PaginatedResponse<AdSummary>;
-
-import { JsonObject } from "../common";
 
 export interface AdAttributes extends JsonObject {
     area?: number | string;

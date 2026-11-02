@@ -211,22 +211,23 @@ export const HomeScene = () => {
                                     image={getMediaPosterUrl(property.mediaIds?.[0])}
                                     isVideo={property.mediaIds?.[0]?.type === "VIDEO"}
                                     category={
-                                        property.subcategory?.label ||
                                         property.subcategoryTitle ||
+                                        property.subcategory?.label ||
                                         property.categoryPath?.subcategoryTitle ||
-                                        property.category?.label ||
                                         property.categoryTitle ||
+                                        property.category?.label ||
                                         property.categoryPath?.categoryTitle ||
-                                        getSubcategoryName(property.categoryPath?.subcategoryKey, property.categoryPath?.categoryKey) ||
-                                        getCategoryName(property.categoryPath?.categoryKey)
+                                        ""
                                     }
                                     className="w-[210px] lg:w-[250px]"
                                     area={getFloorArea(property) ?? undefined}
                                     rooms={
                                         property.rooms ??
-                                        (property.attributes as Record<string, any>)?.rooms_count ??
-                                        (property.attributes as Record<string, any>)?.rooms ??
-                                        undefined
+                                        (typeof property.attributes?.rooms === "number"
+                                            ? property.attributes.rooms
+                                            : typeof property.attributes?.rooms_count === "number"
+                                            ? property.attributes.rooms_count
+                                            : undefined)
                                     }
                                     date={isLadder ? (property.updatedAt || property.createdAt) : property.createdAt}
                                     badgeName={isFeatured ? "ویژه" : undefined}
@@ -361,22 +362,23 @@ export const HomeScene = () => {
                                     image={getMediaPosterUrl(property.mediaIds?.[0])}
                                     isVideo={property.mediaIds?.[0]?.type === "VIDEO"}
                                     category={
-                                        property.subcategory?.label ||
                                         property.subcategoryTitle ||
+                                        property.subcategory?.label ||
                                         property.categoryPath?.subcategoryTitle ||
-                                        property.category?.label ||
                                         property.categoryTitle ||
+                                        property.category?.label ||
                                         property.categoryPath?.categoryTitle ||
-                                        getSubcategoryName(property.categoryPath?.subcategoryKey, property.categoryPath?.categoryKey) ||
-                                        getCategoryName(property.categoryPath?.categoryKey)
+                                        ""
                                     }
                                     className="w-[210px] lg:w-[250px]"
                                     area={getFloorArea(property) ?? undefined}
                                     rooms={
                                         property.rooms ??
-                                        (property.attributes as Record<string, any>)?.rooms_count ??
-                                        (property.attributes as Record<string, any>)?.rooms ??
-                                        undefined
+                                        (typeof property.attributes?.rooms === "number"
+                                            ? property.attributes.rooms
+                                            : typeof property.attributes?.rooms_count === "number"
+                                            ? property.attributes.rooms_count
+                                            : undefined)
                                     }
                                     date={isLadder ? (property.updatedAt || property.createdAt) : property.createdAt}
                                     badgeName={isFeatured ? "ویژه" : undefined}

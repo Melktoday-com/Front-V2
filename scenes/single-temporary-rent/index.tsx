@@ -248,8 +248,7 @@ function getResidenceRate(pricing?: TemporaryRentPricingReadModel | null): numbe
     const lng = coords?.longitude ?? residence.longitude;
     const hasCoords = typeof lat === "number" && typeof lng === "number" && !(lat === 0 && lng === 0);
 
-    const rawAttrs = (residence.attributes as Record<string, any>) || {};
-    const attributeList = ((residence as any).attributeList as Array<{ key: string; label: string; value: unknown; displayValue: string }>) || [];
+    const attributeList = residence.attributeList || [];
 
     const booleanFeatures: { key: string; label: string; value: boolean }[] = [];
     const technicalSpecs: { key: string; label: string; displayValue: string }[] = [];
@@ -275,34 +274,14 @@ function getResidenceRate(pricing?: TemporaryRentPricingReadModel | null): numbe
         }
     }
 
-    const FALLBACK_LABELS: Record<string, string> = {
-        rooms_count: "تعداد اتاق خواب",
-        single_beds: "تعداد تخت یک‌نفره",
-        double_beds: "تعداد تخت دونفره",
-        bathrooms: "سرویس بهداشتی",
-        area: "متراژ زیربنا",
-        max_guests: "ظرفیت مهمان",
-        max_extra_guests: "ظرفیت نفر اضافه",
-        check_in_time: "ساعت تحویل (ورود)",
-        check_out_time: "ساعت تخلیه (خروج)",
-        has_pool: "استخر اختصاصی",
-        has_wifi: "اینترنت وای‌فای",
-        has_parking: "پارکینگ اختصاصی",
-        has_elevator: "آسانسور",
-        has_cooling: "سیستم سرمایشی",
-        has_heating: "سیستم گرمایشی",
-        has_kitchen_appliances: "لوازم آشپزخانه",
-        has_tv: "تلویزیون",
-        has_balcony: "تراس / بالکن",
-    };
-
+    const rawAttrs = residence.attributes || {};
     for (const [key, rawVal] of Object.entries(rawAttrs)) {
         if (processedKeys.has(key)) continue;
         if (rawVal === undefined || rawVal === null || rawVal === "") continue;
         if (key === "availability_window") continue;
 
         processedKeys.add(key);
-        const label = FALLBACK_LABELS[key] || key;
+        const label = key;
         const isBool = typeof rawVal === "boolean";
 
         if (isBool) {
@@ -597,28 +576,30 @@ function getResidenceRate(pricing?: TemporaryRentPricingReadModel | null): numbe
                     <div className="flex flex-wrap items-center gap-3 py-4 border-y border-border-subtle text-xs font-bold text-brand">
                         <div className="flex items-center gap-2 bg-orange-50/60 text-orange-950 px-4 py-2.5 rounded-full border border-orange-100">
                             <Users className="w-4 h-4 text-orange-600" />
-                            <span>ظرفیت تا {toPersianDigits(rawAttrs.max_guests || residence.maxGuests || residence.guestCapacity || 2)} نفر</span>
+                            <span>ظرفیت تا {toPersianDigits(Number(rawAttrs.max_guests || residence.maxGuests || residence.guestCapacity || 2))} نفر</span>
                         </div>
                         {rawAttrs.area && (
                             <div className="flex items-center gap-2 bg-surface-secondary px-4 py-2.5 rounded-full border border-border-subtle text-text-light">
-                                <span>{toPersianDigits(rawAttrs.area)} متر زیربنا</span>
+                                <span>{toPersianDigits(Number(rawAttrs.area))} متر زیربنا</span>
                             </div>
                         )}
                         <div className="flex items-center gap-2 bg-surface-secondary px-4 py-2.5 rounded-full border border-border-subtle text-text-light">
                             <Bed className="w-4 h-4 text-primary" />
                             <span>
                                 {toPersianDigits(
-                                    rawAttrs.rooms_count ||
-                                    rawAttrs.rooms ||
-                                    rawAttrs.single_beds ||
-                                    rawAttrs.double_beds ||
-                                    1
+                                    Number(
+                                        rawAttrs.rooms_count ||
+                                        rawAttrs.rooms ||
+                                        rawAttrs.single_beds ||
+                                        rawAttrs.double_beds ||
+                                        1
+                                    )
                                 )} اتاق خواب / تخت
                             </span>
                         </div>
                         <div className="flex items-center gap-2 bg-surface-secondary px-4 py-2.5 rounded-full border border-border-subtle text-text-light">
                             <Bath className="w-4 h-4 text-primary" />
-                            <span>{toPersianDigits(rawAttrs.bathrooms || 1)} سرویس بهداشتی</span>
+                            <span>{toPersianDigits(Number(rawAttrs.bathrooms || 1))} سرویس بهداشتی</span>
                         </div>
                     </div>
 
@@ -796,8 +777,8 @@ function getResidenceRate(pricing?: TemporaryRentPricingReadModel | null): numbe
                                 <div>
                                     <span className="font-black text-brand block">ساعت ورود</span>
                                     <span className="text-text-light">
-                                        {(residence.attributes as Record<string, any>)?.check_in_time
-                                            ? `از ساعت ${toPersianDigits((residence.attributes as Record<string, any>).check_in_time)} به بعد`
+                                        {residence.attributes?.check_in_time
+                                            ? `از ساعت ${toPersianDigits(String(residence.attributes.check_in_time))} به بعد`
                                             : "از ساعت ۱۴:۰۰ به بعد"}
                                     </span>
                                 </div>
@@ -807,8 +788,8 @@ function getResidenceRate(pricing?: TemporaryRentPricingReadModel | null): numbe
                                 <div>
                                     <span className="font-black text-brand block">ساعت خروج</span>
                                     <span className="text-text-light">
-                                        {(residence.attributes as Record<string, any>)?.check_out_time
-                                            ? `تا قبل از ساعت ${toPersianDigits((residence.attributes as Record<string, any>).check_out_time)}`
+                                        {residence.attributes?.check_out_time
+                                            ? `تا قبل از ساعت ${toPersianDigits(String(residence.attributes.check_out_time))}`
                                             : "تا قبل از ساعت ۱۲:۰۰ ظهر"}
                                     </span>
                                 </div>

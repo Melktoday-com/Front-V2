@@ -353,7 +353,7 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
         null;
 
     // Attributes extraction supporting all subcategories dynamically
-    const rawAttrs = (ad.attributes as Record<string, any>) || {};
+    const rawAttrs = ad.attributes || {};
     const booleanFeatures: { key: string; label: string; value: boolean }[] = [];
     const technicalSpecs: { key: string; label: string; displayValue: string }[] = [];
     const processedKeys = new Set<string>();
@@ -430,7 +430,8 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
     // Top Key Specs Chips (Dynamically adapt to any property category based on technicalSpecs)
     const keyMetrics: { label: string; value: string; icon: LucideIcon }[] = [];
 
-    const topArea = getFloorArea(ad) || rawAttrs.land_area || rawAttrs.building_area || rawAttrs.shed_area || rawAttrs.meterage;
+    const fallbackArea = rawAttrs.land_area ?? rawAttrs.building_area ?? rawAttrs.shed_area ?? rawAttrs.meterage;
+    const topArea = getFloorArea(ad) || (fallbackArea !== undefined && fallbackArea !== null ? String(fallbackArea) : undefined);
     if (topArea && !technicalSpecs.some(s => s.key.toLowerCase().includes("area"))) {
         keyMetrics.push({
             label: "متراژ",
@@ -745,7 +746,7 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
                                     <div className="flex items-center justify-between p-3 rounded-xl bg-surface border border-border-subtle/60">
                                         <span className="text-text-light">درصد سهم مالک:</span>
                                         <span className="font-black text-brand">
-                                            {toPersianDigits(rawAttrs.owner_share_percentage)}٪
+                                            {toPersianDigits(String(rawAttrs.owner_share_percentage))}٪
                                         </span>
                                     </div>
                                 )}

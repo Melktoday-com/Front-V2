@@ -1,7 +1,6 @@
 "use client";
 
 import { useInfiniteMyAds, useMyAds } from "@/hooks/useAds";
-import { DEFAULT_CATEGORY_TRANSLATIONS } from "@/hooks/useCategoryLookup";
 import { cn, formatPrice, getMediaUrl, getMediaPosterUrl, toPersianDigits } from "@/lib/utils";
 import { formatLocationDisplay } from "@/lib/location";
 import { formatDistanceToNow } from "date-fns-jalali";
@@ -210,18 +209,14 @@ const parseAdPricing = (pricing?: Record<string, number | boolean | string>): Pa
 };
 
 const getCategoryBadge = (ad: AdSummary): string => {
-    if (ad.subcategory?.label) return ad.subcategory.label;
     if (ad.subcategoryTitle) return ad.subcategoryTitle;
+    if (ad.subcategory?.label) return ad.subcategory.label;
     if (ad.categoryPath?.subcategoryTitle) return ad.categoryPath.subcategoryTitle;
-    if (ad.category?.label) return ad.category.label;
     if (ad.categoryTitle) return ad.categoryTitle;
+    if (ad.category?.label) return ad.category.label;
     if (ad.categoryPath?.categoryTitle) return ad.categoryPath.categoryTitle;
-    if (ad.categoryPath?.subcategoryKey) {
-        return DEFAULT_CATEGORY_TRANSLATIONS[ad.categoryPath.subcategoryKey] || ad.categoryPath.subcategoryKey;
-    }
-    if (ad.categoryPath?.categoryKey) {
-        return DEFAULT_CATEGORY_TRANSLATIONS[ad.categoryPath.categoryKey] || ad.categoryPath.categoryKey;
-    }
+    if (ad.categoryPath?.subcategoryKey) return ad.categoryPath.subcategoryKey;
+    if (ad.categoryPath?.categoryKey) return ad.categoryPath.categoryKey;
     return "ملک";
 };
 

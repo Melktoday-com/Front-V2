@@ -101,7 +101,7 @@ export interface TemporaryRentAd {
     attributeList?: Array<{
         key: string;
         label: string;
-        value: unknown;
+        value: JsonValue;
         displayValue: string;
     }>;
 }
