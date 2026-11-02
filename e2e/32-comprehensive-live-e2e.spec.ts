@@ -247,5 +247,46 @@ test.describe('Comprehensive Live Platform E2E Suite Across Roles', () => {
       );
       expect(fatalErrors.length).toBe(0);
     });
+
+    test('Single Ad Canonical Contract & UI verification', async ({ page, request }) => {
+      const liveAdId = '3eb057eb-0706-4ddf-87d8-162900db12e6';
+      const res = await request.get(`/backend/api/ads/${liveAdId}`);
+      expect(res.status()).toBe(200);
+      const json = await res.json();
+      expect(json.success).toBe(true);
+      const ad = json.data;
+
+      // Canonical Location verification
+      expect(ad.location).toBeDefined();
+      expect(ad.location.city?.name).toBe('مشهد');
+      expect(ad.location.province?.name).toBe('خراسان رضوی');
+
+      // Canonical Category verification
+      expect(ad.categoryPath).toBeDefined();
+      expect(ad.categoryPath.categoryTitle).toBe('فروش مسکونی');
+
+      // No neighborhood collision on ad.area
+      expect(typeof ad.area === 'object' && ad.area !== null).toBe(false);
+
+      // No '[object Object]' in attributeList
+      if (Array.isArray(ad.attributeList)) {
+        for (const attr of ad.attributeList) {
+          expect(attr.displayValue).not.toContain('[object Object]');
+        }
+      }
+
+      // Live scene UI rendering
+      const telemetry = attachTelemetry(page);
+      await page.goto(`/ads/${liveAdId}`, { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(3000);
+
+      const heading = page.locator('h1').first();
+      await expect(heading).toBeVisible({ timeout: 10000 });
+
+      const fatalErrors = telemetry.errors.filter(
+        (err) => !err.includes('Failed to load resource') && !err.includes('ResizeObserver')
+      );
+      expect(fatalErrors.length).toBe(0);
+    });
   });
 });
