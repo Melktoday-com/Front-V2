@@ -138,28 +138,54 @@ export function SubcategoryFilterDrawer({
         setStringAttrs(currentValues.stringAttributes ? { ...currentValues.stringAttributes } : {});
     }, [isOpen, currentValues]);
 
-    // Partition subcategory attributes into types, excluding keys handled by canonical top-level fields
+    const defs = subcatConfig?.attributeDefinitions ?? [];
+    const hasConfig = defs.length > 0;
+
+    const hasAreaAttr = !hasConfig || defs.some((d) => d.key === "area" || d.key === "land_area");
+    const hasRoomsAttr = defs.some((d) => d.key === "rooms_count" || d.key === "rooms");
+    const hasFloorAttr = defs.some((d) => d.key === "floor_number" || d.key === "floor");
+    const hasYearAttr = defs.some((d) => d.key === "construction_year" || d.key === "year_of_construction");
+    const hasElevatorAttr = defs.some((d) => d.key === "has_elevator" || d.key === "elevator");
+    const hasParkingAttr = defs.some((d) => d.key === "has_parking" || d.key === "parking");
+    const hasStorageAttr = defs.some((d) => d.key === "has_storage" || d.key === "storage");
+    const hasBalconyAttr = defs.some((d) => d.key === "has_balcony" || d.key === "balcony");
+    const hasCoreAmenities = hasElevatorAttr || hasParkingAttr || hasStorageAttr || hasBalconyAttr;
+
+    // Partition subcategory attributes dynamically based on defined catalog attributes
     const { customNumberDefs, customBooleanDefs, customSelectDefs, customStringDefs } = useMemo(() => {
-        const defs = subcatConfig?.attributeDefinitions ?? [];
-        const ignoredKeys = new Set([
-            "area",
-            "metraj",
-            "rooms",
-            "rooms_count",
-            "bedrooms",
-            "parking",
-            "has_parking",
-            "elevator",
-            "has_elevator",
-            "storage",
-            "has_storage",
-            "balcony",
-            "has_balcony",
-            "floor",
-            "floor_number",
-            "construction_year",
-            "year_of_construction",
-        ]);
+        const renderedTopKeys = new Set<string>();
+        if (hasAreaAttr) {
+            renderedTopKeys.add("area");
+            renderedTopKeys.add("land_area");
+        }
+        if (hasRoomsAttr) {
+            renderedTopKeys.add("rooms_count");
+            renderedTopKeys.add("rooms");
+        }
+        if (hasFloorAttr) {
+            renderedTopKeys.add("floor_number");
+            renderedTopKeys.add("floor");
+        }
+        if (hasYearAttr) {
+            renderedTopKeys.add("construction_year");
+            renderedTopKeys.add("year_of_construction");
+        }
+        if (hasElevatorAttr) {
+            renderedTopKeys.add("has_elevator");
+            renderedTopKeys.add("elevator");
+        }
+        if (hasParkingAttr) {
+            renderedTopKeys.add("has_parking");
+            renderedTopKeys.add("parking");
+        }
+        if (hasStorageAttr) {
+            renderedTopKeys.add("has_storage");
+            renderedTopKeys.add("storage");
+        }
+        if (hasBalconyAttr) {
+            renderedTopKeys.add("has_balcony");
+            renderedTopKeys.add("balcony");
+        }
 
         const numberDefs: AttributeDefinition[] = [];
         const booleanDefs: AttributeDefinition[] = [];
@@ -169,7 +195,7 @@ export function SubcategoryFilterDrawer({
         for (const def of defs) {
             if (!def.isActive) continue;
             const k = def.key.toLowerCase();
-            if (ignoredKeys.has(k)) continue;
+            if (renderedTopKeys.has(k)) continue;
 
             if (def.type === "NUMBER") numberDefs.push(def);
             else if (def.type === "BOOLEAN") booleanDefs.push(def);
@@ -183,7 +209,7 @@ export function SubcategoryFilterDrawer({
             customSelectDefs: selectDefs,
             customStringDefs: stringDefs,
         };
-    }, [subcatConfig]);
+    }, [defs, hasAreaAttr, hasRoomsAttr, hasFloorAttr, hasYearAttr, hasElevatorAttr, hasParkingAttr, hasStorageAttr, hasBalconyAttr]);
 
     // Active filters count
     const activeCount = useMemo(() => {
@@ -518,167 +544,187 @@ export function SubcategoryFilterDrawer({
                     </div>
 
                     {/* 3. Area (متراژ) */}
-                    <div className="space-y-2">
-                        <label className="text-xs font-bold text-text-main">متراژ (متر مربع)</label>
-                        <div className="grid grid-cols-2 gap-2">
-                            <input
-                                type="number"
-                                placeholder="حداقل متراژ"
-                                value={minArea}
-                                onChange={(e) => setMinArea(e.target.value)}
-                                className="h-10 px-3 text-xs bg-surface border border-soft-border rounded-xl focus:border-primary focus:outline-none"
-                            />
-                            <input
-                                type="number"
-                                placeholder="حداکثر متراژ"
-                                value={maxArea}
-                                onChange={(e) => setMaxArea(e.target.value)}
-                                className="h-10 px-3 text-xs bg-surface border border-soft-border rounded-xl focus:border-primary focus:outline-none"
-                            />
+                    {hasAreaAttr && (
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold text-text-main">متراژ (متر مربع)</label>
+                            <div className="grid grid-cols-2 gap-2">
+                                <input
+                                    type="number"
+                                    placeholder="حداقل متراژ"
+                                    value={minArea}
+                                    onChange={(e) => setMinArea(e.target.value)}
+                                    className="h-10 px-3 text-xs bg-surface border border-soft-border rounded-xl focus:border-primary focus:outline-none"
+                                />
+                                <input
+                                    type="number"
+                                    placeholder="حداکثر متراژ"
+                                    value={maxArea}
+                                    onChange={(e) => setMaxArea(e.target.value)}
+                                    className="h-10 px-3 text-xs bg-surface border border-soft-border rounded-xl focus:border-primary focus:outline-none"
+                                />
+                            </div>
+                            {/* Quick Presets */}
+                            <div className="flex flex-wrap gap-1.5 pt-1">
+                                {COMMON_AREA_PRESETS.map((areaVal) => (
+                                    <button
+                                        key={areaVal}
+                                        type="button"
+                                        onClick={() => setMinArea(minArea === String(areaVal) ? "" : String(areaVal))}
+                                        className={cn(
+                                            "px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition-all cursor-pointer",
+                                            minArea === String(areaVal)
+                                                ? "bg-primary text-white border-primary"
+                                                : "bg-soft-bg text-secondary border-soft-border hover:border-primary/50"
+                                        )}
+                                    >
+                                        از {toPersianDigits(areaVal)} متر
+                                    </button>
+                                ))}
+                            </div>
                         </div>
-                        {/* Quick Presets */}
-                        <div className="flex flex-wrap gap-1.5 pt-1">
-                            {COMMON_AREA_PRESETS.map((areaVal) => (
-                                <button
-                                    key={areaVal}
-                                    type="button"
-                                    onClick={() => setMinArea(minArea === String(areaVal) ? "" : String(areaVal))}
-                                    className={cn(
-                                        "px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition-all cursor-pointer",
-                                        minArea === String(areaVal)
-                                            ? "bg-primary text-white border-primary"
-                                            : "bg-soft-bg text-secondary border-soft-border hover:border-primary/50"
-                                    )}
-                                >
-                                    از {toPersianDigits(areaVal)} متر
-                                </button>
-                            ))}
-                        </div>
-                    </div>
+                    )}
 
                     {/* 4. Rooms (تعداد خواب) */}
-                    <div className="space-y-2">
-                        <label className="text-xs font-bold text-text-main">تعداد اتاق خواب</label>
-                        <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-                            {ROOM_OPTIONS.map((opt) => (
-                                <button
-                                    key={opt.label}
-                                    type="button"
-                                    onClick={() => setRooms(opt.value)}
-                                    className={cn(
-                                        "h-9 rounded-xl text-xs font-bold border transition-all cursor-pointer flex items-center justify-center",
-                                        rooms === opt.value
-                                            ? "bg-primary text-white border-primary shadow-xs"
-                                            : "bg-soft-bg text-secondary border-soft-border hover:border-primary/50"
-                                    )}
-                                >
-                                    {opt.label}
-                                </button>
-                            ))}
+                    {hasRoomsAttr && (
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold text-text-main">تعداد اتاق خواب</label>
+                            <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
+                                {ROOM_OPTIONS.map((opt) => (
+                                    <button
+                                        key={opt.label}
+                                        type="button"
+                                        onClick={() => setRooms(opt.value)}
+                                        className={cn(
+                                            "h-9 rounded-xl text-xs font-bold border transition-all cursor-pointer flex items-center justify-center",
+                                            rooms === opt.value
+                                                ? "bg-primary text-white border-primary shadow-xs"
+                                                : "bg-soft-bg text-secondary border-soft-border hover:border-primary/50"
+                                        )}
+                                    >
+                                        {opt.label}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
-                    </div>
+                    )}
 
                     {/* 5. Core Amenities (Parking, Elevator, Storage, Balcony) */}
-                    <div className="space-y-2">
-                        <label className="text-xs font-bold text-text-main">امکانات اصلی ملک</label>
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                            <button
-                                type="button"
-                                onClick={() => setHasElevator(!hasElevator)}
-                                className={cn(
-                                    "h-10 px-3 rounded-xl text-xs font-bold border flex items-center justify-center gap-1.5 transition-all cursor-pointer",
-                                    hasElevator
-                                        ? "bg-primary text-white border-primary shadow-xs"
-                                        : "bg-soft-bg text-secondary border-soft-border hover:border-primary/50"
+                    {hasCoreAmenities && (
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold text-text-main">امکانات اصلی ملک</label>
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                {hasElevatorAttr && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setHasElevator(!hasElevator)}
+                                        className={cn(
+                                            "h-10 px-3 rounded-xl text-xs font-bold border flex items-center justify-center gap-1.5 transition-all cursor-pointer",
+                                            hasElevator
+                                                ? "bg-primary text-white border-primary shadow-xs"
+                                                : "bg-soft-bg text-secondary border-soft-border hover:border-primary/50"
+                                        )}
+                                    >
+                                        {hasElevator && <Check className="w-3.5 h-3.5" />}
+                                        <span>آسانسور</span>
+                                    </button>
                                 )}
-                            >
-                                {hasElevator && <Check className="w-3.5 h-3.5" />}
-                                <span>آسانسور</span>
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setHasParking(!hasParking)}
-                                className={cn(
-                                    "h-10 px-3 rounded-xl text-xs font-bold border flex items-center justify-center gap-1.5 transition-all cursor-pointer",
-                                    hasParking
-                                        ? "bg-primary text-white border-primary shadow-xs"
-                                        : "bg-soft-bg text-secondary border-soft-border hover:border-primary/50"
+                                {hasParkingAttr && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setHasParking(!hasParking)}
+                                        className={cn(
+                                            "h-10 px-3 rounded-xl text-xs font-bold border flex items-center justify-center gap-1.5 transition-all cursor-pointer",
+                                            hasParking
+                                                ? "bg-primary text-white border-primary shadow-xs"
+                                                : "bg-soft-bg text-secondary border-soft-border hover:border-primary/50"
+                                        )}
+                                    >
+                                        {hasParking && <Check className="w-3.5 h-3.5" />}
+                                        <span>پارکینگ</span>
+                                    </button>
                                 )}
-                            >
-                                {hasParking && <Check className="w-3.5 h-3.5" />}
-                                <span>پارکینگ</span>
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setHasStorage(!hasStorage)}
-                                className={cn(
-                                    "h-10 px-3 rounded-xl text-xs font-bold border flex items-center justify-center gap-1.5 transition-all cursor-pointer",
-                                    hasStorage
-                                        ? "bg-primary text-white border-primary shadow-xs"
-                                        : "bg-soft-bg text-secondary border-soft-border hover:border-primary/50"
+                                {hasStorageAttr && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setHasStorage(!hasStorage)}
+                                        className={cn(
+                                            "h-10 px-3 rounded-xl text-xs font-bold border flex items-center justify-center gap-1.5 transition-all cursor-pointer",
+                                            hasStorage
+                                                ? "bg-primary text-white border-primary shadow-xs"
+                                                : "bg-soft-bg text-secondary border-soft-border hover:border-primary/50"
+                                        )}
+                                    >
+                                        {hasStorage && <Check className="w-3.5 h-3.5" />}
+                                        <span>انباری</span>
+                                    </button>
                                 )}
-                            >
-                                {hasStorage && <Check className="w-3.5 h-3.5" />}
-                                <span>انباری</span>
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setHasBalcony(!hasBalcony)}
-                                className={cn(
-                                    "h-10 px-3 rounded-xl text-xs font-bold border flex items-center justify-center gap-1.5 transition-all cursor-pointer",
-                                    hasBalcony
-                                        ? "bg-primary text-white border-primary shadow-xs"
-                                        : "bg-soft-bg text-secondary border-soft-border hover:border-primary/50"
+                                {hasBalconyAttr && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setHasBalcony(!hasBalcony)}
+                                        className={cn(
+                                            "h-10 px-3 rounded-xl text-xs font-bold border flex items-center justify-center gap-1.5 transition-all cursor-pointer",
+                                            hasBalcony
+                                                ? "bg-primary text-white border-primary shadow-xs"
+                                                : "bg-soft-bg text-secondary border-soft-border hover:border-primary/50"
+                                        )}
+                                    >
+                                        {hasBalcony && <Check className="w-3.5 h-3.5" />}
+                                        <span>بالکن</span>
+                                    </button>
                                 )}
-                            >
-                                {hasBalcony && <Check className="w-3.5 h-3.5" />}
-                                <span>بالکن</span>
-                            </button>
+                            </div>
                         </div>
-                    </div>
+                    )}
 
                     {/* 6. Floor & Construction Year */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div className="space-y-1.5">
-                            <label className="text-xs font-bold text-text-main">طبقه</label>
-                            <div className="grid grid-cols-2 gap-1.5">
-                                <input
-                                    type="number"
-                                    placeholder="از طبقه"
-                                    value={minFloor}
-                                    onChange={(e) => setMinFloor(e.target.value)}
-                                    className="h-10 px-2.5 text-xs bg-surface border border-soft-border rounded-xl focus:border-primary focus:outline-none"
-                                />
-                                <input
-                                    type="number"
-                                    placeholder="تا طبقه"
-                                    value={maxFloor}
-                                    onChange={(e) => setMaxFloor(e.target.value)}
-                                    className="h-10 px-2.5 text-xs bg-surface border border-soft-border rounded-xl focus:border-primary focus:outline-none"
-                                />
-                            </div>
-                        </div>
+                    {(hasFloorAttr || hasYearAttr) && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            {hasFloorAttr && (
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-bold text-text-main">طبقه</label>
+                                    <div className="grid grid-cols-2 gap-1.5">
+                                        <input
+                                            type="number"
+                                            placeholder="از طبقه"
+                                            value={minFloor}
+                                            onChange={(e) => setMinFloor(e.target.value)}
+                                            className="h-10 px-2.5 text-xs bg-surface border border-soft-border rounded-xl focus:border-primary focus:outline-none"
+                                        />
+                                        <input
+                                            type="number"
+                                            placeholder="تا طبقه"
+                                            value={maxFloor}
+                                            onChange={(e) => setMaxFloor(e.target.value)}
+                                            className="h-10 px-2.5 text-xs bg-surface border border-soft-border rounded-xl focus:border-primary focus:outline-none"
+                                        />
+                                    </div>
+                                </div>
+                            )}
 
-                        <div className="space-y-1.5">
-                            <label className="text-xs font-bold text-text-main">سال ساخت</label>
-                            <div className="grid grid-cols-2 gap-1.5">
-                                <input
-                                    type="number"
-                                    placeholder="از سال (مثلا ۱۴۰۰)"
-                                    value={minConstructionYear}
-                                    onChange={(e) => setMinConstructionYear(e.target.value)}
-                                    className="h-10 px-2.5 text-xs bg-surface border border-soft-border rounded-xl focus:border-primary focus:outline-none"
-                                />
-                                <input
-                                    type="number"
-                                    placeholder="تا سال"
-                                    value={maxConstructionYear}
-                                    onChange={(e) => setMaxConstructionYear(e.target.value)}
-                                    className="h-10 px-2.5 text-xs bg-surface border border-soft-border rounded-xl focus:border-primary focus:outline-none"
-                                />
-                            </div>
+                            {hasYearAttr && (
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-bold text-text-main">سال ساخت</label>
+                                    <div className="grid grid-cols-2 gap-1.5">
+                                        <input
+                                            type="number"
+                                            placeholder="از سال (مثلا ۱۴۰۰)"
+                                            value={minConstructionYear}
+                                            onChange={(e) => setMinConstructionYear(e.target.value)}
+                                            className="h-10 px-2.5 text-xs bg-surface border border-soft-border rounded-xl focus:border-primary focus:outline-none"
+                                        />
+                                        <input
+                                            type="number"
+                                            placeholder="تا سال"
+                                            value={maxConstructionYear}
+                                            onChange={(e) => setMaxConstructionYear(e.target.value)}
+                                            className="h-10 px-2.5 text-xs bg-surface border border-soft-border rounded-xl focus:border-primary focus:outline-none"
+                                        />
+                                    </div>
+                                </div>
+                            )}
                         </div>
-                    </div>
+                    )}
 
                     {/* 7. Custom Dynamic Boolean Attributes (defined by Super Admin for this Subcategory) */}
                     {customBooleanDefs.length > 0 && (

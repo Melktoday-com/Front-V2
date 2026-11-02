@@ -1,38 +1,72 @@
 import type { GeoCoordinates, GeoReference, ResolvedLocation } from '@/types/location.types';
+import type { JsonObject, JsonValue } from '@/types/common';
+
+export interface GeoSearchDocSource {
+  _geo?: { lat: number; lng: number } | null;
+  geo?: {
+    cityId?: string | null;
+    cityName?: string | null;
+    neighbourhoodName?: string | null;
+    zoneIds?: string[];
+    provinceId?: number | null;
+    provinceName?: string | null;
+  } | null;
+}
+
+export interface GeoMarkerSource {
+  id?: string;
+  latitude: number;
+  longitude: number;
+  cityName?: string | null;
+  neighbourhoodName?: string | null;
+}
+
+export interface FloorAreaCandidate {
+  attributes?:
+    | {
+        area?: number | string | null;
+        land_area?: number | string | null;
+        number?: Record<string, number | null | undefined> | null;
+      }
+    | JsonObject
+    | null;
+  area?: number | string | null | object;
+}
 
 /**
  * Type guard to check if an object is already a canonical ResolvedLocation.
  */
-export function isResolvedLocation(val: unknown): val is ResolvedLocation {
+export function isResolvedLocation(val: object | null | undefined): val is ResolvedLocation {
   if (!val || typeof val !== 'object') return false;
-  const obj = val as Record<string, unknown>;
-  return 'coordinates' in obj && 'city' in obj && 'neighbourhood' in obj;
+  return 'coordinates' in val && 'city' in val && 'neighbourhood' in val;
 }
 
 /**
  * Extracts numeric floor area (متراژ in square meters) from an ad or attributes object.
  * Strictly separates physical floor area from geographic neighborhood.
+ * Reads canonical catalog keys: "area" (built property) and "land_area" (plots/land).
  */
-export function getFloorArea(source: unknown): number | null {
+export function getFloorArea(source: FloorAreaCandidate | object | null | undefined): number | null {
   if (!source || typeof source !== 'object') return null;
-  const s = source as Record<string, unknown>;
+  const s = source as FloorAreaCandidate;
 
   if (s.attributes && typeof s.attributes === 'object') {
-    const attrs = s.attributes as Record<string, unknown>;
-    const numAttrs = (attrs.number && typeof attrs.number === 'object' ? attrs.number : {}) as Record<string, unknown>;
+    const attrs = s.attributes as Record<string, JsonValue>;
+    const numAttrs = (attrs.number && typeof attrs.number === 'object' && !Array.isArray(attrs.number)
+      ? (attrs.number as Record<string, JsonValue>)
+      : {}) as Record<string, JsonValue>;
+
     if (typeof numAttrs.area === 'number' && !isNaN(numAttrs.area)) return numAttrs.area;
-    if (typeof numAttrs.metraj === 'number' && !isNaN(numAttrs.metraj)) return numAttrs.metraj;
-    if (typeof numAttrs.meter === 'number' && !isNaN(numAttrs.meter)) return numAttrs.meter;
+    if (typeof numAttrs.land_area === 'number' && !isNaN(numAttrs.land_area)) return numAttrs.land_area;
 
     if (typeof attrs.area === 'number' && !isNaN(attrs.area)) return attrs.area;
-    if (typeof attrs.meterage === 'number' && !isNaN(attrs.meterage)) return attrs.meterage;
-    if (typeof attrs.building_area === 'number' && !isNaN(attrs.building_area)) return attrs.building_area;
     if (typeof attrs.land_area === 'number' && !isNaN(attrs.land_area)) return attrs.land_area;
-    if (typeof attrs.shed_area === 'number' && !isNaN(attrs.shed_area)) return attrs.shed_area;
-    if (typeof attrs.metraj === 'number' && !isNaN(attrs.metraj)) return attrs.metraj;
-    if (typeof attrs.meter === 'number' && !isNaN(attrs.meter)) return attrs.meter;
-    if (typeof attrs.area === 'string' && !isNaN(Number(attrs.area))) return Number(attrs.area);
-    if (typeof attrs.meterage === 'string' && !isNaN(Number(attrs.meterage))) return Number(attrs.meterage);
+    if (typeof attrs.area === 'string' && !isNaN(Number(attrs.area)) && attrs.area.trim() !== '') {
+      return Number(attrs.area);
+    }
+    if (typeof attrs.land_area === 'string' && !isNaN(Number(attrs.land_area)) && attrs.land_area.trim() !== '') {
+      return Number(attrs.land_area);
+    }
   }
 
   if (typeof s.area === 'number' && !isNaN(s.area)) {
@@ -156,7 +190,7 @@ export function formatLocationDisplay(
 /**
  * Boundary normalizer for converting any incoming structure to canonical ResolvedLocation.
  */
-export function normalizeLocation(source: unknown): ResolvedLocation {
+export function normalizeLocation(source: JsonValue | object | undefined): ResolvedLocation {
   if (!source) {
     return { coordinates: null, city: null, neighbourhood: null, province: null };
   }
@@ -173,30 +207,35 @@ export function normalizeLocation(source: unknown): ResolvedLocation {
     };
   }
 
-  if (typeof source !== 'object') {
+  if (typeof source !== 'object' || Array.isArray(source)) {
     return { coordinates: null, city: null, neighbourhood: null, province: null };
   }
 
-  const s = source as Record<string, unknown>;
-
-  if (isResolvedLocation(s)) {
-    return s;
+  if (isResolvedLocation(source)) {
+    return source;
   }
 
-  if (s.location && isResolvedLocation(s.location)) {
+  const s = source as Record<string, JsonValue | object>;
+
+  if (s.location && typeof s.location === 'object' && !Array.isArray(s.location) && isResolvedLocation(s.location)) {
     return s.location;
   }
 
-  if (s.resolvedLocation && isResolvedLocation(s.resolvedLocation)) {
+  if (s.resolvedLocation && typeof s.resolvedLocation === 'object' && !Array.isArray(s.resolvedLocation) && isResolvedLocation(s.resolvedLocation)) {
     return s.resolvedLocation;
   }
 
   if ('_geo' in s || 'geo' in s) {
-    return mapSearchDocToLocation(s as any);
+    return mapSearchDocToLocation(s as GeoSearchDocSource);
   }
 
-  if ('latitude' in s && 'longitude' in s) {
-    return mapMarkerToLocation(s as any);
+  if ('latitude' in s && 'longitude' in s && typeof s.latitude === 'number' && typeof s.longitude === 'number') {
+    return mapMarkerToLocation({
+      latitude: s.latitude,
+      longitude: s.longitude,
+      cityName: typeof s.cityName === 'string' ? s.cityName : undefined,
+      neighbourhoodName: typeof s.neighbourhoodName === 'string' ? s.neighbourhoodName : undefined,
+    });
   }
 
   return { coordinates: null, city: null, neighbourhood: null, province: null };

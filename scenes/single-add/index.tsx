@@ -428,12 +428,11 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
     // Top Key Specs Chips (Dynamically adapt to any property category based on technicalSpecs)
     const keyMetrics: { label: string; value: string; icon: LucideIcon }[] = [];
 
-    const fallbackArea = rawAttrs.land_area ?? rawAttrs.building_area ?? rawAttrs.shed_area ?? rawAttrs.meterage;
-    const topArea = getFloorArea(ad) || (fallbackArea !== undefined && fallbackArea !== null ? String(fallbackArea) : undefined);
-    if (topArea && !technicalSpecs.some(s => s.key.toLowerCase().includes("area"))) {
+    const floorArea = getFloorArea(ad);
+    if (floorArea !== null && !technicalSpecs.some(s => s.key === "area" || s.key === "land_area")) {
         keyMetrics.push({
             label: "متراژ",
-            value: `${toPersianDigits(topArea)} متر`,
+            value: `${toPersianDigits(floorArea)} متر`,
             icon: Maximize2,
         });
     }
@@ -456,9 +455,7 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
         pricing.prepaymentAmount !== undefined ||
         pricing.monthlyLeaseInstallment !== undefined ||
         pricing.goodwillPrice !== undefined ||
-        pricing.fractionPrice !== undefined ||
-        rawAttrs.owner_share_percentage !== undefined ||
-        rawAttrs.developer_gratuitous_payment !== undefined
+        pricing.fractionPrice !== undefined
     );
 
     const statusConfig = STATUS_CONFIG[ad.status] || STATUS_CONFIG.PUBLISHED;
@@ -737,22 +734,6 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
                                         <span className="text-text-light">قدرالسهم:</span>
                                         <span className="font-black text-brand">
                                             {formatPrice(Number(pricing.fractionPrice))}
-                                        </span>
-                                    </div>
-                                )}
-                                {rawAttrs.owner_share_percentage !== undefined && (
-                                    <div className="flex items-center justify-between p-3 rounded-xl bg-surface border border-border-subtle/60">
-                                        <span className="text-text-light">درصد سهم مالک:</span>
-                                        <span className="font-black text-brand">
-                                            {toPersianDigits(String(rawAttrs.owner_share_percentage))}٪
-                                        </span>
-                                    </div>
-                                )}
-                                {rawAttrs.developer_gratuitous_payment !== undefined && (
-                                    <div className="flex items-center justify-between p-3 rounded-xl bg-surface border border-border-subtle/60">
-                                        <span className="text-text-light">مبلغ بلاعوض پیشنهادی:</span>
-                                        <span className="font-black text-brand">
-                                            {formatPrice(Number(rawAttrs.developer_gratuitous_payment))}
                                         </span>
                                     </div>
                                 )}

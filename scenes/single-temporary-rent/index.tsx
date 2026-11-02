@@ -12,7 +12,7 @@ import { useSafeBack } from "@/hooks/useSafeBack";
 import { useShowcase } from "@/hooks/useShowcase";
 import { useTemporaryRentAdDetail, useTemporaryRentAds } from "@/hooks/useTemporaryRent";
 import { cn, formatPrice, getMediaPosterUrl, getMediaUrl, toPersianDigits } from "@/lib/utils";
-import { formatLocationDisplay } from "@/lib/location";
+import { formatLocationDisplay, getFloorArea } from "@/lib/location";
 import { temporaryRentService } from "@/services/temporary-rent.service";
 import type { TemporaryRentAd, TemporaryRentContactInfo, TemporaryRentPricingReadModel } from "@/types/api/temporary-rent.types";
 import {
@@ -25,6 +25,7 @@ import {
     Copy,
     Heart,
     MapPin,
+    Maximize2,
     MessageCircle,
     Minus,
     Phone,
@@ -291,6 +292,27 @@ function getResidenceRate(pricing?: TemporaryRentPricingReadModel | null): numbe
             technicalSpecs.push({ key, label, displayValue: displayVal });
         }
     }
+
+    // Dynamic extraction of key metrics from authoritative attributes (no fake fallbacks)
+    const rawGuests = rawAttrs.max_guests ?? residence.maxGuests ?? residence.guestCapacity;
+    const guestCapacity = rawGuests !== undefined && rawGuests !== null && !isNaN(Number(rawGuests))
+        ? Number(rawGuests)
+        : null;
+
+    const floorArea = getFloorArea(residence);
+
+    const rawRooms = rawAttrs.rooms_count ?? rawAttrs.rooms;
+    const roomsCount = rawRooms !== undefined && rawRooms !== null && !isNaN(Number(rawRooms))
+        ? Number(rawRooms)
+        : null;
+
+    const rawBathrooms = rawAttrs.bathrooms;
+    const bathroomsCount = rawBathrooms !== undefined && rawBathrooms !== null && !isNaN(Number(rawBathrooms))
+        ? Number(rawBathrooms)
+        : null;
+
+    const checkInTime = rawAttrs.check_in_time ? String(rawAttrs.check_in_time) : null;
+    const checkOutTime = rawAttrs.check_out_time ? String(rawAttrs.check_out_time) : null;
 
     const categoryTitle =
         residence.category?.label ||
@@ -572,36 +594,35 @@ function getResidenceRate(pricing?: TemporaryRentPricingReadModel | null): numbe
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
                 {/* Right / Main Column (2 cols) */}
                 <div className="lg:col-span-2 space-y-8">
-                    {/* Key Specs Pills */}
-                    <div className="flex flex-wrap items-center gap-3 py-4 border-y border-border-subtle text-xs font-bold text-brand">
-                        <div className="flex items-center gap-2 bg-orange-50/60 text-orange-950 px-4 py-2.5 rounded-full border border-orange-100">
-                            <Users className="w-4 h-4 text-orange-600" />
-                            <span>ظرفیت تا {toPersianDigits(Number(rawAttrs.max_guests || residence.maxGuests || residence.guestCapacity || 2))} نفر</span>
+                    {/* Dynamic Key Specs Pills */}
+                    {(guestCapacity !== null || floorArea !== null || roomsCount !== null || bathroomsCount !== null) && (
+                        <div className="flex flex-wrap items-center gap-3 py-4 border-y border-border-subtle text-xs font-bold text-brand">
+                            {guestCapacity !== null && (
+                                <div className="flex items-center gap-2 bg-orange-50/60 text-orange-950 px-4 py-2.5 rounded-full border border-orange-100">
+                                    <Users className="w-4 h-4 text-orange-600" />
+                                    <span>ظرفیت تا {toPersianDigits(guestCapacity)} نفر</span>
+                                </div>
+                            )}
+                            {floorArea !== null && (
+                                <div className="flex items-center gap-2 bg-surface-secondary px-4 py-2.5 rounded-full border border-border-subtle text-text-light">
+                                    <Maximize2 className="w-4 h-4 text-primary" />
+                                    <span>{toPersianDigits(floorArea)} متر زیربنا</span>
+                                </div>
+                            )}
+                            {roomsCount !== null && (
+                                <div className="flex items-center gap-2 bg-surface-secondary px-4 py-2.5 rounded-full border border-border-subtle text-text-light">
+                                    <Bed className="w-4 h-4 text-primary" />
+                                    <span>{toPersianDigits(roomsCount)} اتاق خواب</span>
+                                </div>
+                            )}
+                            {bathroomsCount !== null && (
+                                <div className="flex items-center gap-2 bg-surface-secondary px-4 py-2.5 rounded-full border border-border-subtle text-text-light">
+                                    <Bath className="w-4 h-4 text-primary" />
+                                    <span>{toPersianDigits(bathroomsCount)} سرویس بهداشتی</span>
+                                </div>
+                            )}
                         </div>
-                        {rawAttrs.area && (
-                            <div className="flex items-center gap-2 bg-surface-secondary px-4 py-2.5 rounded-full border border-border-subtle text-text-light">
-                                <span>{toPersianDigits(Number(rawAttrs.area))} متر زیربنا</span>
-                            </div>
-                        )}
-                        <div className="flex items-center gap-2 bg-surface-secondary px-4 py-2.5 rounded-full border border-border-subtle text-text-light">
-                            <Bed className="w-4 h-4 text-primary" />
-                            <span>
-                                {toPersianDigits(
-                                    Number(
-                                        rawAttrs.rooms_count ||
-                                        rawAttrs.rooms ||
-                                        rawAttrs.single_beds ||
-                                        rawAttrs.double_beds ||
-                                        1
-                                    )
-                                )} اتاق خواب / تخت
-                            </span>
-                        </div>
-                        <div className="flex items-center gap-2 bg-surface-secondary px-4 py-2.5 rounded-full border border-border-subtle text-text-light">
-                            <Bath className="w-4 h-4 text-primary" />
-                            <span>{toPersianDigits(Number(rawAttrs.bathrooms || 1))} سرویس بهداشتی</span>
-                        </div>
-                    </div>
+                    )}
 
                     {/* Host Profile */}
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 bg-orange-50/40 rounded-3xl border border-orange-100">
@@ -688,7 +709,7 @@ function getResidenceRate(pricing?: TemporaryRentPricingReadModel | null): numbe
                     </div>
 
                     {/* Dynamic Amenities Grid */}
-                    {booleanFeatures.length > 0 ? (
+                    {booleanFeatures.length > 0 && (
                         <div className="space-y-4">
                             <h2 className="text-lg font-black text-brand">امکانات اقامتگاه</h2>
                             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs font-bold">
@@ -716,36 +737,6 @@ function getResidenceRate(pricing?: TemporaryRentPricingReadModel | null): numbe
                                         )}
                                     </div>
                                 ))}
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="space-y-4">
-                            <h2 className="text-lg font-black text-brand">امکانات اقامتگاه</h2>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs font-bold">
-                                <div className="flex items-center gap-2.5 p-3.5 rounded-2xl bg-surface-secondary border border-border-subtle text-text-main">
-                                    <Wifi className="w-4 h-4 text-primary shrink-0" />
-                                    <span>اینترنت وای‌فای</span>
-                                </div>
-                                <div className="flex items-center gap-2.5 p-3.5 rounded-2xl bg-surface-secondary border border-border-subtle text-text-main">
-                                    <Wind className="w-4 h-4 text-primary shrink-0" />
-                                    <span>سیستم سرمایش و گرمایش</span>
-                                </div>
-                                <div className="flex items-center gap-2.5 p-3.5 rounded-2xl bg-surface-secondary border border-border-subtle text-text-main">
-                                    <Utensils className="w-4 h-4 text-primary shrink-0" />
-                                    <span>وسایل پخت و پز آشپزخانه</span>
-                                </div>
-                                <div className="flex items-center gap-2.5 p-3.5 rounded-2xl bg-surface-secondary border border-border-subtle text-text-main">
-                                    <Tv className="w-4 h-4 text-primary shrink-0" />
-                                    <span>تلویزیون</span>
-                                </div>
-                                <div className="flex items-center gap-2.5 p-3.5 rounded-2xl bg-surface-secondary border border-border-subtle text-text-main">
-                                    <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
-                                    <span>پارکینگ اختصاصی</span>
-                                </div>
-                                <div className="flex items-center gap-2.5 p-3.5 rounded-2xl bg-surface-secondary border border-border-subtle text-text-main">
-                                    <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
-                                    <span>ملحفه و روبالشتی بهداشتی</span>
-                                </div>
                             </div>
                         </div>
                     )}
@@ -777,9 +768,9 @@ function getResidenceRate(pricing?: TemporaryRentPricingReadModel | null): numbe
                                 <div>
                                     <span className="font-black text-brand block">ساعت ورود</span>
                                     <span className="text-text-light">
-                                        {residence.attributes?.check_in_time
-                                            ? `از ساعت ${toPersianDigits(String(residence.attributes.check_in_time))} به بعد`
-                                            : "از ساعت ۱۴:۰۰ به بعد"}
+                                        {checkInTime
+                                            ? `از ساعت ${toPersianDigits(checkInTime)} به بعد`
+                                            : "طبق هماهنگی با میزبان"}
                                     </span>
                                 </div>
                             </div>
@@ -788,9 +779,9 @@ function getResidenceRate(pricing?: TemporaryRentPricingReadModel | null): numbe
                                 <div>
                                     <span className="font-black text-brand block">ساعت خروج</span>
                                     <span className="text-text-light">
-                                        {residence.attributes?.check_out_time
-                                            ? `تا قبل از ساعت ${toPersianDigits(String(residence.attributes.check_out_time))}`
-                                            : "تا قبل از ساعت ۱۲:۰۰ ظهر"}
+                                        {checkOutTime
+                                            ? `تا قبل از ساعت ${toPersianDigits(checkOutTime)}`
+                                            : "طبق هماهنگی با میزبان"}
                                     </span>
                                 </div>
                             </div>
