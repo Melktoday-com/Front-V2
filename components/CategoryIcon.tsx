@@ -8,6 +8,7 @@ export interface CategoryIconProps {
     icon?: string | null;
     displayName?: string;
     className?: string;
+    imgClassName?: string;
     size?: number;
 }
 
@@ -15,6 +16,7 @@ export function CategoryIcon({
     icon,
     displayName,
     className,
+    imgClassName,
     size = 24,
 }: CategoryIconProps) {
     const [imgError, setImgError] = useState(false);
@@ -32,7 +34,7 @@ export function CategoryIcon({
                 width={size}
                 height={size}
                 onError={() => setImgError(true)}
-                className="object-contain"
+                className={cn("object-contain", imgClassName)}
             />
         </span>
     );
