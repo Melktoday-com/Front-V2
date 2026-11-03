@@ -37,7 +37,7 @@ export function CategoryDirectory({
                 {[1, 2, 3, 4, 5, 6].map((i) => (
                     <div
                         key={i}
-                        className="bg-transparent lg:bg-surface-secondary/70 rounded-2xl py-1 px-0 lg:p-3.5 border-0 lg:border lg:border-soft-border/70 flex flex-col lg:flex-row items-center justify-center lg:justify-start gap-1.5 lg:gap-2.5 animate-pulse [&:nth-child(3n+1)]:items-start [&:nth-child(3n+2)]:items-center [&:nth-child(3n)]:items-end sm:[&:nth-child(6n+1)]:items-start sm:[&:nth-child(6n+2)]:items-center sm:[&:nth-child(6n+3)]:items-center sm:[&:nth-child(6n+4)]:items-center sm:[&:nth-child(6n+5)]:items-center sm:[&:nth-child(6n)]:items-end lg:items-center"
+                        className="bg-transparent lg:bg-surface-secondary/70 rounded-2xl py-1 px-1 lg:p-3.5 border-0 lg:border lg:border-soft-border/70 flex flex-col lg:flex-row items-center justify-center lg:justify-start text-center lg:text-start gap-1.5 lg:gap-2.5 animate-pulse"
                     >
                         <div className="w-12 h-12 lg:w-14 lg:h-14 rounded-2xl bg-surface-secondary/80 lg:bg-surface shrink-0" />
                         <div className="w-14 lg:w-20 h-2.5 lg:h-4 bg-zinc-200/80 rounded-full" />
@@ -64,7 +64,7 @@ export function CategoryDirectory({
                     <Link
                         key={category.id || category.key}
                         href={mainCategoryHref}
-                        className="bg-transparent lg:bg-surface-secondary/70 lg:hover:bg-surface rounded-2xl py-1 px-0 lg:p-3.5 border-0 lg:border lg:border-soft-border/80 lg:hover:border-primary/40 transition-all duration-300 flex flex-col lg:flex-row items-center justify-center lg:justify-start text-center lg:text-start gap-1.5 lg:gap-3 group lg:hover:shadow-md lg:hover:shadow-brand/5 lg:hover:scale-[1.02] active:scale-95 lg:active:scale-[0.98] [&:nth-child(3n+1)]:items-start [&:nth-child(3n+1)]:text-start [&:nth-child(3n+2)]:items-center [&:nth-child(3n+2)]:text-center [&:nth-child(3n)]:items-end [&:nth-child(3n)]:text-end sm:[&:nth-child(6n+1)]:items-start sm:[&:nth-child(6n+1)]:text-start sm:[&:nth-child(6n+2)]:items-center sm:[&:nth-child(6n+2)]:text-center sm:[&:nth-child(6n+3)]:items-center sm:[&:nth-child(6n+3)]:text-center sm:[&:nth-child(6n+4)]:items-center sm:[&:nth-child(6n+4)]:text-center sm:[&:nth-child(6n+5)]:items-center sm:[&:nth-child(6n+5)]:text-center sm:[&:nth-child(6n)]:items-end sm:[&:nth-child(6n)]:text-end lg:items-center lg:text-start"
+                        className="bg-transparent lg:bg-surface-secondary/70 lg:hover:bg-surface rounded-2xl py-1 px-1 lg:p-3.5 border-0 lg:border lg:border-soft-border/80 lg:hover:border-primary/40 transition-all duration-300 flex flex-col lg:flex-row items-center justify-center lg:justify-start text-center lg:text-start gap-1.5 lg:gap-3 group lg:hover:shadow-md lg:hover:shadow-brand/5 lg:hover:scale-[1.02] active:scale-95 lg:active:scale-[0.98] w-full"
                     >
                         <div className="w-12 h-12 lg:w-14 lg:h-14 rounded-2xl bg-transparent lg:bg-surface shadow-none lg:shadow-xs border-0 lg:border lg:border-soft-border flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-110 lg:group-hover:scale-120 lg:group-hover:border-primary/40">
                             {category.icon ? (
@@ -79,7 +79,7 @@ export function CategoryDirectory({
                                 <Building2 className="w-8 h-8 lg:w-8 lg:h-8 text-primary" />
                             )}
                         </div>
-                        <span className="text-[11px] md:text-xs lg:text-sm font-bold lg:font-black text-brand group-hover:text-primary transition-colors text-inherit leading-snug line-clamp-2 lg:line-clamp-1 break-words max-w-full">
+                        <span className="text-[11px] md:text-xs lg:text-sm font-bold lg:font-black text-brand group-hover:text-primary transition-colors text-center lg:text-start leading-snug line-clamp-2 lg:line-clamp-1 break-words max-w-full">
                             {category.displayName}
                         </span>
                     </Link>
