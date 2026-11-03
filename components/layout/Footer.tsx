@@ -1,6 +1,7 @@
 "use client";
 
 import { lightLogo } from "@/assets/branding";
+import { Enamad } from "@/components/ui/Enamad";
 import { toPersianDigits } from "@/lib/utils";
 import {
   ArrowUp,
@@ -94,6 +95,11 @@ export function Footer() {
                 <Search className="w-4 h-4 text-primary" />
                 <span>جستجو در املاک</span>
               </Link>
+            </div>
+
+            {/* اینماد - نسخه دسکتاپ (زیر ثبت آگهی و جستجو در املاک) */}
+            <div className="hidden md:flex items-center pt-1">
+              <Enamad />
             </div>
           </div>
 
@@ -293,6 +299,11 @@ export function Footer() {
                     )}
                   </button>
                 </div>
+              </div>
+
+              {/* اینماد - نسخه موبایل (زیر نشانی) */}
+              <div className="flex md:hidden justify-start pt-1">
+                <Enamad />
               </div>
             </div>
           </div>

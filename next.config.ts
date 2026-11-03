@@ -36,6 +36,7 @@ const nextConfig: NextConfig = {
     minimumCacheTTL: 2592000,
     remotePatterns: [
       ...getEnvHostnames(),
+      { protocol: "https", hostname: "trustseal.enamad.ir", pathname: "/**" },
       { protocol: "https", hostname: "melktoday.com", pathname: "/**" },
       { protocol: "https", hostname: "**.melktoday.com", pathname: "/**" },
       { protocol: "https", hostname: "beta.melktoday.ir", pathname: "/**" },
