@@ -21,6 +21,7 @@ import {
     BookOpen,
     Building2,
     ChevronDown,
+    Heart,
     Hotel,
     Loader2,
     MapPin,
@@ -171,6 +172,16 @@ export function SearchHeader({ isInitialOpen }: SearchHeaderProps) {
                                 )}
                             </Link>
 
+                            {/* Favorites Icon */}
+                            <Link
+                                href="/favorites"
+                                aria-label="علاقه‌مندی‌ها"
+                                title="علاقه‌مندی‌ها"
+                                className="p-2 sm:p-2.5 bg-surface rounded-full border border-soft-border text-brand hover:text-primary hover:border-primary/30 transition-all relative shadow-sm hover:shadow-md flex items-center justify-center"
+                            >
+                                <Heart className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
+                            </Link>
+
                             {/* Notifications Icon */}
                             <Link
                                 href="/notifications"
@@ -184,16 +195,6 @@ export function SearchHeader({ isInitialOpen }: SearchHeaderProps) {
                                         {toPersianDigits(unreadNotificationsCount > 99 ? "99+" : unreadNotificationsCount)}
                                     </span>
                                 )}
-                            </Link>
-
-                            {/* Profile Icon */}
-                            <Link
-                                href="/profile"
-                                aria-label="حساب کاربری"
-                                title="حساب کاربری"
-                                className="p-2 sm:p-2.5 bg-surface rounded-full border border-soft-border text-brand hover:text-primary hover:border-primary/30 transition-all relative shadow-sm hover:shadow-md flex items-center justify-center"
-                            >
-                                <User className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
                             </Link>
                         </>
                     )}

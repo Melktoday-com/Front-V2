@@ -16,7 +16,6 @@ import {
     Hotel,
     Info,
     LogIn,
-    MapPin,
     MessageSquare,
     Plus,
     PlusCircle,
@@ -33,8 +32,8 @@ import { toast } from "sonner";
 
 const navItems = [
     { icon: Home, label: "خانه", href: "/" },
-    { icon: Compass, label: "کاوش", href: "/explore" },
     { icon: Search, label: "جستجو", href: "/ads" },
+    { icon: Compass, label: "کاوش", href: "/explore" },
     { icon: Hotel, label: "اقامتگاه‌ها", href: "/temporary-rent" },
     { icon: Building2, label: "آژانس‌ها", href: "/agency" },
     { icon: Heart, label: "علاقه‌مندی‌ها", href: "/favorites" },
@@ -321,11 +320,10 @@ function MobileNavContent() {
     if (isSingleAd) return null;
 
     const isHome = pathname === "/";
-    const isExplore =
-        (pathname.startsWith("/explore") || pathname.startsWith("/ads")) &&
-        pathname !== "/ads/submit";
+    const isSearch =
+        pathname.startsWith("/ads") && pathname !== "/ads/submit";
     const isSubmit = pathname === "/ads/submit";
-    const isFavorites = pathname.startsWith("/favorites");
+    const isExplore = pathname.startsWith("/explore");
     const isProfile =
         pathname.startsWith("/profile") || (!isLoggedIn && pathname.startsWith("/auth"));
 
@@ -348,18 +346,18 @@ function MobileNavContent() {
                 <Home className="w-5 h-5" />
             </Link>
 
-            {/* 2. Explore / Search */}
+            {/* 2. Search / Ads */}
             <Link
-                href="/explore"
-                aria-label="کاوش و جستجو"
+                href="/ads"
+                aria-label="جستجوی آگهی‌ها"
                 className={cn(
                     "flex flex-col items-center justify-center w-11 h-11 rounded-full transition-all",
-                    isExplore
+                    isSearch
                         ? "bg-primary text-accent shadow-sm"
                         : "text-foreground-secondary hover:text-primary"
                 )}
             >
-                <MapPin className="w-5 h-5" />
+                <Search className="w-5 h-5" />
             </Link>
 
             {/* 3. Center Elevated Submit Ad Button */}
@@ -376,18 +374,18 @@ function MobileNavContent() {
                 <Plus className="w-7 h-7 stroke-[2.5]" />
             </Link>
 
-            {/* 4. Favorites */}
+            {/* 4. Explore */}
             <Link
-                href="/favorites"
-                aria-label="علاقه‌مندی‌ها"
+                href="/explore"
+                aria-label="کاوش"
                 className={cn(
                     "flex flex-col items-center justify-center w-11 h-11 rounded-full transition-all",
-                    isFavorites
+                    isExplore
                         ? "bg-primary text-accent shadow-sm"
                         : "text-foreground-secondary hover:text-primary"
                 )}
             >
-                <Heart className="w-5 h-5" />
+                <Compass className="w-5 h-5" />
             </Link>
 
             {/* 5. Profile */}

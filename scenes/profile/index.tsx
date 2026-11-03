@@ -31,6 +31,7 @@ import {
     CreditCard,
     ExternalLink,
     FileText,
+    Heart,
     Hotel,
     LayoutList,
     Loader2,
@@ -559,13 +560,11 @@ export default function ProfileScene() {
                     </div>
                 </section>
 
-                {/* Dashboard Options based on Permissions */}
-                <section className="grid gap-4">
+                {/* Dashboard Options & Account Actions */}
+                <section className="space-y-3">
                     <RoleGuard roles={[RoleName.Agent]} requireActiveRole>
                         <div className="space-y-2">
-                            <Button
-                                variant="outline"
-                                className="w-full h-16 rounded-[25px] flex items-center justify-between px-6 border-brand/10 hover:bg-brand/5"
+                            <button
                                 onClick={async () => {
                                     if (activeRole !== RoleName.Agent && user?.sessionId) {
                                         try {
@@ -579,15 +578,14 @@ export default function ProfileScene() {
                                     }
                                     router.push('/agency/panel');
                                 }}
+                                className="w-full flex items-center justify-between p-5 bg-soft-bg rounded-2xl border border-soft-border hover:bg-soft-border/50 transition-colors"
                             >
-                                <div className="flex items-center gap-4">
-                                    <div className="p-3 rounded-2xl bg-brand/5 text-brand">
-                                        <Building2 className="w-6 h-6" />
-                                    </div>
-                                    <span className="font-bold text-brand">مدیریت آژانس من</span>
+                                <div className="flex items-center gap-3">
+                                    <Building2 className="w-5 h-5 text-primary" />
+                                    <span className="text-brand font-bold text-sm">مدیریت آژانس من</span>
                                 </div>
-                                <ChevronLeft className="w-5 h-5 text-secondary" />
-                            </Button>
+                                <ChevronLeft className="w-4 h-4 text-secondary" />
+                            </button>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                 <Link
                                     href="/posts/create"
@@ -618,9 +616,7 @@ export default function ProfileScene() {
 
                     <RoleGuard roles={[RoleName.Landlord]} requireActiveRole>
                         <div className="space-y-2">
-                            <Button
-                                variant="outline"
-                                className="w-full h-16 rounded-[25px] flex items-center justify-between px-6 border-soft-border hover:bg-soft-bg"
+                            <button
                                 onClick={async () => {
                                     if (activeRole !== RoleName.Landlord && user?.sessionId) {
                                         try {
@@ -634,15 +630,14 @@ export default function ProfileScene() {
                                     }
                                     router.push('/profile/temporary-rent');
                                 }}
+                                className="w-full flex items-center justify-between p-5 bg-soft-bg rounded-2xl border border-soft-border hover:bg-soft-border/50 transition-colors"
                             >
-                                <div className="flex items-center gap-4">
-                                    <div className="p-3 rounded-2xl bg-soft-bg text-secondary">
-                                        <Hotel className="w-6 h-6" />
-                                    </div>
-                                    <span className="font-bold text-brand">پنل اقامتگاه‌ها (میزبان)</span>
+                                <div className="flex items-center gap-3">
+                                    <Hotel className="w-5 h-5 text-primary" />
+                                    <span className="text-brand font-bold text-sm">پنل اقامتگاه‌ها (میزبان)</span>
                                 </div>
-                                <ChevronLeft className="w-5 h-5 text-secondary" />
-                            </Button>
+                                <ChevronLeft className="w-4 h-4 text-secondary" />
+                            </button>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                 <Link
                                     href="/posts/create"
@@ -672,75 +667,67 @@ export default function ProfileScene() {
                     </RoleGuard>
 
                     {isRoleAdmin(activeRole) && (
-                        <div className="space-y-2">
-                            <Button
-                                variant="outline"
-                                className="w-full h-16 rounded-[25px] flex items-center justify-between px-6 border-primary/20 hover:bg-primary/5"
-                                onClick={() => router.push('/admin')}
-                            >
-                                <div className="flex items-center gap-4">
-                                    <div className="p-3 rounded-2xl bg-primary/10 text-primary">
-                                        <ShieldCheck className="w-6 h-6" />
-                                    </div>
-                                    <span className="font-bold text-brand">پنل مدیریت</span>
-                                </div>
-                                <ChevronLeft className="w-5 h-5 text-secondary" />
-                            </Button>
-                        </div>
+                        <button
+                            onClick={() => router.push('/admin')}
+                            className="w-full flex items-center justify-between p-5 bg-soft-bg rounded-2xl border border-soft-border hover:bg-soft-border/50 transition-colors"
+                        >
+                            <div className="flex items-center gap-3">
+                                <ShieldCheck className="w-5 h-5 text-primary" />
+                                <span className="text-brand font-bold text-sm">پنل مدیریت</span>
+                            </div>
+                            <ChevronLeft className="w-4 h-4 text-secondary" />
+                        </button>
                     )}
 
-                    <Button
-                        variant="outline"
-                        className="w-full h-16 rounded-[25px] flex items-center justify-between px-6 border-soft-border hover:bg-soft-bg"
+                    <button
                         onClick={() => router.push('/wallet')}
+                        className="w-full flex items-center justify-between p-5 bg-soft-bg rounded-2xl border border-soft-border hover:bg-soft-border/50 transition-colors"
                     >
-                        <div className="flex items-center gap-4">
-                            <div className="p-3 rounded-2xl bg-soft-bg text-secondary">
-                                <CreditCard className="w-6 h-6" />
-                            </div>
-                            <span className="font-bold text-brand">کیف پول و تراکنش‌ها</span>
+                        <div className="flex items-center gap-3">
+                            <CreditCard className="w-5 h-5 text-primary" />
+                            <span className="text-brand font-bold text-sm">کیف پول و تراکنش‌ها</span>
                         </div>
                         <div className="flex items-center gap-2">
                             <span className="text-secondary text-xs">{formatCurrency(rialToToman(balance?.balance))} تومان</span>
-                            <ChevronLeft className="w-5 h-5 text-secondary" />
+                            <ChevronLeft className="w-4 h-4 text-secondary" />
                         </div>
-                    </Button>
+                    </button>
 
-                    <Button
-                        variant="outline"
-                        className="w-full h-16 rounded-[25px] flex items-center justify-between px-6 border-soft-border hover:bg-soft-bg"
+                    <button
                         onClick={() => router.push('/subscriptions')}
+                        className="w-full flex items-center justify-between p-5 bg-soft-bg rounded-2xl border border-soft-border hover:bg-soft-border/50 transition-colors"
                     >
-                        <div className="flex items-center gap-4">
-                            <div className="p-3 rounded-2xl bg-primary/10 text-primary">
-                                <Zap className="w-6 h-6" />
-                            </div>
+                        <div className="flex items-center gap-3">
+                            <Zap className="w-5 h-5 text-primary" />
                             <div className="text-right">
-                                <span className="font-bold text-brand block text-sm">پلن‌های اشتراک و سهمیه‌ها</span>
+                                <span className="text-brand font-bold text-sm block">پلن‌های اشتراک و سهمیه‌ها</span>
                                 <span className="text-[11px] text-secondary">سهمیه باقیمانده، نشان تایید، ارتقای پلن</span>
                             </div>
                         </div>
-                        <ChevronLeft className="w-5 h-5 text-secondary" />
-                    </Button>
+                        <ChevronLeft className="w-4 h-4 text-secondary" />
+                    </button>
 
-                    <Button
-                        variant="outline"
-                        className="w-full h-16 rounded-[25px] flex items-center justify-between px-6 border-soft-border hover:bg-soft-bg"
+                    <button
                         onClick={() => router.push('/profile/ads')}
+                        className="w-full flex items-center justify-between p-5 bg-soft-bg rounded-2xl border border-soft-border hover:bg-soft-border/50 transition-colors"
                     >
-                        <div className="flex items-center gap-4">
-                            <div className="p-3 rounded-2xl bg-soft-bg text-secondary">
-                                <LayoutList className="w-6 h-6" />
-                            </div>
-                            <span className="font-bold text-brand">آگهی‌های من</span>
+                        <div className="flex items-center gap-3">
+                            <LayoutList className="w-5 h-5 text-primary" />
+                            <span className="text-brand font-bold text-sm">آگهی‌های من</span>
                         </div>
-                        <ChevronLeft className="w-5 h-5 text-secondary" />
-                    </Button>
-                </section>
+                        <ChevronLeft className="w-4 h-4 text-secondary" />
+                    </button>
 
-                {/* Account Actions */}
-                <section className="space-y-3">
-
+                    <button
+                        onClick={() => router.push('/favorites')}
+                        className="w-full flex items-center justify-between p-5 bg-soft-bg rounded-2xl border border-soft-border hover:bg-soft-border/50 transition-colors"
+                    >
+                        <div className="flex items-center gap-3">
+                            <Heart className="w-5 h-5 text-primary" />
+                            <span className="text-brand font-bold text-sm">علاقه‌مندی‌های من</span>
+                        </div>
+                        <ChevronLeft className="w-4 h-4 text-secondary" />
+                    </button>
 
                     <button
                         onClick={() => router.push("/profile/requests")}
