@@ -33,14 +33,14 @@ export function CategoryDirectory({
     // Loading Skeletons
     if (isLoading) {
         return (
-            <div className={cn("grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2.5 sm:gap-3.5", className)}>
+            <div className={cn("grid grid-cols-3 min-[360px]:grid-cols-4 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-6 gap-2 sm:gap-3.5", className)}>
                 {[1, 2, 3, 4, 5, 6].map((i) => (
                     <div
                         key={i}
-                        className="bg-surface-secondary/70 rounded-2xl p-2.5 sm:p-3.5 border border-soft-border/70 flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-2 sm:gap-2.5 animate-pulse"
+                        className="bg-transparent sm:bg-surface-secondary/70 rounded-2xl p-1 sm:p-3.5 border-0 sm:border sm:border-soft-border/70 flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1.5 sm:gap-2.5 animate-pulse"
                     >
-                        <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-surface shrink-0" />
-                        <div className="w-14 sm:w-20 h-3 sm:h-4 bg-zinc-200/80 rounded-full" />
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-surface-secondary/80 sm:bg-surface shrink-0" />
+                        <div className="w-12 sm:w-20 h-2.5 sm:h-4 bg-zinc-200/80 rounded-full" />
                     </div>
                 ))}
             </div>
@@ -53,7 +53,7 @@ export function CategoryDirectory({
     }
 
     return (
-        <div className={cn("grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2.5 sm:gap-3.5", className)}>
+        <div className={cn("grid grid-cols-3 min-[360px]:grid-cols-4 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-6 gap-2 sm:gap-3.5", className)}>
             {categories.map((category) => {
                 const isTempRent = category.key === "temporary_rent";
                 const mainCategoryHref = isTempRent
@@ -64,21 +64,21 @@ export function CategoryDirectory({
                     <Link
                         key={category.id || category.key}
                         href={mainCategoryHref}
-                        className="bg-surface-secondary/70 hover:bg-surface rounded-2xl p-2.5 sm:p-3.5 border border-soft-border/80 hover:border-primary/40 transition-all duration-300 flex flex-col sm:flex-row items-center justify-center sm:justify-start text-center sm:text-start gap-1.5 sm:gap-3 group hover:shadow-md hover:shadow-brand/5 active:scale-[0.98]"
+                        className="bg-transparent sm:bg-surface-secondary/70 sm:hover:bg-surface rounded-2xl p-1 sm:p-3.5 border-0 sm:border sm:border-soft-border/80 sm:hover:border-primary/40 transition-all duration-300 flex flex-col sm:flex-row items-center justify-center sm:justify-start text-center sm:text-start gap-1 sm:gap-3 group sm:hover:shadow-md sm:hover:shadow-brand/5 active:scale-95 sm:active:scale-[0.98]"
                     >
-                        <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-surface shadow-xs border border-soft-border flex items-center justify-center shrink-0 group-hover:scale-105 group-hover:border-primary/30 transition-transform duration-200">
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-transparent sm:bg-surface shadow-none sm:shadow-xs border-0 sm:border sm:border-soft-border flex items-center justify-center shrink-0 group-hover:scale-110 sm:group-hover:scale-105 sm:group-hover:border-primary/30 transition-transform duration-200">
                             {category.icon ? (
                                 <CategoryIcon
                                     icon={category.icon}
                                     displayName={category.displayName}
-                                    size={18}
+                                    size={22}
                                     className="shrink-0"
                                 />
                             ) : (
-                                <Building2 className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+                                <Building2 className="w-5 h-5 sm:w-5 sm:h-5 text-primary" />
                             )}
                         </div>
-                        <span className="text-[11px] sm:text-sm font-bold sm:font-black text-brand group-hover:text-primary transition-colors truncate max-w-full">
+                        <span className="text-[10px] sm:text-sm font-bold sm:font-black text-brand group-hover:text-primary transition-colors truncate max-w-full">
                             {category.displayName}
                         </span>
                     </Link>
