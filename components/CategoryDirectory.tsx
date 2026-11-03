@@ -1,9 +1,9 @@
 "use client";
 
 import { CategoryIcon } from "@/components/CategoryIcon";
-import { cn, toPersianDigits } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { CategoryListItem } from "@/types/api/ads.types";
-import { ArrowLeft, Building2 } from "lucide-react";
+import { Building2 } from "lucide-react";
 import Link from "next/link";
 import { useMemo } from "react";
 
@@ -39,12 +39,9 @@ export function CategoryDirectory({
                         key={i}
                         className="bg-surface-secondary/70 rounded-2xl p-3.5 sm:p-4 border border-soft-border/70 flex flex-col justify-between min-h-[96px] animate-pulse"
                     >
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2.5">
-                                <div className="w-9 h-9 rounded-xl bg-surface" />
-                                <div className="w-28 h-4 bg-zinc-200/80 rounded-full" />
-                            </div>
-                            <div className="w-12 h-6 bg-surface rounded-full" />
+                        <div className="flex items-center gap-2.5">
+                            <div className="w-9 h-9 rounded-xl bg-surface" />
+                            <div className="w-28 h-4 bg-zinc-200/80 rounded-full" />
                         </div>
                         <div className="flex gap-1.5 mt-3 pt-2.5 border-t border-soft-border/40">
                             <div className="w-16 h-6 bg-surface rounded-full" />
@@ -80,8 +77,8 @@ export function CategoryDirectory({
                         key={category.id || category.key}
                         className="bg-surface-secondary/70 hover:bg-surface rounded-2xl p-3.5 sm:p-4 border border-soft-border/80 hover:border-primary/40 transition-all duration-300 flex flex-col justify-between group hover:shadow-md hover:shadow-brand/5"
                     >
-                        {/* Header: Icon + Title + Direct View All Link */}
-                        <div className="flex items-center justify-between gap-2.5">
+                        {/* Header: Icon + Title only */}
+                        <div className="flex items-center gap-2.5">
                             <Link
                                 href={mainCategoryHref}
                                 className="flex items-center gap-2.5 min-w-0 group/header flex-1"
@@ -98,32 +95,16 @@ export function CategoryDirectory({
                                         <Building2 className="w-4 h-4 text-primary" />
                                     )}
                                 </div>
-                                <div className="flex flex-col min-w-0">
-                                    <span className="text-sm font-black text-brand group-hover/header:text-primary transition-colors truncate">
-                                        {category.displayName}
-                                    </span>
-                                    {category.description && (
-                                        <span className="text-[11px] text-secondary/60 line-clamp-1">
-                                            {category.description}
-                                        </span>
-                                    )}
-                                </div>
-                            </Link>
-
-                            <Link
-                                href={mainCategoryHref}
-                                aria-label={`مشاهده همه ${category.displayName}`}
-                                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface hover:bg-primary/10 text-secondary hover:text-primary border border-soft-border text-xs font-bold shrink-0 transition-all group/btn"
-                            >
-                                <span>همه</span>
-                                <ArrowLeft className="w-3.5 h-3.5 group-hover/btn:-translate-x-0.5 transition-transform" />
+                                <span className="text-sm font-black text-brand group-hover/header:text-primary transition-colors truncate">
+                                    {category.displayName}
+                                </span>
                             </Link>
                         </div>
 
-                        {/* Subcategories (Directly from API as Apple-style Micro-pills) */}
+                        {/* Subcategories: Micro-pills with Icon + Title only */}
                         {activeSubcategories.length > 0 && (
                             <div className="flex flex-wrap items-center gap-1.5 mt-3 pt-2.5 border-t border-soft-border/50">
-                                {activeSubcategories.slice(0, 5).map((sub) => {
+                                {activeSubcategories.map((sub) => {
                                     const subHref = isTempRent
                                         ? `/temporary-rent${cityQuery ? `?${cityQuery.replace(/^&/, "")}` : ""}`
                                         : `/ads?categoryKey=${encodeURIComponent(category.key)}&subcategoryKey=${encodeURIComponent(sub.key)}${cityQuery}`;
@@ -146,14 +127,6 @@ export function CategoryDirectory({
                                         </Link>
                                     );
                                 })}
-                                {activeSubcategories.length > 5 && (
-                                    <Link
-                                        href={mainCategoryHref}
-                                        className="inline-flex items-center px-2 py-1 rounded-full bg-surface hover:bg-primary/10 text-secondary hover:text-primary text-[10px] font-bold border border-soft-border transition-colors"
-                                    >
-                                        +{toPersianDigits(activeSubcategories.length - 5)}
-                                    </Link>
-                                )}
                             </div>
                         )}
                     </div>

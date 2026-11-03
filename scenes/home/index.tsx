@@ -1,6 +1,7 @@
 "use client";
 
 import { AgentAvatar } from "@/components/AgentAvatar";
+import { CategoryDirectory } from "@/components/CategoryDirectory";
 import { Footer } from "@/components/layout/Footer";
 import { useCity } from "@/components/providers/CityProvider";
 import { SearchHeader } from "@/components/SearchHeader";
@@ -10,11 +11,10 @@ import { Slider } from "@/components/ui/Slider";
 import { EmptyState, ErrorState } from "@/components/ui/StatusStates";
 import { useAds, useCategories } from "@/hooks/useAds";
 import { useAgencies } from "@/hooks/useAgencies";
-import { useCategoryLookup } from "@/hooks/useCategoryLookup";
 import { useFavorites, useToggleSaveAd, useToggleSaveTemporaryRent } from "@/hooks/useFavorites";
 import { useTemporaryRentAds } from "@/hooks/useTemporaryRent";
-import { formatPrice, getMediaPosterUrl } from "@/lib/utils";
 import { getFloorArea } from "@/lib/location";
+import { formatPrice, getMediaPosterUrl } from "@/lib/utils";
 import { TemporaryRentAdSummary } from "@/services/temporary-rent.service";
 import { AdSummary } from "@/types/api/ads.types";
 import { AgencySummary } from "@/types/api/agency.types";
@@ -67,7 +67,6 @@ function getHomeTemporaryRentPrice(pricing: TemporaryRentPricingReadModel): { am
 export const HomeScene = () => {
     const { selectedCity } = useCity();
 
-
     // Saved state for heart buttons
     const { isAdSaved, isTemporaryRentSaved } = useFavorites();
     const toggleSaveAdMutation = useToggleSaveAd();
@@ -119,7 +118,7 @@ export const HomeScene = () => {
         return recentData?.items || [];
     }, [recentData]);
 
-
+    const { data: categoriesData, isLoading: isCategoriesLoading } = useCategories();
 
     const { data: agencyData, isLoading: isAgenciesLoading, error: agencyError, refetch: refetchAgencies } = useAgencies({
         cityId: selectedCity.id || undefined,
@@ -145,6 +144,18 @@ export const HomeScene = () => {
             <SearchHeader
                 isInitialOpen={isInitialModalOpen}
             />
+
+            {/* Categories */}
+            {((categoriesData && categoriesData.length > 0) || isCategoriesLoading) && (
+                <section className="container mx-auto px-4">
+                    <CategoryDirectory
+                        categories={categoriesData || []}
+                        isLoading={isCategoriesLoading}
+                        cityId={selectedCity.id || undefined}
+                        cityName={selectedCity.name || undefined}
+                    />
+                </section>
+            )}
 
             {/* Featured Properties */}
             <section className="container mx-auto px-4">
@@ -207,8 +218,8 @@ export const HomeScene = () => {
                                         (typeof property.attributes?.rooms === "number"
                                             ? property.attributes.rooms
                                             : typeof property.attributes?.rooms_count === "number"
-                                            ? property.attributes.rooms_count
-                                            : undefined)
+                                                ? property.attributes.rooms_count
+                                                : undefined)
                                     }
                                     date={isLadder ? (property.updatedAt || property.createdAt) : property.createdAt}
                                     badgeName={isFeatured ? "ویژه" : undefined}
@@ -358,8 +369,8 @@ export const HomeScene = () => {
                                         (typeof property.attributes?.rooms === "number"
                                             ? property.attributes.rooms
                                             : typeof property.attributes?.rooms_count === "number"
-                                            ? property.attributes.rooms_count
-                                            : undefined)
+                                                ? property.attributes.rooms_count
+                                                : undefined)
                                     }
                                     date={isLadder ? (property.updatedAt || property.createdAt) : property.createdAt}
                                     badgeName={isFeatured ? "ویژه" : undefined}
