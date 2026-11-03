@@ -33,14 +33,14 @@ export function CategoryDirectory({
     // Loading Skeletons
     if (isLoading) {
         return (
-            <div className={cn("grid grid-cols-3 min-[360px]:grid-cols-4 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-6 gap-2 sm:gap-3.5", className)}>
+            <div className={cn("grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-6 gap-1.5 sm:gap-3.5", className)}>
                 {[1, 2, 3, 4, 5, 6].map((i) => (
                     <div
                         key={i}
-                        className="bg-transparent sm:bg-surface-secondary/70 rounded-2xl p-1 sm:p-3.5 border-0 sm:border sm:border-soft-border/70 flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1.5 sm:gap-2.5 animate-pulse"
+                        className="bg-transparent sm:bg-surface-secondary/70 rounded-2xl p-1 sm:p-3.5 border-0 sm:border sm:border-soft-border/70 flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-2.5 animate-pulse"
                     >
                         <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-surface-secondary/80 sm:bg-surface shrink-0" />
-                        <div className="w-12 sm:w-20 h-2.5 sm:h-4 bg-zinc-200/80 rounded-full" />
+                        <div className="w-14 sm:w-20 h-2.5 sm:h-4 bg-zinc-200/80 rounded-full" />
                     </div>
                 ))}
             </div>
@@ -53,7 +53,7 @@ export function CategoryDirectory({
     }
 
     return (
-        <div className={cn("grid grid-cols-3 min-[360px]:grid-cols-4 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-6 gap-2 sm:gap-3.5", className)}>
+        <div className={cn("grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-6 gap-1.5 sm:gap-3.5", className)}>
             {categories.map((category) => {
                 const isTempRent = category.key === "temporary_rent";
                 const mainCategoryHref = isTempRent
@@ -78,7 +78,7 @@ export function CategoryDirectory({
                                 <Building2 className="w-5 h-5 sm:w-5 sm:h-5 text-primary" />
                             )}
                         </div>
-                        <span className="text-[10px] sm:text-sm font-bold sm:font-black text-brand group-hover:text-primary transition-colors truncate max-w-full">
+                        <span className="text-[11px] sm:text-sm font-bold sm:font-black text-brand group-hover:text-primary transition-colors text-center sm:text-start leading-snug line-clamp-2 sm:line-clamp-1 break-words max-w-full">
                             {category.displayName}
                         </span>
                     </Link>
