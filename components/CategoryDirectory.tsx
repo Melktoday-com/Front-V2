@@ -33,21 +33,14 @@ export function CategoryDirectory({
     // Loading Skeletons
     if (isLoading) {
         return (
-            <div className={cn("grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-3.5", className)}>
-                {[1, 2, 3, 4].map((i) => (
+            <div className={cn("grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-3.5", className)}>
+                {[1, 2, 3, 4, 5, 6].map((i) => (
                     <div
                         key={i}
-                        className="bg-surface-secondary/70 rounded-2xl p-3.5 sm:p-4 border border-soft-border/70 flex flex-col justify-between min-h-[96px] animate-pulse"
+                        className="bg-surface-secondary/70 rounded-2xl p-3 sm:p-3.5 border border-soft-border/70 flex items-center gap-2.5 animate-pulse"
                     >
-                        <div className="flex items-center gap-2.5">
-                            <div className="w-9 h-9 rounded-xl bg-surface" />
-                            <div className="w-28 h-4 bg-zinc-200/80 rounded-full" />
-                        </div>
-                        <div className="flex gap-1.5 mt-3 pt-2.5 border-t border-soft-border/40">
-                            <div className="w-16 h-6 bg-surface rounded-full" />
-                            <div className="w-14 h-6 bg-surface rounded-full" />
-                            <div className="w-16 h-6 bg-surface rounded-full" />
-                        </div>
+                        <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-surface shrink-0" />
+                        <div className="w-20 h-4 bg-zinc-200/80 rounded-full" />
                     </div>
                 ))}
             </div>
@@ -60,76 +53,35 @@ export function CategoryDirectory({
     }
 
     return (
-        <div className={cn("grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-3.5", className)}>
+        <div className={cn("grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-3.5", className)}>
             {categories.map((category) => {
                 const isTempRent = category.key === "temporary_rent";
                 const mainCategoryHref = isTempRent
                     ? `/temporary-rent${cityQuery ? `?${cityQuery.replace(/^&/, "")}` : ""}`
                     : `/ads?categoryKey=${encodeURIComponent(category.key)}${cityQuery}`;
 
-                // Filter active, non-archived subcategories directly from API
-                const activeSubcategories = (category.subcategories || []).filter(
-                    (sub) => sub.isActive !== false && !sub.isArchived
-                );
-
                 return (
-                    <div
+                    <Link
                         key={category.id || category.key}
-                        className="bg-surface-secondary/70 hover:bg-surface rounded-2xl p-3.5 sm:p-4 border border-soft-border/80 hover:border-primary/40 transition-all duration-300 flex flex-col justify-between group hover:shadow-md hover:shadow-brand/5"
+                        href={mainCategoryHref}
+                        className="bg-surface-secondary/70 hover:bg-surface rounded-2xl p-3 sm:p-3.5 border border-soft-border/80 hover:border-primary/40 transition-all duration-300 flex items-center gap-2.5 sm:gap-3 group hover:shadow-md hover:shadow-brand/5 active:scale-[0.98]"
                     >
-                        {/* Header: Icon + Title only */}
-                        <div className="flex items-center gap-2.5">
-                            <Link
-                                href={mainCategoryHref}
-                                className="flex items-center gap-2.5 min-w-0 group/header flex-1"
-                            >
-                                <div className="w-9 h-9 sm:w-8.5 sm:h-8.5 rounded-xl bg-surface shadow-xs border border-soft-border flex items-center justify-center shrink-0 group-hover/header:scale-105 group-hover/header:border-primary/30 transition-transform duration-200">
-                                    {category.icon ? (
-                                        <CategoryIcon
-                                            icon={category.icon}
-                                            displayName={category.displayName}
-                                            size={18}
-                                            className="shrink-0"
-                                        />
-                                    ) : (
-                                        <Building2 className="w-4 h-4 text-primary" />
-                                    )}
-                                </div>
-                                <span className="text-sm font-black text-brand group-hover/header:text-primary transition-colors truncate">
-                                    {category.displayName}
-                                </span>
-                            </Link>
+                        <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-surface shadow-xs border border-soft-border flex items-center justify-center shrink-0 group-hover:scale-105 group-hover:border-primary/30 transition-transform duration-200">
+                            {category.icon ? (
+                                <CategoryIcon
+                                    icon={category.icon}
+                                    displayName={category.displayName}
+                                    size={18}
+                                    className="shrink-0"
+                                />
+                            ) : (
+                                <Building2 className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+                            )}
                         </div>
-
-                        {/* Subcategories: Micro-pills with Icon + Title only */}
-                        {activeSubcategories.length > 0 && (
-                            <div className="flex flex-wrap items-center gap-1.5 mt-3 pt-2.5 border-t border-soft-border/50">
-                                {activeSubcategories.map((sub) => {
-                                    const subHref = isTempRent
-                                        ? `/temporary-rent${cityQuery ? `?${cityQuery.replace(/^&/, "")}` : ""}`
-                                        : `/ads?categoryKey=${encodeURIComponent(category.key)}&subcategoryKey=${encodeURIComponent(sub.key)}${cityQuery}`;
-
-                                    return (
-                                        <Link
-                                            key={sub.id || sub.key}
-                                            href={subHref}
-                                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface hover:bg-brand text-secondary hover:text-white border border-soft-border text-[11px] font-medium shadow-2xs transition-all active:scale-95 group/sub"
-                                        >
-                                            {sub.icon && (
-                                                <CategoryIcon
-                                                    icon={sub.icon}
-                                                    displayName={sub.displayName}
-                                                    size={12}
-                                                    className="shrink-0"
-                                                />
-                                            )}
-                                            <span>{sub.displayName}</span>
-                                        </Link>
-                                    );
-                                })}
-                            </div>
-                        )}
-                    </div>
+                        <span className="text-xs sm:text-sm font-black text-brand group-hover:text-primary transition-colors truncate">
+                            {category.displayName}
+                        </span>
+                    </Link>
                 );
             })}
         </div>
