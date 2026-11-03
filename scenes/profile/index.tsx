@@ -1,5 +1,6 @@
 "use client";
 
+import MediaIconUpload from "@/components/admin/MediaIconUpload";
 import { RoleGuard } from "@/components/RoleGuard";
 import { AccountStatusBanner } from "@/components/ui/AccountStatusBanner";
 import { Button } from "@/components/ui/Button";
@@ -11,11 +12,10 @@ import { useHostProfile } from "@/hooks/useShowcase";
 import { useMeProfile, useUser } from "@/hooks/useUser";
 import { useUserStatus } from "@/hooks/useUserStatus";
 import { useWallet } from "@/hooks/useWallet";
+import { normalizeApiError } from "@/lib/api/error-handler";
 import { cn, formatCurrency, getMediaUrl, rialToToman, toEnglishDigits, toOnlyDigits, toPersianDigits } from "@/lib/utils";
 import { mediaService } from "@/services/media.service";
 import { userService } from "@/services/user.service";
-import MediaIconUpload from "@/components/admin/MediaIconUpload";
-import { normalizeApiError } from "@/lib/api/error-handler";
 import { RoleName, isRoleAdmin, tryRoleNameFrom } from "@/types/access";
 import { CitizenType, ForeignIdType, KYCStatus } from "@/types/api/enums";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -720,10 +720,8 @@ export default function ProfileScene() {
                     >
                         <div className="flex items-center gap-3">
                             <Zap className="w-5 h-5 text-primary" />
-                            <div className="text-right">
-                                <span className="text-brand font-bold text-sm block">پلن‌های اشتراک و سهمیه‌ها</span>
-                                <span className="text-[11px] text-secondary">سهمیه باقیمانده، نشان تایید، ارتقای پلن</span>
-                            </div>
+                            <span className="text-brand font-bold text-sm block">پلن‌های اشتراک و سهمیه‌ها</span>
+
                         </div>
                         <ChevronLeft className="w-4 h-4 text-secondary" />
                     </button>
@@ -757,7 +755,7 @@ export default function ProfileScene() {
                         <div className="flex items-center gap-3">
                             <FileText className="w-5 h-5 text-primary" />
                             <span className="text-brand font-bold text-sm">
-                                درخواست‌های من (عضویت و میزبانی)
+                                عضویت آژانس و اقامتگاه‌ها (درخواست‌ها)
                             </span>
                         </div>
                         <ChevronLeft className="w-4 h-4 text-secondary" />
