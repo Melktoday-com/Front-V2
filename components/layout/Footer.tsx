@@ -98,8 +98,8 @@ export function Footer() {
             </div>
 
             {/* اینماد - نسخه دسکتاپ (زیر ثبت آگهی و جستجو در املاک) */}
-            <div className="hidden md:flex items-center pt-1">
-              <Enamad />
+            <div className="hidden md:block pt-1 max-w-sm">
+              <Enamad className="w-full" />
             </div>
           </div>
 
@@ -302,8 +302,8 @@ export function Footer() {
               </div>
 
               {/* اینماد - نسخه موبایل (زیر نشانی) */}
-              <div className="flex md:hidden justify-start pt-1">
-                <Enamad />
+              <div className="md:hidden">
+                <Enamad className="w-full" />
               </div>
             </div>
           </div>
