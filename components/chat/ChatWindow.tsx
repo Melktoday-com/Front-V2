@@ -1,5 +1,6 @@
 "use client";
 
+import { RoleName } from "@/types/access";
 import { useAuth } from "@/hooks/useAuth";
 import {
     useConversation,
@@ -361,13 +362,15 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
         }
     };
 
+    const isServiceRole =
+        activeRole === RoleName.Agent ||
+        activeRole === RoleName.Landlord ||
+        activeRole === RoleName.Admin ||
+        activeRole === RoleName.SuperAdmin;
+
     const canRequestReview =
-        activeRole === "agent" ||
-        activeRole === "landlord" ||
-        activeRole === "admin" ||
-        activeRole === "super-admin" ||
-        conversation?.subjectType === "AGENCY" ||
-        conversation?.subjectType === "RENTAL";
+        isServiceRole &&
+        (conversation?.subjectType === "AGENCY" || conversation?.subjectType === "RENTAL");
 
     const handleRequestReview = () => {
         if (!conversationId || isSending) return;
@@ -754,7 +757,7 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
             {/* Unified Bottom Input Bar */}
             <form
                 onSubmit={handleSubmit}
-                className="p-3 lg:p-4 bg-surface border-t border-soft-border shrink-0 sticky bottom-0 z-20"
+                className="p-2.5 sm:p-3 lg:p-4 bg-surface border-t border-soft-border shrink-0 sticky bottom-0 z-20"
             >
                 <input
                     ref={fileInputRef}
@@ -764,114 +767,127 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
                     onChange={handleImageSelect}
                 />
 
-                {/* Unified Card Container */}
-                <div className="relative flex flex-col bg-soft-bg/30 rounded-2xl border border-soft-border focus-within:border-brand/40 focus-within:bg-surface focus-within:ring-2 focus-within:ring-brand/5 transition-all shadow-xs overflow-hidden">
-                    {/* Banner: Edit or Reply Mode */}
-                    {(editingMessage || replyingTo) && (
-                        <div className="flex items-center justify-between px-3.5 py-2 bg-soft-bg/70 border-b border-soft-border text-xs animate-in slide-in-from-bottom-2 duration-150">
-                            <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                                <div className="w-1 h-7 bg-brand rounded-full shrink-0" />
-                                {editingMessage ? (
-                                    <Edit2 className="w-4 h-4 text-brand shrink-0" />
-                                ) : (
-                                    <Reply className="w-4 h-4 text-brand shrink-0 rotate-180" />
-                                )}
-                                <div className="min-w-0 flex-1 text-right">
-                                    <div className="text-xs font-bold text-brand">
-                                        {editingMessage ? (
-                                            "ویرایش پیام"
-                                        ) : (
-                                            <span>
-                                                پاسخ به{" "}
-                                                {replyingTo?.senderId === me?.userId
-                                                    ? "خودتان"
-                                                    : otherParticipant?.name || "کاربر"}
-                                            </span>
-                                        )}
-                                    </div>
-                                    <div className="text-[11px] text-secondary truncate opacity-80 mt-0.5">
-                                        {editingMessage
-                                            ? editingMessage.content
-                                            : replyingTo?.content ||
-                                              (replyingTo?.type === "IMAGE"
-                                                  ? "📷 تصویر"
-                                                  : replyingTo?.type === "LISTING"
-                                                  ? "🏠 آگهی ملک"
-                                                  : replyingTo?.type === "POLL"
-                                                  ? "📊 نظرسنجی"
-                                                  : "پیام")}
+                <div className="max-w-4xl mx-auto w-full">
+                    {/* Unified Card Container (Zero Outline / Ring on Focus) */}
+                    <div className="relative flex flex-col bg-soft-bg/35 hover:bg-soft-bg/50 focus-within:bg-surface rounded-2xl border border-soft-border focus-within:border-brand/35 transition-all duration-200 shadow-xs overflow-hidden outline-none ring-0 focus:outline-none focus:ring-0 focus-within:outline-none focus-within:ring-0">
+                        {/* Banner: Edit or Reply Mode */}
+                        {(editingMessage || replyingTo) && (
+                            <div className="flex items-center justify-between px-3.5 py-2 bg-soft-bg/80 border-b border-soft-border/80 text-xs animate-in slide-in-from-bottom-2 duration-150">
+                                <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                                    <div className="w-1 h-7.5 bg-brand rounded-full shrink-0" />
+                                    {editingMessage ? (
+                                        <Edit2 className="w-4 h-4 text-brand shrink-0" />
+                                    ) : (
+                                        <Reply className="w-4 h-4 text-brand shrink-0 rotate-180" />
+                                    )}
+                                    <div className="min-w-0 flex-1 text-right">
+                                        <div className="text-xs font-bold text-brand flex items-center gap-1.5">
+                                            {editingMessage ? (
+                                                <span>ویرایش پیام</span>
+                                            ) : (
+                                                <span>
+                                                    پاسخ به{" "}
+                                                    <span className="text-brand font-black">
+                                                        {replyingTo?.senderId === me?.userId
+                                                            ? "خودتان"
+                                                            : otherParticipant?.name || "کاربر"}
+                                                    </span>
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className="text-[11px] text-secondary truncate opacity-85 mt-0.5 max-w-md">
+                                            {editingMessage
+                                                ? editingMessage.content
+                                                : replyingTo?.content ||
+                                                  (replyingTo?.type === "IMAGE"
+                                                      ? "📷 تصویر"
+                                                      : replyingTo?.type === "LISTING"
+                                                      ? "🏠 آگهی ملک"
+                                                      : replyingTo?.type === "POLL"
+                                                      ? "📊 نظرسنجی"
+                                                      : "پیام")}
+                                        </div>
                                     </div>
                                 </div>
+                                <button
+                                    type="button"
+                                    onClick={editingMessage ? handleCancelEdit : handleCancelReply}
+                                    className="p-1.5 text-secondary hover:text-brand hover:bg-surface rounded-xl transition-colors shrink-0 cursor-pointer"
+                                    title="انصراف (Esc)"
+                                >
+                                    <X className="w-4 h-4" />
+                                </button>
                             </div>
-                            <button
-                                type="button"
-                                onClick={editingMessage ? handleCancelEdit : handleCancelReply}
-                                className="p-1 text-secondary hover:text-brand hover:bg-surface rounded-lg transition-colors shrink-0 cursor-pointer"
-                                title="انصراف"
-                            >
-                                <X className="w-4 h-4" />
-                            </button>
-                        </div>
-                    )}
+                        )}
 
-                    {/* Input Row */}
-                    <div className="flex items-end p-1.5 gap-1">
-                        {/* Image upload button (hidden in edit mode, shown in reply/normal) */}
-                        {!editingMessage && (
+                        {/* Input Row */}
+                        <div className="flex items-end p-1.5 gap-1.5">
+                            {/* Media Attachment & Actions: Hidden when input has text or editing */}
+                            {!message.trim() && !editingMessage && (
+                                <div className="flex items-center gap-0.5 animate-in fade-in duration-200 shrink-0">
+                                    {/* Image upload button */}
+                                    <button
+                                        type="button"
+                                        onClick={() => fileInputRef.current?.click()}
+                                        disabled={isUploadingImage || isSending}
+                                        className="p-2 text-secondary hover:text-brand hover:bg-surface rounded-xl transition-all disabled:opacity-40 shrink-0 cursor-pointer"
+                                        title="ارسال تصویر"
+                                    >
+                                        {isUploadingImage ? (
+                                            <Loader2 className="w-5 h-5 animate-spin text-brand" />
+                                        ) : (
+                                            <ImageIcon className="w-5 h-5" />
+                                        )}
+                                    </button>
+
+                                    {/* Review request button: strictly for service roles (agent/landlord/admin) */}
+                                    {canRequestReview && (
+                                        <button
+                                            type="button"
+                                            onClick={handleRequestReview}
+                                            disabled={isSending}
+                                            className="p-2 text-secondary hover:text-warning hover:bg-warning-subtle rounded-xl transition-all cursor-pointer shrink-0"
+                                            title="درخواست ثبت نظر و امتیاز عملکرد"
+                                        >
+                                            <Star className="w-5 h-5 text-amber-500" />
+                                        </button>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Auto-resizing textarea with zero focus outline */}
+                            <textarea
+                                ref={textareaRef}
+                                rows={1}
+                                value={message}
+                                onChange={(e) => setMessage(e.target.value)}
+                                onKeyDown={handleKeyDown}
+                                placeholder={editingMessage ? "متن ویرایش شده را وارد کنید..." : "پیام خود را بنویسید..."}
+                                className="flex-1 bg-transparent py-2.5 px-3 text-xs lg:text-sm font-medium outline-none border-none ring-0 shadow-none focus:outline-none focus:border-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 text-brand placeholder:text-secondary/50 resize-none max-h-36 custom-scrollbar leading-relaxed"
+                                style={{ outline: "none", boxShadow: "none" }}
+                            />
+
+                            {/* Action / Send button with world-class state transitions */}
                             <button
-                                type="button"
-                                onClick={() => fileInputRef.current?.click()}
-                                disabled={isUploadingImage || isSending}
-                                className="p-2 text-secondary hover:text-brand hover:bg-surface rounded-xl transition-all disabled:opacity-40 shrink-0 cursor-pointer"
-                                title="ارسال تصویر"
+                                type="submit"
+                                disabled={(!message.trim() && !editingMessage) || isSending || editMutation.isPending}
+                                className={cn(
+                                    "p-2.5 rounded-xl transition-all duration-200 shadow-xs shrink-0 flex items-center justify-center",
+                                    message.trim() || editingMessage
+                                        ? "bg-brand text-white hover:bg-brand/90 hover:scale-105 active:scale-95 opacity-100 cursor-pointer"
+                                        : "bg-soft-bg text-secondary/30 opacity-40 cursor-not-allowed scale-95"
+                                )}
+                                title={editingMessage ? "تأیید ویرایش (Enter)" : "ارسال پیام (Enter)"}
                             >
-                                {isUploadingImage ? (
-                                    <Loader2 className="w-5 h-5 animate-spin text-brand" />
+                                {isSending || editMutation.isPending ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : editingMessage ? (
+                                    <Check className="w-4 h-4 stroke-[2.5]" />
                                 ) : (
-                                    <ImageIcon className="w-5 h-5" />
+                                    <Send className="w-4 h-4 rotate-180" />
                                 )}
                             </button>
-                        )}
-
-                        {/* Review request button (hidden in edit mode) */}
-                        {!editingMessage && canRequestReview && (
-                            <button
-                                type="button"
-                                onClick={handleRequestReview}
-                                disabled={isSending}
-                                className="p-2 text-secondary hover:text-warning hover:bg-warning-subtle rounded-xl transition-all cursor-pointer shrink-0"
-                                title="درخواست ثبت نظر و امتیاز عملکرد"
-                            >
-                                <Star className="w-5 h-5 text-amber-500" />
-                            </button>
-                        )}
-
-                        {/* Auto-resizing textarea */}
-                        <textarea
-                            ref={textareaRef}
-                            rows={1}
-                            value={message}
-                            onChange={(e) => setMessage(e.target.value)}
-                            onKeyDown={handleKeyDown}
-                            placeholder={editingMessage ? "متن ویرایش شده را وارد کنید..." : "پیام خود را بنویسید..."}
-                            className="flex-1 bg-transparent py-2 px-3 text-xs lg:text-sm font-medium outline-none text-brand placeholder:text-secondary/50 resize-none max-h-32 custom-scrollbar"
-                        />
-
-                        {/* Action / Send button */}
-                        <button
-                            type="submit"
-                            disabled={(!message.trim() && !editingMessage) || isSending || editMutation.isPending}
-                            className="p-2.5 bg-brand text-white rounded-xl hover:bg-brand/90 hover:scale-105 active:scale-95 transition-all disabled:opacity-20 disabled:hover:scale-100 shadow-xs shrink-0 cursor-pointer"
-                            title={editingMessage ? "تأیید ویرایش" : "ارسال پیام"}
-                        >
-                            {isSending || editMutation.isPending ? (
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : editingMessage ? (
-                                <Check className="w-4 h-4" />
-                            ) : (
-                                <Send className="w-4 h-4 rotate-180" />
-                            )}
-                        </button>
+                        </div>
                     </div>
                 </div>
             </form>
