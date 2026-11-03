@@ -35,7 +35,6 @@ import {
     Hotel,
     LayoutList,
     Loader2,
-    Lock,
     LogOut,
     MessageSquare,
     Pencil,
@@ -222,7 +221,7 @@ export default function ProfileScene() {
     const { data: profile } = useMeProfile();
     const { data: myAgency } = useMyAgency();
     const { data: hostProfile } = useHostProfile();
-    const { updateProfile, updateProfileAsync, isUpdating } = useUser(user?.userId);
+    const { updateProfileAsync, isUpdating } = useUser(user?.userId);
 
     const isKycVerified = useMemo(() => {
         return (
@@ -266,12 +265,6 @@ export default function ProfileScene() {
             // error handled in mutation hook
         }
     };
-
-    useEffect(() => {
-        if (isKycVerified && isEditNameModalOpen) {
-            setIsEditNameModalOpen(false);
-        }
-    }, [isKycVerified, isEditNameModalOpen]);
 
     const displayName = useMemo(() => {
         if (activeRole === RoleName.Agent && (myAgency?.agencyName || myAgency?.name)) {
@@ -320,6 +313,7 @@ export default function ProfileScene() {
                 if (kycLastName.trim()) setLastName(kycLastName.trim());
                 setIsKycModalOpen(false);
                 setIsDatePickerView(false);
+                setIsEditNameModalOpen(false);
                 queryClient.invalidateQueries({ queryKey: ["user"] });
                 queryClient.invalidateQueries({ queryKey: ["me"] });
             } else if (res.status === KYCStatus.IN_PROGRESS) {
