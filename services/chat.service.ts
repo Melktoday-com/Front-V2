@@ -48,7 +48,19 @@ export interface ListingMetadata {
     location?: string;
 }
 
-export type ChatMessageMetadata = PollMetadata | ListingMetadata | Record<string, unknown>;
+export interface ReplyMetadata {
+    id: string;
+    senderId?: string;
+    senderName?: string;
+    content?: string | null;
+    type?: MessageType;
+    mediaCount?: number;
+}
+
+export type ChatMessageMetadata = {
+    replyTo?: ReplyMetadata;
+    [key: string]: any;
+};
 
 export interface ChatMessage {
     id: string;

@@ -55,6 +55,42 @@ export const useSendMessage = () => {
     });
 };
 
+export const useEditMessage = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({
+            conversationId,
+            messageId,
+            content,
+        }: {
+            conversationId: string;
+            messageId: string;
+            content: string;
+        }) => chatService.editMessage(conversationId, messageId, content),
+        onSuccess: (_, variables) => {
+            queryClient.invalidateQueries({ queryKey: ["messages", variables.conversationId] });
+            queryClient.invalidateQueries({ queryKey: ["conversations"] });
+        },
+    });
+};
+
+export const useDeleteMessage = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({
+            conversationId,
+            messageId,
+        }: {
+            conversationId: string;
+            messageId: string;
+        }) => chatService.deleteMessage(conversationId, messageId),
+        onSuccess: (_, variables) => {
+            queryClient.invalidateQueries({ queryKey: ["messages", variables.conversationId] });
+            queryClient.invalidateQueries({ queryKey: ["conversations"] });
+        },
+    });
+};
+
 export const useCreateConversation = () => {
     const queryClient = useQueryClient();
     const router = useRouter();

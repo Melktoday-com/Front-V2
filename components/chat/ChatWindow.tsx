@@ -1,20 +1,32 @@
 "use client";
 
 import { useAuth } from "@/hooks/useAuth";
-import { useConversation, useMessages, useSendMessage } from "@/hooks/useChat";
+import {
+    useConversation,
+    useDeleteMessage,
+    useEditMessage,
+    useMessages,
+    useSendMessage,
+} from "@/hooks/useChat";
 import { useMeProfile } from "@/hooks/useUser";
 import { cn, getMediaUrl } from "@/lib/utils";
-import { ChatMessage, chatService, ListingMetadata } from "@/services/chat.service";
-import { mediaService } from "@/services/media.service";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
+    ChatMessage,
+    ListingMetadata,
+    ReplyMetadata,
+} from "@/services/chat.service";
+import { mediaService } from "@/services/media.service";
+import {
+    ArrowRight,
     Building2,
     Check,
     CheckCheck,
+    Copy,
     Edit2,
     Image as ImageIcon,
     Loader2,
     MessageCircle,
+    Reply,
     Send,
     Star,
     Trash2,
@@ -41,6 +53,13 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
     const [message, setMessage] = useState("");
     const [isUploadingImage, setIsUploadingImage] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const scrollRef = useRef<HTMLDivElement>(null);
+
+    const [editingMessage, setEditingMessage] = useState<{ id: string; content: string } | null>(null);
+    const [replyingTo, setReplyingTo] = useState<ChatMessage | null>(null);
+    const [activeMenuMessageId, setActiveMenuMessageId] = useState<string | null>(null);
+    const [highlightedMessageId, setHighlightedMessageId] = useState<string | null>(null);
 
     const {
         data,
@@ -54,61 +73,212 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
     const { data: me } = useMeProfile();
     const { activeRole } = useAuth();
     const { mutate: send, isPending: isSending } = useSendMessage();
-    const scrollRef = useRef<HTMLDivElement>(null);
-    const queryClient = useQueryClient();
-
-    const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
-    const [editingContent, setEditingContent] = useState<string>("");
-
-    const editMutation = useMutation({
-        mutationFn: ({ messageId, content }: { messageId: string; content: string }) => {
-            if (!conversationId) throw new Error("Conversation ID is required");
-            return chatService.editMessage(conversationId, messageId, content);
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["messages", conversationId] });
-            setEditingMessageId(null);
-            setEditingContent("");
-            toast.success("پیام با موفقیت ویرایش شد");
-        },
-        onError: (err: any) => {
-            toast.error(err?.response?.data?.message || "خطا در ویرایش پیام");
-        },
-    });
-
-    const deleteMutation = useMutation({
-        mutationFn: (messageId: string) => {
-            if (!conversationId) throw new Error("Conversation ID is required");
-            return chatService.deleteMessage(conversationId, messageId);
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["messages", conversationId] });
-            toast.success("پیام حذف شد");
-        },
-        onError: (err: any) => {
-            toast.error(err?.response?.data?.message || "خطا در حذف پیام");
-        },
-    });
+    const editMutation = useEditMessage();
+    const deleteMutation = useDeleteMessage();
 
     // Flatten pages of messages (reverse for chronological bottom-to-top rendering)
     const messages = data?.pages.flatMap((page) => page).reverse() || [];
 
+    // Scroll to bottom on initial load and when new messages arrive
     useEffect(() => {
         if (scrollRef.current && !isFetchingNextPage) {
             scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
         }
     }, [messages.length, isFetchingNextPage]);
 
-    const handleSend = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!message.trim() || !conversationId || isSending) return;
+    // Close open message actions menu when clicking anywhere outside
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            const target = e.target as HTMLElement;
+            if (!target.closest("[data-message-menu]") && !target.closest("[data-message-bubble]")) {
+                setActiveMenuMessageId(null);
+            }
+        };
+        document.addEventListener("click", handleClickOutside);
+        return () => document.removeEventListener("click", handleClickOutside);
+    }, []);
+
+    // Auto-resize bottom textarea as user types
+    useEffect(() => {
+        if (textareaRef.current) {
+            textareaRef.current.style.height = "auto";
+            textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 120)}px`;
+        }
+    }, [message]);
+
+    const scrollToMessage = (targetId: string) => {
+        const el = document.getElementById(`msg-${targetId}`);
+        if (el) {
+            el.scrollIntoView({ behavior: "smooth", block: "center" });
+            setHighlightedMessageId(targetId);
+            setTimeout(() => {
+                setHighlightedMessageId((curr) => (curr === targetId ? null : curr));
+            }, 1500);
+        } else {
+            toast.info("پیام ارجاع داده شده در لیست حاضر یافت نشد");
+        }
+    };
+
+    const handleStartEdit = (msg: ChatMessage) => {
+        setActiveMenuMessageId(null);
+        setReplyingTo(null);
+        setEditingMessage({
+            id: msg.id,
+            content: msg.content || "",
+        });
+        setMessage(msg.content || "");
+        setTimeout(() => {
+            if (textareaRef.current) {
+                textareaRef.current.focus();
+                textareaRef.current.selectionStart = textareaRef.current.value.length;
+                textareaRef.current.selectionEnd = textareaRef.current.value.length;
+            }
+        }, 50);
+    };
+
+    const handleCancelEdit = () => {
+        setEditingMessage(null);
+        setMessage("");
+    };
+
+    const handleStartReply = (msg: ChatMessage) => {
+        setActiveMenuMessageId(null);
+        setEditingMessage(null);
+        setReplyingTo(msg);
+        setTimeout(() => {
+            textareaRef.current?.focus();
+        }, 50);
+    };
+
+    const handleCancelReply = () => {
+        setReplyingTo(null);
+    };
+
+    const handleCopy = (content?: string | null) => {
+        setActiveMenuMessageId(null);
+        if (!content) return;
+        navigator.clipboard.writeText(content);
+        toast.success("متن پیام در کلیپ‌بورد کپی شد");
+    };
+
+    const handleDelete = (messageId: string) => {
+        setActiveMenuMessageId(null);
+        if (!conversationId) return;
+        if (confirm("آیا از حذف این پیام اطمینان دارید؟")) {
+            deleteMutation.mutate(
+                { conversationId, messageId },
+                {
+                    onSuccess: () => {
+                        toast.success("پیام حذف شد");
+                        if (editingMessage?.id === messageId) {
+                            handleCancelEdit();
+                        }
+                        if (replyingTo?.id === messageId) {
+                            handleCancelReply();
+                        }
+                    },
+                    onError: (err: any) => {
+                        toast.error(err?.response?.data?.message || "خطا در حذف پیام");
+                    },
+                }
+            );
+        }
+    };
+
+    const handleSubmit = (e?: React.FormEvent) => {
+        e?.preventDefault();
+        if (!conversationId) return;
+
+        const trimmed = message.trim();
+
+        // 1. If currently in EDIT mode
+        if (editingMessage) {
+            if (!trimmed) {
+                toast.error("متن پیام نمی‌تواند خالی باشد");
+                return;
+            }
+            if (trimmed === editingMessage.content.trim()) {
+                handleCancelEdit();
+                return;
+            }
+            editMutation.mutate(
+                {
+                    conversationId,
+                    messageId: editingMessage.id,
+                    content: trimmed,
+                },
+                {
+                    onSuccess: () => {
+                        handleCancelEdit();
+                        toast.success("پیام با موفقیت ویرایش شد");
+                    },
+                    onError: (err: any) => {
+                        toast.error(err?.response?.data?.message || "خطا در ویرایش پیام");
+                    },
+                }
+            );
+            return;
+        }
+
+        // 2. Normal send or Reply
+        if (!trimmed || isSending) return;
+
+        let metadataToSend: Record<string, any> | undefined = undefined;
+        if (replyingTo) {
+            const targetSenderName =
+                replyingTo.senderId === me?.userId
+                    ? "شما"
+                    : otherParticipant?.name || "کاربر";
+
+            let snippet = replyingTo.content || "";
+            if (!snippet) {
+                if (replyingTo.type === "IMAGE") snippet = "📷 تصویر";
+                else if (replyingTo.type === "LISTING") snippet = "🏠 آگهی ملک";
+                else if (replyingTo.type === "POLL") snippet = "📊 نظرسنجی";
+                else snippet = "پیام";
+            }
+
+            metadataToSend = {
+                replyTo: {
+                    id: replyingTo.id,
+                    senderId: replyingTo.senderId,
+                    senderName: targetSenderName,
+                    content: snippet,
+                    type: replyingTo.type,
+                },
+            };
+        }
 
         send(
-            { conversationId, content: message.trim(), type: "TEXT" },
             {
-                onSuccess: () => setMessage(""),
+                conversationId,
+                content: trimmed,
+                type: "TEXT",
+                metadata: metadataToSend,
+            },
+            {
+                onSuccess: () => {
+                    setMessage("");
+                    setReplyingTo(null);
+                },
+                onError: (err: any) => {
+                    toast.error(err?.response?.data?.message || "خطا در ارسال پیام");
+                },
             }
         );
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            handleSubmit();
+        } else if (e.key === "Escape") {
+            if (editingMessage) {
+                handleCancelEdit();
+            } else if (replyingTo) {
+                handleCancelReply();
+            }
+        }
     };
 
     const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -125,22 +295,52 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
             const media = await mediaService.upload(file, "PUBLIC", "IMAGE");
             const mediaId = media.id || media.mediaId;
 
+            let metadataToSend: Record<string, any> | undefined = undefined;
+            if (replyingTo) {
+                const targetSenderName =
+                    replyingTo.senderId === me?.userId
+                        ? "شما"
+                        : otherParticipant?.name || "کاربر";
+
+                let snippet = replyingTo.content || "";
+                if (!snippet) {
+                    if (replyingTo.type === "IMAGE") snippet = "📷 تصویر";
+                    else if (replyingTo.type === "LISTING") snippet = "🏠 آگهی ملک";
+                    else if (replyingTo.type === "POLL") snippet = "📊 نظرسنجی";
+                    else snippet = "پیام";
+                }
+
+                metadataToSend = {
+                    replyTo: {
+                        id: replyingTo.id,
+                        senderId: replyingTo.senderId,
+                        senderName: targetSenderName,
+                        content: snippet,
+                        type: replyingTo.type,
+                    },
+                };
+            }
+
             send(
                 {
                     conversationId,
                     mediaIds: [mediaId],
                     type: "IMAGE",
+                    content: message.trim() || undefined,
+                    metadata: metadataToSend,
                 },
                 {
                     onSuccess: () => {
                         toast.success("تصویر ارسال شد");
+                        setMessage("");
+                        setReplyingTo(null);
                     },
                     onError: () => {
                         toast.error("خطا در ارسال تصویر");
                     },
                 }
             );
-        } catch (err) {
+        } catch {
             toast.error("خطا در بارگذاری تصویر");
         } finally {
             setIsUploadingImage(false);
@@ -228,7 +428,17 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
         <div className="h-full flex flex-col bg-surface overflow-hidden" dir="rtl">
             {/* Header */}
             <div className="p-3 lg:px-6 lg:py-3.5 border-b border-soft-border bg-surface flex items-center justify-between shrink-0 sticky top-0 z-20">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2.5 sm:gap-3">
+                    {onBack && (
+                        <button
+                            type="button"
+                            onClick={onBack}
+                            className="md:hidden p-1.5 -mr-1 text-secondary hover:text-brand hover:bg-soft-bg rounded-xl transition-colors shrink-0 cursor-pointer"
+                            title="بازگشت به لیست گفتگوها"
+                        >
+                            <ArrowRight className="w-5 h-5" />
+                        </button>
+                    )}
                     <div className="w-10 h-10 bg-soft-bg rounded-2xl flex items-center justify-center text-brand overflow-hidden border border-soft-border shrink-0">
                         {otherParticipant?.avatar ? (
                             <img
@@ -285,7 +495,7 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
                         <button
                             onClick={() => fetchNextPage()}
                             disabled={isFetchingNextPage}
-                            className="text-xs text-brand font-bold bg-surface border border-soft-border px-4 py-1.5 rounded-full hover:bg-brand hover:text-white transition-all disabled:opacity-50 shadow-xs"
+                            className="text-xs text-brand font-bold bg-surface border border-soft-border px-4 py-1.5 rounded-full hover:bg-brand hover:text-white transition-all disabled:opacity-50 shadow-xs cursor-pointer"
                         >
                             {isFetchingNextPage ? (
                                 <span className="flex items-center gap-1.5">
@@ -301,156 +511,237 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
 
                 {messages.map((msg: ChatMessage, idx) => {
                     const isMine = msg.senderId === me?.userId;
-                    const canEditOrDelete =
+                    const isWithinRetract =
+                        Date.now() - new Date(msg.createdAt).getTime() <= MESSAGE_RETRACT_WINDOW_MS;
+                    const canEdit =
                         isMine &&
                         !msg.isDeleted &&
-                        Date.now() - new Date(msg.createdAt).getTime() <= MESSAGE_RETRACT_WINDOW_MS;
-                    const isEditingThis = editingMessageId === msg.id;
+                        msg.type !== "POLL" &&
+                        isWithinRetract;
+                    const canDelete =
+                        isMine &&
+                        !msg.isDeleted &&
+                        isWithinRetract;
+                    const canReply = !msg.isDeleted;
+                    const canCopy = Boolean(msg.content && !msg.isDeleted);
+                    const hasAnyAction = canReply || canEdit || canCopy || canDelete;
+
+                    const replyData = (msg.metadata as any)?.replyTo as ReplyMetadata | undefined;
 
                     return (
                         <div
+                            id={`msg-${msg.id}`}
                             key={msg.id || idx}
+                            data-message-bubble
+                            onClick={() => {
+                                if (hasAnyAction) {
+                                    setActiveMenuMessageId((curr) => (curr === msg.id ? null : msg.id));
+                                }
+                            }}
                             className={cn(
-                                "group relative flex flex-col max-w-[85%] sm:max-w-[70%]",
-                                isMine ? "mr-auto items-end" : "ml-auto items-start"
+                                "group relative flex flex-col max-w-[85%] sm:max-w-[70%] transition-all duration-300 rounded-2xl select-text cursor-pointer",
+                                isMine ? "mr-auto items-end" : "ml-auto items-start",
+                                highlightedMessageId === msg.id && "ring-2 ring-brand ring-offset-2 scale-[1.01] animate-pulse"
                             )}
                         >
-                            {/* Actions for editable/deletable messages */}
-                            {canEditOrDelete && !isEditingThis && (
-                                <div className="hidden group-hover:flex items-center gap-1 mb-1 bg-surface border border-soft-border rounded-xl px-1.5 py-0.5 shadow-xs transition-opacity z-10">
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            setEditingMessageId(msg.id);
-                                            setEditingContent(msg.content || "");
-                                        }}
-                                        title="ویرایش پیام"
-                                        className="p-1 hover:text-primary rounded-lg transition-colors text-secondary"
-                                    >
-                                        <Edit2 className="w-3 h-3" />
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            if (confirm("آیا از حذف این پیام اطمینان دارید؟")) {
-                                                deleteMutation.mutate(msg.id);
-                                            }
-                                        }}
-                                        title="حذف پیام"
-                                        className="p-1 hover:text-error rounded-lg transition-colors text-secondary"
-                                    >
-                                        <Trash2 className="w-3 h-3" />
-                                    </button>
+                            {/* Desktop Quick Action Bar (on hover) */}
+                            {hasAnyAction && (
+                                <div
+                                    className={cn(
+                                        "hidden md:group-hover:flex items-center gap-0.5 bg-surface border border-soft-border rounded-xl px-1 py-0.5 shadow-sm transition-all z-10",
+                                        "absolute -top-3.5",
+                                        isMine ? "left-2" : "right-2"
+                                    )}
+                                    onClick={(e) => e.stopPropagation()}
+                                >
+                                    {canReply && (
+                                        <button
+                                            type="button"
+                                            onClick={() => handleStartReply(msg)}
+                                            title="پاسخ"
+                                            className="p-1 hover:text-brand hover:bg-soft-bg rounded-lg transition-colors text-secondary cursor-pointer"
+                                        >
+                                            <Reply className="w-3.5 h-3.5 rotate-180" />
+                                        </button>
+                                    )}
+                                    {canEdit && (
+                                        <button
+                                            type="button"
+                                            onClick={() => handleStartEdit(msg)}
+                                            title="ویرایش"
+                                            className="p-1 hover:text-brand hover:bg-soft-bg rounded-lg transition-colors text-secondary cursor-pointer"
+                                        >
+                                            <Edit2 className="w-3.5 h-3.5" />
+                                        </button>
+                                    )}
+                                    {canCopy && (
+                                        <button
+                                            type="button"
+                                            onClick={() => handleCopy(msg.content)}
+                                            title="کپی متن"
+                                            className="p-1 hover:text-brand hover:bg-soft-bg rounded-lg transition-colors text-secondary cursor-pointer"
+                                        >
+                                            <Copy className="w-3.5 h-3.5" />
+                                        </button>
+                                    )}
+                                    {canDelete && (
+                                        <button
+                                            type="button"
+                                            onClick={() => handleDelete(msg.id)}
+                                            title="حذف پیام"
+                                            className="p-1 hover:text-error hover:bg-error/10 rounded-lg transition-colors text-secondary cursor-pointer"
+                                        >
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                        </button>
+                                    )}
                                 </div>
                             )}
 
-                            {/* Inline Editing Form */}
-                            {isEditingThis ? (
-                                <div className="p-2.5 rounded-2xl bg-surface border border-primary/30 shadow-sm space-y-2 w-64 sm:w-80">
-                                    <textarea
-                                        value={editingContent}
-                                        onChange={(e) => setEditingContent(e.target.value)}
-                                        className="w-full bg-surface-secondary border border-soft-border rounded-xl p-2 text-xs text-brand outline-none focus:ring-1 focus:ring-primary resize-none"
-                                        rows={3}
-                                    />
-                                    <div className="flex items-center justify-end gap-1.5">
+                            {/* Mobile / Clicked Context Menu Popover */}
+                            {activeMenuMessageId === msg.id && hasAnyAction && (
+                                <div
+                                    data-message-menu
+                                    className={cn(
+                                        "absolute z-30 flex items-center gap-0.5 p-1 bg-surface border border-soft-border rounded-2xl shadow-xl animate-in fade-in zoom-in-95 duration-150 backdrop-blur-md",
+                                        idx === 0 ? "top-full mt-1.5" : "bottom-full mb-1.5",
+                                        isMine ? "left-0" : "right-0"
+                                    )}
+                                    onClick={(e) => e.stopPropagation()}
+                                >
+                                    {canReply && (
                                         <button
                                             type="button"
-                                            onClick={() => {
-                                                setEditingMessageId(null);
-                                                setEditingContent("");
-                                            }}
-                                            className="px-2.5 py-1 text-xs text-secondary hover:text-brand rounded-lg"
+                                            onClick={() => handleStartReply(msg)}
+                                            className="flex items-center gap-1.5 px-2.5 py-1.5 hover:bg-soft-bg rounded-xl text-xs font-bold text-brand transition-colors cursor-pointer"
                                         >
-                                            انصراف
+                                            <Reply className="w-3.5 h-3.5 rotate-180" />
+                                            <span>پاسخ</span>
                                         </button>
+                                    )}
+                                    {canEdit && (
                                         <button
                                             type="button"
-                                            disabled={!editingContent.trim() || editMutation.isPending}
-                                            onClick={() =>
-                                                editMutation.mutate({
-                                                    messageId: msg.id,
-                                                    content: editingContent.trim(),
-                                                })
-                                            }
-                                            className="px-3 py-1 bg-brand text-white rounded-lg text-xs font-bold disabled:opacity-50 flex items-center gap-1"
+                                            onClick={() => handleStartEdit(msg)}
+                                            className="flex items-center gap-1.5 px-2.5 py-1.5 hover:bg-soft-bg rounded-xl text-xs font-bold text-brand transition-colors cursor-pointer"
                                         >
-                                            {editMutation.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : "ذخیره"}
+                                            <Edit2 className="w-3.5 h-3.5" />
+                                            <span>ویرایش</span>
                                         </button>
-                                    </div>
+                                    )}
+                                    {canCopy && (
+                                        <button
+                                            type="button"
+                                            onClick={() => handleCopy(msg.content)}
+                                            className="flex items-center gap-1.5 px-2.5 py-1.5 hover:bg-soft-bg rounded-xl text-xs font-bold text-secondary hover:text-brand transition-colors cursor-pointer"
+                                        >
+                                            <Copy className="w-3.5 h-3.5" />
+                                            <span>کپی</span>
+                                        </button>
+                                    )}
+                                    {canDelete && (
+                                        <button
+                                            type="button"
+                                            onClick={() => handleDelete(msg.id)}
+                                            className="flex items-center gap-1.5 px-2.5 py-1.5 hover:bg-error/10 rounded-xl text-xs font-bold text-error transition-colors cursor-pointer"
+                                        >
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                            <span>حذف</span>
+                                        </button>
+                                    )}
                                 </div>
-                            ) : msg.isDeleted ? (
+                            )}
+
+                            {/* Bubble Contents */}
+                            {msg.isDeleted ? (
                                 <div className="px-3.5 py-2 rounded-2xl text-[12px] italic text-secondary/70 bg-surface border border-dashed border-soft-border shadow-xs flex items-center gap-1.5">
                                     <Trash2 className="w-3.5 h-3.5 opacity-60" />
                                     <span>این پیام حذف شده است</span>
                                 </div>
                             ) : msg.type === "LISTING" ? (
-                                <ListingMessageCard
-                                    metadata={msg.metadata as ListingMetadata}
-                                    mediaIds={msg.mediaIds}
-                                />
+                                <div onClick={(e) => e.stopPropagation()}>
+                                    <ListingMessageCard
+                                        metadata={msg.metadata as ListingMetadata}
+                                        mediaIds={msg.mediaIds}
+                                    />
+                                </div>
                             ) : msg.type === "POLL" || (msg.metadata as any)?.isReviewRequest ? (
-                                /* Message Type: REVIEW REQUEST */
-                                <ReviewRequestCard
-                                    messageId={msg.id}
-                                    metadata={msg.metadata as any}
-                                    isMine={isMine}
-                                    conversationSubjectType={conversation?.subjectType}
-                                    conversationSubjectId={conversation?.subjectId}
-                                />
-                            ) : msg.type === "IMAGE" || (msg.mediaIds && msg.mediaIds.length > 0 && !msg.content) ? (
-                                /* Message Type: IMAGE */
-                                <div className="space-y-1.5">
-                                    <div
-                                        className={cn(
-                                            "p-1.5 rounded-2xl overflow-hidden border shadow-xs bg-surface",
-                                            isMine ? "border-brand/20 rounded-br-none" : "border-soft-border rounded-bl-none"
-                                        )}
-                                    >
-                                        {msg.mediaIds?.map((id, mIdx) => (
-                                            <a
-                                                key={mIdx}
-                                                href={getMediaUrl(id)}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="block max-w-xs max-h-72 rounded-xl overflow-hidden group relative"
-                                            >
-                                                <img
-                                                    src={getMediaUrl(id)}
-                                                    alt="Chat Attachment"
-                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                                />
-                                            </a>
-                                        ))}
-                                    </div>
-                                    {msg.content && (
-                                        <div
-                                            className={cn(
-                                                "px-3.5 py-2 rounded-2xl text-[13px] leading-relaxed",
-                                                isMine
-                                                    ? "bg-brand text-white rounded-br-none"
-                                                    : "bg-surface text-brand rounded-bl-none border border-soft-border shadow-xs"
-                                            )}
-                                        >
-                                            {msg.content}
-                                        </div>
-                                    )}
+                                <div onClick={(e) => e.stopPropagation()}>
+                                    <ReviewRequestCard
+                                        messageId={msg.id}
+                                        metadata={msg.metadata as any}
+                                        isMine={isMine}
+                                        conversationSubjectType={conversation?.subjectType}
+                                        conversationSubjectId={conversation?.subjectId}
+                                    />
                                 </div>
                             ) : (
-                                /* Message Type: TEXT or standard */
                                 <div
                                     className={cn(
-                                        "px-3.5 py-2 rounded-2xl text-[13px] leading-relaxed break-words shadow-xs",
+                                        "p-2.5 sm:p-3 rounded-2xl text-[13px] leading-relaxed shadow-xs transition-all",
                                         isMine
                                             ? "bg-brand text-white rounded-br-none"
                                             : "bg-surface text-brand rounded-bl-none border border-soft-border/90"
                                     )}
                                 >
-                                    {msg.content}
+                                    {/* Quoted / Replied message preview inside bubble */}
+                                    {replyData && (
+                                        <div
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                scrollToMessage(replyData.id);
+                                            }}
+                                            className={cn(
+                                                "mb-2 p-2 rounded-xl text-xs border-r-3 flex items-start gap-2 cursor-pointer transition-all",
+                                                isMine
+                                                    ? "bg-black/15 hover:bg-black/25 border-white/80 text-white"
+                                                    : "bg-brand/5 hover:bg-brand/10 border-brand text-brand"
+                                            )}
+                                        >
+                                            <Reply className={cn("w-3.5 h-3.5 shrink-0 mt-0.5 rotate-180", isMine ? "text-white/80" : "text-brand")} />
+                                            <div className="min-w-0 flex-1 text-right">
+                                                <div className={cn("font-black text-[11px] truncate", isMine ? "text-white" : "text-brand")}>
+                                                    {replyData.senderName || "پیام"}
+                                                </div>
+                                                <div className={cn("text-[10px] truncate opacity-90 mt-0.5", isMine ? "text-white/90" : "text-secondary")}>
+                                                    {replyData.content || "مشاهده پیام"}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Image Attachment (if IMAGE type) */}
+                                    {msg.mediaIds && msg.mediaIds.length > 0 && (
+                                        <div className="mb-2 space-y-1 rounded-xl overflow-hidden">
+                                            {msg.mediaIds.map((id, mIdx) => (
+                                                <a
+                                                    key={mIdx}
+                                                    href={getMediaUrl(id)}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                    className="block max-w-xs max-h-72 rounded-xl overflow-hidden group relative"
+                                                >
+                                                    <img
+                                                        src={getMediaUrl(id)}
+                                                        alt="Chat Attachment"
+                                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                                    />
+                                                </a>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {/* Message Text */}
+                                    {msg.content && (
+                                        <div className="break-words whitespace-pre-wrap">
+                                            {msg.content}
+                                        </div>
+                                    )}
                                 </div>
                             )}
 
-                            <span className="text-[9px] text-secondary mt-1 px-1 opacity-70 flex items-center gap-1 font-medium">
+                            {/* Timestamp & Status Indicator */}
+                            <span className="text-[9px] text-secondary mt-1 px-1 opacity-70 flex items-center gap-1 font-medium select-none">
                                 <span>{formatTime(msg.createdAt)}</span>
                                 {msg.isEdited && <span className="text-[9px] text-secondary/80">(ویرایش شده)</span>}
                                 {isMine && <CheckCheck className="w-3 h-3 text-brand" />}
@@ -460,9 +751,9 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
                 })}
             </div>
 
-            {/* Input Bar */}
+            {/* Unified Bottom Input Bar */}
             <form
-                onSubmit={handleSend}
+                onSubmit={handleSubmit}
                 className="p-3 lg:p-4 bg-surface border-t border-soft-border shrink-0 sticky bottom-0 z-20"
             >
                 <input
@@ -473,56 +764,115 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
                     onChange={handleImageSelect}
                 />
 
-                <div className="relative flex items-center bg-soft-bg/30 rounded-2xl border border-soft-border focus-within:border-brand/30 focus-within:bg-surface focus-within:ring-2 focus-within:ring-brand/5 transition-all p-1.5">
-                    {/* Attachment / Image button */}
-                    <button
-                        type="button"
-                        onClick={() => fileInputRef.current?.click()}
-                        disabled={isUploadingImage || isSending}
-                        className="p-2 text-secondary hover:text-brand hover:bg-surface rounded-xl transition-all disabled:opacity-40"
-                        title="ارسال تصویر"
-                    >
-                        {isUploadingImage ? (
-                            <Loader2 className="w-5 h-5 animate-spin text-brand" />
-                        ) : (
-                            <ImageIcon className="w-5 h-5" />
-                        )}
-                    </button>
-
-                    {/* Review request button */}
-                    {canRequestReview && (
-                        <button
-                            type="button"
-                            onClick={handleRequestReview}
-                            disabled={isSending}
-                            className="p-2 text-secondary hover:text-warning hover:bg-warning-subtle rounded-xl transition-all cursor-pointer"
-                            title="درخواست ثبت نظر و امتیاز عملکرد"
-                        >
-                            <Star className="w-5 h-5 text-amber-500" />
-                        </button>
+                {/* Unified Card Container */}
+                <div className="relative flex flex-col bg-soft-bg/30 rounded-2xl border border-soft-border focus-within:border-brand/40 focus-within:bg-surface focus-within:ring-2 focus-within:ring-brand/5 transition-all shadow-xs overflow-hidden">
+                    {/* Banner: Edit or Reply Mode */}
+                    {(editingMessage || replyingTo) && (
+                        <div className="flex items-center justify-between px-3.5 py-2 bg-soft-bg/70 border-b border-soft-border text-xs animate-in slide-in-from-bottom-2 duration-150">
+                            <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                                <div className="w-1 h-7 bg-brand rounded-full shrink-0" />
+                                {editingMessage ? (
+                                    <Edit2 className="w-4 h-4 text-brand shrink-0" />
+                                ) : (
+                                    <Reply className="w-4 h-4 text-brand shrink-0 rotate-180" />
+                                )}
+                                <div className="min-w-0 flex-1 text-right">
+                                    <div className="text-xs font-bold text-brand">
+                                        {editingMessage ? (
+                                            "ویرایش پیام"
+                                        ) : (
+                                            <span>
+                                                پاسخ به{" "}
+                                                {replyingTo?.senderId === me?.userId
+                                                    ? "خودتان"
+                                                    : otherParticipant?.name || "کاربر"}
+                                            </span>
+                                        )}
+                                    </div>
+                                    <div className="text-[11px] text-secondary truncate opacity-80 mt-0.5">
+                                        {editingMessage
+                                            ? editingMessage.content
+                                            : replyingTo?.content ||
+                                              (replyingTo?.type === "IMAGE"
+                                                  ? "📷 تصویر"
+                                                  : replyingTo?.type === "LISTING"
+                                                  ? "🏠 آگهی ملک"
+                                                  : replyingTo?.type === "POLL"
+                                                  ? "📊 نظرسنجی"
+                                                  : "پیام")}
+                                    </div>
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={editingMessage ? handleCancelEdit : handleCancelReply}
+                                className="p-1 text-secondary hover:text-brand hover:bg-surface rounded-lg transition-colors shrink-0 cursor-pointer"
+                                title="انصراف"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
                     )}
 
-                    {/* Text input */}
-                    <input
-                        type="text"
-                        value={message}
-                        onChange={(e) => setMessage(e.target.value)}
-                        placeholder="پیام خود را بنویسید..."
-                        className="flex-1 bg-transparent py-2.5 px-3 text-xs lg:text-sm font-medium outline-none text-brand placeholder:text-secondary/50"
-                    />
-
-                    {/* Send button */}
-                    <button
-                        type="submit"
-                        disabled={!message.trim() || isSending}
-                        className="p-2.5 bg-brand text-white rounded-xl hover:bg-brand/90 hover:scale-105 active:scale-95 transition-all disabled:opacity-20 disabled:hover:scale-100 shadow-xs"
-                    >
-                        {isSending ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                            <Send className="w-4 h-4 rotate-180" />
+                    {/* Input Row */}
+                    <div className="flex items-end p-1.5 gap-1">
+                        {/* Image upload button (hidden in edit mode, shown in reply/normal) */}
+                        {!editingMessage && (
+                            <button
+                                type="button"
+                                onClick={() => fileInputRef.current?.click()}
+                                disabled={isUploadingImage || isSending}
+                                className="p-2 text-secondary hover:text-brand hover:bg-surface rounded-xl transition-all disabled:opacity-40 shrink-0 cursor-pointer"
+                                title="ارسال تصویر"
+                            >
+                                {isUploadingImage ? (
+                                    <Loader2 className="w-5 h-5 animate-spin text-brand" />
+                                ) : (
+                                    <ImageIcon className="w-5 h-5" />
+                                )}
+                            </button>
                         )}
-                    </button>
+
+                        {/* Review request button (hidden in edit mode) */}
+                        {!editingMessage && canRequestReview && (
+                            <button
+                                type="button"
+                                onClick={handleRequestReview}
+                                disabled={isSending}
+                                className="p-2 text-secondary hover:text-warning hover:bg-warning-subtle rounded-xl transition-all cursor-pointer shrink-0"
+                                title="درخواست ثبت نظر و امتیاز عملکرد"
+                            >
+                                <Star className="w-5 h-5 text-amber-500" />
+                            </button>
+                        )}
+
+                        {/* Auto-resizing textarea */}
+                        <textarea
+                            ref={textareaRef}
+                            rows={1}
+                            value={message}
+                            onChange={(e) => setMessage(e.target.value)}
+                            onKeyDown={handleKeyDown}
+                            placeholder={editingMessage ? "متن ویرایش شده را وارد کنید..." : "پیام خود را بنویسید..."}
+                            className="flex-1 bg-transparent py-2 px-3 text-xs lg:text-sm font-medium outline-none text-brand placeholder:text-secondary/50 resize-none max-h-32 custom-scrollbar"
+                        />
+
+                        {/* Action / Send button */}
+                        <button
+                            type="submit"
+                            disabled={(!message.trim() && !editingMessage) || isSending || editMutation.isPending}
+                            className="p-2.5 bg-brand text-white rounded-xl hover:bg-brand/90 hover:scale-105 active:scale-95 transition-all disabled:opacity-20 disabled:hover:scale-100 shadow-xs shrink-0 cursor-pointer"
+                            title={editingMessage ? "تأیید ویرایش" : "ارسال پیام"}
+                        >
+                            {isSending || editMutation.isPending ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : editingMessage ? (
+                                <Check className="w-4 h-4" />
+                            ) : (
+                                <Send className="w-4 h-4 rotate-180" />
+                            )}
+                        </button>
+                    </div>
                 </div>
             </form>
         </div>
