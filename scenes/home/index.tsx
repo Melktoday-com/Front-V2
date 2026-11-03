@@ -65,8 +65,8 @@ function getHomeTemporaryRentPrice(pricing: TemporaryRentPricingReadModel): { am
 }
 
 export const HomeScene = () => {
-    const { selectedCity, setSelectedCity } = useCity();
-    const { getSubcategoryName, getCategoryName } = useCategoryLookup();
+    const { selectedCity } = useCity();
+
 
     // Saved state for heart buttons
     const { isAdSaved, isTemporaryRentSaved } = useFavorites();
@@ -119,7 +119,7 @@ export const HomeScene = () => {
         return recentData?.items || [];
     }, [recentData]);
 
-    const { data: categoriesData, isLoading: isCategoriesLoading } = useCategories();
+
 
     const { data: agencyData, isLoading: isAgenciesLoading, error: agencyError, refetch: refetchAgencies } = useAgencies({
         cityId: selectedCity.id || undefined,
