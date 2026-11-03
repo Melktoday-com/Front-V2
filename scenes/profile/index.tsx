@@ -114,6 +114,9 @@ export default function ProfileScene() {
 
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
+    const [editFirstName, setEditFirstName] = useState("");
+    const [editLastName, setEditLastName] = useState("");
+    const [isEditNameModalOpen, setIsEditNameModalOpen] = useState(false);
     const [kycFirstName, setKycFirstName] = useState("");
     const [kycLastName, setKycLastName] = useState("");
     const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
@@ -219,7 +222,56 @@ export default function ProfileScene() {
     const { data: profile } = useMeProfile();
     const { data: myAgency } = useMyAgency();
     const { data: hostProfile } = useHostProfile();
-    const { updateProfile, isUpdating } = useUser(user?.userId);
+    const { updateProfile, updateProfileAsync, isUpdating } = useUser(user?.userId);
+
+    const isKycVerified = useMemo(() => {
+        return (
+            profile?.kycStatus === KYCStatus.VERIFIED ||
+            String(profile?.kycStatus).toLowerCase() === "verified"
+        );
+    }, [profile?.kycStatus]);
+
+    const handleOpenEditName = () => {
+        if (isKycVerified) {
+            toast.info("به دلیل تایید احراز هویت، امکان ویرایش نام وجود ندارد.");
+            return;
+        }
+        setEditFirstName(profile?.firstName || firstName || "");
+        setEditLastName(profile?.lastName || lastName || "");
+        setIsEditNameModalOpen(true);
+    };
+
+    const handleSaveName = async (e?: React.FormEvent) => {
+        if (e) e.preventDefault();
+        if (isKycVerified) {
+            toast.error("امکان ویرایش نام پس از تایید احراز هویت وجود ندارد.");
+            setIsEditNameModalOpen(false);
+            return;
+        }
+        const trimmedFirst = editFirstName.trim();
+        const trimmedLast = editLastName.trim();
+        if (!trimmedFirst && !trimmedLast) {
+            toast.error("لطفاً نام یا نام خانوادگی را وارد نمایید");
+            return;
+        }
+        try {
+            await updateProfileAsync({
+                firstName: trimmedFirst,
+                lastName: trimmedLast,
+            });
+            setFirstName(trimmedFirst);
+            setLastName(trimmedLast);
+            setIsEditNameModalOpen(false);
+        } catch {
+            // error handled in mutation hook
+        }
+    };
+
+    useEffect(() => {
+        if (isKycVerified && isEditNameModalOpen) {
+            setIsEditNameModalOpen(false);
+        }
+    }, [isKycVerified, isEditNameModalOpen]);
 
     const displayName = useMemo(() => {
         if (activeRole === RoleName.Agent && (myAgency?.agencyName || myAgency?.name)) {
@@ -384,13 +436,13 @@ export default function ProfileScene() {
 
     return (
         <div className="min-h-screen bg-surface pb-24 lg:pb-10">
-            <div className="p-6 lg:p-10 space-y-6 max-w-2xl mx-auto">
+            <div className="px-3.5 py-4 sm:px-6 sm:py-6 lg:p-10 space-y-4 sm:space-y-6 max-w-2xl mx-auto">
                 {/* Account Status Alert if Suspended or Banned */}
                 <AccountStatusBanner showNotificationLink={true} />
 
                 {/* Profile Info */}
-                <section className="bg-soft-bg rounded-[30px] p-6 space-y-6 border border-soft-border">
-                    <div className="flex items-center gap-4">
+                <section className="bg-soft-bg rounded-2xl sm:rounded-3xl p-3.5 sm:p-6 space-y-4 sm:space-y-5 border border-soft-border">
+                    <div className="flex items-center gap-3 sm:gap-4">
                         <input
                             ref={avatarInputRef}
                             type="file"
@@ -399,36 +451,58 @@ export default function ProfileScene() {
                             onChange={handleAvatarChange}
                         />
                         <div className="relative group shrink-0">
-                            <div className="w-18 h-18 rounded-full bg-surface border-2 border-soft-border flex items-center justify-center overflow-hidden shadow-xs">
+                            <div className="w-16 h-16 sm:w-18 sm:h-18 rounded-full bg-surface border-2 border-soft-border flex items-center justify-center overflow-hidden shadow-xs">
                                 {profile?.avatarUrl ? (
                                     <Image
                                         src={getMediaUrl(profile.avatarUrl)}
-                                        alt={firstName || "Profile"}
+                                        alt={displayName || "Profile"}
                                         className="w-full h-full object-cover"
-                                        width={18}
-                                        height={18}
+                                        width={72}
+                                        height={72}
                                     />
                                 ) : (
-                                    <User className="w-9 h-9 text-brand/60" />
+                                    <User className="w-8 h-8 sm:w-9 sm:h-9 text-brand/60" />
                                 )}
                             </div>
                             <button
                                 type="button"
                                 onClick={() => avatarInputRef.current?.click()}
                                 disabled={isUploadingAvatar}
-                                className="absolute -bottom-1 -left-1 w-7 h-7 bg-brand text-white rounded-full flex items-center justify-center shadow-md hover:bg-brand/90 hover:scale-110 active:scale-95 transition-all border-2 border-white cursor-pointer"
+                                className="absolute -bottom-1 -left-1 w-6 h-6 sm:w-7 sm:h-7 bg-brand text-white rounded-full flex items-center justify-center shadow-md hover:bg-brand/90 hover:scale-110 active:scale-95 transition-all border-2 border-white cursor-pointer"
                                 title="تغییر تصویر نمایه"
                             >
                                 {isUploadingAvatar ? (
-                                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                    <Loader2 className="w-3 sm:w-3.5 h-3 sm:h-3.5 animate-spin" />
                                 ) : (
-                                    <Camera className="w-3.5 h-3.5" />
+                                    <Camera className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
                                 )}
                             </button>
                         </div>
                         <div className="flex-1 min-w-0">
-                            <div className="text-brand font-black text-lg truncate">
-                                {displayName}
+                            <div className="flex items-center gap-2 flex-wrap">
+                                <span className="text-brand font-black text-base sm:text-lg truncate">
+                                    {displayName}
+                                </span>
+                                {isKycVerified ? (
+                                    <span
+                                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-success-subtle text-success border border-success/30 text-[10px] sm:text-[11px] font-bold"
+                                        title="احراز هویت تایید شده و نام حساب کاربری قفل است"
+                                    >
+                                        <ShieldCheck className="w-3.5 h-3.5" />
+                                        <span>تایید هویت شده</span>
+                                    </span>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        onClick={handleOpenEditName}
+                                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-surface hover:bg-surface-secondary text-secondary hover:text-brand border border-soft-border hover:border-primary/40 text-[11px] font-bold transition-all shadow-2xs active:scale-95 cursor-pointer"
+                                        title="ویرایش نام و نام خانوادگی"
+                                        aria-label="ویرایش نام"
+                                    >
+                                        <Pencil className="w-3 h-3 text-primary" />
+                                        <span>ویرایش</span>
+                                    </button>
+                                )}
                             </div>
                             {displaySubtitle && (
                                 <div className="text-xs text-foreground-muted font-medium truncate mt-0.5">
@@ -456,8 +530,8 @@ export default function ProfileScene() {
                     </div>
 
                     {userRoles.length > 1 && (
-                        <div className="pt-4 border-t border-soft-border/80">
-                            <div className="flex items-center justify-between mb-2.5">
+                        <div className="pt-3 sm:pt-4 border-t border-soft-border/80">
+                            <div className="flex items-center justify-between mb-2">
                                 <span className="text-xs font-bold text-brand">تغییر نقش فعال در حساب:</span>
                                 {switchRoleMutation.isPending && (
                                     <span className="text-[11px] text-secondary flex items-center gap-1 font-medium">
@@ -475,7 +549,7 @@ export default function ProfileScene() {
                                             disabled={isActive || switchRoleMutation.isPending}
                                             onClick={() => handleSwitchRole(role)}
                                             className={cn(
-                                                "px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5",
+                                                "px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5",
                                                 isActive
                                                     ? "bg-brand text-white shadow-sm ring-2 ring-brand/20 cursor-default"
                                                     : "bg-surface text-secondary hover:text-brand border border-soft-border hover:border-brand/40 active:scale-95"
@@ -491,78 +565,30 @@ export default function ProfileScene() {
                         </div>
                     )}
 
-                    <div className="grid gap-4">
-                        <div className="space-y-2">
-                            <div className="flex items-center justify-between pr-2">
-                                <label className="text-brand text-sm font-bold flex items-center gap-1.5">
-                                    <Phone className="w-4 h-4 text-secondary" />
-                                    شماره موبایل
-                                </label>
-                                <span className="inline-flex items-center gap-1 text-[11px] font-bold text-success bg-success-subtle px-2.5 py-1 rounded-lg border border-success/30">
-                                    <CheckCircle2 className="w-3.5 h-3.5" />
-                                    تایید شده با پیامک
-                                </span>
+                    {/* Mobile number info row */}
+                    <div className="pt-3 sm:pt-4 border-t border-soft-border/80">
+                        <div className="flex items-center justify-between p-3 sm:p-3.5 bg-surface rounded-xl sm:rounded-2xl border border-soft-border">
+                            <div className="flex items-center gap-2.5">
+                                <div className="w-8 h-8 rounded-xl bg-surface-secondary flex items-center justify-center text-secondary">
+                                    <Phone className="w-4 h-4 text-primary" />
+                                </div>
+                                <div>
+                                    <div className="text-[10px] sm:text-[11px] text-secondary font-bold">شماره همراه حساب</div>
+                                    <div className="text-xs sm:text-sm font-black text-brand tracking-wider" dir="ltr">
+                                        {toPersianDigits(profile?.mobileNumber || "")}
+                                    </div>
+                                </div>
                             </div>
-                            <div className="relative">
-                                <Lock className="w-4 h-4 absolute right-4 top-1/2 -translate-y-1/2 text-secondary/60" />
-                                <input
-                                    type="text"
-                                    value={toPersianDigits(profile?.mobileNumber || "")}
-                                    readOnly
-                                    disabled
-                                    dir="ltr"
-                                    className="w-full bg-surface-secondary/80 border border-soft-border rounded-2xl py-3 px-4 text-sm font-black text-brand cursor-not-allowed outline-none select-all"
-                                />
-
-                            </div>
-                            <p className="text-[11px] text-secondary font-medium pr-1">
-                                شماره همراه شناسه هویتی یکتای حساب شماست. در حال حاضر امکان ویرایش شماره تلفن در پلتفرم وجود ندارد.
-                            </p>
+                            <span className="inline-flex items-center gap-1 text-[10px] sm:text-[11px] font-bold text-success bg-success-subtle px-2 sm:px-2.5 py-1 rounded-lg border border-success/30">
+                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                <span>تایید شده با پیامک</span>
+                            </span>
                         </div>
-
-                        <div className="space-y-2">
-                            <label className="text-brand text-sm font-bold pr-2">نام</label>
-                            <input
-                                type="text"
-                                value={firstName}
-                                onChange={(e) => setFirstName(e.target.value)}
-                                className="w-full bg-surface border border-soft-border rounded-2xl py-3 px-4 text-sm font-bold text-brand focus:ring-2 focus:ring-primary/20 outline-none"
-                                placeholder="وارد کنید..."
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-brand text-sm font-bold pr-2">
-                                نام خانوادگی
-                            </label>
-                            <input
-                                type="text"
-                                value={lastName}
-                                onChange={(e) => setLastName(e.target.value)}
-                                className="w-full bg-surface border border-soft-border rounded-2xl py-3 px-4 text-sm font-bold text-brand focus:ring-2 focus:ring-primary/20 outline-none"
-                                placeholder="وارد کنید..."
-                            />
-                        </div>
-                        <Button
-                            className="w-full h-12 rounded-2xl"
-                            disabled={isUpdating}
-                            onClick={() => {
-                                if (!firstName.trim() && !lastName.trim()) {
-                                    toast.error("لطفاً نام یا نام خانوادگی را وارد نمایید");
-                                    return;
-                                }
-                                updateProfile({
-                                    firstName: firstName.trim(),
-                                    lastName: lastName.trim(),
-                                });
-                            }}
-                        >
-                            {isUpdating ? "در حال ثبت..." : "بروزرسانی مشخصات"}
-                        </Button>
                     </div>
                 </section>
 
                 {/* Dashboard Options & Account Actions */}
-                <section className="space-y-3">
+                <section className="space-y-2.5 sm:space-y-3">
                     <RoleGuard roles={[RoleName.Agent]} requireActiveRole>
                         <div className="space-y-2">
                             <button
@@ -579,7 +605,7 @@ export default function ProfileScene() {
                                     }
                                     router.push('/agency/panel');
                                 }}
-                                className="w-full flex items-center justify-between p-5 bg-soft-bg rounded-2xl border border-soft-border hover:bg-soft-border/50 transition-colors"
+                                className="w-full flex items-center justify-between p-3.5 sm:p-4.5 bg-soft-bg rounded-xl sm:rounded-2xl border border-soft-border hover:bg-soft-border/50 transition-colors"
                             >
                                 <div className="flex items-center gap-3">
                                     <Building2 className="w-5 h-5 text-primary" />
@@ -590,7 +616,7 @@ export default function ProfileScene() {
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                 <Link
                                     href="/posts/create"
-                                    className="flex items-center justify-between px-4 py-3 rounded-2xl bg-purple-50 hover:bg-purple-100 text-xs font-black text-purple-800 transition-colors border border-purple-200/80 group"
+                                    className="flex items-center justify-between px-3.5 py-2.5 sm:px-4 sm:py-3 rounded-xl sm:rounded-2xl bg-purple-50 hover:bg-purple-100 text-xs font-black text-purple-800 transition-colors border border-purple-200/80 group"
                                 >
                                     <div className="flex items-center gap-2">
                                         <Sparkles className="w-4 h-4 text-purple-600" />
@@ -602,7 +628,7 @@ export default function ProfileScene() {
                                     <Link
                                         href={`/agency/showcase/${myAgency.slug || myAgency.id}`}
                                         target="_blank"
-                                        className="flex items-center justify-between px-4 py-3 rounded-2xl bg-surface-secondary hover:bg-surface-secondary text-xs font-bold text-foreground-secondary transition-colors border border-border-subtle/80 group"
+                                        className="flex items-center justify-between px-3.5 py-2.5 sm:px-4 sm:py-3 rounded-xl sm:rounded-2xl bg-surface-secondary hover:bg-surface-secondary text-xs font-bold text-foreground-secondary transition-colors border border-border-subtle/80 group"
                                     >
                                         <div className="flex items-center gap-2">
                                             <ExternalLink className="w-4 h-4 text-info" />
@@ -631,7 +657,7 @@ export default function ProfileScene() {
                                     }
                                     router.push('/profile/temporary-rent');
                                 }}
-                                className="w-full flex items-center justify-between p-5 bg-soft-bg rounded-2xl border border-soft-border hover:bg-soft-border/50 transition-colors"
+                                className="w-full flex items-center justify-between p-3.5 sm:p-4.5 bg-soft-bg rounded-xl sm:rounded-2xl border border-soft-border hover:bg-soft-border/50 transition-colors"
                             >
                                 <div className="flex items-center gap-3">
                                     <Hotel className="w-5 h-5 text-primary" />
@@ -642,7 +668,7 @@ export default function ProfileScene() {
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                 <Link
                                     href="/posts/create"
-                                    className="flex items-center justify-between px-4 py-3 rounded-2xl bg-success-subtle hover:bg-success-subtle text-xs font-black text-success transition-colors border border-success/30/80 group"
+                                    className="flex items-center justify-between px-3.5 py-2.5 sm:px-4 sm:py-3 rounded-xl sm:rounded-2xl bg-success-subtle hover:bg-success-subtle text-xs font-black text-success transition-colors border border-success/30/80 group"
                                 >
                                     <div className="flex items-center gap-2">
                                         <Sparkles className="w-4 h-4 text-success" />
@@ -654,7 +680,7 @@ export default function ProfileScene() {
                                     <Link
                                         href={`/host/${hostProfile.slug || hostProfile.id || hostProfile.userId}`}
                                         target="_blank"
-                                        className="flex items-center justify-between px-4 py-3 rounded-2xl bg-surface-secondary hover:bg-surface-secondary text-xs font-bold text-foreground-secondary transition-colors border border-border-subtle/80 group"
+                                        className="flex items-center justify-between px-3.5 py-2.5 sm:px-4 sm:py-3 rounded-xl sm:rounded-2xl bg-surface-secondary hover:bg-surface-secondary text-xs font-bold text-foreground-secondary transition-colors border border-border-subtle/80 group"
                                     >
                                         <div className="flex items-center gap-2">
                                             <ExternalLink className="w-4 h-4 text-success" />
@@ -670,7 +696,7 @@ export default function ProfileScene() {
                     {isRoleAdmin(activeRole) && (
                         <button
                             onClick={() => router.push('/admin')}
-                            className="w-full flex items-center justify-between p-5 bg-soft-bg rounded-2xl border border-soft-border hover:bg-soft-border/50 transition-colors"
+                            className="w-full flex items-center justify-between p-3.5 sm:p-4.5 bg-soft-bg rounded-xl sm:rounded-2xl border border-soft-border hover:bg-soft-border/50 transition-colors"
                         >
                             <div className="flex items-center gap-3">
                                 <ShieldCheck className="w-5 h-5 text-primary" />
@@ -682,7 +708,7 @@ export default function ProfileScene() {
 
                     <button
                         onClick={() => router.push('/wallet')}
-                        className="w-full flex items-center justify-between p-5 bg-soft-bg rounded-2xl border border-soft-border hover:bg-soft-border/50 transition-colors"
+                        className="w-full flex items-center justify-between p-3.5 sm:p-4.5 bg-soft-bg rounded-xl sm:rounded-2xl border border-soft-border hover:bg-soft-border/50 transition-colors"
                     >
                         <div className="flex items-center gap-3">
                             <CreditCard className="w-5 h-5 text-primary" />
@@ -696,7 +722,7 @@ export default function ProfileScene() {
 
                     <button
                         onClick={() => router.push('/subscriptions')}
-                        className="w-full flex items-center justify-between p-5 bg-soft-bg rounded-2xl border border-soft-border hover:bg-soft-border/50 transition-colors"
+                        className="w-full flex items-center justify-between p-3.5 sm:p-4.5 bg-soft-bg rounded-xl sm:rounded-2xl border border-soft-border hover:bg-soft-border/50 transition-colors"
                     >
                         <div className="flex items-center gap-3">
                             <Zap className="w-5 h-5 text-primary" />
@@ -710,7 +736,7 @@ export default function ProfileScene() {
 
                     <button
                         onClick={() => router.push('/profile/ads')}
-                        className="w-full flex items-center justify-between p-5 bg-soft-bg rounded-2xl border border-soft-border hover:bg-soft-border/50 transition-colors"
+                        className="w-full flex items-center justify-between p-3.5 sm:p-4.5 bg-soft-bg rounded-xl sm:rounded-2xl border border-soft-border hover:bg-soft-border/50 transition-colors"
                     >
                         <div className="flex items-center gap-3">
                             <LayoutList className="w-5 h-5 text-primary" />
@@ -721,7 +747,7 @@ export default function ProfileScene() {
 
                     <button
                         onClick={() => router.push('/favorites')}
-                        className="w-full flex items-center justify-between p-5 bg-soft-bg rounded-2xl border border-soft-border hover:bg-soft-border/50 transition-colors"
+                        className="w-full flex items-center justify-between p-3.5 sm:p-4.5 bg-soft-bg rounded-xl sm:rounded-2xl border border-soft-border hover:bg-soft-border/50 transition-colors"
                     >
                         <div className="flex items-center gap-3">
                             <Heart className="w-5 h-5 text-primary" />
@@ -732,7 +758,7 @@ export default function ProfileScene() {
 
                     <button
                         onClick={() => router.push("/profile/requests")}
-                        className="w-full flex items-center justify-between p-5 bg-soft-bg rounded-2xl border border-soft-border hover:bg-soft-border/50 transition-colors"
+                        className="w-full flex items-center justify-between p-3.5 sm:p-4.5 bg-soft-bg rounded-xl sm:rounded-2xl border border-soft-border hover:bg-soft-border/50 transition-colors"
                     >
                         <div className="flex items-center gap-3">
                             <FileText className="w-5 h-5 text-primary" />
@@ -746,7 +772,7 @@ export default function ProfileScene() {
 
                     <button
                         onClick={() => router.push("/profile/chat")}
-                        className="w-full flex items-center justify-between p-5 bg-soft-bg rounded-2xl border border-soft-border hover:bg-soft-border/50 transition-colors"
+                        className="w-full flex items-center justify-between p-3.5 sm:p-4.5 bg-soft-bg rounded-xl sm:rounded-2xl border border-soft-border hover:bg-soft-border/50 transition-colors"
                     >
                         <div className="flex items-center gap-3">
                             <MessageSquare className="w-5 h-5 text-primary" />
@@ -766,7 +792,7 @@ export default function ProfileScene() {
 
                     <button
                         onClick={() => router.push("/notifications")}
-                        className="w-full flex items-center justify-between p-5 bg-soft-bg rounded-2xl border border-soft-border hover:bg-soft-border/50 transition-colors"
+                        className="w-full flex items-center justify-between p-3.5 sm:p-4.5 bg-soft-bg rounded-xl sm:rounded-2xl border border-soft-border hover:bg-soft-border/50 transition-colors"
                     >
                         <div className="flex items-center gap-3">
                             <Bell className="w-5 h-5 text-primary" />
@@ -794,7 +820,7 @@ export default function ProfileScene() {
                                 setIsKycModalOpen(true);
                             }
                         }}
-                        className="w-full flex items-center justify-between p-5 bg-soft-bg rounded-2xl border border-soft-border hover:bg-soft-border/50 transition-colors"
+                        className="w-full flex items-center justify-between p-3.5 sm:p-4.5 bg-soft-bg rounded-xl sm:rounded-2xl border border-soft-border hover:bg-soft-border/50 transition-colors"
                     >
                         <div className="flex items-center gap-3">
                             <ShieldCheck className="w-5 h-5 text-primary" />
@@ -818,7 +844,7 @@ export default function ProfileScene() {
 
                     <button
                         onClick={logout}
-                        className="w-full flex items-center justify-between p-5 bg-error-subtle rounded-2xl border border-error/30 hover:bg-error-subtle transition-colors"
+                        className="w-full flex items-center justify-between p-3.5 sm:p-4.5 bg-error-subtle rounded-xl sm:rounded-2xl border border-error/30 hover:bg-error-subtle transition-colors"
                     >
                         <div className="flex items-center gap-3">
                             <LogOut className="w-5 h-5 text-error" />
@@ -832,8 +858,10 @@ export default function ProfileScene() {
 
             {/* KYC Verification Modal */}
             {isKycModalOpen && (
-                <div role="dialog" aria-modal="true" aria-label="احراز هویت هوشمند" className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in overflow-y-auto">
-                    <div className="bg-surface rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-4 border border-border-subtle my-8">
+                <div role="dialog" aria-modal="true" aria-label="احراز هویت هوشمند" className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50 backdrop-blur-xs animate-in fade-in overflow-y-auto">
+                    <div className="bg-surface rounded-t-[28px] sm:rounded-3xl p-5 sm:p-8 max-w-md w-full shadow-2xl space-y-4 border border-border-subtle my-0 sm:my-8 max-h-[92vh] overflow-y-auto animate-in slide-in-from-bottom sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-200">
+                        {/* Mobile Drawer Pull Handle */}
+                        <div className="w-12 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto mb-2 sm:hidden" />
                         {isDatePickerView ? (
                             <div className="space-y-4 animate-in fade-in zoom-in-95">
                                 {/* Header & Back Action */}
@@ -1344,6 +1372,115 @@ export default function ProfileScene() {
                                 </div>
                             </>
                         )}
+                    </div>
+                </div>
+            )}
+
+            {/* Edit Name Modal / Drawer */}
+            {isEditNameModalOpen && !isKycVerified && (
+                <div
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label="ویرایش نام و نام خانوادگی"
+                    className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
+                >
+                    {/* Backdrop */}
+                    <div
+                        className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
+                        onClick={() => {
+                            if (!isUpdating) setIsEditNameModalOpen(false);
+                        }}
+                    />
+
+                    {/* Drawer (bottom-sheet) on mobile, Modal on desktop */}
+                    <div
+                        className={cn(
+                            "relative z-10 w-full sm:max-w-md bg-surface rounded-t-[28px] sm:rounded-3xl p-5 sm:p-7 shadow-2xl transition-all max-h-[90vh] overflow-y-auto border border-border-subtle",
+                            "animate-in slide-in-from-bottom sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-200"
+                        )}
+                    >
+                        {/* Mobile Drawer Pull Handle */}
+                        <div className="w-12 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto mb-3 sm:hidden" />
+
+                        {/* Header */}
+                        <div className="flex items-center justify-between pb-3.5 border-b border-border-subtle mb-4">
+                            <div className="flex items-center gap-2.5">
+                                <div className="p-2.5 bg-primary/10 text-primary rounded-2xl">
+                                    <Pencil className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <h3 className="font-black text-brand text-base">ویرایش نام و نام خانوادگی</h3>
+                                    <p className="text-[11px] text-text-light mt-0.5">مشخصات هویتی نمایشی در حساب کاربری</p>
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    if (!isUpdating) setIsEditNameModalOpen(false);
+                                }}
+                                className="w-8 h-8 rounded-full bg-surface-secondary flex items-center justify-center text-text-light hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                                aria-label="بستن"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+
+                        {/* Notice */}
+                        <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 text-xs text-amber-800 dark:text-amber-300 leading-relaxed mb-4">
+                            <span className="font-bold">توجه:</span> پس از تایید نهایی فرایند احراز هویت (KYC)، امکان ویرایش نام و نام خانوادگی قفل خواهد شد.
+                        </div>
+
+                        <form onSubmit={handleSaveName} className="space-y-4">
+                            <div className="space-y-1.5">
+                                <label className="text-brand text-xs font-bold pr-1">نام</label>
+                                <input
+                                    type="text"
+                                    value={editFirstName}
+                                    onChange={(e) => setEditFirstName(e.target.value)}
+                                    className="w-full bg-surface-secondary border border-soft-border rounded-xl py-3 px-3.5 text-sm font-bold text-brand focus:bg-surface focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                                    placeholder="نام خود را وارد کنید..."
+                                    disabled={isUpdating}
+                                    autoFocus
+                                />
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <label className="text-brand text-xs font-bold pr-1">نام خانوادگی</label>
+                                <input
+                                    type="text"
+                                    value={editLastName}
+                                    onChange={(e) => setEditLastName(e.target.value)}
+                                    className="w-full bg-surface-secondary border border-soft-border rounded-xl py-3 px-3.5 text-sm font-bold text-brand focus:bg-surface focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                                    placeholder="نام خانوادگی خود را وارد کنید..."
+                                    disabled={isUpdating}
+                                />
+                            </div>
+
+                            <div className="flex items-center gap-2 pt-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsEditNameModalOpen(false)}
+                                    disabled={isUpdating}
+                                    className="flex-1 py-3 rounded-xl border border-border-subtle font-bold text-xs text-secondary hover:bg-surface-secondary transition-colors cursor-pointer"
+                                >
+                                    انصراف
+                                </button>
+                                <Button
+                                    type="submit"
+                                    className="flex-1 h-11 rounded-xl text-xs font-bold"
+                                    disabled={isUpdating}
+                                >
+                                    {isUpdating ? (
+                                        <span className="flex items-center gap-1.5">
+                                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                            در حال ثبت...
+                                        </span>
+                                    ) : (
+                                        "ذخیره تغییرات"
+                                    )}
+                                </Button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}

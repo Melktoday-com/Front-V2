@@ -68,8 +68,10 @@ export function useUser(userId?: string) {
 
     return {
         updateProfile: updateProfileMutation.mutate,
+        updateProfileAsync: updateProfileMutation.mutateAsync,
         isUpdating: updateProfileMutation.isPending,
         verifyKyc: verifyKycMutation.mutate,
+        verifyKycAsync: verifyKycMutation.mutateAsync,
         isVerifying: verifyKycMutation.isPending,
     };
 }
