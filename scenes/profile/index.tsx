@@ -584,107 +584,103 @@ export default function ProfileScene() {
                 {/* Dashboard Options & Account Actions */}
                 <section className="space-y-2.5 sm:space-y-3">
                     <RoleGuard roles={[RoleName.Agent]} requireActiveRole>
-                        <div className="space-y-2">
-                            <button
-                                onClick={async () => {
-                                    if (activeRole !== RoleName.Agent && user?.sessionId) {
-                                        try {
-                                            await switchRoleMutation.mutateAsync({
-                                                sessionId: user.sessionId,
-                                                roleName: RoleName.Agent,
-                                            });
-                                        } catch {
-                                            // continue navigation
-                                        }
+                        <button
+                            onClick={async () => {
+                                if (activeRole !== RoleName.Agent && user?.sessionId) {
+                                    try {
+                                        await switchRoleMutation.mutateAsync({
+                                            sessionId: user.sessionId,
+                                            roleName: RoleName.Agent,
+                                        });
+                                    } catch {
+                                        // continue navigation
                                     }
-                                    router.push('/agency/panel');
-                                }}
+                                }
+                                router.push('/agency/panel');
+                            }}
+                            className="w-full flex items-center justify-between p-3.5 sm:p-4.5 bg-soft-bg rounded-xl sm:rounded-2xl border border-soft-border hover:bg-soft-border/50 transition-colors"
+                        >
+                            <div className="flex items-center gap-3">
+                                <Building2 className="w-5 h-5 text-primary" />
+                                <span className="text-brand font-bold text-sm">مدیریت آژانس من</span>
+                            </div>
+                            <ChevronLeft className="w-4 h-4 text-secondary" />
+                        </button>
+
+                        <Link
+                            href="/posts/create"
+                            className="w-full flex items-center justify-between p-3.5 sm:p-4.5 bg-soft-bg rounded-xl sm:rounded-2xl border border-soft-border hover:bg-soft-border/50 transition-colors"
+                        >
+                            <div className="flex items-center gap-3">
+                                <Sparkles className="w-5 h-5 text-primary" />
+                                <span className="text-brand font-bold text-sm">استودیو انتشار پست و مقاله</span>
+                            </div>
+                            <ChevronLeft className="w-4 h-4 text-secondary" />
+                        </Link>
+
+                        {myAgency && (
+                            <Link
+                                href={`/agency/showcase/${myAgency.slug || myAgency.id}`}
+                                target="_blank"
                                 className="w-full flex items-center justify-between p-3.5 sm:p-4.5 bg-soft-bg rounded-xl sm:rounded-2xl border border-soft-border hover:bg-soft-border/50 transition-colors"
                             >
                                 <div className="flex items-center gap-3">
-                                    <Building2 className="w-5 h-5 text-primary" />
-                                    <span className="text-brand font-bold text-sm">مدیریت آژانس من</span>
+                                    <ExternalLink className="w-5 h-5 text-primary" />
+                                    <span className="text-brand font-bold text-sm">ویترین عمومی آژانس</span>
                                 </div>
                                 <ChevronLeft className="w-4 h-4 text-secondary" />
-                            </button>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                <Link
-                                    href="/posts/create"
-                                    className="flex items-center justify-between px-3.5 py-2.5 sm:px-4 sm:py-3 rounded-xl sm:rounded-2xl bg-purple-50 hover:bg-purple-100 text-xs font-black text-purple-800 transition-colors border border-purple-200/80 group"
-                                >
-                                    <div className="flex items-center gap-2">
-                                        <Sparkles className="w-4 h-4 text-purple-600" />
-                                        <span>استودیو انتشار پست و مقاله</span>
-                                    </div>
-                                    <span className="text-[11px] text-purple-500 font-bold">&larr;</span>
-                                </Link>
-                                {myAgency && (
-                                    <Link
-                                        href={`/agency/showcase/${myAgency.slug || myAgency.id}`}
-                                        target="_blank"
-                                        className="flex items-center justify-between px-3.5 py-2.5 sm:px-4 sm:py-3 rounded-xl sm:rounded-2xl bg-surface-secondary hover:bg-surface-secondary text-xs font-bold text-foreground-secondary transition-colors border border-border-subtle/80 group"
-                                    >
-                                        <div className="flex items-center gap-2">
-                                            <ExternalLink className="w-4 h-4 text-info" />
-                                            <span>ویترین عمومی آژانس</span>
-                                        </div>
-                                        <span className="text-[11px] text-foreground-muted font-medium group-hover:text-info transition-colors">&larr;</span>
-                                    </Link>
-                                )}
-                            </div>
-                        </div>
+                            </Link>
+                        )}
                     </RoleGuard>
 
                     <RoleGuard roles={[RoleName.Landlord]} requireActiveRole>
-                        <div className="space-y-2">
-                            <button
-                                onClick={async () => {
-                                    if (activeRole !== RoleName.Landlord && user?.sessionId) {
-                                        try {
-                                            await switchRoleMutation.mutateAsync({
-                                                sessionId: user.sessionId,
-                                                roleName: RoleName.Landlord,
-                                            });
-                                        } catch {
-                                            // continue navigation
-                                        }
+                        <button
+                            onClick={async () => {
+                                if (activeRole !== RoleName.Landlord && user?.sessionId) {
+                                    try {
+                                        await switchRoleMutation.mutateAsync({
+                                            sessionId: user.sessionId,
+                                            roleName: RoleName.Landlord,
+                                        });
+                                    } catch {
+                                        // continue navigation
                                     }
-                                    router.push('/profile/temporary-rent');
-                                }}
+                                }
+                                router.push('/profile/temporary-rent');
+                            }}
+                            className="w-full flex items-center justify-between p-3.5 sm:p-4.5 bg-soft-bg rounded-xl sm:rounded-2xl border border-soft-border hover:bg-soft-border/50 transition-colors"
+                        >
+                            <div className="flex items-center gap-3">
+                                <Hotel className="w-5 h-5 text-primary" />
+                                <span className="text-brand font-bold text-sm">پنل اقامتگاه‌ها (میزبان)</span>
+                            </div>
+                            <ChevronLeft className="w-4 h-4 text-secondary" />
+                        </button>
+
+                        <Link
+                            href="/posts/create"
+                            className="w-full flex items-center justify-between p-3.5 sm:p-4.5 bg-soft-bg rounded-xl sm:rounded-2xl border border-soft-border hover:bg-soft-border/50 transition-colors"
+                        >
+                            <div className="flex items-center gap-3">
+                                <Sparkles className="w-5 h-5 text-primary" />
+                                <span className="text-brand font-bold text-sm">استودیو انتشار پست اقامتگاه</span>
+                            </div>
+                            <ChevronLeft className="w-4 h-4 text-secondary" />
+                        </Link>
+
+                        {hostProfile && (
+                            <Link
+                                href={`/host/${hostProfile.slug || hostProfile.id || hostProfile.userId}`}
+                                target="_blank"
                                 className="w-full flex items-center justify-between p-3.5 sm:p-4.5 bg-soft-bg rounded-xl sm:rounded-2xl border border-soft-border hover:bg-soft-border/50 transition-colors"
                             >
                                 <div className="flex items-center gap-3">
-                                    <Hotel className="w-5 h-5 text-primary" />
-                                    <span className="text-brand font-bold text-sm">پنل اقامتگاه‌ها (میزبان)</span>
+                                    <ExternalLink className="w-5 h-5 text-primary" />
+                                    <span className="text-brand font-bold text-sm">صفحه عمومی میزبان</span>
                                 </div>
                                 <ChevronLeft className="w-4 h-4 text-secondary" />
-                            </button>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                <Link
-                                    href="/posts/create"
-                                    className="flex items-center justify-between px-3.5 py-2.5 sm:px-4 sm:py-3 rounded-xl sm:rounded-2xl bg-success-subtle hover:bg-success-subtle text-xs font-black text-success transition-colors border border-success/30/80 group"
-                                >
-                                    <div className="flex items-center gap-2">
-                                        <Sparkles className="w-4 h-4 text-success" />
-                                        <span>استودیو انتشار پست اقامتگاه</span>
-                                    </div>
-                                    <span className="text-[11px] text-success font-bold">&larr;</span>
-                                </Link>
-                                {hostProfile && (
-                                    <Link
-                                        href={`/host/${hostProfile.slug || hostProfile.id || hostProfile.userId}`}
-                                        target="_blank"
-                                        className="flex items-center justify-between px-3.5 py-2.5 sm:px-4 sm:py-3 rounded-xl sm:rounded-2xl bg-surface-secondary hover:bg-surface-secondary text-xs font-bold text-foreground-secondary transition-colors border border-border-subtle/80 group"
-                                    >
-                                        <div className="flex items-center gap-2">
-                                            <ExternalLink className="w-4 h-4 text-success" />
-                                            <span>صفحه عمومی میزبان</span>
-                                        </div>
-                                        <span className="text-[11px] text-foreground-muted font-medium group-hover:text-success transition-colors">&larr;</span>
-                                    </Link>
-                                )}
-                            </div>
-                        </div>
+                            </Link>
+                        )}
                     </RoleGuard>
 
                     {isRoleAdmin(activeRole) && (
@@ -755,7 +751,7 @@ export default function ProfileScene() {
                         <div className="flex items-center gap-3">
                             <FileText className="w-5 h-5 text-primary" />
                             <span className="text-brand font-bold text-sm">
-                                عضویت آژانس و اقامتگاه‌ها (درخواست‌ها)
+                                عضویت آژانس و اقامتگاه‌ (درخواست‌ها)
                             </span>
                         </div>
                         <ChevronLeft className="w-4 h-4 text-secondary" />

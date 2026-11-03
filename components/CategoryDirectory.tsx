@@ -108,17 +108,17 @@ export function CategoryDirectory({
                                 <CategoryIcon
                                     icon={category.icon}
                                     displayName={category.displayName}
-                                    size={isTempRent ? 64 : 56}
+                                    size={56}
                                     className={cn(
                                         "shrink-0",
                                         isTempRent
-                                            ? "w-12 h-12 lg:w-11 lg:h-11"
+                                            ? "w-11 h-11 lg:w-10 lg:h-10"
                                             : "w-10 h-10 lg:w-10 lg:h-10"
                                     )}
                                     imgClassName={cn(
                                         "object-contain",
                                         isTempRent
-                                            ? "w-12 h-12 lg:w-11 lg:h-11 scale-115 lg:scale-105"
+                                            ? "w-11 h-11 lg:w-10 lg:h-10 scale-105 lg:scale-100"
                                             : "w-10 h-10 lg:w-10 lg:h-10"
                                     )}
                                 />
