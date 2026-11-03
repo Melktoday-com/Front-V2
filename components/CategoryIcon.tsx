@@ -1,11 +1,11 @@
 "use client";
 
 import { cn, getMediaUrl } from "@/lib/utils";
-import Image from "next/image";
+import Image, { type StaticImageData } from "next/image";
 import { useState } from "react";
 
 export interface CategoryIconProps {
-    icon?: string | null;
+    icon?: string | StaticImageData | null;
     displayName?: string;
     className?: string;
     imgClassName?: string;
@@ -25,11 +25,12 @@ export function CategoryIcon({
         return null;
     }
 
-    const mediaUrl = getMediaUrl(icon);
+    const imageSrc = typeof icon === "string" ? getMediaUrl(icon) : icon;
+
     return (
         <span className={cn("relative inline-flex items-center justify-center shrink-0", className)}>
             <Image
-                src={mediaUrl}
+                src={imageSrc}
                 alt={displayName || "Category icon"}
                 width={size}
                 height={size}

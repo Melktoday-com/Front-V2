@@ -38,6 +38,7 @@ import {
     Lock,
     LogOut,
     MessageSquare,
+    Pencil,
     Phone,
     ShieldCheck,
     Sparkles,

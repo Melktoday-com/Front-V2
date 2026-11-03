@@ -1,11 +1,20 @@
 "use client";
 
+import { temporaryRentIcon } from "@/assets/icons";
 import { CategoryIcon } from "@/components/CategoryIcon";
 import { cn } from "@/lib/utils";
 import { CategoryListItem } from "@/types/api/ads.types";
 import { Building2 } from "lucide-react";
+import type { StaticImageData } from "next/image";
 import Link from "next/link";
 import { useMemo } from "react";
+
+export interface DirectoryCategoryItem {
+    id: string;
+    key: string;
+    displayName: string;
+    icon?: string | StaticImageData | null;
+}
 
 export interface CategoryDirectoryProps {
     categories?: CategoryListItem[];
@@ -14,6 +23,13 @@ export interface CategoryDirectoryProps {
     cityName?: string;
     className?: string;
 }
+
+const STATIC_TEMPORARY_RENT_CATEGORY: DirectoryCategoryItem = {
+    id: "temporary_rent",
+    key: "temporary_rent",
+    displayName: "اقامتگاه",
+    icon: temporaryRentIcon,
+};
 
 export function CategoryDirectory({
     categories,
@@ -29,6 +45,28 @@ export function CategoryDirectory({
         if (cityName && cityName !== "همه شهرها") parts.push(`cityName=${encodeURIComponent(cityName)}`);
         return parts.length > 0 ? `&${parts.join("&")}` : "";
     }, [cityId, cityName]);
+
+    // Combine incoming categories with the static residence (temporary_rent) category
+    const displayCategories = useMemo<DirectoryCategoryItem[]>(() => {
+        if (!categories || categories.length === 0) {
+            return [STATIC_TEMPORARY_RENT_CATEGORY];
+        }
+
+        const hasTempRent = categories.some((c) => c.key === "temporary_rent");
+        if (hasTempRent) {
+            return categories.map((c) =>
+                c.key === "temporary_rent"
+                    ? {
+                          ...c,
+                          displayName: c.displayName || STATIC_TEMPORARY_RENT_CATEGORY.displayName,
+                          icon: c.icon || STATIC_TEMPORARY_RENT_CATEGORY.icon,
+                      }
+                    : c
+            );
+        }
+
+        return [...categories, STATIC_TEMPORARY_RENT_CATEGORY];
+    }, [categories]);
 
     // Loading Skeletons
     if (isLoading) {
@@ -47,14 +85,13 @@ export function CategoryDirectory({
         );
     }
 
-    // If API returned no categories, do not render fake data
-    if (!categories || categories.length === 0) {
+    if (displayCategories.length === 0) {
         return null;
     }
 
     return (
         <div className={cn("grid grid-cols-3 sm:grid-cols-6 lg:grid-cols-6 gap-2 sm:gap-3 lg:gap-3.5", className)}>
-            {categories.map((category) => {
+            {displayCategories.map((category) => {
                 const isTempRent = category.key === "temporary_rent";
                 const mainCategoryHref = isTempRent
                     ? `/temporary-rent${cityQuery ? `?${cityQuery.replace(/^&/, "")}` : ""}`
