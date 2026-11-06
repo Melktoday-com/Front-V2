@@ -2,12 +2,12 @@
 
 import { useAuth } from "@/hooks/useAuth";
 import {
-    useActiveBadge,
     useClaimWelcomePackage,
     useEntitlements,
     usePurchasePlan,
     useSubscriptionPlans,
 } from "@/hooks/useSubscription";
+import { SubscriptionEntitlementsSection } from "@/components/subscriptions/SubscriptionEntitlementsSection";
 import { useWalletBalance } from "@/hooks/useWallet";
 import { normalizeApiError } from "@/lib/api/error-handler";
 import { cn, formatCurrency, rialToToman, toPersianDigits } from "@/lib/utils";
@@ -120,7 +120,6 @@ export default function SubscriptionsScene() {
         : selectedRole;
     const { data: plans = [], isLoading: isLoadingPlans } = useSubscriptionPlans(effectivePlanRole);
     const { data: entitlements = [], isLoading: isLoadingEntitlements } = useEntitlements();
-    const { data: activeBadge, isLoading: isLoadingBadge } = useActiveBadge();
 
     // Aggregated Entitlements by Feature (prevents duplicate cards when user has multiple plans)
     const aggregatedEntitlements = useMemo(() => {
@@ -649,202 +648,9 @@ export default function SubscriptionsScene() {
 
                 {/* TAB 2: User Entitlements */}
                 {activeTab === "entitlements" && (
-                    <div className="space-y-6">
-                        {/* Active Badge Card */}
-                        {isLoadingBadge ? (
-                            <div className="p-6 bg-surface rounded-3xl border border-border-subtle/80 animate-pulse h-28" />
-                        ) : activeBadge ? (
-                            <div className="p-6 bg-gradient-to-r from-amber-500/10 via-amber-400/5 to-white border border-warning/30 rounded-3xl flex items-center justify-between gap-4">
-                                <div className="flex items-center gap-4">
-                                    <div className="p-3.5 bg-amber-500/15 text-warning rounded-2xl shadow-xs">
-                                        {renderBadgeIcon(activeBadge.badgeIcon)}
-                                    </div>
-                                    <div>
-                                        <div className="flex items-center gap-2 mb-0.5">
-                                            <span className="text-[11px] font-bold text-warning bg-warning-subtle/70 px-2 py-0.5 rounded-full">
-                                                نشان فعال شما
-                                            </span>
-                                            <h3 className="font-black text-foreground text-base">
-                                                {activeBadge.badgeName}
-                                            </h3>
-                                        </div>
-                                        <p className="text-xs text-foreground-muted">
-                                            این نشان بر روی تمام آگهی‌ها و پروفایل شما به صورت برجسته نمایش داده می‌شود.
-                                        </p>
-                                    </div>
-                                </div>
-                                <div className="text-left text-xs text-foreground-muted shrink-0">
-                                    <span>اعتبار تا:</span>
-                                    <span className="block font-bold text-foreground-secondary">
-                                        {new Date(activeBadge.expiresAt).toLocaleDateString("fa-IR")}
-                                    </span>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="p-5 bg-surface border border-border-subtle/80 rounded-3xl flex items-center justify-between text-xs text-foreground-muted">
-                                <div className="flex items-center gap-2.5">
-                                    <ShieldCheck className="w-5 h-5 text-foreground-muted" />
-                                    <span>در حال حاضر نشان فعالی ندارید. با خرید پلن‌های ویژه می‌توانید نشان اختصاصی دریافت کنید.</span>
-                                </div>
-                                <button
-                                    onClick={() => setActiveTab("plans")}
-                                    className="font-bold text-primary hover:underline"
-                                >
-                                    مشاهده پلن‌ها
-                                </button>
-                            </div>
-                        )}
-
-                        {/* Entitlement Quotas Grid (Aggregated per feature with per-plan breakdown) */}
-                        <div>
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3.5">
-                                <h3 className="text-sm font-black text-foreground flex items-center gap-2">
-                                    <TrendingUp className="w-4 h-4 text-primary" />
-                                    <span>مجموع سهمیه‌های فعال شما</span>
-                                </h3>
-                                {aggregatedEntitlements.length > 0 && (
-                                    <span className="text-xs text-foreground-muted">
-                                        تعداد فیچرهای فعال: {toPersianDigits(aggregatedEntitlements.length)} مورد
-                                    </span>
-                                )}
-                            </div>
-
-                            {isLoadingEntitlements ? (
-                                <div className="py-12 flex justify-center text-foreground-muted">
-                                    <Loader2 className="w-6 h-6 animate-spin text-primary" />
-                                </div>
-                            ) : aggregatedEntitlements.length === 0 ? (
-                                <div className="py-12 bg-surface rounded-3xl border border-border-subtle/80 text-center p-6 text-xs text-foreground-muted">
-                                    سهمیه فعالی ندارید. با خرید اشتراک سهمیه‌های انتشار و ارتقای فوری دریافت خواهید کرد.
-                                </div>
-                            ) : (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                                    {aggregatedEntitlements.map((group) => {
-                                        const meta = FEATURE_META[group.type] || {
-                                            ...DEFAULT_FEATURE_META,
-                                            label: group.type,
-                                        };
-                                        const percentRemaining =
-                                            group.totalQuota > 0
-                                                ? Math.min(
-                                                      100,
-                                                      Math.max(
-                                                          0,
-                                                          Math.round(
-                                                              (group.remainingQuota / group.totalQuota) * 100,
-                                                          ),
-                                                      ),
-                                                  )
-                                                : 0;
-
-                                        return (
-                                            <div
-                                                key={group.type}
-                                                className="bg-surface rounded-3xl border border-border-subtle/80 p-5 shadow-xs flex flex-col justify-between hover:shadow-md transition-all"
-                                            >
-                                                <div>
-                                                    {/* Top Row: Icon, Multi-plan badge, Expiry */}
-                                                    <div className="flex items-center justify-between mb-3.5">
-                                                        <div className="flex items-center gap-2">
-                                                            <span
-                                                                className={cn(
-                                                                    "p-2 rounded-xl shrink-0",
-                                                                    meta.iconBg,
-                                                                )}
-                                                            >
-                                                                {meta.icon("w-4 h-4")}
-                                                            </span>
-                                                            {group.plans.length > 1 && (
-                                                                <span className="text-[10px] font-bold text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-full">
-                                                                    {toPersianDigits(group.plans.length)} پلن
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                        <span className="text-[11px] font-medium text-foreground-muted">
-                                                            {group.nearestExpiresAt
-                                                                ? `انقضا: ${new Date(group.nearestExpiresAt).toLocaleDateString("fa-IR")}`
-                                                                : "همگام با اشتراک"}
-                                                        </span>
-                                                    </div>
-
-                                                    {/* Feature Title */}
-                                                    <h4 className="font-bold text-foreground text-sm mb-1">
-                                                        {meta.label}
-                                                    </h4>
-
-                                                    {/* Quota Numbers (Aggregated Sum) */}
-                                                    <div className="flex items-baseline justify-between mb-2">
-                                                        <div className="flex items-baseline gap-1">
-                                                            <span className="text-2xl font-black text-foreground">
-                                                                {toPersianDigits(group.remainingQuota)}
-                                                            </span>
-                                                            <span className="text-xs text-foreground-muted font-normal">
-                                                                باقی‌مانده
-                                                            </span>
-                                                        </div>
-                                                        <span className="text-xs text-foreground-muted">
-                                                            از کل {toPersianDigits(group.totalQuota)} عدد
-                                                        </span>
-                                                    </div>
-
-                                                    {/* Progress Bar */}
-                                                    <div className="w-full bg-surface-secondary rounded-full h-2 overflow-hidden my-3">
-                                                        <div
-                                                            className={cn(
-                                                                "h-full transition-all duration-300 rounded-full",
-                                                                meta.progressBar,
-                                                            )}
-                                                            style={{ width: `${percentRemaining}%` }}
-                                                        />
-                                                    </div>
-
-                                                    {/* Plan Breakdown */}
-                                                    <div className="mt-4 pt-3.5 border-t border-border-subtle/60">
-                                                        <span className="text-[11px] font-bold text-foreground-muted block mb-2">
-                                                            سهمیه به تفکیک پلن:
-                                                        </span>
-                                                        <div className="space-y-1.5">
-                                                            {group.plans.map((plan, pIdx) => (
-                                                                <div
-                                                                    key={pIdx}
-                                                                    className="bg-surface-secondary/70 hover:bg-surface-secondary px-2.5 py-1.5 rounded-xl flex items-center justify-between text-xs gap-2 transition-colors"
-                                                                    title={
-                                                                        plan.expiresAt
-                                                                            ? `تاریخ انقضا: ${new Date(plan.expiresAt).toLocaleDateString("fa-IR")}`
-                                                                            : undefined
-                                                                    }
-                                                                >
-                                                                    <div className="flex items-center gap-1.5 min-w-0">
-                                                                        <span
-                                                                            className={cn(
-                                                                                "w-1.5 h-1.5 rounded-full shrink-0",
-                                                                                meta.progressBar,
-                                                                            )}
-                                                                        />
-                                                                        <span className="font-medium text-foreground truncate text-[11px]">
-                                                                            {plan.planName}
-                                                                        </span>
-                                                                    </div>
-                                                                    <div className="flex items-center gap-1 shrink-0 text-[11px]">
-                                                                        <span className="font-black text-foreground">
-                                                                            {toPersianDigits(plan.remainingQuota)}
-                                                                        </span>
-                                                                        <span className="text-foreground-muted text-[10px]">
-                                                                            از {toPersianDigits(plan.totalQuota)}
-                                                                        </span>
-                                                                    </div>
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            )}
-                        </div>
-                    </div>
+                    <SubscriptionEntitlementsSection
+                        onNavigateToPlans={() => setActiveTab("plans")}
+                    />
                 )}
             </div>
 
