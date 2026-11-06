@@ -564,7 +564,7 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
                                             title="پاسخ"
                                             className="p-1 hover:text-brand hover:bg-soft-bg rounded-lg transition-colors text-secondary cursor-pointer"
                                         >
-                                            <Reply className="w-3.5 h-3.5 rotate-180" />
+                                            <Reply className="w-3.5 h-3.5 -scale-x-100" />
                                         </button>
                                     )}
                                     {canEdit && (
@@ -617,7 +617,7 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
                                             onClick={() => handleStartReply(msg)}
                                             className="flex items-center gap-1.5 px-2.5 py-1.5 hover:bg-soft-bg rounded-xl text-xs font-bold text-brand transition-colors cursor-pointer"
                                         >
-                                            <Reply className="w-3.5 h-3.5 rotate-180" />
+                                            <Reply className="w-3.5 h-3.5 -scale-x-100" />
                                             <span>پاسخ</span>
                                         </button>
                                     )}
@@ -693,19 +693,50 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
                                                 e.stopPropagation();
                                                 scrollToMessage(replyData.id);
                                             }}
+                                            title="رفتن به پیام اصلی"
                                             className={cn(
-                                                "mb-2 p-2 rounded-xl text-xs border-r-3 flex items-start gap-2 cursor-pointer transition-all",
+                                                "group/reply mb-2 px-2.5 py-1.5 rounded-xl flex items-stretch gap-2.5 cursor-pointer select-none transition-all duration-150 min-w-[140px] max-w-full",
                                                 isMine
-                                                    ? "bg-black/15 hover:bg-black/25 border-white/80 text-white"
-                                                    : "bg-brand/5 hover:bg-brand/10 border-brand text-brand"
+                                                    ? "bg-white/10 hover:bg-white/15 active:bg-white/20 backdrop-blur-[2px]"
+                                                    : "bg-brand/[0.04] hover:bg-brand/[0.08] active:bg-brand/[0.12] border border-soft-border/80"
                                             )}
                                         >
-                                            <Reply className={cn("w-3.5 h-3.5 shrink-0 mt-0.5 rotate-180", isMine ? "text-white/80" : "text-brand")} />
-                                            <div className="min-w-0 flex-1 text-right">
-                                                <div className={cn("font-black text-[11px] truncate", isMine ? "text-white" : "text-brand")}>
-                                                    {replyData.senderName || "پیام"}
+                                            {/* Vertical accent bar */}
+                                            <span
+                                                className={cn(
+                                                    "w-1 rounded-full shrink-0 my-0.5 transition-colors",
+                                                    isMine ? "bg-teal-300" : "bg-brand"
+                                                )}
+                                            />
+                                            <div className="min-w-0 flex-1 py-0.5 text-right">
+                                                <div className="flex items-center gap-1.5 mb-0.5">
+                                                    {replyData.type === "IMAGE" ? (
+                                                        <ImageIcon className={cn("w-3 h-3 shrink-0", isMine ? "text-teal-300" : "text-brand")} />
+                                                    ) : replyData.type === "LISTING" ? (
+                                                        <Building2 className={cn("w-3 h-3 shrink-0", isMine ? "text-teal-300" : "text-brand")} />
+                                                    ) : (
+                                                        <Reply
+                                                            className={cn(
+                                                                "w-3 h-3 shrink-0 -scale-x-100 transition-transform group-hover/reply:-translate-x-0.5",
+                                                                isMine ? "text-teal-300" : "text-brand"
+                                                            )}
+                                                        />
+                                                    )}
+                                                    <span
+                                                        className={cn(
+                                                            "font-bold text-[11px] leading-tight truncate",
+                                                            isMine ? "text-teal-300" : "text-brand"
+                                                        )}
+                                                    >
+                                                        {replyData.senderName || "پیام"}
+                                                    </span>
                                                 </div>
-                                                <div className={cn("text-[10px] truncate opacity-90 mt-0.5", isMine ? "text-white/90" : "text-secondary")}>
+                                                <div
+                                                    className={cn(
+                                                        "text-[11px] leading-snug truncate opacity-90",
+                                                        isMine ? "text-white" : "text-secondary"
+                                                    )}
+                                                >
                                                     {replyData.content || "مشاهده پیام"}
                                                 </div>
                                             </div>
@@ -778,7 +809,7 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
                                     {editingMessage ? (
                                         <Edit2 className="w-4 h-4 text-brand shrink-0" />
                                     ) : (
-                                        <Reply className="w-4 h-4 text-brand shrink-0 rotate-180" />
+                                        <Reply className="w-4 h-4 text-brand shrink-0 -scale-x-100" />
                                     )}
                                     <div className="min-w-0 flex-1 text-right">
                                         <div className="text-xs font-bold text-brand flex items-center gap-1.5">
