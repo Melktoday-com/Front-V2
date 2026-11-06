@@ -47,7 +47,7 @@ const FEATURE_META: Record<string, FeatureMeta> = {
         iconBg: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20",
         progressBar: "bg-emerald-500",
         accentGlow: "from-emerald-500/20 to-transparent",
-        badge: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20",
+        badge: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20",
     },
     TEMPORARY_RENTAL_PUBLICATION: {
         label: "انتشار اقامتگاه روزانه",
@@ -56,7 +56,7 @@ const FEATURE_META: Record<string, FeatureMeta> = {
         iconBg: "bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20",
         progressBar: "bg-sky-500",
         accentGlow: "from-sky-500/20 to-transparent",
-        badge: "bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-500/20",
+        badge: "bg-sky-500/10 text-sky-700 dark:text-sky-300 border border-sky-500/20",
     },
     URGENT_PROMOTION: {
         label: "برچسب فوری",
@@ -65,7 +65,7 @@ const FEATURE_META: Record<string, FeatureMeta> = {
         iconBg: "bg-amber-500/10 text-amber-500 border border-amber-500/20",
         progressBar: "bg-amber-500",
         accentGlow: "from-amber-500/20 to-transparent",
-        badge: "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20",
+        badge: "bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20",
     },
     LADDER_PROMOTION: {
         label: "نردبان آگهی",
@@ -74,7 +74,7 @@ const FEATURE_META: Record<string, FeatureMeta> = {
         iconBg: "bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20",
         progressBar: "bg-purple-600",
         accentGlow: "from-purple-500/20 to-transparent",
-        badge: "bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/20",
+        badge: "bg-purple-500/10 text-purple-700 dark:text-purple-300 border border-purple-500/20",
     },
 };
 
@@ -85,7 +85,7 @@ const DEFAULT_FEATURE_META: FeatureMeta = {
     iconBg: "bg-primary/10 text-primary border border-primary/20",
     progressBar: "bg-primary",
     accentGlow: "from-primary/20 to-transparent",
-    badge: "bg-primary/10 text-primary border-primary/20",
+    badge: "bg-primary/10 text-primary border border-primary/20",
 };
 
 export function formatPersianDate(dateVal?: string | number | Date | null): string | null {
@@ -221,9 +221,23 @@ export function SubscriptionEntitlementsSection({
                     .filter((n): n is string => !!n),
             ),
         );
-        if (fromEntitlements.length > 0) return fromEntitlements.join(" + ");
+        if (fromEntitlements.length > 0) return fromEntitlements[0];
         return null;
     }, [badge, subscription, entitlements]);
+
+    // Detect if badge is a gold/premium tier
+    const isGoldBadge = useMemo(() => {
+        const text = (activeBadgeTitle || "").toLowerCase();
+        const color = (badge?.badgeMetadata?.color || "").toLowerCase();
+        return (
+            text.includes("طلایی") ||
+            text.includes("gold") ||
+            color === "gold" ||
+            color === "amber" ||
+            badge?.badgeIcon === "star" ||
+            badge?.badgeIcon === "crown"
+        );
+    }, [activeBadgeTitle, badge]);
 
     // Expiry date formatting with safe checks (avoids "Invalid Date")
     const activeExpiryDate = useMemo(() => {
@@ -246,21 +260,31 @@ export function SubscriptionEntitlementsSection({
     const daysRemaining = subscription?.daysRemaining;
 
     const renderBadgeIcon = (iconName?: string | null, cls?: string) => {
+        const iconCls = cls || "w-3.5 h-3.5 shrink-0";
         switch (iconName?.toLowerCase()) {
             case "star":
-                return <Star className={cn("w-3.5 h-3.5 fill-amber-400 text-amber-400", cls)} />;
+                return <Star className={cn("fill-amber-400 text-amber-500", iconCls)} />;
             case "sparkles":
-                return <Sparkles className={cn("w-3.5 h-3.5 text-amber-500", cls)} />;
+                return <Sparkles className={cn("text-amber-600 dark:text-amber-400", iconCls)} />;
             case "award":
-                return <Award className={cn("w-3.5 h-3.5 text-info", cls)} />;
+                return <Award className={cn("text-info", iconCls)} />;
             case "crown":
-                return <Crown className={cn("w-3.5 h-3.5 text-amber-500", cls)} />;
+                return <Crown className={cn("fill-amber-400 text-amber-600 dark:text-amber-400", iconCls)} />;
             case "check":
             case "checkcircle":
             case "check-circle":
-                return <CheckCircle2 className={cn("w-3.5 h-3.5 text-emerald-500", cls)} />;
+                return <CheckCircle2 className={cn("text-emerald-600 dark:text-emerald-400", iconCls)} />;
             default:
-                return <ShieldCheck className={cn("w-3.5 h-3.5 text-amber-500", cls)} />;
+                return (
+                    <ShieldCheck
+                        className={cn(
+                            isGoldBadge
+                                ? "text-amber-600 dark:text-amber-400 fill-amber-500/20"
+                                : "text-primary",
+                            iconCls,
+                        )}
+                    />
+                );
         }
     };
 
@@ -270,64 +294,70 @@ export function SubscriptionEntitlementsSection({
     return (
         <div className={cn("space-y-6", className)}>
             {/* Unified Entitlements Header with Integrated Active Plan Badge */}
-            <div className="bg-surface rounded-3xl border border-border-subtle p-5 sm:p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="flex items-start sm:items-center gap-3.5">
-                    <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/15 shadow-2xs">
-                        <Zap className="w-6 h-6" />
-                    </div>
-                    <div>
-                        <div className="flex items-center gap-2.5 flex-wrap">
-                            <h2 className="text-base sm:text-lg font-black text-foreground tracking-tight">
+            <div className="bg-surface rounded-3xl border border-border-subtle p-4 sm:p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
+                <div className="flex-1 min-w-0">
+                    {/* Top Row: Icon + Title on right, Badge on left (fits perfectly in 1 line on mobile) */}
+                    <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/15 shadow-2xs">
+                                <Zap className="w-4 h-4 sm:w-5 sm:h-5" />
+                            </div>
+                            <h2 className="text-base sm:text-lg font-black text-foreground tracking-tight truncate">
                                 مجموع سهمیه‌های من
                             </h2>
-
-                            {/* Active Plan / Badge Integrated Pill */}
-                            {isInitialLoading ? (
-                                <div className="h-6 w-28 bg-surface-secondary animate-pulse rounded-full" />
-                            ) : activeBadgeTitle ? (
-                                <div
-                                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 text-amber-900 dark:text-amber-200 border border-amber-500/30 text-xs font-black shadow-2xs transition-all hover:bg-amber-500/15"
-                                    title={badge?.badgeMetadata?.tooltip || undefined}
-                                >
-                                    <span className="w-4 h-4 rounded-full bg-amber-500/20 flex items-center justify-center shrink-0">
-                                        {renderBadgeIcon(badge?.badgeIcon, "w-2.5 h-2.5 text-amber-600 dark:text-amber-400")}
-                                    </span>
-                                    <span>پلن فعال: {activeBadgeTitle}</span>
-                                </div>
-                            ) : (
-                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-surface-secondary text-foreground-muted border border-border-subtle/50">
-                                    طرح عادی (پایه)
-                                </span>
-                            )}
                         </div>
 
-                        {/* Subtitle / Expiry / Feature Count */}
-                        <div className="flex items-center gap-2 sm:gap-3 text-xs text-foreground-muted mt-1.5 flex-wrap">
-                            {activeExpiryDate && (
-                                <span className="flex items-center gap-1 font-medium text-foreground-secondary">
-                                    <Clock className="w-3.5 h-3.5 text-foreground-muted" />
-                                    <span>اعتبار تا: {activeExpiryDate}</span>
+                        {/* Active Plan / Badge Integrated Pill */}
+                        {isInitialLoading ? (
+                            <div className="h-6 w-20 bg-surface-secondary animate-pulse rounded-full shrink-0" />
+                        ) : activeBadgeTitle ? (
+                            <div
+                                className={cn(
+                                    "inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full text-xs font-black shrink-0 transition-all shadow-2xs",
+                                    isGoldBadge
+                                        ? "bg-amber-100/90 text-amber-900 border border-amber-300 dark:bg-amber-950/80 dark:text-amber-200 dark:border-amber-700/80"
+                                        : "bg-primary/10 text-primary border border-primary/20",
+                                )}
+                                title={badge?.badgeMetadata?.tooltip || undefined}
+                            >
+                                {renderBadgeIcon(badge?.badgeIcon, "w-3.5 h-3.5 shrink-0")}
+                                <span>{activeBadgeTitle}</span>
+                            </div>
+                        ) : (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-surface-secondary text-foreground-muted border border-border-subtle/50 shrink-0">
+                                طرح عادی
+                            </span>
+                        )}
+                    </div>
+
+                    {/* Subtitle / Expiry / Feature Count */}
+                    <div className="flex items-center gap-2 sm:gap-3 text-xs text-foreground-muted mt-2 sm:mt-1.5 flex-wrap">
+                        {daysRemaining !== undefined && daysRemaining !== null && (
+                            <span className="font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                                <Clock className="w-3.5 h-3.5" />
+                                <span>{toPersianDigits(daysRemaining)} روز اعتبار باقی‌مانده</span>
+                            </span>
+                        )}
+                        {activeExpiryDate && (
+                            <>
+                                {daysRemaining !== undefined && daysRemaining !== null && (
+                                    <span className="text-border">•</span>
+                                )}
+                                <span className="font-medium text-foreground-secondary">
+                                    اعتبار تا: {activeExpiryDate}
                                 </span>
-                            )}
-                            {daysRemaining !== undefined && daysRemaining !== null && (
-                                <>
-                                    {activeExpiryDate && <span className="text-border">•</span>}
-                                    <span className="font-semibold text-emerald-600 dark:text-emerald-400">
-                                        {toPersianDigits(daysRemaining)} روز اعتبار باقی‌مانده
-                                    </span>
-                                </>
-                            )}
-                            {aggregatedEntitlements.length > 0 && (
-                                <>
-                                    {(activeExpiryDate || daysRemaining !== undefined) && (
-                                        <span className="text-border">•</span>
-                                    )}
-                                    <span>
-                                        {toPersianDigits(aggregatedEntitlements.length)} دسته‌بندی سهمیه فعال
-                                    </span>
-                                </>
-                            )}
-                        </div>
+                            </>
+                        )}
+                        {aggregatedEntitlements.length > 0 && (
+                            <>
+                                {(activeExpiryDate || daysRemaining !== undefined) && (
+                                    <span className="text-border hidden sm:inline">•</span>
+                                )}
+                                <span className="hidden sm:inline">
+                                    {toPersianDigits(aggregatedEntitlements.length)} دسته‌بندی سهمیه فعال
+                                </span>
+                            </>
+                        )}
                     </div>
                 </div>
 
@@ -335,7 +365,7 @@ export function SubscriptionEntitlementsSection({
                 {onNavigateToPlans && (
                     <button
                         onClick={onNavigateToPlans}
-                        className="px-4 py-2.5 rounded-2xl bg-surface-secondary hover:bg-border-subtle/80 text-foreground font-bold text-xs transition-all flex items-center gap-2 border border-border-subtle/70 cursor-pointer self-start md:self-auto shrink-0 shadow-2xs hover:shadow-xs active:scale-[0.98]"
+                        className="w-full md:w-auto px-4 py-2 sm:py-2.5 rounded-2xl bg-surface-secondary hover:bg-border-subtle/80 text-foreground font-bold text-xs transition-all flex items-center justify-center gap-2 border border-border-subtle/70 cursor-pointer shrink-0 shadow-2xs hover:shadow-xs active:scale-[0.98]"
                     >
                         <span>
                             {hasActiveSubscription || activeBadgeTitle
@@ -402,7 +432,7 @@ export function SubscriptionEntitlementsSection({
                         return (
                             <div
                                 key={group.type}
-                                className="group bg-surface rounded-3xl border border-border-subtle hover:border-primary/30 p-5 shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between relative overflow-hidden"
+                                className="group bg-surface rounded-3xl border border-border-subtle hover:border-primary/30 p-4 sm:p-5 shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between relative overflow-hidden"
                             >
                                 {/* Top Ambient Accent */}
                                 <div
@@ -515,7 +545,7 @@ export function SubscriptionEntitlementsSection({
                                                                 {plan.planName}
                                                             </span>
                                                         </div>
-                                                        <div className="flex items-center gap-1.5 shrink-0 text-[11px]">
+                                                        <div className="flex items-center gap-1 shrink-0 text-[11px]">
                                                             {planExpiry && (
                                                                 <span className="text-[10px] text-foreground-muted hidden sm:inline">
                                                                     تا {planExpiry}
