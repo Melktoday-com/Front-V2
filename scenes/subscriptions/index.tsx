@@ -337,26 +337,7 @@ export default function SubscriptionsScene() {
                         </p>
                     </div>
 
-                    {/* Wallet Badge & Quick Link */}
-                    {isLoggedIn && (
-                        <div className="flex items-center gap-3">
-                            <div className="flex items-center gap-2.5 bg-surface border border-border-subtle/80 px-4 py-2.5 rounded-2xl shadow-sm">
-                                <Wallet className="w-4 h-4 text-success" />
-                                <div className="text-xs">
-                                    <span className="text-foreground-muted block font-normal">موجودی در دسترس:</span>
-                                    <span className="font-black text-foreground">
-                                        {isLoadingWallet ? "..." : `${formatCurrency(availableBalanceToman)} تومان`}
-                                    </span>
-                                </div>
-                            </div>
-                            <Link
-                                href="/wallet"
-                                className="px-3.5 py-2.5 bg-primary/10 hover:bg-primary/20 text-primary font-bold text-xs rounded-2xl transition"
-                            >
-                                شارژ کیف پول
-                            </Link>
-                        </div>
-                    )}
+
                 </div>
 
                 {/* Non-Host / Non-Agent Banner (Regular User Guidance) */}
