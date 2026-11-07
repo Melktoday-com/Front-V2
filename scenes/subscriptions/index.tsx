@@ -23,6 +23,7 @@ import {
     Building2,
     Check,
     CheckCircle2,
+    FileText,
     Flame,
     Gift,
     Home,
@@ -333,65 +334,94 @@ export default function SubscriptionsScene() {
 
                 {/* Non-Host / Non-Agent Banner (Regular User Guidance) */}
                 {!isHostOrAgent && !isPrivileged && activeTab === "plans" && (
-                    <div className="mb-8 p-5 bg-gradient-to-r from-amber-50 to-orange-50/70 border border-warning/30/80 rounded-3xl">
-                        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                            <div className="flex items-start gap-3.5">
-                                <div className="p-2.5 bg-amber-500/10 text-warning rounded-2xl shrink-0 mt-0.5">
-                                    <AlertCircle className="w-5 h-5" />
+                    <div className="relative overflow-hidden mb-8 p-5 sm:p-6 bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-surface rounded-3xl border border-amber-500/25 shadow-xs transition-all">
+                        {/* Decorative background glows */}
+                        <div className="pointer-events-none absolute -top-12 -left-12 w-48 h-48 rounded-full bg-amber-400/15 blur-2xl" />
+                        <div className="pointer-events-none absolute -bottom-14 -right-14 w-44 h-44 rounded-full bg-orange-400/10 blur-xl" />
+
+                        <div className="relative flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5">
+                            {/* Content Info */}
+                            <div className="flex items-start gap-3.5 sm:gap-4 max-w-2xl">
+                                <div className="p-3 bg-gradient-to-br from-amber-500/20 to-orange-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 rounded-2xl shrink-0 mt-0.5 shadow-2xs">
+                                    <Sparkles className="w-5 h-5" />
                                 </div>
-                                <div>
-                                    <h3 className="font-black text-amber-950 text-base mb-1">
-                                        پلن‌های اشتراک مختص «میزبانان» و «مشاوران املاک» است
-                                    </h3>
-                                    <p className="text-xs text-amber-900/80 leading-relaxed max-w-2xl">
-                                        کاربران عادی به ازای هر آگهی مبلغ مصوب را پرداخت می‌کنند. در صورت تمایل به خرید اشتراک و دریافت سهمیه‌های انبوه و نشان تایید، به عنوان میزبان یا مشاور املاک ثبت‌نام کنید.
+                                <div className="space-y-1.5">
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <h3 className="font-black text-foreground text-base sm:text-lg tracking-tight">
+                                            پلن‌های اشتراک مختص «میزبانان» و «مشاوران املاک» است
+                                        </h3>
+                                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/20">
+                                            راهنما
+                                        </span>
+                                    </div>
+                                    <p className="text-xs sm:text-[13px] text-foreground-muted leading-relaxed">
+                                        کاربران عادی به ازای هر آگهی مبلغ مصوب را پرداخت می‌کنند. در صورت تمایل به خرید اشتراک، دریافت سهمیه‌های انبوه و نشان تایید، به عنوان میزبان یا مشاور املاک ثبت‌نام کنید.
                                     </p>
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-2.5 shrink-0 w-full md:w-auto">
+                            {/* Action Buttons */}
+                            <div className="flex flex-wrap sm:flex-nowrap items-center gap-2.5 shrink-0 w-full lg:w-auto">
                                 <Link
-                                    href="/host"
-                                    className="flex-1 md:flex-none text-center px-4 py-2.5 bg-surface border border-amber-300 text-amber-900 hover:bg-warning-subtle/50 font-bold text-xs rounded-2xl shadow-sm transition"
+                                    href="/host/apply"
+                                    className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-surface hover:bg-surface-secondary border border-border-subtle hover:border-amber-400/60 text-foreground font-black text-xs rounded-2xl shadow-2xs hover:shadow-xs transition-all active:scale-[0.98]"
                                 >
-                                    ثبت‌نام میزبان
+                                    <Home className="w-4 h-4 text-amber-600" />
+                                    <span>ثبت‌نام میزبان</span>
                                 </Link>
+
                                 <Link
-                                    href="/agency"
-                                    className="flex-1 md:flex-none text-center px-4 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-2xl shadow-sm transition"
+                                    href="/agency/apply"
+                                    className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-black text-xs rounded-2xl shadow-xs hover:shadow-sm transition-all active:scale-[0.98]"
                                 >
-                                    ثبت‌نام مشاور / آژانس
+                                    <Building2 className="w-4 h-4 text-white" />
+                                    <span>ثبت‌نام مشاور / آژانس</span>
                                 </Link>
                             </div>
                         </div>
 
-                        {/* Role preview switcher */}
-                        <div className="mt-4 pt-4 border-t border-warning/30/60 flex items-center justify-between text-xs">
-                            <span className="text-warning font-medium">پیش‌نمایش پلن‌ها بر اساس نقش:</span>
-                            <div className="inline-flex p-1 bg-amber-200/40 rounded-xl">
-                                <button
-                                    onClick={() => setSelectedRole("landlord")}
-                                    className={cn(
-                                        "px-3 py-1 rounded-lg font-bold transition",
-                                        selectedRole === "landlord"
-                                            ? "bg-surface text-amber-900 shadow-sm"
-                                            : "text-warning hover:text-amber-950",
-                                    )}
-                                >
-                                    میزبان اقامتگاه
-                                </button>
-                                <button
-                                    onClick={() => setSelectedRole("agent")}
-                                    className={cn(
-                                        "px-3 py-1 rounded-lg font-bold transition",
-                                        selectedRole === "agent"
-                                            ? "bg-surface text-amber-900 shadow-sm"
-                                            : "text-warning hover:text-amber-950",
-                                    )}
-                                >
-                                    مشاور املاک
-                                </button>
+                        {/* Bottom Row: Role Preview Switcher + Requests Page Link */}
+                        <div className="relative mt-5 pt-4 border-t border-amber-500/15 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+                            <div className="flex flex-wrap items-center gap-2 text-foreground-secondary">
+                                <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />
+                                <span className="font-bold">پیش‌نمایش پلن‌ها بر اساس نقش:</span>
+                                <div className="inline-flex p-1 bg-surface-secondary/80 rounded-xl border border-border-subtle/80 shadow-2xs">
+                                    <button
+                                        onClick={() => setSelectedRole("landlord")}
+                                        className={cn(
+                                            "flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition-all text-xs",
+                                            selectedRole === "landlord"
+                                                ? "bg-surface text-foreground shadow-xs border border-border-subtle/50"
+                                                : "text-foreground-muted hover:text-foreground",
+                                        )}
+                                    >
+                                        <Home className="w-3.5 h-3.5 text-amber-600" />
+                                        <span>میزبان اقامتگاه</span>
+                                    </button>
+                                    <button
+                                        onClick={() => setSelectedRole("agent")}
+                                        className={cn(
+                                            "flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition-all text-xs",
+                                            selectedRole === "agent"
+                                                ? "bg-surface text-foreground shadow-xs border border-border-subtle/50"
+                                                : "text-foreground-muted hover:text-foreground",
+                                        )}
+                                    >
+                                        <Building2 className="w-3.5 h-3.5 text-info" />
+                                        <span>مشاور املاک</span>
+                                    </button>
+                                </div>
                             </div>
+
+                            {/* Link to Requests Page */}
+                            <Link
+                                href="/profile/requests"
+                                className="group inline-flex items-center gap-1.5 text-xs font-bold text-amber-800 dark:text-amber-300 hover:text-amber-950 transition-colors"
+                            >
+                                <FileText className="w-3.5 h-3.5 text-amber-600" />
+                                <span>پیگیری وضعیت در صفحه درخواست‌ها</span>
+                                <ArrowLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-0.5" />
+                            </Link>
                         </div>
                     </div>
                 )}
@@ -495,7 +525,7 @@ export default function SubscriptionsScene() {
                                             <div>
                                                 {/* Dynamic Badge Tag if plan includes badge */}
                                                 {plan.badgeName && (
-                                                    <div className="mb-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-warning-subtle text-warning border border-warning/30/60 shadow-xs">
+                                                    <div className="mb-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-warning-subtle text-warning border border-warning/30 shadow-xs">
                                                         {renderBadgeIcon(plan.badgeIcon)}
                                                         <span>{plan.badgeName}</span>
                                                     </div>
@@ -609,7 +639,7 @@ export default function SubscriptionsScene() {
 
                         {/* Welcome Package Section */}
                         {isLoggedIn && (
-                            <div className="mt-12 p-6 bg-gradient-to-r from-blue-50/80 to-indigo-50/80 border border-info/30/60 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-4">
+                            <div className="mt-12 p-6 bg-gradient-to-r from-blue-50/80 to-indigo-50/80 border border-info/30 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-4">
                                 <div className="flex items-center gap-3.5">
                                     <div className="p-3 bg-blue-500/10 text-info rounded-2xl shrink-0">
                                         <Gift className="w-6 h-6" />
