@@ -497,9 +497,19 @@ body {
   color: var(--brand-navy);
 }
 
-:focus-visible {
+:focus-visible:not(input):not(textarea):not(select) {
   outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
+}
+
+/* Ensure inputs, textareas, and selects never show browser or custom outline on focus */
+input:focus,
+input:focus-visible,
+textarea:focus,
+textarea:focus-visible,
+select:focus,
+select:focus-visible {
+  outline: none !important;
 }
 
 /* =============================================================================
