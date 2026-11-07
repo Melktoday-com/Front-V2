@@ -17,16 +17,15 @@ import {
     SubscriptionTargetRole
 } from "@/types/api/subscription.types";
 import {
-    AlertCircle,
     ArrowLeft,
     Award,
     Building2,
     Check,
     CheckCircle2,
-    FileText,
     Flame,
     Gift,
     Home,
+    Info,
     Layers,
     Loader2,
     ShieldCheck,
@@ -334,94 +333,61 @@ export default function SubscriptionsScene() {
 
                 {/* Non-Host / Non-Agent Banner (Regular User Guidance) */}
                 {!isHostOrAgent && !isPrivileged && activeTab === "plans" && (
-                    <div className="relative overflow-hidden mb-8 p-5 sm:p-6 bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-surface rounded-3xl border border-amber-500/25 shadow-xs transition-all">
-                        {/* Decorative background glows */}
-                        <div className="pointer-events-none absolute -top-12 -left-12 w-48 h-48 rounded-full bg-amber-400/15 blur-2xl" />
-                        <div className="pointer-events-none absolute -bottom-14 -right-14 w-44 h-44 rounded-full bg-orange-400/10 blur-xl" />
-
-                        <div className="relative flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5">
-                            {/* Content Info */}
-                            <div className="flex items-start gap-3.5 sm:gap-4 max-w-2xl">
-                                <div className="p-3 bg-gradient-to-br from-amber-500/20 to-orange-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 rounded-2xl shrink-0 mt-0.5 shadow-2xs">
-                                    <Sparkles className="w-5 h-5" />
+                    <div className="mb-6 p-4 sm:p-5 bg-surface rounded-2xl border border-border-subtle shadow-xs space-y-4">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5">
+                            <div className="flex items-start sm:items-center gap-3">
+                                <div className="w-8 h-8 rounded-xl bg-info-subtle text-info flex items-center justify-center shrink-0 border border-info-border/40">
+                                    <Info className="w-4 h-4" />
                                 </div>
-                                <div className="space-y-1.5">
-                                    <div className="flex flex-wrap items-center gap-2">
-                                        <h3 className="font-black text-foreground text-base sm:text-lg tracking-tight">
-                                            پلن‌های اشتراک مختص «میزبانان» و «مشاوران املاک» است
-                                        </h3>
-                                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/20">
-                                            راهنما
-                                        </span>
-                                    </div>
-                                    <p className="text-xs sm:text-[13px] text-foreground-muted leading-relaxed">
-                                        کاربران عادی به ازای هر آگهی مبلغ مصوب را پرداخت می‌کنند. در صورت تمایل به خرید اشتراک، دریافت سهمیه‌های انبوه و نشان تایید، به عنوان میزبان یا مشاور املاک ثبت‌نام کنید.
+                                <div>
+                                    <h3 className="font-bold text-sm text-foreground">
+                                        پلن‌های اشتراک مختص «میزبانان» و «مشاوران املاک» است
+                                    </h3>
+                                    <p className="text-xs text-foreground-muted mt-0.5 leading-relaxed">
+                                        کاربران عادی به ازای هر آگهی مبلغ مصوب را پرداخت می‌کنند. برای خرید پلن اشتراک، ابتدا درخواست عضویت دهید.
                                     </p>
                                 </div>
                             </div>
 
-                            {/* Action Buttons */}
-                            <div className="flex flex-wrap sm:flex-nowrap items-center gap-2.5 shrink-0 w-full lg:w-auto">
-                                <Link
-                                    href="/host/apply"
-                                    className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-surface hover:bg-surface-secondary border border-border-subtle hover:border-amber-400/60 text-foreground font-black text-xs rounded-2xl shadow-2xs hover:shadow-xs transition-all active:scale-[0.98]"
-                                >
-                                    <Home className="w-4 h-4 text-amber-600" />
-                                    <span>ثبت‌نام میزبان</span>
-                                </Link>
-
-                                <Link
-                                    href="/agency/apply"
-                                    className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-black text-xs rounded-2xl shadow-xs hover:shadow-sm transition-all active:scale-[0.98]"
-                                >
-                                    <Building2 className="w-4 h-4 text-white" />
-                                    <span>ثبت‌نام مشاور / آژانس</span>
-                                </Link>
-                            </div>
-                        </div>
-
-                        {/* Bottom Row: Role Preview Switcher + Requests Page Link */}
-                        <div className="relative mt-5 pt-4 border-t border-amber-500/15 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
-                            <div className="flex flex-wrap items-center gap-2 text-foreground-secondary">
-                                <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />
-                                <span className="font-bold">پیش‌نمایش پلن‌ها بر اساس نقش:</span>
-                                <div className="inline-flex p-1 bg-surface-secondary/80 rounded-xl border border-border-subtle/80 shadow-2xs">
-                                    <button
-                                        onClick={() => setSelectedRole("landlord")}
-                                        className={cn(
-                                            "flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition-all text-xs",
-                                            selectedRole === "landlord"
-                                                ? "bg-surface text-foreground shadow-xs border border-border-subtle/50"
-                                                : "text-foreground-muted hover:text-foreground",
-                                        )}
-                                    >
-                                        <Home className="w-3.5 h-3.5 text-amber-600" />
-                                        <span>میزبان اقامتگاه</span>
-                                    </button>
-                                    <button
-                                        onClick={() => setSelectedRole("agent")}
-                                        className={cn(
-                                            "flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition-all text-xs",
-                                            selectedRole === "agent"
-                                                ? "bg-surface text-foreground shadow-xs border border-border-subtle/50"
-                                                : "text-foreground-muted hover:text-foreground",
-                                        )}
-                                    >
-                                        <Building2 className="w-3.5 h-3.5 text-info" />
-                                        <span>مشاور املاک</span>
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Link to Requests Page */}
                             <Link
                                 href="/profile/requests"
-                                className="group inline-flex items-center gap-1.5 text-xs font-bold text-amber-800 dark:text-amber-300 hover:text-amber-950 transition-colors"
+                                className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-primary hover:bg-primary-hover text-white text-xs font-bold transition shadow-xs shrink-0 self-start sm:self-auto"
                             >
-                                <FileText className="w-3.5 h-3.5 text-amber-600" />
-                                <span>پیگیری وضعیت در صفحه درخواست‌ها</span>
-                                <ArrowLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-0.5" />
+                                <span>صفحه درخواست‌ها</span>
+                                <ArrowLeft className="w-3.5 h-3.5" />
                             </Link>
+                        </div>
+
+                        <div className="pt-3 border-t border-border-subtle flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs">
+                            <span className="text-foreground-muted">
+                                پیش‌نمایش پلن‌ها بر اساس نقش:
+                            </span>
+                            <div className="inline-flex p-1 bg-surface-secondary rounded-xl">
+                                <button
+                                    type="button"
+                                    onClick={() => setSelectedRole("landlord")}
+                                    className={cn(
+                                        "px-3 py-1 rounded-lg font-bold transition text-xs",
+                                        selectedRole === "landlord"
+                                            ? "bg-primary text-white shadow-xs"
+                                            : "text-foreground-muted hover:text-foreground",
+                                    )}
+                                >
+                                    میزبان اقامتگاه
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setSelectedRole("agent")}
+                                    className={cn(
+                                        "px-3 py-1 rounded-lg font-bold transition text-xs",
+                                        selectedRole === "agent"
+                                            ? "bg-primary text-white shadow-xs"
+                                            : "text-foreground-muted hover:text-foreground",
+                                    )}
+                                >
+                                    مشاور املاک
+                                </button>
+                            </div>
                         </div>
                     </div>
                 )}
