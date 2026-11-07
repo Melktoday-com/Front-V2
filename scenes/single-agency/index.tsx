@@ -45,7 +45,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useSafeBack } from "@/hooks/useSafeBack";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 function getAgencyAdPricing(pricing?: any): { price: string | number; unit?: string } {
@@ -99,7 +99,28 @@ export default function SingleAgencyScene({ initialData }: SingleAgencySceneProp
     const router = useRouter();
     const handleBack = useSafeBack("/");
 
-    const [activeTab, setActiveTab] = useState<"listings" | "posts" | "about" | "reviews">("listings");
+    const searchParams = useSearchParams();
+    const requestedTab = searchParams.get("tab");
+
+    const [activeTab, setActiveTab] = useState<"listings" | "posts" | "about" | "reviews">(() => {
+        if (requestedTab === "posts") return "posts";
+        if (requestedTab === "about") return "about";
+        if (requestedTab === "reviews") return "reviews";
+        return "listings";
+    });
+
+    const handleTabChange = (tab: "listings" | "posts" | "about" | "reviews") => {
+        setActiveTab(tab);
+        if (typeof window !== "undefined") {
+            const url = new URL(window.location.href);
+            if (tab === "listings") {
+                url.searchParams.delete("tab");
+            } else {
+                url.searchParams.set("tab", tab);
+            }
+            window.history.replaceState(null, "", url.toString());
+        }
+    };
     const [viewMode, setViewMode] = useState<"grid" | "feed">("grid");
     const [readingPost, setReadingPost] = useState<AgencyPost | null>(null);
 
@@ -476,7 +497,7 @@ export default function SingleAgencyScene({ initialData }: SingleAgencySceneProp
             <div className="flex items-center justify-between border-b border-border-subtle mb-6">
                 <div className="flex gap-4 sm:gap-8">
                     <button
-                        onClick={() => setActiveTab("listings")}
+                        onClick={() => handleTabChange("listings")}
                         className={cn(
                             "pb-3 font-bold text-xs sm:text-sm border-b-2 transition-colors",
                             activeTab === "listings"
@@ -488,7 +509,7 @@ export default function SingleAgencyScene({ initialData }: SingleAgencySceneProp
                     </button>
 
                     <button
-                        onClick={() => setActiveTab("posts")}
+                        onClick={() => handleTabChange("posts")}
                         className={cn(
                             "pb-3 font-bold text-xs sm:text-sm border-b-2 transition-colors",
                             activeTab === "posts"
@@ -500,7 +521,7 @@ export default function SingleAgencyScene({ initialData }: SingleAgencySceneProp
                     </button>
 
                     <button
-                        onClick={() => setActiveTab("about")}
+                        onClick={() => handleTabChange("about")}
                         className={cn(
                             "pb-3 font-bold text-xs sm:text-sm border-b-2 transition-colors",
                             activeTab === "about"
@@ -512,7 +533,7 @@ export default function SingleAgencyScene({ initialData }: SingleAgencySceneProp
                     </button>
 
                     <button
-                        onClick={() => setActiveTab("reviews")}
+                        onClick={() => handleTabChange("reviews")}
                         className={cn(
                             "pb-3 font-bold text-xs sm:text-sm border-b-2 transition-colors",
                             activeTab === "reviews"

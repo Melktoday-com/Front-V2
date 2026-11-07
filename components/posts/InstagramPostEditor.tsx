@@ -84,6 +84,9 @@ export function InstagramPostEditor({
 }: InstagramPostEditorProps) {
   const [activeSlide, setActiveSlide] = useState(0);
   const [showFullCaption, setShowFullCaption] = useState(false);
+  const [isCustomCategory, setIsCustomCategory] = useState<boolean>(() => {
+    return Boolean(category && !INSTAGRAM_CATEGORIES.includes(category));
+  });
 
   const addHashtag = (tag: string) => {
     if (caption.includes(tag)) return;
@@ -169,21 +172,57 @@ export function InstagramPostEditor({
           {/* Category & Location Tag */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-black text-foreground flex items-center gap-1.5">
-                <Tag className="w-3.5 h-3.5 text-primary" />
-                <span>دسته‌بندی موضوعی</span>
-              </label>
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="w-full px-4 py-3 rounded-2xl bg-surface-secondary border border-border-subtle text-sm font-medium text-foreground focus:bg-surface focus:border-primary focus:outline-hidden transition-all"
-              >
-                {INSTAGRAM_CATEGORIES.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-black text-foreground flex items-center gap-1.5">
+                  <Tag className="w-3.5 h-3.5 text-primary" />
+                  <span>دسته‌بندی موضوعی</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (isCustomCategory) {
+                      setIsCustomCategory(false);
+                      setCategory(INSTAGRAM_CATEGORIES[0]);
+                    } else {
+                      setIsCustomCategory(true);
+                      setCategory("");
+                    }
+                  }}
+                  className="text-[11px] text-primary font-bold hover:underline"
+                >
+                  {isCustomCategory ? "انتخاب از لیست" : "تایپ موضوع دلخواه"}
+                </button>
+              </div>
+              {isCustomCategory ? (
+                <input
+                  type="text"
+                  placeholder="موضوع دلخواه خود را تایپ کنید..."
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  className="w-full px-4 py-3 rounded-2xl bg-surface-secondary border border-border-subtle text-sm font-medium text-foreground focus:bg-surface focus:border-primary focus:outline-hidden transition-all placeholder:text-foreground-muted"
+                  autoFocus
+                />
+              ) : (
+                <select
+                  value={category}
+                  onChange={(e) => {
+                    if (e.target.value === "__custom__") {
+                      setIsCustomCategory(true);
+                      setCategory("");
+                    } else {
+                      setCategory(e.target.value);
+                    }
+                  }}
+                  className="w-full px-4 py-3 rounded-2xl bg-surface-secondary border border-border-subtle text-sm font-medium text-foreground focus:bg-surface focus:border-primary focus:outline-hidden transition-all"
+                >
+                  {INSTAGRAM_CATEGORIES.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                  <option value="__custom__">+ سایر (تایپ موضوع دلخواه)...</option>
+                </select>
+              )}
             </div>
 
             {setLocationTag && (

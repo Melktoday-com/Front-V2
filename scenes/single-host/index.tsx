@@ -63,6 +63,19 @@ export default function SingleHostScene({ idOrSlug, initialData }: SingleHostSce
     if (requestedTab === "about") return "about";
     return "rentals";
   });
+
+  const handleTabChange = (tab: "rentals" | "ads" | "posts" | "about") => {
+    setActiveTab(tab);
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      if (tab === "rentals") {
+        url.searchParams.delete("tab");
+      } else {
+        url.searchParams.set("tab", tab);
+      }
+      window.history.replaceState(null, "", url.toString());
+    }
+  };
   const [selectedPost, setSelectedPost] = useState<UnifiedPost | null>(null);
 
   // Queries
@@ -285,7 +298,7 @@ export default function SingleHostScene({ idOrSlug, initialData }: SingleHostSce
         {/* Tab Navigation */}
         <div className="flex border-b border-soft-border gap-6 sm:gap-10 text-sm font-bold bg-surface px-6 rounded-2xl border overflow-x-auto no-scrollbar">
           <button
-            onClick={() => setActiveTab("rentals")}
+            onClick={() => handleTabChange("rentals")}
             className={cn(
               "py-4 relative transition-colors flex items-center gap-2 shrink-0 cursor-pointer",
               activeTab === "rentals" ? "text-primary border-b-2 border-primary -mb-px font-black" : "text-secondary hover:text-brand"
@@ -296,7 +309,7 @@ export default function SingleHostScene({ idOrSlug, initialData }: SingleHostSce
           </button>
           {hasAds && (
             <button
-              onClick={() => setActiveTab("ads")}
+              onClick={() => handleTabChange("ads")}
               className={cn(
                 "py-4 relative transition-colors flex items-center gap-2 shrink-0 cursor-pointer",
                 activeTab === "ads" ? "text-primary border-b-2 border-primary -mb-px font-black" : "text-secondary hover:text-brand"
@@ -307,7 +320,7 @@ export default function SingleHostScene({ idOrSlug, initialData }: SingleHostSce
             </button>
           )}
           <button
-            onClick={() => setActiveTab("posts")}
+            onClick={() => handleTabChange("posts")}
             className={cn(
               "py-4 relative transition-colors flex items-center gap-2 shrink-0 cursor-pointer",
               activeTab === "posts" ? "text-primary border-b-2 border-primary -mb-px font-black" : "text-secondary hover:text-brand"
@@ -317,7 +330,7 @@ export default function SingleHostScene({ idOrSlug, initialData }: SingleHostSce
             <span>پست‌ها و مقالات ({toPersianDigits(header.postsCount || 0)})</span>
           </button>
           <button
-            onClick={() => setActiveTab("about")}
+            onClick={() => handleTabChange("about")}
             className={cn(
               "py-4 relative transition-colors flex items-center gap-2 shrink-0 cursor-pointer",
               activeTab === "about" ? "text-primary border-b-2 border-primary -mb-px font-black" : "text-secondary hover:text-brand"

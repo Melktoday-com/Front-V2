@@ -5,7 +5,7 @@ import { useSafeBack } from "@/hooks/useSafeBack";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { useSinglePost, useLikePost, useUpdatePost } from "@/hooks/usePosts";
+import { useSinglePost, useLikePost, useUpdatePost, useDeletePost } from "@/hooks/usePosts";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdminPermissions } from "@/hooks/useAdminPermissions";
 import { usePostViewObserver } from "@/hooks/usePostViewObserver";
@@ -35,6 +35,7 @@ import {
   Loader2,
   AlertCircle,
   Edit3,
+  Trash2,
   X,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -51,10 +52,13 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
   const { data: post, isLoading, isError, refetch } = useSinglePost(idOrSlug);
   const likeMutation = useLikePost();
   const updatePostMutation = useUpdatePost();
+  const deletePostMutation = useDeletePost();
 
   const isAuthor = Boolean(user?.userId && post?.authorUserId === user.userId);
   const canEdit = isAuthor || isSuperAdmin || hasPermission("posts.edit");
 
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [editingPost, setEditingPost] = useState<UnifiedPost | null>(null);
   const [editForm, setEditForm] = useState({
     title: "",
@@ -108,6 +112,28 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
         },
       }
     );
+  };
+
+  const handleDeletePost = async () => {
+    if (!post?.id) return;
+    setIsDeleting(true);
+    try {
+      await deletePostMutation.mutateAsync(post.id);
+      toast.success("پست با موفقیت حذف شد.");
+      setShowDeleteModal(false);
+      if (post.publisherType === PUBLISHER_TYPES.AGENCY && (post.agencyId || post.publisherId)) {
+        router.push(`/agency/${post.agencyId || post.publisherId}?tab=posts`);
+      } else if (post.publisherType === PUBLISHER_TYPES.HOST && post.publisherId) {
+        const hostTarget = post.publisher?.slug ? encodeURIComponent(post.publisher.slug) : encodeURIComponent(post.publisherId);
+        router.push(`/host/${hostTarget}?tab=posts`);
+      } else {
+        router.push("/explore");
+      }
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "خطا در حذف پست. لطفا مجددا تلاش کنید.");
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   // Active slide index for Instagram style
@@ -306,14 +332,24 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
 
         <div className="flex items-center gap-2">
           {canEdit && (
-            <button
-              type="button"
-              onClick={handleOpenEdit}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary text-xs font-black transition-colors"
-            >
-              <Edit3 className="w-3.5 h-3.5" />
-              <span>ویرایش این مطلب</span>
-            </button>
+            <>
+              <button
+                type="button"
+                onClick={handleOpenEdit}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary text-xs font-black transition-colors cursor-pointer"
+              >
+                <Edit3 className="w-3.5 h-3.5" />
+                <span>ویرایش این مطلب</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowDeleteModal(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 text-xs font-black transition-colors cursor-pointer"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>حذف</span>
+              </button>
+            </>
           )}
 
           {post.category && (
@@ -911,6 +947,50 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── DELETE CONFIRMATION MODAL ────────────────────────────────────── */}
+      {showDeleteModal && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="تایید حذف پست"
+          className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in"
+        >
+          <div className="bg-surface rounded-3xl max-w-sm w-full p-6 space-y-4 shadow-2xl border border-border-subtle animate-in zoom-in-95">
+            <div className="w-12 h-12 rounded-2xl bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center mx-auto">
+              <Trash2 className="w-6 h-6" />
+            </div>
+            <div className="text-center space-y-2">
+              <h3 className="text-base font-black text-brand">حذف این پست</h3>
+              <p className="text-xs text-foreground-secondary leading-relaxed">
+                آیا از حذف این پست اطمینان دارید؟ پس از حذف، این مطلب برای همیشه پاک خواهد شد و قابل بازگشت نیست.
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={() => setShowDeleteModal(false)}
+                className="py-2.5 px-4 rounded-xl border border-border-subtle text-foreground-secondary hover:bg-surface-secondary text-xs font-black transition-colors cursor-pointer"
+              >
+                انصراف
+              </button>
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={handleDeletePost}
+                className="py-2.5 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-black transition-colors cursor-pointer flex items-center justify-center gap-1.5 shadow-sm"
+              >
+                {isDeleting ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <span>بله، حذف شود</span>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       )}

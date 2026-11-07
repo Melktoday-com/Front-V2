@@ -373,6 +373,16 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
         setPricingErrors({});
     };
 
+    // Automatically scroll to top whenever step changes (Item 38)
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
+            setTimeout(() => {
+                window.scrollTo({ top: 0, behavior: "smooth" });
+            }, 40);
+        }
+    }, [step]);
+
     const hydratedEditAdIdRef = useRef<string | null>(null);
 
     // Pre-fill form in edit mode
@@ -384,8 +394,24 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                 return;
             }
 
-            if (hydratedEditAdIdRef.current !== existingAd.adId) {
-                hydratedEditAdIdRef.current = existingAd.adId;
+            const adIdentifier = existingAd.adId || (existingAd as any).id;
+            if (hydratedEditAdIdRef.current !== adIdentifier) {
+                hydratedEditAdIdRef.current = adIdentifier;
+
+                const rawMedia = (existingAd.mediaIds && existingAd.mediaIds.length > 0)
+                    ? existingAd.mediaIds
+                    : (existingAd as any).images || (existingAd as any).media || [];
+
+                const normalizedMedia: MediaReference[] = rawMedia.map((m: any) => {
+                    if (typeof m === "string") {
+                        return { id: m, type: "IMAGE" };
+                    }
+                    return {
+                        id: m.id || m.mediaId || m.url || "",
+                        type: m.type || "IMAGE",
+                    };
+                }).filter((m: MediaReference) => Boolean(m.id));
+
                 setFormData({
                     cityId: existingAd.cityId,
                     categoryPath: existingAd.categoryPath,
@@ -395,7 +421,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                     pricingValues: existingAd.pricing || {},
                     latitude: existingAd.location?.coordinates?.latitude ?? 35.6892,
                     longitude: existingAd.location?.coordinates?.longitude ?? 51.389,
-                    mediaIds: existingAd.mediaIds || [],
+                    mediaIds: normalizedMedia,
                     isDecorativeImages: existingAd.isDecorativeImages || false,
                 });
                 if (existingAd.cityName) {

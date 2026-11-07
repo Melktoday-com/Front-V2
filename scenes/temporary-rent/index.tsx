@@ -62,56 +62,22 @@ export default function TemporaryRentScene() {
                     cityId={effectiveCityId}
                     onCitySelect={handleCitySelect}
                 />
-
-                {/* Airbnb-style Filter Pill Bar */}
-                <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar text-xs">
-                    {/* Guest Filter Buttons */}
-                    <div className="flex items-center gap-1.5 bg-surface p-1 rounded-full border border-border-subtle shadow-2xs">
-                        <Users className="w-3.5 h-3.5 text-orange-500 mr-2" />
-                        <span className="text-text-light font-bold text-[11px] ml-1">تعداد مسافر:</span>
-                        {[
-                            { count: null, label: "همه" },
-                            { count: 1, label: "۱+" },
-                            { count: 2, label: "۲+" },
-                            { count: 4, label: "۴+" },
-                            { count: 6, label: "۶+" },
-                        ].map((opt) => {
-                            const isSelected = guestCount === opt.count;
-                            return (
-                                <button
-                                    key={opt.label}
-                                    onClick={() => setGuestCount(opt.count)}
-                                    className={cn(
-                                        "px-2.5 py-1 rounded-full font-bold text-xs transition-colors",
-                                        isSelected
-                                            ? "bg-brand text-white shadow-xs"
-                                            : "text-text-light hover:bg-surface-secondary"
-                                    )}
-                                >
-                                    {opt.label}
-                                </button>
-                            );
-                        })}
-                    </div>
-
-                    {/* Quick Jalali Date Tag info */}
-                    <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-surface rounded-full border border-border-subtle text-text-light text-[11px] font-bold shadow-2xs">
-                        <Calendar className="w-3.5 h-3.5 text-primary" />
-                        <span>تحویل کلید: آنی و هماهنگ با میزبان</span>
-                    </div>
-                </div>
             </div>
 
             {/* Content Body */}
             <div className="p-4 sm:p-6 lg:p-10">
-                {/* Count and status */}
-                <div className="flex items-center justify-between mb-6 text-xs text-text-light font-bold">
-                    <span>
-                        {isLoading
-                            ? "در حال بارگذاری اقامتگاه‌ها..."
-                            : `${toPersianDigits(filteredItems.length)} اقامتگاه در ${effectiveCityName}`}
-                    </span>
-                </div>
+                {/* Count and status (hidden when 0 per Item 59) */}
+                {isLoading ? (
+                    <div className="mb-6 text-xs text-text-light font-bold">
+                        <span>در حال بارگذاری اقامتگاه‌ها...</span>
+                    </div>
+                ) : filteredItems.length > 0 ? (
+                    <div className="flex items-center justify-between mb-6 text-xs text-text-light font-bold">
+                        <span>
+                            {`${toPersianDigits(filteredItems.length)} اقامتگاه در ${effectiveCityName}`}
+                        </span>
+                    </div>
+                ) : null}
 
                 {isLoading ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -125,10 +91,10 @@ export default function TemporaryRentScene() {
                         onRetry={() => refetch()}
                     />
                 ) : filteredItems.length === 0 ? (
-                    <div className="py-20 text-center">
+                    <div className="py-8 sm:py-12 text-center">
                         <EmptyState
-                            message="اقامتگاهی با این مشخصات یافت نشد"
-                            description="می‌توانید فیلتر تعداد مسافران را ریست کنید یا شهر مورد نظر را تغییر دهید."
+                            message="اقامتگاهی در این شهر یافت نشد"
+                            description="می‌توانید شهر مورد نظر را تغییر دهید یا واژه جستجوی دیگری را امتحان کنید."
                         />
                     </div>
                 ) : (

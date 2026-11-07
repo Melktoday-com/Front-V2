@@ -93,6 +93,9 @@ export function MediumPostEditor({
   setFeaturedImageUrl,
 }: MediumPostEditorProps) {
   const [editorTab, setEditorTab] = useState<"edit" | "preview" | "split">("edit");
+  const [isCustomCategory, setIsCustomCategory] = useState<boolean>(() => {
+    return Boolean(category && !MEDIUM_CATEGORIES.includes(category));
+  });
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const mdFileInputRef = useRef<HTMLInputElement>(null);
   const inlineImageInputRef = useRef<HTMLInputElement>(null);
@@ -423,18 +426,54 @@ export function MediumPostEditor({
         {/* Category & Slug */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
           <div className="space-y-1.5">
-            <label className="text-xs font-black text-foreground">دسته‌بندی موضوعی مقاله</label>
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="w-full px-4 py-3 rounded-2xl bg-surface-secondary border border-border-subtle text-sm font-medium text-foreground focus:bg-surface focus:border-emerald-500 focus:outline-hidden transition-all"
-            >
-              {MEDIUM_CATEGORIES.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
-              ))}
-            </select>
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-black text-foreground">دسته‌بندی موضوعی مقاله</label>
+              <button
+                type="button"
+                onClick={() => {
+                  if (isCustomCategory) {
+                    setIsCustomCategory(false);
+                    setCategory(MEDIUM_CATEGORIES[0]);
+                  } else {
+                    setIsCustomCategory(true);
+                    setCategory("");
+                  }
+                }}
+                className="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold hover:underline"
+              >
+                {isCustomCategory ? "انتخاب از لیست" : "تایپ موضوع دلخواه"}
+              </button>
+            </div>
+            {isCustomCategory ? (
+              <input
+                type="text"
+                placeholder="موضوع دلخواه خود را تایپ کنید..."
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="w-full px-4 py-3 rounded-2xl bg-surface-secondary border border-border-subtle text-sm font-medium text-foreground focus:bg-surface focus:border-emerald-500 focus:outline-hidden transition-all placeholder:text-foreground-muted"
+                autoFocus
+              />
+            ) : (
+              <select
+                value={category}
+                onChange={(e) => {
+                  if (e.target.value === "__custom__") {
+                    setIsCustomCategory(true);
+                    setCategory("");
+                  } else {
+                    setCategory(e.target.value);
+                  }
+                }}
+                className="w-full px-4 py-3 rounded-2xl bg-surface-secondary border border-border-subtle text-sm font-medium text-foreground focus:bg-surface focus:border-emerald-500 focus:outline-hidden transition-all"
+              >
+                {MEDIUM_CATEGORIES.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+                <option value="__custom__">+ سایر (تایپ موضوع دلخواه)...</option>
+              </select>
+            )}
           </div>
 
           <div className="space-y-1.5">

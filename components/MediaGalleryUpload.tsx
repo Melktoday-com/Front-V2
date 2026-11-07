@@ -38,7 +38,19 @@ export default function MediaGalleryUpload({
     }, [localPreviews]);
 
     const normalizedValue: MediaReference[] = useMemo(() => {
-        return value || [];
+        if (!Array.isArray(value)) return [];
+        return value.map((item: any) => {
+            if (typeof item === 'string') {
+                return { id: item, type: 'IMAGE' as ExistingMediaType };
+            }
+            if (item && typeof item === 'object') {
+                return {
+                    id: item.id || item.mediaId || item.url || '',
+                    type: (item.type || 'IMAGE') as ExistingMediaType,
+                };
+            }
+            return item;
+        }).filter((item: MediaReference) => Boolean(item && item.id));
     }, [value]);
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {

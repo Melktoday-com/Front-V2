@@ -276,7 +276,12 @@ export default function CreatePostScene() {
       }
     }
     setCurrentStep(3);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
+      setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }, 50);
+    }
   };
 
   // Handle Submit / Publish
@@ -972,8 +977,8 @@ export default function CreatePostScene() {
       {currentStep === 3 && activePublisher && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            {/* Left: Summary & Metadata */}
-            <div className="lg:col-span-6 space-y-6">
+            {/* Left: Summary & Metadata (Appears second on mobile, below preview) */}
+            <div className="lg:col-span-6 order-2 lg:order-1 space-y-6">
               <div className="bg-surface p-6 rounded-3xl border border-border-subtle shadow-xs space-y-5">
                 <div>
                   <h2 className="text-base font-black text-brand flex items-center gap-2">
@@ -1066,8 +1071,8 @@ export default function CreatePostScene() {
               </div>
             </div>
 
-            {/* Right: Live Preview */}
-            <div className="lg:col-span-6 space-y-4">
+            {/* Right: Live Preview (Appears first on mobile so user sees preview immediately) */}
+            <div className="lg:col-span-6 order-1 lg:order-2 space-y-4">
               <div className="bg-surface-secondary p-4 rounded-3xl border border-border-subtle">
                 <div className="flex items-center gap-2 mb-3">
                   <Eye className="w-4 h-4 text-brand" />

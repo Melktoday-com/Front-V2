@@ -26,12 +26,14 @@ import {
     Users,
     Wallet,
     Zap,
+    Menu,
+    X,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { darkLogo } from "@/assets/branding";
 import { usePathname } from "next/navigation";
-import React from "react";
+import React, { useState, useEffect } from "react";
 
 interface SidebarItem {
     name: string;
@@ -70,6 +72,11 @@ export default function AdminLayout({
 }) {
     const pathname = usePathname();
     const { isSuperAdmin, hasAnyPermission, isLoading } = useAdminPermissions();
+    const [sidebarOpen, setSidebarOpen] = useState(false);
+
+    useEffect(() => {
+        setSidebarOpen(false);
+    }, [pathname]);
 
     const visibleSidebarItems = sidebarItems.filter((item) => {
         if (item.superAdminOnly) return isSuperAdmin;
@@ -90,19 +97,41 @@ export default function AdminLayout({
 
     return (
         <AccessGuard roles={[RoleName.Admin, RoleName.SuperAdmin]}>
-            <div className="flex min-h-screen bg-soft-bg admin-layout" dir="rtl">
+            <div className="flex min-h-screen bg-soft-bg admin-layout relative" dir="rtl">
+                {/* Mobile Backdrop */}
+                {sidebarOpen && (
+                    <div
+                        className="fixed inset-0 z-40 bg-slate-900/60 backdrop-blur-xs lg:hidden transition-opacity"
+                        onClick={() => setSidebarOpen(false)}
+                        aria-hidden="true"
+                    />
+                )}
+
                 {/* Sidebar */}
-                <aside className="w-64 bg-surface border-l border-soft-border sticky top-0 h-screen overflow-y-auto p-6 flex flex-col">
-                    <div className="mb-10 px-2">
-                        <Link href="/admin" className="block">
+                <aside
+                    className={cn(
+                        "fixed inset-y-0 right-0 z-50 w-72 max-w-[85vw] bg-surface border-l border-soft-border h-full overflow-y-auto p-5 sm:p-6 flex flex-col transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 lg:w-64 lg:h-screen lg:sticky lg:top-0",
+                        sidebarOpen ? "translate-x-0 shadow-2xl" : "translate-x-full lg:translate-x-0"
+                    )}
+                >
+                    <div className="mb-8 px-2 flex items-center justify-between">
+                        <Link href="/admin" className="block" onClick={() => setSidebarOpen(false)}>
                             <Image
                                 src={darkLogo}
                                 alt="MELKTODAY"
-                                className="h-8 w-auto max-w-full object-contain"
+                                className="h-7 sm:h-8 w-auto max-w-full object-contain"
                                 priority
                             />
-                            <span className="text-[10px] block font-bold text-secondary uppercase mt-2 tracking-widest">Admin Panel</span>
+                            <span className="text-[10px] block font-bold text-secondary uppercase mt-1.5 tracking-widest">Admin Panel</span>
                         </Link>
+                        <button
+                            type="button"
+                            onClick={() => setSidebarOpen(false)}
+                            className="lg:hidden p-1.5 rounded-xl bg-soft-bg text-secondary hover:text-brand transition-colors cursor-pointer"
+                            aria-label="بستن منو"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
                     </div>
 
                     <nav className="flex-1 space-y-2">
@@ -114,6 +143,7 @@ export default function AdminLayout({
                                 <Link
                                     key={item.href}
                                     href={item.href}
+                                    onClick={() => setSidebarOpen(false)}
                                     className={cn(
                                         "flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 group",
                                         isActive
@@ -149,16 +179,25 @@ export default function AdminLayout({
                         </div>
                     </nav>
 
-                    <div className="mt-10 p-4 bg-soft-bg rounded-3xl border border-soft-border">
-                        <p className="text-xs text-secondary font-bold mb-2">مدیریت سیستم</p>
+                    <div className="mt-8 p-4 bg-soft-bg rounded-3xl border border-soft-border">
+                        <p className="text-xs text-secondary font-bold mb-1">مدیریت سیستم</p>
+                        <p className="text-[11px] text-secondary/70">سامانه جامع املاک و اقامتگاه ملک تودی</p>
                     </div>
                 </aside>
 
                 {/* Main Content */}
-                <main className="flex-1 overflow-auto">
-                    <header className="h-16 bg-surface border-b border-soft-border flex items-center justify-between px-8 sticky top-0 z-10">
-                        <div className="flex items-center gap-4">
-                            <h2 className="text-brand font-black text-lg">
+                <main className="flex-1 min-w-0 overflow-auto">
+                    <header className="h-14 sm:h-16 bg-surface border-b border-soft-border flex items-center justify-between px-4 sm:px-8 sticky top-0 z-10">
+                        <div className="flex items-center gap-3">
+                            <button
+                                type="button"
+                                onClick={() => setSidebarOpen(true)}
+                                className="lg:hidden p-2 rounded-xl bg-soft-bg text-brand hover:bg-soft-border/50 transition-colors cursor-pointer"
+                                aria-label="منوی مدیریت"
+                            >
+                                <Menu className="w-5 h-5" />
+                            </button>
+                            <h2 className="text-brand font-black text-base sm:text-lg">
                                 {sidebarItems.find(i => i.href === pathname)?.name || "مدیریت"}
                             </h2>
                         </div>
@@ -167,11 +206,11 @@ export default function AdminLayout({
                         </div>
                     </header>
                     {isBlocked ? (
-                        <div className="p-8 md:p-16 flex items-center justify-center min-h-[60vh]">
-                            <div className="bg-surface border border-error/30 rounded-3xl p-8 max-w-md w-full text-center shadow-sm space-y-4">
-                                <ShieldAlert className="w-16 h-16 text-error mx-auto" />
-                                <h2 className="text-xl font-black text-foreground">عدم دسترسی به این بخش</h2>
-                                <p className="text-sm text-secondary leading-relaxed">
+                        <div className="p-4 sm:p-8 md:p-16 flex items-center justify-center min-h-[60vh]">
+                            <div className="bg-surface border border-error/30 rounded-3xl p-6 sm:p-8 max-w-md w-full text-center shadow-sm space-y-4">
+                                <ShieldAlert className="w-14 sm:w-16 h-14 sm:h-16 text-error mx-auto" />
+                                <h2 className="text-lg sm:text-xl font-black text-foreground">عدم دسترسی به این بخش</h2>
+                                <p className="text-xs sm:text-sm text-secondary leading-relaxed">
                                     حساب کاربری شما دسترسی لازم برای مشاهده یا مدیریت این بخش را ندارد. در صورت نیاز با مدیر ارشد هماهنگ نمایید.
                                 </p>
                                 <div className="pt-2">
@@ -185,7 +224,7 @@ export default function AdminLayout({
                             </div>
                         </div>
                     ) : (
-                        <div className="p-8">
+                        <div className="p-4 sm:p-8">
                             {children}
                         </div>
                     )}
