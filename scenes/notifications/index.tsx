@@ -4,6 +4,7 @@ import { NotificationCard } from "@/components/notifications/NotificationCard";
 import { NotificationEmptyState } from "@/components/notifications/NotificationEmptyState";
 import { NotificationFilterTabs } from "@/components/notifications/NotificationFilterTabs";
 import { NotificationSkeleton } from "@/components/notifications/NotificationSkeleton";
+import { SubpageHeader } from "@/components/ui/SubpageHeader";
 import { useAuth } from "@/hooks/useAuth";
 import {
     useInfiniteNotifications,
@@ -134,58 +135,53 @@ export default function NotificationsScene() {
     return (
         <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6 pb-28 lg:pb-10 space-y-6">
             {/* Header */}
-            <div className="flex items-center justify-between">
-                <button
-                    type="button"
-                    onClick={handleBack}
-                    className="p-2 -mr-2 text-foreground-muted hover:text-brand transition-colors cursor-pointer"
-                    aria-label="بازگشت"
-                    title="بازگشت"
-                >
-                    <ChevronRight className="w-6 h-6" />
-                </button>
+            <SubpageHeader
+                title={
+                    <span className="inline-flex items-center gap-2">
+                        <span>اعلان‌های من</span>
+                        {unreadCount > 0 && (
+                            <span className="px-2 py-0.5 rounded-full text-xs font-black bg-primary/10 text-primary">
+                                {toPersianDigits(unreadCount)} جدید
+                            </span>
+                        )}
+                    </span>
+                }
+                onBack={handleBack}
+                className="mb-6"
+                action={
+                    <div className="flex items-center gap-2">
+                        {/* Read All CTA button */}
+                        {unreadCount > 0 && (
+                            <button
+                                type="button"
+                                onClick={handleMarkAllAsRead}
+                                disabled={markAllAsReadMutation.isPending}
+                                title="علامت‌گذاری همه به عنوان خوانده‌شده"
+                                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-success bg-success-subtle border border-success/30/80 rounded-xl hover:bg-success-subtle/70 active:scale-95 transition-all disabled:opacity-50"
+                            >
+                                {markAllAsReadMutation.isPending ? (
+                                    <Loader2 className="w-3.5 h-3.5 animate-spin text-success" />
+                                ) : (
+                                    <CheckCheck className="w-3.5 h-3.5 text-success" />
+                                )}
+                                <span className="hidden sm:inline">خواندن همه</span>
+                            </button>
+                        )}
 
-                <div className="flex items-center gap-2">
-                    <h1 className="text-base sm:text-lg font-black text-brand">اعلان‌های من</h1>
-                    {unreadCount > 0 && (
-                        <span className="px-2 py-0.5 rounded-full text-xs font-black bg-primary/10 text-primary">
-                            {toPersianDigits(unreadCount)} جدید
-                        </span>
-                    )}
-                </div>
-
-                <div className="flex items-center gap-2">
-                    {/* Read All CTA button */}
-                    {unreadCount > 0 && (
+                        {/* Refresh button */}
                         <button
                             type="button"
-                            onClick={handleMarkAllAsRead}
-                            disabled={markAllAsReadMutation.isPending}
-                            title="علامت‌گذاری همه به عنوان خوانده‌شده"
-                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-success bg-success-subtle border border-success/30/80 rounded-xl hover:bg-success-subtle/70 active:scale-95 transition-all disabled:opacity-50"
+                            onClick={() => refetch()}
+                            disabled={isFetching}
+                            title="بروزرسانی"
+                            aria-label="بروزرسانی لیست اعلان‌ها"
+                            className="p-2 text-secondary hover:text-brand bg-surface rounded-xl border border-soft-border/70 hover:shadow-sm transition-all disabled:opacity-50"
                         >
-                            {markAllAsReadMutation.isPending ? (
-                                <Loader2 className="w-3.5 h-3.5 animate-spin text-success" />
-                            ) : (
-                                <CheckCheck className="w-3.5 h-3.5 text-success" />
-                            )}
-                            <span className="hidden sm:inline">خواندن همه</span>
+                            <RotateCw className={`w-4 h-4 ${isFetching ? "animate-spin text-primary" : ""}`} />
                         </button>
-                    )}
-
-                    {/* Refresh button */}
-                    <button
-                        type="button"
-                        onClick={() => refetch()}
-                        disabled={isFetching}
-                        title="بروزرسانی"
-                        aria-label="بروزرسانی لیست اعلان‌ها"
-                        className="p-2 text-secondary hover:text-brand bg-surface rounded-xl border border-soft-border/70 hover:shadow-sm transition-all disabled:opacity-50"
-                    >
-                        <RotateCw className={`w-4 h-4 ${isFetching ? "animate-spin text-primary" : ""}`} />
-                    </button>
-                </div>
-            </div>
+                    </div>
+                }
+            />
 
             {/* Filter Tabs */}
             <div className="flex items-center justify-between gap-4 flex-wrap">
