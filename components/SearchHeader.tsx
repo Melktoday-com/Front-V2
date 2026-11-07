@@ -148,7 +148,7 @@ export function SearchHeader({ isInitialOpen }: SearchHeaderProps) {
 
                     <button
                         onClick={() => setIsSelectorOpen(true)}
-                        className="flex items-center gap-2 sm:gap-2.5 bg-surface px-1 sm:px-3.5 py-0.25 sm:py-2 rounded-full border border-soft-border group hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300"
+                        className="flex items-center gap-1 sm:gap-2.5 bg-surface px-1 sm:px-3.5 py-0.25 sm:py-2 rounded-full border border-soft-border group hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300"
                     >
                         <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-soft-bg flex items-center justify-center group-hover:bg-primary/10 transition-colors">
                             <MapPin className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-accent" />
