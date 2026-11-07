@@ -231,7 +231,7 @@ export const HomeScene = () => {
             {/* Top Agencies */}
             <section className="container mx-auto px-4">
                 <SectionHeader
-                    title="املاک و دفاتر برتر"
+                    title="دفاتر املاک برتر"
                     subtitle="همکاری با معتبرترین دفاتر املاک و مشاوران"
                     link={selectedCity.id ? `/agency?cityId=${selectedCity.id}&cityName=${selectedCity.name}` : "/agency"}
                 />
