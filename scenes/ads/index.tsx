@@ -15,7 +15,7 @@ import { useCategoryLookup } from "@/hooks/useCategoryLookup";
 import { useFavorites, useToggleSaveAd } from "@/hooks/useFavorites";
 import { useGeoHierarchy } from "@/hooks/useGeoHierarchy";
 import { useDebounce } from "@/hooks/useDebounce";
-import { cn, formatPrice, getMediaUrl, getMediaPosterUrl, toPersianDigits } from "@/lib/utils";
+import { cn, formatPrice, getMediaUrl, getMediaPosterUrl, toPersianDigits, isPersianMatch } from "@/lib/utils";
 import { mapSearchDocToLocation, mapMarkerToLocation, getFloorArea } from "@/lib/location";
 import { searchDocToAdSummary } from "@/lib/search-transformers";
 import { adsService } from "@/services/ads.service";
@@ -690,7 +690,9 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
 
         if (zonesData && zonesData.length > 0) {
             const matched = zonesData.filter(
-                (z) => urlZoneIds.includes(z.id) || urlNeighbourhoodNames.includes(z.name)
+                (z) =>
+                    urlZoneIds.includes(z.id) ||
+                    urlNeighbourhoodNames.some((name) => isPersianMatch(name, z.name))
             );
             const matchedIds = new Set(matched.map((m) => m.id));
             const extra: ZoneSummary[] = [];

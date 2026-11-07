@@ -202,8 +202,8 @@ export default function AgencyApplyPage() {
                 toast.error("وارد کردن نام دفتر املاک الزامی است.");
                 return;
             }
-            if (!formData.guildCode.trim() || formData.guildCode.trim().length !== 10) {
-                toast.error("شناسه صنفی اصناف برای دفتر املاک باید ۱۰ رقم معتبر باشد.");
+            if (!formData.guildCode.trim() || formData.guildCode.trim().length < 4 || formData.guildCode.trim().length > 12) {
+                toast.error("شناسه صنفی یا شماره پروانه کسب باید بین ۴ تا ۱۲ رقم باشد.");
                 return;
             }
         }
@@ -561,25 +561,33 @@ export default function AgencyApplyPage() {
                                     </div>
 
                                     <div className="space-y-1.5">
-                                        <label className="text-xs font-bold text-foreground-secondary">شناسه صنفی ۱۰ رقمی اصناف *</label>
+                                        <div className="flex items-center justify-between">
+                                            <label className="text-xs font-bold text-foreground-secondary">
+                                                شناسه صنفی یا شماره پروانه کسب *
+                                            </label>
+                                            <span className="text-[11px] text-foreground-muted">۴ الی ۱۲ رقم</span>
+                                        </div>
                                         <input
                                             type="text"
-                                            maxLength={10}
+                                            maxLength={12}
                                             value={formData.guildCode}
                                             onChange={(e) => setFormData({ ...formData, guildCode: toOnlyDigits(e.target.value) })}
-                                            placeholder="شناسه ۱۰ رقمی پروانه کسب اصناف"
+                                            placeholder="شناسه ۱۰ رقمی سامانه نوین اصناف یا شماره پروانه اتحادیه"
                                             className="w-full p-3 bg-surface-secondary border border-border-subtle rounded-xl text-xs font-mono focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                                             required
                                         />
+                                        <p className="text-[11px] text-foreground-muted">
+                                            شماره پروانه اتحادیه محلی (۴ الی ۸ رقم) یا شناسه یکتای نوین اصناف (۱۰ رقم) را وارد نمایید.
+                                        </p>
                                     </div>
 
                                     <div className="space-y-1.5">
-                                        <label className="text-xs font-bold text-foreground-secondary">شماره پروانه کسب (اختیاری)</label>
+                                        <label className="text-xs font-bold text-foreground-secondary">شماره پروانه کسب / ثبت اتحادیه (تکمیلی اختیاری)</label>
                                         <input
                                             type="text"
                                             value={formData.licenseNumber}
                                             onChange={(e) => setFormData({ ...formData, licenseNumber: e.target.value })}
-                                            placeholder="شماره مجوز ثبت اتحادیه"
+                                            placeholder="شماره مجوز ثبت اتحادیه املاک"
                                             className="w-full p-3 bg-surface-secondary border border-border-subtle rounded-xl text-xs font-mono focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                                         />
                                     </div>

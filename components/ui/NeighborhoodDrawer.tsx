@@ -1,7 +1,7 @@
 "use client";
 
 import { ZoneSummary } from "@/types/api/geo.types";
-import { cn } from "@/lib/utils";
+import { cn, isPersianMatch } from "@/lib/utils";
 import { MapPin, Search, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -44,9 +44,10 @@ export function NeighborhoodDrawer({
 
     if (!isOpen) return null;
 
-    const filtered = neighborhoods.filter((z) =>
-        z.name.toLowerCase().includes(query.toLowerCase())
-    );
+    const trimmedQuery = query.trim();
+    const filtered = trimmedQuery
+        ? neighborhoods.filter((z) => isPersianMatch(z.name, trimmedQuery))
+        : neighborhoods;
 
     const selectedCount = selectedIds.length;
 

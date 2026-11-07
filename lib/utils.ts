@@ -236,5 +236,35 @@ export function getPaginationItems(
     return items.filter((item, index, self) => item === "..." || self.indexOf(item) === index);
 }
 
+/**
+ * Normalizes Persian text by unifying Arabic Yeh/Kaf, removing ZWNJ / half-spaces and extra whitespace.
+ * Useful for resilient fuzzy/exact matching across cities, neighborhoods, and categories.
+ */
+export function normalizePersianText(text: string | undefined | null): string {
+    if (!text) return "";
+    return text
+        .trim()
+        .replace(/ي/g, "ی")
+        .replace(/ك/g, "ک")
+        .replace(/[\u200B-\u200D\uFEFF]/g, "")
+        .replace(/\u200c/g, " ")
+        .replace(/\s+/g, " ")
+        .toLowerCase();
+}
+
+/**
+ * Checks if two Persian strings match, ignoring half-spaces, spaces, and Arabic Kaf/Yeh variations.
+ */
+export function isPersianMatch(a: string | undefined | null, b: string | undefined | null): boolean {
+    if (!a || !b) return false;
+    const normA = normalizePersianText(a);
+    const normB = normalizePersianText(b);
+    if (normA === normB || normA.includes(normB) || normB.includes(normA)) return true;
+    const compactA = normA.replace(/\s+/g, "");
+    const compactB = normB.replace(/\s+/g, "");
+    return compactA === compactB || compactA.includes(compactB) || compactB.includes(compactA);
+}
+
+
 
 

@@ -2,6 +2,7 @@
 
 import { PromotionModal } from "@/components/promotions/PromotionModal";
 import { PropertyCard } from "@/components/ui/PropertyCard";
+import { RentalMortgageCalculator } from "@/components/ads/RentalMortgageCalculator";
 import { useAd, useAdContact, useAds } from "@/hooks/useAds";
 import { useAuth } from "@/hooks/useAuth";
 import { useCategoryLookup } from "@/hooks/useCategoryLookup";
@@ -739,6 +740,14 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
                                     </div>
                                 )}
                             </div>
+
+                            {/* Rental Mortgage Converter Calculator (Item 16) */}
+                            {pricing.depositPrice !== undefined && pricing.monthlyRent !== undefined && (
+                                <RentalMortgageCalculator
+                                    depositPrice={Number(pricing.depositPrice)}
+                                    monthlyRent={Number(pricing.monthlyRent)}
+                                />
+                            )}
                         </div>
                     )}
 

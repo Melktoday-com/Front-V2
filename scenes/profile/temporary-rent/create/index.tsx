@@ -40,6 +40,7 @@ import { cn, formatCurrency, formatPrice, toPersianDigits, getMediaUrl } from "@
 import { AdminOwnershipSelector, AdminOwnershipData } from "@/components/admin/AdminOwnershipSelector";
 import { adminService } from "@/services/admin.service";
 import { AdminCreateTemporaryRentRequest } from "@/types/api/admin.types";
+import { geoService } from "@/services/geo.service";
 import { useGeoHierarchy } from "@/hooks/useGeoHierarchy";
 import { useUserStatus } from "@/hooks/useUserStatus";
 import { AccountStatusBanner } from "@/components/ui/AccountStatusBanner";
@@ -136,6 +137,33 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
     const { data: categories, isLoading: isLoadingCategories } = useQuery<TemporaryRentCategory[]>({
         queryKey: ["temporary-rent-categories"],
         queryFn: () => temporaryRentService.listCategories(),
+        staleTime: 1000 * 60 * 5,
+    });
+
+    // Reverse-geocode selected point to detect neighborhood (Item 47)
+    const { data: detectedZone, isLoading: isLoadingNeighborhood } = useQuery({
+        queryKey: ["detected-neighborhood-temp-rent", formData.latitude, formData.longitude],
+        queryFn: async () => {
+            if (
+                formData.latitude === undefined ||
+                formData.longitude === undefined ||
+                isNaN(Number(formData.latitude)) ||
+                isNaN(Number(formData.longitude))
+            ) {
+                return null;
+            }
+            return geoService.findZoneByPoint({
+                latitude: Number(formData.latitude),
+                longitude: Number(formData.longitude),
+                type: "NEIGHBORHOOD",
+            });
+        },
+        enabled: Boolean(
+            formData.latitude !== undefined &&
+            formData.longitude !== undefined &&
+            !isNaN(Number(formData.latitude)) &&
+            !isNaN(Number(formData.longitude))
+        ),
         staleTime: 1000 * 60 * 5,
     });
 
@@ -792,6 +820,23 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
                                         }
                                     />
                                 </div>
+
+                                {/* Detected Neighborhood Feedback (Item 47) */}
+                                <div className="flex items-center gap-2 p-3 bg-surface-secondary/70 rounded-xl border border-border-subtle text-xs">
+                                    <MapPin className="w-4 h-4 text-primary shrink-0" />
+                                    <span className="text-text-light font-medium">محله تشخیص داده‌شده:</span>
+                                    {isLoadingNeighborhood ? (
+                                        <span className="text-text-light animate-pulse">در حال بررسی نقشه...</span>
+                                    ) : detectedZone?.name ? (
+                                        <span className="font-black text-brand bg-primary/10 text-primary px-2.5 py-0.5 rounded-lg border border-primary/20">
+                                            {detectedZone.name}
+                                        </span>
+                                    ) : (
+                                        <span className="text-text-light">
+                                            خارج از محدوده محله‌های ثبت‌شده (مختصات نقشه ذخیره شد)
+                                        </span>
+                                    )}
+                                </div>
                             </div>
                         )}
 
@@ -837,6 +882,12 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
                                         <span className="text-text-light">شهر:</span>
                                         <span className="font-bold text-brand">{cityName}</span>
                                     </div>
+                                    {detectedZone?.name && (
+                                        <div className="flex justify-between pb-2 border-b border-border-subtle/50">
+                                            <span className="text-text-light">محله:</span>
+                                            <span className="font-bold text-primary">{detectedZone.name}</span>
+                                        </div>
+                                    )}
                                     <div className="flex justify-between pb-2 border-b border-border-subtle/50">
                                         <span className="text-text-light">نوع اقامتگاه:</span>
                                         <span className="font-bold text-brand text-left">
