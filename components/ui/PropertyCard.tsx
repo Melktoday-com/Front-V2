@@ -138,9 +138,13 @@ export function PropertyCard({
     const isUrgentEffective = Boolean(isUrgent || badgeName === "فوری");
     const isLadderEffective = Boolean(isLadder || badgeName === "نردبان");
     const effectiveBadgeName =
-        badgeName === "نردبان" || badgeName === "فوری" || isLadderEffective || isUrgentEffective
+        badgeName === "نردبان" ||
+        badgeName === "فوری" ||
+        badgeName === "ویژه" ||
+        isLadderEffective ||
+        isUrgentEffective
             ? null
-            : badgeName || (isFeatured ? "ویژه" : null);
+            : badgeName;
     const displayLocation = typeof location === "string" ? location : formatLocationDisplay(location);
     const effectiveArea = area !== null && area !== undefined && typeof area !== "object" ? area : undefined;
     const effectiveRooms = rooms ?? undefined;

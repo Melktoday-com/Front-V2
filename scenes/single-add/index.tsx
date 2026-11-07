@@ -956,7 +956,7 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
                                                 <span>آگهی شما ارتقا یافته است</span>
                                             </div>
                                             <span className="text-[10px] font-bold bg-warning text-white px-2 py-0.5 rounded-md">
-                                                {ad.isUrgent ? "فوری" : ad.isLadder ? "نردبان" : "ویژه"}
+                                                {ad.isUrgent ? "فوری" : "نردبان"}
                                             </span>
                                         </div>
                                     )}
@@ -969,7 +969,7 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
                                             className="w-full py-3 px-4 bg-accent hover:bg-accent-hover active:bg-accent-active text-accent-foreground font-black text-sm rounded-xl shadow-xs flex items-center justify-center gap-2 transition-all active:scale-98 cursor-pointer"
                                         >
                                             <Sparkles className="w-4 h-4 shrink-0" />
-                                            <span>{isPromoted ? "نردبان مجدد آگهی" : "ارتقای آگهی (نردبان / ویژه)"}</span>
+                                            <span>{isPromoted ? "نردبان مجدد آگهی" : "ارتقای آگهی (نردبان / فوری)"}</span>
                                         </button>
                                     )}
 
@@ -1098,7 +1098,6 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
                                         }
                                         publisher={item.publisher}
                                         date={item.createdAt}
-                                        badgeName={item.isFeatured ? "ویژه" : undefined}
                                         isUrgent={item.isUrgent}
                                         isLadder={item.isLadder}
                                     />

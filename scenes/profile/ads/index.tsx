@@ -375,12 +375,6 @@ function MyAdCard({
                                 <span>نردبان</span>
                             </div>
                         )}
-                        {ad.isFeatured && (
-                            <div className="bg-surface/95 text-warning border border-warning/30 text-[8px] sm:text-[10px] font-black px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md sm:rounded-lg shadow-xs flex items-center gap-0.5 leading-none pointer-events-none">
-                                <Sparkles className="w-2 sm:w-2.5 h-2 sm:h-2.5 text-amber-500 shrink-0" />
-                                <span>ویژه</span>
-                            </div>
-                        )}
                     </div>
 
                     {/* Desktop Bottom-Right: Category Badge */}

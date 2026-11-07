@@ -173,7 +173,7 @@ export const HomeScene = () => {
                 ) : featuredError ? (
                     <ErrorState onRetry={refetchFeatured} />
                 ) : !featuredAds.length ? (
-                    <EmptyState message="در حال حاضر آگهی ویژه‌ای در این شهر ثبت نشده است" />
+                    <EmptyState message="در حال حاضر آگهی برتری در این شهر ثبت نشده است" />
                 ) : (
                     <Slider>
                         {featuredAds.map((property: AdSummary) => {
@@ -181,7 +181,7 @@ export const HomeScene = () => {
                             const adPrice = getHomeAdPrice(property.pricing);
                             const isUrgent = Boolean(property.isUrgent);
                             const isLadder = Boolean(property.isLadder);
-                            const isFeatured = Boolean(property.isFeatured && !isLadder && !isUrgent);
+                            const isFeatured = Boolean(property.isFeatured);
 
                             return (
                                 <PropertyCard
@@ -216,7 +216,6 @@ export const HomeScene = () => {
                                                 : undefined)
                                     }
                                     date={isLadder ? (property.updatedAt || property.createdAt) : property.createdAt}
-                                    badgeName={isFeatured ? "ویژه" : undefined}
                                     isUrgent={isUrgent}
                                     isLadder={isLadder}
                                     isFeatured={isFeatured}
@@ -280,7 +279,7 @@ export const HomeScene = () => {
                             const trPrice = getHomeTemporaryRentPrice(property.pricing);
                             const isUrgent = Boolean(property.isUrgent);
                             const isLadder = Boolean(property.isLadder);
-                            const isFeatured = Boolean(property.isFeatured && !isLadder && !isUrgent);
+                            const isFeatured = Boolean(property.isFeatured);
                             return (
                                 <PropertyCard
                                     key={property.id}
@@ -297,7 +296,6 @@ export const HomeScene = () => {
                                     category="اجاره روزانه"
                                     className="w-[210px] lg:w-[250px]"
                                     date={isLadder ? (property.updatedAt || property.createdAt) : property.createdAt}
-                                    badgeName={isFeatured ? "ویژه" : undefined}
                                     isUrgent={isUrgent}
                                     isLadder={isLadder}
                                     isFeatured={isFeatured}
@@ -334,7 +332,7 @@ export const HomeScene = () => {
                             const adPrice = getHomeAdPrice(property.pricing);
                             const isUrgent = Boolean(property.isUrgent);
                             const isLadder = Boolean(property.isLadder);
-                            const isFeatured = Boolean(property.isFeatured && !isLadder && !isUrgent);
+                            const isFeatured = Boolean(property.isFeatured);
 
                             return (
                                 <PropertyCard
@@ -369,7 +367,6 @@ export const HomeScene = () => {
                                                 : undefined)
                                     }
                                     date={isLadder ? (property.updatedAt || property.createdAt) : property.createdAt}
-                                    badgeName={isFeatured ? "ویژه" : undefined}
                                     isUrgent={isUrgent}
                                     isLadder={isLadder}
                                     isFeatured={isFeatured}

@@ -466,7 +466,6 @@ export default function SingleHostScene({ idOrSlug, initialData }: SingleHostSce
                       category={categoryName}
                       area={getFloorArea(ad)}
                       rooms={ad.rooms}
-                      badgeName={ad.isFeatured ? "ویژه" : undefined}
                       isUrgent={ad.isUrgent}
                       isLadder={ad.isLadder}
                     />

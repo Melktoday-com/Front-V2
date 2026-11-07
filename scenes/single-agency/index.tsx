@@ -583,7 +583,6 @@ export default function SingleAgencyScene({ initialData }: SingleAgencySceneProp
                                         image={getMediaPosterUrl(firstMedia)}
                                         isVideo={firstMedia?.type === "VIDEO"}
                                         category={categoryName}
-                                        badgeName={ad.isFeatured || ad.is_featured ? "ویژه" : undefined}
                                         isUrgent={ad.isUrgent}
                                         isLadder={ad.isLadder}
                                     />

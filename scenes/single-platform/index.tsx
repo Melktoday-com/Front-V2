@@ -395,7 +395,7 @@ export default function SinglePlatformScene() {
             ) : adsData?.items?.length === 0 ? (
               <div className="text-center py-16 bg-surface rounded-3xl border border-soft-border space-y-2">
                 <Home className="w-10 h-10 text-secondary/30 mx-auto" />
-                <p className="text-sm font-bold text-brand">هنوز آگهی ویژه‌ای اضافه نشده است</p>
+                <p className="text-sm font-bold text-brand">هنوز آگهی ثبت نشده است</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">

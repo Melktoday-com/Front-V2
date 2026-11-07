@@ -1607,10 +1607,9 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                                                             ? ad.attributes.rooms
                                                             : undefined)
                                                     }
-                                                    badgeName={ad.isFeatured && !ad.isLadder && !ad.isUrgent ? "ویژه" : undefined}
                                                     isUrgent={ad.isUrgent}
                                                     isLadder={ad.isLadder}
-                                                    isFeatured={ad.isFeatured && !ad.isLadder && !ad.isUrgent}
+                                                    isFeatured={ad.isFeatured}
                                                     date={ad.createdAt}
                                                 />
                                             );

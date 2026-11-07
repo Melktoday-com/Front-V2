@@ -402,7 +402,7 @@ function getResidenceRate(pricing?: TemporaryRentPricingReadModel | null): numbe
                     {isPublished && isPromoted && (
                         <div className="flex items-center justify-center gap-2 w-full py-3 bg-warning-subtle border border-warning/30 text-warning font-black text-xs rounded-2xl shadow-xs">
                             <Sparkles className="w-4 h-4 text-warning" />
-                            <span>اقامتگاه شما ارتقا یافته است (فوری / ویژه)</span>
+                            <span>اقامتگاه شما ارتقا یافته است (فوری / نردبان)</span>
                         </div>
                     )}
 
