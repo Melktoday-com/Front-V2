@@ -1,63 +1,61 @@
 "use client";
 
-import { CitySelector } from "@/components/CitySelector";
-import { Button } from "@/components/ui/Button";
-import { Select } from "@/components/ui/Select";
-import { DynamicPricingFields } from "@/components/dynamic-form/DynamicPricingFields";
+import { AdminOwnershipData, AdminOwnershipSelector } from "@/components/admin/AdminOwnershipSelector";
 import { DynamicAttributeRenderer, validateAttributeValue } from "@/components/dynamic-form/DynamicAttributeRenderer";
-import { useCreateTemporaryRentDraft } from "@/hooks/useTemporaryRent";
+import { DynamicPricingFields } from "@/components/dynamic-form/DynamicPricingFields";
+import MediaGalleryUpload from "@/components/MediaGalleryUpload";
+import { useCity } from "@/components/providers/CityProvider";
+import { AccountStatusBanner } from "@/components/ui/AccountStatusBanner";
+import {
+    ResponsiveSelectDrawer,
+    SelectDrawerOption,
+    SelectDrawerTag,
+} from "@/components/ui/ResponsiveSelectDrawer";
+import { useGeoHierarchy } from "@/hooks/useGeoHierarchy";
+import { useSafeBack } from "@/hooks/useSafeBack";
+import { useTemporaryRentAdDetail } from "@/hooks/useTemporaryRent";
+import { useUserStatus } from "@/hooks/useUserStatus";
+import { normalizeApiError } from "@/lib/api/error-handler";
+import { cn, formatCurrency, formatPrice, getMediaUrl, toPersianDigits } from "@/lib/utils";
+import { adminService } from "@/services/admin.service";
+import { geoService } from "@/services/geo.service";
 import { temporaryRentService } from "@/services/temporary-rent.service";
+import { AdminCreateTemporaryRentRequest } from "@/types/api/admin.types";
+import type { MediaReference } from "@/types/api/media.types";
 import {
     CreateTemporaryRentDraftRequest,
     TemporaryRentCategory,
     TemporaryRentSubcategoryConfigResponse,
 } from "@/types/api/temporary-rent.types";
-import type { MediaReference } from "@/types/api/media.types";
-import MediaGalleryUpload from "@/components/MediaGalleryUpload";
-import { normalizeApiError } from "@/lib/api/error-handler";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import {
-    Calendar,
-    Check,
     ChevronLeft,
     ChevronRight,
-    Image as ImageIcon,
     Loader2,
     LucideIcon,
     MapPin,
-    Plus,
+    Send,
+    ShieldAlert,
+    Sparkles,
     Tag,
-    Trash2,
-    Upload,
     Wallet,
-    X,
 } from "lucide-react";
 import dynamic from "next/dynamic";
-import { useRouter } from "next/navigation";
-import React, { useEffect, useMemo, useState } from "react";
-import { toast } from "sonner";
-import { cn, formatCurrency, formatPrice, toPersianDigits, getMediaUrl } from "@/lib/utils";
-import { AdminOwnershipSelector, AdminOwnershipData } from "@/components/admin/AdminOwnershipSelector";
-import { adminService } from "@/services/admin.service";
-import { AdminCreateTemporaryRentRequest } from "@/types/api/admin.types";
-import { geoService } from "@/services/geo.service";
-import { useGeoHierarchy } from "@/hooks/useGeoHierarchy";
-import { useUserStatus } from "@/hooks/useUserStatus";
-import { AccountStatusBanner } from "@/components/ui/AccountStatusBanner";
-import { ShieldAlert } from "lucide-react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
 
 // Leaflet is client-side only
 const DynamicMapPicker = dynamic(() => import("@/components/ui/MapPicker"), { ssr: false });
 
-type Step = "CATEGORY" | "DETAILS" | "LOCATION" | "MEDIA" | "REVIEW";
+type Step = "BASIC_INFO" | "DETAILS" | "LOCATION" | "REVIEW";
 
 const STEPS_CONFIG: { id: Step; label: string; icon: LucideIcon }[] = [
-    { id: "CATEGORY", icon: Tag, label: "دسته‌بندی و شهر" },
+    { id: "BASIC_INFO", icon: Tag, label: "اطلاعات پایه" },
     { id: "DETAILS", icon: Wallet, label: "قیمت و مشخصات" },
     { id: "LOCATION", icon: MapPin, label: "موقعیت" },
-    { id: "MEDIA", icon: ImageIcon, label: "تصاویر" },
-    { id: "REVIEW", icon: Check, label: "بازبینی و ثبت" },
+    { id: "REVIEW", icon: Send, label: "بازبینی و ثبت" },
 ];
 
 interface CreateTemporaryRentSceneProps {
@@ -66,17 +64,29 @@ interface CreateTemporaryRentSceneProps {
 
 export default function CreateTemporaryRentScene({ adminMode = false }: CreateTemporaryRentSceneProps) {
     const router = useRouter();
-    const { isRestricted, restrictionMessage } = useUserStatus();
-    const [step, setStep] = useState<Step>("CATEGORY");
-    const [isCitySelectorOpen, setIsCitySelectorOpen] = useState(false);
-    const [cityName, setCityName] = useState("");
-    const [pricingErrors, setPricingErrors] = useState<Record<string, string>>({});
-    const [attributeErrors, setAttributeErrors] = useState<Record<string, string>>({});
-    const [isSubmittingAdmin, setIsSubmittingAdmin] = useState(false);
+    const searchParams = useSearchParams();
+    const editAdId = searchParams.get("edit");
+    const handlePageBack = useSafeBack(adminMode ? "/admin/temporary-rent" : editAdId ? "/profile/temporary-rent" : "/");
+
+    const [activeAdId, setActiveAdId] = useState<string | null>(editAdId || null);
+    const activeAdIdRef = useRef<string | null>(editAdId || null);
 
     useEffect(() => {
-        window.scrollTo({ top: 0, behavior: "smooth" });
-    }, [step]);
+        if (editAdId) {
+            setActiveAdId(editAdId);
+            activeAdIdRef.current = editAdId;
+        }
+    }, [editAdId]);
+
+    const { selectedCity } = useCity();
+    const { isRestricted, restrictionMessage } = useUserStatus();
+
+    const [step, setStep] = useState<Step>("BASIC_INFO");
+    const [cityName, setCityName] = useState(selectedCity?.name || "");
+    const [pricingErrors, setPricingErrors] = useState<Record<string, string>>({});
+    const [attributeErrors, setAttributeErrors] = useState<Record<string, string>>({});
+    const [titleError, setTitleError] = useState<string>("");
+    const [descriptionError, setDescriptionError] = useState<string>("");
 
     const [adminOwnership, setAdminOwnership] = useState<AdminOwnershipData>({
         isPlatform: true,
@@ -85,8 +95,12 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
         lastName: "",
     });
 
-    const [formData, setFormData] = useState<Omit<CreateTemporaryRentDraftRequest, "priceModelKey" | "pricing">>({
-        cityId: "",
+    const initialCoords = (selectedCity?.centerPoint?.latitude && selectedCity?.centerPoint?.longitude)
+        ? { latitude: selectedCity.centerPoint.latitude, longitude: selectedCity.centerPoint.longitude }
+        : { latitude: 35.6892, longitude: 51.3890 };
+
+    const [formData, setFormData] = useState<Partial<CreateTemporaryRentDraftRequest> & { isDecorativeImages?: boolean; address?: string }>({
+        cityId: selectedCity?.id || undefined,
         categoryPath: {
             categoryKey: "",
             subcategoryKey: "",
@@ -100,47 +114,23 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
             availableFrom: new Date().toISOString(),
             availableTo: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
         },
-        latitude: 35.6892,
-        longitude: 51.389,
+        latitude: initialCoords.latitude,
+        longitude: initialCoords.longitude,
         mediaIds: [] as MediaReference[],
         attributes: {},
+        pricing: {} as any,
+        priceModelKey: "DAILY_RENT_STANDARD",
+        isDecorativeImages: false,
     });
+
+    const [pricingValues, setPricingValues] = useState<Record<string, number | string | boolean>>({});
 
     const { data: geoHierarchy } = useGeoHierarchy();
 
-    const cityCoordinates = useMemo<[number, number]>(() => {
-        if (formData.cityId && geoHierarchy) {
-            for (const province of geoHierarchy) {
-                const found = province.cities.find((c) => c.id === formData.cityId);
-                if (found?.centerPoint?.latitude && found?.centerPoint?.longitude) {
-                    return [found.centerPoint.latitude, found.centerPoint.longitude];
-                }
-            }
-        }
-        if (cityName && geoHierarchy) {
-            for (const province of geoHierarchy) {
-                const found = province.cities.find((c) => c.name === cityName);
-                if (found?.centerPoint?.latitude && found?.centerPoint?.longitude) {
-                    return [found.centerPoint.latitude, found.centerPoint.longitude];
-                }
-            }
-        }
-        return [formData.latitude || 35.6892, formData.longitude || 51.3890];
-    }, [formData.cityId, cityName, geoHierarchy, formData.latitude, formData.longitude]);
+    // Fetch existing ad if editing
+    const { data: existingAd, isLoading: isLoadingExisting } = useTemporaryRentAdDetail(editAdId || "");
 
-    const [pricing, setPricing] = useState<Record<string, number | string | boolean>>({});
-    const [priceModelKey, setPriceModelKey] = useState<string>("DAILY_RENT_STANDARD");
-
-    const createDraftMutation = useCreateTemporaryRentDraft();
-
-    // Fetch Temporary Rent Categories
-    const { data: categories, isLoading: isLoadingCategories } = useQuery<TemporaryRentCategory[]>({
-        queryKey: ["temporary-rent-categories"],
-        queryFn: () => temporaryRentService.listCategories(),
-        staleTime: 1000 * 60 * 5,
-    });
-
-    // Reverse-geocode selected point to detect neighborhood (Item 47)
+    // Reverse-geocode selected point to detect neighborhood with PostGIS
     const { data: detectedZone, isLoading: isLoadingNeighborhood } = useQuery({
         queryKey: ["detected-neighborhood-temp-rent", formData.latitude, formData.longitude],
         queryFn: async () => {
@@ -167,9 +157,16 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
         staleTime: 1000 * 60 * 5,
     });
 
+    // Fetch Categories
+    const { data: categories } = useQuery<TemporaryRentCategory[]>({
+        queryKey: ["temporary-rent-categories"],
+        queryFn: () => temporaryRentService.listCategories(),
+        staleTime: 1000 * 60 * 5,
+    });
+
     // Auto-select first category and subcategory when categories load
     useEffect(() => {
-        if (categories && categories.length > 0 && !formData.categoryPath.categoryKey) {
+        if (!editAdId && categories && categories.length > 0 && !formData.categoryPath?.categoryKey) {
             const firstCat = categories[0];
             const firstSub = firstCat.subcategories?.[0];
             setFormData((prev) => ({
@@ -181,15 +178,15 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
                 },
             }));
         }
-    }, [categories, formData.categoryPath.categoryKey]);
+    }, [editAdId, categories, formData.categoryPath?.categoryKey]);
 
-    // Fetch Subcategory Config (allowed PriceModels & dynamic Attributes)
-    const selectedSubcategoryKey = formData.categoryPath.subcategoryKey;
-    const selectedCategoryKey = formData.categoryPath.categoryKey;
+    // Fetch Subcategory Config
+    const selectedSubcategoryKey = formData.categoryPath?.subcategoryKey;
+    const selectedCategoryKey = formData.categoryPath?.categoryKey;
 
     const { data: subcatConfig, isLoading: isLoadingConfig } = useQuery<TemporaryRentSubcategoryConfigResponse>({
         queryKey: ["temporary-rent-subcat-config", selectedSubcategoryKey, selectedCategoryKey],
-        queryFn: () => temporaryRentService.getSubcategoryConfig(selectedSubcategoryKey, selectedCategoryKey),
+        queryFn: () => temporaryRentService.getSubcategoryConfig(selectedSubcategoryKey!, selectedCategoryKey),
         enabled: Boolean(selectedSubcategoryKey),
         staleTime: 0,
         refetchOnMount: "always",
@@ -198,20 +195,364 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
     // Resolve active PriceModel
     const activePriceModel = useMemo(() => {
         if (!subcatConfig?.allowedPriceModels?.length) return undefined;
-        if (priceModelKey) {
+        const currentKey = formData.priceModelKey;
+        if (currentKey) {
             const found = subcatConfig.allowedPriceModels.find(
-                (m) => m.key === priceModelKey || m.id === priceModelKey
+                (m) => m.key === currentKey || m.id === currentKey
             );
             if (found) return found;
         }
         return subcatConfig.allowedPriceModels.find((m) => m.isDefault) || subcatConfig.allowedPriceModels[0];
-    }, [subcatConfig, priceModelKey]);
+    }, [subcatConfig, formData.priceModelKey]);
 
     useEffect(() => {
-        if (activePriceModel && activePriceModel.key !== priceModelKey) {
-            setPriceModelKey(activePriceModel.key);
+        if (activePriceModel && activePriceModel.key !== formData.priceModelKey) {
+            setFormData((prev) => ({
+                ...prev,
+                priceModelKey: activePriceModel.key,
+            }));
         }
-    }, [activePriceModel, priceModelKey]);
+    }, [activePriceModel, formData.priceModelKey]);
+
+    // Pre-fill form in edit mode
+    const hydratedEditAdIdRef = useRef<string | null>(null);
+    useEffect(() => {
+        if (existingAd) {
+            const adIdentifier = existingAd.id;
+            if (hydratedEditAdIdRef.current !== adIdentifier) {
+                hydratedEditAdIdRef.current = adIdentifier;
+
+                const rawMedia = (existingAd.mediaIds && existingAd.mediaIds.length > 0)
+                    ? existingAd.mediaIds
+                    : (existingAd as any).images || [];
+
+                const normalizedMedia: MediaReference[] = rawMedia.map((m: any) => {
+                    if (typeof m === "string") return { id: m, type: "IMAGE" };
+                    return { id: m.id || m.mediaId || m.url || "", type: m.type || "IMAGE" };
+                }).filter((m: MediaReference) => Boolean(m.id));
+
+                const rawPricing = ((existingAd.pricing as any)?.pricing || {}) as Record<string, any>;
+                const initialPricing = (rawPricing as Record<string, number | string | boolean>) || {};
+
+                setFormData({
+                    cityId: existingAd.cityId,
+                    categoryPath: {
+                        categoryKey: existingAd.categoryPath?.categoryKey || "",
+                        subcategoryKey: existingAd.categoryPath?.subcategoryKey || "",
+                        attributeSchemaVersion: existingAd.categoryPath?.attributeSchemaVersion || 1,
+                    },
+                    title: existingAd.title,
+                    description: existingAd.description,
+                    nightlyPrice: rawPricing.nightlyPrice || 0,
+                    maxGuests: existingAd.maxGuests || 2,
+                    availabilityWindow: existingAd.availabilityWindow || {
+                        availableFrom: new Date().toISOString(),
+                        availableTo: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+                    },
+                    latitude: existingAd.location?.coordinates?.latitude ?? existingAd.latitude ?? 35.6892,
+                    longitude: existingAd.location?.coordinates?.longitude ?? existingAd.longitude ?? 51.389,
+                    mediaIds: normalizedMedia,
+                    attributes: existingAd.attributes || {},
+                    pricing: rawPricing as any,
+                    priceModelKey: existingAd.pricing?.priceModelKey || "DAILY_RENT_STANDARD",
+                    isDecorativeImages: (existingAd as any).isDecorativeImages || false,
+                    address: existingAd.address || "",
+                });
+
+                setPricingValues(initialPricing);
+
+                if (existingAd.cityName) {
+                    setCityName(existingAd.cityName);
+                }
+            }
+        }
+    }, [existingAd]);
+
+    // Automatically scroll to top whenever step changes
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
+            setTimeout(() => {
+                window.scrollTo({ top: 0, behavior: "smooth" });
+            }, 40);
+        }
+    }, [step]);
+
+    // Options for Responsive Select Drawer: City
+    const cityOptions = useMemo<SelectDrawerOption<string>[]>(() => {
+        if (!geoHierarchy) {
+            if (formData.cityId && cityName) {
+                return [{ value: formData.cityId, label: cityName }];
+            }
+            return [];
+        }
+        const list: SelectDrawerOption<string>[] = [];
+        let hasCurrentCity = false;
+        for (const province of geoHierarchy) {
+            for (const city of province.cities) {
+                if (city.id === formData.cityId) hasCurrentCity = true;
+                list.push({
+                    value: city.id,
+                    label: city.name,
+                    description: `استان ${province.name}`,
+                    badge: city.isCapital ? "مرکز استان" : undefined,
+                });
+            }
+        }
+        if (!hasCurrentCity && formData.cityId && cityName) {
+            list.unshift({ value: formData.cityId, label: cityName });
+        }
+        return list;
+    }, [geoHierarchy, formData.cityId, cityName]);
+
+    const popularCityTags = useMemo<SelectDrawerTag<string>[]>(() => {
+        if (!geoHierarchy) return [];
+        const tags: SelectDrawerTag<string>[] = [];
+        const popularNames = ["تهران", "مشهد", "رامسر", "اصفهان", "شیراز", "کیش", "نوشهر", "چالوس"];
+        for (const name of popularNames) {
+            for (const p of geoHierarchy) {
+                const found = p.cities.find((c) => c.name === name);
+                if (found) {
+                    tags.push({ label: found.name, value: found.id });
+                    break;
+                }
+            }
+        }
+        return tags;
+    }, [geoHierarchy]);
+
+    const handleCityChange = (newCityId: string) => {
+        let matched: { id: string; name: string; centerPoint?: { latitude: number; longitude: number } } | null = null;
+        if (geoHierarchy) {
+            for (const p of geoHierarchy) {
+                const found = p.cities.find((c) => c.id === newCityId);
+                if (found) {
+                    matched = found;
+                    break;
+                }
+            }
+        }
+        setFormData((prev) => ({
+            ...prev,
+            cityId: newCityId,
+            latitude: matched?.centerPoint?.latitude ?? prev.latitude ?? 35.6892,
+            longitude: matched?.centerPoint?.longitude ?? prev.longitude ?? 51.3890,
+        }));
+        setCityName(matched?.name || "");
+    };
+
+    // Options for Responsive Select Drawer: Category
+    const categoryOptions = useMemo<SelectDrawerOption<string>[]>(() => {
+        if (!categories) return [];
+        return categories.map((cat) => ({
+            value: cat.key,
+            label: cat.displayName,
+            description: cat.description,
+            icon: cat.icon ? (
+                <img
+                    src={getMediaUrl(cat.icon)}
+                    alt=""
+                    className="w-5 h-5 object-contain rounded p-0.5 bg-surface-secondary border border-border-subtle shrink-0"
+                />
+            ) : undefined,
+        }));
+    }, [categories]);
+
+    const handleCategoryChange = (catKey: string) => {
+        if (formData.categoryPath?.categoryKey === catKey) return;
+        const cat = categories?.find((c) => c.key === catKey);
+        const firstSub = cat?.subcategories?.[0];
+        setFormData((prev) => ({
+            ...prev,
+            categoryPath: {
+                categoryKey: catKey,
+                subcategoryKey: firstSub?.key || "",
+                attributeSchemaVersion: 1,
+            },
+            pricing: {} as any,
+            attributes: {},
+        }));
+        setPricingValues({});
+        setPricingErrors({});
+        setAttributeErrors({});
+    };
+
+    // Options for Responsive Select Drawer: Subcategory
+    const subcategoryOptions = useMemo<SelectDrawerOption<string>[]>(() => {
+        if (!categories || !formData.categoryPath?.categoryKey) return [];
+        const currentCat = categories.find((c) => c.key === formData.categoryPath?.categoryKey);
+        if (!currentCat?.subcategories) return [];
+        return currentCat.subcategories.map((sub) => ({
+            value: sub.key,
+            label: sub.displayName,
+            icon: sub.icon ? (
+                <img
+                    src={getMediaUrl(sub.icon)}
+                    alt=""
+                    className="w-4 h-4 object-contain rounded shrink-0"
+                />
+            ) : undefined,
+        }));
+    }, [categories, formData.categoryPath?.categoryKey]);
+
+    const handleSubcategoryChange = (subKey: string) => {
+        if (formData.categoryPath?.subcategoryKey === subKey) return;
+        setFormData((prev) => ({
+            ...prev,
+            categoryPath: {
+                categoryKey: prev.categoryPath?.categoryKey || "",
+                subcategoryKey: subKey,
+                attributeSchemaVersion: 1,
+            },
+            pricing: {} as any,
+            attributes: {},
+        }));
+        setPricingValues({});
+        setPricingErrors({});
+        setAttributeErrors({});
+    };
+
+    // City coordinates for Map
+    const cityCoordinates = useMemo<[number, number]>(() => {
+        if (formData.cityId && geoHierarchy) {
+            for (const province of geoHierarchy) {
+                const found = province.cities.find((c) => c.id === formData.cityId);
+                if (found?.centerPoint?.latitude && found?.centerPoint?.longitude) {
+                    return [found.centerPoint.latitude, found.centerPoint.longitude];
+                }
+            }
+        }
+        if (cityName && geoHierarchy) {
+            for (const province of geoHierarchy) {
+                const found = province.cities.find((c) => c.name === cityName);
+                if (found?.centerPoint?.latitude && found?.centerPoint?.longitude) {
+                    return [found.centerPoint.latitude, found.centerPoint.longitude];
+                }
+            }
+        }
+        if (selectedCity?.centerPoint?.latitude && selectedCity?.centerPoint?.longitude) {
+            return [selectedCity.centerPoint.latitude, selectedCity.centerPoint.longitude];
+        }
+        return [35.6892, 51.3890];
+    }, [formData.cityId, geoHierarchy, cityName, selectedCity]);
+
+    // Submit Mutation
+    const submitMutation = useMutation({
+        mutationFn: async () => {
+            if (!formData.mediaIds || formData.mediaIds.length === 0) {
+                toast.error("بارگذاری حداقل یک تصویر برای ثبت اقامتگاه الزامی است");
+                throw new Error("بارگذاری حداقل یک تصویر برای ثبت اقامتگاه الزامی است");
+            }
+
+            const resolvedNightlyPrice = pricingValues.nightlyPrice
+                ? Number(pricingValues.nightlyPrice)
+                : formData.nightlyPrice || 1000000;
+            const resolvedMaxGuests = formData.attributes?.max_guests
+                ? Number(formData.attributes.max_guests)
+                : formData.maxGuests || 2;
+
+            if (adminMode) {
+                const payload: AdminCreateTemporaryRentRequest = {
+                    isPlatform: adminOwnership.isPlatform,
+                    phoneNumber: adminOwnership.isPlatform ? undefined : adminOwnership.phoneNumber.trim(),
+                    firstName: adminOwnership.isPlatform ? undefined : adminOwnership.firstName.trim(),
+                    lastName: adminOwnership.isPlatform ? undefined : adminOwnership.lastName.trim(),
+                    targetOwnerId: adminOwnership.targetOwnerId,
+                    cityId: formData.cityId!,
+                    categoryPath: {
+                        categoryKey: formData.categoryPath!.categoryKey,
+                        subcategoryKey: formData.categoryPath!.subcategoryKey,
+                        attributeSchemaVersion: formData.categoryPath!.attributeSchemaVersion || 1,
+                    },
+                    title: formData.title!,
+                    description: formData.description!,
+                    nightlyPrice: resolvedNightlyPrice,
+                    maxGuests: resolvedMaxGuests,
+                    availabilityWindow: formData.availabilityWindow!,
+                    priceModelKey: formData.priceModelKey || "DAILY_RENT_STANDARD",
+                    pricing: pricingValues as any,
+                    attributes: formData.attributes as any,
+                    latitude: formData.latitude || 35.6892,
+                    longitude: formData.longitude || 51.389,
+                    mediaIds: formData.mediaIds || [],
+                };
+                const created = await adminService.createTemporaryRent(payload);
+                return { adId: created?.id || created?.adId || "", isUpdate: false };
+            }
+
+            const targetAdId = activeAdIdRef.current || activeAdId || editAdId;
+
+            if (targetAdId) {
+                // Update existing temporary rental
+                await temporaryRentService.update(targetAdId, {
+                    title: formData.title,
+                    description: formData.description,
+                    priceModelKey: formData.priceModelKey,
+                    pricing: pricingValues as any,
+                    attributes: formData.attributes,
+                    mediaIds: formData.mediaIds,
+                    maxGuests: resolvedMaxGuests,
+                    nightlyPrice: resolvedNightlyPrice,
+                });
+                return { adId: targetAdId, isUpdate: true };
+            }
+
+            // Create new temporary rental draft and publish directly for authenticated host/agent
+            const payload: CreateTemporaryRentDraftRequest = {
+                cityId: formData.cityId!,
+                categoryPath: {
+                    categoryKey: formData.categoryPath!.categoryKey,
+                    subcategoryKey: formData.categoryPath!.subcategoryKey,
+                    attributeSchemaVersion: formData.categoryPath!.attributeSchemaVersion || 1,
+                },
+                title: formData.title!,
+                description: formData.description!,
+                nightlyPrice: resolvedNightlyPrice,
+                maxGuests: resolvedMaxGuests,
+                availabilityWindow: formData.availabilityWindow!,
+                priceModelKey: formData.priceModelKey || "DAILY_RENT_STANDARD",
+                pricing: pricingValues as any,
+                attributes: formData.attributes,
+                latitude: formData.latitude || 35.6892,
+                longitude: formData.longitude || 51.389,
+                mediaIds: formData.mediaIds || [],
+            };
+
+            const created = await temporaryRentService.createDraft(payload);
+            const createdId = created.adId;
+
+            // Direct publish for authenticated host/agent (Task 18)
+            try {
+                await temporaryRentService.publish(createdId);
+            } catch (pubErr) {
+                console.warn("Direct publish fallback to submitForReview:", pubErr);
+                try {
+                    await temporaryRentService.submitForReview(createdId);
+                } catch {
+                    // Ignore review submission error if already handled
+                }
+            }
+
+            return { adId: createdId, isUpdate: false };
+        },
+        onSuccess: ({ isUpdate }: { adId: string; isUpdate: boolean }) => {
+            if (adminMode) {
+                toast.success("اقامتگاه با موفقیت توسط ادمین ثبت گردید");
+                router.push("/admin/temporary-rent");
+                return;
+            }
+            if (isUpdate) {
+                toast.success("اطلاعات اقامتگاه با موفقیت به‌روزرسانی شد");
+            } else {
+                toast.success("اقامتگاه با موفقیت ثبت و منتشر گردید");
+            }
+            router.push("/profile/temporary-rent");
+        },
+        onError: (err: Error) => {
+            const msg = normalizeApiError(err, "خطا در ثبت اقامتگاه");
+            toast.error(msg);
+        },
+    });
 
     const currentStepIndex = STEPS_CONFIG.findIndex((s) => s.id === step);
 
@@ -220,28 +561,23 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
         const pErrors: Record<string, string> = {};
         const aErrors: Record<string, string> = {};
 
-        if (!formData.title?.trim()) {
-            toast.error("عنوان اقامتگاه الزامی است");
-            return false;
-        }
-
-        if (!formData.description?.trim()) {
-            toast.error("توضیحات اقامتگاه الزامی است");
-            return false;
-        }
-
-        // Validate pricing
+        // Validate pricing fields
         if (activePriceModel) {
             for (const field of activePriceModel.pricingFields) {
-                const val = pricing[field.key];
-                if (field.required && (val === undefined || val === null || val === "" || Number(val) <= 0)) {
-                    pErrors[field.key] = `فیلد ${field.label} الزامی است`;
+                const val = pricingValues?.[field.key];
+                const isUnset = val === undefined || val === null || String(val).trim() === "";
+
+                if (field.required && isUnset) {
+                    pErrors[field.key] = `فیلد «${field.label}» الزامی است`;
                     isValid = false;
+                } else if (!isUnset && field.fieldType === "NUMBER") {
+                    const num = Number(val);
+                    if (isNaN(num) || num < 0) {
+                        pErrors[field.key] = `فیلد «${field.label}» باید عدد معتبر باشد`;
+                        isValid = false;
+                    }
                 }
             }
-        } else if (!formData.nightlyPrice || formData.nightlyPrice <= 0) {
-            toast.error("مبلغ اجاره هر شب باید بزرگتر از صفر باشد");
-            return false;
         }
 
         // Validate attributes with constraints
@@ -260,19 +596,14 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
         setAttributeErrors(aErrors);
 
         if (!isValid) {
-            const hasConstraintErrors = Object.values(aErrors).some((e) => !e.includes("الزامی"));
-            if (hasConstraintErrors) {
-                toast.error("لطفاً مقادیر وارد شده را بر اساس محدودیت‌ها و خطاهای مشخص‌شده اصلاح فرمایید");
-            } else {
-                toast.error("لطفاً فیلدهای الزامی مشخص شده را تکمیل نمایید");
-            }
+            toast.error("لطفاً فیلدهای الزامی و خطاهای مشخص‌شده در قیمت و مشخصات را تکمیل نمایید");
         }
 
         return isValid;
     };
 
     const handleNext = () => {
-        if (step === "CATEGORY") {
+        if (step === "BASIC_INFO") {
             if (adminMode && !adminOwnership.isPlatform) {
                 if (!adminOwnership.phoneNumber?.trim()) {
                     toast.error("لطفاً شماره تماس مالک اقامتگاه را وارد فرمایید");
@@ -280,33 +611,84 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
                 }
                 if (adminOwnership.isUserFound === false) {
                     if (!adminOwnership.firstName?.trim() || !adminOwnership.lastName?.trim()) {
-                        toast.error("لطفاً نام و نام خانوادگی مالک جدید را جهت ایجاد حساب کاربری وارد فرمایید");
+                        toast.error("لطفاً نام و نام خانوادگی مالک جدید را وارد فرمایید");
                         return;
                     }
                 }
             }
+
             if (!formData.cityId) {
-                toast.error("لطفاً شهر اقامتگاه را انتخاب نمایید");
+                toast.error("لطفاً شهر اقامتگاه را مشخص نمایید");
                 return;
             }
-            if (!formData.categoryPath.categoryKey || !formData.categoryPath.subcategoryKey) {
-                toast.error("لطفاً نوع اقامتگاه را انتخاب نمایید");
+
+            if (!formData.categoryPath?.categoryKey || !formData.categoryPath?.subcategoryKey) {
+                toast.error("لطفاً نوع و زیردسته اقامتگاه را مشخص فرمایید");
                 return;
             }
-            setStep("DETAILS");
-        } else if (step === "DETAILS") {
-            if (!validateDetailsStep()) return;
-            setStep("LOCATION");
-        } else if (step === "LOCATION") {
-            setStep("MEDIA");
-        } else if (step === "MEDIA") {
+
+            let hasBasicError = false;
+            const trimmedTitle = formData.title?.trim() || "";
+            const trimmedDesc = formData.description?.trim() || "";
+
+            if (!trimmedTitle) {
+                setTitleError("عنوان اقامتگاه الزامی است");
+                hasBasicError = true;
+            } else if (trimmedTitle.length < 5) {
+                setTitleError("عنوان اقامتگاه باید حداقل ۵ کاراکتر باشد");
+                hasBasicError = true;
+            } else if (trimmedTitle.length > 120) {
+                setTitleError("عنوان اقامتگاه حداکثر می‌تواند ۱۲۰ کاراکتر باشد");
+                hasBasicError = true;
+            } else {
+                setTitleError("");
+            }
+
+            if (!trimmedDesc) {
+                setDescriptionError("توضیحات اقامتگاه الزامی است");
+                hasBasicError = true;
+            } else if (trimmedDesc.length < 20) {
+                setDescriptionError(`توضیحات اقامتگاه باید حداقل ۲۰ کاراکتر باشد (تعداد فعلی: ${toPersianDigits(trimmedDesc.length)} کاراکتر)`);
+                hasBasicError = true;
+            } else if (trimmedDesc.length > 4000) {
+                setDescriptionError("توضیحات اقامتگاه حداکثر می‌تواند ۴۰۰۰ کاراکتر باشد");
+                hasBasicError = true;
+            } else {
+                setDescriptionError("");
+            }
+
             if (!formData.mediaIds || formData.mediaIds.length === 0) {
-                toast.error("درج حداقل یک تصویر برای ثبت اقامتگاه الزامی است");
+                toast.error("بارگذاری حداقل یک تصویر یا ویدئو برای اقامتگاه الزامی است");
+                hasBasicError = true;
+            }
+
+            if (hasBasicError) {
                 return;
             }
-            setStep("REVIEW");
-        } else if (step === "REVIEW") {
-            handleSubmit();
+        }
+
+        if (step === "DETAILS") {
+            if (!validateDetailsStep()) {
+                return;
+            }
+        }
+
+        if (step === "LOCATION") {
+            if (
+                formData.latitude === undefined ||
+                formData.longitude === undefined ||
+                isNaN(Number(formData.latitude)) ||
+                isNaN(Number(formData.longitude))
+            ) {
+                toast.error("تعیین موقعیت مکانی اقامتگاه روی نقشه الزامی است");
+                return;
+            }
+        }
+
+        if (currentStepIndex === STEPS_CONFIG.length - 1) {
+            submitMutation.mutate();
+        } else {
+            setStep(STEPS_CONFIG[currentStepIndex + 1].id);
         }
     };
 
@@ -316,85 +698,10 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
         }
     };
 
-    const handleSubmit = async () => {
-        try {
-            if (!formData.mediaIds || formData.mediaIds.length === 0) {
-                toast.error("درج حداقل یک تصویر برای ثبت اقامتگاه الزامی است");
-                setStep("MEDIA");
-                return;
-            }
-
-            const resolvedNightlyPrice = pricing.nightlyPrice
-                ? Number(pricing.nightlyPrice)
-                : formData.nightlyPrice || 1000000;
-            const resolvedMaxGuests = formData.attributes?.max_guests
-                ? Number(formData.attributes.max_guests)
-                : formData.maxGuests || 2;
-
-            if (adminMode) {
-                setIsSubmittingAdmin(true);
-                const payload: AdminCreateTemporaryRentRequest = {
-                    isPlatform: adminOwnership.isPlatform,
-                    phoneNumber: adminOwnership.isPlatform ? undefined : adminOwnership.phoneNumber.trim(),
-                    firstName: adminOwnership.isPlatform ? undefined : adminOwnership.firstName.trim(),
-                    lastName: adminOwnership.isPlatform ? undefined : adminOwnership.lastName.trim(),
-                    targetOwnerId: adminOwnership.targetOwnerId,
-                    cityId: formData.cityId,
-                    categoryPath: {
-                        categoryKey: formData.categoryPath.categoryKey,
-                        subcategoryKey: formData.categoryPath.subcategoryKey,
-                        attributeSchemaVersion: formData.categoryPath.attributeSchemaVersion || 1,
-                    },
-                    title: formData.title,
-                    description: formData.description,
-                    nightlyPrice: resolvedNightlyPrice,
-                    maxGuests: resolvedMaxGuests,
-                    priceModelKey,
-                    pricing,
-                    availabilityWindow: {
-                        availableFrom: formData.availabilityWindow?.availableFrom || new Date().toISOString(),
-                        availableTo: formData.availabilityWindow?.availableTo || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-                    },
-                    latitude: formData.latitude,
-                    longitude: formData.longitude,
-                    mediaIds: formData.mediaIds || [],
-                    attributes: formData.attributes || {},
-                };
-                await adminService.createTemporaryRent(payload);
-                toast.success("اقامتگاه با موفقیت توسط ادمین ثبت گردید");
-                router.push("/admin/temporary-rent");
-                return;
-            }
-
-            const { nightlyPrice: _ignored, ...cleanFormData } = formData;
-            const payload: CreateTemporaryRentDraftRequest = {
-                ...cleanFormData,
-                maxGuests: resolvedMaxGuests,
-                priceModelKey,
-                pricing,
-                attributes: formData.attributes || {},
-            };
-
-            const draft = await createDraftMutation.mutateAsync(payload);
-            try {
-                await temporaryRentService.publish(draft.adId);
-                toast.success("اقامتگاه با موفقیت منتشر گردید");
-            } catch (publishErr) {
-                toast.success("اقامتگاه با موفقیت ثبت شد");
-            }
-            router.push("/profile/temporary-rent");
-        } catch (err) {
-            const msg = normalizeApiError(err instanceof Error ? err : undefined, "خطا در ثبت اقامتگاه");
-            toast.error(msg);
-        } finally {
-            setIsSubmittingAdmin(false);
-        }
-    };
-
     if (!adminMode && isRestricted) {
         return (
             <div className="min-h-[70vh] flex items-center justify-center p-4">
-                <div className="max-w-md w-full bg-surface rounded-3xl p-6 sm:p-8 border border-soft-border shadow-md text-center space-y-5">
+                <div className="max-w-md w-full bg-surface rounded-3xl p-6 sm:p-8 border border-border-subtle shadow-md text-center space-y-5">
                     <div className="w-16 h-16 bg-error-subtle text-error rounded-2xl flex items-center justify-center mx-auto">
                         <ShieldAlert className="w-8 h-8" />
                     </div>
@@ -416,7 +723,7 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
                         </Link>
                         <Link
                             href="/notifications"
-                            className="py-3 px-4 rounded-xl bg-soft-bg text-secondary text-xs font-bold hover:bg-soft-border transition-colors flex items-center justify-center gap-1.5"
+                            className="py-3 px-4 rounded-xl bg-surface-secondary text-foreground text-xs font-bold hover:bg-border/30 transition-colors flex items-center justify-center gap-1.5"
                         >
                             <span>مشاهده اعلان‌ها</span>
                         </Link>
@@ -426,24 +733,41 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
         );
     }
 
+    if (editAdId && isLoadingExisting) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3">
+                <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                <p className="text-text-light font-bold text-sm">در حال دریافت اطلاعات اقامتگاه...</p>
+            </div>
+        );
+    }
+
     return (
-        <div className="min-h-screen bg-surface-secondary/50 py-8 px-4 sm:px-6 lg:px-8 pb-32 lg:pb-12">
+        <div className="min-h-screen bg-surface-secondary/50 py-3 sm:py-8 px-2.5 sm:px-6 lg:px-8 pb-35 sm:pb-32 lg:pb-12">
             <div className="max-w-3xl mx-auto">
-                <header className="mb-6 flex items-center justify-between">
-                    <div>
-                        <h1 className="text-base sm:text-xl font-bold text-brand whitespace-normal sm:whitespace-nowrap">
-                            {adminMode ? "ثبت اقامتگاه جدید (پنل مدیریت)" : "ثبت اقامتگاه جدید (اجاره موقت و روزانه)"}
-                        </h1>
-                        <p className="text-xs text-text-light mt-1">
-                            {adminMode
-                                ? "ثبت مستقیم اقامتگاه به صورت سازمانی یا به نیابت از میزبانان با قابلیت ایجاد خودکار کاربر"
-                                : "مشخصات ویلا، سوئیت یا اقامتگاه بوم‌گردی خود را برای میهمانان سراسر کشور ثبت نمایید."}
-                        </p>
-                    </div>
+                {/* Standard Header with Back button and centered title */}
+                <header className="relative mb-3 sm:mb-6 flex items-center justify-center min-h-[40px]">
+                    <button
+                        type="button"
+                        onClick={() => handlePageBack()}
+                        className="absolute right-0 top-1/2 -translate-y-1/2 p-2 -mr-2 text-foreground-muted hover:text-brand transition-colors shrink-0 cursor-pointer"
+                        aria-label="بازگشت"
+                        title="بازگشت"
+                    >
+                        <ChevronRight className="w-6 h-6" />
+                    </button>
+
+                    <h1 className="text-lg sm:text-2xl font-black text-brand text-center px-16 sm:px-24">
+                        {adminMode
+                            ? "ثبت اقامتگاه جدید (پنل مدیریت)"
+                            : editAdId
+                                ? "ویرایش اطلاعات اقامتگاه"
+                                : "ثبت اقامتگاه جدید (اجاره موقت و روزانه)"}
+                    </h1>
                 </header>
 
-                {/* Mobile Stepper */}
-                <div className="sm:hidden mb-6 bg-surface p-4 rounded-2xl border border-border-subtle shadow-xs">
+                {/* Mobile Compact Step Indicator */}
+                <div className="sm:hidden mb-3 bg-surface p-2.5 sm:p-4 rounded-xl border border-border-subtle shadow-xs">
                     <div className="flex justify-between items-center text-xs font-bold text-brand mb-2">
                         <span>
                             مرحله {toPersianDigits(currentStepIndex + 1)} از {toPersianDigits(STEPS_CONFIG.length)}:
@@ -503,264 +827,258 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
                 </nav>
 
                 {/* Form Card Content */}
-                <div className="bg-surface rounded-3xl shadow-sm border border-border-subtle p-6 sm:p-8 min-h-[480px] flex flex-col justify-between">
+                <div className="bg-surface rounded-2xl sm:rounded-3xl shadow-sm border border-border-subtle p-3.5 sm:p-8 min-h-[480px] flex flex-col justify-between">
                     <div>
-                        {/* 1. CATEGORY & CITY */}
-                        {step === "CATEGORY" && (
+                        {/* STEP 1: BASIC INFO */}
+                        {step === "BASIC_INFO" && (
                             <div className="space-y-6">
                                 {adminMode && (
                                     <AdminOwnershipSelector
                                         value={adminOwnership}
                                         onChange={setAdminOwnership}
-                                        themeColor="emerald"
                                     />
                                 )}
-                                <h2 className="text-lg font-black text-brand">شهر و نوع اقامتگاه</h2>
 
-                                <div className="grid grid-cols-1 gap-5">
+                                {/* City Selection using ResponsiveSelectDrawer */}
+                                <div>
+                                    <ResponsiveSelectDrawer
+                                        label="شهر اقامتگاه"
+                                        required
+                                        value={formData.cityId}
+                                        onChange={handleCityChange}
+                                        options={cityOptions}
+                                        placeholder="انتخاب شهر..."
+                                        drawerTitle="انتخاب شهر اقامتگاه"
+                                        searchable
+                                        searchPlaceholder="جستجوی نام شهر..."
+                                        tags={popularCityTags}
+                                        tagsLabel="شهرهای پرطرفدار گردشگری:"
+                                        icon={<MapPin className="w-4 h-4" />}
+                                    />
+                                </div>
+
+                                {/* Category & Subcategory Selection using ResponsiveSelectDrawer */}
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <ResponsiveSelectDrawer
+                                        label="نوع اقامتگاه (دسته‌بندی اصلی)"
+                                        required
+                                        value={formData.categoryPath?.categoryKey}
+                                        onChange={handleCategoryChange}
+                                        options={categoryOptions}
+                                        placeholder="انتخاب نوع اقامتگاه..."
+                                        drawerTitle="انتخاب نوع اقامتگاه"
+                                        icon={<Tag className="w-4 h-4" />}
+                                    />
+
+                                    <ResponsiveSelectDrawer
+                                        label="زیردسته اقامتگاه"
+                                        required
+                                        value={formData.categoryPath?.subcategoryKey}
+                                        onChange={handleSubcategoryChange}
+                                        options={subcategoryOptions}
+                                        placeholder={formData.categoryPath?.categoryKey ? "انتخاب زیردسته..." : "ابتدا نوع اقامتگاه را مشخص کنید"}
+                                        drawerTitle="انتخاب زیردسته اقامتگاه"
+                                        disabled={!formData.categoryPath?.categoryKey}
+                                        icon={<Tag className="w-4 h-4" />}
+                                    />
+                                </div>
+
+                                {/* Price Model Selection Chips */}
+                                {subcatConfig?.allowedPriceModels && subcatConfig.allowedPriceModels.length > 0 && (
                                     <div>
                                         <label className="block text-xs font-bold text-brand mb-2">
-                                            شهر اقامتگاه <span className="text-error">*</span>
+                                            مدل قیمت‌گذاری <span className="text-error">*</span>
                                         </label>
-                                        <button
-                                            type="button"
-                                            onClick={() => setIsCitySelectorOpen(true)}
-                                            className="w-full flex items-center justify-between p-3.5 sm:p-4 bg-soft-bg hover:bg-soft-bg/80 border border-soft-border hover:border-primary/50 rounded-2xl transition-all group text-right focus:outline-none focus:ring-2 focus:ring-primary/20"
-                                        >
-                                            <div className="flex items-center gap-3 min-w-0">
-                                                <div className="w-10 h-10 rounded-xl bg-surface border border-soft-border flex items-center justify-center group-hover:border-primary/30 group-hover:text-primary transition-colors text-brand shrink-0">
-                                                    <MapPin className="w-5 h-5 text-primary" />
-                                                </div>
-                                                <div className="min-w-0 text-right">
-                                                    <span className={cn("text-sm font-black block truncate", cityName ? "text-brand" : "text-secondary/60")}>
-                                                        {cityName || "انتخاب شهر اقامتگاه..."}
-                                                    </span>
-                                                    <span className="text-[11px] text-secondary font-medium">
-                                                        {cityName ? "برای تغییر شهر کلیک کنید" : "شهر مورد نظر را مشخص نمایید"}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div className="flex items-center gap-1.5 text-xs font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-xl group-hover:bg-primary group-hover:text-white transition-all shrink-0">
-                                                <span>تغییر شهر</span>
-                                                <ChevronLeft className="w-4 h-4" />
-                                            </div>
-                                        </button>
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-xs font-bold text-brand mb-2">
-                                            نوع اقامتگاه <span className="text-error">*</span>
-                                        </label>
-                                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                                            {categories?.map((cat) => {
-                                                const isSelected = formData.categoryPath.categoryKey === cat.key;
+                                        <div className="flex flex-wrap gap-2.5">
+                                            {subcatConfig.allowedPriceModels.map((pm) => {
+                                                const isSelected = (formData.priceModelKey || activePriceModel?.key) === pm.key;
                                                 return (
                                                     <button
+                                                        key={pm.key}
                                                         type="button"
-                                                        key={cat.id || cat.key}
                                                         onClick={() => {
-                                                            const firstSub = cat.subcategories?.[0];
-                                                            setFormData((prev) => ({
-                                                                ...prev,
-                                                                categoryPath: {
-                                                                    categoryKey: cat.key,
-                                                                    subcategoryKey: firstSub?.key || "",
-                                                                    attributeSchemaVersion: 1,
-                                                                },
-                                                            }));
+                                                            setFormData((prev) => ({ ...prev, priceModelKey: pm.key }));
+                                                            setPricingValues({});
+                                                            setPricingErrors({});
                                                         }}
                                                         className={cn(
-                                                            "p-4 border rounded-2xl text-right transition-all flex flex-col justify-between min-h-[70px]",
+                                                            "px-4 py-2.5 rounded-xl border text-xs font-bold transition-all flex items-center gap-2 cursor-pointer",
                                                             isSelected
-                                                                ? "border-primary bg-primary/10 text-brand font-bold shadow-xs"
-                                                                : "border-border-subtle hover:border-primary/40 text-text-light bg-surface"
+                                                                ? "bg-primary text-white border-primary shadow-xs"
+                                                                : "bg-surface hover:bg-surface-secondary text-text-light border-border-subtle"
                                                         )}
                                                     >
-                                                        <div className="flex items-center gap-2.5">
-                                                            {cat.icon && (
-                                                                <img
-                                                                    src={getMediaUrl(cat.icon)}
-                                                                    alt=""
-                                                                    className="w-7 h-7 object-contain rounded-lg p-0.5 bg-surface-secondary border border-border-subtle shrink-0"
-                                                                />
-                                                            )}
-                                                            <span className="block text-sm font-black">{cat.displayName}</span>
-                                                        </div>
-                                                        {cat.description && (
-                                                            <span className="block text-[11px] text-text-light mt-1 line-clamp-1">
-                                                                {cat.description}
-                                                            </span>
-                                                        )}
+                                                        <span>{pm.displayName}</span>
                                                     </button>
                                                 );
                                             })}
                                         </div>
                                     </div>
+                                )}
 
-                                    {formData.categoryPath.categoryKey && (
-                                        <div className="space-y-4">
-                                            <div>
-                                                <Select
-                                                    label="زیردسته اقامتگاه *"
-                                                    value={formData.categoryPath.subcategoryKey || ""}
-                                                    onChange={(val) => {
-                                                        setFormData((prev) => ({
-                                                            ...prev,
-                                                            categoryPath: {
-                                                                ...prev.categoryPath,
-                                                                subcategoryKey: val,
-                                                            },
-                                                        }));
-                                                        setPricing({});
-                                                    }}
-                                                    options={
-                                                        categories
-                                                            ?.find((c) => c.key === formData.categoryPath.categoryKey)
-                                                            ?.subcategories?.map((sub) => ({
-                                                                value: sub.key,
-                                                                label: sub.displayName,
-                                                                icon: sub.icon ? (
-                                                                    <img
-                                                                        src={getMediaUrl(sub.icon)}
-                                                                        alt=""
-                                                                        className="w-4 h-4 object-contain rounded shrink-0"
-                                                                    />
-                                                                ) : undefined,
-                                                            })) || []
-                                                    }
-                                                    placeholder="انتخاب زیردسته..."
-                                                />
-                                            </div>
+                                {/* Title with Counter & Validation */}
+                                <div>
+                                    <div className="flex items-center justify-between mb-1.5">
+                                        <label className="text-xs font-bold text-brand">
+                                            عنوان اقامتگاه <span className="text-error">*</span>
+                                        </label>
+                                        <span className="text-[11px] text-text-light font-mono" dir="ltr">
+                                            {toPersianDigits(formData.title?.length || 0)} / ۱۲۰
+                                        </span>
+                                    </div>
+                                    <input
+                                        type="text"
+                                        value={formData.title || ""}
+                                        onChange={(e) => {
+                                            setFormData((prev) => ({ ...prev, title: e.target.value }));
+                                            if (titleError) setTitleError("");
+                                        }}
+                                        placeholder="مثال: ویلای دوبلکس استخردار در رامسر با چشم‌انداز جنگل"
+                                        maxLength={120}
+                                        className={cn(
+                                            "w-full px-3.5 py-3 rounded-xl border text-xs sm:text-sm font-medium transition-all focus:outline-hidden",
+                                            titleError
+                                                ? "border-error focus:border-error bg-error-subtle/20"
+                                                : "border-border-subtle focus:border-primary bg-surface"
+                                        )}
+                                    />
+                                    {titleError && (
+                                        <p className="text-[11px] font-bold text-error mt-1">{titleError}</p>
+                                    )}
+                                </div>
 
-                                            {/* Price Model selection within Step 1 */}
-                                            {formData.categoryPath.subcategoryKey && subcatConfig?.allowedPriceModels && (
-                                                <div>
-                                                    {subcatConfig.allowedPriceModels.length > 1 ? (
-                                                        <div>
-                                                            <label className="block text-xs font-bold text-brand mb-2">
-                                                                مدل قیمت‌گذاری <span className="text-error">*</span>
-                                                            </label>
-                                                            <div className="flex flex-wrap gap-2.5">
-                                                                {subcatConfig.allowedPriceModels.map((pm) => {
-                                                                    const isSelected =
-                                                                        (priceModelKey || activePriceModel?.key) === pm.key;
-                                                                    return (
-                                                                        <button
-                                                                            key={pm.key}
-                                                                            type="button"
-                                                                            onClick={() => {
-                                                                                setPriceModelKey(pm.key);
-                                                                                setPricing({});
-                                                                                setPricingErrors({});
-                                                                            }}
-                                                                            className={cn(
-                                                                                "px-4 py-2.5 rounded-xl border text-xs font-bold transition-all flex items-center gap-2",
-                                                                                isSelected
-                                                                                    ? "border-primary bg-primary text-white shadow-xs"
-                                                                                    : "border-border-subtle bg-surface text-text-light hover:border-primary/40 hover:text-brand"
-                                                                            )}
-                                                                        >
-                                                                            {isSelected && <Check className="w-3.5 h-3.5" />}
-                                                                            <span>{pm.displayName}</span>
-                                                                        </button>
-                                                                    );
-                                                                })}
-                                                            </div>
-                                                        </div>
-                                                    ) : subcatConfig.allowedPriceModels.length === 1 ? (
-                                                        <div className="p-3.5 bg-primary/5 border border-primary/20 rounded-2xl flex items-center justify-between">
-                                                            <span className="text-xs text-text-light font-medium">مدل قیمت‌گذاری:</span>
-                                                            <span className="text-xs font-black text-primary flex items-center gap-1.5">
-                                                                <Check className="w-4 h-4" />
-                                                                {subcatConfig.allowedPriceModels[0].displayName}
-                                                            </span>
-                                                        </div>
-                                                    ) : null}
-                                                </div>
+                                {/* Description with Counter & Validation */}
+                                <div>
+                                    <div className="flex items-center justify-between mb-1.5">
+                                        <label className="text-xs font-bold text-brand">
+                                            توضیحات اقامتگاه <span className="text-error">*</span>
+                                        </label>
+                                        <span className="text-[11px] text-text-light font-mono" dir="ltr">
+                                            {toPersianDigits(formData.description?.length || 0)} / ۴۰۰۰
+                                        </span>
+                                    </div>
+                                    <textarea
+                                        rows={4}
+                                        value={formData.description || ""}
+                                        onChange={(e) => {
+                                            setFormData((prev) => ({ ...prev, description: e.target.value }));
+                                            if (descriptionError) setDescriptionError("");
+                                        }}
+                                        placeholder="امکانات، فاصله تا جاذبه‌های گردشگری، قوانین پذیرش و آرامش محیط را با دقت بنویسید (حداقل ۲۰ کاراکتر)..."
+                                        maxLength={4000}
+                                        className={cn(
+                                            "w-full px-3.5 py-3 rounded-xl border text-xs sm:text-sm font-medium transition-all focus:outline-hidden resize-y",
+                                            descriptionError
+                                                ? "border-error focus:border-error bg-error-subtle/20"
+                                                : "border-border-subtle focus:border-primary bg-surface"
+                                        )}
+                                    />
+                                    {descriptionError && (
+                                        <p className="text-[11px] font-bold text-error mt-1">{descriptionError}</p>
+                                    )}
+                                </div>
+
+                                {/* Media Gallery Upload (Integrated in Step 1) */}
+                                <div className="space-y-3 pt-2 border-t border-border-subtle/70">
+                                    <div className="flex items-center justify-between">
+                                        <label className="text-xs font-bold text-brand">
+                                            تصاویر و ویدئوهای اقامتگاه <span className="text-error">*</span>
+                                        </label>
+                                        <span className="text-[11px] text-text-light">حداکثر ۱۵ فایل</span>
+                                    </div>
+
+                                    <MediaGalleryUpload
+                                        value={formData.mediaIds}
+                                        onChange={(media) =>
+                                            setFormData((prev) => ({
+                                                ...prev,
+                                                mediaIds: media,
+                                            }))
+                                        }
+                                        label=""
+                                        helperText="بارگذاری حداقل یک تصویر برای ثبت اقامتگاه الزامی است. اقامتگاه‌های دارای تصاویر باکیفیت و ویدئو تا ۵ برابر بیشتر رزرو دریافت می‌کنند."
+                                        maxFiles={15}
+                                        allowVideos={true}
+                                    />
+
+                                    {/* Decorative Images Toggle Switch */}
+                                    <div
+                                        role="button"
+                                        tabIndex={0}
+                                        onClick={() =>
+                                            setFormData((prev) => ({
+                                                ...prev,
+                                                isDecorativeImages: !prev.isDecorativeImages,
+                                            }))
+                                        }
+                                        onKeyDown={(e) => {
+                                            if (e.key === "Enter" || e.key === " ") {
+                                                e.preventDefault();
+                                                setFormData((prev) => ({
+                                                    ...prev,
+                                                    isDecorativeImages: !prev.isDecorativeImages,
+                                                }));
+                                            }
+                                        }}
+                                        className="flex items-center justify-between p-3 bg-surface-secondary/70 hover:bg-surface-secondary rounded-xl border border-border-subtle transition-colors cursor-pointer select-none"
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <span
+                                                className={cn(
+                                                    "text-xs font-bold transition-colors",
+                                                    formData.isDecorativeImages ? "text-brand" : "text-text-main"
+                                                )}
+                                            >
+                                                تصاویر تزئینی است
+                                            </span>
+                                            {formData.isDecorativeImages && (
+                                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/30">
+                                                    فعال
+                                                </span>
                                             )}
                                         </div>
-                                    )}
+
+                                        <div
+                                            role="switch"
+                                            aria-checked={Boolean(formData.isDecorativeImages)}
+                                            className={cn(
+                                                "relative inline-flex h-6 w-11 shrink-0 rounded-full transition-colors duration-200 ease-in-out",
+                                                formData.isDecorativeImages ? "bg-primary" : "bg-gray-300"
+                                            )}
+                                        >
+                                            <span
+                                                className={cn(
+                                                    "pointer-events-none absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-md transition-all duration-200 ease-in-out",
+                                                    formData.isDecorativeImages ? "right-[22px]" : "right-0.5"
+                                                )}
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         )}
 
-                        {/* 2. DETAILS (PRICE MODEL & ATTRIBUTES) */}
+                        {/* STEP 2: DETAILS */}
                         {step === "DETAILS" && (
-                            <div className="space-y-8">
-                                <div className="flex items-center justify-between">
-                                    <h2 className="text-lg font-black text-brand">عنوان، قیمت و ویژگی‌های اقامتگاه</h2>
-                                    {isLoadingConfig && (
-                                        <div className="flex items-center gap-1.5 text-xs text-primary font-bold">
-                                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                            <span>در حال دریافت مشخصات...</span>
-                                        </div>
-                                    )}
-                                </div>
-
-                                <div className="space-y-4">
-                                    <div>
-                                        <label className="block text-xs font-bold text-brand mb-2">
-                                            عنوان اقامتگاه <span className="text-error">*</span>
-                                        </label>
-                                        <input
-                                            type="text"
-                                            className="w-full p-3 border border-border-subtle rounded-xl bg-surface-secondary text-sm focus:bg-surface focus:ring-2 focus:ring-primary outline-hidden"
-                                            placeholder="مثلاً: ویلای استخردار دو خوابه با چشم‌انداز جنگل در رامسر"
-                                            value={formData.title}
-                                            onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-bold text-brand mb-2">
-                                            توضیحات و قوانین اقامتگاه <span className="text-error">*</span>
-                                        </label>
-                                        <textarea
-                                            rows={5}
-                                            className="w-full p-3 border border-border-subtle rounded-xl bg-surface-secondary text-sm focus:bg-surface focus:ring-2 focus:ring-primary outline-hidden leading-relaxed"
-                                            placeholder="توضیحات درباره محیط، امکانات رفاهی، دسترسی به مراکز تفریحی و ساعت ورود/خروج..."
-                                            value={formData.description}
-                                            onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
-                                        />
-                                    </div>
-                                </div>
-
-                                {/* Locked Active Price Model Display */}
-                                {activePriceModel && (
-                                    <div className="flex items-center justify-between p-4 bg-surface-secondary/80 border border-border-subtle/80 rounded-2xl">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                                                <Wallet className="w-5 h-5" />
-                                            </div>
-                                            <div>
-                                                <span className="text-[11px] text-text-light font-medium block">
-                                                    مدل محاسبه قیمت:
-                                                </span>
-                                                <span className="text-sm font-black text-brand">
-                                                    {activePriceModel.displayName}
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <span className="text-[11px] text-text-light bg-surface border border-border-subtle px-3 py-1 rounded-xl">
-                                            تعیین‌شده در مرحله دسته‌بندی
-                                        </span>
-                                    </div>
-                                )}
-
+                            <div className="space-y-6">
                                 {/* Dynamic Pricing Fields */}
-                                {activePriceModel && (
-                                    <div className="p-5 bg-surface-secondary/60 border border-border-subtle/80 rounded-2xl">
+                                {activePriceModel && activePriceModel.pricingFields && activePriceModel.pricingFields.length > 0 && (
+                                    <div className="space-y-4">
+                                        <div className="flex items-center justify-between pb-2 border-b border-border-subtle">
+                                            <h3 className="text-sm sm:text-base font-black text-brand flex items-center gap-2">
+                                                <Wallet className="w-4 h-4 text-primary" />
+                                                نرخ و قیمت‌گذاری اقامتگاه ({activePriceModel.displayName})
+                                            </h3>
+                                        </div>
                                         <DynamicPricingFields
-                                            priceModel={activePriceModel}
-                                            values={pricing}
-                                            onChange={(k, v) => {
-                                                setPricing((prev) => ({ ...prev, [k]: v }));
-                                                if (k === "nightlyPrice") {
-                                                    setFormData((prev) => ({ ...prev, nightlyPrice: Number(v) }));
-                                                }
-                                                if (pricingErrors[k]) {
+                                            priceModel={activePriceModel as any}
+                                            values={pricingValues}
+                                            onChange={(key, val) => {
+                                                setPricingValues((prev) => ({ ...prev, [key]: val }));
+                                                if (pricingErrors[key]) {
                                                     setPricingErrors((prev) => {
                                                         const copy = { ...prev };
-                                                        delete copy[k];
+                                                        delete copy[key];
                                                         return copy;
                                                     });
                                                 }
@@ -770,24 +1088,25 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
                                     </div>
                                 )}
 
-                                {/* Dynamic Attributes for Temporary Rental */}
+                                {/* Dynamic Attributes */}
                                 {subcatConfig?.attributeDefinitions && subcatConfig.attributeDefinitions.length > 0 && (
-                                    <div className="pt-2">
-                                        <h3 className="text-sm font-bold text-brand mb-4 pb-2 border-b border-border-subtle">
-                                            امکانات و ظرفیت اقامتگاه
+                                    <div className="space-y-4 pt-4 border-t border-border-subtle">
+                                        <h3 className="text-sm sm:text-base font-black text-brand flex items-center gap-2 pb-2 border-b border-border-subtle">
+                                            <Tag className="w-4 h-4 text-primary" />
+                                            مشخصات و امکانات اقامتگاه
                                         </h3>
                                         <DynamicAttributeRenderer
                                             definitions={subcatConfig.attributeDefinitions}
                                             values={formData.attributes || {}}
-                                            onChange={(k, v) => {
+                                            onChange={(key, val) => {
                                                 setFormData((prev) => ({
                                                     ...prev,
-                                                    attributes: { ...prev.attributes, [k]: v },
+                                                    attributes: { ...prev.attributes, [key]: val },
                                                 }));
-                                                if (attributeErrors[k]) {
+                                                if (attributeErrors[key]) {
                                                     setAttributeErrors((prev) => {
                                                         const copy = { ...prev };
-                                                        delete copy[k];
+                                                        delete copy[key];
                                                         return copy;
                                                     });
                                                 }
@@ -799,21 +1118,22 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
                             </div>
                         )}
 
-                        {/* 3. LOCATION */}
+                        {/* STEP 3: LOCATION */}
                         {step === "LOCATION" && (
                             <div className="space-y-4">
                                 <div>
-                                    <h2 className="text-lg font-black text-brand">تعیین موقعیت روی نقشه</h2>
+                                    <h2 className="text-base sm:text-lg font-black text-brand">تعیین موقعیت مکانی روی نقشه</h2>
                                     <p className="text-xs text-text-light mt-1">
-                                        نقشه به صورت خودکار روی شهر انتخابی شما ({cityName || "شهر انتخاب‌شده"}) تنظیم شده است. با کلیک روی نقشه، جابجایی نشانگر یا استفاده از دکمه «موقعیت فعلی من»، محل دقیق اقامتگاه را مشخص نمایید.
+                                        نقشه به صورت خودکار روی شهر انتخابی شما ({cityName || "شهر انتخاب‌شده"}) تنظیم شده است. با کلیک روی نقشه یا جابجایی نشانگر، محدوده اقامتگاه را مشخص نمایید.
                                     </p>
                                 </div>
-                                <div>
+
+                                <div className="rounded-2xl overflow-hidden border border-border-subtle">
                                     <DynamicMapPicker
                                         cityCenter={cityCoordinates}
                                         cityName={cityName}
                                         initialCenter={cityCoordinates}
-                                        value={[formData.latitude, formData.longitude]}
+                                        value={[formData.latitude ?? 35.6892, formData.longitude ?? 51.3890]}
                                         zoom={13}
                                         onChange={(lat, lng) =>
                                             setFormData((prev) => ({ ...prev, latitude: lat, longitude: lng }))
@@ -821,7 +1141,7 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
                                     />
                                 </div>
 
-                                {/* Detected Neighborhood Feedback (Item 47) */}
+                                {/* Detected Neighborhood Feedback */}
                                 <div className="flex items-center gap-2 p-3 bg-surface-secondary/70 rounded-xl border border-border-subtle text-xs">
                                     <MapPin className="w-4 h-4 text-primary shrink-0" />
                                     <span className="text-text-light font-medium">محله تشخیص داده‌شده:</span>
@@ -833,79 +1153,88 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
                                         </span>
                                     ) : (
                                         <span className="text-text-light">
-                                            خارج از محدوده محله‌های ثبت‌شده (مختصات نقشه ذخیره شد)
+                                            محدوده عمومی شهر (مختصات نقشه با موفقیت ثبت شد)
                                         </span>
                                     )}
+                                </div>
+
+                                {/* Optional Address Field */}
+                                <div>
+                                    <label className="block text-xs font-bold text-brand mb-1.5">
+                                        آدرس یا راهنمای دسترسی (اختیاری)
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={formData.address || ""}
+                                        onChange={(e) => setFormData((prev) => ({ ...prev, address: e.target.value }))}
+                                        placeholder="مثال: کیلومتر ۵ جاده ساحلی، کوچه صنوبر ۴"
+                                        className="w-full px-3.5 py-2.5 rounded-xl border border-border-subtle text-xs sm:text-sm bg-surface focus:border-primary focus:outline-hidden"
+                                    />
+                                    <p className="text-[10px] text-text-light mt-1">
+                                        این متن جهت سهولت در آدرس‌دهی پس از ثبت درخواست به میهمان نمایش داده خواهد شد.
+                                    </p>
                                 </div>
                             </div>
                         )}
 
-                        {/* 4. MEDIA */}
-                        {step === "MEDIA" && (
-                            <div className="space-y-6">
-                                <MediaGalleryUpload
-                                    value={formData.mediaIds}
-                                    onChange={(media) =>
-                                        setFormData((prev) => ({
-                                            ...prev,
-                                            mediaIds: media,
-                                        }))
-                                    }
-                                    label="تصاویر و ویدئوهای اقامتگاه"
-                                    helperText="تصاویر و ویدئوهای باکیفیت از فضای داخلی، اتاق‌ها و محوطه اقامتگاه بازدهی رزرواسیون را چند برابر می‌کند."
-                                    maxFiles={15}
-                                    allowVideos={true}
-                                />
-                            </div>
-                        )}
-
-                        {/* 5. REVIEW */}
+                        {/* STEP 4: REVIEW */}
                         {step === "REVIEW" && (
                             <div className="space-y-6">
                                 <h2 className="text-lg font-black text-brand">بازبینی و ثبت نهایی اقامتگاه</h2>
+
                                 <div className="bg-surface-secondary/80 rounded-2xl p-6 space-y-4 border border-border-subtle text-sm">
                                     {adminMode && (
                                         <div className="flex justify-between pb-2 border-b border-border-subtle/50">
-                                            <span className="text-text-light">نوع مالکیت:</span>
+                                            <span className="text-text-light">نوع ثبت در پنل مدیریت:</span>
                                             <span className="font-bold text-brand">
                                                 {adminOwnership.isPlatform
-                                                    ? "سازمانی (متعلق به سامانه)"
+                                                    ? "سازمانی (سامانه ملک تودی)"
                                                     : `به نام میزبان: ${adminOwnership.foundUserName || `${adminOwnership.firstName} ${adminOwnership.lastName}`} (${adminOwnership.phoneNumber})`}
                                             </span>
                                         </div>
                                     )}
+
                                     <div className="flex justify-between pb-2 border-b border-border-subtle/50">
                                         <span className="text-text-light">عنوان اقامتگاه:</span>
                                         <span className="font-bold text-brand">{formData.title}</span>
                                     </div>
+
                                     <div className="flex justify-between pb-2 border-b border-border-subtle/50">
                                         <span className="text-text-light">شهر:</span>
                                         <span className="font-bold text-brand">{cityName}</span>
                                     </div>
+
                                     {detectedZone?.name && (
                                         <div className="flex justify-between pb-2 border-b border-border-subtle/50">
                                             <span className="text-text-light">محله:</span>
                                             <span className="font-bold text-primary">{detectedZone.name}</span>
                                         </div>
                                     )}
+
                                     <div className="flex justify-between pb-2 border-b border-border-subtle/50">
-                                        <span className="text-text-light">نوع اقامتگاه:</span>
-                                        <span className="font-bold text-brand text-left">
-                                            {subcatConfig?.subcategory?.categoryDisplayName} / {subcatConfig?.subcategory?.displayName}
+                                        <span className="text-text-light">نوع و زیردسته:</span>
+                                        <span className="font-bold text-brand">
+                                            {subcatConfig?.subcategory?.categoryDisplayName || "اقامتگاه"} / {subcatConfig?.subcategory?.displayName || "اجاره روزانه"}
                                         </span>
                                     </div>
+
                                     <div className="flex justify-between pb-2 border-b border-border-subtle/50">
                                         <span className="text-text-light">مدل قیمت‌گذاری:</span>
-                                        <span className="font-bold text-primary">
-                                            {activePriceModel?.displayName}
-                                        </span>
+                                        <span className="font-bold text-primary">{activePriceModel?.displayName}</span>
                                     </div>
+
                                     <div className="flex justify-between pb-2 border-b border-border-subtle/50">
-                                        <span className="text-text-light">اجاره هر شب:</span>
-                                        <span className="font-bold text-success">
-                                            {formatCurrency(pricing.nightlyPrice ? Number(pricing.nightlyPrice) : formData.nightlyPrice)} تومان
+                                        <span className="text-text-light">نرخ اجاره هر شب:</span>
+                                        <span className="font-black text-brand">
+                                            {formatPrice(Number(pricingValues.nightlyPrice || formData.nightlyPrice || 0))}
                                         </span>
                                     </div>
+
+                                    <div className="flex justify-between pb-2 border-b border-border-subtle/50">
+                                        <span className="text-text-light">تعداد رسانه‌ها:</span>
+                                        <span className="font-bold text-brand">{toPersianDigits(formData.mediaIds?.length || 0)} فایل</span>
+                                    </div>
+
                                     <div className="border-t border-border-subtle/60 pt-3">
                                         <p className="text-text-light text-xs mb-1">توضیحات:</p>
                                         <p className="text-xs text-text-main line-clamp-3 leading-relaxed">
@@ -918,37 +1247,37 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
                     </div>
 
                     {/* Navigation Buttons */}
-                    <div className="mt-10 flex items-center justify-between border-t border-border-subtle pt-6">
+                    <div className="mt-8 flex items-center justify-between border-t border-border-subtle pt-6">
                         <button
                             type="button"
                             onClick={handleBack}
-                            disabled={step === "CATEGORY"}
-                            className="flex items-center text-text-light hover:text-brand disabled:opacity-30 font-bold text-xs"
+                            disabled={currentStepIndex === 0}
+                            className="flex items-center text-text-light hover:text-brand disabled:opacity-30 font-bold text-xs cursor-pointer transition-colors"
                         >
                             <ChevronRight className="h-4 w-4 ml-1" />
-                            مرحله قبل
+                            <span>مرحله قبل</span>
                         </button>
 
-                        {step === "REVIEW" ? (
+                        {currentStepIndex === STEPS_CONFIG.length - 1 ? (
                             <button
                                 type="button"
-                                onClick={handleSubmit}
-                                disabled={createDraftMutation.isPending || isSubmittingAdmin}
+                                onClick={handleNext}
+                                disabled={submitMutation.isPending}
                                 className={cn(
-                                    "px-7 py-2.5 rounded-xl text-white font-black text-xs shadow-md flex items-center gap-1.5 transition-all",
+                                    "px-7 py-3 rounded-xl text-white font-black text-xs shadow-md flex items-center gap-1.5 transition-all cursor-pointer active:scale-95",
                                     adminMode
                                         ? "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/20"
                                         : "bg-primary hover:bg-primary/90 shadow-primary/20"
                                 )}
                             >
-                                {(createDraftMutation.isPending || isSubmittingAdmin) && <Loader2 className="h-4 w-4 animate-spin" />}
-                                <span>{adminMode ? "ثبت نهایی اقامتگاه در پنل مدیریت" : "ثبت اقامتگاه"}</span>
+                                {submitMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+                                <span>{adminMode ? "ثبت نهایی اقامتگاه در پنل مدیریت" : editAdId ? "به‌روزرسانی اقامتگاه" : "ثبت و انتشار اقامتگاه"}</span>
                             </button>
                         ) : (
                             <button
                                 type="button"
                                 onClick={handleNext}
-                                className="bg-primary text-white px-7 py-2.5 rounded-xl font-black text-xs hover:bg-primary/90 transition-all flex items-center shadow-md shadow-primary/20"
+                                className="bg-primary text-white px-7 py-3 rounded-xl font-black text-xs hover:bg-primary/90 transition-all flex items-center shadow-md shadow-primary/20 cursor-pointer active:scale-95"
                             >
                                 <span>مرحله بعد</span>
                                 <ChevronLeft className="h-4 w-4 mr-1" />
@@ -957,22 +1286,6 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
                     </div>
                 </div>
             </div>
-
-            {/* City Selector Modal */}
-            <CitySelector
-                isOpen={isCitySelectorOpen}
-                onClose={() => setIsCitySelectorOpen(false)}
-                currentCityId={formData.cityId}
-                onSelect={(city) => {
-                    setFormData((prev) => ({
-                        ...prev,
-                        cityId: city.id,
-                        latitude: city.centerPoint?.latitude ?? prev.latitude ?? 35.6892,
-                        longitude: city.centerPoint?.longitude ?? prev.longitude ?? 51.3890,
-                    }));
-                    setCityName(city.name);
-                }}
-            />
         </div>
     );
 }

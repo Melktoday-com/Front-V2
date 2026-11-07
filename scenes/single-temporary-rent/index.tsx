@@ -11,25 +11,35 @@ import { useToggleSaveTemporaryRent } from "@/hooks/useFavorites";
 import { useSafeBack } from "@/hooks/useSafeBack";
 import { useShowcase } from "@/hooks/useShowcase";
 import { useTemporaryRentAdDetail, useTemporaryRentAds } from "@/hooks/useTemporaryRent";
-import { cn, formatPrice, getMediaPosterUrl, getMediaUrl, toPersianDigits } from "@/lib/utils";
 import { formatLocationDisplay, getFloorArea } from "@/lib/location";
+import { cn, formatPrice, getMediaPosterUrl, getMediaUrl, toPersianDigits } from "@/lib/utils";
 import { temporaryRentService } from "@/services/temporary-rent.service";
+import { AdStatus } from "@/types/api/enums";
 import type { TemporaryRentAd, TemporaryRentContactInfo, TemporaryRentPricingReadModel } from "@/types/api/temporary-rent.types";
 import {
     Bath,
     Bed,
+    Building2,
+    Calendar,
     CheckCircle2,
     ChevronDown,
     ChevronLeft,
     ChevronRight,
     Clock,
     Copy,
+    CreditCard,
+    FileText,
     Heart,
+    Info,
+    Layers,
+    Loader2,
+    Lock,
+    LucideIcon,
     MapPin,
     Maximize2,
     MessageCircle,
-    MessageSquare,
     Minus,
+    Pencil,
     Phone,
     Play,
     Plus,
@@ -38,12 +48,9 @@ import {
     ShieldCheck,
     Sparkles,
     Star,
-    Tv,
+    Tag,
     Users,
-    Utensils,
-    Wifi,
-    Wind,
-    X
+    X,
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
@@ -51,6 +58,39 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+
+const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string; border: string }> = {
+    [AdStatus.PUBLISHED]: {
+        label: "منتشر شده",
+        bg: "bg-success-subtle/80",
+        text: "text-success",
+        border: "border-success/30",
+    },
+    [AdStatus.DRAFT]: {
+        label: "پیش‌نویس",
+        bg: "bg-surface-secondary",
+        text: "text-foreground-secondary",
+        border: "border-border-subtle",
+    },
+    [AdStatus.PENDING_APPROVAL]: {
+        label: "در حال بررسی",
+        bg: "bg-warning-subtle/80",
+        text: "text-warning",
+        border: "border-warning/30",
+    },
+    [AdStatus.REJECTED]: {
+        label: "رد شده",
+        bg: "bg-error-subtle/80",
+        text: "text-error",
+        border: "border-error/30",
+    },
+    [AdStatus.ARCHIVED]: {
+        label: "بایگانی شده",
+        bg: "bg-purple-50",
+        text: "text-purple-700",
+        border: "border-purple-200",
+    },
+};
 
 const Map = dynamic(() => import("@/components/ui/Map"), {
     ssr: false,
@@ -60,6 +100,22 @@ const Map = dynamic(() => import("@/components/ui/Map"), {
         </div>
     ),
 });
+
+function getResidenceRate(pricing?: TemporaryRentPricingReadModel | null): number {
+    if (!pricing?.pricing) return 0;
+    const p = pricing.pricing as any;
+    switch (pricing.priceModelKey) {
+        case "DAILY_RENT_STANDARD":
+        case "WEEKLY_MONTHLY_RENT":
+            return p.nightlyPrice || 0;
+        case "WEEKEND_PEAK_RENT":
+            return p.midweekNightlyPrice || p.weekendNightlyPrice || p.nightlyPrice || 0;
+        case "EVENT_VENUE_RENT":
+            return p.eventBasePrice || p.nightlyPrice || 0;
+        default:
+            return p.nightlyPrice || 0;
+    }
+}
 
 interface ResidenceDetailSceneProps {
     initialData?: TemporaryRentAd;
@@ -77,8 +133,8 @@ export default function ResidenceDetailScene({ initialData }: ResidenceDetailSce
 
     const { data: residence, isLoading, error, refetch } = useTemporaryRentAdDetail(id, initialData);
     const isOwner = Boolean(user && residence?.ownerId && user.userId === residence.ownerId);
-    const isPublished = residence?.status === 'PUBLISHED';
-    const isPromoted = Boolean(residence?.isFeatured || residence?.isUrgent);
+    const isPublished = residence?.status === AdStatus.PUBLISHED;
+    const isPromoted = Boolean((residence as any)?.isUrgent || (residence as any)?.isLadder);
     const isEligibleForPromotion = isOwner && isPublished;
 
     const { getCityName } = useCityLookup();
@@ -142,7 +198,7 @@ export default function ResidenceDetailScene({ initialData }: ResidenceDetailSce
 
     const handleToggleSave = async () => {
         if (!isLoggedIn) {
-            toast.error('لطفاً ابتدا وارد حساب کاربری خود شوید');
+            toast.error("لطفاً ابتدا وارد حساب کاربری خود شوید");
             router.push(`/auth?returnUrl=/temporary-rent/${id}`);
             return;
         }
@@ -150,7 +206,7 @@ export default function ResidenceDetailScene({ initialData }: ResidenceDetailSce
         setSaved(nextState);
         try {
             await toggleSaveTempMutation.mutateAsync(id);
-            toast.success(nextState ? 'اقامتگاه در نشان‌شده‌ها ذخیره شد' : 'اقامتگاه از نشان‌شده‌ها حذف شد');
+            toast.success(nextState ? "اقامتگاه در نشان‌شده‌ها ذخیره شد" : "اقامتگاه از نشان‌شده‌ها حذف شد");
         } catch {
             setSaved(!nextState);
         }
@@ -177,7 +233,7 @@ export default function ResidenceDetailScene({ initialData }: ResidenceDetailSce
 
     const handleChat = () => {
         if (!isLoggedIn) {
-            router.push("/auth");
+            router.push(`/auth?returnUrl=/temporary-rent/${id}`);
             return;
         }
         chatMutation.mutate(
@@ -209,14 +265,21 @@ export default function ResidenceDetailScene({ initialData }: ResidenceDetailSce
             }).catch(() => { });
         } else if (typeof navigator !== "undefined" && navigator.clipboard) {
             navigator.clipboard.writeText(window.location.href);
-            toast.success("لینک اقامتگاه کپی شد");
+            toast.success("لینک اقامتگاه در کلیپ‌بورد کپی شد");
+        }
+    };
+
+    const handleCopyId = () => {
+        if (typeof navigator !== "undefined" && navigator.clipboard && residence) {
+            navigator.clipboard.writeText(residence.id);
+            toast.success("کد اقامتگاه در حافظه کپی شد");
         }
     };
 
     if (isLoading) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3">
-                <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin" />
+                <Loader2 className="w-8 h-8 text-primary animate-spin" />
                 <p className="text-text-light text-sm font-bold">در حال بارگذاری اطلاعات اقامتگاه...</p>
             </div>
         );
@@ -230,30 +293,17 @@ export default function ResidenceDetailScene({ initialData }: ResidenceDetailSce
         );
     }
 
-function getResidenceRate(pricing?: TemporaryRentPricingReadModel | null): number {
-    if (!pricing) return 0;
-    switch (pricing.priceModelKey) {
-        case "DAILY_RENT_STANDARD":
-        case "WEEKLY_MONTHLY_RENT":
-            return pricing.pricing.nightlyPrice;
-        case "WEEKEND_PEAK_RENT":
-            return pricing.pricing.midweekNightlyPrice || pricing.pricing.weekendNightlyPrice;
-        case "EVENT_VENUE_RENT":
-            return pricing.pricing.eventBasePrice;
-        default:
-            return 0;
-    }
-}
-
+    const pricing = (residence.pricing?.pricing || {}) as Record<string, any>;
+    const priceModelKey = residence.pricing?.priceModelKey || "DAILY_RENT_STANDARD";
     const nightlyPrice = getResidenceRate(residence.pricing);
     const totalPrice = nightlyPrice * nights;
+
     const coords = residence.location?.coordinates;
     const lat = coords?.latitude ?? residence.latitude;
     const lng = coords?.longitude ?? residence.longitude;
     const hasCoords = typeof lat === "number" && typeof lng === "number" && !(lat === 0 && lng === 0);
 
     const attributeList = residence.attributeList || [];
-
     const booleanFeatures: { key: string; label: string; value: boolean }[] = [];
     const technicalSpecs: { key: string; label: string; displayValue: string }[] = [];
     const processedKeys = new Set<string>();
@@ -296,7 +346,6 @@ function getResidenceRate(pricing?: TemporaryRentPricingReadModel | null): numbe
         }
     }
 
-    // Dynamic extraction of key metrics from authoritative attributes (no fake fallbacks)
     const rawGuests = rawAttrs.max_guests ?? residence.maxGuests ?? residence.guestCapacity;
     const guestCapacity = rawGuests !== undefined && rawGuests !== null && !isNaN(Number(rawGuests))
         ? Number(rawGuests)
@@ -320,153 +369,70 @@ function getResidenceRate(pricing?: TemporaryRentPricingReadModel | null): numbe
     const categoryTitle =
         residence.category?.label ||
         residence.categoryTitle ||
-        residence.categoryPath?.categoryTitle;
+        residence.categoryPath?.categoryTitle ||
+        "اقامتگاه و ویلا";
 
     const subcategoryTitle =
         residence.subcategory?.label ||
         residence.subcategoryTitle ||
-        residence.categoryPath?.subcategoryTitle;
+        residence.categoryPath?.subcategoryTitle ||
+        "اجاره روزانه";
 
-    const renderBookingCard = (isMobile = false) => (
-        <div
-            className={cn(
-                "bg-surface p-6 rounded-3xl border border-border-subtle space-y-5",
-                isMobile ? "shadow-sm" : "sticky top-6 shadow-xl"
-            )}
-        >
-            {/* Price display */}
-            <div className="flex items-baseline justify-between border-b border-border-subtle pb-4">
-                <div className="flex items-baseline gap-1">
-                    <span className="text-2xl font-black text-brand">
-                        {formatPrice(nightlyPrice, "")}
-                    </span>
-                    <span className="text-xs font-bold text-text-light">تومان</span>
-                    <span className="text-xs text-text-light">/ هر شب</span>
-                </div>
-                <div className="flex items-center gap-1 text-xs font-bold text-brand">
-                    <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-                    <span>۴.۹</span>
-                </div>
-            </div>
+    const getPriceModelTitle = (key: string) => {
+        switch (key) {
+            case "DAILY_RENT_STANDARD":
+                return "اجاره روزانه استاندارد";
+            case "WEEKEND_PEAK_RENT":
+                return "اجاره با نرخ آخر هفته و ایام پیک";
+            case "WEEKLY_MONTHLY_RENT":
+                return "اجاره هفتگی و ماهانه با تخفیف";
+            case "EVENT_VENUE_RENT":
+                return "اجاره برگزاری مراسم و رویداد";
+            default:
+                return "اجاره موقت و روزانه";
+        }
+    };
 
-            {/* Nights Selector */}
-            <div className="space-y-2">
-                <label className="block text-xs font-bold text-brand">مدت اقامت (تعداد شب)</label>
-                <div className="flex items-center justify-between p-3 rounded-2xl border border-border-subtle bg-surface-secondary">
-                    <span className="text-xs font-bold text-brand">
-                        {toPersianDigits(nights)} شب
-                    </span>
-                    <div className="flex items-center gap-2">
-                        <button
-                            type="button"
-                            onClick={() => setNights(Math.max(1, nights - 1))}
-                            className="w-8 h-8 rounded-full bg-surface border border-border-subtle flex items-center justify-center text-text-main hover:bg-surface-secondary active:scale-95 transition-transform"
-                        >
-                            <Minus className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setNights(nights + 1)}
-                            className="w-8 h-8 rounded-full bg-surface border border-border-subtle flex items-center justify-center text-text-main hover:bg-surface-secondary active:scale-95 transition-transform"
-                        >
-                            <Plus className="w-3.5 h-3.5" />
-                        </button>
-                    </div>
-                </div>
-            </div>
+    const statusConfig = STATUS_CONFIG[residence.status] || STATUS_CONFIG.PUBLISHED;
 
-            {/* Price Breakdown */}
-            <div className="space-y-2.5 text-xs text-text-light border-t border-border-subtle pt-4">
-                <div className="flex justify-between">
-                    <span>{formatPrice(nightlyPrice, "")} تومان × {toPersianDigits(nights)} شب</span>
-                    <span className="font-bold text-brand">{formatPrice(totalPrice, "")} تومان</span>
-                </div>
-                <div className="flex justify-between">
-                    <span>کارمزد خدمات</span>
-                    <span className="text-success font-bold">رایگان</span>
-                </div>
-                <div className="flex justify-between border-t border-border-subtle pt-3 text-sm font-black text-brand">
-                    <span>مجموع کل</span>
-                    <span>{formatPrice(totalPrice)}</span>
-                </div>
-            </div>
+    // Key metrics cards
+    const keyMetrics: { label: string; value: string; icon: LucideIcon }[] = [];
 
-            {isOwner ? (
-                <div className={cn("space-y-3", isMobile && "hidden")}>
-                    <div className="p-3.5 bg-warning-subtle/70 border border-warning/30/80 rounded-2xl flex items-center gap-2.5 text-xs font-bold text-amber-950">
-                        <ShieldCheck className="w-4 h-4 text-warning shrink-0" />
-                        <span>این اقامتگاه توسط شما ثبت شده است.</span>
-                    </div>
+    if (guestCapacity !== null) {
+        keyMetrics.push({
+            label: "ظرفیت مهمان",
+            value: `حداکثر ${toPersianDigits(guestCapacity)} نفر`,
+            icon: Users,
+        });
+    }
 
-                    {/* Already promoted indicator */}
-                    {isPublished && isPromoted && (
-                        <div className="flex items-center justify-center gap-2 w-full py-3 bg-warning-subtle border border-warning/30 text-warning font-black text-xs rounded-2xl shadow-xs">
-                            <Sparkles className="w-4 h-4 text-warning" />
-                            <span>اقامتگاه شما ارتقا یافته است (فوری / نردبان)</span>
-                        </div>
-                    )}
+    if (floorArea !== null) {
+        keyMetrics.push({
+            label: "متراژ زیربنا",
+            value: `${toPersianDigits(floorArea)} متر`,
+            icon: Maximize2,
+        });
+    }
 
-                    {/* Owner Promotion CTA if eligible */}
-                    {isEligibleForPromotion && (
-                        <button
-                            onClick={() => setIsPromotionModalOpen(true)}
-                            className="w-full py-3.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-black text-sm rounded-2xl shadow-md shadow-amber-500/20 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer"
-                        >
-                            <Sparkles className="w-4 h-4" />
-                            <span>{isPromoted ? "نردبان مجدد اقامتگاه" : "ارتقای اقامتگاه (فوری / نردبان)"}</span>
-                        </button>
-                    )}
+    if (roomsCount !== null) {
+        keyMetrics.push({
+            label: "تعداد اتاق",
+            value: roomsCount > 0 ? `${toPersianDigits(roomsCount)} خواب` : "بدون خواب (سوئیت)",
+            icon: Bed,
+        });
+    }
 
-                    {!isPublished && (
-                        <div className="p-2.5 bg-surface-secondary border border-border-subtle text-foreground-secondary text-xs text-center rounded-xl font-medium">
-                            {residence?.status === 'PENDING_APPROVAL'
-                                ? "اقامتگاه در انتظار تایید کارشناسان است"
-                                : "اقامتگاه در حالت فعال نمی‌باشد"}
-                        </div>
-                    )}
-
-                    <button
-                        onClick={() => router.push('/profile/temporary-rent')}
-                        className="w-full py-3 bg-brand/5 hover:bg-brand/10 text-brand font-bold text-xs rounded-2xl border border-brand/20 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
-                    >
-                        <span>مدیریت در پنل اقامتگاه‌ها</span>
-                    </button>
-                </div>
-            ) : !isMobile ? (
-                <>
-                    <div className="flex flex-col gap-3">
-                        {/* Booking CTA Button */}
-                        <button
-                            onClick={handleChat}
-                            disabled={chatMutation.isPending}
-                            className="w-full py-4 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black text-sm rounded-2xl shadow-lg shadow-orange-500/25 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer"
-                        >
-                            <MessageCircle className="w-5 h-5" />
-                            <span>درخواست رزرو و گفتگو با میزبان</span>
-                        </button>
-
-                        {/* Contact Host Direct CTA */}
-                        <button
-                            onClick={handleOpenContact}
-                            disabled={isLoadingContact}
-                            className="w-full py-3 bg-surface-secondary hover:bg-surface-secondary text-brand font-bold text-xs rounded-2xl border border-border-subtle transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
-                        >
-                            <Phone className="w-4 h-4 text-success" />
-                            <span>{isLoadingContact ? "در حال دریافت..." : "اطلاعات تماس با میزبان"}</span>
-                        </button>
-                    </div>
-
-                    <p className="text-[10px] text-text-light text-center leading-relaxed">
-                        در این مرحله وجهی کسر نمی‌شود. هماهنگی نهایی پس از تایید میزبان صورت می‌گیرد.
-                    </p>
-                </>
-            ) : null}
-        </div>
-    );
+    if (bathroomsCount !== null) {
+        keyMetrics.push({
+            label: "سرویس بهداشتی",
+            value: `${toPersianDigits(bathroomsCount)} سرویس`,
+            icon: Bath,
+        });
+    }
 
     return (
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 pb-32 lg:pb-16">
-            {/* Top Navigation */}
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 pb-32 lg:pb-12">
+            {/* Top Navigation & Breadcrumb Actions */}
             <div className="flex items-center justify-between mb-4">
                 <button
                     onClick={handleBack}
@@ -498,48 +464,7 @@ function getResidenceRate(pricing?: TemporaryRentPricingReadModel | null): numbe
                 </div>
             </div>
 
-            {/* Header Titles */}
-            <div className="mb-6">
-                {(categoryTitle || subcategoryTitle) && (
-                    <div className="flex items-center gap-2 mb-2.5">
-                        {categoryTitle && (
-                            <span className="px-3 py-1 rounded-full text-xs font-bold bg-orange-100 text-orange-950 border border-orange-200">
-                                {categoryTitle}
-                            </span>
-                        )}
-                        {subcategoryTitle && (
-                            <span className="px-3 py-1 rounded-full text-xs font-bold bg-surface-secondary text-brand border border-border-subtle">
-                                {subcategoryTitle}
-                            </span>
-                        )}
-                    </div>
-                )}
-                <h1 className="text-xl sm:text-3xl font-black text-brand leading-tight">
-                    {residence.title}
-                </h1>
-                <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs text-text-light mt-2 font-medium">
-                    <div className="flex items-center gap-1 text-brand font-bold">
-                        <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
-                        <span>{toPersianDigits("4.9")}</span>
-                        <span className="text-text-light text-[11px]">(امتیاز مسافران)</span>
-                    </div>
-                    <span>•</span>
-                    <div className="flex items-center gap-1">
-                        <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
-                        <span>
-                            {formatLocationDisplay(residence.location, cityName)}
-                        </span>
-                    </div>
-                    {residence.address && (
-                        <>
-                            <span>•</span>
-                            <span className="truncate max-w-xs">{residence.address}</span>
-                        </>
-                    )}
-                </div>
-            </div>
-
-            {/* Gallery Grid (Airbnb Style) */}
+            {/* Gallery Section */}
             <section className="space-y-3">
                 <div className="relative w-full aspect-[16/10] sm:aspect-[16/8] rounded-3xl overflow-hidden bg-surface-secondary shadow-md">
                     {activeMedia.isVideo ? (
@@ -559,11 +484,29 @@ function getResidenceRate(pricing?: TemporaryRentPricingReadModel | null): numbe
                             className="object-cover transition-opacity duration-300"
                         />
                     )}
-                    <div className="absolute top-4 right-4 bg-orange-600/90 backdrop-blur-md text-white text-xs font-bold px-3 py-1 rounded-full z-10">
-                        اجاره روزانه
+                    <div className="absolute top-4 right-4 flex items-center gap-1.5 z-10">
+                        {subcategoryTitle && (
+                            <span className="bg-brand/85 backdrop-blur-md text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">
+                                {subcategoryTitle}
+                            </span>
+                        )}
+                        {categoryTitle && categoryTitle !== subcategoryTitle && (
+                            <span className="bg-black/40 backdrop-blur-md text-white/90 text-xs font-medium px-2.5 py-1 rounded-full">
+                                {categoryTitle}
+                            </span>
+                        )}
+                        <span className="bg-primary/90 backdrop-blur-md text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">
+                            اجاره موقت و روزانه
+                        </span>
+                        {(residence as any).isDecorativeImages && (
+                            <span className="bg-amber-600/90 backdrop-blur-md text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">
+                                تصاویر تزئینی است
+                            </span>
+                        )}
                     </div>
                 </div>
 
+                {/* Thumbnails Strip */}
                 {mediaItems.length > 1 && (
                     <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
                         {mediaItems.map((media, idx) => (
@@ -572,9 +515,7 @@ function getResidenceRate(pricing?: TemporaryRentPricingReadModel | null): numbe
                                 onClick={() => setActiveImageIndex(idx)}
                                 className={cn(
                                     "relative w-20 h-16 sm:w-24 sm:h-18 rounded-2xl overflow-hidden shrink-0 border-2 transition-all",
-                                    activeImageIndex === idx
-                                        ? "border-orange-500 scale-105 shadow-md"
-                                        : "border-transparent opacity-70 hover:opacity-100"
+                                    activeImageIndex === idx ? "border-primary scale-105 shadow-md" : "border-transparent opacity-70 hover:opacity-100"
                                 )}
                             >
                                 {media.isVideo ? (
@@ -594,94 +535,221 @@ function getResidenceRate(pricing?: TemporaryRentPricingReadModel | null): numbe
                 )}
             </section>
 
-            {/* Main Content & Sticky Booking Card Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
-                {/* Right / Main Column (2 cols) */}
-                <div className="lg:col-span-2 space-y-8">
-                    {/* About Residence & Host Specs Section (Unified per Item 50) */}
-                    <div className="bg-surface rounded-3xl p-5 sm:p-6 border border-border-subtle shadow-xs space-y-5">
-                        {/* Header: Title + Host Showcase Pill Button */}
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-border-subtle">
-                            <div>
-                                <h2 className="text-base sm:text-lg font-black text-brand">درباره این اقامتگاه</h2>
-                                <p className="text-xs text-text-light mt-0.5">
-                                    میزبان: <span className="font-bold text-brand">{hostName}</span>
-                                    {isHostVerified && (
-                                        <span className="text-primary font-bold mr-1.5 inline-flex items-center gap-0.5">
-                                            <ShieldCheck className="w-3.5 h-3.5 inline" />
-                                            (تایید هویت شده)
-                                        </span>
-                                    )}
-                                </p>
+            {/* Main Content & Sidebar Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-6">
+                {/* Right / Main column (2 cols) */}
+                <div className="lg:col-span-2 space-y-6">
+                    {/* Status Alert Banner for non-published ads */}
+                    {!isPublished && (
+                        <div className={cn(
+                            "p-4 rounded-2xl border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3",
+                            statusConfig.bg,
+                            statusConfig.border
+                        )}>
+                            <div className="flex items-center gap-2.5">
+                                <span className={cn("text-xs font-black px-2.5 py-1 rounded-xl bg-surface border", statusConfig.border, statusConfig.text)}>
+                                    وضعیت: {statusConfig.label}
+                                </span>
+                                <span className="text-xs text-text-main font-medium">
+                                    {residence.status === AdStatus.PENDING_APPROVAL
+                                        ? "اقامتگاه در انتظار بررسی و تایید کارشناسان سامانه است."
+                                        : residence.status === AdStatus.DRAFT
+                                            ? "این اقامتگاه در حالت پیش‌نویس قرار دارد و هنوز برای میهمانان منتشر نشده است."
+                                            : "این اقامتگاه در وضعیت فعال قرار ندارد."}
+                                </span>
                             </div>
-
-                            {hostShowcaseUrl && (
-                                <Link
-                                    href={hostShowcaseUrl}
-                                    className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-orange-50 text-orange-950 hover:bg-orange-100 rounded-xl border border-orange-200 text-xs font-bold transition-colors cursor-pointer w-fit"
+                            {isOwner && (
+                                <button
+                                    onClick={() => router.push(`/profile/temporary-rent/new?edit=${residence.id}`)}
+                                    className="px-3.5 py-1.5 bg-brand text-white text-xs font-bold rounded-xl hover:bg-brand/90 transition shadow-xs self-start sm:self-auto shrink-0"
                                 >
-                                    <span>مشاهده ویترین میزبان</span>
-                                    <ChevronLeft className="w-4 h-4 text-orange-600" />
-                                </Link>
+                                    ویرایش اقامتگاه
+                                </button>
                             )}
                         </div>
+                    )}
 
-                        {/* Integrated Key Specs (Capacity, Area, Rooms, Baths) */}
-                        {(guestCapacity !== null || floorArea !== null || roomsCount !== null || bathroomsCount !== null) && (
-                            <div className="flex flex-wrap items-center gap-2.5 text-xs font-bold text-brand">
-                                {guestCapacity !== null && (
-                                    <div className="flex items-center gap-1.5 bg-orange-50/80 text-orange-950 px-3 py-2 rounded-xl border border-orange-200/80">
-                                        <Users className="w-3.5 h-3.5 text-orange-600" />
-                                        <span>ظرفیت تا {toPersianDigits(guestCapacity)} نفر</span>
-                                    </div>
-                                )}
-                                {floorArea !== null && (
-                                    <div className="flex items-center gap-1.5 bg-surface-secondary px-3 py-2 rounded-xl border border-border-subtle text-text-light">
-                                        <Maximize2 className="w-3.5 h-3.5 text-primary" />
-                                        <span>{toPersianDigits(floorArea)} متر</span>
-                                    </div>
-                                )}
-                                {roomsCount !== null && (
-                                    <div className="flex items-center gap-1.5 bg-surface-secondary px-3 py-2 rounded-xl border border-border-subtle text-text-light">
-                                        <Bed className="w-3.5 h-3.5 text-primary" />
-                                        <span>{toPersianDigits(roomsCount)} اتاق</span>
-                                    </div>
-                                )}
-                                {bathroomsCount !== null && (
-                                    <div className="flex items-center gap-1.5 bg-surface-secondary px-3 py-2 rounded-xl border border-border-subtle text-text-light">
-                                        <Bath className="w-3.5 h-3.5 text-primary" />
-                                        <span>{toPersianDigits(bathroomsCount)} سرویس</span>
-                                    </div>
-                                )}
+                    {/* Title & Metadata Header */}
+                    <div className="space-y-3 pb-2 border-b border-border-subtle">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <h1 className="text-xl sm:text-2xl font-black text-brand leading-tight">
+                                {residence.title}
+                            </h1>
+                            <button
+                                onClick={handleCopyId}
+                                className="inline-flex items-center gap-1.5 text-xs text-foreground-muted hover:text-brand bg-surface-secondary px-2.5 py-1 rounded-lg border border-border-subtle transition self-start sm:self-auto cursor-pointer"
+                                title="کپی کد اقامتگاه"
+                            >
+                                <span className="text-[11px]">کد:</span>
+                                <span className="font-mono text-[11px] truncate max-w-[120px]">{residence.id.slice(0, 8)}...</span>
+                                <Copy className="w-3.5 h-3.5 text-foreground-muted" />
+                            </button>
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs text-text-light font-medium">
+                            <div className="flex items-center gap-1 text-brand font-bold">
+                                <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+                                <span>{toPersianDigits("4.9")}</span>
+                                <span className="text-text-light text-[11px]">(امتیاز مسافران)</span>
                             </div>
-                        )}
-
-                        {/* Description Text */}
-                        <div className="text-xs sm:text-sm text-text-main leading-relaxed whitespace-pre-line pt-1">
-                            {residence.description || "توضیحاتی برای این اقامتگاه ثبت نشده است."}
+                            <span className="text-gray-300">•</span>
+                            <div className="flex items-center gap-1">
+                                <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
+                                <span>{formatLocationDisplay(residence.location, cityName)}</span>
+                            </div>
+                            {residence.createdAt && (
+                                <>
+                                    <span className="text-gray-300">•</span>
+                                    <span>ثبت: {new Date(residence.createdAt).toLocaleDateString("fa-IR")}</span>
+                                </>
+                            )}
                         </div>
                     </div>
 
-                    {/* Dynamic Amenities Grid */}
+                    {/* Key Metrics Chips */}
+                    {keyMetrics.length > 0 && (
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                            {keyMetrics.map((m, idx) => {
+                                const IconComponent = m.icon;
+                                return (
+                                    <div
+                                        key={idx}
+                                        className="bg-surface border border-border-subtle p-3.5 rounded-2xl flex items-center gap-3 shadow-xs hover:border-primary/40 transition-colors"
+                                    >
+                                        <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                                            <IconComponent className="w-5 h-5" />
+                                        </div>
+                                        <div className="flex flex-col min-w-0">
+                                            <span className="text-xs text-text-light">{m.label}</span>
+                                            <span className="text-sm font-black text-brand truncate max-w-full">{m.value}</span>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+
+                    {/* Financial Terms & Rates Card */}
+                    <div className="bg-surface-secondary/50 rounded-2xl p-5 border border-border-subtle space-y-4">
+                        <div className="flex items-center justify-between border-b border-border-subtle/70 pb-3">
+                            <div className="flex items-center gap-2">
+                                <CreditCard className="w-5 h-5 text-primary" />
+                                <h2 className="text-sm sm:text-base font-black text-brand">نرخ و شرایط مالی اقامتگاه</h2>
+                            </div>
+                            <span className="text-xs font-black px-2.5 py-1 rounded-xl bg-primary/10 text-primary border border-primary/20">
+                                {getPriceModelTitle(priceModelKey)}
+                            </span>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs sm:text-sm">
+                            <div className="flex items-center justify-between p-3 rounded-xl bg-surface border border-border-subtle/60">
+                                <span className="text-text-light">نرخ اجاره هر شب:</span>
+                                <span className="font-black text-brand">
+                                    {nightlyPrice > 0 ? formatPrice(nightlyPrice) : "توافقی"}
+                                </span>
+                            </div>
+
+                            {pricing.weekendNightlyPrice !== undefined && Number(pricing.weekendNightlyPrice) > 0 && (
+                                <div className="flex items-center justify-between p-3 rounded-xl bg-surface border border-border-subtle/60">
+                                    <span className="text-text-light">نرخ آخر هفته (پنجشنبه و جمعه):</span>
+                                    <span className="font-black text-brand">
+                                        {formatPrice(Number(pricing.weekendNightlyPrice))}
+                                    </span>
+                                </div>
+                            )}
+
+                            {pricing.midweekNightlyPrice !== undefined && Number(pricing.midweekNightlyPrice) > 0 && (
+                                <div className="flex items-center justify-between p-3 rounded-xl bg-surface border border-border-subtle/60">
+                                    <span className="text-text-light">نرخ ایام وسط هفته:</span>
+                                    <span className="font-black text-brand">
+                                        {formatPrice(Number(pricing.midweekNightlyPrice))}
+                                    </span>
+                                </div>
+                            )}
+
+                            {pricing.weeklyDiscountPercent !== undefined && Number(pricing.weeklyDiscountPercent) > 0 && (
+                                <div className="flex items-center justify-between p-3 rounded-xl bg-surface border border-border-subtle/60">
+                                    <span className="text-text-light">تخفیف رزرو بیش از ۷ شب:</span>
+                                    <span className="font-black text-success">
+                                        {toPersianDigits(pricing.weeklyDiscountPercent)}٪ تخفیف
+                                    </span>
+                                </div>
+                            )}
+
+                            {pricing.monthlyDiscountPercent !== undefined && Number(pricing.monthlyDiscountPercent) > 0 && (
+                                <div className="flex items-center justify-between p-3 rounded-xl bg-surface border border-border-subtle/60">
+                                    <span className="text-text-light">تخفیف رزرو ماهانه (۳۰ شب):</span>
+                                    <span className="font-black text-success">
+                                        {toPersianDigits(pricing.monthlyDiscountPercent)}٪ تخفیف
+                                    </span>
+                                </div>
+                            )}
+
+                            {pricing.extraGuestPrice !== undefined && Number(pricing.extraGuestPrice) > 0 && (
+                                <div className="flex items-center justify-between p-3 rounded-xl bg-surface border border-border-subtle/60">
+                                    <span className="text-text-light">هزینه هر نفر مهمان اضافه:</span>
+                                    <span className="font-black text-brand">
+                                        {formatPrice(Number(pricing.extraGuestPrice))}
+                                    </span>
+                                </div>
+                            )}
+
+                            {pricing.cleaningFee !== undefined && Number(pricing.cleaningFee) > 0 && (
+                                <div className="flex items-center justify-between p-3 rounded-xl bg-surface border border-border-subtle/60">
+                                    <span className="text-text-light">هزینه نظافت نهایی:</span>
+                                    <span className="font-black text-brand">
+                                        {formatPrice(Number(pricing.cleaningFee))}
+                                    </span>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* House Rules & Timing Section */}
+                    <div className="space-y-3">
+                        <h2 className="text-base font-black text-brand">مقررات و ساعات ورود و خروج</h2>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 bg-surface-secondary/50 p-4 rounded-2xl border border-border-subtle text-xs">
+                            <div className="flex items-center gap-3 p-3 bg-surface rounded-xl border border-border-subtle/60">
+                                <Clock className="w-5 h-5 text-primary shrink-0" />
+                                <div>
+                                    <span className="font-black text-brand block">ساعت ورود میهمان</span>
+                                    <span className="text-text-light">
+                                        {checkInTime ? `از ساعت ${toPersianDigits(checkInTime)} به بعد` : "از ساعت ۱۴:۰۰ به بعد (طبق هماهنگی)"}
+                                    </span>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-3 p-3 bg-surface rounded-xl border border-border-subtle/60">
+                                <Clock className="w-5 h-5 text-primary shrink-0" />
+                                <div>
+                                    <span className="font-black text-brand block">ساعت خروج و تحویل</span>
+                                    <span className="text-text-light">
+                                        {checkOutTime ? `تا قبل از ساعت ${toPersianDigits(checkOutTime)}` : "تا قبل از ساعت ۱۲:۰۰ ظهر"}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Amenities & Boolean Features */}
                     {booleanFeatures.length > 0 && (
-                        <div className="space-y-4">
-                            <h2 className="text-lg font-black text-brand">امکانات اقامتگاه</h2>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs font-bold">
+                        <div className="space-y-3">
+                            <h2 className="text-base font-black text-brand">امکانات اصلی اقامتگاه</h2>
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                                 {booleanFeatures.map((feat) => (
                                     <div
                                         key={feat.key}
                                         className={cn(
-                                            "flex items-center justify-between p-3.5 rounded-2xl border transition-colors",
+                                            "flex items-center justify-between p-3 rounded-xl border text-xs font-bold transition-colors",
                                             feat.value
-                                                ? "bg-orange-50/40 border-orange-200 text-orange-950 font-bold"
+                                                ? "bg-success-subtle/50 border-success/30 text-success"
                                                 : "bg-surface-secondary border-border-subtle text-foreground-muted"
                                         )}
                                     >
                                         <span>{feat.label}</span>
                                         {feat.value ? (
-                                            <span className="flex items-center gap-1 text-[11px] font-black text-orange-600">
+                                            <span className="flex items-center gap-1 text-[11px] font-black text-success">
                                                 دارد
-                                                <CheckCircle2 className="w-3.5 h-3.5 text-orange-600" />
+                                                <CheckCircle2 className="w-3.5 h-3.5" />
                                             </span>
                                         ) : (
                                             <span className="flex items-center gap-1 text-[11px] text-foreground-muted">
@@ -697,13 +765,13 @@ function getResidenceRate(pricing?: TemporaryRentPricingReadModel | null): numbe
 
                     {/* Technical Specifications */}
                     {technicalSpecs.length > 0 && (
-                        <div className="space-y-4">
-                            <h2 className="text-lg font-black text-brand">مشخصات فنی و شرایط اقامت</h2>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm">
+                        <div className="space-y-3">
+                            <h2 className="text-base font-black text-brand">مشخصات و شرایط اقامت</h2>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 {technicalSpecs.map((spec) => (
                                     <div
                                         key={spec.key}
-                                        className="flex items-center justify-between p-3.5 rounded-2xl bg-surface-secondary/60 border border-border-subtle"
+                                        className="flex items-center justify-between p-3.5 rounded-xl bg-surface-secondary/50 border border-border-subtle text-xs sm:text-sm"
                                     >
                                         <span className="text-text-light font-medium">{spec.label}</span>
                                         <span className="font-bold text-brand">{spec.displayValue}</span>
@@ -713,144 +781,323 @@ function getResidenceRate(pricing?: TemporaryRentPricingReadModel | null): numbe
                         </div>
                     )}
 
-                    {/* House Rules & Check-in info */}
-                    <div className="space-y-4">
-                        <h2 className="text-lg font-black text-brand">مقررات و شرایط ورود و خروج</h2>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-orange-50/20 p-5 rounded-3xl border border-orange-100 text-xs">
-                            <div className="flex items-center gap-3">
-                                <Clock className="w-5 h-5 text-orange-600 shrink-0" />
-                                <div>
-                                    <span className="font-black text-brand block">ساعت ورود</span>
-                                    <span className="text-text-light">
-                                        {checkInTime
-                                            ? `از ساعت ${toPersianDigits(checkInTime)} به بعد`
-                                            : "طبق هماهنگی با میزبان"}
-                                    </span>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <Clock className="w-5 h-5 text-orange-600 shrink-0" />
-                                <div>
-                                    <span className="font-black text-brand block">ساعت خروج</span>
-                                    <span className="text-text-light">
-                                        {checkOutTime
-                                            ? `تا قبل از ساعت ${toPersianDigits(checkOutTime)}`
-                                            : "طبق هماهنگی با میزبان"}
-                                    </span>
-                                </div>
-                            </div>
+                    {/* Description */}
+                    <div className="space-y-3">
+                        <h2 className="text-base font-black text-brand">توضیحات و امکانات اقامتگاه</h2>
+                        <div className="bg-surface-secondary/60 p-5 rounded-2xl border border-border-subtle text-sm text-text-main leading-relaxed whitespace-pre-line">
+                            {residence.description || "توضیحاتی برای این اقامتگاه ثبت نشده است."}
                         </div>
                     </div>
 
-                    {/* Mobile Price & Booking Section */}
-                    <div className="lg:hidden space-y-3">
-                        <h2 className="text-lg font-black text-brand">قیمت و محاسبه اقامت</h2>
-                        {renderBookingCard(true)}
-                    </div>
-
-                    {/* Interactive Leaflet Map */}
+                    {/* Map Location */}
                     {hasCoords && (
                         <div className="space-y-3">
-                            <h2 className="text-lg font-black text-brand">موقعیت اقامتگاه روی نقشه</h2>
-                            <div className="h-64 rounded-3xl overflow-hidden border border-border-subtle shadow-xs">
+                            <div className="flex items-center justify-between">
+                                <h2 className="text-base font-black text-brand">موقعیت تقریبی روی نقشه</h2>
+                                <span className="text-[11px] text-text-light">
+                                    موقعیت دقیق پس از ثبت درخواست ارسال خواهد شد
+                                </span>
+                            </div>
+                            <div className="h-64 rounded-2xl overflow-hidden border border-border-subtle shadow-xs">
                                 <Map
-                                    ads={[]}
-                                    center={[lat, lng]}
-                                    zoom={14}
+                                    ads={[{
+                                        adId: residence.id,
+                                        title: residence.title,
+                                        pricing: {},
+                                        location: { coordinates: { latitude: lat!, longitude: lng! } },
+                                    } as any]}
+                                    center={[lat!, lng!]}
+                                    zoom={15}
                                 />
                             </div>
                         </div>
                     )}
 
-                    {/* Collapsible Reviews Accordion (Item 51) */}
-                    <div className="bg-surface rounded-3xl border border-border-subtle shadow-xs overflow-hidden">
+                    {/* Host Showcase Box */}
+                    <div className="p-4 rounded-2xl bg-surface-secondary/70 border border-border-subtle/70 flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                            {hostAvatar ? (
+                                <img
+                                    src={getMediaUrl(hostAvatar)}
+                                    alt={hostName}
+                                    className="w-12 h-12 rounded-xl object-cover border border-border-subtle shadow-xs shrink-0"
+                                />
+                            ) : (
+                                <div className="w-12 h-12 rounded-xl bg-brand text-white flex items-center justify-center font-black text-lg shrink-0">
+                                    {hostName ? hostName.charAt(0) : "م"}
+                                </div>
+                            )}
+                            <div className="min-w-0">
+                                <div className="flex items-center gap-1.5">
+                                    <h4 className="font-black text-sm text-brand truncate">{hostName}</h4>
+                                    {isHostVerified && (
+                                        <span className="text-primary shrink-0" title="تایید هویت شده">
+                                            <ShieldCheck className="w-4 h-4" />
+                                        </span>
+                                    )}
+                                </div>
+                                <span className="text-[11px] text-foreground-muted block mt-0.5">میزبان اقامتگاه</span>
+                            </div>
+                        </div>
+                        {hostShowcaseUrl && (
+                            <Link
+                                href={hostShowcaseUrl}
+                                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-surface hover:bg-surface-secondary text-brand border border-border-subtle text-xs font-bold transition-colors shrink-0 shadow-xs cursor-pointer"
+                            >
+                                <span>مشاهده ویترین</span>
+                                <ChevronLeft className="w-3.5 h-3.5" />
+                            </Link>
+                        )}
+                    </div>
+
+                    {/* Safety Guideline Box */}
+                    <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl flex items-start gap-3">
+                        <ShieldAlert className="w-5 h-5 text-warning shrink-0 mt-0.5" />
+                        <div className="text-xs">
+                            <h5 className="font-black text-amber-950 mb-1">راهنمای رزرو امن اقامتگاه</h5>
+                            <p className="text-amber-900/80 leading-relaxed">
+                                پیش از پرداخت وجه یا بیعانه، حتماً از شرایط اقامتگاه و هویت میزبان اطمینان حاصل فرمایید. گفتگوی آنلاین و هماهنگی رسمی از طریق پیام‌رسان سامانه را در اولویت قرار دهید.
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Guest Reviews Section */}
+                    <div className="bg-surface rounded-2xl p-5 border border-border-subtle space-y-4">
                         <button
                             type="button"
                             onClick={() => setShowReviews(!showReviews)}
-                            className="w-full p-5 sm:p-6 flex items-center justify-between text-right hover:bg-surface-secondary/40 transition-colors cursor-pointer"
+                            className="w-full flex items-center justify-between text-right cursor-pointer"
                         >
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                                    <MessageSquare className="w-5 h-5" />
-                                </div>
-                                <div>
-                                    <h2 className="text-base sm:text-lg font-black text-brand">نظرات و دیدگاه‌های کاربران</h2>
-                                    <p className="text-xs text-text-light mt-0.5">
-                                        {showReviews ? "برای بستن لیست نظرات کلیک کنید" : "مشاهده نظرات ثبت‌شده مسافران قبلی"}
-                                    </p>
-                                </div>
+                            <div className="flex items-center gap-2">
+                                <Star className="w-5 h-5 text-amber-400 fill-amber-400" />
+                                <h2 className="text-sm sm:text-base font-black text-brand">نظرات و امتیازات میهمانان</h2>
                             </div>
-                            <ChevronDown className={cn("w-5 h-5 text-secondary transition-transform duration-200", showReviews && "rotate-180")} />
+                            <ChevronDown className={cn("w-5 h-5 text-text-light transition-transform", showReviews && "rotate-180")} />
                         </button>
                         {showReviews && (
-                            <div className="p-5 sm:p-6 pt-0 border-t border-border-subtle/50 animate-in fade-in">
-                                <ReviewsSection targetId={id} targetType="temporary-rent" />
+                            <div className="pt-3 border-t border-border-subtle">
+                                <ReviewsSection
+                                    targetType="temporary-rent"
+                                    targetId={id}
+                                />
                             </div>
                         )}
                     </div>
                 </div>
 
-                {/* Left Column (Sticky Booking Card - Airbnb Style, Desktop only) */}
-                <div className="hidden lg:block">
-                    {renderBookingCard(false)}
+                {/* Left column (Desktop Sticky Sidebar) */}
+                <div className="space-y-6 hidden lg:block">
+                    <div className="sticky top-6 bg-surface p-5 sm:p-6 rounded-2xl border border-border-subtle shadow-card space-y-5">
+                        {/* Header */}
+                        <div className="flex items-center justify-between pb-3.5 border-b border-border-subtle/80">
+                            <div className="flex items-center gap-2.5">
+                                <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                                    {isOwner ? (
+                                        <ShieldCheck className="w-5 h-5" />
+                                    ) : (
+                                        <Phone className="w-5 h-5" />
+                                    )}
+                                </div>
+                                <div>
+                                    <h3 className="font-black text-brand text-base leading-tight">
+                                        {isOwner ? "مدیریت اقامتگاه" : "رزرو و اطلاعات تماس"}
+                                    </h3>
+                                    <p className="text-[11px] text-foreground-muted mt-0.5">
+                                        {isOwner ? "پنل اختصاصی میزبان اقامتگاه" : "هماهنگی مستقیم با میزبان"}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {isOwner ? (
+                            <div className="space-y-3">
+                                <div className="p-3.5 bg-warning-subtle/70 border border-warning/30 rounded-2xl flex items-center gap-2.5 text-xs font-bold text-amber-950">
+                                    <ShieldCheck className="w-4 h-4 text-warning shrink-0" />
+                                    <span>این اقامتگاه توسط شما ثبت شده است.</span>
+                                </div>
+
+                                {isPublished && isPromoted && (
+                                    <div className="flex items-center justify-center gap-2 w-full py-3 bg-warning-subtle border border-warning/30 text-warning font-black text-xs rounded-2xl shadow-xs">
+                                        <Sparkles className="w-4 h-4 text-warning" />
+                                        <span>اقامتگاه شما ارتقا یافته است (فوری / نردبان)</span>
+                                    </div>
+                                )}
+
+                                {isEligibleForPromotion && (
+                                    <button
+                                        onClick={() => setIsPromotionModalOpen(true)}
+                                        className="w-full py-3.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-black text-sm rounded-xl shadow-md shadow-amber-500/20 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                                    >
+                                        <Sparkles className="w-4 h-4" />
+                                        <span>{isPromoted ? "نردبان مجدد اقامتگاه" : "ارتقای اقامتگاه (فوری / نردبان)"}</span>
+                                    </button>
+                                )}
+
+                                <button
+                                    type="button"
+                                    onClick={() => router.push(`/profile/temporary-rent/new?edit=${residence.id}`)}
+                                    className="w-full py-2.5 px-4 bg-surface-secondary hover:bg-border/30 text-foreground border border-border-subtle font-bold text-xs rounded-xl flex items-center justify-center gap-2 transition-all active:scale-98 cursor-pointer"
+                                >
+                                    <Pencil className="w-3.5 h-3.5 text-foreground-muted" />
+                                    <span>ویرایش اطلاعات اقامتگاه</span>
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={() => router.push("/profile/temporary-rent")}
+                                    className="w-full py-2 text-center text-xs text-foreground-muted hover:text-brand font-bold transition-colors cursor-pointer flex items-center justify-center gap-1"
+                                >
+                                    <span>مشاهده در لیست اقامتگاه‌های من</span>
+                                    <ChevronLeft className="w-3.5 h-3.5" />
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="space-y-4">
+                                {/* Price header */}
+                                <div className="flex items-baseline justify-between border-b border-border-subtle pb-3">
+                                    <div className="flex items-baseline gap-1">
+                                        <span className="text-2xl font-black text-brand">
+                                            {nightlyPrice > 0 ? formatPrice(nightlyPrice, "") : "توافقی"}
+                                        </span>
+                                        <span className="text-xs font-bold text-text-light">تومان</span>
+                                        <span className="text-xs text-text-light">/ هر شب</span>
+                                    </div>
+                                    <div className="flex items-center gap-1 text-xs font-bold text-brand">
+                                        <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+                                        <span>۴.۹</span>
+                                    </div>
+                                </div>
+
+                                {/* Nights Selector */}
+                                <div className="space-y-1.5">
+                                    <label className="block text-xs font-bold text-brand">مدت اقامت (تعداد شب)</label>
+                                    <div className="flex items-center justify-between p-3 rounded-xl border border-border-subtle bg-surface-secondary">
+                                        <span className="text-xs font-bold text-brand">{toPersianDigits(nights)} شب</span>
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                type="button"
+                                                onClick={() => setNights(Math.max(1, nights - 1))}
+                                                className="w-7 h-7 rounded-lg bg-surface border border-border-subtle flex items-center justify-center text-text-main hover:bg-surface-secondary active:scale-95 transition-transform"
+                                            >
+                                                <Minus className="w-3.5 h-3.5" />
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => setNights(nights + 1)}
+                                                className="w-7 h-7 rounded-lg bg-surface border border-border-subtle flex items-center justify-center text-text-main hover:bg-surface-secondary active:scale-95 transition-transform"
+                                            >
+                                                <Plus className="w-3.5 h-3.5" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Price Breakdown */}
+                                <div className="space-y-2 text-xs text-text-light border-t border-border-subtle pt-3">
+                                    <div className="flex justify-between">
+                                        <span>{formatPrice(nightlyPrice, "")} تومان × {toPersianDigits(nights)} شب</span>
+                                        <span className="font-bold text-brand">{formatPrice(totalPrice, "")} تومان</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span>کارمزد خدمات سامانه</span>
+                                        <span className="text-success font-bold">رایگان</span>
+                                    </div>
+                                    <div className="flex justify-between border-t border-border-subtle pt-2.5 text-sm font-black text-brand">
+                                        <span>مجموع برآورد اقامت</span>
+                                        <span>{formatPrice(totalPrice)}</span>
+                                    </div>
+                                </div>
+
+                                {/* Action Buttons */}
+                                <div className="space-y-2.5 pt-2">
+                                    <button
+                                        type="button"
+                                        onClick={handleOpenContact}
+                                        disabled={isLoadingContact}
+                                        className="w-full py-3.5 px-4 bg-primary hover:bg-primary/90 text-white font-bold text-sm rounded-xl shadow-xs flex items-center justify-center gap-2 transition-all active:scale-98 cursor-pointer"
+                                    >
+                                        {isLoadingContact ? <Loader2 className="w-4 h-4 animate-spin" /> : <Phone className="w-4 h-4" />}
+                                        <span>اطلاعات تماس با میزبان</span>
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={handleChat}
+                                        disabled={chatMutation.isPending}
+                                        className="w-full py-3 px-4 bg-brand hover:bg-brand/90 text-white font-bold text-sm rounded-xl shadow-xs flex items-center justify-center gap-2 transition-all active:scale-98 disabled:opacity-50 cursor-pointer"
+                                    >
+                                        {chatMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <MessageCircle className="w-4 h-4" />}
+                                        <span>شروع گفتگوی آنلاین</span>
+                                    </button>
+                                </div>
+
+                                <p className="text-[10px] text-text-light text-center leading-relaxed pt-1">
+                                    هماهنگی و تایید نهایی پذیرش توسط میزبان اقامتگاه انجام می‌شود.
+                                </p>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
 
             {/* Similar Residences Section */}
-            {similarResidences?.items && similarResidences.items.filter((r) => r.id !== id).length > 0 && (
-                <section className="mt-16 pt-8 border-t border-border-subtle">
-                    <h2 className="text-xl font-black text-brand mb-6">اقامتگاه‌های مشابه در این منطقه</h2>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {similarResidences.items
-                            .filter((r) => r.id !== id)
-                            .slice(0, 4)
-                            .map((item) => (
+            {(() => {
+                const filteredSimilar = (similarResidences?.items || []).filter((r) => r.id !== id);
+                if (filteredSimilar.length === 0) return null;
+
+                return (
+                    <section className="mt-14 pt-8 border-t border-border-subtle">
+                        <h2 className="text-xl font-black text-brand mb-6">اقامتگاه‌های مشابه در {cityName || "این شهر"}</h2>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            {filteredSimilar.slice(0, 4).map((item) => (
                                 <TemporaryRentCard
                                     key={item.id}
                                     id={item.id}
                                     title={item.title}
                                     nightlyPrice={getResidenceRate(item.pricing)}
-                                    location={formatLocationDisplay(item.location, item.cityName || getCityName(item.cityId) || cityName || "ایران")}
+                                    location={item.cityName || cityName}
                                     mediaIds={item.mediaIds}
+                                    isUrgent={item.isUrgent}
+                                    isLadder={item.isLadder}
+                                    rooms={(item as any).rooms}
                                     maxGuests={item.maxGuests}
                                 />
                             ))}
-                    </div>
-                </section>
-            )}
+                        </div>
+                    </section>
+                );
+            })()}
 
-            {/* Sticky Mobile Reservation Bar (Airbnb Mobile Pattern) */}
+            {/* Sticky Mobile Bottom Bar */}
             <div className="fixed bottom-0 left-0 right-0 p-3.5 bg-surface/95 backdrop-blur-xl border-t border-border-subtle/70 flex items-center justify-between gap-3 z-40 lg:hidden shadow-2xl">
-                <div className="flex flex-col min-w-0">
-                    <div className="flex items-baseline gap-1">
-                        <span className="text-base font-black text-brand">{formatPrice(nightlyPrice, "")}</span>
-                        <span className="text-xs text-text-light font-bold">تومان</span>
-                    </div>
-                    <span className="text-[11px] text-text-light font-medium">هر شب</span>
+                <div className="flex flex-col min-w-0 flex-1">
+                    <span className="text-[11px] text-text-light font-bold">اجاره هر شب</span>
+                    <span className="text-sm font-black text-brand truncate">{formatPrice(nightlyPrice)}</span>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 shrink-0">
                     {isOwner ? (
                         <>
+                            {isEligibleForPromotion && (
+                                <button
+                                    onClick={() => setIsPromotionModalOpen(true)}
+                                    className="flex items-center gap-1 px-3 py-2.5 bg-accent text-accent-foreground rounded-xl text-xs font-black shadow-xs active:scale-95 transition-transform cursor-pointer"
+                                >
+                                    <Sparkles className="w-3.5 h-3.5" />
+                                    <span>{isPromoted ? "نردبان" : "ارتقا"}</span>
+                                </button>
+                            )}
                             {isPublished && isPromoted && (
                                 <span className="flex items-center gap-1 px-2.5 py-2 bg-warning-subtle text-warning rounded-xl text-xs font-bold">
                                     <Sparkles className="w-3.5 h-3.5 text-warning" />
                                     <span>ارتقا یافته</span>
                                 </span>
                             )}
-                            {isEligibleForPromotion && (
-                                <button
-                                    onClick={() => setIsPromotionModalOpen(true)}
-                                    className="flex items-center gap-1 px-3 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl text-xs font-black shadow-md shadow-orange-500/20 active:scale-95 transition-transform cursor-pointer"
-                                >
-                                    <Sparkles className="w-3.5 h-3.5" />
-                                    <span>{isPromoted ? "نردبان مجدد" : "ارتقا"}</span>
-                                </button>
-                            )}
                             <button
-                                onClick={() => router.push('/profile/temporary-rent')}
-                                className="px-4 py-2.5 bg-brand text-white rounded-xl text-xs font-bold active:scale-95 transition-transform cursor-pointer"
+                                onClick={() => router.push(`/profile/temporary-rent/new?edit=${residence.id}`)}
+                                className="flex items-center gap-1.5 px-3 py-2.5 bg-brand text-white rounded-xl text-xs font-bold active:scale-95 transition-transform cursor-pointer"
                             >
-                                <span>مدیریت</span>
+                                <Pencil className="w-3.5 h-3.5" />
+                                <span>ویرایش</span>
                             </button>
                         </>
                     ) : (
@@ -858,25 +1105,25 @@ function getResidenceRate(pricing?: TemporaryRentPricingReadModel | null): numbe
                             <button
                                 onClick={handleOpenContact}
                                 disabled={isLoadingContact}
-                                className="p-2.5 bg-surface-secondary hover:bg-gray-200 text-brand rounded-xl border border-border-subtle transition-all flex items-center justify-center cursor-pointer"
-                                title="تماس با میزبان"
+                                className="flex items-center gap-1.5 px-4 py-2.5 bg-primary text-white rounded-xl text-xs font-bold shadow-md shadow-primary/25 active:scale-95 transition-transform cursor-pointer"
                             >
-                                <Phone className="w-4 h-4 text-success" />
+                                {isLoadingContact ? <Loader2 className="w-4 h-4 animate-spin" /> : <Phone className="w-4 h-4" />}
+                                <span>تماس با میزبان</span>
                             </button>
                             <button
                                 onClick={handleChat}
                                 disabled={chatMutation.isPending}
-                                className="px-5 py-2.5 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl text-xs font-black shadow-md shadow-orange-500/25 active:scale-95 transition-transform flex items-center gap-1.5 cursor-pointer"
+                                className="flex items-center gap-1.5 px-4 py-2.5 bg-brand text-white rounded-xl text-xs font-bold hover:bg-brand/90 active:scale-95 transition-transform cursor-pointer"
                             >
                                 <MessageCircle className="w-4 h-4" />
-                                <span>رزرو و گفتگو</span>
+                                <span>چت</span>
                             </button>
                         </>
                     )}
                 </div>
             </div>
 
-            {/* Contact Reveal Modal */}
+            {/* Responsive Contact Reveal Modal */}
             {isContactModalOpen && (
                 <div
                     role="dialog"
@@ -911,7 +1158,7 @@ function getResidenceRate(pricing?: TemporaryRentPricingReadModel | null): numbe
 
                         {!contactInfo?.phoneNumber ? (
                             <div className="space-y-4">
-                                <div className="p-4 bg-warning-subtle/70 border border-warning/30/80 rounded-2xl flex items-start gap-3">
+                                <div className="p-4 bg-warning-subtle/70 border border-warning/30 rounded-2xl flex items-start gap-3">
                                     <ShieldAlert className="w-5 h-5 text-warning shrink-0 mt-0.5" />
                                     <div className="text-xs">
                                         <h5 className="font-black text-amber-950 mb-1">شماره تماس مخفی شده است</h5>
@@ -926,7 +1173,7 @@ function getResidenceRate(pricing?: TemporaryRentPricingReadModel | null): numbe
                                         handleChat();
                                     }}
                                     disabled={chatMutation.isPending}
-                                    className="w-full py-3.5 bg-brand hover:bg-brand/90 text-white font-bold text-xs rounded-2xl shadow-md transition flex items-center justify-center gap-2 cursor-pointer"
+                                    className="w-full py-3.5 bg-brand hover:bg-brand/90 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center justify-center gap-2 cursor-pointer"
                                 >
                                     <MessageCircle className="w-4 h-4" />
                                     <span>ارسال پیام در چت آنلاین</span>
@@ -958,7 +1205,7 @@ function getResidenceRate(pricing?: TemporaryRentPricingReadModel | null): numbe
                                 <div className="flex items-center gap-2.5 pt-2">
                                     <a
                                         href={`tel:${contactInfo.phoneNumber}`}
-                                        className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-2xl shadow-md transition flex items-center justify-center gap-2 cursor-pointer text-center"
+                                        className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center justify-center gap-2 cursor-pointer text-center"
                                     >
                                         <Phone className="w-4 h-4" />
                                         <span>تماس تلفنی</span>
@@ -968,7 +1215,7 @@ function getResidenceRate(pricing?: TemporaryRentPricingReadModel | null): numbe
                                             setIsContactModalOpen(false);
                                             handleChat();
                                         }}
-                                        className="flex-1 py-3 border border-border-subtle hover:bg-surface-secondary text-brand font-bold text-xs rounded-2xl transition flex items-center justify-center gap-2 cursor-pointer"
+                                        className="flex-1 py-3 border border-border-subtle hover:bg-surface-secondary text-brand font-bold text-xs rounded-xl transition flex items-center justify-center gap-2 cursor-pointer"
                                     >
                                         <MessageCircle className="w-4 h-4" />
                                         <span>ارسال پیام آنلاین</span>

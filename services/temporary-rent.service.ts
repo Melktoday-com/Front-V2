@@ -61,6 +61,11 @@ export const temporaryRentService = {
         return response.data;
     },
 
+    async update(id: string, data: Partial<CreateTemporaryRentDraftRequest>): Promise<TemporaryRentMutationResponse> {
+        const response = await apiClient.patch<TemporaryRentMutationResponse>(`/temporary-rent/${id}`, data);
+        return response.data;
+    },
+
     async publish(id: string): Promise<TemporaryRentMutationResponse> {
         const response = await apiClient.post<TemporaryRentMutationResponse>(`/temporary-rent/${id}/publish`);
         return response.data;
