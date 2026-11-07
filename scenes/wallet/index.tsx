@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { TransactionStatus, TransactionType } from "@/types/api/enums";
 import { useSafeBack } from "@/hooks/useSafeBack";
+import { SubpageHeader } from "@/components/ui/SubpageHeader";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -118,17 +119,11 @@ export default function WalletScene() {
     return (
         <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6 pb-28 lg:pb-10">
             {/* Header */}
-            <div className="relative flex items-center justify-center mb-6">
-                <button
-                    onClick={handleBack}
-                    aria-label="بازگشت"
-                    title="بازگشت"
-                    className="absolute right-0 top-1/2 -translate-y-1/2 p-2 -mr-2 text-text-light hover:text-brand transition-colors cursor-pointer"
-                >
-                    <ChevronRight className="w-6 h-6" />
-                </button>
-                <h1 className="text-base sm:text-lg font-black text-brand text-center">کیف پول من</h1>
-            </div>
+            <SubpageHeader
+                title="کیف پول من"
+                onBack={handleBack}
+                className="mb-6"
+            />
 
             {/* Balance Card */}
             <div className="bg-gradient-to-br from-brand via-slate-900 to-brand-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden mb-8">

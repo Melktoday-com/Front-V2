@@ -2,6 +2,7 @@
 
 import { LikedPostCard } from '@/components/ui/LikedPostCard';
 import { PropertyCard } from '@/components/ui/PropertyCard';
+import { SubpageHeader } from '@/components/ui/SubpageHeader';
 import { TemporaryRentCard } from '@/components/ui/TemporaryRentCard';
 import { useAuth } from '@/hooks/useAuth';
 import {
@@ -123,17 +124,11 @@ export default function FavoritesPage() {
 
     return (
         <div className="max-w-5xl mx-auto px-4 py-8 pb-28 lg:pb-12">
-            <header className="mb-6 flex items-center justify-between">
-                <h1 className="text-xl sm:text-2xl font-black text-brand">علاقه‌مندی‌ها و نشان‌شده‌ها</h1>
-                <button
-                    onClick={() => router.back()}
-                    aria-label="بازگشت"
-                    title="بازگشت"
-                    className="p-2 -ml-2 text-text-light hover:text-brand transition-colors cursor-pointer"
-                >
-                    <ChevronRight className="w-6 h-6" />
-                </button>
-            </header>
+            <SubpageHeader
+                title="نشان‌شده‌ها و علاقه‌مندی‌ها"
+                onBack={() => router.back()}
+                className="mb-6"
+            />
 
             {/* Filter Tabs */}
             <div className="flex items-center gap-2 mb-8 border-b border-border-subtle pb-3 overflow-x-auto no-scrollbar">

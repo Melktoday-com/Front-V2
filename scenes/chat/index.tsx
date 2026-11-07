@@ -1,8 +1,8 @@
 "use client";
 
-import { ChatHeader } from "@/components/chat/ChatHeader";
 import { ChatWindow } from "@/components/chat/ChatWindow";
 import { ConversationList } from "@/components/chat/ConversationList";
+import { SubpageHeader } from "@/components/ui/SubpageHeader";
 import { cn } from "@/lib/utils";
 import { MessageSquare } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -20,11 +20,11 @@ function ChatContent() {
                 "flex flex-col border-l border-soft-border bg-surface h-full md:w-75 lg:w-85 shrink-0 overflow-hidden",
                 conversationId ? "hidden md:flex" : "flex w-full md:w-75 lg:w-85"
             )}>
-                <header className="px-5 py-4 border-b border-soft-border flex items-center justify-between shrink-0">
-                    <h1 className="text-brand text-lg font-black">
-                        پیام‌های من
-                    </h1>
-                </header>
+                <SubpageHeader
+                    title="پیام‌ها"
+                    onBack={() => router.push('/profile')}
+                    className="px-4 py-3.5 border-b border-soft-border mb-0 bg-surface"
+                />
 
                 <div className="flex-1 overflow-y-auto custom-scrollbar p-2 pb-24 md:pb-2">
                     <ConversationList />
@@ -64,7 +64,6 @@ function ChatContent() {
 export function ChatScene() {
     return (
         <div className="chat-page-content fixed inset-0 z-40 flex flex-col bg-surface overflow-hidden" dir="rtl">
-            <ChatHeader />
             <div className="flex-1 w-full h-full flex flex-col overflow-hidden">
                 <div className="flex-1 bg-surface flex flex-col overflow-hidden">
                     <Suspense fallback={

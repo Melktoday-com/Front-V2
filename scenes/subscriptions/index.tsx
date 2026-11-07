@@ -8,6 +8,7 @@ import {
     useSubscriptionPlans,
 } from "@/hooks/useSubscription";
 import { SubscriptionEntitlementsSection } from "@/components/subscriptions/SubscriptionEntitlementsSection";
+import { SubpageHeader } from "@/components/ui/SubpageHeader";
 import { useWalletBalance } from "@/hooks/useWallet";
 import { normalizeApiError } from "@/lib/api/error-handler";
 import { cn, formatCurrency, rialToToman, toPersianDigits } from "@/lib/utils";
@@ -324,15 +325,11 @@ export default function SubscriptionsScene() {
         <div className="min-h-screen bg-surface-secondary/60 pb-28 lg:pb-10 pt-6">
             <div className="max-w-6xl mx-auto px-4 sm:px-6">
                 {/* Header */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-                    <div>
-                        <div className="flex items-center gap-2 mb-1.5">
-                            <h1 className="text-2xl font-black text-foreground tracking-tight">
-                                {activeTab === "entitlements" ? "سهمیه‌ها و پلن‌های من" : "پلن‌های اشتراک و سهمیه‌ها"}
-                            </h1>
-                        </div>
-                    </div>
-                </div>
+                <SubpageHeader
+                    title={activeTab === "entitlements" ? "سهمیه‌ها و پلن‌های من" : "پلن‌های اشتراک و سهمیه‌ها"}
+                    backHref="/profile"
+                    className="mb-6"
+                />
 
                 {/* Non-Host / Non-Agent Banner (Regular User Guidance) */}
                 {!isHostOrAgent && !isPrivileged && activeTab === "plans" && (

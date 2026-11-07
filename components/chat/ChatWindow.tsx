@@ -22,6 +22,7 @@ import {
     Building2,
     Check,
     CheckCheck,
+    ChevronRight,
     Copy,
     Edit2,
     Image as ImageIcon,
@@ -442,10 +443,11 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
                         <button
                             type="button"
                             onClick={onBack}
-                            className="md:hidden p-1.5 -mr-1 text-secondary hover:text-brand hover:bg-soft-bg rounded-xl transition-colors shrink-0 cursor-pointer"
+                            className="md:hidden p-1.5 -mr-1 text-text-light hover:text-brand hover:bg-soft-bg/60 rounded-xl transition-colors shrink-0 cursor-pointer"
                             title="بازگشت به لیست گفتگوها"
+                            aria-label="بازگشت به لیست گفتگوها"
                         >
-                            <ArrowRight className="w-5 h-5" />
+                            <ChevronRight className="w-6 h-6" />
                         </button>
                     )}
                     <div className="w-10 h-10 bg-soft-bg rounded-2xl flex items-center justify-center text-brand overflow-hidden border border-soft-border shrink-0">

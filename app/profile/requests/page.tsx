@@ -3,6 +3,7 @@
 import { toPersianDigits } from "@/lib/utils";
 import { agencyService } from "@/services/agency.service";
 import { showcaseService } from "@/services/showcase.service";
+import { SubpageHeader } from "@/components/ui/SubpageHeader";
 import { useQuery } from "@tanstack/react-query";
 import {
     ArrowRight,
@@ -77,27 +78,22 @@ export default function UserRequestsPage() {
     return (
         <div className="max-w-4xl mx-auto px-4 pt-8 pb-36 lg:pb-8 space-y-6" dir="rtl">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-surface p-6 rounded-3xl border border-soft-border shadow-xs">
-                <div className="flex items-center gap-3.5">
-                    <Link
-                        href="/profile"
-                        className="p-2 -mr-2 text-secondary hover:text-brand transition-colors"
-                        title="بازگشت به حساب کاربری"
-                    >
-                        <ArrowRight className="w-5 h-5" />
-                    </Link>
-                    <h1 className="text-xl font-black text-brand">درخواست‌های من</h1>
+            <SubpageHeader
+                title="درخواست‌های من"
+                backHref="/profile"
+                className="mb-6"
+                action={
                     <button
                         onClick={handleRefreshAll}
                         disabled={isRefreshing}
-                        className="p-2.5 text-secondary mr-auto hover:text-brand hover:bg-soft-bg rounded-2xl border border-soft-border transition"
+                        className="p-2 text-text-light hover:text-brand hover:bg-soft-bg rounded-xl transition cursor-pointer"
                         title="بروزرسانی وضعیت"
+                        aria-label="بروزرسانی وضعیت"
                     >
                         <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin text-primary" : ""}`} />
                     </button>
-                </div>
-
-            </div>
+                }
+            />
 
             {/* Filter Tabs */}
             <div className="flex items-center gap-2 bg-soft-bg p-1.5 rounded-2xl border border-soft-border w-fit text-xs font-bold">
