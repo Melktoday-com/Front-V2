@@ -61,6 +61,7 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
     const [replyingTo, setReplyingTo] = useState<ChatMessage | null>(null);
     const [activeMenuMessageId, setActiveMenuMessageId] = useState<string | null>(null);
     const [highlightedMessageId, setHighlightedMessageId] = useState<string | null>(null);
+    const [messageIdToDelete, setMessageIdToDelete] = useState<string | null>(null);
 
     const {
         data,
@@ -164,26 +165,31 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
 
     const handleDelete = (messageId: string) => {
         setActiveMenuMessageId(null);
-        if (!conversationId) return;
-        if (confirm("آیا از حذف این پیام اطمینان دارید؟")) {
-            deleteMutation.mutate(
-                { conversationId, messageId },
-                {
-                    onSuccess: () => {
-                        toast.success("پیام حذف شد");
-                        if (editingMessage?.id === messageId) {
-                            handleCancelEdit();
-                        }
-                        if (replyingTo?.id === messageId) {
-                            handleCancelReply();
-                        }
-                    },
-                    onError: (err: any) => {
-                        toast.error(err?.response?.data?.message || "خطا در حذف پیام");
-                    },
-                }
-            );
-        }
+        setMessageIdToDelete(messageId);
+    };
+
+    const confirmDelete = () => {
+        if (!conversationId || !messageIdToDelete) return;
+        const targetId = messageIdToDelete;
+        deleteMutation.mutate(
+            { conversationId, messageId: targetId },
+            {
+                onSuccess: () => {
+                    toast.success("پیام حذف شد");
+                    if (editingMessage?.id === targetId) {
+                        handleCancelEdit();
+                    }
+                    if (replyingTo?.id === targetId) {
+                        handleCancelReply();
+                    }
+                    setMessageIdToDelete(null);
+                },
+                onError: (err: any) => {
+                    toast.error(err?.response?.data?.message || "خطا در حذف پیام");
+                    setMessageIdToDelete(null);
+                },
+            }
+        );
     };
 
     const handleSubmit = (e?: React.FormEvent) => {
@@ -473,19 +479,6 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
                         </p>
                     </div>
                 </div>
-
-                {canRequestReview && (
-                    <button
-                        type="button"
-                        onClick={handleRequestReview}
-                        disabled={isSending}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-warning text-xs font-bold transition-colors border border-amber-500/20 cursor-pointer"
-                        title="ارسال درخواست ثبت نظر و امتیاز به کاربر"
-                    >
-                        <Star className="w-4 h-4 fill-amber-500 text-amber-500" />
-                        <span className="hidden sm:inline">درخواست ثبت نظر</span>
-                    </button>
-                )}
             </div>
 
             {/* Messages Area */}
@@ -922,6 +915,40 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
                     </div>
                 </div>
             </form>
+
+            {/* Persian Confirmation Modal for Message Deletion */}
+            {messageIdToDelete && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+                    <div className="bg-surface border border-border-subtle rounded-2xl max-w-sm w-full p-6 shadow-xl space-y-4 text-center">
+                        <div className="w-12 h-12 rounded-full bg-error-subtle/30 text-error flex items-center justify-center mx-auto">
+                            <Trash2 className="w-6 h-6" />
+                        </div>
+                        <div className="space-y-1">
+                            <h3 className="text-base font-bold text-brand">حذف پیام</h3>
+                            <p className="text-xs text-secondary leading-relaxed">
+                                آیا از حذف این پیام اطمینان دارید؟ این پیام برای هر دو طرف حذف خواهد شد.
+                            </p>
+                        </div>
+                        <div className="flex items-center gap-2 pt-2">
+                            <button
+                                type="button"
+                                onClick={() => setMessageIdToDelete(null)}
+                                className="flex-1 py-2.5 rounded-xl border border-border-subtle text-xs font-bold text-secondary hover:bg-soft-bg transition-colors cursor-pointer"
+                            >
+                                انصراف
+                            </button>
+                            <button
+                                type="button"
+                                onClick={confirmDelete}
+                                disabled={deleteMutation.isPending}
+                                className="flex-1 py-2.5 rounded-xl bg-error hover:bg-error/90 text-white text-xs font-bold transition-colors cursor-pointer disabled:opacity-50"
+                            >
+                                {deleteMutation.isPending ? "در حال حذف..." : "بله، حذف شود"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

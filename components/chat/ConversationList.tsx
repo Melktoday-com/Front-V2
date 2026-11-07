@@ -45,6 +45,7 @@ function ConversationListContent() {
                     <Link
                         key={conv.id}
                         href={`/profile/chat?id=${conv.id}`}
+                        replace
                         scroll={false}
                         className={cn(
                             "flex items-center gap-3 p-3 rounded-2xl transition-all duration-200",

@@ -33,6 +33,8 @@ import {
     X,
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
+import { darkLogo } from "@/assets/branding";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { CitySelector } from "./CitySelector";
@@ -138,21 +140,35 @@ export function SearchHeader({ isInitialOpen }: SearchHeaderProps) {
     return (
         <div className="container mx-auto px-4 space-y-6 lg:space-y-8">
             {/* Top Bar: Location & Profile */}
-            <div className="flex justify-between items-center">
-                <button
-                    onClick={() => setIsSelectorOpen(true)}
-                    className="flex items-center gap-2 sm:gap-2.5 bg-surface px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-full border border-soft-border group hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300"
-                >
-                    <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-soft-bg flex items-center justify-center group-hover:bg-primary/10 transition-colors">
-                        <MapPin className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-accent" />
-                    </div>
-                    <div className="flex items-center gap-1 sm:gap-1.5">
-                        <span className="text-brand font-black text-xs sm:text-sm">
-                            {selectedCity.name || "انتخاب شهر"}
+            <div className="flex justify-between items-center gap-3">
+                <div className="flex items-center gap-2.5 sm:gap-3.5">
+                    <Link href="/" className="flex items-center gap-2 group">
+                        <Image
+                            src={darkLogo}
+                            alt="ملک تودی"
+                            className="h-7 sm:h-8 w-auto object-contain"
+                            priority
+                        />
+                        <span className="text-sm sm:text-base font-black text-brand tracking-tight">
+                            ملک تودی
                         </span>
-                        <ChevronDown className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-secondary group-hover:text-primary transition-all duration-500 group-hover:rotate-180" />
-                    </div>
-                </button>
+                    </Link>
+
+                    <button
+                        onClick={() => setIsSelectorOpen(true)}
+                        className="flex items-center gap-2 sm:gap-2.5 bg-surface px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-full border border-soft-border group hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300"
+                    >
+                        <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-soft-bg flex items-center justify-center group-hover:bg-primary/10 transition-colors">
+                            <MapPin className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-accent" />
+                        </div>
+                        <div className="flex items-center gap-1 sm:gap-1.5">
+                            <span className="text-brand font-black text-xs sm:text-sm">
+                                {selectedCity.name || "انتخاب شهر"}
+                            </span>
+                            <ChevronDown className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-secondary group-hover:text-primary transition-all duration-500 group-hover:rotate-180" />
+                        </div>
+                    </button>
+                </div>
 
                 <div className="flex items-center gap-1.5 sm:gap-3">
                     {isLoggedIn && (

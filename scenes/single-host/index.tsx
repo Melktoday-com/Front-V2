@@ -314,7 +314,7 @@ export default function SingleHostScene({ idOrSlug, initialData }: SingleHostSce
             )}
           >
             <Calendar className="w-4 h-4" />
-            <span>پست‌ها و راهنما ({toPersianDigits(header.postsCount || 0)})</span>
+            <span>پست‌ها و مقالات ({toPersianDigits(header.postsCount || 0)})</span>
           </button>
           <button
             onClick={() => setActiveTab("about")}

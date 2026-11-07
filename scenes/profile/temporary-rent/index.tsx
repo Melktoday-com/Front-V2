@@ -318,6 +318,10 @@ export default function TemporaryRentPanelScene() {
     // Scroll smoothly to section when tab clicked
     const scrollToSection = (tabId: Tab) => {
         setActiveTab(tabId);
+        const tabIndex = TABS.findIndex((t) => t.id === tabId);
+        if (swiperRef.current && tabIndex !== -1) {
+            swiperRef.current.slideTo(tabIndex, 300);
+        }
         isManualScrollingRef.current = true;
         const targetElement = document.getElementById(`section-${tabId}`);
         if (targetElement) {
@@ -334,21 +338,33 @@ export default function TemporaryRentPanelScene() {
 
     // Scroll spy: Update activeTab as user scrolls down the page
     useEffect(() => {
+        let ticking = false;
         const handleScroll = () => {
             if (isManualScrollingRef.current) return;
-            const scrollPosition = window.scrollY + 160;
+            if (!ticking) {
+                window.requestAnimationFrame(() => {
+                    const scrollPosition = window.scrollY + 160;
 
-            for (let i = TABS.length - 1; i >= 0; i--) {
-                const section = document.getElementById(`section-${TABS[i].id}`);
-                if (section && section.offsetTop <= scrollPosition) {
-                    const currentTab = TABS[i].id;
-                    setActiveTab(currentTab);
-                    const tabIndex = TABS.findIndex((t) => t.id === currentTab);
-                    if (swiperRef.current && tabIndex !== -1) {
-                        swiperRef.current.slideTo(tabIndex);
+                    for (let i = TABS.length - 1; i >= 0; i--) {
+                        const section = document.getElementById(`section-${TABS[i].id}`);
+                        if (section && section.offsetTop <= scrollPosition) {
+                            const newTab = TABS[i].id;
+                            setActiveTab((prev) => {
+                                if (prev !== newTab) {
+                                    const tabIndex = TABS.findIndex((t) => t.id === newTab);
+                                    if (swiperRef.current && tabIndex !== -1) {
+                                        swiperRef.current.slideTo(tabIndex, 300);
+                                    }
+                                    return newTab;
+                                }
+                                return prev;
+                            });
+                            break;
+                        }
                     }
-                    break;
-                }
+                    ticking = false;
+                });
+                ticking = true;
             }
         };
 
@@ -466,17 +482,21 @@ export default function TemporaryRentPanelScene() {
             </header>
 
             {/* Apple-style Sticky Tabs powered by Swiper */}
-            <div className="sticky top-14 sm:top-16 z-20 bg-canvas/80 backdrop-blur-xl border-b border-soft-border/60 py-2 sm:py-2.5 transition-all">
-                <div className="max-w-6xl mx-auto px-3.5 sm:px-6 lg:px-8">
+            <div className="sticky top-14 sm:top-16 z-20 bg-canvas/80 backdrop-blur-xl border-b border-soft-border/60 py-2 sm:py-2.5 transition-all w-full max-w-full overflow-hidden">
+                <div className="max-w-6xl mx-auto px-3.5 sm:px-6 lg:px-8 overflow-hidden">
                     <Swiper
                         modules={[FreeMode]}
-                        freeMode={{ enabled: true, momentum: true }}
+                        freeMode={{ enabled: true, momentum: true, momentumRatio: 0.8, momentumBounce: false }}
                         slidesPerView="auto"
                         spaceBetween={8}
+                        resistance={true}
+                        resistanceRatio={0.6}
+                        watchOverflow={true}
+                        dir="rtl"
                         onBeforeInit={(swiper) => {
                             swiperRef.current = swiper;
                         }}
-                        className="w-full !overflow-visible"
+                        className="w-full overflow-hidden select-none py-0.5"
                     >
                         {TABS.map((tab) => {
                             const Icon = tab.icon;
@@ -602,7 +622,7 @@ export default function TemporaryRentPanelScene() {
 
                         <div className="p-4 rounded-2xl bg-surface border border-soft-border/70 shadow-2xs space-y-1">
                             <span className="text-[11px] font-bold text-secondary flex items-center justify-between">
-                                <span>پست‌ها و راهنماها</span>
+                                <span>پست‌ها و مقالات</span>
                                 <BookOpen className="w-3.5 h-3.5 text-accent-foreground" />
                             </span>
                             <div className="text-xl sm:text-2xl font-black text-brand">

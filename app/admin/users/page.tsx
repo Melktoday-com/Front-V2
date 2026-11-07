@@ -3,7 +3,7 @@
 import { useAdminUsers } from "@/hooks/useAdmin";
 import { useDebounce } from "@/hooks/useDebounce";
 import { adminService } from "@/services/admin.service";
-import { AdminUser } from "@/types/api/admin.types";
+import { AdminUser, ModerationHistory } from "@/types/api/admin.types";
 import { UserStatus } from "@/types/api/enums";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -27,6 +27,24 @@ export default function AdminUsersPage() {
     const [page, setPage] = useState(1);
     const [searchQuery, setSearchQuery] = useState("");
     const debouncedSearch = useDebounce(searchQuery.trim(), 400);
+
+    const [selectedUserForHistory, setSelectedUserForHistory] = useState<AdminUser | null>(null);
+    const [historyList, setHistoryList] = useState<ModerationHistory[]>([]);
+    const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+
+    const handleViewHistory = async (targetUser: AdminUser) => {
+        setSelectedUserForHistory(targetUser);
+        setIsLoadingHistory(true);
+        try {
+            const hist = await adminService.getModerationHistory(targetUser.id);
+            setHistoryList(hist || []);
+        } catch {
+            toast.error("خطا در دریافت تاریخچه مدیریت");
+            setHistoryList([]);
+        } finally {
+            setIsLoadingHistory(false);
+        }
+    };
 
     useEffect(() => {
         setPage(1);
@@ -187,7 +205,8 @@ export default function AdminUsersPage() {
                                             <WalletIcon size={16} />
                                         </button>
                                         <button
-                                            title="تاریخچه مدیریت"
+                                            onClick={() => handleViewHistory(user)}
+                                            title="تاریخچه مدیریت کاربر"
                                             className="p-1.5 text-foreground-secondary hover:bg-surface-secondary rounded-md"
                                         >
                                             <History size={16} />
@@ -262,6 +281,74 @@ export default function AdminUsersPage() {
                     </button>
                 </div>
             </div>
+
+            {/* Moderation History Modal */}
+            {selectedUserForHistory && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+                    <div className="bg-surface border border-border-subtle rounded-2xl max-w-lg w-full p-6 shadow-xl space-y-4">
+                        <div className="flex items-center justify-between pb-3 border-b border-border-subtle">
+                            <div className="flex items-center gap-2">
+                                <History className="w-5 h-5 text-primary" />
+                                <h3 className="text-base font-bold text-brand">
+                                    تاریخچه مدیریت کاربر: {selectedUserForHistory.mobileNumber}
+                                </h3>
+                            </div>
+                            <button
+                                onClick={() => setSelectedUserForHistory(null)}
+                                className="p-1 hover:bg-surface-secondary rounded-lg transition-colors cursor-pointer"
+                            >
+                                <X className="w-5 h-5 text-secondary" />
+                            </button>
+                        </div>
+
+                        {isLoadingHistory ? (
+                            <div className="py-12 flex flex-col items-center justify-center gap-2 text-secondary">
+                                <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                                <span className="text-xs">در حال بارگذاری سوابق...</span>
+                            </div>
+                        ) : historyList.length === 0 ? (
+                            <div className="py-8 text-center text-sm text-secondary">
+                                هیچ سابقه‌ای برای این کاربر ثبت نشده است.
+                            </div>
+                        ) : (
+                            <div className="max-h-80 overflow-y-auto space-y-3 custom-scrollbar">
+                                {historyList.map((item) => (
+                                    <div
+                                        key={item.id}
+                                        className="p-3 bg-surface-secondary rounded-xl border border-border-subtle space-y-1 text-xs"
+                                    >
+                                        <div className="flex items-center justify-between font-bold text-brand">
+                                            <span>عملیات: {item.actionType}</span>
+                                            <span className="text-[11px] text-text-light font-normal">
+                                                {new Date(item.createdAt).toLocaleDateString("fa-IR")}
+                                            </span>
+                                        </div>
+                                        {item.reasonDetail && (
+                                            <p className="text-secondary">
+                                                <span className="font-semibold">دلیل:</span> {item.reasonDetail}
+                                            </p>
+                                        )}
+                                        {item.note && (
+                                            <p className="text-text-light text-[11px]">
+                                                <span className="font-semibold">یادداشت:</span> {item.note}
+                                            </p>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        <div className="pt-2 flex justify-end">
+                            <button
+                                onClick={() => setSelectedUserForHistory(null)}
+                                className="px-4 py-2 bg-surface-secondary text-brand text-xs font-bold rounded-xl hover:bg-soft-border/50 transition-colors cursor-pointer"
+                            >
+                                بستن
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

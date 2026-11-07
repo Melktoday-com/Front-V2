@@ -40,7 +40,7 @@ function ChatContent() {
                     <div className="flex-1 h-full flex flex-col overflow-hidden">
                         <ChatWindow
                             conversationId={conversationId}
-                            onBack={() => router.push('/profile/chat')}
+                            onBack={() => router.replace('/profile/chat')}
                         />
                     </div>
                 ) : (

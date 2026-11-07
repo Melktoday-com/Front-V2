@@ -313,10 +313,10 @@ export default function ExploreScene() {
           <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground-muted" />
           <input
             type="text"
-            placeholder="جستجو در تصاویر، مقالات، تحلیل‌ها و اخبار ملکی..."
+            placeholder="جستجو در پست‌ها و مقالات اخبار ملک"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pr-11 pl-22 py-3 rounded-2xl
+            className="w-full pr-11 pl-24 py-3 rounded-2xl
                bg-surface-secondary border border-border-subtle text-xs 
                sm:text-sm text-foreground focus:bg-surface
                 focus:border-primary focus:outline-hidden 

@@ -87,6 +87,32 @@ export function formatAdPrice(amount: number | string | undefined | null, suffix
     return `${new Intl.NumberFormat("fa-IR").format(num)}${suffix}`;
 }
 
+/**
+ * Converts numeric Toman into Persian verbal units (هزار، میلیون، میلیارد تومان).
+ */
+export function formatPriceWords(amount: number | string | undefined | null): string {
+    if (amount === undefined || amount === null || amount === "") return "";
+    const num = typeof amount === "string" ? parseFloat(amount.replace(/,/g, "")) : amount;
+    if (isNaN(num) || num <= 0) return "";
+    if (num >= 1_000_000_000_000) {
+        const val = (num / 1_000_000_000_000).toFixed(2).replace(/\.?0+$/, "");
+        return `${toPersianDigits(val)} هزار میلیارد تومان`;
+    }
+    if (num >= 1_000_000_000) {
+        const val = (num / 1_000_000_000).toFixed(2).replace(/\.?0+$/, "");
+        return `${toPersianDigits(val)} میلیارد تومان`;
+    }
+    if (num >= 1_000_000) {
+        const val = (num / 1_000_000).toFixed(1).replace(/\.?0+$/, "");
+        return `${toPersianDigits(val)} میلیون تومان`;
+    }
+    if (num >= 1_000) {
+        const val = (num / 1_000).toFixed(0);
+        return `${toPersianDigits(val)} هزار تومان`;
+    }
+    return `${toPersianDigits(num)} تومان`;
+}
+
 export function extractMediaId(media?: string | { id: string; type?: string } | null): string {
     if (!media) return "";
     return typeof media === "object" ? media.id : media;
@@ -142,7 +168,8 @@ export function getMediaUrl(mediaIdOrUrl?: string | { id: string; type?: string 
     }
     const siteBase = getSiteBaseUrl();
     if (raw.startsWith("/backend/api/media/") || raw.startsWith("/media/")) {
-        return siteBase ? `${siteBase}${raw}` : raw;
+        const normalized = raw.startsWith("/media/") ? `/backend/api${raw}` : raw;
+        return siteBase ? `${siteBase}${normalized}` : normalized;
     }
     if (raw.startsWith("/")) {
         return raw;

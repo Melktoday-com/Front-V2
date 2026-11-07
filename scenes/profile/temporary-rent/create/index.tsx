@@ -73,6 +73,10 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
     const [attributeErrors, setAttributeErrors] = useState<Record<string, string>>({});
     const [isSubmittingAdmin, setIsSubmittingAdmin] = useState(false);
 
+    useEffect(() => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    }, [step]);
+
     const [adminOwnership, setAdminOwnership] = useState<AdminOwnershipData>({
         isPlatform: true,
         phoneNumber: "",
@@ -394,7 +398,7 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
             <div className="max-w-3xl mx-auto">
                 <header className="mb-6 flex items-center justify-between">
                     <div>
-                        <h1 className="text-2xl font-black text-brand">
+                        <h1 className="text-base sm:text-xl font-bold text-brand whitespace-normal sm:whitespace-nowrap">
                             {adminMode ? "ثبت اقامتگاه جدید (پنل مدیریت)" : "ثبت اقامتگاه جدید (اجاره موقت و روزانه)"}
                         </h1>
                         <p className="text-xs text-text-light mt-1">
@@ -830,7 +834,7 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
                                     </div>
                                     <div className="flex justify-between pb-2 border-b border-border-subtle/50">
                                         <span className="text-text-light">نوع اقامتگاه:</span>
-                                        <span className="font-bold text-brand">
+                                        <span className="font-bold text-brand text-left">
                                             {subcatConfig?.subcategory?.categoryDisplayName} / {subcatConfig?.subcategory?.displayName}
                                         </span>
                                     </div>

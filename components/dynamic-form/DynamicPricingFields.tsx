@@ -47,12 +47,12 @@ export const DynamicPricingFields: React.FC<DynamicPricingFieldsProps> = ({
 
     return (
         <div className="space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-border-subtle">
+            <div className="flex flex-row items-center justify-between gap-2 pb-2 border-b border-border-subtle">
                 <h3 className="text-sm font-bold text-brand">
                     اطلاعات مالی — {priceModel.displayName}
                 </h3>
                 {priceModel.currency && (
-                    <span className="text-[11px] font-bold text-text-light bg-surface-secondary px-2.5 py-1 rounded-lg">
+                    <span className="text-[11px] font-bold text-text-light bg-surface-secondary px-2.5 py-1 rounded-lg shrink-0 whitespace-nowrap">
                         واحد پول: {priceModel.currency === "TOMAN" ? "تومان" : priceModel.currency}
                     </span>
                 )}
@@ -136,24 +136,31 @@ export const DynamicPricingFields: React.FC<DynamicPricingFieldsProps> = ({
                                         ))}
                                     </select>
                                 ) : (
-                                    <input
-                                        type="text"
-                                        inputMode={field.fieldType === "NUMBER" ? "numeric" : undefined}
-                                        value={typeof rawVal === "boolean" ? "" : (rawVal ?? "")}
-                                        placeholder={field.placeholder || (field.fieldType === "NUMBER" ? "مبلغ به عدد..." : "")}
-                                        onChange={(e) => {
-                                            const raw = e.target.value;
-                                            if (field.fieldType === "NUMBER") {
-                                                const v = toOnlyDigits(raw);
-                                                onChange(field.key, v === "" ? "" : Number(v));
-                                            } else {
-                                                onChange(field.key, raw);
-                                            }
-                                        }}
-                                        className={`w-full p-3 text-sm bg-surface-secondary border rounded-xl focus:bg-surface focus:ring-2 focus:ring-primary outline-hidden transition-all ${
-                                            errors[field.key] ? "border-red-500 bg-error-subtle/20" : "border-border-subtle"
-                                        }`}
-                                    />
+                                    <div className="relative flex items-center">
+                                        <input
+                                            type="text"
+                                            inputMode={field.fieldType === "NUMBER" ? "numeric" : undefined}
+                                            value={typeof rawVal === "boolean" ? "" : (rawVal ?? "")}
+                                            placeholder={field.placeholder || (field.fieldType === "NUMBER" ? "مبلغ به عدد..." : "")}
+                                            onChange={(e) => {
+                                                const raw = e.target.value;
+                                                if (field.fieldType === "NUMBER") {
+                                                    const v = toOnlyDigits(raw);
+                                                    onChange(field.key, v === "" ? "" : Number(v));
+                                                } else {
+                                                    onChange(field.key, raw);
+                                                }
+                                            }}
+                                            className={`w-full p-3 ${field.fieldType === "NUMBER" && isTomanUnit ? "pl-14" : ""} text-sm bg-surface-secondary border rounded-xl focus:bg-surface focus:ring-2 focus:ring-primary outline-hidden transition-all ${
+                                                errors[field.key] ? "border-red-500 bg-error-subtle/20" : "border-border-subtle"
+                                            }`}
+                                        />
+                                        {field.fieldType === "NUMBER" && isTomanUnit && (
+                                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-text-light pointer-events-none">
+                                                تومان
+                                            </span>
+                                        )}
+                                    </div>
                                 )}
                             </div>
 

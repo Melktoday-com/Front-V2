@@ -118,16 +118,16 @@ export default function WalletScene() {
     return (
         <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6 pb-28 lg:pb-10">
             {/* Header */}
-            <div className="flex items-center justify-between mb-6">
+            <div className="relative flex items-center justify-center mb-6">
                 <button
                     onClick={handleBack}
-                    className="flex items-center gap-1.5 text-xs font-bold text-text-light hover:text-brand transition-colors"
+                    aria-label="بازگشت"
+                    title="بازگشت"
+                    className="absolute right-0 top-1/2 -translate-y-1/2 p-2 -mr-2 text-text-light hover:text-brand transition-colors cursor-pointer"
                 >
-                    <ChevronRight className="w-5 h-5" />
-                    <span>بازگشت</span>
+                    <ChevronRight className="w-6 h-6" />
                 </button>
-                <h1 className="text-base font-black text-brand">کیف پول من</h1>
-                <div className="w-6" />
+                <h1 className="text-base sm:text-lg font-black text-brand text-center">کیف پول من</h1>
             </div>
 
             {/* Balance Card */}

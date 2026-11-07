@@ -160,8 +160,8 @@ export const HomeScene = () => {
             {/* Featured Properties */}
             <section className="container mx-auto px-4">
                 <SectionHeader
-                    title="املاک برتر"
-                    subtitle="منتخب آگهی‌های برتر"
+                    title="آگهی‌های برتر"
+                    subtitle="منتخب برترین آگهی‌های ملکی"
                     link={selectedCity.id ? `/ads?isFeatured=true&cityId=${selectedCity.id}&cityName=${encodeURIComponent(selectedCity.name)}` : "/ads?isFeatured=true"}
                 />
                 {isFeaturedLoading ? (
@@ -238,8 +238,8 @@ export const HomeScene = () => {
             {/* Top Agencies */}
             <section className="container mx-auto px-4">
                 <SectionHeader
-                    title="آژانس‌های برتر"
-                    subtitle="همکاری با بهترین متخصصان"
+                    title="املاک و دفاتر برتر"
+                    subtitle="همکاری با معتبرترین دفاتر املاک و مشاوران"
                     link={selectedCity.id ? `/agency?cityId=${selectedCity.id}&cityName=${selectedCity.name}` : "/agency"}
                 />
                 {isAgenciesLoading ? (

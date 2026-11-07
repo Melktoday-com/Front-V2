@@ -17,6 +17,7 @@ import {
     Bookmark,
     Building2,
     Calendar,
+    ChevronRight,
     Eye,
     Heart,
     Share2,
@@ -33,7 +34,7 @@ const TABS: { id: FilterTab; label: string; icon: typeof Building2 }[] = [
     { id: 'ALL', label: 'همه', icon: Bookmark },
     { id: 'AD', label: 'آگهی‌های خرید و رهن', icon: Building2 },
     { id: 'TEMPORARY_RENT', label: 'اجاره روزانه و موقت', icon: Calendar },
-    { id: 'POST', label: 'پست‌های پسندیده‌شده', icon: Heart },
+    { id: 'POST', label: 'پست‌ها و مقالات', icon: Heart },
 ];
 
 export default function FavoritesPage() {
@@ -122,11 +123,16 @@ export default function FavoritesPage() {
 
     return (
         <div className="max-w-5xl mx-auto px-4 py-8 pb-28 lg:pb-12">
-            <header className="mb-6">
-                <h1 className="text-2xl font-black text-brand mb-2">علاقه‌مندی‌ها و نشان‌شده‌ها</h1>
-                <p className="text-sm text-foreground-muted">
-                    آگهی‌ها و اقامتگاه‌های ذخیره‌شده و پست‌هایی که پسندیده‌اید.
-                </p>
+            <header className="mb-6 flex items-center justify-between">
+                <h1 className="text-xl sm:text-2xl font-black text-brand">علاقه‌مندی‌ها و نشان‌شده‌ها</h1>
+                <button
+                    onClick={() => router.back()}
+                    aria-label="بازگشت"
+                    title="بازگشت"
+                    className="p-2 -ml-2 text-text-light hover:text-brand transition-colors cursor-pointer"
+                >
+                    <ChevronRight className="w-6 h-6" />
+                </button>
             </header>
 
             {/* Filter Tabs */}
@@ -200,18 +206,6 @@ export default function FavoritesPage() {
                     {/* 1. Saved Ads Section (Shown on ALL, AD, TEMPORARY_RENT) */}
                     {selectedTab !== 'POST' && filteredFavorites.length > 0 && (
                         <section className="space-y-4">
-                            {selectedTab === 'ALL' && likedPosts.length > 0 && (
-                                <div className="flex items-center justify-between">
-                                    <h2 className="text-base font-bold text-foreground flex items-center gap-2">
-                                        <Bookmark className="w-4 h-4 text-brand" />
-                                        آگهی‌ها و اقامتگاه‌های نشان‌شده
-                                        <span className="text-xs text-foreground-muted font-normal">
-                                            ({toPersianDigits(filteredFavorites.length)})
-                                        </span>
-                                    </h2>
-                                </div>
-                            )}
-
                             <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
                                 {filteredFavorites.map((item) => {
                                     if (item.type === 'TEMPORARY_RENT') {
@@ -243,7 +237,7 @@ export default function FavoritesPage() {
                                             price={item.details?.price?.toString() || 'توافقی'}
                                             category={item.details?.category || 'آگهی'}
                                             location={item.subtitle || 'نامشخص'}
-                                            variant="responsive"
+                                            variant="vertical"
                                             className="bg-surface rounded-2xl border border-border-subtle shadow-xs hover:shadow-md transition-shadow"
                                             isSaved={true}
                                             onToggleSave={(id) => toggleSaveAdMutation.mutateAsync(id)}

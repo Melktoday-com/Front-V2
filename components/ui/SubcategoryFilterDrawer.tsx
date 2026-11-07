@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/Button";
-import { cn, formatPrice, toPersianDigits } from "@/lib/utils";
+import { cn, formatPrice, formatPriceWords, toPersianDigits } from "@/lib/utils";
 import { AttributeDefinition, PriceModel, SubcategoryConfigResponse } from "@/types/api/ads.types";
 import { NumericRangeFilterDto } from "@/types/api/search.types";
 import { Check, ChevronDown, Filter, RotateCcw, SlidersHorizontal, Sparkles, X } from "lucide-react";
@@ -80,7 +80,8 @@ export function SubcategoryFilterDrawer({
     const [maxRent, setMaxRent] = useState<string>(toStr(currentValues.maxRent));
     const [minArea, setMinArea] = useState<string>(toStr(currentValues.minArea));
     const [maxArea, setMaxArea] = useState<string>(toStr(currentValues.maxArea));
-    const [rooms, setRooms] = useState<number | undefined>(currentValues.minRooms);
+    const [minRooms, setMinRooms] = useState<string>(toStr(currentValues.minRooms));
+    const [maxRooms, setMaxRooms] = useState<string>(toStr(currentValues.maxRooms));
     const [minFloor, setMinFloor] = useState<string>(toStr(currentValues.minFloor));
     const [maxFloor, setMaxFloor] = useState<string>(toStr(currentValues.maxFloor));
     const [minConstructionYear, setMinConstructionYear] = useState<string>(toStr(currentValues.minConstructionYear));
@@ -111,7 +112,8 @@ export function SubcategoryFilterDrawer({
         setMaxRent(toStr(currentValues.maxRent));
         setMinArea(toStr(currentValues.minArea));
         setMaxArea(toStr(currentValues.maxArea));
-        setRooms(currentValues.minRooms);
+        setMinRooms(toStr(currentValues.minRooms));
+        setMaxRooms(toStr(currentValues.maxRooms));
         setMinFloor(toStr(currentValues.minFloor));
         setMaxFloor(toStr(currentValues.maxFloor));
         setMinConstructionYear(toStr(currentValues.minConstructionYear));
@@ -219,7 +221,7 @@ export function SubcategoryFilterDrawer({
         if (minDeposit || maxDeposit) count++;
         if (minRent || maxRent) count++;
         if (minArea || maxArea) count++;
-        if (rooms !== undefined) count++;
+        if (minRooms || maxRooms) count++;
         if (minFloor || maxFloor) count++;
         if (minConstructionYear || maxConstructionYear) count++;
         if (hasParking) count++;
@@ -250,7 +252,8 @@ export function SubcategoryFilterDrawer({
         maxRent,
         minArea,
         maxArea,
-        rooms,
+        minRooms,
+        maxRooms,
         minFloor,
         maxFloor,
         minConstructionYear,
@@ -300,8 +303,8 @@ export function SubcategoryFilterDrawer({
             maxRent: maxRent ? Number(maxRent) : undefined,
             minArea: minArea ? Number(minArea) : undefined,
             maxArea: maxArea ? Number(maxArea) : undefined,
-            minRooms: rooms !== undefined ? rooms : undefined,
-            maxRooms: rooms !== undefined ? (rooms === 4 ? undefined : rooms) : undefined,
+            minRooms: minRooms ? Number(minRooms) : undefined,
+            maxRooms: maxRooms ? Number(maxRooms) : undefined,
             minFloor: minFloor ? Number(minFloor) : undefined,
             maxFloor: maxFloor ? Number(maxFloor) : undefined,
             minConstructionYear: minConstructionYear ? Number(minConstructionYear) : undefined,
@@ -328,7 +331,8 @@ export function SubcategoryFilterDrawer({
         setMaxRent("");
         setMinArea("");
         setMaxArea("");
-        setRooms(undefined);
+        setMinRooms("");
+        setMaxRooms("");
         setMinFloor("");
         setMaxFloor("");
         setMinConstructionYear("");
@@ -437,18 +441,6 @@ export function SubcategoryFilterDrawer({
                                 <span>نوع معامله / مدل قیمت</span>
                             </label>
                             <div className="flex flex-wrap gap-1.5">
-                                <button
-                                    type="button"
-                                    onClick={() => setPriceModelKey(undefined)}
-                                    className={cn(
-                                        "px-3 py-1.5 rounded-full text-xs font-bold border transition-all cursor-pointer",
-                                        priceModelKey === undefined
-                                            ? "bg-primary text-white border-primary shadow-xs"
-                                            : "bg-soft-bg text-secondary border-soft-border hover:border-primary/50"
-                                    )}
-                                >
-                                    همه مدل‌ها
-                                </button>
                                 {subcatConfig.allowedPriceModels.map((pm) => (
                                     <button
                                         key={pm.key}
@@ -471,77 +463,130 @@ export function SubcategoryFilterDrawer({
                     )}
 
                     {/* 2. Price Ranges */}
-                    <div className="space-y-3">
-                        <label className="text-xs font-bold text-text-main">محدوده قیمت و بودجه (تومان)</label>
+                    {(() => {
+                        const normalizedModel = (priceModelKey || "").toLowerCase();
+                        const showSalePrice =
+                            !priceModelKey ||
+                            normalizedModel.includes("sale") ||
+                            normalizedModel.includes("cash") ||
+                            normalizedModel.includes("total");
+                        const showRentPrice =
+                            !priceModelKey ||
+                            normalizedModel.includes("rent") ||
+                            normalizedModel.includes("mortgage") ||
+                            normalizedModel.includes("rahn") ||
+                            normalizedModel.includes("deposit");
 
-                        {/* Total price for Sale / Default */}
-                        {(!priceModelKey ||
-                            priceModelKey.includes("sale") ||
-                            priceModelKey.includes("cash") ||
-                            priceModelKey.includes("total")) && (
-                            <div className="space-y-1.5 bg-soft-bg/50 p-3 rounded-2xl border border-soft-border/70">
-                                <span className="text-[11px] font-semibold text-secondary">قیمت کل</span>
-                                <div className="grid grid-cols-2 gap-2">
-                                    <input
-                                        type="number"
-                                        placeholder="حداقل قیمت"
-                                        value={minPrice}
-                                        onChange={(e) => setMinPrice(e.target.value)}
-                                        className="h-10 px-3 text-xs bg-surface border border-soft-border rounded-xl focus:border-primary focus:outline-none"
-                                    />
-                                    <input
-                                        type="number"
-                                        placeholder="حداکثر قیمت"
-                                        value={maxPrice}
-                                        onChange={(e) => setMaxPrice(e.target.value)}
-                                        className="h-10 px-3 text-xs bg-surface border border-soft-border rounded-xl focus:border-primary focus:outline-none"
-                                    />
-                                </div>
-                            </div>
-                        )}
+                        return (
+                            <div className="space-y-3">
+                                <label className="text-xs font-bold text-text-main">محدوده قیمت و بودجه (تومان)</label>
 
-                        {/* Rent / Deposit for Rent models */}
-                        {(!priceModelKey ||
-                            priceModelKey.includes("rent") ||
-                            priceModelKey.includes("mortgage") ||
-                            priceModelKey.includes("rahn")) && (
-                            <div className="space-y-2 bg-soft-bg/50 p-3 rounded-2xl border border-soft-border/70">
-                                <span className="text-[11px] font-semibold text-secondary">ودیعه / رهن و اجاره</span>
-                                <div className="grid grid-cols-2 gap-2">
-                                    <input
-                                        type="number"
-                                        placeholder="حداقل ودیعه"
-                                        value={minDeposit}
-                                        onChange={(e) => setMinDeposit(e.target.value)}
-                                        className="h-10 px-3 text-xs bg-surface border border-soft-border rounded-xl focus:border-primary focus:outline-none"
-                                    />
-                                    <input
-                                        type="number"
-                                        placeholder="حداکثر ودیعه"
-                                        value={maxDeposit}
-                                        onChange={(e) => setMaxDeposit(e.target.value)}
-                                        className="h-10 px-3 text-xs bg-surface border border-soft-border rounded-xl focus:border-primary focus:outline-none"
-                                    />
-                                </div>
-                                <div className="grid grid-cols-2 gap-2 pt-1">
-                                    <input
-                                        type="number"
-                                        placeholder="حداقل اجاره"
-                                        value={minRent}
-                                        onChange={(e) => setMinRent(e.target.value)}
-                                        className="h-10 px-3 text-xs bg-surface border border-soft-border rounded-xl focus:border-primary focus:outline-none"
-                                    />
-                                    <input
-                                        type="number"
-                                        placeholder="حداکثر اجاره"
-                                        value={maxRent}
-                                        onChange={(e) => setMaxRent(e.target.value)}
-                                        className="h-10 px-3 text-xs bg-surface border border-soft-border rounded-xl focus:border-primary focus:outline-none"
-                                    />
-                                </div>
+                                {/* Total price for Sale / Default */}
+                                {showSalePrice && (
+                                    <div className="space-y-1.5 bg-soft-bg/50 p-3 rounded-2xl border border-soft-border/70">
+                                        <span className="text-[11px] font-semibold text-secondary">قیمت کل</span>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <div>
+                                                <input
+                                                    type="number"
+                                                    placeholder="حداقل قیمت"
+                                                    value={minPrice}
+                                                    onChange={(e) => setMinPrice(e.target.value)}
+                                                    className="w-full h-10 px-3 text-xs bg-surface border border-soft-border rounded-xl focus:border-primary focus:outline-none"
+                                                />
+                                                {minPrice && Number(minPrice) > 0 ? (
+                                                    <span className="text-[10px] text-primary block mt-0.5 font-medium px-1 truncate">
+                                                        {formatPriceWords(minPrice)}
+                                                    </span>
+                                                ) : null}
+                                            </div>
+                                            <div>
+                                                <input
+                                                    type="number"
+                                                    placeholder="حداکثر قیمت"
+                                                    value={maxPrice}
+                                                    onChange={(e) => setMaxPrice(e.target.value)}
+                                                    className="w-full h-10 px-3 text-xs bg-surface border border-soft-border rounded-xl focus:border-primary focus:outline-none"
+                                                />
+                                                {maxPrice && Number(maxPrice) > 0 ? (
+                                                    <span className="text-[10px] text-primary block mt-0.5 font-medium px-1 truncate">
+                                                        {formatPriceWords(maxPrice)}
+                                                    </span>
+                                                ) : null}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Rent / Deposit for Rent models */}
+                                {showRentPrice && (
+                                    <div className="space-y-2 bg-soft-bg/50 p-3 rounded-2xl border border-soft-border/70">
+                                        <span className="text-[11px] font-semibold text-secondary">ودیعه / رهن و اجاره</span>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <div>
+                                                <input
+                                                    type="number"
+                                                    placeholder="حداقل ودیعه"
+                                                    value={minDeposit}
+                                                    onChange={(e) => setMinDeposit(e.target.value)}
+                                                    className="w-full h-10 px-3 text-xs bg-surface border border-soft-border rounded-xl focus:border-primary focus:outline-none"
+                                                />
+                                                {minDeposit && Number(minDeposit) > 0 ? (
+                                                    <span className="text-[10px] text-primary block mt-0.5 font-medium px-1 truncate">
+                                                        {formatPriceWords(minDeposit)}
+                                                    </span>
+                                                ) : null}
+                                            </div>
+                                            <div>
+                                                <input
+                                                    type="number"
+                                                    placeholder="حداکثر ودیعه"
+                                                    value={maxDeposit}
+                                                    onChange={(e) => setMaxDeposit(e.target.value)}
+                                                    className="w-full h-10 px-3 text-xs bg-surface border border-soft-border rounded-xl focus:border-primary focus:outline-none"
+                                                />
+                                                {maxDeposit && Number(maxDeposit) > 0 ? (
+                                                    <span className="text-[10px] text-primary block mt-0.5 font-medium px-1 truncate">
+                                                        {formatPriceWords(maxDeposit)}
+                                                    </span>
+                                                ) : null}
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-2 pt-1">
+                                            <div>
+                                                <input
+                                                    type="number"
+                                                    placeholder="حداقل اجاره"
+                                                    value={minRent}
+                                                    onChange={(e) => setMinRent(e.target.value)}
+                                                    className="w-full h-10 px-3 text-xs bg-surface border border-soft-border rounded-xl focus:border-primary focus:outline-none"
+                                                />
+                                                {minRent && Number(minRent) > 0 ? (
+                                                    <span className="text-[10px] text-primary block mt-0.5 font-medium px-1 truncate">
+                                                        {formatPriceWords(minRent)}
+                                                    </span>
+                                                ) : null}
+                                            </div>
+                                            <div>
+                                                <input
+                                                    type="number"
+                                                    placeholder="حداکثر اجاره"
+                                                    value={maxRent}
+                                                    onChange={(e) => setMaxRent(e.target.value)}
+                                                    className="w-full h-10 px-3 text-xs bg-surface border border-soft-border rounded-xl focus:border-primary focus:outline-none"
+                                                />
+                                                {maxRent && Number(maxRent) > 0 ? (
+                                                    <span className="text-[10px] text-primary block mt-0.5 font-medium px-1 truncate">
+                                                        {formatPriceWords(maxRent)}
+                                                    </span>
+                                                ) : null}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
-                        )}
-                    </div>
+                        );
+                    })()}
 
                     {/* 3. Area (متراژ) */}
                     {hasAreaAttr && (
@@ -550,36 +595,18 @@ export function SubcategoryFilterDrawer({
                             <div className="grid grid-cols-2 gap-2">
                                 <input
                                     type="number"
-                                    placeholder="حداقل متراژ"
+                                    placeholder="از متراژ..."
                                     value={minArea}
                                     onChange={(e) => setMinArea(e.target.value)}
                                     className="h-10 px-3 text-xs bg-surface border border-soft-border rounded-xl focus:border-primary focus:outline-none"
                                 />
                                 <input
                                     type="number"
-                                    placeholder="حداکثر متراژ"
+                                    placeholder="تا متراژ..."
                                     value={maxArea}
                                     onChange={(e) => setMaxArea(e.target.value)}
                                     className="h-10 px-3 text-xs bg-surface border border-soft-border rounded-xl focus:border-primary focus:outline-none"
                                 />
-                            </div>
-                            {/* Quick Presets */}
-                            <div className="flex flex-wrap gap-1.5 pt-1">
-                                {COMMON_AREA_PRESETS.map((areaVal) => (
-                                    <button
-                                        key={areaVal}
-                                        type="button"
-                                        onClick={() => setMinArea(minArea === String(areaVal) ? "" : String(areaVal))}
-                                        className={cn(
-                                            "px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition-all cursor-pointer",
-                                            minArea === String(areaVal)
-                                                ? "bg-primary text-white border-primary"
-                                                : "bg-soft-bg text-secondary border-soft-border hover:border-primary/50"
-                                        )}
-                                    >
-                                        از {toPersianDigits(areaVal)} متر
-                                    </button>
-                                ))}
                             </div>
                         </div>
                     )}
@@ -588,22 +615,21 @@ export function SubcategoryFilterDrawer({
                     {hasRoomsAttr && (
                         <div className="space-y-2">
                             <label className="text-xs font-bold text-text-main">تعداد اتاق خواب</label>
-                            <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-                                {ROOM_OPTIONS.map((opt) => (
-                                    <button
-                                        key={opt.label}
-                                        type="button"
-                                        onClick={() => setRooms(opt.value)}
-                                        className={cn(
-                                            "h-9 rounded-xl text-xs font-bold border transition-all cursor-pointer flex items-center justify-center",
-                                            rooms === opt.value
-                                                ? "bg-primary text-white border-primary shadow-xs"
-                                                : "bg-soft-bg text-secondary border-soft-border hover:border-primary/50"
-                                        )}
-                                    >
-                                        {opt.label}
-                                    </button>
-                                ))}
+                            <div className="grid grid-cols-2 gap-2">
+                                <input
+                                    type="number"
+                                    placeholder="از تعداد اتاق..."
+                                    value={minRooms}
+                                    onChange={(e) => setMinRooms(e.target.value)}
+                                    className="h-10 px-3 text-xs bg-surface border border-soft-border rounded-xl focus:border-primary focus:outline-none"
+                                />
+                                <input
+                                    type="number"
+                                    placeholder="تا تعداد اتاق..."
+                                    value={maxRooms}
+                                    onChange={(e) => setMaxRooms(e.target.value)}
+                                    className="h-10 px-3 text-xs bg-surface border border-soft-border rounded-xl focus:border-primary focus:outline-none"
+                                />
                             </div>
                         </div>
                     )}

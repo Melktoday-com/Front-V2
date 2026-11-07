@@ -1077,39 +1077,6 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                     onCitySelect={handleCitySelect}
                 />
 
-                {/* Selected neighborhood tags — shown below search bar */}
-                {selectedZones.length > 0 && (
-                    <div
-                        data-testid="selected-zone-tags"
-                        className="flex flex-wrap items-center gap-2"
-                    >
-                        <span className="text-[11px] text-text-light font-medium shrink-0">محله‌های انتخابی:</span>
-                        {selectedZones.map((zone) => (
-                            <span
-                                key={zone.id}
-                                className="inline-flex items-center gap-1.5 bg-primary/10 text-primary text-xs font-semibold px-3 py-1 rounded-full border border-primary/20"
-                            >
-                                {zone.name}
-                                <button
-                                    type="button"
-                                    onClick={() => handleRemoveZone(zone.id)}
-                                    aria-label={`حذف محله ${zone.name}`}
-                                    className="hover:opacity-70 transition-opacity cursor-pointer"
-                                >
-                                    <X className="w-3 h-3" />
-                                </button>
-                            </span>
-                        ))}
-                        <button
-                            type="button"
-                            onClick={handleClearZones}
-                            className="text-[11px] text-secondary hover:text-error font-semibold transition-colors cursor-pointer"
-                        >
-                            پاک کردن همه
-                        </button>
-                    </div>
-                )}
-
                 {/* Active filter chips (Price, Area, Rooms, Amenities, Dynamic Attributes) */}
                 {activeFiltersCount > 0 && (
                     <div
