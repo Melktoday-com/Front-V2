@@ -556,15 +556,7 @@ export default function ResidenceDetailScene({ initialData }: ResidenceDetailSce
                             <h1 className="text-xl sm:text-2xl font-black text-brand leading-tight">
                                 {residence.title}
                             </h1>
-                            <button
-                                onClick={handleCopyId}
-                                className="inline-flex items-center gap-1.5 text-xs text-foreground-muted hover:text-brand bg-surface-secondary px-2.5 py-1 rounded-lg border border-border-subtle transition self-start sm:self-auto cursor-pointer"
-                                title="کپی کد اقامتگاه"
-                            >
-                                <span className="text-[11px]">کد:</span>
-                                <span className="font-mono text-[11px] truncate max-w-[120px]">{residence.id.slice(0, 8)}...</span>
-                                <Copy className="w-3.5 h-3.5 text-foreground-muted" />
-                            </button>
+
                         </div>
 
                         <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs text-text-light font-medium">
