@@ -324,23 +324,18 @@ export default function SubscriptionsScene() {
         <div className="min-h-screen bg-surface-secondary/60 pb-28 lg:pb-10 pt-6">
             <div className="max-w-6xl mx-auto px-4 sm:px-6">
                 {/* Header */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                     <div>
                         <div className="flex items-center gap-2 mb-1.5">
                             <h1 className="text-2xl font-black text-foreground tracking-tight">
-                                پلن‌های اشتراک و سهمیه‌های ویژه
+                                {activeTab === "entitlements" ? "سهمیه‌ها و پلن‌های من" : "پلن‌های اشتراک و سهمیه‌ها"}
                             </h1>
                         </div>
-                        <p className="text-sm text-foreground-muted">
-                            ارتقای ظرفیت آگهی‌ها، انتشار اقامتگاه، نردبان و برچسب‌های فوری اختصاصی
-                        </p>
                     </div>
-
-
                 </div>
 
                 {/* Non-Host / Non-Agent Banner (Regular User Guidance) */}
-                {!isHostOrAgent && !isPrivileged && (
+                {!isHostOrAgent && !isPrivileged && activeTab === "plans" && (
                     <div className="mb-8 p-5 bg-gradient-to-r from-amber-50 to-orange-50/70 border border-warning/30/80 rounded-3xl">
                         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                             <div className="flex items-start gap-3.5">
@@ -567,7 +562,7 @@ export default function SubscriptionsScene() {
                                                                 <strong className="font-black text-foreground">
                                                                     {toPersianDigits(plan.urgentQuota)}
                                                                 </strong>{" "}
-                                                                برچسب فوری (فوری شو)
+                                                                برچسب فوری
                                                             </span>
                                                         </div>
                                                     )}

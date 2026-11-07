@@ -402,7 +402,7 @@ export function MediumPostEditor({
             placeholder="مثلاً: تحلیل جامع روند قیمت مسکن در پاییز ۱۴۰۵ و چشم‌انداز سرمایه‌گذاری"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full px-4 py-3.5 rounded-2xl bg-surface-secondary border border-border-subtle text-base sm:text-lg font-black text-foreground focus:bg-surface focus:border-emerald-500 focus:outline-hidden transition-all placeholder:text-foreground-muted"
+            className="w-full px-4 py-3 rounded-2xl bg-surface-secondary border border-border-subtle text-sm font-medium text-foreground focus:bg-surface focus:border-emerald-500 focus:outline-hidden transition-all placeholder:text-foreground-muted"
           />
         </div>
 
@@ -416,7 +416,7 @@ export function MediumPostEditor({
             placeholder="یک یا دو جمله کوتاه و گیرا برای نمایش در کارت‌ها و پیش‌نمایش شبکه‌های اجتماعی..."
             value={summary}
             onChange={(e) => setSummary(e.target.value)}
-            className="w-full px-4 py-2.5 rounded-2xl bg-surface-secondary border border-border-subtle text-xs sm:text-sm font-medium text-foreground focus:bg-surface focus:border-emerald-500 focus:outline-hidden transition-all placeholder:text-foreground-muted"
+            className="w-full px-4 py-3 rounded-2xl bg-surface-secondary border border-border-subtle text-sm font-medium text-foreground focus:bg-surface focus:border-emerald-500 focus:outline-hidden transition-all placeholder:text-foreground-muted"
           />
         </div>
 
@@ -427,7 +427,7 @@ export function MediumPostEditor({
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="w-full px-4 py-3 rounded-2xl bg-surface-secondary border border-border-subtle text-xs font-bold text-foreground focus:bg-surface focus:border-emerald-500 focus:outline-hidden transition-all"
+              className="w-full px-4 py-3 rounded-2xl bg-surface-secondary border border-border-subtle text-sm font-medium text-foreground focus:bg-surface focus:border-emerald-500 focus:outline-hidden transition-all"
             >
               {MEDIUM_CATEGORIES.map((cat) => (
                 <option key={cat} value={cat}>
@@ -454,7 +454,7 @@ export function MediumPostEditor({
               placeholder="housing-market-analysis-fall"
               value={slug}
               onChange={(e) => setSlug(e.target.value)}
-              className="w-full px-4 py-3 rounded-2xl bg-surface-secondary border border-border-subtle text-xs font-mono text-foreground focus:bg-surface focus:border-emerald-500 focus:outline-hidden transition-all placeholder:text-foreground-muted"
+              className="w-full px-4 py-3 rounded-2xl bg-surface-secondary border border-border-subtle text-sm font-medium text-foreground focus:bg-surface focus:border-emerald-500 focus:outline-hidden transition-all placeholder:text-foreground-muted"
             />
           </div>
         </div>
@@ -675,7 +675,7 @@ export function MediumPostEditor({
               placeholder="متن کامل مقاله، تحلیل یا گزارش خود را به صورت مارک‌داون یا متن ساده در اینجا بنویسید... (می‌توانید با دکمه درج عکس بالا، تصاویر را بین بندهای مقاله قرار دهید)"
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              className="w-full h-full p-4 rounded-2xl bg-surface-secondary/70 border border-border-subtle text-sm sm:text-base text-foreground font-normal focus:bg-surface focus:border-emerald-500 focus:outline-hidden transition-all leading-loose resize-y placeholder:text-foreground-muted"
+              className="w-full h-full p-4 rounded-2xl bg-surface-secondary/70 border border-border-subtle text-sm text-foreground font-medium focus:bg-surface focus:border-emerald-500 focus:outline-hidden transition-all leading-relaxed resize-y placeholder:text-foreground-muted"
             />
           )}
 
@@ -775,7 +775,7 @@ export function MediumPostEditor({
                   rows={20}
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  className="w-full p-4 rounded-2xl bg-surface-secondary border border-border-subtle text-sm font-mono text-foreground focus:bg-surface focus:border-emerald-500 focus:outline-hidden transition-all leading-relaxed resize-y"
+                  className="w-full p-4 rounded-2xl bg-surface-secondary border border-border-subtle text-sm font-medium text-foreground focus:bg-surface focus:border-emerald-500 focus:outline-hidden transition-all leading-relaxed resize-y"
                 />
               </div>
 

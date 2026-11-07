@@ -131,7 +131,7 @@ export default function AgencyApplyPage() {
     }, [formData.cityId, selectedCityName, getCityName]);
 
     useEffect(() => {
-        if (searchParams.get("edit") === "true" && myApp && myApp.status === "PENDING") {
+        if ((searchParams.get("edit") === "true" || searchParams.get("reapply") === "true") && myApp) {
             startEditing();
         }
     }, [searchParams, myApp]);
@@ -256,36 +256,22 @@ export default function AgencyApplyPage() {
     return (
         <div className="min-h-screen bg-surface-secondary pb-24 lg:pb-10 pt-10 px-4 sm:px-6 lg:px-8" dir="rtl">
             <div className="max-w-3xl mx-auto space-y-6">
-                {/* 1. Header for Edit / Reapply Mode */}
+                {/* 1. Clean Top Bar for Edit / Reapply Mode */}
                 {(isEditing || isReapplying) && (
-                    <div className="bg-surface p-5 sm:p-6 rounded-3xl border border-border-subtle/80 shadow-xs flex items-center justify-between gap-4">
-                        <div className="flex items-center gap-3">
-                            <div className={`w-10 h-10 rounded-2xl flex items-center justify-center font-bold shrink-0 ${
-                                isEditing ? "bg-amber-500/10 text-amber-600" : "bg-blue-500/10 text-blue-600"
-                            }`}>
-                                {isEditing ? <Pencil className="w-5 h-5" /> : <RotateCcw className="w-5 h-5" />}
-                            </div>
-                            <div>
-                                <h1 className="text-base sm:text-lg font-black text-foreground">
-                                    {isEditing ? "ویرایش مشخصات درخواست همکاری" : "ارسال مجدد درخواست همکاری"}
-                                </h1>
-                                <p className="text-xs text-foreground-muted font-medium mt-0.5">
-                                    {isEditing
-                                        ? "اطلاعات زیر را ویرایش نموده و در انتهای فرم دکمه بروزرسانی را بزنید."
-                                        : "با توجه به توضیحات مدیریت، اطلاعات خود را اصلاح و مجدداً ارسال نمایید."}
-                                </p>
-                            </div>
+                    <div className="flex items-center justify-between pb-1">
+                        <div className="flex items-center gap-2">
+                            <button
+                                type="button"
+                                onClick={handleCancelEdit}
+                                className="p-2 -mr-2 text-foreground-muted hover:text-foreground transition-colors cursor-pointer"
+                                title="بازگشت"
+                            >
+                                <ArrowRight className="w-5 h-5" />
+                            </button>
+                            <h1 className="text-base sm:text-lg font-black text-foreground">
+                                {isEditing ? "ویرایش مشخصات درخواست همکاری" : "ارسال مجدد درخواست همکاری"}
+                            </h1>
                         </div>
-
-                        <button
-                            type="button"
-                            onClick={handleCancelEdit}
-                            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-surface-secondary hover:bg-slate-200 text-foreground-secondary rounded-xl text-xs font-bold transition-colors shrink-0"
-                        >
-                            <X className="w-4 h-4" />
-                            <span className="hidden sm:inline">انصراف از ویرایش</span>
-                            <span className="sm:hidden">انصراف</span>
-                        </button>
                     </div>
                 )}
 
@@ -470,48 +456,52 @@ export default function AgencyApplyPage() {
                                 انتخاب نوع نقش درخواستی:
                             </label>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div
                                     onClick={() => setAgentType("CONSULTANT")}
-                                    className={`p-5 rounded-2xl border-2 cursor-pointer transition-all space-y-2 ${agentType === "CONSULTANT"
+                                    className={`p-3.5 sm:p-4 rounded-2xl border-2 cursor-pointer transition-all space-y-1.5 ${agentType === "CONSULTANT"
                                         ? "border-blue-600 bg-info-subtle/40 shadow-xs"
                                         : "border-border-subtle hover:border-border bg-surface"
                                         }`}
                                 >
                                     <div className="flex items-center justify-between">
-                                        <div className="w-10 h-10 rounded-xl bg-info-subtle/70 text-info flex items-center justify-center font-bold">
-                                            <Award className="w-5 h-5" />
+                                        <div className="flex items-center gap-2.5">
+                                            <div className="w-8 h-8 rounded-xl bg-info-subtle/70 text-info flex items-center justify-center font-bold shrink-0">
+                                                <Award className="w-4 h-4" />
+                                            </div>
+                                            <h3 className="text-xs sm:text-sm font-black text-foreground">مشاور املاک مستقل</h3>
                                         </div>
-                                        <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${agentType === "CONSULTANT" ? "border-blue-600 bg-blue-600" : "border-border"
+                                        <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${agentType === "CONSULTANT" ? "border-blue-600 bg-blue-600" : "border-border"
                                             }`}>
                                             {agentType === "CONSULTANT" && <span className="w-1.5 h-1.5 rounded-full bg-surface" />}
                                         </span>
                                     </div>
-                                    <h3 className="text-sm font-black text-foreground">مشاور املاک مستقل</h3>
-                                    <p className="text-[11px] text-foreground-muted leading-relaxed font-medium">
-                                        مخصوص کارشناسان و مشاورین ملکی بدون نیاز به دفتر فیزیکی. احراز هویت با تطبیق کدملی و سامانه شاهکار جیبیت انجام می‌پذیرد.
+                                    <p className="text-[11px] text-foreground-muted font-medium pr-1">
+                                        مخصوص مشاورین املاک بدون نیاز به پروانه
                                     </p>
                                 </div>
 
                                 <div
                                     onClick={() => setAgentType("AGENCY")}
-                                    className={`p-5 rounded-2xl border-2 cursor-pointer transition-all space-y-2 ${agentType === "AGENCY"
+                                    className={`p-3.5 sm:p-4 rounded-2xl border-2 cursor-pointer transition-all space-y-1.5 ${agentType === "AGENCY"
                                         ? "border-purple-600 bg-purple-50/40 shadow-xs"
                                         : "border-border-subtle hover:border-border bg-surface"
                                         }`}
                                 >
                                     <div className="flex items-center justify-between">
-                                        <div className="w-10 h-10 rounded-xl bg-purple-100/70 text-purple-700 flex items-center justify-center font-bold">
-                                            <Building2 className="w-5 h-5" />
+                                        <div className="flex items-center gap-2.5">
+                                            <div className="w-8 h-8 rounded-xl bg-purple-100/70 text-purple-700 flex items-center justify-center font-bold shrink-0">
+                                                <Building2 className="w-4 h-4" />
+                                            </div>
+                                            <h3 className="text-xs sm:text-sm font-black text-foreground">آژانس / دفتر املاک</h3>
                                         </div>
-                                        <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${agentType === "AGENCY" ? "border-purple-600 bg-purple-600" : "border-border"
+                                        <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${agentType === "AGENCY" ? "border-purple-600 bg-purple-600" : "border-border"
                                             }`}>
                                             {agentType === "AGENCY" && <span className="w-1.5 h-1.5 rounded-full bg-surface" />}
                                         </span>
                                     </div>
-                                    <h3 className="text-sm font-black text-foreground">دفتر / آژانس معاملات ملکی</h3>
-                                    <p className="text-[11px] text-foreground-muted leading-relaxed font-medium">
-                                        مخصوص بنگاه‌ها و دفاتر رسمی دارای پروانه کسب. احراز هویت با شناسه صنفی ۱۰ رقمی اصناف جیبیت صورت می‌گیرد.
+                                    <p className="text-[11px] text-foreground-muted font-medium pr-1">
+                                        مخصوص دفاتر املاک دارای پروانه رسمی
                                     </p>
                                 </div>
                             </div>
@@ -715,30 +705,6 @@ export default function AgencyApplyPage() {
                             </button>
                         </div>
                     </form>
-                )}
-
-                {/* Simultaneous Host Opportunity Banner - Positioned cleanly at the bottom */}
-                {!isEditing && (
-                    <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200/80 rounded-3xl p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                        <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 rounded-2xl bg-white text-emerald-600 flex items-center justify-center shadow-xs shrink-0">
-                                <Home className="w-6 h-6" />
-                            </div>
-                            <div>
-                                <h4 className="text-sm font-black text-emerald-900">ثبت‌نام همزمان به عنوان میزبان اقامتگاه</h4>
-                                <p className="text-xs text-emerald-700/80 mt-0.5 font-medium leading-relaxed">
-                                    می‌توانید همزمان با فعالیت املاک، اقامتگاه‌ها و ویلاهای روزانه خود را نیز در ملک‌تودی اجاره دهید.
-                                </p>
-                            </div>
-                        </div>
-                        <Link
-                            href="/host/apply"
-                            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 transition shadow-sm shrink-0"
-                        >
-                            <Home className="w-4 h-4" />
-                            <span>ثبت درخواست میزبانی</span>
-                        </Link>
-                    </div>
                 )}
             </div>
 

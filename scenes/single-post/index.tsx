@@ -297,10 +297,11 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
         <button
           type="button"
           onClick={handleBack}
-          className="inline-flex items-center gap-1.5 text-xs font-black text-brand hover:text-primary transition-colors bg-surface px-3.5 py-2 rounded-xl border border-border-subtle shadow-2xs"
+          className="p-2 -mr-2 text-foreground-muted hover:text-brand transition-colors cursor-pointer"
           aria-label="بازگشت"
+          title="بازگشت"
         >
-          <ArrowRight className="w-4 h-4" />
+          <ArrowRight className="w-5 h-5" />
         </button>
 
         <div className="flex items-center gap-2">

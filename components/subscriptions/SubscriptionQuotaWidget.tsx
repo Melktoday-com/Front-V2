@@ -193,7 +193,7 @@ export function SubscriptionQuotaWidget({
                 };
             case "URGENT_PROMOTION":
                 return {
-                    label: "برچسب فوری شو",
+                    label: "برچسب فوری",
                     icon: <Flame className="w-4 h-4 text-amber-500" />,
                     bg: "bg-amber-500/10",
                     border: "border-amber-500/20",

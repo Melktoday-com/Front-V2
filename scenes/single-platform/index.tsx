@@ -161,7 +161,7 @@ export default function SinglePlatformScene() {
           <div className="flex flex-col sm:flex-row items-center sm:items-end justify-between gap-6">
             <div className="flex flex-col sm:flex-row items-center gap-5 text-center sm:text-right">
               {/* Logo */}
-              <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-brand border-4 border-white shadow-md overflow-hidden shrink-0 flex items-center justify-center p-3">
+              <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-brand border border-soft-border/40 shadow-md overflow-hidden shrink-0 flex items-center justify-center p-3">
                 {header?.avatarUrl ? (
                   <Image src={getMediaUrl(header.avatarUrl)} alt="Logo" fill className="object-contain p-2" />
                 ) : (

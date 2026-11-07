@@ -25,6 +25,8 @@ type ActiveTab = "ALL" | "AGENCY" | "HOST";
 export default function UserRequestsPage() {
     const router = useRouter();
     const [activeTab, setActiveTab] = useState<ActiveTab>("ALL");
+    const [showAgencyRejectReason, setShowAgencyRejectReason] = useState(false);
+    const [showHostRejectReason, setShowHostRejectReason] = useState(false);
 
     // Fetch agency application
     const {
@@ -79,7 +81,7 @@ export default function UserRequestsPage() {
                 <div className="flex items-center gap-3.5">
                     <Link
                         href="/profile"
-                        className="p-2.5 rounded-2xl bg-soft-bg hover:bg-soft-border/50 text-secondary transition-colors"
+                        className="p-2 -mr-2 text-secondary hover:text-brand transition-colors"
                         title="بازگشت به حساب کاربری"
                     >
                         <ArrowRight className="w-5 h-5" />
@@ -180,9 +182,6 @@ export default function UserRequestsPage() {
                                             <h3 className="text-sm font-black text-brand">
                                                 درخواست عضویت {agencyApp.agentType === "AGENCY" ? "دفتر املاک" : "مشاور املاک"}
                                             </h3>
-                                            <span className="text-[10px] font-mono bg-soft-bg px-2 py-0.5 rounded-md text-secondary">
-                                                ID: {agencyApp.id.slice(0, 8)}
-                                            </span>
                                         </div>
                                         <p className="text-xs text-secondary mt-0.5">
                                             نام متقاضی: {agencyApp.fullName}
@@ -206,20 +205,27 @@ export default function UserRequestsPage() {
                                         </span>
                                     )}
                                     {agencyApp.status === "REJECTED" && (
-                                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-error-subtle text-error border border-error/30">
-                                            <XCircle className="w-4 h-4" />
-                                            <span>رد شده</span>
-                                        </span>
+                                        <div className="flex flex-col items-start sm:items-end gap-1.5">
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowAgencyRejectReason(!showAgencyRejectReason)}
+                                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-error-subtle text-error border border-error/30 hover:bg-error-subtle/80 transition-colors cursor-pointer"
+                                            >
+                                                <XCircle className="w-4 h-4" />
+                                                <span>رد شده {showAgencyRejectReason ? "(بستن علت)" : "(مشاهده علت)"}</span>
+                                            </button>
+                                            {showAgencyRejectReason && (
+                                                <p className="text-xs text-error font-medium bg-error-subtle/40 p-2.5 rounded-xl border border-error/20 text-right max-w-xs animate-in fade-in">
+                                                    {agencyApp.rejectionReason || agencyApp.adminNote || "اطلاعات یا مدارک ارسالی با ضوابط سامانه تطابق نداشت."}
+                                                </p>
+                                            )}
+                                        </div>
                                     )}
                                 </div>
                             </div>
 
                             {/* Details Grid */}
-                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs bg-soft-bg/60 p-4 rounded-2xl">
-                                <div>
-                                    <span className="text-secondary block mb-0.5">کد ملی:</span>
-                                    <span className="font-bold text-brand">{toPersianDigits(agencyApp.nationalCode)}</span>
-                                </div>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs bg-soft-bg/60 p-4 rounded-2xl">
                                 {agencyApp.licenseNumber && (
                                     <div>
                                         <span className="text-secondary block mb-0.5">شماره پروانه کسب:</span>
@@ -242,24 +248,6 @@ export default function UserRequestsPage() {
                                 )}
                             </div>
 
-                            {/* Rejection Alert Box */}
-                            {agencyApp.status === "REJECTED" && (
-                                <div className="bg-error-subtle/80 border border-error/30 rounded-2xl p-4 space-y-2">
-                                    <div className="flex items-center gap-2 text-error font-bold text-xs">
-                                        <ShieldAlert className="w-4 h-4" />
-                                        <span>علت رد درخواست توسط مدیریت:</span>
-                                    </div>
-                                    <p className="text-xs text-error leading-relaxed font-medium">
-                                        {agencyApp.rejectionReason || "اطلاعات یا مدارک ارسالی با ضوابط سامانه تطابق نداشت."}
-                                    </p>
-                                    {agencyApp.adminNote && (
-                                        <p className="text-[11px] text-error bg-surface/70 p-2 rounded-lg border border-error/30">
-                                            یادداشت مدیر: {agencyApp.adminNote}
-                                        </p>
-                                    )}
-                                </div>
-                            )}
-
                             {/* Action Buttons */}
                             <div className="flex items-center justify-end gap-3 pt-1">
                                 {agencyApp.status === "PENDING" && (
@@ -273,7 +261,7 @@ export default function UserRequestsPage() {
                                 )}
                                 {agencyApp.status === "REJECTED" && (
                                     <Link
-                                        href="/agency/apply"
+                                        href="/agency/apply?edit=true"
                                         className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl text-xs font-bold hover:bg-primary/90 transition shadow-sm"
                                     >
                                         <RotateCcw className="w-4 h-4" />
@@ -304,9 +292,6 @@ export default function UserRequestsPage() {
                                     <div>
                                         <div className="flex items-center gap-2">
                                             <h3 className="text-sm font-black text-brand">درخواست میزبانی اقامتگاه</h3>
-                                            <span className="text-[10px] font-mono bg-soft-bg px-2 py-0.5 rounded-md text-secondary">
-                                                ID: {hostApp.id.slice(0, 8)}
-                                            </span>
                                         </div>
                                         <p className="text-xs text-secondary mt-0.5">
                                             نام میزبان: {hostApp.hostName || hostApp.fullName}
@@ -329,10 +314,21 @@ export default function UserRequestsPage() {
                                         </span>
                                     )}
                                     {hostApp.status === "REJECTED" && (
-                                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-error-subtle text-error border border-error/30">
-                                            <XCircle className="w-4 h-4" />
-                                            <span>رد شده</span>
-                                        </span>
+                                        <div className="flex flex-col items-start sm:items-end gap-1.5">
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowHostRejectReason(!showHostRejectReason)}
+                                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-error-subtle text-error border border-error/30 hover:bg-error-subtle/80 transition-colors cursor-pointer"
+                                            >
+                                                <XCircle className="w-4 h-4" />
+                                                <span>رد شده {showHostRejectReason ? "(بستن علت)" : "(مشاهده علت)"}</span>
+                                            </button>
+                                            {showHostRejectReason && (
+                                                <p className="text-xs text-error font-medium bg-error-subtle/40 p-2.5 rounded-xl border border-error/20 text-right max-w-xs animate-in fade-in">
+                                                    {hostApp.rejectionReason || hostApp.adminNote || "اطلاعات اقامتگاه با ضوابط سامانه میزبانی همخوانی نداشت."}
+                                                </p>
+                                            )}
+                                        </div>
                                     )}
                                 </div>
                             </div>
@@ -367,24 +363,6 @@ export default function UserRequestsPage() {
                                 )}
                             </div>
 
-                            {/* Rejection Alert Box */}
-                            {hostApp.status === "REJECTED" && (
-                                <div className="bg-error-subtle/80 border border-error/30 rounded-2xl p-4 space-y-2">
-                                    <div className="flex items-center gap-2 text-error font-bold text-xs">
-                                        <ShieldAlert className="w-4 h-4" />
-                                        <span>علت رد درخواست میزبانی:</span>
-                                    </div>
-                                    <p className="text-xs text-error leading-relaxed font-medium">
-                                        {hostApp.rejectionReason || "اطلاعات اقامتگاه با ضوابط سامانه میزبانی همخوانی نداشت."}
-                                    </p>
-                                    {hostApp.adminNote && (
-                                        <p className="text-[11px] text-error bg-surface/70 p-2 rounded-lg border border-error/30">
-                                            یادداشت مدیر: {hostApp.adminNote}
-                                        </p>
-                                    )}
-                                </div>
-                            )}
-
                             {/* Action Buttons */}
                             <div className="flex items-center justify-end gap-3 pt-1">
                                 {hostApp.status === "PENDING" && (
@@ -398,7 +376,7 @@ export default function UserRequestsPage() {
                                 )}
                                 {hostApp.status === "REJECTED" && (
                                     <Link
-                                        href="/host/apply"
+                                        href="/host/apply?edit=true"
                                         className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl text-xs font-bold hover:bg-primary/90 transition shadow-sm"
                                     >
                                         <RotateCcw className="w-4 h-4" />

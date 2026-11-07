@@ -478,10 +478,11 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
             <div className="flex items-center justify-between mb-4">
                 <button
                     onClick={handleBack}
-                    className="flex items-center gap-1.5 text-xs font-bold text-text-light hover:text-brand transition-colors"
+                    className="p-2 -mr-2 text-foreground-muted hover:text-brand transition-colors cursor-pointer"
+                    aria-label="بازگشت"
+                    title="بازگشت"
                 >
-                    <ChevronRight className="w-5 h-5" />
-                    <span>بازگشت</span>
+                    <ChevronRight className="w-6 h-6" />
                 </button>
                 <div className="flex items-center gap-2">
                     <button
@@ -838,7 +839,7 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
                 </div>
 
                 {/* Left column (Desktop Contact Card & Actions) */}
-                <div className={cn("space-y-6", isRegularUser && "hidden lg:block")}>
+                <div className="space-y-6 hidden lg:block">
                     <div className="sticky top-6 bg-surface p-5 sm:p-6 rounded-2xl border border-border-subtle shadow-card space-y-5">
                         {/* Header */}
                         <div className="flex items-center justify-between pb-3.5 border-b border-border-subtle/80">

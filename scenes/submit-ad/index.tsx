@@ -874,12 +874,11 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                     <button
                         type="button"
                         onClick={() => handlePageBack()}
-                        className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl bg-surface hover:bg-surface-secondary active:scale-95 border border-border-subtle text-text-light hover:text-brand transition-all shrink-0 cursor-pointer shadow-2xs text-xs font-bold"
+                        className="absolute right-0 top-1/2 -translate-y-1/2 p-2 -mr-2 text-foreground-muted hover:text-brand transition-colors shrink-0 cursor-pointer"
                         aria-label="بازگشت"
                         title="بازگشت"
                     >
-                        <ChevronRight className="w-4 h-4" />
-                        <span>بازگشت</span>
+                        <ChevronRight className="w-6 h-6" />
                     </button>
 
                     <h1 className="text-lg sm:text-2xl font-black text-brand text-center px-16 sm:px-24">

@@ -162,7 +162,7 @@ export function InstagramPostEditor({
               placeholder="مثال: معرفی پنت‌هاوس ۲۵۰ متری فرمانیه با دید ابدی"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-4 py-3 rounded-2xl bg-surface-secondary border border-border-subtle text-sm font-bold text-foreground focus:bg-surface focus:border-primary focus:outline-hidden transition-all placeholder:text-foreground-muted"
+              className="w-full px-4 py-3 rounded-2xl bg-surface-secondary border border-border-subtle text-sm font-medium text-foreground focus:bg-surface focus:border-primary focus:outline-hidden transition-all placeholder:text-foreground-muted"
             />
           </div>
 
@@ -176,7 +176,7 @@ export function InstagramPostEditor({
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full px-4 py-3 rounded-2xl bg-surface-secondary border border-border-subtle text-xs font-bold text-foreground focus:bg-surface focus:border-primary focus:outline-hidden transition-all"
+                className="w-full px-4 py-3 rounded-2xl bg-surface-secondary border border-border-subtle text-sm font-medium text-foreground focus:bg-surface focus:border-primary focus:outline-hidden transition-all"
               >
                 {INSTAGRAM_CATEGORIES.map((cat) => (
                   <option key={cat} value={cat}>
@@ -197,7 +197,7 @@ export function InstagramPostEditor({
                   placeholder="مثلاً: زعفرانیه، تهران"
                   value={locationTag}
                   onChange={(e) => setLocationTag(e.target.value)}
-                  className="w-full px-4 py-3 rounded-2xl bg-surface-secondary border border-border-subtle text-xs font-bold text-foreground focus:bg-surface focus:border-primary focus:outline-hidden transition-all placeholder:text-foreground-muted"
+                  className="w-full px-4 py-3 rounded-2xl bg-surface-secondary border border-border-subtle text-sm font-medium text-foreground focus:bg-surface focus:border-primary focus:outline-hidden transition-all placeholder:text-foreground-muted"
                 />
               </div>
             )}
@@ -220,7 +220,7 @@ export function InstagramPostEditor({
               placeholder="توضیحات جذاب درباره ملک، مشخصات، قیمت، امکانات یا تحلیل سریع خود را در اینجا بنویسید..."
               value={caption}
               onChange={(e) => setCaption(e.target.value)}
-              className="w-full p-4 rounded-2xl bg-surface-secondary border border-border-subtle text-sm text-foreground focus:bg-surface focus:border-primary focus:outline-hidden transition-all placeholder:text-foreground-muted leading-relaxed resize-none"
+              className="w-full p-4 rounded-2xl bg-surface-secondary border border-border-subtle text-sm font-medium text-foreground focus:bg-surface focus:border-primary focus:outline-hidden transition-all placeholder:text-foreground-muted leading-relaxed resize-none"
             />
           </div>
 

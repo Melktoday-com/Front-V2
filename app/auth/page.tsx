@@ -1,14 +1,15 @@
 
 "use client";
 
-import { authImage1, authImage2, authImage3, authImage4 } from "@/assets/auth";
 import { useAuth, useRequestOtp, useVerifyOtp } from "@/hooks/useAuth";
 import { normalizeApiError } from "@/lib/api/error-handler";
 import { toEnglishDigits, toOnlyDigits } from "@/lib/utils";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { ChevronRight } from "lucide-react";
 
 function AuthContent() {
   const router = useRouter();
@@ -88,29 +89,55 @@ function AuthContent() {
   }
 
   return (
-    <main className="min-h-screen bg-background flex flex-col items-center p-6 text-right">
-      {/* Visual Header - House/Property Images Grid */}
-      <div className="grid grid-cols-2 gap-2 mb-12 mt-6 w-full max-w-85">
-        <div className="aspect-square bg-primary/10 rounded-xl overflow-hidden flex items-center justify-center text-primary text-4xl shadow-sm relative">
-          <Image src={authImage1} alt="Property 1" fill className="object-cover" />
-        </div>
-        <div className="aspect-square bg-brand/5 rounded-xl overflow-hidden flex items-center justify-center text-brand text-4xl shadow-sm relative">
-          <Image src={authImage2} alt="Property 2" fill className="object-cover" />
-        </div>
-        <div className="aspect-square bg-brand/5 rounded-xl overflow-hidden flex items-center justify-center text-brand text-4xl shadow-sm relative">
-          <Image src={authImage3} alt="Property 3" fill className="object-cover" />
-        </div>
-        <div className="aspect-square bg-primary/10 rounded-xl overflow-hidden flex items-center justify-center text-primary text-4xl shadow-sm relative">
-          <Image src={authImage4} alt="Property 4" fill className="object-cover" />
-        </div>
+    <main className="min-h-screen bg-background flex flex-col items-center p-4 sm:p-6 text-right">
+      {/* Top Header with Clean Back Button */}
+      <div className="w-full max-w-sm flex items-center justify-between mt-2 mb-2">
+        <button
+          type="button"
+          onClick={() => {
+            if (step === "otp") {
+              setStep("phone");
+            } else if (typeof window !== "undefined" && window.history.length > 1) {
+              router.back();
+            } else {
+              router.push("/");
+            }
+          }}
+          className="p-2 -mr-2 text-foreground-muted hover:text-foreground transition-colors cursor-pointer"
+          title="بازگشت"
+        >
+          <ChevronRight className="w-6 h-6" />
+        </button>
       </div>
 
-      <div className="w-full max-w-85  pb-10">
+      {/* Brand Header */}
+      <div className="flex flex-col items-center justify-center my-6 sm:my-8 text-center">
+        <Link href="/" className="inline-block mb-3 transition-transform hover:scale-105 active:scale-95">
+          <div className="w-18 h-18 sm:w-20 sm:h-20 rounded-3xl bg-surface border border-soft-border/80 shadow-sm flex items-center justify-center p-3 relative overflow-hidden">
+            <Image
+              src="/apple-touch-icon.png"
+              alt="ملک تودی"
+              width={72}
+              height={72}
+              className="object-contain rounded-2xl"
+              priority
+            />
+          </div>
+        </Link>
+        <span className="text-xl sm:text-2xl font-black text-brand tracking-tight mb-1">
+          ملک <span className="text-brand-teal">تودی</span>
+        </span>
+        <p className="text-xs sm:text-sm text-secondary font-medium">
+          سامانه هوشمند املاک و اقامتگاه‌ها
+        </p>
+      </div>
+
+      <div className="w-full max-w-sm pb-10">
         {step === "phone" ? (
           <div className="transition-all duration-500 transform">
-            <h1 className="text-2xl font-bold text-brand mb-3">به ملک تودی خوش آمدید</h1>
-            <p className="text-text-light mb-10 text-sm leading-relaxed">
-              برای ورود یا ثبت‌نام، شماره موبایل خود را وارد کنید.
+            <h2 className="text-lg sm:text-xl font-black text-brand mb-1.5 text-center sm:text-right">ورود یا ثبت‌نام</h2>
+            <p className="text-text-light mb-8 text-xs sm:text-sm leading-relaxed text-center sm:text-right">
+              برای ورود به حساب کاربری، شماره موبایل خود را وارد کنید.
             </p>
 
             <form onSubmit={handleRequestOtp} className="space-y-8">
@@ -148,14 +175,14 @@ function AuthContent() {
           <div className="animate-in fade-in duration-700 pb-15">
             <button
               onClick={() => setStep("phone")}
-              className="mb-8 flex items-center gap-2 text-text-light hover:text-brand transition-colors group"
+              className="mb-6 flex items-center gap-1.5 text-secondary hover:text-brand transition-colors cursor-pointer"
             >
-              <span className="text-lg group-hover:translate-x-1 transition-transform">→</span>
-              <span className="text-sm font-bold">تغییر شماره ({phone})</span>
+              <ChevronRight className="w-4 h-4" />
+              <span className="text-xs font-bold">تغییر شماره ({phone})</span>
             </button>
 
-            <h1 className="text-2xl font-bold text-brand mb-3">تایید شماره</h1>
-            <p className="text-text-light mb-10 text-sm leading-relaxed">
+            <h2 className="text-lg sm:text-xl font-black text-brand mb-1.5 text-center sm:text-right">تایید شماره موبایل</h2>
+            <p className="text-text-light mb-8 text-xs sm:text-sm leading-relaxed text-center sm:text-right">
               کد تایید ۶ رقمی ارسال‌شده به شماره همراه خود را وارد کنید.
             </p>
 

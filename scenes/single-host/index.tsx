@@ -211,7 +211,7 @@ export default function SingleHostScene({ idOrSlug, initialData }: SingleHostSce
           <div className="flex flex-col sm:flex-row items-center sm:items-end justify-between gap-6">
             <div className="flex flex-col sm:flex-row items-center gap-5 text-center sm:text-right">
               {/* Avatar */}
-              <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-soft-bg border-4 border-white shadow-md overflow-hidden shrink-0">
+              <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-soft-bg border border-soft-border/60 shadow-md overflow-hidden shrink-0">
                 {header.avatarUrl ? (
                   <Image src={header.avatarUrl} alt={header.title} fill className="object-cover" />
                 ) : (

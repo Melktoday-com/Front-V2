@@ -138,10 +138,11 @@ export default function NotificationsScene() {
                 <button
                     type="button"
                     onClick={handleBack}
-                    className="flex items-center gap-1.5 text-xs font-bold text-secondary hover:text-brand transition-colors"
+                    className="p-2 -mr-2 text-foreground-muted hover:text-brand transition-colors cursor-pointer"
+                    aria-label="بازگشت"
+                    title="بازگشت"
                 >
-                    <ChevronRight className="w-5 h-5" />
-                    <span>بازگشت</span>
+                    <ChevronRight className="w-6 h-6" />
                 </button>
 
                 <div className="flex items-center gap-2">

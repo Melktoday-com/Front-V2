@@ -257,7 +257,18 @@ export function SubscriptionEntitlementsSection({
         return null;
     }, [subscription, badge, aggregatedEntitlements]);
 
-    const daysRemaining = subscription?.daysRemaining;
+    const daysRemaining = useMemo(() => {
+        if (typeof subscription?.daysRemaining === "number") return subscription.daysRemaining;
+        const expStr = subscription?.expiresAt || (badge as { expiresAt?: string })?.expiresAt;
+        if (expStr) {
+            const exp = new Date(expStr);
+            if (!isNaN(exp.getTime())) {
+                const diff = Math.ceil((exp.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+                return diff >= 0 ? diff : 0;
+            }
+        }
+        return null;
+    }, [subscription, badge]);
 
     const renderBadgeIcon = (iconName?: string | null, cls?: string) => {
         const iconCls = cls || "w-3.5 h-3.5 shrink-0";
@@ -303,7 +314,7 @@ export function SubscriptionEntitlementsSection({
                                 <Zap className="w-4 h-4 sm:w-5 sm:h-5" />
                             </div>
                             <h2 className="text-base sm:text-lg font-black text-foreground tracking-tight truncate">
-                                مجموع سهمیه‌های من
+                                مجموع سهمیه‌های فعال شما
                             </h2>
                         </div>
 

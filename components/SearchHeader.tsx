@@ -140,7 +140,7 @@ export function SearchHeader({ isInitialOpen }: SearchHeaderProps) {
             {/* Top Bar: Location & Profile */}
             <div className="flex justify-between items-center gap-3">
                 <div className="flex items-center gap-2.5 sm:gap-3.5">
-                    <Link href="/" className="flex items-center gap-2 group">
+                    <Link href="/" className="flex lg:hidden items-center gap-2 group">
                         <span className="text-sm sm:text-base font-black text-brand tracking-tight">
                             ملک <span className="text-brand-teal">تودی</span>
                         </span>
@@ -240,7 +240,7 @@ export function SearchHeader({ isInitialOpen }: SearchHeaderProps) {
                             }}
                             onFocus={() => setIsSearching(true)}
                             placeholder={placeholderText}
-                            className="w-full bg-surface border border-soft-border/80 sm:border-2 sm:border-soft-border/50 rounded-2xl sm:rounded-[20px] py-3 sm:py-4 pr-11 sm:pr-14 pl-20 sm:pl-24 text-sm sm:text-base lg:text-lg font-medium sm:font-bold text-brand focus:ring-4 sm:focus:ring-8 focus:ring-primary/5 focus:border-primary/40 outline-none transition-all placeholder:text-secondary/50 placeholder:font-normal placeholder:text-xs sm:placeholder:text-sm lg:placeholder:text-base shadow-md sm:shadow-xl shadow-brand/5 hover:border-soft-border"
+                            className="w-full bg-surface border border-soft-border/80 sm:border sm:border-soft-border rounded-2xl sm:rounded-[20px] py-3 sm:py-4 pr-11 sm:pr-14 pl-20 sm:pl-24 text-sm sm:text-base lg:text-lg font-medium sm:font-bold text-brand focus:border-primary/60 focus:ring-2 focus:ring-primary/10 outline-none transition-all placeholder:text-secondary/50 placeholder:font-normal placeholder:text-xs sm:placeholder:text-sm lg:placeholder:text-base shadow-xs hover:border-soft-border"
                         />
                         <div className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 flex items-center gap-1 sm:gap-2">
                             {searchQuery && (

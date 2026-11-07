@@ -225,10 +225,11 @@ export default function SingleAgencyScene({ initialData }: SingleAgencySceneProp
             <div className="flex items-center justify-between mb-4">
                 <button
                     onClick={handleBack}
-                    className="flex items-center gap-1 text-xs font-bold text-text-light hover:text-brand transition-colors"
+                    className="p-2 -mr-2 text-foreground-muted hover:text-brand transition-colors cursor-pointer"
+                    aria-label="بازگشت"
+                    title="بازگشت"
                 >
-                    <ChevronRight className="w-4 h-4" />
-                    <span>بازگشت</span>
+                    <ChevronRight className="w-6 h-6" />
                 </button>
                 <button
                     onClick={() => {
@@ -275,7 +276,7 @@ export default function SingleAgencyScene({ initialData }: SingleAgencySceneProp
                     <div className="flex flex-col sm:flex-row items-center sm:items-end justify-between -mt-14 sm:-mt-16 mb-4 gap-4">
                         {/* Avatar / Logo */}
                         <div className="relative">
-                            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl border-4 border-white shadow-md bg-surface overflow-hidden flex items-center justify-center font-black text-2xl text-brand">
+                            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl border border-soft-border/60 shadow-md bg-surface overflow-hidden flex items-center justify-center font-black text-2xl text-brand">
                                 {agency.logoUrl ? (
                                     <img
                                         src={getMediaUrl(agency.logoUrl)}

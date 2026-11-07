@@ -190,10 +190,11 @@ export default function HostApplyPage() {
         <div className="flex items-center justify-between">
           <Link
             href="/temporary-rent"
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-foreground-muted hover:text-info transition-colors"
+            className="p-2 -mr-2 text-foreground-muted hover:text-foreground transition-colors"
+            title="بازگشت"
+            aria-label="بازگشت"
           >
-            <ArrowRight className="w-4 h-4" />
-            <span>بازگشت به اقامتگاه‌ها</span>
+            <ArrowRight className="w-5 h-5" />
           </Link>
           <span className="text-xs font-medium text-foreground-muted">فرم رسمی درخواست میزبانی</span>
         </div>
