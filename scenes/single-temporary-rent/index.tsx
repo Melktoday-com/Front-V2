@@ -498,11 +498,6 @@ export default function ResidenceDetailScene({ initialData }: ResidenceDetailSce
                         <span className="bg-primary/90 backdrop-blur-md text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">
                             اجاره موقت و روزانه
                         </span>
-                        {(residence as any).isDecorativeImages && (
-                            <span className="bg-amber-600/90 backdrop-blur-md text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">
-                                تصاویر تزئینی است
-                            </span>
-                        )}
                     </div>
                 </div>
 

@@ -99,7 +99,7 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
         ? { latitude: selectedCity.centerPoint.latitude, longitude: selectedCity.centerPoint.longitude }
         : { latitude: 35.6892, longitude: 51.3890 };
 
-    const [formData, setFormData] = useState<Partial<CreateTemporaryRentDraftRequest> & { isDecorativeImages?: boolean; address?: string }>({
+    const [formData, setFormData] = useState<Partial<CreateTemporaryRentDraftRequest> & { address?: string }>({
         cityId: selectedCity?.id || undefined,
         categoryPath: {
             categoryKey: "",
@@ -120,7 +120,6 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
         attributes: {},
         pricing: {} as any,
         priceModelKey: "DAILY_RENT_STANDARD",
-        isDecorativeImages: false,
     });
 
     const [pricingValues, setPricingValues] = useState<Record<string, number | string | boolean>>({});
@@ -255,7 +254,6 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
                     attributes: existingAd.attributes || {},
                     pricing: rawPricing as any,
                     priceModelKey: existingAd.pricing?.priceModelKey || "DAILY_RENT_STANDARD",
-                    isDecorativeImages: (existingAd as any).isDecorativeImages || false,
                     address: existingAd.address || "",
                 });
 
@@ -1000,60 +998,6 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
                                         maxFiles={15}
                                         allowVideos={true}
                                     />
-
-                                    {/* Decorative Images Toggle Switch */}
-                                    <div
-                                        role="button"
-                                        tabIndex={0}
-                                        onClick={() =>
-                                            setFormData((prev) => ({
-                                                ...prev,
-                                                isDecorativeImages: !prev.isDecorativeImages,
-                                            }))
-                                        }
-                                        onKeyDown={(e) => {
-                                            if (e.key === "Enter" || e.key === " ") {
-                                                e.preventDefault();
-                                                setFormData((prev) => ({
-                                                    ...prev,
-                                                    isDecorativeImages: !prev.isDecorativeImages,
-                                                }));
-                                            }
-                                        }}
-                                        className="flex items-center justify-between p-3 bg-surface-secondary/70 hover:bg-surface-secondary rounded-xl border border-border-subtle transition-colors cursor-pointer select-none"
-                                    >
-                                        <div className="flex items-center gap-2">
-                                            <span
-                                                className={cn(
-                                                    "text-xs font-bold transition-colors",
-                                                    formData.isDecorativeImages ? "text-brand" : "text-text-main"
-                                                )}
-                                            >
-                                                تصاویر تزئینی است
-                                            </span>
-                                            {formData.isDecorativeImages && (
-                                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/30">
-                                                    فعال
-                                                </span>
-                                            )}
-                                        </div>
-
-                                        <div
-                                            role="switch"
-                                            aria-checked={Boolean(formData.isDecorativeImages)}
-                                            className={cn(
-                                                "relative inline-flex h-6 w-11 shrink-0 rounded-full transition-colors duration-200 ease-in-out",
-                                                formData.isDecorativeImages ? "bg-primary" : "bg-gray-300"
-                                            )}
-                                        >
-                                            <span
-                                                className={cn(
-                                                    "pointer-events-none absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-md transition-all duration-200 ease-in-out",
-                                                    formData.isDecorativeImages ? "right-[22px]" : "right-0.5"
-                                                )}
-                                            />
-                                        </div>
-                                    </div>
                                 </div>
                             </div>
                         )}
