@@ -22,10 +22,12 @@ export interface TemporaryRentAdSummary {
     mediaIds?: MediaReference[];
     location?: import("@/types/location.types").ResolvedLocation | null;
     createdAt: string;
+    updatedAt?: string;
     maxGuests?: number;
     isSaved?: boolean;
     isFeatured?: boolean;
     isUrgent?: boolean;
+    isLadder?: boolean;
 }
 
 export interface ListTemporaryRentQuery {

@@ -347,8 +347,13 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
                 attributes: formData.attributes || {},
             };
 
-            await createDraftMutation.mutateAsync(payload);
-            toast.success("اقامتگاه با موفقیت به عنوان پیش‌نویس ثبت شد");
+            const draft = await createDraftMutation.mutateAsync(payload);
+            try {
+                await temporaryRentService.publish(draft.adId);
+                toast.success("اقامتگاه با موفقیت منتشر گردید");
+            } catch (publishErr) {
+                toast.success("اقامتگاه با موفقیت ثبت شد");
+            }
             router.push("/profile/temporary-rent");
         } catch (err) {
             const msg = normalizeApiError(err instanceof Error ? err : undefined, "خطا در ثبت اقامتگاه");

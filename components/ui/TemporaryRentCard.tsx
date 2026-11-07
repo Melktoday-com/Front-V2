@@ -30,6 +30,7 @@ interface TemporaryRentCardProps {
     className?: string;
     isFeatured?: boolean;
     isUrgent?: boolean;
+    isLadder?: boolean;
     publisher?: {
         type: 'host' | 'agency' | 'platform' | 'user';
         name: string;
@@ -58,6 +59,7 @@ export function TemporaryRentCard({
     className,
     isFeatured = false,
     isUrgent = false,
+    isLadder = false,
     publisher,
 }: TemporaryRentCardProps) {
     const effectiveIsSaved = isSaved !== undefined ? isSaved : isFavorited;
@@ -131,14 +133,26 @@ export function TemporaryRentCard({
                     className="object-cover transition-transform duration-500 group-hover:scale-105"
                 />
 
-                {/* Urgent / Featured Badge */}
-                {(isUrgent || isFeatured) && (
+                {/* Promotion Badges: Urgent / Ladder / Featured */}
+                {isUrgent ? (
                     <div className="absolute top-2.5 right-2.5 z-10">
                         <div className="bg-rose-600 text-white text-[9px] sm:text-[10px] font-black px-2 py-0.5 rounded-md shadow-sm">
                             <span>فوری</span>
                         </div>
                     </div>
-                )}
+                ) : isLadder ? (
+                    <div className="absolute top-2.5 right-2.5 z-10">
+                        <div className="bg-sky-600 text-white text-[9px] sm:text-[10px] font-black px-2 py-0.5 rounded-md shadow-sm">
+                            <span>نردبان</span>
+                        </div>
+                    </div>
+                ) : isFeatured ? (
+                    <div className="absolute top-2.5 right-2.5 z-10">
+                        <div className="bg-amber-500 text-white text-[9px] sm:text-[10px] font-black px-2 py-0.5 rounded-md shadow-sm">
+                            <span>ویژه</span>
+                        </div>
+                    </div>
+                ) : null}
 
                 {mediaIds[currentImageIndex]?.type === "VIDEO" && (
                     <div className="absolute bottom-2.5 right-2.5 bg-black/60 backdrop-blur-xs text-white text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1 z-10 font-medium">

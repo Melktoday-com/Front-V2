@@ -180,13 +180,7 @@ export const HomeScene = () => {
                             const effectiveId = property.adId;
                             const adPrice = getHomeAdPrice(property.pricing);
                             const isUrgent = Boolean(property.isUrgent);
-                            const isLadder = Boolean(
-                                property.isLadder ||
-                                (!isUrgent &&
-                                    property.updatedAt &&
-                                    property.createdAt &&
-                                    new Date(property.updatedAt).getTime() - new Date(property.createdAt).getTime() > 120_000)
-                            );
+                            const isLadder = Boolean(property.isLadder);
                             const isFeatured = Boolean(property.isFeatured && !isLadder && !isUrgent);
 
                             return (
@@ -284,6 +278,9 @@ export const HomeScene = () => {
                     <Slider>
                         {tempRentData.items.map((property: TemporaryRentAdSummary) => {
                             const trPrice = getHomeTemporaryRentPrice(property.pricing);
+                            const isUrgent = Boolean(property.isUrgent);
+                            const isLadder = Boolean(property.isLadder);
+                            const isFeatured = Boolean(property.isFeatured && !isLadder && !isUrgent);
                             return (
                                 <PropertyCard
                                     key={property.id}
@@ -299,6 +296,11 @@ export const HomeScene = () => {
                                     isVideo={property.mediaIds?.[0]?.type === "VIDEO"}
                                     category="اجاره روزانه"
                                     className="w-[210px] lg:w-[250px]"
+                                    date={isLadder ? (property.updatedAt || property.createdAt) : property.createdAt}
+                                    badgeName={isFeatured ? "ویژه" : undefined}
+                                    isUrgent={isUrgent}
+                                    isLadder={isLadder}
+                                    isFeatured={isFeatured}
                                     isSaved={property.isSaved ?? isTemporaryRentSaved(property.id)}
                                     onToggleSave={(id) => toggleSaveTempMutation.mutateAsync(id)}
                                 />
@@ -331,13 +333,7 @@ export const HomeScene = () => {
                             const effectiveId = property.adId;
                             const adPrice = getHomeAdPrice(property.pricing);
                             const isUrgent = Boolean(property.isUrgent);
-                            const isLadder = Boolean(
-                                property.isLadder ||
-                                (!isUrgent &&
-                                    property.updatedAt &&
-                                    property.createdAt &&
-                                    new Date(property.updatedAt).getTime() - new Date(property.createdAt).getTime() > 120_000)
-                            );
+                            const isLadder = Boolean(property.isLadder);
                             const isFeatured = Boolean(property.isFeatured && !isLadder && !isUrgent);
 
                             return (
