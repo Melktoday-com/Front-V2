@@ -3,7 +3,7 @@
 import { useAdminUsers } from "@/hooks/useAdmin";
 import { useDebounce } from "@/hooks/useDebounce";
 import { adminService } from "@/services/admin.service";
-import { AdminUser, ModerationHistory } from "@/types/api/admin.types";
+import { AdminUser, ModerationHistoryResponseDto } from "@/types/api/admin.types";
 import { UserStatus } from "@/types/api/enums";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -20,6 +20,7 @@ import {
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 export default function AdminUsersPage() {
     const router = useRouter();
@@ -29,7 +30,7 @@ export default function AdminUsersPage() {
     const debouncedSearch = useDebounce(searchQuery.trim(), 400);
 
     const [selectedUserForHistory, setSelectedUserForHistory] = useState<AdminUser | null>(null);
-    const [historyList, setHistoryList] = useState<ModerationHistory[]>([]);
+    const [moderationRecord, setModerationRecord] = useState<ModerationHistoryResponseDto | null>(null);
     const [isLoadingHistory, setIsLoadingHistory] = useState(false);
 
     const handleViewHistory = async (targetUser: AdminUser) => {
@@ -37,10 +38,10 @@ export default function AdminUsersPage() {
         setIsLoadingHistory(true);
         try {
             const hist = await adminService.getModerationHistory(targetUser.id);
-            setHistoryList(hist || []);
+            setModerationRecord(hist);
         } catch {
-            toast.error("خطا در دریافت تاریخچه مدیریت");
-            setHistoryList([]);
+            toast.error("خطا در دریافت وضعیت مدیریت کاربر");
+            setModerationRecord(null);
         } finally {
             setIsLoadingHistory(false);
         }
@@ -304,37 +305,91 @@ export default function AdminUsersPage() {
                         {isLoadingHistory ? (
                             <div className="py-12 flex flex-col items-center justify-center gap-2 text-secondary">
                                 <Loader2 className="w-6 h-6 animate-spin text-primary" />
-                                <span className="text-xs">در حال بارگذاری سوابق...</span>
+                                <span className="text-xs">در حال دریافت وضعیت مدیریت...</span>
                             </div>
-                        ) : historyList.length === 0 ? (
+                        ) : !moderationRecord ? (
                             <div className="py-8 text-center text-sm text-secondary">
                                 هیچ سابقه‌ای برای این کاربر ثبت نشده است.
                             </div>
                         ) : (
-                            <div className="max-h-80 overflow-y-auto space-y-3 custom-scrollbar">
-                                {historyList.map((item) => (
-                                    <div
-                                        key={item.id}
-                                        className="p-3 bg-surface-secondary rounded-xl border border-border-subtle space-y-1 text-xs"
-                                    >
-                                        <div className="flex items-center justify-between font-bold text-brand">
-                                            <span>عملیات: {item.actionType}</span>
-                                            <span className="text-[11px] text-text-light font-normal">
-                                                {new Date(item.createdAt).toLocaleDateString("fa-IR")}
-                                            </span>
-                                        </div>
-                                        {item.reasonDetail && (
-                                            <p className="text-secondary">
-                                                <span className="font-semibold">دلیل:</span> {item.reasonDetail}
-                                            </p>
-                                        )}
-                                        {item.note && (
-                                            <p className="text-text-light text-[11px]">
-                                                <span className="font-semibold">یادداشت:</span> {item.note}
-                                            </p>
-                                        )}
+                            <div className="space-y-4 py-2">
+                                <div className="p-4 rounded-xl border border-border-subtle bg-surface-secondary space-y-2 text-xs">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-secondary">وضعیت مسدودی دائم:</span>
+                                        <span className={cn(
+                                            "font-bold px-2.5 py-0.5 rounded-full text-[11px]",
+                                            moderationRecord.isBanned
+                                                ? "bg-red-500/10 text-red-600 border border-red-500/20"
+                                                : "bg-green-500/10 text-green-600 border border-green-500/20"
+                                        )}>
+                                            {moderationRecord.isBanned ? "مسدود شده (Ban)" : "مسدود نیست"}
+                                        </span>
                                     </div>
-                                ))}
+                                    {moderationRecord.isBanned && (
+                                        <>
+                                            {moderationRecord.bannedAt && (
+                                                <div className="flex justify-between text-secondary">
+                                                    <span>تاریخ مسدودی:</span>
+                                                    <span className="font-medium text-brand">
+                                                        {new Date(moderationRecord.bannedAt).toLocaleDateString("fa-IR")}
+                                                    </span>
+                                                </div>
+                                            )}
+                                            {moderationRecord.banReason && (
+                                                <div className="flex justify-between text-secondary">
+                                                    <span>دلیل مسدودی:</span>
+                                                    <span className="font-medium text-brand">{moderationRecord.banReason}</span>
+                                                </div>
+                                            )}
+                                        </>
+                                    )}
+                                </div>
+
+                                <div className="p-4 rounded-xl border border-border-subtle bg-surface-secondary space-y-2 text-xs">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-secondary">وضعیت تعلیق موقت:</span>
+                                        <span className={cn(
+                                            "font-bold px-2.5 py-0.5 rounded-full text-[11px]",
+                                            moderationRecord.isActivelySuspended
+                                                ? "bg-amber-500/10 text-amber-600 border border-amber-500/20"
+                                                : "bg-green-500/10 text-green-600 border border-green-500/20"
+                                        )}>
+                                            {moderationRecord.isActivelySuspended ? "معلق (Suspended)" : "تعلیق نیست"}
+                                        </span>
+                                    </div>
+                                    {moderationRecord.isActivelySuspended && (
+                                        <>
+                                            {moderationRecord.suspendedAt && (
+                                                <div className="flex justify-between text-secondary">
+                                                    <span>تاریخ شروع تعلیق:</span>
+                                                    <span className="font-medium text-brand">
+                                                        {new Date(moderationRecord.suspendedAt).toLocaleDateString("fa-IR")}
+                                                    </span>
+                                                </div>
+                                            )}
+                                            {moderationRecord.suspensionExpiresAt && (
+                                                <div className="flex justify-between text-secondary">
+                                                    <span>انقضای تعلیق:</span>
+                                                    <span className="font-medium text-brand">
+                                                        {new Date(moderationRecord.suspensionExpiresAt).toLocaleDateString("fa-IR")}
+                                                    </span>
+                                                </div>
+                                            )}
+                                            {moderationRecord.suspensionReason && (
+                                                <div className="flex justify-between text-secondary">
+                                                    <span>دلیل تعلیق:</span>
+                                                    <span className="font-medium text-brand">{moderationRecord.suspensionReason}</span>
+                                                </div>
+                                            )}
+                                        </>
+                                    )}
+                                </div>
+
+                                {!moderationRecord.isBanned && !moderationRecord.isActivelySuspended && (
+                                    <p className="text-xs text-center text-text-light pt-1">
+                                        این حساب کاربری در وضعیت مجاز و فعال قرار دارد و هیچ محدودیتی ندارد.
+                                    </p>
+                                )}
                             </div>
                         )}
 

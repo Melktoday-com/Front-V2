@@ -5,16 +5,19 @@ import { AgencyFull } from "./agency.types";
 import type { MediaReference } from "./media.types";
 import type { TemporaryRentPricingPayload } from "./temporary-rent.types";
 
-export interface ModerationHistory {
-    id: string;
-    targetUserId: string;
-    adminId: string;
-    actionType: string;
-    reasonCode?: string;
-    reasonDetail?: string;
-    note?: string;
-    createdAt: string;
+export interface ModerationHistoryResponseDto {
+    userId: string;
+    isBanned: boolean;
+    bannedAt?: string | Date;
+    bannedBy?: string;
+    banReason?: string;
+    isActivelySuspended: boolean;
+    suspendedAt?: string | Date;
+    suspensionExpiresAt?: string | Date;
+    suspensionReason?: string;
 }
+
+export type ModerationHistory = ModerationHistoryResponseDto;
 
 export interface BanUserRequest {
     reasonCode: string;

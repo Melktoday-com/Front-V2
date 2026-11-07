@@ -15,7 +15,7 @@ import {
     CreateGeoZoneRequest,
     GeoZone,
     GiftCreditRequest,
-    ModerationHistory,
+    ModerationHistoryResponseDto,
     RejectListingRequest,
     SuspendUserRequest,
     UpdateAdminAttributeRequest,
@@ -101,8 +101,8 @@ export const adminService = {
         return response.data;
     },
 
-    getModerationHistory: async (userId: string): Promise<ModerationHistory[]> => {
-        const response = await api.get(`/admin/users/${userId}/moderation-history`);
+    getModerationHistory: async (userId: string): Promise<ModerationHistoryResponseDto> => {
+        const response = await api.get<ModerationHistoryResponseDto>(`/admin/users/${userId}/moderation-history`);
         return response.data;
     },
 
