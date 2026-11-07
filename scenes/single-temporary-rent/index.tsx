@@ -484,21 +484,7 @@ export default function ResidenceDetailScene({ initialData }: ResidenceDetailSce
                             className="object-cover transition-opacity duration-300"
                         />
                     )}
-                    <div className="absolute top-4 right-4 flex items-center gap-1.5 z-10">
-                        {subcategoryTitle && (
-                            <span className="bg-brand/85 backdrop-blur-md text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">
-                                {subcategoryTitle}
-                            </span>
-                        )}
-                        {categoryTitle && categoryTitle !== subcategoryTitle && (
-                            <span className="bg-black/40 backdrop-blur-md text-white/90 text-xs font-medium px-2.5 py-1 rounded-full">
-                                {categoryTitle}
-                            </span>
-                        )}
-                        <span className="bg-primary/90 backdrop-blur-md text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">
-                            اجاره موقت و روزانه
-                        </span>
-                    </div>
+
                 </div>
 
                 {/* Thumbnails Strip */}
