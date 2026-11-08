@@ -174,22 +174,19 @@ export function PropertyCard({
     const isVertical = variant === "vertical";
     const isMap = variant === "map";
 
-    // Format price: handle string with commas or raw numbers
-    const formatDisplayPrice = () => {
-        if (!price && price !== 0) return "توافقی";
-        const priceStr = String(price).trim();
-        if (priceStr === "0" || priceStr === "توافقی") return "توافقی";
+    // Format single price value (handles raw numbers or localized strings)
+    const formatSingleValue = (val: string | number | undefined | null): string => {
+        if (!val && val !== 0) return "توافقی";
+        const valStr = String(val).trim();
+        if (valStr === "0" || valStr === "توافقی") return "توافقی";
 
-        // If currency is explicitly set to "$", keep prefix format for legacy support
         if (currency === "$") {
-            return `$ ${priceStr}`;
+            return `$ ${valStr}`;
         }
 
-        // Check if string contains Persian digits or needs formatting
-        const cleaned = priceStr.replace(/,/g, "");
+        const cleaned = toEnglishDigits(valStr).replace(/,/g, "").trim();
         const num = Number(cleaned);
         if (!isNaN(num) && num > 0) {
-            // For map variant, show concise numbers for billions/millions so it stays minimal
             if (isMap) {
                 if (num >= 1000000000) {
                     const billions = num / 1000000000;
@@ -205,15 +202,95 @@ export function PropertyCard({
             return `${new Intl.NumberFormat("fa-IR").format(num)} ${currency}`;
         }
 
-        const persianPrice = toPersianDigits(priceStr);
-        // Avoid duplicate currency suffix if already present
+        const persianPrice = toPersianDigits(valStr);
         if (currency && persianPrice.includes(currency)) {
             return persianPrice;
         }
-
-        // Return as is if already a formatted Persian string
         return `${persianPrice} ${currency}`;
     };
+
+    // Parse and extract price items with distinct labels displayed above each price
+    const getPriceItems = (): { label?: string; value: string }[] => {
+        // 1. Explicit rentPrice passed
+        if (rentPrice !== undefined && rentPrice !== null && String(rentPrice).trim() !== "") {
+            return [
+                {
+                    label: priceLabel || "ودیعه",
+                    value: formatSingleValue(price),
+                },
+                {
+                    label: rentPriceLabel || "اجاره ماهانه",
+                    value: formatSingleValue(rentPrice),
+                },
+            ];
+        }
+
+        if (!price && price !== 0) {
+            return [{ value: "توافقی" }];
+        }
+
+        const priceStr = String(price).trim();
+        if (priceStr === "0" || priceStr === "توافقی") {
+            return [{ label: priceLabel, value: "توافقی" }];
+        }
+
+        // 2. Check for composite string: "رهن ... - اجاره ...", "ودیعه ... - اجاره ...", etc.
+        const delimiter = [" - ", " – ", " — ", " / "].find((d) => priceStr.includes(d));
+        if (delimiter) {
+            const parts = priceStr.split(delimiter);
+            if (parts.length === 2) {
+                const parsePart = (text: string, defaultLabel?: string) => {
+                    const cleanText = text.trim();
+                    let label = defaultLabel;
+                    let val = cleanText;
+
+                    if (/^رهن\s*:?\s*/.test(cleanText)) {
+                        label = "رهن";
+                        val = cleanText.replace(/^رهن\s*:?\s*/, "").trim();
+                    } else if (/^ودیعه\s*:?\s*/.test(cleanText)) {
+                        label = "ودیعه";
+                        val = cleanText.replace(/^ودیعه\s*:?\s*/, "").trim();
+                    } else if (/^(اجاره\s*ماهانه|اجاره)\s*:?\s*/.test(cleanText)) {
+                        label = "اجاره ماهانه";
+                        val = cleanText.replace(/^(اجاره\s*ماهانه|اجاره)\s*:?\s*/, "").trim();
+                    }
+
+                    return {
+                        label,
+                        value: formatSingleValue(val),
+                    };
+                };
+
+                return [
+                    parsePart(parts[0], "ودیعه"),
+                    parsePart(parts[1], "اجاره ماهانه"),
+                ];
+            }
+        }
+
+        // 3. Single prefixed strings
+        if (/^ودیعه\s*:?\s*/.test(priceStr)) {
+            const val = priceStr.replace(/^ودیعه\s*:?\s*/, "").trim();
+            return [{ label: priceLabel || "ودیعه", value: formatSingleValue(val) }];
+        }
+        if (/^رهن\s*:?\s*/.test(priceStr)) {
+            const val = priceStr.replace(/^رهن\s*:?\s*/, "").trim();
+            return [{ label: priceLabel || "رهن", value: formatSingleValue(val) }];
+        }
+        if (/^(اجاره\s*ماهانه|اجاره)\s*:?\s*/.test(priceStr)) {
+            const val = priceStr.replace(/^(اجاره\s*ماهانه|اجاره)\s*:?\s*/, "").trim();
+            return [{ label: priceLabel || "اجاره ماهانه", value: formatSingleValue(val) }];
+        }
+        if (/^قیمت\s*کل\s*:?\s*/.test(priceStr)) {
+            const val = priceStr.replace(/^قیمت\s*کل\s*:?\s*/, "").trim();
+            return [{ label: priceLabel || "قیمت کل", value: formatSingleValue(val) }];
+        }
+
+        // 4. Single value with optional explicit priceLabel
+        return [{ label: priceLabel, value: formatSingleValue(priceStr) }];
+    };
+
+    const priceItems = getPriceItems();
 
     const finalHref = href || (effectiveAdId ? `/ads/${effectiveAdId}` : undefined);
 
@@ -309,17 +386,28 @@ export function PropertyCard({
                     </div>
 
                     {/* Bottom Row: Price & Action */}
-                    <div className="mt-1 pt-1 border-t border-border-subtle/50 flex items-center justify-between gap-1">
-                        <div className="flex items-baseline gap-0.5 min-w-0">
-                            <span className="text-xs sm:text-[13px] font-black text-brand truncate">
-                                {formatDisplayPrice()}
-                            </span>
-                            {unit && unit !== currency && unit !== "تومان" && (
-                                <span className="text-[9px] text-foreground-muted shrink-0">{unit}</span>
-                            )}
+                    <div className="mt-1 pt-1 border-t border-border-subtle/50 flex items-end justify-between gap-1">
+                        <div className="flex flex-col min-w-0">
+                            {priceItems.map((item, idx) => (
+                                <div key={idx} className={cn("flex flex-col min-w-0", idx > 0 && "mt-0.5")}>
+                                    {item.label && (
+                                        <span className="text-[8px] text-foreground-muted font-medium leading-none">
+                                            {item.label}
+                                        </span>
+                                    )}
+                                    <div className="flex items-baseline gap-0.5 min-w-0">
+                                        <span className="text-xs sm:text-[13px] font-black text-brand truncate leading-tight">
+                                            {item.value}
+                                        </span>
+                                        {idx === priceItems.length - 1 && unit && unit !== currency && unit !== "تومان" && (
+                                            <span className="text-[9px] text-foreground-muted shrink-0">{unit}</span>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
                         </div>
 
-                        <span className="inline-flex items-center text-[10px] font-bold text-accent group-hover:text-primary transition-colors shrink-0 gap-0.5">
+                        <span className="inline-flex items-center text-[10px] font-bold text-accent group-hover:text-primary transition-colors shrink-0 gap-0.5 self-end">
                             مشاهده
                             <ChevronLeft className="w-3 h-3 transition-transform group-hover:-translate-x-0.5" />
                         </span>
@@ -438,18 +526,29 @@ export function PropertyCard({
                 </div>
 
                 {/* Bottom row: Price on right, Location on left (opposite) */}
-                <div className="mt-auto pt-2 flex items-center justify-between gap-1.5">
-                    <div className="flex items-baseline gap-1 min-w-0">
-                        <span className="text-brand font-bold text-xs sm:text-sm truncate">
-                            {formatDisplayPrice()}
-                        </span>
-                        {unit && unit !== currency && unit !== "تومان" && (
-                            <span className="text-[10px] text-text-light shrink-0">{unit}</span>
-                        )}
+                <div className="mt-auto pt-2 flex items-end justify-between gap-1.5">
+                    <div className="flex flex-col min-w-0">
+                        {priceItems.map((item, idx) => (
+                            <div key={idx} className={cn("flex flex-col min-w-0", idx > 0 && "mt-1")}>
+                                {item.label && (
+                                    <span className="text-[10px] sm:text-[11px] text-text-light font-medium leading-tight">
+                                        {item.label}
+                                    </span>
+                                )}
+                                <div className="flex items-baseline gap-1 min-w-0">
+                                    <span className="text-brand font-bold text-xs sm:text-sm truncate leading-snug">
+                                        {item.value}
+                                    </span>
+                                    {idx === priceItems.length - 1 && unit && unit !== currency && unit !== "تومان" && (
+                                        <span className="text-[10px] text-text-light shrink-0">{unit}</span>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
                     </div>
 
                     {displayLocation && (
-                        <div className="flex items-center gap-1 text-text-light text-[10px] sm:text-[11px] min-w-0 shrink-0 max-w-[50%]">
+                        <div className="flex items-center gap-1 text-text-light text-[10px] sm:text-[11px] min-w-0 shrink-0 max-w-[50%] self-end pb-0.5">
                             <MapPin className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0 text-text-light/70" />
                             <span className="truncate">{displayLocation}</span>
                         </div>

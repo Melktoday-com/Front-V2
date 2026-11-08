@@ -1022,14 +1022,25 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
         updateZoneParams([]);
     };
 
-    const getPricingDisplay = (ad: AdSummary): { price: string | number; unit?: string } => {
+    const getPricingDisplay = (
+        ad: AdSummary
+    ): {
+        price: string | number;
+        priceLabel?: string;
+        rentPrice?: string | number;
+        rentPriceLabel?: string;
+        unit?: string;
+    } => {
         const pricing = ad.pricing;
         if (!pricing) return { price: "توافقی" };
         const dep = pricing.depositPrice ?? pricing.mortgagePrice ?? pricing.deposit;
         const rent = pricing.monthlyRent ?? pricing.rentPrice ?? pricing.monthly_rent;
         if (dep !== undefined && rent !== undefined) {
             return {
-                price: `رهن ${formatPrice(Number(dep), "")} - اجاره ${formatPrice(Number(rent), "")}`,
+                price: Number(dep) > 0 ? Number(dep) : "توافقی",
+                priceLabel: "ودیعه",
+                rentPrice: Number(rent) > 0 ? Number(rent) : "توافقی",
+                rentPriceLabel: "اجاره ماهانه",
             };
         }
         if (pricing.totalPrice !== undefined || pricing.price !== undefined) {
@@ -1038,11 +1049,11 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
         }
         if (dep !== undefined) {
             const depNum = Number(dep);
-            return { price: depNum > 0 ? `ودیعه ${formatPrice(depNum, "")}` : "توافقی" };
+            return { price: depNum > 0 ? depNum : "توافقی", priceLabel: "ودیعه" };
         }
         if (rent !== undefined) {
             const rentNum = Number(rent);
-            return { price: rentNum > 0 ? `اجاره ${formatPrice(rentNum, "")}` : "توافقی" };
+            return { price: rentNum > 0 ? rentNum : "توافقی", priceLabel: "اجاره ماهانه" };
         }
         return { price: "توافقی" };
     };
@@ -1619,6 +1630,9 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                                                     href={`/ads/${effectiveId}`}
                                                     title={ad.title}
                                                     price={pricing.price}
+                                                    priceLabel={pricing.priceLabel}
+                                                    rentPrice={pricing.rentPrice}
+                                                    rentPriceLabel={pricing.rentPriceLabel}
                                                     unit={pricing.unit}
                                                     location={ad.location || ''}
                                                     image={
