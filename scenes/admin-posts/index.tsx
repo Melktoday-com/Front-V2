@@ -35,6 +35,7 @@ import {
   X,
 } from "lucide-react";
 import { toast } from "sonner";
+import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
 import { toPersianDigits, getMediaPosterUrl, cn } from "@/lib/utils";
 
 type PublisherFilterType = "ALL" | PublisherType;
@@ -162,25 +163,32 @@ export default function AdminPostsScene() {
     );
   };
 
+  const [postToDelete, setPostToDelete] = useState<UnifiedPost | null>(null);
+
   const handleDeletePost = (post: UnifiedPost) => {
     if (!canDeletePost) {
       toast.error("شما مجوز حذف پست را ندارید.");
       return;
     }
-    if (confirm(`آیا از حذف مطلب "${post.title}" اطمینان دارید؟ این عمل غیرقابل بازگشت است.`)) {
-      setDeletingPostId(post.id);
-      deletePostMutation.mutate(post.id, {
-        onSuccess: () => {
-          toast.success("مطلب با موفقیت حذف شد.");
-          setDeletingPostId(null);
-          refetchPosts();
-        },
-        onError: () => {
-          toast.error("خطا در حذف مطلب.");
-          setDeletingPostId(null);
-        },
-      });
-    }
+    setPostToDelete(post);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!postToDelete) return;
+    setDeletingPostId(postToDelete.id);
+    deletePostMutation.mutate(postToDelete.id, {
+      onSuccess: () => {
+        toast.success("مطلب با موفقیت حذف شد.");
+        setDeletingPostId(null);
+        setPostToDelete(null);
+        refetchPosts();
+      },
+      onError: () => {
+        toast.error("خطا در حذف مطلب.");
+        setDeletingPostId(null);
+        setPostToDelete(null);
+      },
+    });
   };
 
   const renderPublisherBadge = (post: UnifiedPost) => {
@@ -737,6 +745,20 @@ export default function AdminPostsScene() {
           </div>
         </div>
       )}
+
+      {/* Delete Post Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={Boolean(postToDelete)}
+        onClose={() => setPostToDelete(null)}
+        onConfirm={handleConfirmDelete}
+        isLoading={deletePostMutation.isPending}
+        title="حذف مطلب"
+        description={
+          postToDelete?.title
+            ? `آیا از حذف مطلب «${postToDelete.title}» اطمینان دارید؟ این عمل غیرقابل بازگشت است.`
+            : "آیا از حذف این مطلب اطمینان دارید؟ این عمل غیرقابل بازگشت است."
+        }
+      />
     </div>
   );
 }

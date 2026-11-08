@@ -1,6 +1,7 @@
 "use client";
 
 import MediaIconUpload from "@/components/admin/MediaIconUpload";
+import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
 import { SubscriptionQuotaWidget } from "@/components/subscriptions/SubscriptionQuotaWidget";
 import { useAgencyStats, useMyAgency } from "@/hooks/useAgencies";
 import { useAuth } from "@/hooks/useAuth";
@@ -288,6 +289,8 @@ export default function AgencyPanelScene() {
         });
     }, [posts, postSearch, postStatusFilter]);
 
+    const [postToDelete, setPostToDelete] = useState<AgencyPost | null>(null);
+
     const deletePostMutation = useMutation({
         mutationFn: (postId: string) => agencyService.deleteMyPost(postId),
         onSuccess: () => {
@@ -300,6 +303,13 @@ export default function AgencyPanelScene() {
             toast.error(normalizeApiError(err, "خطا در حذف پست."));
         },
     });
+
+    const handleConfirmDeletePost = () => {
+        if (!postToDelete) return;
+        deletePostMutation.mutate(postToDelete.id, {
+            onSettled: () => setPostToDelete(null),
+        });
+    };
 
     const publicShowcasePath = `/agency/showcase/${agency?.slug || agency?.id || ""}`;
     const fullPublicUrl = `${getSiteBaseUrl()}${publicShowcasePath}`;
@@ -1397,11 +1407,7 @@ export default function AgencyPanelScene() {
                                                 {/* Delete Post */}
                                                 <button
                                                     type="button"
-                                                    onClick={() => {
-                                                        if (window.confirm("آیا از حذف این پست اطمینان دارید؟")) {
-                                                            deletePostMutation.mutate(post.id);
-                                                        }
-                                                    }}
+                                                    onClick={() => setPostToDelete(post)}
                                                     disabled={deletePostMutation.isPending}
                                                     className="p-1.5 text-status-error hover:bg-status-error/10 rounded-lg transition-colors cursor-pointer"
                                                     title="حذف پست"
@@ -1523,6 +1529,19 @@ export default function AgencyPanelScene() {
                     </div>
                 </div>
             )}
+            {/* Delete Post Confirmation Modal */}
+            <DeleteConfirmModal
+                isOpen={Boolean(postToDelete)}
+                onClose={() => setPostToDelete(null)}
+                onConfirm={handleConfirmDeletePost}
+                isLoading={deletePostMutation.isPending}
+                title="حذف پست"
+                description={
+                    postToDelete?.title
+                        ? `آیا از حذف پست «${postToDelete.title}» اطمینان دارید؟ این عملیات غیرقابل بازگشت است.`
+                        : "آیا از حذف این پست اطمینان دارید؟ این عملیات غیرقابل بازگشت است."
+                }
+            />
         </div>
     );
 }

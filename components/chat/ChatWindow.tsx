@@ -37,6 +37,7 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
 import { ListingMessageCard } from "./ListingMessageCard";
 import { ReviewRequestCard } from "./ReviewRequestCard";
 
@@ -919,38 +920,14 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
             </form>
 
             {/* Persian Confirmation Modal for Message Deletion */}
-            {messageIdToDelete && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
-                    <div className="bg-surface border border-border-subtle rounded-2xl max-w-sm w-full p-6 shadow-xl space-y-4 text-center">
-                        <div className="w-12 h-12 rounded-full bg-error-subtle/30 text-error flex items-center justify-center mx-auto">
-                            <Trash2 className="w-6 h-6" />
-                        </div>
-                        <div className="space-y-1">
-                            <h3 className="text-base font-bold text-brand">حذف پیام</h3>
-                            <p className="text-xs text-secondary leading-relaxed">
-                                آیا از حذف این پیام اطمینان دارید؟ این پیام برای هر دو طرف حذف خواهد شد.
-                            </p>
-                        </div>
-                        <div className="flex items-center gap-2 pt-2">
-                            <button
-                                type="button"
-                                onClick={() => setMessageIdToDelete(null)}
-                                className="flex-1 py-2.5 rounded-xl border border-border-subtle text-xs font-bold text-secondary hover:bg-soft-bg transition-colors cursor-pointer"
-                            >
-                                انصراف
-                            </button>
-                            <button
-                                type="button"
-                                onClick={confirmDelete}
-                                disabled={deleteMutation.isPending}
-                                className="flex-1 py-2.5 rounded-xl bg-error hover:bg-error/90 text-white text-xs font-bold transition-colors cursor-pointer disabled:opacity-50"
-                            >
-                                {deleteMutation.isPending ? "در حال حذف..." : "بله، حذف شود"}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            <DeleteConfirmModal
+                isOpen={!!messageIdToDelete}
+                onClose={() => setMessageIdToDelete(null)}
+                onConfirm={confirmDelete}
+                isLoading={deleteMutation.isPending}
+                title="حذف پیام"
+                description="آیا از حذف این پیام اطمینان دارید؟ این پیام برای هر دو طرف حذف خواهد شد."
+            />
         </div>
     );
 }

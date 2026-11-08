@@ -562,26 +562,7 @@ export default function SingleHostScene({ idOrSlug, initialData }: SingleHostSce
 
         {activeTab === "posts" && (
           <div className="space-y-6">
-            {isHostOwner && (
-              <div className="flex items-center justify-between p-4 sm:p-5 bg-gradient-to-l from-emerald-50 to-teal-50 border border-success/30/80 rounded-3xl shadow-xs">
-                <div className="space-y-0.5">
-                  <h4 className="text-xs sm:text-sm font-black text-emerald-900 flex items-center gap-1.5">
-                    <Sparkles className="w-4 h-4 text-success" />
-                    <span>استودیو انتشار محتوای اقامتگاه</span>
-                  </h4>
-                  <p className="text-[11px] text-success font-medium">
-                    پست‌های اسلایدی جدید و مقالات معرفی جاذبه‌ها را در صفحه عمومی خود منتشر نمایید.
-                  </p>
-                </div>
-                <Link
-                  href="/posts/create"
-                  className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-xs font-black transition-colors shrink-0 shadow-xs"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>ایجاد پست جدید</span>
-                </Link>
-              </div>
-            )}
+
 
             {isLoadingPosts ? (
               <div className="text-center py-16 text-secondary text-sm font-bold animate-pulse">

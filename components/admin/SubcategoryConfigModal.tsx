@@ -22,6 +22,7 @@ import {
 import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { normalizeApiError } from "@/lib/api/error-handler";
+import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
 
 interface SubcategoryConfigModalProps {
     isOpen: boolean;
@@ -209,6 +210,15 @@ export default function SubcategoryConfigModal({
         },
         onError: () => toast.error("خطا در حذف ویژگی")
     });
+
+    const [attributeToDelete, setAttributeToDelete] = useState<{ id: string; label: string } | null>(null);
+
+    const handleConfirmDeleteAttribute = () => {
+        if (!attributeToDelete) return;
+        deleteAttributeMutation.mutate(attributeToDelete.id, {
+            onSettled: () => setAttributeToDelete(null),
+        });
+    };
 
     if (!isOpen) return null;
 

@@ -4,6 +4,7 @@ import MediaIconUpload from "@/components/admin/MediaIconUpload";
 import { PromotionModal } from "@/components/promotions/PromotionModal";
 import { SubscriptionQuotaWidget } from "@/components/subscriptions/SubscriptionQuotaWidget";
 import { AccountStatusBanner } from "@/components/ui/AccountStatusBanner";
+import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
 import { useAuth } from "@/hooks/useAuth";
 import { useSafeBack } from "@/hooks/useSafeBack";
 import { useHostProfile, useShowcasePosts, useUpdateHostProfile } from "@/hooks/useShowcase";
@@ -247,14 +248,26 @@ export default function TemporaryRentPanelScene() {
         }
     };
 
-    const handleDeleteRental = async (id: string) => {
-        if (!window.confirm("آیا از حذف این اقامتگاه اطمینان دارید؟")) return;
+    // Delete dialog states
+    const [rentalToDelete, setRentalToDelete] = useState<{ id: string; title?: string } | null>(null);
+    const [postToDelete, setPostToDelete] = useState<UnifiedPost | null>(null);
+
+    const handleConfirmDeleteRental = async () => {
+        if (!rentalToDelete) return;
         try {
-            await deleteMutation.mutateAsync(id);
+            await deleteMutation.mutateAsync(rentalToDelete.id);
             toast.success("اقامتگاه با موفقیت حذف شد");
+            setRentalToDelete(null);
         } catch {
             toast.error("خطا در حذف اقامتگاه");
         }
+    };
+
+    const handleConfirmDeletePost = () => {
+        if (!postToDelete) return;
+        deletePostMutation.mutate(postToDelete.id, {
+            onSettled: () => setPostToDelete(null),
+        });
     };
 
     // Settings form state
@@ -885,7 +898,7 @@ export default function TemporaryRentPanelScene() {
 
                                                     <button
                                                         type="button"
-                                                        onClick={() => handleDeleteRental(ad.id)}
+                                                        onClick={() => setRentalToDelete({ id: ad.id, title: ad.title })}
                                                         disabled={deleteMutation.isPending}
                                                         className="p-1.5 rounded-xl text-status-error hover:bg-status-error/10 transition-colors cursor-pointer"
                                                         title="حذف اقامتگاه"
@@ -1272,11 +1285,7 @@ export default function TemporaryRentPanelScene() {
                                             </button>
                                             <button
                                                 type="button"
-                                                onClick={() => {
-                                                    if (window.confirm("آیا از حذف این پست اطمینان دارید؟")) {
-                                                        deletePostMutation.mutate(post.id);
-                                                    }
-                                                }}
+                                                onClick={() => setPostToDelete(post)}
                                                 disabled={deletePostMutation.isPending}
                                                 className="p-1.5 text-status-error hover:bg-status-error/10 rounded-lg transition-colors cursor-pointer"
                                                 title="حذف پست"
@@ -1405,6 +1414,34 @@ export default function TemporaryRentPanelScene() {
                 listingId={promotingAd?.id || ""}
                 listingTitle={promotingAd?.title || ""}
                 itemType="TEMPORARY_RENTAL"
+            />
+
+            {/* Delete Rental Confirmation Modal */}
+            <DeleteConfirmModal
+                isOpen={Boolean(rentalToDelete)}
+                onClose={() => setRentalToDelete(null)}
+                onConfirm={handleConfirmDeleteRental}
+                isLoading={deleteMutation.isPending}
+                title="حذف اقامتگاه"
+                description={
+                    rentalToDelete?.title
+                        ? `آیا از حذف اقامتگاه «${rentalToDelete.title}» اطمینان دارید؟ این عملیات غیرقابل بازگشت است.`
+                        : "آیا از حذف این اقامتگاه اطمینان دارید؟ این عملیات غیرقابل بازگشت است."
+                }
+            />
+
+            {/* Delete Post Confirmation Modal */}
+            <DeleteConfirmModal
+                isOpen={Boolean(postToDelete)}
+                onClose={() => setPostToDelete(null)}
+                onConfirm={handleConfirmDeletePost}
+                isLoading={deletePostMutation.isPending}
+                title="حذف پست"
+                description={
+                    postToDelete?.title
+                        ? `آیا از حذف پست «${postToDelete.title}» اطمینان دارید؟ این عملیات غیرقابل بازگشت است.`
+                        : "آیا از حذف این پست اطمینان دارید؟ این عملیات غیرقابل بازگشت است."
+                }
             />
         </div>
     );
