@@ -98,6 +98,79 @@ export default function SingleHostScene({ idOrSlug, initialData }: SingleHostSce
   const hasAds = ads.length > 0;
   const isHostOwner = Boolean(user?.userId && (hostUserId === user.userId || header?.id === user.userId || idOrSlug === user.userId));
 
+  const tabs = useMemo(() => {
+    return [
+      {
+        id: "rentals" as const,
+        label: "اقامتگاه‌ها",
+        icon: Home,
+        count: header?.listingsCount || 0,
+      },
+      ...(hasAds
+        ? [
+            {
+              id: "ads" as const,
+              label: "لیست آگهی‌ها",
+              icon: Building2,
+              count: ads.length,
+            },
+          ]
+        : []),
+      {
+        id: "posts" as const,
+        label: "پست‌ها و مقالات",
+        icon: Calendar,
+        count: header?.postsCount || 0,
+      },
+      {
+        id: "about" as const,
+        label: "درباره میزبان و قوانین",
+        icon: Info,
+      },
+    ];
+  }, [header?.listingsCount, header?.postsCount, hasAds, ads.length]);
+
+  // Keep Swiper centered on active tab
+  useEffect(() => {
+    if (swiperRef.current) {
+      const tabIndex = tabs.findIndex((t) => t.id === activeTab);
+      if (tabIndex !== -1 && swiperRef.current.activeIndex !== tabIndex) {
+        swiperRef.current.slideTo(tabIndex, 300);
+      }
+    }
+  }, [activeTab, tabs]);
+
+  // Sync state if URL query param changes externally
+  useEffect(() => {
+    if (requestedTab === "ads" || requestedTab === "posts" || requestedTab === "about" || requestedTab === "rentals") {
+      setActiveTab(requestedTab);
+    }
+  }, [requestedTab]);
+
+  // Gracefully fallback if ads tab is selected but ads are empty
+  useEffect(() => {
+    if (activeTab === "ads" && !hasAds && adsResponse !== undefined) {
+      setActiveTab("rentals");
+    }
+  }, [activeTab, hasAds, adsResponse]);
+
+  const handleTabChange = (tab: HostTabType) => {
+    setActiveTab(tab);
+    const tabIndex = tabs.findIndex((t) => t.id === tab);
+    if (swiperRef.current && tabIndex !== -1) {
+      swiperRef.current.slideTo(tabIndex, 300);
+    }
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      if (tab === "rentals") {
+        url.searchParams.delete("tab");
+      } else {
+        url.searchParams.set("tab", tab);
+      }
+      window.history.replaceState(null, "", url.toString());
+    }
+  };
+
   const getPricingDisplay = (ad: AdSummary): { price: string; unit?: string } => {
     const pricing = ad.pricing;
     if (!pricing || Object.keys(pricing).length === 0) {
@@ -291,50 +364,65 @@ export default function SingleHostScene({ idOrSlug, initialData }: SingleHostSce
           </div>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="flex border-b border-soft-border gap-6 sm:gap-10 text-sm font-bold bg-surface px-6 rounded-2xl border overflow-x-auto no-scrollbar">
-          <button
-            onClick={() => handleTabChange("rentals")}
-            className={cn(
-              "py-4 relative transition-colors flex items-center gap-2 shrink-0 cursor-pointer",
-              activeTab === "rentals" ? "text-primary border-b-2 border-primary -mb-px font-black" : "text-secondary hover:text-brand"
-            )}
+        {/* Tab Navigation powered by Swiper */}
+        <div className="relative bg-surface rounded-2xl sm:rounded-3xl p-1.5 sm:p-2 border border-soft-border/80 shadow-xs overflow-hidden">
+          <Swiper
+            modules={[FreeMode]}
+            freeMode={{ enabled: true, momentum: true, momentumRatio: 0.8, momentumBounce: false }}
+            slidesPerView="auto"
+            spaceBetween={8}
+            resistance={true}
+            resistanceRatio={0.6}
+            watchOverflow={true}
+            grabCursor={true}
+            dir="rtl"
+            initialSlide={Math.max(0, tabs.findIndex((t) => t.id === activeTab))}
+            onBeforeInit={(swiper) => {
+              swiperRef.current = swiper;
+            }}
+            className="w-full select-none py-0.5"
           >
-            <Home className="w-4 h-4" />
-            <span>اقامتگاه‌ها ({toPersianDigits(header.listingsCount || 0)})</span>
-          </button>
-          {hasAds && (
-            <button
-              onClick={() => handleTabChange("ads")}
-              className={cn(
-                "py-4 relative transition-colors flex items-center gap-2 shrink-0 cursor-pointer",
-                activeTab === "ads" ? "text-primary border-b-2 border-primary -mb-px font-black" : "text-secondary hover:text-brand"
-              )}
-            >
-              <Building2 className="w-4 h-4" />
-              <span>لیست آگهی‌ها ({toPersianDigits(ads.length)})</span>
-            </button>
-          )}
-          <button
-            onClick={() => handleTabChange("posts")}
-            className={cn(
-              "py-4 relative transition-colors flex items-center gap-2 shrink-0 cursor-pointer",
-              activeTab === "posts" ? "text-primary border-b-2 border-primary -mb-px font-black" : "text-secondary hover:text-brand"
-            )}
-          >
-            <Calendar className="w-4 h-4" />
-            <span>پست‌ها و مقالات ({toPersianDigits(header.postsCount || 0)})</span>
-          </button>
-          <button
-            onClick={() => handleTabChange("about")}
-            className={cn(
-              "py-4 relative transition-colors flex items-center gap-2 shrink-0 cursor-pointer",
-              activeTab === "about" ? "text-primary border-b-2 border-primary -mb-px font-black" : "text-secondary hover:text-brand"
-            )}
-          >
-            <Info className="w-4 h-4" />
-            <span>درباره میزبان و قوانین</span>
-          </button>
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              const hasCount = tab.count !== undefined && tab.count !== null;
+
+              return (
+                <SwiperSlide key={tab.id} className="!w-auto">
+                  <button
+                    type="button"
+                    onClick={() => handleTabChange(tab.id)}
+                    className={cn(
+                      "group inline-flex items-center gap-2 sm:gap-2.5 px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-bold transition-all duration-200 select-none cursor-pointer whitespace-nowrap active:scale-[0.98]",
+                      isActive
+                        ? "bg-brand text-white shadow-xs font-black scale-[1.01]"
+                        : "bg-transparent text-secondary hover:text-brand hover:bg-soft-bg/80 border border-transparent font-bold"
+                    )}
+                  >
+                    <Icon
+                      className={cn(
+                        "w-4 h-4 transition-transform duration-200 group-hover:scale-110 shrink-0",
+                        isActive ? "text-accent" : "text-secondary/70 group-hover:text-brand"
+                      )}
+                    />
+                    <span>{tab.label}</span>
+                    {hasCount && (
+                      <span
+                        className={cn(
+                          "text-[11px] sm:text-xs px-2 py-0.5 rounded-full font-bold transition-all",
+                          isActive
+                            ? "bg-white/15 text-white border border-white/20"
+                            : "bg-soft-bg text-secondary border border-soft-border/60 group-hover:bg-soft-border/80 group-hover:text-brand"
+                        )}
+                      >
+                        {toPersianDigits(tab.count ?? 0)}
+                      </span>
+                    )}
+                  </button>
+                </SwiperSlide>
+              );
+            })}
+          </Swiper>
         </div>
 
         {/* Tab Content */}
