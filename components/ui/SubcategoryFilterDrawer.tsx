@@ -601,26 +601,7 @@ export function SubcategoryFilterDrawer({
                     {hasAreaAttr && (
                         <div className="space-y-2">
                             <label className="text-xs font-bold text-text-main">متراژ (متر مربع)</label>
-                            <div className="flex flex-wrap gap-1.5 pb-1">
-                                {COMMON_AREA_PRESETS.map((areaVal) => {
-                                    const isSelected = minArea === String(areaVal);
-                                    return (
-                                        <button
-                                            key={areaVal}
-                                            type="button"
-                                            onClick={() => setMinArea(isSelected ? "" : String(areaVal))}
-                                            className={cn(
-                                                "px-2.5 py-1 rounded-xl text-xs font-semibold border transition-all cursor-pointer",
-                                                isSelected
-                                                    ? "bg-primary text-white border-primary shadow-xs"
-                                                    : "bg-soft-bg text-secondary border-soft-border hover:border-primary/50"
-                                            )}
-                                        >
-                                            از {toPersianDigits(areaVal)} متر
-                                        </button>
-                                    );
-                                })}
-                            </div>
+
                             <div className="grid grid-cols-2 gap-2">
                                 <input
                                     type="number"
