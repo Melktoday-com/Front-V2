@@ -625,46 +625,7 @@ export function SubcategoryFilterDrawer({
                     {hasRoomsAttr && (
                         <div className="space-y-2">
                             <label className="text-xs font-bold text-text-main">تعداد اتاق خواب</label>
-                            <div className="flex flex-wrap gap-1.5 pb-1">
-                                {ROOM_OPTIONS.map((opt) => {
-                                    const isSelected =
-                                        opt.value === undefined
-                                            ? !minRooms && !maxRooms
-                                            : opt.value === 4
-                                            ? minRooms === "4" && !maxRooms
-                                            : minRooms === String(opt.value) && maxRooms === String(opt.value);
-
-                                    return (
-                                        <button
-                                            key={opt.label}
-                                            type="button"
-                                            onClick={() => {
-                                                if (opt.value === undefined) {
-                                                    setMinRooms("");
-                                                    setMaxRooms("");
-                                                } else if (isSelected) {
-                                                    setMinRooms("");
-                                                    setMaxRooms("");
-                                                } else if (opt.value === 4) {
-                                                    setMinRooms("4");
-                                                    setMaxRooms("");
-                                                } else {
-                                                    setMinRooms(String(opt.value));
-                                                    setMaxRooms(String(opt.value));
-                                                }
-                                            }}
-                                            className={cn(
-                                                "px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer flex items-center justify-center",
-                                                isSelected
-                                                    ? "bg-primary text-white border-primary shadow-xs"
-                                                    : "bg-soft-bg text-secondary border-soft-border hover:border-primary/50"
-                                            )}
-                                        >
-                                            {opt.label}
-                                        </button>
-                                    );
-                                })}
-                            </div>
+  
                             <div className="grid grid-cols-2 gap-2">
                                 <input
                                     type="number"
