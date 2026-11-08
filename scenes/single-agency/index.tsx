@@ -12,6 +12,7 @@ import { useCreateConversation } from "@/hooks/useChat";
 import { cn, formatPrice, toPersianDigits, getMediaUrl, getMediaPosterUrl } from "@/lib/utils";
 import { agencyService } from "@/services/agency.service";
 import { AgencyFull, AgencyPost } from "@/types/api/agency.types";
+import type { ShowcaseAdListingItem } from "@/types/api/showcase.types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
     Award,
@@ -561,10 +562,11 @@ export default function SingleAgencyScene({ initialData }: SingleAgencySceneProp
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {ads.map((ad: any) => {
+                            {ads.map((item) => {
+                                const ad = item as ShowcaseAdListingItem;
                                 const adPrice = getAgencyAdPricing(ad.pricing);
                                 const adId = ad.adId || ad.id;
-                                const mediaList = ad.mediaIds || ad.media_ids || [];
+                                const mediaList = ad.mediaIds || [];
                                 const firstMedia = mediaList[0];
                                 const categoryName =
                                     ad.subcategoryTitle ||
@@ -573,8 +575,7 @@ export default function SingleAgencyScene({ initialData }: SingleAgencySceneProp
                                     ad.categoryTitle ||
                                     ad.category?.label ||
                                     ad.categoryPath?.categoryTitle ||
-                                    ad.categoryPath?.subcategoryKey ||
-                                    ad.category_path?.subcategoryKey;
+                                    ad.categoryPath?.subcategoryKey;
                                 return (
                                     <PropertyCard
                                         key={adId}
@@ -583,13 +584,14 @@ export default function SingleAgencyScene({ initialData }: SingleAgencySceneProp
                                         title={ad.title}
                                         price={adPrice.price}
                                         unit={adPrice.unit}
-                                        location={ad.location || ad.cityName || ad.cityId || ad.city_id}
+                                        location={ad.location || ad.cityName || ad.city?.label || ""}
                                         image={getMediaPosterUrl(firstMedia)}
+                                        mediaIds={mediaList}
                                         isVideo={firstMedia?.type === "VIDEO"}
                                         category={categoryName}
                                         isUrgent={ad.isUrgent}
                                         isLadder={ad.isLadder}
-                                        isFeatured={ad.isFeatured || ad.is_featured}
+                                        isFeatured={ad.isFeatured}
                                         isSaved={ad.isSaved}
                                         date={ad.isLadder ? (ad.updatedAt || ad.createdAt) : ad.createdAt}
                                     />

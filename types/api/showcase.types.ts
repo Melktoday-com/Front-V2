@@ -10,8 +10,8 @@ import {
 } from './post.types';
 import type { MediaReference } from './media.types';
 import type { JsonValue } from '../common';
-import type { AdPricingReadModel } from './ads.types';
-import type { TemporaryRentPricingReadModel } from './temporary-rent.types';
+import type { AdSummary, AdPricingReadModel } from './ads.types';
+import type { TemporaryRentAd, TemporaryRentPricingReadModel } from './temporary-rent.types';
 
 export type {
   PublisherType,
@@ -113,79 +113,34 @@ export interface ShowcaseResponse<TAbout = ShowcaseAbout> {
   about: TAbout;
 }
 
-export interface ShowcaseListingPricing {
-  nightlyPrice?: number;
-  price?: number;
-  totalPrice?: number;
-  mortgage?: number;
-  rent?: number;
-  securityDeposit?: number;
-  extraGuestNightlyPrice?: number;
-  [key: string]: number | undefined;
-}
-
-export interface ShowcaseListingAttributes {
-  max_guests?: number;
-  maxGuests?: number;
-  rooms?: number;
-  bathrooms?: number;
-  area?: number | string;
-  meterage?: number | string;
-  securityDeposit?: number;
-  extraGuestNightlyPrice?: number;
-  nightlyPrice?: number;
-  [key: string]: JsonValue | undefined;
-}
-
-export interface ShowcaseListingItem {
+/**
+ * Standard Showcase Ad listing item (AGENCY and PLATFORM).
+ * Inherits directly from the canonical `AdSummary` interface from `ads.types`.
+ */
+export type ShowcaseAdListingItem = AdSummary & {
+  /** Standard ID alias: id is identical to adId */
   id: string;
-  adId?: string;
-  owner_id?: string;
-  ownerId?: string;
-  city_id?: string;
-  cityId?: string;
-  cityName?: string;
-  provinceId?: string;
-  provinceName?: string;
-  province?: { id: string; label: string } | null;
-  city?: { id: string; label: string } | null;
-  category?: { id: string; label: string } | null;
-  subcategory?: { id: string; label: string } | null;
-  categoryTitle?: string;
-  subcategoryTitle?: string;
-  location?: import("../location.types").ResolvedLocation | null;
-  categoryPath?: any;
-  category_path?: any;
-  title: string;
-  description?: string;
-  price?: number;
-  totalPrice?: number;
-  basePricePerNight?: number;
-  pricing?:
-    | AdPricingReadModel
-    | TemporaryRentPricingReadModel
-    | ShowcaseListingPricing
-    | Record<string, any>;
-  attributes?: ShowcaseListingAttributes;
-  address?: string;
-  mediaIds?: MediaReference[];
-  media_ids?: MediaReference[];
-  status?: string;
-  is_featured?: boolean;
-  isFeatured?: boolean;
-  isUrgent?: boolean;
-  isLadder?: boolean;
-  isDecorativeImages?: boolean;
-  isSaved?: boolean;
-  createdAt?: string;
-  created_at?: string;
-  updatedAt?: string;
-  updated_at?: string;
-}
+};
 
-export interface ShowcaseListingsResponse {
-  listingsType: string;
-  items: ShowcaseListingItem[];
+/**
+ * Standard Showcase Temporary Rent listing item (HOST).
+ * Inherits directly from canonical `TemporaryRentAd` interface from `temporary-rent.types`.
+ */
+export type ShowcaseTemporaryRentListingItem = TemporaryRentAd & {
+  /** Optional compatibility alias for components expecting adId */
+  adId?: string;
+};
+
+/**
+ * Discriminated or composite listing item for showcase responses.
+ */
+export type ShowcaseListingItem =
+  | ShowcaseAdListingItem
+  | ShowcaseTemporaryRentListingItem;
+
+export interface ShowcaseListingsResponse<T = ShowcaseListingItem> {
+  listingsType: 'REAL_ESTATE' | 'TEMPORARY_RENT' | 'FEATURED' | string;
+  items: T[];
   total: number;
   page: number;
   limit: number;

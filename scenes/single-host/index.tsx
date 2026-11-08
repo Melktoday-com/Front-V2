@@ -49,7 +49,7 @@ import { toast } from "sonner";
 import { UnifiedPost } from "@/types/api/post.types";
 import { AdSummary } from "@/types/api/ads.types";
 import type { TemporaryRentPricingReadModel } from "@/types/api/temporary-rent.types";
-import { HostAbout, ShowcaseResponse } from "@/types/api/showcase.types";
+import { HostAbout, ShowcaseResponse, ShowcaseTemporaryRentListingItem } from "@/types/api/showcase.types";
 import { MarkdownRenderer } from "@/components/ui/MarkdownRenderer";
 
 interface SingleHostSceneProps {
@@ -440,8 +440,9 @@ export default function SingleHostScene({ idOrSlug, initialData }: SingleHostSce
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                {rentalsData?.items?.map((rental) => {
-                  const media = rental.mediaIds?.[0] || rental.media_ids?.[0];
+                {rentalsData?.items?.map((item) => {
+                  const rental = item as ShowcaseTemporaryRentListingItem;
+                  const media = rental.mediaIds?.[0];
                   const p = rental.pricing as TemporaryRentPricingReadModel | undefined;
                   let nightlyRate = 0;
                   if (p) {

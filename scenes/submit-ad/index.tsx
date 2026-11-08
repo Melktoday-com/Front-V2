@@ -132,6 +132,10 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
     // Fetch ad if editing
     const { data: existingAd, isLoading: isLoadingExisting } = useAd(editAdId || "");
 
+    const isExistingSubmitted =
+        existingAd?.status === AdStatus.PUBLISHED ||
+        existingAd?.status === AdStatus.PENDING_APPROVAL;
+
     // Resolve neighborhood zone by coordinates via authoritative PostGIS polygon matching
     const { data: detectedZone, isLoading: isDetectingZone } = useQuery({
         queryKey: ["zone-by-point", formData.latitude, formData.longitude],
@@ -618,8 +622,8 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                 }
             }
 
-            // If user requested approval review, submit it
-            if (shouldPublish && adId) {
+            // If user requested approval review, submit it (only for draft/rejected/new ads, not for already published/pending ads)
+            if (shouldPublish && adId && !isExistingSubmitted) {
                 try {
                     await adsService.submitForReview(adId);
                 } catch (e) {
@@ -628,16 +632,26 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                         toast.error("موجودی کیف پول شما برای پرداخت تعرفه ثبت آگهی کافی نیست.");
                         setFeeModalAdId(adId);
                         setIsFeeModalOpen(true);
-                        return { adId, shouldPublish: false, paymentRequired: true, isUpdate: Boolean(targetAdId) };
+                        return { adId, shouldPublish: false, paymentRequired: true, isUpdate: Boolean(targetAdId), wasSubmitted: isExistingSubmitted };
                     }
                     console.error("Error during submitForReview:", err);
                     throw err;
                 }
             }
 
-            return { adId, shouldPublish, paymentRequired: false, isUpdate: Boolean(targetAdId) };
+            return { adId, shouldPublish, paymentRequired: false, isUpdate: Boolean(targetAdId), wasSubmitted: isExistingSubmitted };
         },
-        onSuccess: ({ shouldPublish, paymentRequired, isUpdate }: { shouldPublish: boolean; paymentRequired?: boolean; isUpdate?: boolean }) => {
+        onSuccess: ({
+            shouldPublish,
+            paymentRequired,
+            isUpdate,
+            wasSubmitted,
+        }: {
+            shouldPublish: boolean;
+            paymentRequired?: boolean;
+            isUpdate?: boolean;
+            wasSubmitted?: boolean;
+        }) => {
             if (adminMode) {
                 toast.success("آگهی با موفقیت توسط ادمین ثبت گردید");
                 router.push("/admin/ads");
@@ -647,7 +661,9 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                 // User is prompted with AdPublicationFeeModal/Drawer to top up
                 return;
             }
-            if (shouldPublish) {
+            if (wasSubmitted) {
+                toast.success("تغییرات آگهی با موفقیت ذخیره شد");
+            } else if (shouldPublish) {
                 toast.success("آگهی با موفقیت ثبت و جهت بررسی و انتشار به ادمین ارسال شد");
             } else {
                 toast.success(isUpdate ? "پیش‌نویس آگهی با موفقیت به‌روزرسانی شد" : "آگهی با موفقیت به عنوان پیش‌نویس ذخیره شد");
