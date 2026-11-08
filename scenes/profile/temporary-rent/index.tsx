@@ -384,7 +384,7 @@ export default function TemporaryRentPanelScene() {
                         <button
                             onClick={handleBack}
                             aria-label="بازگشت"
-                            className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-soft-bg/80 hover:bg-soft-bg active:scale-95 border border-soft-border/60 flex items-center justify-center text-brand transition-all shrink-0 cursor-pointer"
+                            className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl  flex items-center justify-center text-brand transition-all shrink-0 cursor-pointer"
                         >
                             <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 rotate-180" />
                         </button>
