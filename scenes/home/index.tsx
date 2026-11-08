@@ -160,8 +160,8 @@ export const HomeScene = () => {
             {/* Featured Properties */}
             <section className="container mx-auto px-4">
                 <SectionHeader
-                    title="آگهی‌های برتر"
-                    subtitle="منتخب برترین آگهی‌های ملکی"
+                    title="آگهی‌های نردبان شده و فوری"
+                    subtitle="منتخب آگهی‌های ملکی"
                     link={selectedCity.id ? `/ads?isFeatured=true&cityId=${selectedCity.id}&cityName=${encodeURIComponent(selectedCity.name)}` : "/ads?isFeatured=true"}
                 />
                 {isFeaturedLoading ? (
@@ -231,7 +231,7 @@ export const HomeScene = () => {
             {/* Top Agencies */}
             <section className="container mx-auto px-4">
                 <SectionHeader
-                    title="دفاتر املاک برتر"
+                    title="دفاتر املاک"
                     subtitle="همکاری با معتبرترین دفاتر املاک و مشاوران"
                     link={selectedCity.id ? `/agency?cityId=${selectedCity.id}&cityName=${selectedCity.name}` : "/agency"}
                 />
@@ -259,7 +259,7 @@ export const HomeScene = () => {
             {/* Temporary Rentals */}
             <section className="container mx-auto px-4">
                 <SectionHeader
-                    title="اقامتگاه‌های برتر "
+                    title="اقامتگاه‌های نردبان شده و فوری"
                     subtitle="بهترین گزینه برای اجاره روزانه و سفرهای کوتاه"
                     link="/temporary-rent"
                 />
