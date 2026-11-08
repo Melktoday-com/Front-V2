@@ -751,7 +751,7 @@ export default function ProfileScene() {
                         <div className="flex items-center gap-3">
                             <FileText className="w-5 h-5 text-primary" />
                             <span className="text-brand font-bold text-sm">
-                                عضویت آژانس و اقامتگاه‌ (درخواست‌ها)
+                                عضویت املاک و اقامتگاه‌ (درخواست‌ها)
                             </span>
                         </div>
                         <ChevronLeft className="w-4 h-4 text-secondary" />
