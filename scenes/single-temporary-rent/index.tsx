@@ -579,28 +579,7 @@ export default function ResidenceDetailScene({ initialData }: ResidenceDetailSce
                         </div>
                     </div>
 
-                    {/* Key Metrics Chips */}
-                    {keyMetrics.length > 0 && (
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                            {keyMetrics.map((m, idx) => {
-                                const IconComponent = m.icon;
-                                return (
-                                    <div
-                                        key={idx}
-                                        className="bg-surface border border-border-subtle p-3.5 rounded-2xl flex items-center gap-3 shadow-xs hover:border-primary/40 transition-colors"
-                                    >
-                                        <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                                            <IconComponent className="w-5 h-5" />
-                                        </div>
-                                        <div className="flex flex-col min-w-0">
-                                            <span className="text-xs text-text-light">{m.label}</span>
-                                            <span className="text-sm font-black text-brand truncate max-w-full">{m.value}</span>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    )}
+
 
                     {/* Financial Terms & Rates Card */}
                     <div className="bg-surface-secondary/50 rounded-2xl p-5 border border-border-subtle space-y-4">
