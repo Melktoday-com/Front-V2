@@ -1,6 +1,6 @@
 "use client";
 
-import { cn, toPersianDigits, getMediaUrl, getMediaPosterUrl } from "@/lib/utils";
+import { cn, toPersianDigits, toEnglishDigits, getMediaUrl, getMediaPosterUrl } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns-jalali";
 import { ChevronLeft, Clock, MapPin, Play, ShieldCheck, Sparkles, Zap } from "lucide-react";
 import Image from "next/image";
@@ -65,6 +65,9 @@ interface PropertyCardProps {
     adId?: string;
     title: string;
     price: string | number;
+    priceLabel?: string;
+    rentPrice?: string | number;
+    rentPriceLabel?: string;
     location: string | ResolvedLocation;
     image?: string;
     mediaIds?: MediaReference[];
@@ -107,6 +110,9 @@ export function PropertyCard({
     adId,
     title,
     price,
+    priceLabel,
+    rentPrice,
+    rentPriceLabel,
     location,
     image,
     mediaIds,

@@ -76,11 +76,14 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
     const router = useRouter();
 
     const adsNavigate = useCallback((targetUrl: string, _source?: string) => {
-        if (typeof window !== "undefined") {
-            window.history.replaceState(window.history.state, "", targetUrl);
-        }
         router.replace(targetUrl, { scroll: false });
     }, [router]);
+
+    const getCurrentParams = useCallback(() => {
+        return typeof window !== "undefined"
+            ? new URLSearchParams(window.location.search)
+            : new URLSearchParams(searchParams.toString());
+    }, [searchParams]);
     const { selectedCity, setSelectedCity } = useCity();
 
     const effectiveCityId = searchParams.get("cityId") || selectedCity.id || undefined;
@@ -121,7 +124,7 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
         (mode: "list" | "split" | "map") => {
             const targetMode = isMobile && mode === "split" ? "list" : mode;
             setViewModeState(targetMode);
-            const params = new URLSearchParams(searchParams.toString());
+            const params = getCurrentParams();
             params.set("view", targetMode);
             if (effectiveCityId && !params.has("cityId")) {
                 params.set("cityId", effectiveCityId);
@@ -245,7 +248,7 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
         const currentUrlSearch = searchParams.get("search") || "";
         const trimmed = debouncedSearch.trim();
         if (trimmed !== currentUrlSearch) {
-            const params = new URLSearchParams(searchParams.toString());
+            const params = getCurrentParams();
             if (trimmed) {
                 params.set("search", trimmed);
             } else {
@@ -395,7 +398,7 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
     ]);
 
     const handleApplyFilters = (vals: SubcategoryFilterValues) => {
-        const params = new URLSearchParams(searchParams.toString());
+        const params = getCurrentParams();
 
         const effectiveCategory = selectedCategory || searchParams.get("categoryKey") || "";
         const effectiveSubcategory = selectedSubcategory || searchParams.get("subcategoryKey") || "";
@@ -475,7 +478,7 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
     };
 
     const handleClearAllFilters = () => {
-        const params = new URLSearchParams(searchParams.toString());
+        const params = getCurrentParams();
         [
             "priceModelKey",
             "minPrice",
@@ -520,7 +523,7 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
     };
 
     const handleRemoveFilterItem = (type: string, key?: string) => {
-        const params = new URLSearchParams(searchParams.toString());
+        const params = getCurrentParams();
         if (type === "price") {
             params.delete("minPrice");
             params.delete("maxPrice");
@@ -884,7 +887,7 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
     }, [mapData, displayedAds]);
 
     const updateZoneParams = (newZones: ZoneSummary[]) => {
-        const params = new URLSearchParams(searchParams.toString());
+        const params = getCurrentParams();
         params.delete("zoneId");
         params.delete("zoneIds");
         params.delete("neighbourhoodName");
@@ -912,7 +915,7 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
         setSelectedCity(city);
         setSelectedZones([]);
         setStartPage(1);
-        const params = new URLSearchParams(searchParams.toString());
+        const params = getCurrentParams();
         if (city.id) {
             params.set("cityId", city.id);
             params.set("cityName", city.name);
@@ -933,7 +936,7 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
         setSelectedCategory(nextCategory);
         setSelectedSubcategory(nextSubcategory);
         setStartPage(1);
-        const params = new URLSearchParams(searchParams.toString());
+        const params = getCurrentParams();
         if (nextCategory) {
             params.set("categoryKey", nextCategory);
         } else {
@@ -974,7 +977,7 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
     const handleSortChange = (newSort: SearchSortOption) => {
         setSort(newSort);
         setStartPage(1);
-        const params = new URLSearchParams(searchParams.toString());
+        const params = getCurrentParams();
         if (newSort === "newest") {
             params.delete("sort");
         } else {
