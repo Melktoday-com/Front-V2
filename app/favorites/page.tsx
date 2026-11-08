@@ -18,7 +18,6 @@ import {
     Bookmark,
     Building2,
     Calendar,
-    ChevronRight,
     Eye,
     Heart,
     Share2,
@@ -222,20 +221,43 @@ export default function FavoritesPage() {
                                         );
                                     }
 
+                                    const adId = item.referenceId || item.id;
+                                    const details = item.details;
+                                    const categoryDisplay =
+                                        typeof details?.category === 'string' && details.category !== 'آگهی'
+                                            ? details.category
+                                            : undefined;
+
                                     return (
                                         <PropertyCard
                                             key={`ad-${item.id}`}
-                                            adId={item.referenceId || item.id}
+                                            id={adId}
+                                            adId={adId}
+                                            href={`/ads/${adId}`}
                                             title={item.title}
                                             mediaIds={item.mediaIds}
                                             imageIds={item.imageIds}
-                                            price={item.details?.price?.toString() || 'توافقی'}
-                                            category={item.details?.category || 'آگهی'}
-                                            location={item.subtitle || 'نامشخص'}
-                                            variant="vertical"
-                                            className="bg-surface rounded-2xl border border-border-subtle shadow-xs hover:shadow-md transition-shadow"
+                                            image={
+                                                item.mediaIds && item.mediaIds.length > 0
+                                                    ? getMediaPosterUrl(item.mediaIds[0])
+                                                    : item.imageUrl
+                                                    ? getMediaUrl(item.imageUrl)
+                                                    : "/property-placeholder.svg"
+                                            }
+                                            isVideo={item.mediaIds?.[0]?.type === "VIDEO"}
+                                            price={details?.price?.toString() || 'توافقی'}
+                                            unit={typeof details?.unit === 'string' ? details.unit : undefined}
+                                            category={categoryDisplay}
+                                            location={item.subtitle || ''}
+                                            variant="responsive"
                                             isSaved={true}
                                             onToggleSave={(id) => toggleSaveAdMutation.mutateAsync(id)}
+                                            area={typeof details?.area === 'number' || typeof details?.area === 'string' ? details.area : undefined}
+                                            rooms={typeof details?.rooms === 'number' || typeof details?.rooms === 'string' ? details.rooms : undefined}
+                                            isUrgent={Boolean(details?.isUrgent)}
+                                            isLadder={Boolean(details?.isLadder)}
+                                            isFeatured={Boolean(details?.isFeatured)}
+                                            date={item.timestamp || (typeof details?.createdAt === 'string' ? details.createdAt : undefined)}
                                         />
                                     );
                                 })}
