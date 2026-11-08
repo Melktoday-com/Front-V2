@@ -12,7 +12,6 @@ import { agencyService } from "@/services/agency.service";
 import {
     AgencyPost,
     AgencyPostsListResponse,
-    UpdateAgencyPostRequest,
     UpdateAgencyProfileRequest,
 } from "@/types/api/agency.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -198,21 +197,6 @@ export default function AgencyPanelScene() {
     const [postStatusFilter, setPostStatusFilter] = useState<"all" | "published" | "draft">("all");
 
     // Edit post modal state
-    const [editingPost, setEditingPost] = useState<AgencyPost | null>(null);
-    const [editForm, setEditForm] = useState<{
-        title: string;
-        slug: string;
-        summary: string;
-        content: string;
-        isPublished: boolean;
-    }>({
-        title: "",
-        slug: "",
-        summary: "",
-        content: "",
-        isPublished: true,
-    });
-
     const togglePublishMutation = useMutation({
         mutationFn: ({ postId, isPublished }: { postId: string; isPublished: boolean }) =>
             agencyService.updateMyPost(postId, { isPublished }),
@@ -226,51 +210,6 @@ export default function AgencyPanelScene() {
             toast.error(normalizeApiError(err, "خطا در تغییر وضعیت انتشار پست."));
         },
     });
-
-    const updatePostMutation = useMutation({
-        mutationFn: ({ postId, data }: { postId: string; data: UpdateAgencyPostRequest }) =>
-            agencyService.updateMyPost(postId, data),
-        onSuccess: () => {
-            toast.success("پست با موفقیت بروزرسانی شد.");
-            setEditingPost(null);
-            refetchPosts();
-            queryClient.invalidateQueries({ queryKey: ["agency-posts"] });
-            queryClient.invalidateQueries({ queryKey: ["agency-public-posts"] });
-        },
-        onError: (err: Error) => {
-            toast.error(normalizeApiError(err, "خطا در بروزرسانی پست."));
-        },
-    });
-
-    const handleOpenEdit = (post: AgencyPost) => {
-        setEditingPost(post);
-        setEditForm({
-            title: post.title || "",
-            slug: post.slug || "",
-            summary: post.summary || "",
-            content: post.content || "",
-            isPublished: post.isPublished ?? true,
-        });
-    };
-
-    const handleSaveEdit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!editingPost) return;
-        if (!editForm.title.trim()) {
-            toast.error("عنوان پست نمی‌تواند خالی باشد.");
-            return;
-        }
-        updatePostMutation.mutate({
-            postId: editingPost.id,
-            data: {
-                title: editForm.title.trim(),
-                slug: editForm.slug.trim() || undefined,
-                summary: editForm.summary.trim() || undefined,
-                content: editForm.content,
-                isPublished: editForm.isPublished,
-            },
-        });
-    };
 
     const filteredPosts = useMemo(() => {
         return posts.filter((p) => {
@@ -1395,14 +1334,13 @@ export default function AgencyPanelScene() {
                                                 </button>
 
                                                 {/* Edit Post */}
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleOpenEdit(post)}
+                                                <Link
+                                                    href={`/posts/create?edit=${post.id}`}
                                                     className="p-1.5 text-primary hover:bg-primary/10 rounded-lg transition-colors cursor-pointer"
                                                     title="ویرایش مشخصات پست"
                                                 >
                                                     <Edit3 className="w-4 h-4" />
-                                                </button>
+                                                </Link>
 
                                                 {/* Delete Post */}
                                                 <button
@@ -1424,111 +1362,7 @@ export default function AgencyPanelScene() {
                 </section>
             </main>
 
-            {/* Edit Post Modal Dialog */}
-            {editingPost && (
-                <div
-                    role="dialog"
-                    aria-modal="true"
-                    aria-label="ویرایش پست"
-                    className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto"
-                >
-                    <div className="bg-surface rounded-3xl max-w-xl w-full p-6 sm:p-7 space-y-4 shadow-2xl border border-soft-border my-8 animate-in fade-in zoom-in-95">
-                        <div className="flex items-center justify-between border-b border-soft-border/70 pb-3">
-                            <div className="flex items-center gap-2">
-                                <Edit3 className="w-4 h-4 text-primary" />
-                                <h3 className="text-sm sm:text-base font-black text-brand">ویرایش پست ویترین</h3>
-                            </div>
-                            <button
-                                type="button"
-                                onClick={() => setEditingPost(null)}
-                                className="w-7 h-7 rounded-full bg-soft-bg text-secondary hover:bg-slate-200 flex items-center justify-center transition-colors cursor-pointer"
-                            >
-                                <X className="w-4 h-4" />
-                            </button>
-                        </div>
 
-                        <form onSubmit={handleSaveEdit} className="space-y-4 text-xs sm:text-sm">
-                            <div className="space-y-1.5">
-                                <label className="text-xs font-bold text-brand block">عنوان پست *</label>
-                                <input
-                                    type="text"
-                                    value={editForm.title}
-                                    onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
-                                    placeholder="عنوان جذاب برای پست..."
-                                    className="w-full px-3.5 py-2.5 rounded-xl bg-surface border border-soft-border/80 text-brand focus:outline-none focus:ring-2 focus:ring-primary/20"
-                                    required
-                                />
-                            </div>
-
-                            <div className="space-y-1.5">
-                                <label className="text-xs font-bold text-brand block">آدرس اینترنتی یکتا (Slug - اختیاری)</label>
-                                <input
-                                    type="text"
-                                    value={editForm.slug}
-                                    onChange={(e) => setEditForm({ ...editForm, slug: e.target.value })}
-                                    placeholder="villa-shomal-tehran"
-                                    dir="ltr"
-                                    className="w-full px-3.5 py-2.5 rounded-xl bg-surface border border-soft-border/80 text-brand font-mono text-left focus:outline-none focus:ring-2 focus:ring-primary/20"
-                                />
-                            </div>
-
-                            <div className="space-y-1.5">
-                                <label className="text-xs font-bold text-brand block">خلاصه کوتاه</label>
-                                <textarea
-                                    value={editForm.summary}
-                                    onChange={(e) => setEditForm({ ...editForm, summary: e.target.value })}
-                                    placeholder="توضیح کوتاه ۱ الی ۲ خطی برای پیش‌نمایش در کارت‌ها..."
-                                    rows={2}
-                                    className="w-full px-3.5 py-2.5 rounded-xl bg-surface border border-soft-border/80 text-brand focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
-                                />
-                            </div>
-
-                            <div className="space-y-1.5">
-                                <label className="text-xs font-bold text-brand block">متن و محتوای پست</label>
-                                <textarea
-                                    value={editForm.content}
-                                    onChange={(e) => setEditForm({ ...editForm, content: e.target.value })}
-                                    placeholder="محتوای متنی کامل، نکات کارشناسی یا توضیحات ملک..."
-                                    rows={5}
-                                    className="w-full px-3.5 py-2.5 rounded-xl bg-surface border border-soft-border/80 text-brand focus:outline-none focus:ring-2 focus:ring-primary/20 resize-y"
-                                />
-                            </div>
-
-                            <div className="flex items-center justify-between p-3 rounded-xl bg-soft-bg/60 border border-soft-border/50">
-                                <div>
-                                    <span className="text-xs font-bold text-brand block">وضعیت انتشار عمومی</span>
-                                    <span className="text-[11px] text-secondary">
-                                        در صورت فعال بودن، پست در ویترین شما و کاوش سایت نمایش داده می‌شود.
-                                    </span>
-                                </div>
-                                <input
-                                    type="checkbox"
-                                    checked={editForm.isPublished}
-                                    onChange={(e) => setEditForm({ ...editForm, isPublished: e.target.checked })}
-                                    className="w-4 h-4 rounded text-primary focus:ring-primary cursor-pointer"
-                                />
-                            </div>
-
-                            <div className="flex items-center justify-end gap-2 pt-3 border-t border-soft-border/70">
-                                <button
-                                    type="button"
-                                    onClick={() => setEditingPost(null)}
-                                    className="px-4 py-2 rounded-xl border border-soft-border text-xs font-bold text-secondary hover:bg-soft-bg transition-colors cursor-pointer"
-                                >
-                                    انصراف
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={updatePostMutation.isPending}
-                                    className="px-5 py-2 rounded-xl bg-brand hover:bg-brand/90 text-white text-xs font-black transition-all cursor-pointer shadow-xs disabled:opacity-50"
-                                >
-                                    {updatePostMutation.isPending ? "در حال ذخیره..." : "ذخیره تغییرات"}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
             {/* Delete Post Confirmation Modal */}
             <DeleteConfirmModal
                 isOpen={Boolean(postToDelete)}
