@@ -1592,6 +1592,16 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                     {submitMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
                                     <span>ثبت نهایی آگهی در پنل مدیریت</span>
                                 </button>
+                            ) : isExistingSubmitted ? (
+                                <button
+                                    type="button"
+                                    onClick={() => submitMutation.mutate({ shouldPublish: false })}
+                                    disabled={submitMutation.isPending}
+                                    className="px-6 py-2.5 rounded-xl bg-primary text-white font-black text-xs hover:bg-primary/90 shadow-md shadow-primary/20 flex items-center gap-1.5 transition-all"
+                                >
+                                    {submitMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+                                    <span>ذخیره تغییرات</span>
+                                </button>
                             ) : (
                                 <div className="flex items-center gap-2">
                                     <button
