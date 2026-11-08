@@ -657,30 +657,6 @@ export default function ResidenceDetailScene({ initialData }: ResidenceDetailSce
                         </div>
                     </div>
 
-                    {/* House Rules & Timing Section */}
-                    <div className="space-y-3">
-                        <h2 className="text-base font-black text-brand">مقررات و ساعات ورود و خروج</h2>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 bg-surface-secondary/50 p-4 rounded-2xl border border-border-subtle text-xs">
-                            <div className="flex items-center gap-3 p-3 bg-surface rounded-xl border border-border-subtle/60">
-                                <Clock className="w-5 h-5 text-primary shrink-0" />
-                                <div>
-                                    <span className="font-black text-brand block">ساعت ورود میهمان</span>
-                                    <span className="text-text-light">
-                                        {checkInTime ? `از ساعت ${toPersianDigits(checkInTime)} به بعد` : "از ساعت ۱۴:۰۰ به بعد (طبق هماهنگی)"}
-                                    </span>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-3 p-3 bg-surface rounded-xl border border-border-subtle/60">
-                                <Clock className="w-5 h-5 text-primary shrink-0" />
-                                <div>
-                                    <span className="font-black text-brand block">ساعت خروج و تحویل</span>
-                                    <span className="text-text-light">
-                                        {checkOutTime ? `تا قبل از ساعت ${toPersianDigits(checkOutTime)}` : "تا قبل از ساعت ۱۲:۰۰ ظهر"}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
 
                     {/* Amenities & Boolean Features */}
                     {booleanFeatures.length > 0 && (
