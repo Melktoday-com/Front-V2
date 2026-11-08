@@ -12,6 +12,7 @@ import { useCreateConversation } from "@/hooks/useChat";
 import { cn, formatPrice, toPersianDigits, getMediaUrl, getMediaPosterUrl } from "@/lib/utils";
 import { agencyService } from "@/services/agency.service";
 import { AgencyFull, AgencyPost } from "@/types/api/agency.types";
+import type { AdSummary } from "@/types/api/ads.types";
 import type { ShowcaseAdListingItem } from "@/types/api/showcase.types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
@@ -49,46 +50,30 @@ import { useSafeBack } from "@/hooks/useSafeBack";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-function getAgencyAdPricing(pricing?: any): { price: string | number; unit?: string } {
-    if (!pricing || Object.keys(pricing).length === 0) {
-        return { price: "توافقی" };
-    }
-    const values = pricing.values || pricing;
-    const deposit = values.depositPrice ?? values.deposit;
-    const rent = values.monthlyRent ?? values.monthly_rent;
-    if (deposit !== undefined && rent !== undefined) {
+const getPricingDisplay = (ad: AdSummary | ShowcaseAdListingItem): { price: string | number; unit?: string } => {
+    const pricing = ad.pricing;
+    if (!pricing) return { price: "توافقی" };
+    const dep = pricing.depositPrice ?? pricing.mortgagePrice ?? pricing.deposit;
+    const rent = pricing.monthlyRent ?? pricing.rentPrice ?? pricing.monthly_rent;
+    if (dep !== undefined && rent !== undefined) {
         return {
-            price: `رهن ${formatPrice(Number(deposit), "")} - اجاره ${formatPrice(Number(rent), "")}`,
-            unit: "تومان",
+            price: `رهن ${formatPrice(Number(dep), "")} - اجاره ${formatPrice(Number(rent), "")}`,
         };
     }
-    const total = values.totalPrice ?? values.price;
-    if (total !== undefined) {
-        const num = Number(total);
-        return { price: num > 0 ? num : "توافقی", unit: num > 0 ? "تومان" : undefined };
+    if (pricing.totalPrice !== undefined || pricing.price !== undefined) {
+        const total = Number(pricing.totalPrice ?? pricing.price);
+        return { price: total > 0 ? total : "توافقی" };
     }
-    if (deposit !== undefined) {
-        const dep = Number(deposit);
-        return { price: dep > 0 ? `ودیعه ${formatPrice(dep, "")}` : "توافقی", unit: dep > 0 ? "تومان" : undefined };
+    if (dep !== undefined) {
+        const depNum = Number(dep);
+        return { price: depNum > 0 ? `ودیعه ${formatPrice(depNum, "")}` : "توافقی" };
     }
     if (rent !== undefined) {
-        const r = Number(rent);
-        return { price: r > 0 ? `اجاره ${formatPrice(r, "")}` : "توافقی", unit: r > 0 ? "تومان" : undefined };
-    }
-    if (values.estimatedTotalPrice !== undefined) {
-        const est = Number(values.estimatedTotalPrice);
-        return { price: est > 0 ? `قیمت کل: ${formatPrice(est, "")}` : "توافقی", unit: est > 0 ? "تومان" : undefined };
-    }
-    if (values.goodwillPrice !== undefined) {
-        const gw = Number(values.goodwillPrice);
-        return { price: gw > 0 ? `سرقفلی: ${formatPrice(gw, "")}` : "توافقی", unit: gw > 0 ? "تومان" : undefined };
-    }
-    if (values.fractionPrice !== undefined) {
-        const fp = Number(values.fractionPrice);
-        return { price: fp > 0 ? `قدرالسهم: ${formatPrice(fp, "")}` : "توافقی", unit: fp > 0 ? "تومان" : undefined };
+        const rentNum = Number(rent);
+        return { price: rentNum > 0 ? `اجاره ${formatPrice(rentNum, "")}` : "توافقی" };
     }
     return { price: "توافقی" };
-}
+};
 
 interface SingleAgencySceneProps {
     initialData?: AgencyFull;
@@ -564,7 +549,7 @@ export default function SingleAgencyScene({ initialData }: SingleAgencySceneProp
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                             {ads.map((item) => {
                                 const ad = item as ShowcaseAdListingItem;
-                                const adPrice = getAgencyAdPricing(ad.pricing);
+                                const pricing = getPricingDisplay(ad);
                                 const adId = ad.adId || ad.id;
                                 const mediaList = ad.mediaIds || [];
                                 const firstMedia = mediaList[0];
@@ -581,11 +566,16 @@ export default function SingleAgencyScene({ initialData }: SingleAgencySceneProp
                                         key={adId}
                                         id={adId}
                                         adId={adId}
+                                        href={`/ads/${adId}`}
                                         title={ad.title}
-                                        price={adPrice.price}
-                                        unit={adPrice.unit}
+                                        price={pricing.price}
+                                        unit={pricing.unit}
                                         location={ad.location || ad.cityName || ad.city?.label || ""}
-                                        image={getMediaPosterUrl(firstMedia)}
+                                        image={
+                                            mediaList.length > 0
+                                                ? getMediaPosterUrl(firstMedia)
+                                                : "/property-placeholder.svg"
+                                        }
                                         mediaIds={mediaList}
                                         isVideo={firstMedia?.type === "VIDEO"}
                                         category={categoryName}

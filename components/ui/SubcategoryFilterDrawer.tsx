@@ -301,26 +301,34 @@ export function SubcategoryFilterDrawer({
             if (v && v.trim()) outString[k] = v.trim();
         }
 
+        const normalizedModel = (priceModelKey || "").toLowerCase();
+        const isDepositModel = normalizedModel.includes("deposit") || normalizedModel.includes("mortgage") || normalizedModel.includes("rahn");
+        const isRentModel = normalizedModel.includes("rent") || normalizedModel.includes("ejare");
+        const showSalePrice = !priceModelKey || (!isDepositModel && !isRentModel) || normalizedModel.includes("sale") || normalizedModel.includes("cash") || normalizedModel.includes("barter") || normalizedModel.includes("total");
+        const showRentPrice = !priceModelKey || isDepositModel || isRentModel;
+        const showDepositField = showRentPrice && !normalizedModel.includes("pure_rental");
+        const showRentField = showRentPrice && !normalizedModel.includes("full_rental_deposit");
+
         onApply({
             priceModelKey: priceModelKey || undefined,
-            minPrice: parseNum(minPrice),
-            maxPrice: parseNum(maxPrice),
-            minDeposit: parseNum(minDeposit),
-            maxDeposit: parseNum(maxDeposit),
-            minRent: parseNum(minRent),
-            maxRent: parseNum(maxRent),
-            minArea: parseNum(minArea),
-            maxArea: parseNum(maxArea),
-            minRooms: parseNum(minRooms),
-            maxRooms: parseNum(maxRooms),
-            minFloor: parseNum(minFloor),
-            maxFloor: parseNum(maxFloor),
-            minConstructionYear: parseNum(minConstructionYear),
-            maxConstructionYear: parseNum(maxConstructionYear),
-            hasParking: hasParking || undefined,
-            hasElevator: hasElevator || undefined,
-            hasStorage: hasStorage || undefined,
-            hasBalcony: hasBalcony || undefined,
+            minPrice: showSalePrice ? parseNum(minPrice) : undefined,
+            maxPrice: showSalePrice ? parseNum(maxPrice) : undefined,
+            minDeposit: showDepositField ? parseNum(minDeposit) : undefined,
+            maxDeposit: showDepositField ? parseNum(maxDeposit) : undefined,
+            minRent: showRentField ? parseNum(minRent) : undefined,
+            maxRent: showRentField ? parseNum(maxRent) : undefined,
+            minArea: hasAreaAttr ? parseNum(minArea) : undefined,
+            maxArea: hasAreaAttr ? parseNum(maxArea) : undefined,
+            minRooms: hasRoomsAttr ? parseNum(minRooms) : undefined,
+            maxRooms: hasRoomsAttr ? parseNum(maxRooms) : undefined,
+            minFloor: hasFloorAttr ? parseNum(minFloor) : undefined,
+            maxFloor: hasFloorAttr ? parseNum(maxFloor) : undefined,
+            minConstructionYear: hasYearAttr ? parseNum(minConstructionYear) : undefined,
+            maxConstructionYear: hasYearAttr ? parseNum(maxConstructionYear) : undefined,
+            hasParking: hasParkingAttr ? (hasParking || undefined) : undefined,
+            hasElevator: hasElevatorAttr ? (hasElevator || undefined) : undefined,
+            hasStorage: hasStorageAttr ? (hasStorage || undefined) : undefined,
+            hasBalcony: hasBalconyAttr ? (hasBalcony || undefined) : undefined,
             numericAttributes: Object.keys(outNumeric).length > 0 ? outNumeric : undefined,
             booleanAttributes: Object.keys(outBoolean).length > 0 ? outBoolean : undefined,
             selectionAttributes: Object.keys(outSelection).length > 0 ? outSelection : undefined,
@@ -354,6 +362,7 @@ export function SubcategoryFilterDrawer({
         setSelectionAttrs({});
         setStringAttrs({});
         onClear();
+        onClose();
     };
 
     // Close on Escape key
@@ -454,9 +463,29 @@ export function SubcategoryFilterDrawer({
                                     <button
                                         key={pm.key}
                                         type="button"
-                                        onClick={() =>
-                                            setPriceModelKey(priceModelKey === pm.key ? undefined : pm.key)
-                                        }
+                                        onClick={() => {
+                                            const nextModel = priceModelKey === pm.key ? undefined : pm.key;
+                                            setPriceModelKey(nextModel);
+                                            const nm = (nextModel || "").toLowerCase();
+                                            const isDep = nm.includes("deposit") || nm.includes("mortgage") || nm.includes("rahn");
+                                            const isRnt = nm.includes("rent") || nm.includes("ejare");
+                                            const showSale = !nextModel || (!isDep && !isRnt) || nm.includes("sale") || nm.includes("cash") || nm.includes("barter") || nm.includes("total");
+                                            const showRent = !nextModel || isDep || isRnt;
+                                            const showDep = showRent && !nm.includes("pure_rental");
+                                            const showRntField = showRent && !nm.includes("full_rental_deposit");
+                                            if (!showSale) {
+                                                setMinPrice("");
+                                                setMaxPrice("");
+                                            }
+                                            if (!showDep) {
+                                                setMinDeposit("");
+                                                setMaxDeposit("");
+                                            }
+                                            if (!showRntField) {
+                                                setMinRent("");
+                                                setMaxRent("");
+                                            }
+                                        }}
                                         className={cn(
                                             "px-3 py-1.5 rounded-full text-xs font-bold border transition-all cursor-pointer",
                                             priceModelKey === pm.key
@@ -474,17 +503,18 @@ export function SubcategoryFilterDrawer({
                     {/* 2. Price Ranges */}
                     {(() => {
                         const normalizedModel = (priceModelKey || "").toLowerCase();
+                        const isDepositModel = normalizedModel.includes("deposit") || normalizedModel.includes("mortgage") || normalizedModel.includes("rahn");
+                        const isRentModel = normalizedModel.includes("rent") || normalizedModel.includes("ejare");
                         const showSalePrice =
                             !priceModelKey ||
+                            (!isDepositModel && !isRentModel) ||
                             normalizedModel.includes("sale") ||
                             normalizedModel.includes("cash") ||
+                            normalizedModel.includes("barter") ||
                             normalizedModel.includes("total");
-                        const showRentPrice =
-                            !priceModelKey ||
-                            normalizedModel.includes("rent") ||
-                            normalizedModel.includes("mortgage") ||
-                            normalizedModel.includes("rahn") ||
-                            normalizedModel.includes("deposit");
+                        const showRentPrice = !priceModelKey || isDepositModel || isRentModel;
+                        const showDepositField = showRentPrice && !normalizedModel.includes("pure_rental");
+                        const showRentField = showRentPrice && !normalizedModel.includes("full_rental_deposit");
 
                         return (
                             <div className="space-y-3">
@@ -531,66 +561,70 @@ export function SubcategoryFilterDrawer({
                                 {showRentPrice && (
                                     <div className="space-y-2 bg-soft-bg/50 p-3 rounded-2xl border border-soft-border/70">
                                         <span className="text-[11px] font-semibold text-secondary">ودیعه / رهن و اجاره</span>
-                                        <div className="grid grid-cols-2 gap-2">
-                                            <div>
-                                                <input
-                                                    type="number"
-                                                    placeholder="حداقل ودیعه"
-                                                    value={minDeposit}
-                                                    onChange={(e) => setMinDeposit(e.target.value)}
-                                                    className="w-full h-10 px-3 text-xs bg-surface border border-soft-border rounded-xl focus:border-primary focus:outline-none"
-                                                />
-                                                {minDeposit && Number(minDeposit) > 0 ? (
-                                                    <span className="text-[10px] text-primary block mt-0.5 font-medium px-1 truncate">
-                                                        {formatPriceWords(minDeposit)}
-                                                    </span>
-                                                ) : null}
+                                        {showDepositField && (
+                                            <div className="grid grid-cols-2 gap-2">
+                                                <div>
+                                                    <input
+                                                        type="number"
+                                                        placeholder="حداقل ودیعه"
+                                                        value={minDeposit}
+                                                        onChange={(e) => setMinDeposit(e.target.value)}
+                                                        className="w-full h-10 px-3 text-xs bg-surface border border-soft-border rounded-xl focus:border-primary focus:outline-none"
+                                                    />
+                                                    {minDeposit && Number(minDeposit) > 0 ? (
+                                                        <span className="text-[10px] text-primary block mt-0.5 font-medium px-1 truncate">
+                                                            {formatPriceWords(minDeposit)}
+                                                        </span>
+                                                    ) : null}
+                                                </div>
+                                                <div>
+                                                    <input
+                                                        type="number"
+                                                        placeholder="حداکثر ودیعه"
+                                                        value={maxDeposit}
+                                                        onChange={(e) => setMaxDeposit(e.target.value)}
+                                                        className="w-full h-10 px-3 text-xs bg-surface border border-soft-border rounded-xl focus:border-primary focus:outline-none"
+                                                    />
+                                                    {maxDeposit && Number(maxDeposit) > 0 ? (
+                                                        <span className="text-[10px] text-primary block mt-0.5 font-medium px-1 truncate">
+                                                            {formatPriceWords(maxDeposit)}
+                                                        </span>
+                                                    ) : null}
+                                                </div>
                                             </div>
-                                            <div>
-                                                <input
-                                                    type="number"
-                                                    placeholder="حداکثر ودیعه"
-                                                    value={maxDeposit}
-                                                    onChange={(e) => setMaxDeposit(e.target.value)}
-                                                    className="w-full h-10 px-3 text-xs bg-surface border border-soft-border rounded-xl focus:border-primary focus:outline-none"
-                                                />
-                                                {maxDeposit && Number(maxDeposit) > 0 ? (
-                                                    <span className="text-[10px] text-primary block mt-0.5 font-medium px-1 truncate">
-                                                        {formatPriceWords(maxDeposit)}
-                                                    </span>
-                                                ) : null}
+                                        )}
+                                        {showRentField && (
+                                            <div className="grid grid-cols-2 gap-2 pt-1">
+                                                <div>
+                                                    <input
+                                                        type="number"
+                                                        placeholder="حداقل اجاره"
+                                                        value={minRent}
+                                                        onChange={(e) => setMinRent(e.target.value)}
+                                                        className="w-full h-10 px-3 text-xs bg-surface border border-soft-border rounded-xl focus:border-primary focus:outline-none"
+                                                    />
+                                                    {minRent && Number(minRent) > 0 ? (
+                                                        <span className="text-[10px] text-primary block mt-0.5 font-medium px-1 truncate">
+                                                            {formatPriceWords(minRent)}
+                                                        </span>
+                                                    ) : null}
+                                                </div>
+                                                <div>
+                                                    <input
+                                                        type="number"
+                                                        placeholder="حداکثر اجاره"
+                                                        value={maxRent}
+                                                        onChange={(e) => setMaxRent(e.target.value)}
+                                                        className="w-full h-10 px-3 text-xs bg-surface border border-soft-border rounded-xl focus:border-primary focus:outline-none"
+                                                    />
+                                                    {maxRent && Number(maxRent) > 0 ? (
+                                                        <span className="text-[10px] text-primary block mt-0.5 font-medium px-1 truncate">
+                                                            {formatPriceWords(maxRent)}
+                                                        </span>
+                                                    ) : null}
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-2 pt-1">
-                                            <div>
-                                                <input
-                                                    type="number"
-                                                    placeholder="حداقل اجاره"
-                                                    value={minRent}
-                                                    onChange={(e) => setMinRent(e.target.value)}
-                                                    className="w-full h-10 px-3 text-xs bg-surface border border-soft-border rounded-xl focus:border-primary focus:outline-none"
-                                                />
-                                                {minRent && Number(minRent) > 0 ? (
-                                                    <span className="text-[10px] text-primary block mt-0.5 font-medium px-1 truncate">
-                                                        {formatPriceWords(minRent)}
-                                                    </span>
-                                                ) : null}
-                                            </div>
-                                            <div>
-                                                <input
-                                                    type="number"
-                                                    placeholder="حداکثر اجاره"
-                                                    value={maxRent}
-                                                    onChange={(e) => setMaxRent(e.target.value)}
-                                                    className="w-full h-10 px-3 text-xs bg-surface border border-soft-border rounded-xl focus:border-primary focus:outline-none"
-                                                />
-                                                {maxRent && Number(maxRent) > 0 ? (
-                                                    <span className="text-[10px] text-primary block mt-0.5 font-medium px-1 truncate">
-                                                        {formatPriceWords(maxRent)}
-                                                    </span>
-                                                ) : null}
-                                            </div>
-                                        </div>
+                                        )}
                                     </div>
                                 )}
                             </div>
@@ -601,6 +635,28 @@ export function SubcategoryFilterDrawer({
                     {hasAreaAttr && (
                         <div className="space-y-2">
                             <label className="text-xs font-bold text-text-main">متراژ (متر مربع)</label>
+
+                            {/* Preset chips for fast area selection */}
+                            <div className="flex flex-wrap gap-1.5 pb-1">
+                                {COMMON_AREA_PRESETS.map((preset) => {
+                                    const isPresetActive = minArea === String(preset);
+                                    return (
+                                        <button
+                                            key={preset}
+                                            type="button"
+                                            onClick={() => setMinArea(isPresetActive ? "" : String(preset))}
+                                            className={cn(
+                                                "px-2.5 py-1 rounded-full text-xs font-bold border transition-all cursor-pointer",
+                                                isPresetActive
+                                                    ? "bg-primary text-white border-primary shadow-xs"
+                                                    : "bg-soft-bg text-secondary border-soft-border hover:border-primary/50"
+                                            )}
+                                        >
+                                            {toPersianDigits(preset)} متر به بالا
+                                        </button>
+                                    );
+                                })}
+                            </div>
 
                             <div className="grid grid-cols-2 gap-2">
                                 <input
@@ -625,7 +681,46 @@ export function SubcategoryFilterDrawer({
                     {hasRoomsAttr && (
                         <div className="space-y-2">
                             <label className="text-xs font-bold text-text-main">تعداد اتاق خواب</label>
-  
+
+                            {/* Quick room option chips */}
+                            <div className="flex flex-wrap gap-1.5 pb-1">
+                                {ROOM_OPTIONS.map((opt) => {
+                                    const isChipActive =
+                                        opt.value === undefined
+                                            ? minRooms === "" && maxRooms === ""
+                                            : opt.value === 4
+                                            ? minRooms === "4" && (maxRooms === "" || !maxRooms)
+                                            : minRooms === String(opt.value) && maxRooms === String(opt.value);
+
+                                    return (
+                                        <button
+                                            key={opt.label}
+                                            type="button"
+                                            onClick={() => {
+                                                if (opt.value === undefined) {
+                                                    setMinRooms("");
+                                                    setMaxRooms("");
+                                                } else if (opt.value === 4) {
+                                                    setMinRooms("4");
+                                                    setMaxRooms("");
+                                                } else {
+                                                    setMinRooms(String(opt.value));
+                                                    setMaxRooms(String(opt.value));
+                                                }
+                                            }}
+                                            className={cn(
+                                                "px-3 py-1 rounded-full text-xs font-bold border transition-all cursor-pointer",
+                                                isChipActive
+                                                    ? "bg-primary text-white border-primary shadow-xs"
+                                                    : "bg-soft-bg text-secondary border-soft-border hover:border-primary/50"
+                                            )}
+                                        >
+                                            {opt.label}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+
                             <div className="grid grid-cols-2 gap-2">
                                 <input
                                     type="number"

@@ -76,6 +76,9 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
     const router = useRouter();
 
     const adsNavigate = useCallback((targetUrl: string, _source?: string) => {
+        if (typeof window !== "undefined") {
+            window.history.replaceState(window.history.state, "", targetUrl);
+        }
         router.replace(targetUrl, { scroll: false });
     }, [router]);
     const { selectedCity, setSelectedCity } = useCity();
@@ -254,15 +257,9 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                     params.set("cityName", effectiveCityName);
                 }
             }
-            if (selectedCategory && !params.has("categoryKey")) {
-                params.set("categoryKey", selectedCategory);
-            }
-            if (selectedSubcategory && !params.has("subcategoryKey")) {
-                params.set("subcategoryKey", selectedSubcategory);
-            }
             adsNavigate(`/ads?${params.toString()}`, "debouncedSearchEffect");
         }
-    }, [debouncedSearch, searchParams, adsNavigate, effectiveCityId, effectiveCityName, selectedCategory, selectedSubcategory]);
+    }, [debouncedSearch, searchParams, adsNavigate, effectiveCityId, effectiveCityName]);
 
     const selectedZoneIds = useMemo(() => selectedZones.map((z) => z.id), [selectedZones]);
     const selectedZoneNames = useMemo(() => selectedZones.map((z) => z.name), [selectedZones]);
@@ -579,12 +576,14 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
             } else {
                 params.delete("numericAttributes");
             }
-        }
-        if (selectedCategory && !params.has("categoryKey")) {
-            params.set("categoryKey", selectedCategory);
-        }
-        if (selectedSubcategory && !params.has("subcategoryKey")) {
-            params.set("subcategoryKey", selectedSubcategory);
+        } else if (type === "category") {
+            params.delete("categoryKey");
+            params.delete("subcategoryKey");
+            setSelectedCategory("");
+            setSelectedSubcategory("");
+        } else if (type === "subcategory") {
+            params.delete("subcategoryKey");
+            setSelectedSubcategory("");
         }
         if (effectiveCityId && !params.has("cityId")) {
             params.set("cityId", effectiveCityId);
@@ -896,12 +895,6 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                 params.append("neighbourhoodNames", z.name);
             });
         }
-        if (selectedCategory && !params.has("categoryKey")) {
-            params.set("categoryKey", selectedCategory);
-        }
-        if (selectedSubcategory && !params.has("subcategoryKey")) {
-            params.set("subcategoryKey", selectedSubcategory);
-        }
         if (effectiveCityId && !params.has("cityId")) {
             params.set("cityId", effectiveCityId);
             if (effectiveCityName && effectiveCityName !== "همه شهرها") {
@@ -931,12 +924,6 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
         params.delete("zoneIds");
         params.delete("neighbourhoodName");
         params.delete("neighbourhoodNames");
-        if (selectedCategory) {
-            params.set("categoryKey", selectedCategory);
-        }
-        if (selectedSubcategory) {
-            params.set("subcategoryKey", selectedSubcategory);
-        }
         adsNavigate(`/ads?${params.toString()}`, "handleCitySelect");
     };
 
@@ -964,11 +951,22 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
             }
         }
         // If subcategory or category changed or cleared, clear obsolete dynamic attributes
-        if (!nextSubcategory || nextSubcategory !== selectedSubcategory) {
+        if (!nextSubcategory || nextSubcategory !== selectedSubcategory || nextCategory !== selectedCategory) {
             params.delete("numericAttributes");
             params.delete("booleanAttributes");
             params.delete("selectionAttributes");
             params.delete("stringAttributes");
+            const isOldRent = (selectedCategory || "").toLowerCase().includes("rent") || (selectedCategory || "").toLowerCase().includes("ejare");
+            const isNewRent = (nextCategory || "").toLowerCase().includes("rent") || (nextCategory || "").toLowerCase().includes("ejare");
+            if (isOldRent !== isNewRent || !nextCategory) {
+                params.delete("priceModelKey");
+                params.delete("minPrice");
+                params.delete("maxPrice");
+                params.delete("minDeposit");
+                params.delete("maxDeposit");
+                params.delete("minRent");
+                params.delete("maxRent");
+            }
         }
         adsNavigate(`/ads?${params.toString()}`, "handleCategorySelect");
     };
@@ -982,18 +980,14 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
         } else {
             params.set("sort", newSort);
         }
-        if (selectedCategory && !params.has("categoryKey")) {
-            params.set("categoryKey", selectedCategory);
-        }
-        if (selectedSubcategory && !params.has("subcategoryKey")) {
-            params.set("subcategoryKey", selectedSubcategory);
-        }
         if (effectiveCityId && !params.has("cityId")) {
             params.set("cityId", effectiveCityId);
             if (effectiveCityName && effectiveCityName !== "همه شهرها") {
                 params.set("cityName", effectiveCityName);
             }
         }
+        adsNavigate(`/ads?${params.toString()}`, "handleSortChange");
+    };
         adsNavigate(`/ads?${params.toString()}`, "handleSortChange");
     };
 
