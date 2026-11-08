@@ -767,9 +767,7 @@ export default function ResidenceDetailScene({ initialData }: ResidenceDetailSce
                         <div className="space-y-3">
                             <div className="flex items-center justify-between">
                                 <h2 className="text-base font-black text-brand">موقعیت تقریبی روی نقشه</h2>
-                                <span className="text-[11px] text-text-light">
-                                    موقعیت دقیق پس از ثبت درخواست ارسال خواهد شد
-                                </span>
+
                             </div>
                             <div className="h-64 rounded-2xl overflow-hidden border border-border-subtle shadow-xs">
                                 <Map
