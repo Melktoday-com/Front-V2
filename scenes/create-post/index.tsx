@@ -233,6 +233,13 @@ export default function CreatePostScene() {
     setHasInitializedEdit(true);
   }, [isEditMode, existingPost, hasInitializedEdit]);
 
+  // Ensure Step 1 is locked and inaccessible in edit mode
+  useEffect(() => {
+    if (isEditMode && currentStep === 1 && hasInitializedEdit) {
+      setCurrentStep(2);
+    }
+  }, [isEditMode, currentStep, hasInitializedEdit]);
+
   const activePublisher = useMemo(() => {
     if (!selectedPublisherKey) return publisherOptions[0] || null;
     const [type, id] = selectedPublisherKey.split(":");
@@ -810,32 +817,44 @@ export default function CreatePostScene() {
           {/* Step 1 */}
           <button
             type="button"
-            onClick={() => setCurrentStep(1)}
+            disabled={isEditMode}
+            onClick={() => {
+              if (!isEditMode) setCurrentStep(1);
+            }}
             className={cn(
               "flex items-center gap-2 sm:gap-3 p-3 rounded-2xl text-right transition-all border",
-              currentStep === 1
-                ? "bg-slate-900 text-white border-slate-900 shadow-xs"
-                : currentStep > 1
-                  ? "bg-success-subtle text-success border-success/30"
-                  : "bg-surface-secondary text-foreground-muted border-border-subtle hover:bg-surface-secondary"
+              isEditMode
+                ? "opacity-60 cursor-not-allowed bg-surface-secondary text-foreground-muted border-border-subtle"
+                : currentStep === 1
+                  ? "bg-slate-900 text-white border-slate-900 shadow-xs"
+                  : currentStep > 1
+                    ? "bg-success-subtle text-success border-success/30"
+                    : "bg-surface-secondary text-foreground-muted border-border-subtle hover:bg-surface-secondary"
             )}
+            title={isEditMode ? "ناشر و قالب محتوا در حالت ویرایش قفل هستند" : undefined}
           >
             <div
               className={cn(
                 "w-7 h-7 rounded-xl flex items-center justify-center text-xs font-black shrink-0",
-                currentStep === 1
-                  ? "bg-primary text-foreground"
-                  : currentStep > 1
-                    ? "bg-emerald-600 text-white"
-                    : "bg-slate-200 text-foreground-secondary"
+                isEditMode
+                  ? "bg-slate-200 text-foreground-secondary"
+                  : currentStep === 1
+                    ? "bg-primary text-foreground"
+                    : currentStep > 1
+                      ? "bg-emerald-600 text-white"
+                      : "bg-slate-200 text-foreground-secondary"
               )}
             >
-              {currentStep > 1 ? <Check className="w-4 h-4" /> : "۱"}
+              {isEditMode ? <Lock className="w-3.5 h-3.5" /> : currentStep > 1 ? <Check className="w-4 h-4" /> : "۱"}
             </div>
             <div className="min-w-0">
-              <p className="text-xs font-black truncate">مرحله اول</p>
+              <p className="text-xs font-black truncate">
+                {isEditMode ? "هویت و قالب (ثابت)" : "مرحله اول"}
+              </p>
               <p className="text-[10px] opacity-80 truncate hidden sm:block">
-                {publisherOptions.length > 1 ? "ناشر و قالب محتوا" : "قالب محتوا"}
+                {isEditMode
+                  ? `${activePublisher?.name || "ناشر"} • ${postFormat === "instagram" ? "اینستاگرام" : "مقاله"}`
+                  : (publisherOptions.length > 1 ? "ناشر و قالب محتوا" : "قالب محتوا")}
               </p>
             </div>
           </button>
@@ -912,7 +931,7 @@ export default function CreatePostScene() {
       </div>
 
       {/* ── STEP 1: CHOOSE PUBLISHER & FORMAT ──────────────────────────── */}
-      {currentStep === 1 && (
+      {!isEditMode && currentStep === 1 && (
         <div className="space-y-6">
           {/* 1.1 Publisher Identity Selection (Only shown when multiple publishers are available) */}
           {publisherOptions.length > 1 && (
@@ -1121,14 +1140,21 @@ export default function CreatePostScene() {
               </span>
             </div>
 
-            <button
-              type="button"
-              onClick={() => setCurrentStep(1)}
-              className="text-xs font-bold text-brand hover:text-primary transition-colors flex items-center gap-1"
-            >
-              <span>{publisherOptions.length > 1 ? "تغییر ناشر یا قالب" : "تغییر قالب"}</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
+            {!isEditMode ? (
+              <button
+                type="button"
+                onClick={() => setCurrentStep(1)}
+                className="text-xs font-bold text-brand hover:text-primary transition-colors flex items-center gap-1"
+              >
+                <span>{publisherOptions.length > 1 ? "تغییر ناشر یا قالب" : "تغییر قالب"}</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            ) : (
+              <span className="text-[11px] text-foreground-muted flex items-center gap-1">
+                <Lock className="w-3 h-3 text-foreground-muted" />
+                <span>ناشر و قالب در حالت ویرایش قفل است</span>
+              </span>
+            )}
           </div>
 
           {postFormat === "instagram" ? (
@@ -1165,14 +1191,24 @@ export default function CreatePostScene() {
 
           {/* Action Bar Step 2 */}
           <div className="flex items-center justify-between bg-surface p-4 rounded-3xl border border-border-subtle shadow-xs">
-            <button
-              type="button"
-              onClick={() => setCurrentStep(1)}
-              className="flex items-center gap-1.5 px-5 py-2.5 rounded-2xl text-xs font-bold text-foreground-secondary bg-surface-secondary hover:bg-slate-200 transition-all"
-            >
-              <ArrowRight className="w-4 h-4" />
-              <span>مرحله قبل (انتخاب قالب)</span>
-            </button>
+            {!isEditMode ? (
+              <button
+                type="button"
+                onClick={() => setCurrentStep(1)}
+                className="flex items-center gap-1.5 px-5 py-2.5 rounded-2xl text-xs font-bold text-foreground-secondary bg-surface-secondary hover:bg-slate-200 transition-all"
+              >
+                <ArrowRight className="w-4 h-4" />
+                <span>مرحله قبل (انتخاب قالب)</span>
+              </button>
+            ) : (
+              <Link
+                href={`/posts/${existingPost?.slug || editPostId}`}
+                className="flex items-center gap-1.5 px-5 py-2.5 rounded-2xl text-xs font-bold text-foreground-muted hover:text-brand bg-surface-secondary hover:bg-slate-200 transition-all"
+              >
+                <RotateCcw className="w-4 h-4" />
+                <span>انصراف و بازگشت به پست</span>
+              </Link>
+            )}
 
             <button
               type="button"

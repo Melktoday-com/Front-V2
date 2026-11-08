@@ -47,16 +47,7 @@ export const DynamicPricingFields: React.FC<DynamicPricingFieldsProps> = ({
 
     return (
         <div className="space-y-4">
-            <div className="flex flex-row items-center justify-between gap-2 pb-2 border-b border-border-subtle">
-                <h3 className="text-sm font-bold text-brand">
-                    اطلاعات مالی — {priceModel.displayName}
-                </h3>
-                {priceModel.currency && (
-                    <span className="text-[11px] font-bold text-text-light bg-surface-secondary px-2.5 py-1 rounded-lg shrink-0 whitespace-nowrap">
-                        واحد پول: {priceModel.currency === "TOMAN" ? "تومان" : priceModel.currency}
-                    </span>
-                )}
-            </div>
+
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {priceModel.pricingFields.map((field) => {
