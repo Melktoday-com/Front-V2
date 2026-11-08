@@ -14,8 +14,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
     if (!residence) {
         return {
-            title: "اقامتگاه پیدا نشد | ملک تودی",
-            description: "اقامتگاه مورد نظر در سامانه ملک تودی یافت نشد.",
+            title: "اجاره اقامتگاه و ویلا | ملک تودی",
+            description: "رزرو آنلاین اقامتگاه، سوئیت و ویلا در سامانه ملک تودی",
         };
     }
 
