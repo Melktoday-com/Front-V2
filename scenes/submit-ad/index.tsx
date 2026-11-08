@@ -853,7 +853,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
         }
 
         if (currentStepIndex === STEPS_CONFIG.length - 1) {
-            submitMutation.mutate({ shouldPublish: submitForApproval });
+            submitMutation.mutate({ shouldPublish: isExistingSubmitted ? false : submitForApproval });
         } else {
             setStep(STEPS_CONFIG[currentStepIndex + 1].id);
         }
