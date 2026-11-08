@@ -568,7 +568,11 @@ export default function SingleAgencyScene({ initialData }: SingleAgencySceneProp
                                 const firstMedia = mediaList[0];
                                 const categoryName =
                                     ad.subcategoryTitle ||
+                                    ad.subcategory?.label ||
                                     ad.categoryPath?.subcategoryTitle ||
+                                    ad.categoryTitle ||
+                                    ad.category?.label ||
+                                    ad.categoryPath?.categoryTitle ||
                                     ad.categoryPath?.subcategoryKey ||
                                     ad.category_path?.subcategoryKey;
                                 return (
@@ -579,12 +583,15 @@ export default function SingleAgencyScene({ initialData }: SingleAgencySceneProp
                                         title={ad.title}
                                         price={adPrice.price}
                                         unit={adPrice.unit}
-                                        location={ad.cityName || ad.cityId || ad.city_id}
+                                        location={ad.location || ad.cityName || ad.cityId || ad.city_id}
                                         image={getMediaPosterUrl(firstMedia)}
                                         isVideo={firstMedia?.type === "VIDEO"}
                                         category={categoryName}
                                         isUrgent={ad.isUrgent}
                                         isLadder={ad.isLadder}
+                                        isFeatured={ad.isFeatured || ad.is_featured}
+                                        isSaved={ad.isSaved}
+                                        date={ad.isLadder ? (ad.updatedAt || ad.createdAt) : ad.createdAt}
                                     />
                                 );
                             })}

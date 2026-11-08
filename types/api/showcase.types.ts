@@ -139,8 +139,23 @@ export interface ShowcaseListingAttributes {
 
 export interface ShowcaseListingItem {
   id: string;
+  adId?: string;
   owner_id?: string;
+  ownerId?: string;
   city_id?: string;
+  cityId?: string;
+  cityName?: string;
+  provinceId?: string;
+  provinceName?: string;
+  province?: { id: string; label: string } | null;
+  city?: { id: string; label: string } | null;
+  category?: { id: string; label: string } | null;
+  subcategory?: { id: string; label: string } | null;
+  categoryTitle?: string;
+  subcategoryTitle?: string;
+  location?: import("../location.types").ResolvedLocation | null;
+  categoryPath?: any;
+  category_path?: any;
   title: string;
   description?: string;
   price?: number;
@@ -149,15 +164,23 @@ export interface ShowcaseListingItem {
   pricing?:
     | AdPricingReadModel
     | TemporaryRentPricingReadModel
-    | ShowcaseListingPricing;
+    | ShowcaseListingPricing
+    | Record<string, any>;
   attributes?: ShowcaseListingAttributes;
   address?: string;
   mediaIds?: MediaReference[];
   media_ids?: MediaReference[];
   status?: string;
   is_featured?: boolean;
+  isFeatured?: boolean;
+  isUrgent?: boolean;
+  isLadder?: boolean;
+  isDecorativeImages?: boolean;
+  isSaved?: boolean;
   createdAt?: string;
   created_at?: string;
+  updatedAt?: string;
+  updated_at?: string;
 }
 
 export interface ShowcaseListingsResponse {

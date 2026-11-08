@@ -16,7 +16,7 @@ import { useSafeBack } from "@/hooks/useSafeBack";
 import { useTemporaryRentAdDetail } from "@/hooks/useTemporaryRent";
 import { useUserStatus } from "@/hooks/useUserStatus";
 import { normalizeApiError } from "@/lib/api/error-handler";
-import { cn, formatCurrency, formatPrice, getMediaUrl, toPersianDigits } from "@/lib/utils";
+import { cn, formatPrice, formatPriceWords, getMediaUrl, toPersianDigits } from "@/lib/utils";
 import { adminService } from "@/services/admin.service";
 import { geoService } from "@/services/geo.service";
 import { temporaryRentService } from "@/services/temporary-rent.service";
@@ -24,20 +24,26 @@ import { AdminCreateTemporaryRentRequest } from "@/types/api/admin.types";
 import type { MediaReference } from "@/types/api/media.types";
 import {
     CreateTemporaryRentDraftRequest,
+    TemporaryRentAttributeDefinition,
     TemporaryRentCategory,
     TemporaryRentSubcategoryConfigResponse,
 } from "@/types/api/temporary-rent.types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
+    Check,
     ChevronLeft,
     ChevronRight,
+    FileText,
+    Home,
+    Image as ImageIcon,
     Loader2,
     LucideIcon,
     MapPin,
+    Pencil,
     Send,
     ShieldAlert,
-    Sparkles,
     Tag,
+    Video,
     Wallet,
 } from "lucide-react";
 import dynamic from "next/dynamic";
@@ -57,6 +63,135 @@ const STEPS_CONFIG: { id: Step; label: string; icon: LucideIcon }[] = [
     { id: "LOCATION", icon: MapPin, label: "موقعیت" },
     { id: "REVIEW", icon: Send, label: "بازبینی و ثبت" },
 ];
+
+interface ReviewRowProps {
+    label: string;
+    value?: React.ReactNode;
+    highlight?: boolean;
+    isLong?: boolean;
+    className?: string;
+    valueClassName?: string;
+}
+
+function ReviewRow({
+    label,
+    value,
+    highlight = false,
+    isLong: explicitIsLong,
+    className,
+    valueClassName,
+}: ReviewRowProps) {
+    if (value === undefined || value === null || value === "") return null;
+
+    const isLong = explicitIsLong !== undefined
+        ? explicitIsLong
+        : (typeof value === "string" && (value.length > 25 || value.includes("\n")));
+
+    return (
+        <div
+            className={cn(
+                "pb-2.5 border-b border-border-subtle/50 text-xs sm:text-sm transition-colors",
+                isLong
+                    ? "flex flex-col gap-1 items-start"
+                    : "flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1",
+                className
+            )}
+        >
+            <span className="text-text-light shrink-0 text-xs font-medium">{label}:</span>
+            <span
+                className={cn(
+                    "font-bold break-words min-w-0 [overflow-wrap:anywhere]",
+                    isLong ? "text-brand text-right leading-relaxed w-full" : "text-brand text-left",
+                    highlight && "text-primary",
+                    valueClassName
+                )}
+            >
+                {value}
+            </span>
+        </div>
+    );
+}
+
+function formatPricingFieldValue(
+    field: { key: string; label: string; fieldType: string; unit?: string },
+    value: unknown
+): string {
+    if (value === undefined || value === null || value === "") return "—";
+
+    if (field.fieldType === "BOOLEAN" || typeof value === "boolean") {
+        const isTrue = value === true || value === "true" || value === 1 || value === "1";
+        const isQuestion = field.label.includes("آیا") || field.label.includes("؟");
+        return isQuestion ? (isTrue ? "بله" : "خیر") : (isTrue ? "دارد" : "ندارد");
+    }
+
+    if (field.fieldType === "NUMBER" || typeof value === "number") {
+        const num = Number(value);
+        if (isNaN(num)) return String(value);
+
+        const unit = field.unit?.trim();
+        if (!unit || unit === "تومان") {
+            const formatted = formatPrice(num);
+            if (num >= 1_000_000) {
+                const words = formatPriceWords(num);
+                if (words) {
+                    return `${formatted} (${words})`;
+                }
+            }
+            return formatted;
+        }
+        if (unit === "%" || unit === "درصد") {
+            return `${toPersianDigits(num)} درصد`;
+        }
+        if (unit === "نفر") {
+            return `${toPersianDigits(num)} نفر`;
+        }
+        return `${toPersianDigits(num)} ${unit}`;
+    }
+
+    return `${String(value)}${field.unit ? ` ${field.unit}` : ""}`;
+}
+
+function formatAttributeValue(
+    attr: TemporaryRentAttributeDefinition,
+    value: unknown
+): string {
+    if (value === undefined || value === null || value === "") return "—";
+
+    if (attr.type === "SELECT") {
+        const option = attr.options?.find((o) => o.key === String(value));
+        return option?.label || String(value);
+    }
+
+    if (attr.type === "BOOLEAN" || typeof value === "boolean") {
+        const isTrue = value === true || value === "true" || value === 1 || value === "1";
+        return isTrue ? "دارد" : "ندارد";
+    }
+
+    if (attr.type === "NUMBER" || typeof value === "number") {
+        const num = Number(value);
+        if (isNaN(num)) return String(value);
+
+        const label = attr.label || "";
+        let suffix = "";
+        if (label.includes("متراژ") || label.includes("مساحت") || label.includes("زیربنا")) {
+            suffix = " متر مربع";
+        } else if (label.includes("ظرفیت") || label.includes("نفرات") || label.includes("میهمان")) {
+            suffix = " نفر";
+        } else if (label.includes("اتاق") || label.includes("خواب")) {
+            suffix = " خواب";
+        } else if (label.includes("تخت")) {
+            suffix = " تخت";
+        } else if (label.includes("طبقه")) {
+            suffix = " طبقه";
+        } else if (label.includes("سرویس") || label.includes("حمام")) {
+            suffix = " عدد";
+        }
+
+        return `${toPersianDigits(num)}${suffix}`;
+    }
+
+    return String(value);
+}
 
 interface CreateTemporaryRentSceneProps {
     adminMode?: boolean;
@@ -551,6 +686,81 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
             toast.error(msg);
         },
     });
+
+    const provinceAndCityName = useMemo(() => {
+        if (!cityName) return "مشخص نشده";
+        if (geoHierarchy && formData.cityId) {
+            for (const prov of geoHierarchy) {
+                const found = prov.cities.find((c) => c.id === formData.cityId);
+                if (found) {
+                    return `استان ${prov.name}، شهر ${found.name}`;
+                }
+            }
+        }
+        return cityName;
+    }, [geoHierarchy, formData.cityId, cityName]);
+
+    const filledPricingFields = useMemo(() => {
+        if (!activePriceModel?.pricingFields) return [];
+        return activePriceModel.pricingFields.filter((field) => {
+            const val = pricingValues[field.key];
+            return val !== undefined && val !== null && String(val).trim() !== "";
+        });
+    }, [activePriceModel?.pricingFields, pricingValues]);
+
+    const extraPricingFields = useMemo(() => {
+        const definedKeys = new Set(activePriceModel?.pricingFields?.map((f) => f.key) || []);
+        const extras: { key: string; label: string; displayValue: string }[] = [];
+        for (const [key, val] of Object.entries(pricingValues)) {
+            if (definedKeys.has(key)) continue;
+            if (val === undefined || val === null || String(val).trim() === "") continue;
+            extras.push({
+                key,
+                label: key === "nightlyPrice" ? "نرخ اجاره هر شب" : key,
+                displayValue: typeof val === "number" ? formatPrice(val) : String(val),
+            });
+        }
+        return extras;
+    }, [pricingValues, activePriceModel?.pricingFields]);
+
+    const filledNonBooleanAttrs = useMemo(() => {
+        if (!subcatConfig?.attributeDefinitions) return [];
+        return subcatConfig.attributeDefinitions.filter((attr) => {
+            if (attr.type === "BOOLEAN") return false;
+            const val = formData.attributes?.[attr.key];
+            return val !== undefined && val !== null && String(val).trim() !== "";
+        });
+    }, [subcatConfig?.attributeDefinitions, formData.attributes]);
+
+    const activeBooleanFeatures = useMemo(() => {
+        if (!subcatConfig?.attributeDefinitions) return [];
+        return subcatConfig.attributeDefinitions.filter((attr) => {
+            if (attr.type !== "BOOLEAN") return false;
+            return Boolean(formData.attributes?.[attr.key]);
+        });
+    }, [subcatConfig?.attributeDefinitions, formData.attributes]);
+
+    const extraAttributes = useMemo(() => {
+        if (!formData.attributes) return [];
+        const definedKeys = new Set(subcatConfig?.attributeDefinitions?.map((a) => a.key) || []);
+        const extras: { key: string; label: string; displayValue: string }[] = [];
+        for (const [key, val] of Object.entries(formData.attributes)) {
+            if (definedKeys.has(key)) continue;
+            if (val === undefined || val === null || String(val).trim() === "") continue;
+            if (typeof val === "boolean") {
+                if (val) {
+                    extras.push({ key, label: key, displayValue: "دارد" });
+                }
+            } else {
+                extras.push({
+                    key,
+                    label: key,
+                    displayValue: typeof val === "number" ? toPersianDigits(val) : String(val),
+                });
+            }
+        }
+        return extras;
+    }, [formData.attributes, subcatConfig?.attributeDefinitions]);
 
     const currentStepIndex = STEPS_CONFIG.findIndex((s) => s.id === step);
 
@@ -1124,67 +1334,309 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
                         {/* STEP 4: REVIEW */}
                         {step === "REVIEW" && (
                             <div className="space-y-6">
-                                <h2 className="text-lg font-black text-brand">بازبینی و ثبت نهایی اقامتگاه</h2>
+                                <div>
+                                    <h2 className="text-lg font-black text-brand">بازبینی و ثبت نهایی اقامتگاه</h2>
+                                    <p className="text-xs text-text-light mt-1">
+                                        اطلاعات ثبت‌شده را به دقت بررسی فرمایید. در صورت نیاز به ویرایش هر بخش، می‌توانید با کلیک روی دکمه ویرایش به مرحله مربوطه بازگردید.
+                                    </p>
+                                </div>
 
-                                <div className="bg-surface-secondary/80 rounded-2xl p-6 space-y-4 border border-border-subtle text-sm">
+                                {/* Section 1: Basic Information & Location */}
+                                <div className="bg-surface-secondary/70 rounded-2xl p-4 sm:p-5 border border-border-subtle space-y-3">
+                                    <div className="flex items-center justify-between pb-2 border-b border-border-subtle">
+                                        <h3 className="text-xs sm:text-sm font-black text-brand flex items-center gap-2">
+                                            <Tag className="w-4 h-4 text-primary" />
+                                            اطلاعات پایه و دسته‌بندی
+                                        </h3>
+                                        <button
+                                            type="button"
+                                            onClick={() => setStep("BASIC_INFO")}
+                                            className="text-[11px] font-bold text-primary hover:underline flex items-center gap-1 cursor-pointer"
+                                        >
+                                            <Pencil className="w-3 h-3" />
+                                            ویرایش
+                                        </button>
+                                    </div>
+
                                     {adminMode && (
-                                        <div className="flex justify-between pb-2 border-b border-border-subtle/50">
-                                            <span className="text-text-light">نوع ثبت در پنل مدیریت:</span>
-                                            <span className="font-bold text-brand">
-                                                {adminOwnership.isPlatform
+                                        <ReviewRow
+                                            label="نوع ثبت در پنل مدیریت"
+                                            value={
+                                                adminOwnership.isPlatform
                                                     ? "سازمانی (سامانه ملک تودی)"
-                                                    : `به نام میزبان: ${adminOwnership.foundUserName || `${adminOwnership.firstName} ${adminOwnership.lastName}`} (${adminOwnership.phoneNumber})`}
-                                            </span>
-                                        </div>
+                                                    : `به نام میزبان: ${adminOwnership.foundUserName || `${adminOwnership.firstName} ${adminOwnership.lastName}`} (${toPersianDigits(adminOwnership.phoneNumber)})`
+                                            }
+                                            isLong
+                                        />
                                     )}
 
-                                    <div className="flex justify-between pb-2 border-b border-border-subtle/50">
-                                        <span className="text-text-light">عنوان اقامتگاه:</span>
-                                        <span className="font-bold text-brand">{formData.title}</span>
-                                    </div>
+                                    <ReviewRow
+                                        label="عنوان اقامتگاه"
+                                        value={formData.title}
+                                        isLong
+                                    />
 
-                                    <div className="flex justify-between pb-2 border-b border-border-subtle/50">
-                                        <span className="text-text-light">شهر:</span>
-                                        <span className="font-bold text-brand">{cityName}</span>
-                                    </div>
+                                    <ReviewRow
+                                        label="نوع و زیردسته اقامتگاه"
+                                        value={`${subcatConfig?.subcategory?.categoryDisplayName || "اقامتگاه"} / ${subcatConfig?.subcategory?.displayName || "اجاره روزانه"}`}
+                                    />
 
-                                    {detectedZone?.name && (
-                                        <div className="flex justify-between pb-2 border-b border-border-subtle/50">
-                                            <span className="text-text-light">محله:</span>
-                                            <span className="font-bold text-primary">{detectedZone.name}</span>
-                                        </div>
+                                    <ReviewRow
+                                        label="شهر و استان"
+                                        value={provinceAndCityName}
+                                    />
+
+                                    <ReviewRow
+                                        label="محله روی نقشه"
+                                        value={detectedZone?.name || "محدوده عمومی شهر (مختصات نقشه ثبت گردید)"}
+                                        highlight={Boolean(detectedZone?.name)}
+                                    />
+
+                                    {formData.address && (
+                                        <ReviewRow
+                                            label="آدرس یا راهنمای دسترسی"
+                                            value={formData.address}
+                                            isLong
+                                        />
                                     )}
 
-                                    <div className="flex justify-between pb-2 border-b border-border-subtle/50">
-                                        <span className="text-text-light">نوع و زیردسته:</span>
-                                        <span className="font-bold text-brand">
-                                            {subcatConfig?.subcategory?.categoryDisplayName || "اقامتگاه"} / {subcatConfig?.subcategory?.displayName || "اجاره روزانه"}
-                                        </span>
+                                    <ReviewRow
+                                        label="مدل قیمت‌گذاری"
+                                        value={activePriceModel?.displayName}
+                                        highlight
+                                    />
+                                </div>
+
+                                {/* Section 2: Pricing Breakdown */}
+                                <div className="bg-surface-secondary/70 rounded-2xl p-4 sm:p-5 border border-border-subtle space-y-3">
+                                    <div className="flex items-center justify-between pb-2 border-b border-border-subtle">
+                                        <h3 className="text-xs sm:text-sm font-black text-brand flex items-center gap-2">
+                                            <Wallet className="w-4 h-4 text-primary" />
+                                            شرایط مالی و نرخ‌گذاری ({activePriceModel?.displayName || "اقامتگاه"})
+                                        </h3>
+                                        <button
+                                            type="button"
+                                            onClick={() => setStep("DETAILS")}
+                                            className="text-[11px] font-bold text-primary hover:underline flex items-center gap-1 cursor-pointer"
+                                        >
+                                            <Pencil className="w-3 h-3" />
+                                            ویرایش
+                                        </button>
                                     </div>
 
-                                    <div className="flex justify-between pb-2 border-b border-border-subtle/50">
-                                        <span className="text-text-light">مدل قیمت‌گذاری:</span>
-                                        <span className="font-bold text-primary">{activePriceModel?.displayName}</span>
+                                    {(filledPricingFields.length > 0 || extraPricingFields.length > 0) ? (
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                                            {filledPricingFields.map((field) => {
+                                                const val = pricingValues[field.key];
+                                                const displayVal = formatPricingFieldValue(field, val);
+                                                const isValLong = typeof displayVal === "string" && displayVal.length > 22;
+                                                return (
+                                                    <div
+                                                        key={field.key}
+                                                        className={cn(
+                                                            "p-3 bg-surface rounded-xl border border-border-subtle/70 text-xs",
+                                                            isValLong
+                                                                ? "flex flex-col gap-1 items-start"
+                                                                : "flex flex-wrap items-baseline justify-between gap-x-2 gap-y-1"
+                                                        )}
+                                                    >
+                                                        <span className="text-text-light font-medium shrink-0">{field.label}:</span>
+                                                        <span className={cn(
+                                                            "font-black text-brand break-words min-w-0 [overflow-wrap:anywhere]",
+                                                            isValLong ? "text-right w-full" : "text-left"
+                                                        )}>
+                                                            {displayVal}
+                                                        </span>
+                                                    </div>
+                                                );
+                                            })}
+                                            {extraPricingFields.map((field) => {
+                                                const isValLong = typeof field.displayValue === "string" && field.displayValue.length > 22;
+                                                return (
+                                                    <div
+                                                        key={field.key}
+                                                        className={cn(
+                                                            "p-3 bg-surface rounded-xl border border-border-subtle/70 text-xs",
+                                                            isValLong
+                                                                ? "flex flex-col gap-1 items-start"
+                                                                : "flex flex-wrap items-baseline justify-between gap-x-2 gap-y-1"
+                                                        )}
+                                                    >
+                                                        <span className="text-text-light font-medium shrink-0">{field.label}:</span>
+                                                        <span className={cn(
+                                                            "font-black text-brand break-words min-w-0 [overflow-wrap:anywhere]",
+                                                            isValLong ? "text-right w-full" : "text-left"
+                                                        )}>
+                                                            {field.displayValue}
+                                                        </span>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    ) : (
+                                        <div className="py-2 text-xs text-text-light">
+                                            <span>نرخ مشخصی تعیین نشده است. نرخ پایه پیش‌فرض: </span>
+                                            <span className="font-bold text-brand">{formatPrice(Number(formData.nightlyPrice || 0))}</span>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Section 3: Attributes and Technical Specs */}
+                                {(filledNonBooleanAttrs.length > 0 || activeBooleanFeatures.length > 0 || extraAttributes.length > 0) && (
+                                    <div className="bg-surface-secondary/70 rounded-2xl p-4 sm:p-5 border border-border-subtle space-y-3">
+                                        <div className="flex items-center justify-between pb-2 border-b border-border-subtle">
+                                            <h3 className="text-xs sm:text-sm font-black text-brand flex items-center gap-2">
+                                                <Home className="w-4 h-4 text-primary" />
+                                                مشخصات فنی و امکانات اقامتگاه
+                                            </h3>
+                                            <button
+                                                type="button"
+                                                onClick={() => setStep("DETAILS")}
+                                                className="text-[11px] font-bold text-primary hover:underline flex items-center gap-1 cursor-pointer"
+                                            >
+                                                <Pencil className="w-3 h-3" />
+                                                ویرایش
+                                            </button>
+                                        </div>
+
+                                        {/* Non-boolean attributes */}
+                                        {(filledNonBooleanAttrs.length > 0 || extraAttributes.length > 0) && (
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 pt-1">
+                                                {filledNonBooleanAttrs.map((attr) => {
+                                                    const val = formData.attributes?.[attr.key];
+                                                    const displayVal = formatAttributeValue(attr, val);
+                                                    const isValLong = typeof displayVal === "string" && displayVal.length > 22;
+                                                    return (
+                                                        <div
+                                                            key={attr.key}
+                                                            className={cn(
+                                                                "p-3 bg-surface rounded-xl border border-border-subtle/70 text-xs",
+                                                                isValLong
+                                                                    ? "flex flex-col gap-1 items-start"
+                                                                    : "flex flex-wrap items-baseline justify-between gap-x-2 gap-y-1"
+                                                            )}
+                                                        >
+                                                            <span className="text-text-light font-medium shrink-0">{attr.label}:</span>
+                                                            <span className={cn(
+                                                                "font-bold text-brand break-words min-w-0 [overflow-wrap:anywhere]",
+                                                                isValLong ? "text-right w-full" : "text-left"
+                                                            )}>
+                                                                {displayVal}
+                                                            </span>
+                                                        </div>
+                                                    );
+                                                })}
+                                                {extraAttributes.map((attr) => {
+                                                    const isValLong = typeof attr.displayValue === "string" && attr.displayValue.length > 22;
+                                                    return (
+                                                        <div
+                                                            key={attr.key}
+                                                            className={cn(
+                                                                "p-3 bg-surface rounded-xl border border-border-subtle/70 text-xs",
+                                                                isValLong
+                                                                    ? "flex flex-col gap-1 items-start"
+                                                                    : "flex flex-wrap items-baseline justify-between gap-x-2 gap-y-1"
+                                                            )}
+                                                        >
+                                                            <span className="text-text-light font-medium shrink-0">{attr.label}:</span>
+                                                            <span className={cn(
+                                                                "font-bold text-brand break-words min-w-0 [overflow-wrap:anywhere]",
+                                                                isValLong ? "text-right w-full" : "text-left"
+                                                            )}>
+                                                                {attr.displayValue}
+                                                            </span>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
+
+                                        {/* Boolean amenities */}
+                                        {activeBooleanFeatures.length > 0 && (
+                                            <div className="pt-2 border-t border-border-subtle/60 space-y-2">
+                                                <span className="text-xs font-bold text-text-light block">ویژگی‌ها و امکانات رفاهی:</span>
+                                                <div className="flex flex-wrap gap-2">
+                                                    {activeBooleanFeatures.map((feat) => (
+                                                        <span
+                                                            key={feat.key}
+                                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface border border-border-subtle text-xs font-bold text-brand shadow-2xs"
+                                                        >
+                                                            <Check className="w-3.5 h-3.5 text-primary shrink-0" />
+                                                            <span>{feat.label}</span>
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* Section 4: Media Gallery Preview */}
+                                <div className="bg-surface-secondary/70 rounded-2xl p-4 sm:p-5 border border-border-subtle space-y-3">
+                                    <div className="flex items-center justify-between pb-2 border-b border-border-subtle">
+                                        <h3 className="text-xs sm:text-sm font-black text-brand flex items-center gap-2">
+                                            <ImageIcon className="w-4 h-4 text-primary" />
+                                            تصاویر و رسانه‌های اقامتگاه ({toPersianDigits(formData.mediaIds?.length || 0)} فایل)
+                                        </h3>
+                                        <button
+                                            type="button"
+                                            onClick={() => setStep("BASIC_INFO")}
+                                            className="text-[11px] font-bold text-primary hover:underline flex items-center gap-1 cursor-pointer"
+                                        >
+                                            <Pencil className="w-3 h-3" />
+                                            ویرایش
+                                        </button>
                                     </div>
 
-                                    <div className="flex justify-between pb-2 border-b border-border-subtle/50">
-                                        <span className="text-text-light">نرخ اجاره هر شب:</span>
-                                        <span className="font-black text-brand">
-                                            {formatPrice(Number(pricingValues.nightlyPrice || formData.nightlyPrice || 0))}
-                                        </span>
-                                    </div>
+                                    {formData.mediaIds && formData.mediaIds.length > 0 ? (
+                                        <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 pt-1">
+                                            {formData.mediaIds.map((m, idx) => (
+                                                <div
+                                                    key={m.id || idx}
+                                                    className="relative aspect-4/3 rounded-xl overflow-hidden border border-border-subtle bg-surface-secondary group"
+                                                >
+                                                    <img
+                                                        src={getMediaUrl(m.id)}
+                                                        alt={`رسانه ${toPersianDigits(idx + 1)}`}
+                                                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                                    />
+                                                    {m.type === "VIDEO" && (
+                                                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                                                            <Video className="w-4 h-4 text-white" />
+                                                        </div>
+                                                    )}
+                                                    {idx === 0 && (
+                                                        <span className="absolute bottom-1 right-1 text-[9px] font-bold bg-primary text-white px-1.5 py-0.5 rounded shadow-xs">
+                                                            تصویر اصلی
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <p className="text-xs text-error font-medium">تصویری بارگذاری نشده است.</p>
+                                    )}
+                                </div>
 
-                                    <div className="flex justify-between pb-2 border-b border-border-subtle/50">
-                                        <span className="text-text-light">تعداد رسانه‌ها:</span>
-                                        <span className="font-bold text-brand">{toPersianDigits(formData.mediaIds?.length || 0)} فایل</span>
+                                {/* Section 5: Description */}
+                                <div className="bg-surface-secondary/70 rounded-2xl p-4 sm:p-5 border border-border-subtle space-y-2">
+                                    <div className="flex items-center justify-between pb-2 border-b border-border-subtle">
+                                        <h3 className="text-xs sm:text-sm font-black text-brand flex items-center gap-2">
+                                            <FileText className="w-4 h-4 text-primary" />
+                                            توضیحات اقامتگاه
+                                        </h3>
+                                        <button
+                                            type="button"
+                                            onClick={() => setStep("BASIC_INFO")}
+                                            className="text-[11px] font-bold text-primary hover:underline flex items-center gap-1 cursor-pointer"
+                                        >
+                                            <Pencil className="w-3 h-3" />
+                                            ویرایش
+                                        </button>
                                     </div>
-
-                                    <div className="border-t border-border-subtle/60 pt-3">
-                                        <p className="text-text-light text-xs mb-1">توضیحات:</p>
-                                        <p className="text-xs text-text-main line-clamp-3 leading-relaxed">
-                                            {formData.description}
-                                        </p>
-                                    </div>
+                                    <p className="text-xs sm:text-sm text-text-main whitespace-pre-line leading-relaxed pt-1">
+                                        {formData.description || "توضیحاتی ثبت نشده است."}
+                                    </p>
                                 </div>
                             </div>
                         )}
