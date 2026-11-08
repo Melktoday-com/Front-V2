@@ -838,7 +838,7 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
                             <h2 className="text-base font-black text-brand">موقعیت روی نقشه</h2>
                             <div className="h-64 rounded-2xl overflow-hidden border border-border-subtle shadow-xs">
                                 <Map
-                                    ads={[ad]}
+                                    point={[lat, lng]}
                                     center={[lat, lng]}
                                     zoom={15}
                                 />

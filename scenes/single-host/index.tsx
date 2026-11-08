@@ -1,10 +1,16 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useMemo, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSafeBack } from "@/hooks/useSafeBack";
 import { useRouter, useSearchParams } from "next/navigation";
+import type { Swiper as SwiperType } from "swiper";
+import { FreeMode } from "swiper/modules";
+import { Swiper, SwiperSlide } from "swiper/react";
+
+import "swiper/css";
+import "swiper/css/free-mode";
 import {
   useShowcase,
   useShowcaseListings,
@@ -57,25 +63,15 @@ export default function SingleHostScene({ idOrSlug, initialData }: SingleHostSce
   const requestedTab = searchParams.get("tab");
   const handleBack = useSafeBack("/");
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<"rentals" | "ads" | "posts" | "about">(() => {
+  type HostTabType = "rentals" | "ads" | "posts" | "about";
+
+  const swiperRef = useRef<SwiperType | null>(null);
+  const [activeTab, setActiveTab] = useState<HostTabType>(() => {
     if (requestedTab === "ads") return "ads";
     if (requestedTab === "posts") return "posts";
     if (requestedTab === "about") return "about";
     return "rentals";
   });
-
-  const handleTabChange = (tab: "rentals" | "ads" | "posts" | "about") => {
-    setActiveTab(tab);
-    if (typeof window !== "undefined") {
-      const url = new URL(window.location.href);
-      if (tab === "rentals") {
-        url.searchParams.delete("tab");
-      } else {
-        url.searchParams.set("tab", tab);
-      }
-      window.history.replaceState(null, "", url.toString());
-    }
-  };
   const [selectedPost, setSelectedPost] = useState<UnifiedPost | null>(null);
 
   // Queries
@@ -190,7 +186,7 @@ export default function SingleHostScene({ idOrSlug, initialData }: SingleHostSce
   }
 
   return (
-    <div className="min-h-screen bg-soft-bg pb-24 lg:pb-10" dir="rtl">
+    <div className="min-h-screen bg-soft-bg pb-34 lg:pb-10" dir="rtl">
       {/* Cover Banner */}
       <div className="relative h-48 sm:h-64 md:h-80 w-full bg-linear-to-l from-emerald-800 to-teal-900 overflow-hidden">
         {header.coverUrl ? (

@@ -773,12 +773,7 @@ export default function ResidenceDetailScene({ initialData }: ResidenceDetailSce
                             </div>
                             <div className="h-64 rounded-2xl overflow-hidden border border-border-subtle shadow-xs">
                                 <Map
-                                    ads={[{
-                                        adId: residence.id,
-                                        title: residence.title,
-                                        pricing: {},
-                                        location: { coordinates: { latitude: lat!, longitude: lng! } },
-                                    } as any]}
+                                    point={[lat!, lng!]}
                                     center={[lat!, lng!]}
                                     zoom={15}
                                 />

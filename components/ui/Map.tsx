@@ -227,6 +227,50 @@ const LegacyAdMarker = React.memo(function LegacyAdMarker({
     );
 });
 
+const PointMarker = React.memo(function PointMarker({ point }: { point: NormalizedPoint }) {
+    const icon = useMemo(() => getPointIcon(), []);
+
+    return (
+        <Marker position={[point.lat, point.lng]} icon={icon}>
+            {point.title && (
+                <Tooltip
+                    direction="top"
+                    offset={[0, -38]}
+                    className="font-bold text-xs bg-surface/95 text-foreground px-2.5 py-1 rounded-md shadow-md border border-border-subtle"
+                >
+                    {point.title}
+                </Tooltip>
+            )}
+        </Marker>
+    );
+});
+
+const pointIconCache = new globalThis.Map<string, L.DivIcon>();
+
+function getPointIcon(): L.DivIcon {
+    let icon = pointIconCache.get("default");
+    if (!icon) {
+        icon = L.divIcon({
+            className: "custom-point-marker",
+            html: `
+                <div class="flex flex-col items-center transform -translate-x-1/2 -translate-y-full pointer-events-auto">
+                    <div class="text-brand filter drop-shadow-[0_4px_6px_rgba(0,0,0,0.3)] hover:scale-110 transition-transform duration-200 cursor-pointer">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="34" height="42" viewBox="0 0 24 24" fill="none">
+                            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7Z" fill="currentColor" stroke="#ffffff" stroke-width="1.5" stroke-linejoin="round"/>
+                            <circle cx="12" cy="9" r="2.5" fill="#ffffff"/>
+                        </svg>
+                    </div>
+                    <div class="w-3 h-1 bg-black/25 rounded-full blur-[1px] -mt-1"></div>
+                </div>
+            `,
+            iconSize: [0, 0],
+            iconAnchor: [0, 0],
+        });
+        pointIconCache.set("default", icon);
+    }
+    return icon;
+}
+
 function MapViewHandler({ center, zoom, bounds }: { center: [number, number]; zoom: number; bounds?: L.LatLngBoundsExpression }) {
     const map = useMap();
     const prevCenterRef = useRef<[number, number] | null>(null);
@@ -398,6 +442,34 @@ function MapDebugController() {
     return <MapDebugOverlay map={map} />;
 }
 
+export type MapPoint =
+    | [number, number]
+    | { lat: number; lng: number; title?: string }
+    | { latitude: number; longitude: number; title?: string };
+
+interface NormalizedPoint {
+    lat: number;
+    lng: number;
+    title?: string;
+}
+
+function normalizePoint(p: MapPoint): NormalizedPoint | null {
+    if (Array.isArray(p)) {
+        const [lat, lng] = p;
+        if (typeof lat === "number" && !isNaN(lat) && typeof lng === "number" && !isNaN(lng)) {
+            return { lat, lng };
+        }
+    } else if (p && typeof p === "object") {
+        const lat = "lat" in p ? p.lat : "latitude" in p ? p.latitude : undefined;
+        const lng = "lng" in p ? p.lng : "longitude" in p ? p.longitude : undefined;
+        const title = "title" in p ? p.title : undefined;
+        if (typeof lat === "number" && !isNaN(lat) && typeof lng === "number" && !isNaN(lng)) {
+            return { lat, lng, title };
+        }
+    }
+    return null;
+}
+
 interface MapProps {
     ads?: AdSummary[];
     markers?: MapMarkerDto[];
@@ -409,6 +481,8 @@ interface MapProps {
     center?: [number, number];
     zoom?: number;
     bounds?: L.LatLngBoundsExpression;
+    points?: MapPoint[];
+    point?: MapPoint;
     onViewportChange?: (viewport: {
         bounds: { northEast: { lat: number; lng: number }; southWest: { lat: number; lng: number } };
         zoom: number;
@@ -427,6 +501,8 @@ export default function Map({
     center = [35.6892, 51.3890],
     zoom = 12,
     bounds,
+    points,
+    point,
     onViewportChange,
     onBoundsChange,
 }: MapProps) {
@@ -450,6 +526,17 @@ export default function Map({
         typeof center[1] === 'number' &&
         !isNaN(center[1])
     ) ? center : [35.6892, 51.3890];
+
+    // Static point markers (for single item location display without pricing)
+    const normalizedPoints = useMemo(() => {
+        const rawList: MapPoint[] = [];
+        if (point) rawList.push(point);
+        if (points && points.length > 0) rawList.push(...points);
+
+        return rawList
+            .map(normalizePoint)
+            .filter((p): p is NormalizedPoint => p !== null);
+    }, [point, points]);
 
     // If there are ads with locations, we might want to fit the bounds
     const adsWithLocation = useMemo(() => {
@@ -579,6 +666,11 @@ export default function Map({
                         </Polygon>
                     );
                 })}
+
+                {/* Render Point Markers (no pricing) */}
+                {normalizedPoints.map((pt, index) => (
+                    <PointMarker key={`point-${index}-${pt.lat}-${pt.lng}`} point={pt} />
+                ))}
 
                 {/* Render Adaptive Clusters */}
                 {clusters?.map((cluster) => (
