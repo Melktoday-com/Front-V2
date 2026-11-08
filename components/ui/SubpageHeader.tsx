@@ -13,6 +13,8 @@ interface SubpageHeaderProps {
     action?: React.ReactNode;
     className?: string;
     titleClassName?: string;
+    backButtonClassName?: string;
+    actionClassName?: string;
 }
 
 export function SubpageHeader({
@@ -22,6 +24,8 @@ export function SubpageHeader({
     action,
     className,
     titleClassName,
+    backButtonClassName,
+    actionClassName,
 }: SubpageHeaderProps) {
     const router = useRouter();
 
@@ -43,7 +47,7 @@ export function SubpageHeader({
             )}
             dir="rtl"
         >
-            <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center">
+            <div className={cn("absolute right-0 top-1/2 -translate-y-1/2 flex items-center", backButtonClassName)}>
                 {backHref && !onBack ? (
                     <Link
                         href={backHref}
@@ -76,7 +80,7 @@ export function SubpageHeader({
             </h1>
 
             {action && (
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 flex items-center shrink-0">
+                <div className={cn("absolute left-0 top-1/2 -translate-y-1/2 flex items-center shrink-0", actionClassName)}>
                     {action}
                 </div>
             )}

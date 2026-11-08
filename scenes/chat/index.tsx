@@ -24,6 +24,7 @@ function ChatContent() {
                     title="پیام‌ها"
                     onBack={() => router.push('/profile')}
                     className="px-4 py-3.5 border-b border-soft-border mb-0 bg-surface"
+                    backButtonClassName="right-4"
                 />
 
                 <div className="flex-1 overflow-y-auto custom-scrollbar p-2 pb-24 md:pb-2">
