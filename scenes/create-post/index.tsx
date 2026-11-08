@@ -3,8 +3,9 @@
 import { InstagramPostEditor } from "@/components/posts/InstagramPostEditor";
 import { MediumPostEditor } from "@/components/posts/MediumPostEditor";
 import { useMyAgency } from "@/hooks/useAgencies";
+import { useAdminPermissions } from "@/hooks/useAdminPermissions";
 import { useAuth, useSwitchRole } from "@/hooks/useAuth";
-import { useCreatePost } from "@/hooks/usePosts";
+import { useCreatePost, useSinglePost, useUpdatePost } from "@/hooks/usePosts";
 import { useHostProfile } from "@/hooks/useShowcase";
 import { useMeProfile } from "@/hooks/useUser";
 import { cn, getMediaUrl, toPersianDigits } from "@/lib/utils";
@@ -33,7 +34,7 @@ import {
   Trash2
 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -50,12 +51,28 @@ interface PublisherOption {
 
 export default function CreatePostScene() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const editPostId = searchParams.get("edit");
+  const isEditMode = Boolean(editPostId);
+
   const { user, isLoggedIn, isLoading: isLoadingAuth } = useAuth();
+  const { isSuperAdmin, hasPermission } = useAdminPermissions();
   const { data: profile } = useMeProfile();
   const switchRoleMutation = useSwitchRole();
   const { data: myAgency, isLoading: isLoadingAgency } = useMyAgency();
   const { data: hostProfile, isLoading: isLoadingHost, refetch: refetchHost } = useHostProfile();
+
+  const {
+    data: existingPost,
+    isLoading: isLoadingExistingPost,
+    isError: isErrorExistingPost,
+  } = useSinglePost(editPostId || "", isEditMode);
+
   const createPostMutation = useCreatePost();
+  const updatePostMutation = useUpdatePost();
+
+  const isAuthor = Boolean(user?.userId && existingPost?.authorUserId === user.userId);
+  const canEdit = !isEditMode || isAuthor || isSuperAdmin || hasPermission("posts.edit");
 
   // Wizard Step: 1 = Choose Publisher & Format, 2 = Create Content, 3 = Review & Publish
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
@@ -80,6 +97,9 @@ export default function CreatePostScene() {
   const [medSlug, setMedSlug] = useState("");
   const [medCategory, setMedCategory] = useState("تحلیل بازار مسکن");
   const [medFeaturedImage, setMedFeaturedImage] = useState("");
+
+  // Flag to ensure edit form is initialized only once when existingPost arrives
+  const [hasInitializedEdit, setHasInitializedEdit] = useState(false);
 
   // Determine allowed publisher options based on user role and profiles
   const publisherOptions: PublisherOption[] = useMemo(() => {
@@ -139,11 +159,32 @@ export default function CreatePostScene() {
       });
     }
 
-    return options;
-  }, [user, myAgency, hostProfile]);
+    // 4. In edit mode, if post publisher is not in options, include it so activePublisher is defined
+    if (existingPost) {
+      const pubType = existingPost.publisherType;
+      const pubId = existingPost.publisherId || (existingPost as any).agencyId || "";
+      if (pubType && pubId) {
+        const key = `${pubType}:${pubId}`;
+        const exists = options.some((p) => `${p.type}:${p.id}` === key);
+        if (!exists) {
+          options.unshift({
+            type: pubType as PublisherType,
+            id: pubId,
+            name: existingPost.publisher?.name || (existingPost as any).agency?.name || "ناشر فعلی مطلب",
+            avatarUrl: existingPost.publisher?.avatarUrl || existingPost.publisher?.logoUrl || undefined,
+            isVerified: existingPost.publisher?.isVerified,
+            label: `ناشر اصلی: ${existingPost.publisher?.name || (existingPost as any).agency?.name || "ناشر فعلی"}`,
+          });
+        }
+      }
+    }
 
-  // Set default selected publisher
+    return options;
+  }, [user, myAgency, hostProfile, existingPost]);
+
+  // Set default selected publisher (in create mode)
   useEffect(() => {
+    if (isEditMode) return;
     if (publisherOptions.length > 0) {
       const exists = publisherOptions.some(
         (p) => `${p.type}:${p.id}` === selectedPublisherKey
@@ -152,7 +193,45 @@ export default function CreatePostScene() {
         setSelectedPublisherKey(`${publisherOptions[0].type}:${publisherOptions[0].id}`);
       }
     }
-  }, [publisherOptions, selectedPublisherKey]);
+  }, [isEditMode, publisherOptions, selectedPublisherKey]);
+
+  // Initialize form state when editing an existing post
+  useEffect(() => {
+    if (!isEditMode || !existingPost || hasInitializedEdit) return;
+
+    // Detect format
+    const hasMultipleMedia = (existingPost.mediaIds?.length || 0) > 1;
+    const isShortText = (existingPost.content?.length || 0) < 500 && !existingPost.content?.includes("## ");
+    const detectedFormat: PostFormat =
+      hasMultipleMedia || (isShortText && !existingPost.summary) ? "instagram" : "medium";
+    setPostFormat(detectedFormat);
+
+    // Instagram state
+    setIgTitle(existingPost.title || "");
+    setIgCaption(existingPost.content || "");
+    setIgCategory(existingPost.category || "معرفی ملک ویژه");
+    setIgMedia(existingPost.mediaIds || []);
+    setIgLocation((existingPost as any).location || "");
+
+    // Medium state
+    setMedTitle(existingPost.title || "");
+    setMedSummary(existingPost.summary || "");
+    setMedContent(existingPost.content || "");
+    setMedSlug(existingPost.slug || "");
+    setMedCategory(existingPost.category || "تحلیل بازار مسکن");
+    setMedFeaturedImage(existingPost.mediaIds?.[0]?.id || "");
+
+    // Set selected publisher key
+    const pubType = existingPost.publisherType;
+    const pubId = existingPost.publisherId || (existingPost as any).agencyId || "";
+    if (pubType && pubId) {
+      setSelectedPublisherKey(`${pubType}:${pubId}`);
+    }
+
+    // Direct jump to Step 2 so user can immediately edit their content
+    setCurrentStep(2);
+    setHasInitializedEdit(true);
+  }, [isEditMode, existingPost, hasInitializedEdit]);
 
   const activePublisher = useMemo(() => {
     if (!selectedPublisherKey) return publisherOptions[0] || null;
@@ -164,8 +243,9 @@ export default function CreatePostScene() {
     );
   }, [selectedPublisherKey, publisherOptions]);
 
-  // Load draft from localStorage if available
+  // Load draft from localStorage if available (only in create mode)
   useEffect(() => {
+    if (isEditMode) return;
     try {
       const savedIg = localStorage.getItem("melktoday_draft_instagram");
       if (savedIg) {
@@ -192,10 +272,11 @@ export default function CreatePostScene() {
     } catch {
       // ignore
     }
-  }, []);
+  }, [isEditMode]);
 
-  // Auto-save draft on changes
+  // Auto-save draft on changes (only in create mode)
   useEffect(() => {
+    if (isEditMode) return;
     if (igTitle || igCaption || igMedia.length > 0) {
       localStorage.setItem(
         "melktoday_draft_instagram",
@@ -208,9 +289,10 @@ export default function CreatePostScene() {
         })
       );
     }
-  }, [igTitle, igCaption, igCategory, igMedia, igLocation]);
+  }, [isEditMode, igTitle, igCaption, igCategory, igMedia, igLocation]);
 
   useEffect(() => {
+    if (isEditMode) return;
     if (medTitle || medContent || medFeaturedImage) {
       localStorage.setItem(
         "melktoday_draft_medium",
@@ -224,7 +306,7 @@ export default function CreatePostScene() {
         })
       );
     }
-  }, [medTitle, medSummary, medContent, medSlug, medCategory, medFeaturedImage]);
+  }, [isEditMode, medTitle, medSummary, medContent, medSlug, medCategory, medFeaturedImage]);
 
   const clearDraft = () => {
     if (postFormat === "instagram") {
@@ -285,6 +367,8 @@ export default function CreatePostScene() {
   };
 
   // Handle Submit / Publish
+  const isSubmitting = createPostMutation.isPending || updatePostMutation.isPending;
+
   const handlePublish = async (isPublished = true) => {
     if (!activePublisher) {
       toast.error("ناشر پست مشخص نیست.");
@@ -292,6 +376,73 @@ export default function CreatePostScene() {
     }
 
     try {
+      if (isEditMode && editPostId) {
+        if (postFormat === "instagram") {
+          if (igMedia.length === 0) {
+            toast.error("لطفاً حداقل یک تصویر برای پست اینستاگرامی آپلود کنید.");
+            return;
+          }
+
+          const effectiveTitle =
+            igTitle.trim() ||
+            igCaption.trim().slice(0, 45) ||
+            `پست تصویری ${activePublisher.name}`;
+
+          await updatePostMutation.mutateAsync({
+            id: editPostId,
+            data: {
+              title: effectiveTitle,
+              content: igCaption.trim() || effectiveTitle,
+              category: igCategory || "معرفی ملک ویژه",
+              mediaIds: igMedia,
+              isPublished,
+            },
+          });
+
+          toast.success(
+            isPublished
+              ? "مطلب با موفقیت بروزرسانی و منتشر شد!"
+              : "تغییرات مطلب به عنوان پیش‌نویس ذخیره شد."
+          );
+          router.push(`/posts/${existingPost?.slug || editPostId}`);
+        } else {
+          if (!medTitle.trim()) {
+            toast.error("لطفاً عنوان مقاله را وارد کنید.");
+            return;
+          }
+          if (!medContent.trim()) {
+            toast.error("متن مقاله نمی‌تواند خالی باشد.");
+            return;
+          }
+
+          const mediaIds: MediaReference[] = [];
+          if (medFeaturedImage) {
+            mediaIds.push({ id: medFeaturedImage, type: "IMAGE" });
+          }
+
+          await updatePostMutation.mutateAsync({
+            id: editPostId,
+            data: {
+              title: medTitle.trim(),
+              summary: medSummary.trim() || undefined,
+              content: medContent.trim(),
+              slug: medSlug.trim() || undefined,
+              category: medCategory || "تحلیل بازار مسکن",
+              mediaIds,
+              isPublished,
+            },
+          });
+
+          toast.success(
+            isPublished
+              ? "مقاله تخصصی با موفقیت بروزرسانی و منتشر شد!"
+              : "تغییرات مقاله به عنوان پیش‌نویس ذخیره شد."
+          );
+          router.push(`/posts/${medSlug.trim() || existingPost?.slug || editPostId}`);
+        }
+        return;
+      }
+
       if (postFormat === "instagram") {
         if (igMedia.length === 0) {
           toast.error("لطفاً حداقل یک تصویر برای پست اینستاگرامی آپلود کنید.");
@@ -363,17 +514,19 @@ export default function CreatePostScene() {
           ? (err.response?.data as { message: string }).message
           : err instanceof Error
             ? err.message
-            : "خطایی در انتشار پست رخ داد.";
+            : "خطایی در ذخیره پست رخ داد.";
       toast.error(errorMsg);
     }
   };
 
   // ── Loading & Auth Guards ──────────────────────────────────────────────
-  if (isLoadingAuth || isLoadingAgency || isLoadingHost) {
+  if (isLoadingAuth || isLoadingAgency || isLoadingHost || (isEditMode && isLoadingExistingPost)) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center gap-3" dir="rtl">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        <p className="text-sm font-bold text-foreground-secondary">در حال بارگذاری استودیو محتوا...</p>
+        <p className="text-sm font-bold text-foreground-secondary">
+          {isEditMode ? "در حال بارگذاری اطلاعات مطلب جهت ویرایش..." : "در حال بارگذاری استودیو محتوا..."}
+        </p>
       </div>
     );
   }
@@ -387,14 +540,62 @@ export default function CreatePostScene() {
         <div className="space-y-1.5">
           <h2 className="text-lg font-black text-brand">ورود به حساب کاربری</h2>
           <p className="text-xs text-foreground-muted leading-relaxed">
-            برای انتشار پست و مقالات ملکی، لطفاً ابتدا وارد حساب کاربری خود شوید.
+            برای انتشار یا ویرایش پست و مقالات ملکی، لطفاً ابتدا وارد حساب کاربری خود شوید.
           </p>
         </div>
         <Link
-          href={`/auth?redirect=${encodeURIComponent("/posts/create")}`}
+          href={`/auth?redirect=${encodeURIComponent(isEditMode ? `/posts/create?edit=${editPostId}` : "/posts/create")}`}
           className="inline-flex w-full items-center justify-center gap-2 py-3 rounded-2xl bg-brand text-white text-sm font-bold hover:bg-brand/90 transition-all shadow-xs"
         >
           <span>ورود / ثبت‌نام</span>
+          <ArrowRight className="w-4 h-4" />
+        </Link>
+      </div>
+    );
+  }
+
+  // Not found in edit mode
+  if (isEditMode && (isErrorExistingPost || (!isLoadingExistingPost && !existingPost))) {
+    return (
+      <div className="max-w-md mx-auto my-16 p-8 rounded-3xl bg-surface border border-border-subtle text-center space-y-5 shadow-sm" dir="rtl">
+        <div className="w-14 h-14 mx-auto rounded-2xl bg-rose-500/10 text-rose-600 flex items-center justify-center">
+          <AlertTriangle className="w-7 h-7" />
+        </div>
+        <div className="space-y-1.5">
+          <h2 className="text-lg font-black text-brand">مطلب یافت نشد</h2>
+          <p className="text-xs text-foreground-muted leading-relaxed">
+            مطلبی که قصد ویرایش آن را دارید یافت نشد یا ممکن است قبلاً حذف شده باشد.
+          </p>
+        </div>
+        <Link
+          href="/explore"
+          className="inline-flex w-full items-center justify-center gap-2 py-3 rounded-2xl bg-brand text-white text-sm font-bold hover:bg-brand/90 transition-all shadow-xs"
+        >
+          <span>بازگشت به اکسپلور</span>
+          <ArrowRight className="w-4 h-4" />
+        </Link>
+      </div>
+    );
+  }
+
+  // Permission denied in edit mode
+  if (isEditMode && existingPost && !canEdit) {
+    return (
+      <div className="max-w-md mx-auto my-16 p-8 rounded-3xl bg-surface border border-border-subtle text-center space-y-5 shadow-sm" dir="rtl">
+        <div className="w-14 h-14 mx-auto rounded-2xl bg-warning-subtle text-warning flex items-center justify-center">
+          <Lock className="w-7 h-7" />
+        </div>
+        <div className="space-y-1.5">
+          <h2 className="text-lg font-black text-brand">عدم دسترسی به ویرایش</h2>
+          <p className="text-xs text-foreground-muted leading-relaxed">
+            شما دسترسی لازم برای ویرایش این مطلب را ندارید. فقط نویسنده مطلب یا مدیران سیستم می‌توانند آن را ویرایش کنند.
+          </p>
+        </div>
+        <Link
+          href={`/posts/${existingPost.slug || existingPost.id}`}
+          className="inline-flex w-full items-center justify-center gap-2 py-3 rounded-2xl bg-brand text-white text-sm font-bold hover:bg-brand/90 transition-all shadow-xs"
+        >
+          <span>بازگشت به صفحه مطلب</span>
           <ArrowRight className="w-4 h-4" />
         </Link>
       </div>
@@ -561,7 +762,7 @@ export default function CreatePostScene() {
           <div>
             <div className="flex items-center gap-2">
               <span className="px-2.5 py-1 rounded-lg bg-surface-secondary text-brand text-[11px] font-bold">
-                استودیو محتوای ملک‌تودی
+                {isEditMode ? "استودیو محتوای ملک‌تودی • ویرایش پست" : "استودیو محتوای ملک‌تودی"}
               </span>
               {activePublisher && (
                 <span className="flex items-center gap-1 text-xs text-primary font-bold">
@@ -571,19 +772,29 @@ export default function CreatePostScene() {
               )}
             </div>
             <h1 className="text-xl sm:text-2xl font-black text-brand mt-1.5">
-              ایجاد و انتشار محتوای جدید
+              {isEditMode ? `ویرایش مطلب «${existingPost?.title || ""}»` : "ایجاد و انتشار محتوای جدید"}
             </h1>
           </div>
 
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={clearDraft}
-              className="flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-bold text-foreground-muted hover:text-error hover:bg-error-subtle transition-all"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-              <span>پاکسازی فرم</span>
-            </button>
+            {isEditMode ? (
+              <Link
+                href={`/posts/${existingPost?.slug || editPostId}`}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-foreground-muted hover:text-brand hover:bg-surface-secondary transition-all"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>انصراف و بازگشت</span>
+              </Link>
+            ) : (
+              <button
+                type="button"
+                onClick={clearDraft}
+                className="flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-bold text-foreground-muted hover:text-error hover:bg-error-subtle transition-all"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>پاکسازی فرم</span>
+              </button>
+            )}
             <Link
               href="/explore"
               className="flex items-center gap-1 px-4 py-2 rounded-xl text-xs font-bold text-brand bg-surface-secondary hover:bg-slate-200 transition-all"
@@ -692,7 +903,9 @@ export default function CreatePostScene() {
             </div>
             <div className="min-w-0">
               <p className="text-xs font-black truncate">مرحله سوم</p>
-              <p className="text-[10px] opacity-80 truncate hidden sm:block">بازبینی و انتشار</p>
+              <p className="text-[10px] opacity-80 truncate hidden sm:block">
+                {isEditMode ? "بازبینی و ذخیره" : "بازبینی و انتشار"}
+              </p>
             </div>
           </button>
         </div>
@@ -890,7 +1103,7 @@ export default function CreatePostScene() {
               onClick={handleNextFromStep1}
               className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-brand text-white text-xs sm:text-sm font-bold hover:bg-brand/90 transition-all shadow-xs"
             >
-              <span>ادامه و ورود به ویرایشگر محتوا</span>
+              <span>{isEditMode ? "ادامه ویرایش محتوا" : "ادامه و ورود به ویرایشگر محتوا"}</span>
               <ChevronLeft className="w-4 h-4 text-primary" />
             </button>
           </div>
@@ -966,7 +1179,7 @@ export default function CreatePostScene() {
               onClick={handleNextFromStep2}
               className="flex items-center gap-2 px-6 py-2.5 rounded-2xl bg-brand text-white text-xs font-bold hover:bg-brand/90 transition-all shadow-xs"
             >
-              <span>مرحله بعد: بازبینی و انتشار نهایی</span>
+              <span>{isEditMode ? "مرحله بعد: بازبینی و ذخیره نهایی" : "مرحله بعد: بازبینی و انتشار نهایی"}</span>
               <ChevronLeft className="w-4 h-4 text-primary" />
             </button>
           </div>
@@ -1033,31 +1246,31 @@ export default function CreatePostScene() {
                 <div className="pt-4 border-t border-border-subtle space-y-3">
                   <button
                     type="button"
-                    disabled={createPostMutation.isPending}
+                    disabled={isSubmitting}
                     onClick={() => handlePublish(true)}
                     className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-primary text-[#ffff] font-black text-sm hover:bg-primary/90 transition-all shadow-md disabled:opacity-50"
                   >
-                    {createPostMutation.isPending ? (
+                    {isSubmitting ? (
                       <>
                         <Loader2 className="w-5 h-5 animate-spin" />
-                        <span>در حال ارسال و انتشار محتوا...</span>
+                        <span>{isEditMode ? "در حال ذخیره تغییرات..." : "در حال ارسال و انتشار محتوا..."}</span>
                       </>
                     ) : (
                       <>
                         <Send className="w-5 h-5" />
-                        <span>انتشار رسمی در اکسپلور و صفحه ناشر</span>
+                        <span>{isEditMode ? "ذخیره تغییرات و انتشار در اکسپلور" : "انتشار رسمی در اکسپلور و صفحه ناشر"}</span>
                       </>
                     )}
                   </button>
 
                   <button
                     type="button"
-                    disabled={createPostMutation.isPending}
+                    disabled={isSubmitting}
                     onClick={() => handlePublish(false)}
                     className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-surface-secondary hover:bg-slate-200 text-foreground-secondary font-bold text-xs transition-all disabled:opacity-50"
                   >
                     <Save className="w-4 h-4" />
-                    <span>ذخیره به عنوان پیش‌نویس (غیرعمومی)</span>
+                    <span>{isEditMode ? "ذخیره تغییرات به عنوان پیش‌نویس (غیرعمومی)" : "ذخیره به عنوان پیش‌نویس (غیرعمومی)"}</span>
                   </button>
 
                   <button
