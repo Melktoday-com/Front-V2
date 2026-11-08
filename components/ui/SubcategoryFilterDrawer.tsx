@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/Button";
-import { cn, formatPrice, formatPriceWords, toPersianDigits } from "@/lib/utils";
+import { cn, formatPrice, formatPriceWords, toEnglishDigits, toPersianDigits } from "@/lib/utils";
 import { AttributeDefinition, PriceModel, SubcategoryConfigResponse } from "@/types/api/ads.types";
 import { NumericRangeFilterDto } from "@/types/api/search.types";
 import { Check, ChevronDown, Filter, RotateCcw, SlidersHorizontal, Sparkles, X } from "lucide-react";
@@ -269,11 +269,19 @@ export function SubcategoryFilterDrawer({
     ]);
 
     const handleApply = () => {
+        const parseNum = (s: string) => {
+            if (!s) return undefined;
+            const cleaned = toEnglishDigits(s).replace(/,/g, "").trim();
+            if (!cleaned) return undefined;
+            const n = Number(cleaned);
+            return !isNaN(n) ? n : undefined;
+        };
+
         const outNumeric: Record<string, NumericRangeFilterDto> = {};
         for (const [k, v] of Object.entries(numericAttrs)) {
-            const minNum = v.min ? Number(v.min) : undefined;
-            const maxNum = v.max ? Number(v.max) : undefined;
-            if ((minNum !== undefined && !isNaN(minNum)) || (maxNum !== undefined && !isNaN(maxNum))) {
+            const minNum = v.min ? parseNum(v.min) : undefined;
+            const maxNum = v.max ? parseNum(v.max) : undefined;
+            if (minNum !== undefined || maxNum !== undefined) {
                 outNumeric[k] = { min: minNum, max: maxNum };
             }
         }
@@ -295,20 +303,20 @@ export function SubcategoryFilterDrawer({
 
         onApply({
             priceModelKey: priceModelKey || undefined,
-            minPrice: minPrice ? Number(minPrice) : undefined,
-            maxPrice: maxPrice ? Number(maxPrice) : undefined,
-            minDeposit: minDeposit ? Number(minDeposit) : undefined,
-            maxDeposit: maxDeposit ? Number(maxDeposit) : undefined,
-            minRent: minRent ? Number(minRent) : undefined,
-            maxRent: maxRent ? Number(maxRent) : undefined,
-            minArea: minArea ? Number(minArea) : undefined,
-            maxArea: maxArea ? Number(maxArea) : undefined,
-            minRooms: minRooms ? Number(minRooms) : undefined,
-            maxRooms: maxRooms ? Number(maxRooms) : undefined,
-            minFloor: minFloor ? Number(minFloor) : undefined,
-            maxFloor: maxFloor ? Number(maxFloor) : undefined,
-            minConstructionYear: minConstructionYear ? Number(minConstructionYear) : undefined,
-            maxConstructionYear: maxConstructionYear ? Number(maxConstructionYear) : undefined,
+            minPrice: parseNum(minPrice),
+            maxPrice: parseNum(maxPrice),
+            minDeposit: parseNum(minDeposit),
+            maxDeposit: parseNum(maxDeposit),
+            minRent: parseNum(minRent),
+            maxRent: parseNum(maxRent),
+            minArea: parseNum(minArea),
+            maxArea: parseNum(maxArea),
+            minRooms: parseNum(minRooms),
+            maxRooms: parseNum(maxRooms),
+            minFloor: parseNum(minFloor),
+            maxFloor: parseNum(maxFloor),
+            minConstructionYear: parseNum(minConstructionYear),
+            maxConstructionYear: parseNum(maxConstructionYear),
             hasParking: hasParking || undefined,
             hasElevator: hasElevator || undefined,
             hasStorage: hasStorage || undefined,
@@ -366,6 +374,7 @@ export function SubcategoryFilterDrawer({
             role="dialog"
             aria-modal="true"
             data-modal="true"
+            data-history-handled="true"
             aria-label="فیلترهای پیشرفته"
         >
             {/* Backdrop */}
@@ -592,6 +601,26 @@ export function SubcategoryFilterDrawer({
                     {hasAreaAttr && (
                         <div className="space-y-2">
                             <label className="text-xs font-bold text-text-main">متراژ (متر مربع)</label>
+                            <div className="flex flex-wrap gap-1.5 pb-1">
+                                {COMMON_AREA_PRESETS.map((areaVal) => {
+                                    const isSelected = minArea === String(areaVal);
+                                    return (
+                                        <button
+                                            key={areaVal}
+                                            type="button"
+                                            onClick={() => setMinArea(isSelected ? "" : String(areaVal))}
+                                            className={cn(
+                                                "px-2.5 py-1 rounded-xl text-xs font-semibold border transition-all cursor-pointer",
+                                                isSelected
+                                                    ? "bg-primary text-white border-primary shadow-xs"
+                                                    : "bg-soft-bg text-secondary border-soft-border hover:border-primary/50"
+                                            )}
+                                        >
+                                            از {toPersianDigits(areaVal)} متر
+                                        </button>
+                                    );
+                                })}
+                            </div>
                             <div className="grid grid-cols-2 gap-2">
                                 <input
                                     type="number"
@@ -615,6 +644,46 @@ export function SubcategoryFilterDrawer({
                     {hasRoomsAttr && (
                         <div className="space-y-2">
                             <label className="text-xs font-bold text-text-main">تعداد اتاق خواب</label>
+                            <div className="flex flex-wrap gap-1.5 pb-1">
+                                {ROOM_OPTIONS.map((opt) => {
+                                    const isSelected =
+                                        opt.value === undefined
+                                            ? !minRooms && !maxRooms
+                                            : opt.value === 4
+                                            ? minRooms === "4" && !maxRooms
+                                            : minRooms === String(opt.value) && maxRooms === String(opt.value);
+
+                                    return (
+                                        <button
+                                            key={opt.label}
+                                            type="button"
+                                            onClick={() => {
+                                                if (opt.value === undefined) {
+                                                    setMinRooms("");
+                                                    setMaxRooms("");
+                                                } else if (isSelected) {
+                                                    setMinRooms("");
+                                                    setMaxRooms("");
+                                                } else if (opt.value === 4) {
+                                                    setMinRooms("4");
+                                                    setMaxRooms("");
+                                                } else {
+                                                    setMinRooms(String(opt.value));
+                                                    setMaxRooms(String(opt.value));
+                                                }
+                                            }}
+                                            className={cn(
+                                                "px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer flex items-center justify-center",
+                                                isSelected
+                                                    ? "bg-primary text-white border-primary shadow-xs"
+                                                    : "bg-soft-bg text-secondary border-soft-border hover:border-primary/50"
+                                            )}
+                                        >
+                                            {opt.label}
+                                        </button>
+                                    );
+                                })}
+                            </div>
                             <div className="grid grid-cols-2 gap-2">
                                 <input
                                     type="number"

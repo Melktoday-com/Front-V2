@@ -400,13 +400,16 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
     const handleApplyFilters = (vals: SubcategoryFilterValues) => {
         const params = new URLSearchParams(searchParams.toString());
 
-        if (selectedCategory) {
-            params.set("categoryKey", selectedCategory);
+        const effectiveCategory = selectedCategory || searchParams.get("categoryKey") || "";
+        const effectiveSubcategory = selectedSubcategory || searchParams.get("subcategoryKey") || "";
+
+        if (effectiveCategory) {
+            params.set("categoryKey", effectiveCategory);
         } else {
             params.delete("categoryKey");
         }
-        if (selectedSubcategory) {
-            params.set("subcategoryKey", selectedSubcategory);
+        if (effectiveSubcategory) {
+            params.set("subcategoryKey", effectiveSubcategory);
         } else {
             params.delete("subcategoryKey");
         }

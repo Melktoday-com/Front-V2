@@ -255,6 +255,7 @@ export function CategoryTreeDialog({
                 role="dialog"
                 aria-modal="true"
                 data-modal="true"
+                data-history-handled="true"
                 className="hidden md:flex fixed inset-0 z-60 items-center justify-center"
             >
                 {/* Backdrop */}
@@ -274,6 +275,7 @@ export function CategoryTreeDialog({
                 role="dialog"
                 aria-modal="true"
                 data-modal="true"
+                data-history-handled="true"
                 className="md:hidden fixed inset-0 z-60 flex flex-col justify-end"
             >
                 {/* Backdrop */}

@@ -57,6 +57,7 @@ export function NeighborhoodDrawer({
             role="dialog"
             aria-modal="true"
             data-modal="true"
+            data-history-handled="true"
             aria-label="انتخاب محله"
         >
             {/* Backdrop */}

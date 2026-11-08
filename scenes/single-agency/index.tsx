@@ -356,7 +356,7 @@ export default function SingleAgencyScene({ initialData }: SingleAgencySceneProp
                                 className="flex-1 sm:flex-initial py-2.5 px-5 rounded-xl bg-slate-900 text-white font-bold text-xs flex items-center justify-center gap-1.5 hover:bg-slate-800 transition-all shadow-xs disabled:opacity-50 cursor-pointer"
                             >
                                 <MessageCircle className="w-4 h-4 text-blue-400" />
-                                <span>{chatMutation.isPending ? "در حال اتصال به چت..." : "گفتگو و مشاوره آنلاین"}</span>
+                                <span>{chatMutation.isPending ? "در حال اتصال به چت..." : "مشاوره آنلاین"}</span>
                             </button>
                         </div>
                     </div>
