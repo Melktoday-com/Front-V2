@@ -988,8 +988,6 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
         }
         adsNavigate(`/ads?${params.toString()}`, "handleSortChange");
     };
-        adsNavigate(`/ads?${params.toString()}`, "handleSortChange");
-    };
 
     const handleSearchChange = (val: string) => {
         setSearch(val);
@@ -1236,6 +1234,278 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                     </div>
                 </div>
             </div>
+
+            {/* Active filter chips (Price, Area, Rooms, Amenities, Dynamic Attributes) */}
+            {activeFiltersCount > 0 && (
+                <div
+                    data-testid="active-filter-chips"
+                    className="flex flex-wrap items-center gap-1.5 px-4 lg:px-6 py-2 bg-soft-bg/60 border-b border-border-subtle"
+                >
+                    <span className="text-[11px] text-secondary font-medium shrink-0">فیلترهای فعال:</span>
+
+                    {/* Price Model chip */}
+                    {urlPriceModel && (
+                        <span className="inline-flex items-center gap-1.5 bg-secondary/10 text-secondary text-xs font-semibold px-2.5 py-1 rounded-full border border-secondary/20">
+                            مدل: {subcatConfig?.allowedPriceModels.find((p) => p.key === urlPriceModel)?.displayName || urlPriceModel}
+                            <button
+                                type="button"
+                                onClick={() => handleRemoveFilterItem("priceModel")}
+                                className="hover:opacity-70 transition-opacity cursor-pointer p-0.5"
+                                title="حذف فیلتر مدل قیمت"
+                            >
+                                <X className="w-3 h-3" />
+                            </button>
+                        </span>
+                    )}
+
+                    {/* Total Price chip */}
+                    {(urlMinPrice !== undefined || urlMaxPrice !== undefined) && (
+                        <span className="inline-flex items-center gap-1.5 bg-primary/10 text-primary text-xs font-semibold px-2.5 py-1 rounded-full border border-primary/20">
+                            قیمت: {urlMinPrice ? `از ${formatPrice(urlMinPrice, "")}` : ""} {urlMaxPrice ? `تا ${formatPrice(urlMaxPrice, "")}` : ""} تومان
+                            <button
+                                type="button"
+                                onClick={() => handleRemoveFilterItem("price")}
+                                className="hover:opacity-70 transition-opacity cursor-pointer p-0.5"
+                                title="حذف فیلتر قیمت"
+                            >
+                                <X className="w-3 h-3" />
+                            </button>
+                        </span>
+                    )}
+
+                    {/* Deposit chip */}
+                    {(urlMinDeposit !== undefined || urlMaxDeposit !== undefined) && (
+                        <span className="inline-flex items-center gap-1.5 bg-primary/10 text-primary text-xs font-semibold px-2.5 py-1 rounded-full border border-primary/20">
+                            ودیعه: {urlMinDeposit ? `از ${formatPrice(urlMinDeposit, "")}` : ""} {urlMaxDeposit ? `تا ${formatPrice(urlMaxDeposit, "")}` : ""} تومان
+                            <button
+                                type="button"
+                                onClick={() => handleRemoveFilterItem("deposit")}
+                                className="hover:opacity-70 transition-opacity cursor-pointer p-0.5"
+                                title="حذف فیلتر ودیعه"
+                            >
+                                <X className="w-3 h-3" />
+                            </button>
+                        </span>
+                    )}
+
+                    {/* Rent chip */}
+                    {(urlMinRent !== undefined || urlMaxRent !== undefined) && (
+                        <span className="inline-flex items-center gap-1.5 bg-primary/10 text-primary text-xs font-semibold px-2.5 py-1 rounded-full border border-primary/20">
+                            اجاره: {urlMinRent ? `از ${formatPrice(urlMinRent, "")}` : ""} {urlMaxRent ? `تا ${formatPrice(urlMaxRent, "")}` : ""} تومان
+                            <button
+                                type="button"
+                                onClick={() => handleRemoveFilterItem("rent")}
+                                className="hover:opacity-70 transition-opacity cursor-pointer p-0.5"
+                                title="حذف فیلتر اجاره"
+                            >
+                                <X className="w-3 h-3" />
+                            </button>
+                        </span>
+                    )}
+
+                    {/* Area chip */}
+                    {(urlMinArea !== undefined || urlMaxArea !== undefined) && (
+                        <span className="inline-flex items-center gap-1.5 bg-primary/10 text-primary text-xs font-semibold px-2.5 py-1 rounded-full border border-primary/20">
+                            متراژ: {urlMinArea ? `از ${toPersianDigits(urlMinArea)}` : ""} {urlMaxArea ? `تا ${toPersianDigits(urlMaxArea)}` : ""} متر
+                            <button
+                                type="button"
+                                onClick={() => handleRemoveFilterItem("area")}
+                                className="hover:opacity-70 transition-opacity cursor-pointer p-0.5"
+                                title="حذف فیلتر متراژ"
+                            >
+                                <X className="w-3 h-3" />
+                            </button>
+                        </span>
+                    )}
+
+                    {/* Rooms chip */}
+                    {(urlMinRooms !== undefined || urlMaxRooms !== undefined) && (
+                        <span className="inline-flex items-center gap-1.5 bg-primary/10 text-primary text-xs font-semibold px-2.5 py-1 rounded-full border border-primary/20">
+                            خواب: {urlMinRooms === 0 && urlMaxRooms === 0
+                                ? "بدون اتاق خواب"
+                                : urlMinRooms !== undefined && urlMaxRooms !== undefined && urlMinRooms === urlMaxRooms
+                                ? `${toPersianDigits(urlMinRooms)} خواب`
+                                : urlMinRooms !== undefined && urlMaxRooms !== undefined
+                                ? `${toPersianDigits(urlMinRooms)} تا ${toPersianDigits(urlMaxRooms)} خواب`
+                                : urlMinRooms !== undefined
+                                ? `حداقل ${toPersianDigits(urlMinRooms)} خواب`
+                                : `حداکثر ${toPersianDigits(urlMaxRooms)} خواب`}
+                            <button
+                                type="button"
+                                onClick={() => handleRemoveFilterItem("rooms")}
+                                className="hover:opacity-70 transition-opacity cursor-pointer p-0.5"
+                                title="حذف فیلتر خواب"
+                            >
+                                <X className="w-3 h-3" />
+                            </button>
+                        </span>
+                    )}
+
+                    {/* Floor chip */}
+                    {(urlMinFloor !== undefined || urlMaxFloor !== undefined) && (
+                        <span className="inline-flex items-center gap-1.5 bg-primary/10 text-primary text-xs font-semibold px-2.5 py-1 rounded-full border border-primary/20">
+                            طبقه: {urlMinFloor ? `از ${toPersianDigits(urlMinFloor)}` : ""} {urlMaxFloor ? `تا ${toPersianDigits(urlMaxFloor)}` : ""}
+                            <button
+                                type="button"
+                                onClick={() => handleRemoveFilterItem("floor")}
+                                className="hover:opacity-70 transition-opacity cursor-pointer p-0.5"
+                                title="حذف فیلتر طبقه"
+                            >
+                                <X className="w-3 h-3" />
+                            </button>
+                        </span>
+                    )}
+
+                    {/* Year chip */}
+                    {(urlMinConstructionYear !== undefined || urlMaxConstructionYear !== undefined) && (
+                        <span className="inline-flex items-center gap-1.5 bg-primary/10 text-primary text-xs font-semibold px-2.5 py-1 rounded-full border border-primary/20">
+                            سال ساخت: {urlMinConstructionYear ? `از ${toPersianDigits(urlMinConstructionYear)}` : ""} {urlMaxConstructionYear ? `تا ${toPersianDigits(urlMaxConstructionYear)}` : ""}
+                            <button
+                                type="button"
+                                onClick={() => handleRemoveFilterItem("year")}
+                                className="hover:opacity-70 transition-opacity cursor-pointer p-0.5"
+                                title="حذف فیلتر سال ساخت"
+                            >
+                                <X className="w-3 h-3" />
+                            </button>
+                        </span>
+                    )}
+
+                    {/* Amenities chips */}
+                    {urlHasParking && (
+                        <span className="inline-flex items-center gap-1.5 bg-primary/10 text-primary text-xs font-semibold px-2.5 py-1 rounded-full border border-primary/20">
+                            پارکینگ
+                            <button
+                                type="button"
+                                onClick={() => handleRemoveFilterItem("parking")}
+                                className="hover:opacity-70 transition-opacity cursor-pointer p-0.5"
+                                title="حذف فیلتر پارکینگ"
+                            >
+                                <X className="w-3 h-3" />
+                            </button>
+                        </span>
+                    )}
+                    {urlHasElevator && (
+                        <span className="inline-flex items-center gap-1.5 bg-primary/10 text-primary text-xs font-semibold px-2.5 py-1 rounded-full border border-primary/20">
+                            آسانسور
+                            <button
+                                type="button"
+                                onClick={() => handleRemoveFilterItem("elevator")}
+                                className="hover:opacity-70 transition-opacity cursor-pointer p-0.5"
+                                title="حذف فیلتر آسانسور"
+                            >
+                                <X className="w-3 h-3" />
+                            </button>
+                        </span>
+                    )}
+                    {urlHasStorage && (
+                        <span className="inline-flex items-center gap-1.5 bg-primary/10 text-primary text-xs font-semibold px-2.5 py-1 rounded-full border border-primary/20">
+                            انباری
+                            <button
+                                type="button"
+                                onClick={() => handleRemoveFilterItem("storage")}
+                                className="hover:opacity-70 transition-opacity cursor-pointer p-0.5"
+                                title="حذف فیلتر انباری"
+                            >
+                                <X className="w-3 h-3" />
+                            </button>
+                        </span>
+                    )}
+                    {urlHasBalcony && (
+                        <span className="inline-flex items-center gap-1.5 bg-primary/10 text-primary text-xs font-semibold px-2.5 py-1 rounded-full border border-primary/20">
+                            بالکن
+                            <button
+                                type="button"
+                                onClick={() => handleRemoveFilterItem("balcony")}
+                                className="hover:opacity-70 transition-opacity cursor-pointer p-0.5"
+                                title="حذف فیلتر بالکن"
+                            >
+                                <X className="w-3 h-3" />
+                            </button>
+                        </span>
+                    )}
+
+                    {/* Dynamic booleans */}
+                    {urlBooleanAttributes &&
+                        Object.entries(urlBooleanAttributes).map(([k, v]) => {
+                            if (!v) return null;
+                            const def = subcatConfig?.attributeDefinitions.find((d) => d.key === k);
+                            const label = def?.label || k;
+                            return (
+                                <span
+                                    key={k}
+                                    className="inline-flex items-center gap-1.5 bg-primary/10 text-primary text-xs font-semibold px-2.5 py-1 rounded-full border border-primary/20"
+                                >
+                                    {label}
+                                    <button
+                                        type="button"
+                                        onClick={() => handleRemoveFilterItem("booleanAttr", k)}
+                                        className="hover:opacity-70 transition-opacity cursor-pointer p-0.5"
+                                        title={`حذف فیلتر ${label}`}
+                                    >
+                                        <X className="w-3 h-3" />
+                                    </button>
+                                </span>
+                            );
+                        })}
+
+                    {/* Dynamic selections */}
+                    {urlSelectionAttributes &&
+                        Object.entries(urlSelectionAttributes).map(([k, v]) => {
+                            const def = subcatConfig?.attributeDefinitions.find((d) => d.key === k);
+                            const opt = def?.options?.find((o) => o.key === v);
+                            const label = def?.label || k;
+                            return (
+                                <span
+                                    key={k}
+                                    className="inline-flex items-center gap-1.5 bg-primary/10 text-primary text-xs font-semibold px-2.5 py-1 rounded-full border border-primary/20"
+                                >
+                                    {label}: {opt?.label || v}
+                                    <button
+                                        type="button"
+                                        onClick={() => handleRemoveFilterItem("selectionAttr", k)}
+                                        className="hover:opacity-70 transition-opacity cursor-pointer p-0.5"
+                                        title={`حذف فیلتر ${label}`}
+                                    >
+                                        <X className="w-3 h-3" />
+                                    </button>
+                                </span>
+                            );
+                        })}
+
+                    {/* Dynamic numeric attributes */}
+                    {urlNumericAttributes &&
+                        Object.entries(urlNumericAttributes).map(([k, v]) => {
+                            const def = subcatConfig?.attributeDefinitions.find((d) => d.key === k);
+                            const label = def?.label || k;
+                            return (
+                                <span
+                                    key={k}
+                                    className="inline-flex items-center gap-1.5 bg-primary/10 text-primary text-xs font-semibold px-2.5 py-1 rounded-full border border-primary/20"
+                                >
+                                    {label}: {v.min !== undefined ? `از ${toPersianDigits(v.min)}` : ""} {v.max !== undefined ? `تا ${toPersianDigits(v.max)}` : ""}
+                                    <button
+                                        type="button"
+                                        onClick={() => handleRemoveFilterItem("numericAttr", k)}
+                                        className="hover:opacity-70 transition-opacity cursor-pointer p-0.5"
+                                        title={`حذف فیلتر ${label}`}
+                                    >
+                                        <X className="w-3 h-3" />
+                                    </button>
+                                </span>
+                            );
+                        })}
+
+                    {/* Clear all active filters button */}
+                    <button
+                        type="button"
+                        onClick={handleClearAllFilters}
+                        className="text-xs text-error font-bold hover:underline transition-all cursor-pointer px-2 py-0.5 mr-auto"
+                    >
+                        حذف همه فیلترها
+                    </button>
+                </div>
+            )}
 
             {/* Main Split View */}
             <div className="flex-1 relative flex flex-col lg:flex-row gap-4 p-4 lg:p-6 lg:pt-4 overflow-hidden">
