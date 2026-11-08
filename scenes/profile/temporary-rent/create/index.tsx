@@ -760,7 +760,7 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
                             ? "ثبت اقامتگاه جدید (پنل مدیریت)"
                             : editAdId
                                 ? "ویرایش اطلاعات اقامتگاه"
-                                : "ثبت اقامتگاه جدید (اجاره موقت و روزانه)"}
+                                : "ثبت اقامتگاه جدید"}
                     </h1>
                 </header>
 

@@ -561,11 +561,7 @@ export default function SubcategoryConfigModal({
                                                     <Edit2 className="w-4 h-4" />
                                                 </button>
                                                 <button
-                                                    onClick={() => {
-                                                        if (confirm(`آیا از حذف ویژگی "${attr.label}" اطمینان دارید؟`)) {
-                                                            deleteAttributeMutation.mutate(attr.id);
-                                                        }
-                                                    }}
+                                                    onClick={() => setAttributeToDelete({ id: attr.id, label: attr.label })}
                                                     className="p-2 text-foreground-muted hover:text-error hover:bg-error-subtle rounded-xl transition-all"
                                                     title="حذف ویژگی"
                                                 >
@@ -791,6 +787,20 @@ export default function SubcategoryConfigModal({
                     </div>
                 </div>
             )}
+
+            {/* Delete Attribute Confirmation Modal */}
+            <DeleteConfirmModal
+                isOpen={Boolean(attributeToDelete)}
+                onClose={() => setAttributeToDelete(null)}
+                onConfirm={handleConfirmDeleteAttribute}
+                isLoading={deleteAttributeMutation.isPending}
+                title="حذف ویژگی"
+                description={
+                    attributeToDelete?.label
+                        ? `آیا از حذف ویژگی «${attributeToDelete.label}» اطمینان دارید؟`
+                        : "آیا از حذف این ویژگی اطمینان دارید؟"
+                }
+            />
         </div>
     );
 }

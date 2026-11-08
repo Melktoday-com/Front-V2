@@ -38,6 +38,7 @@ import Link from "next/link";
 import React, { useMemo, useState } from "react";
 import { toast } from "sonner";
 import TemporaryRentItemDetailModal from "./TemporaryRentItemDetailModal";
+import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
 
 const STATUS_FILTERS = [
     { key: "PENDING_APPROVAL", label: "در انتظار بررسی", badgeClass: "bg-warning-subtle text-warning border-warning/30" },
@@ -684,48 +685,18 @@ export default function TemporaryRentItemsTab() {
             />
 
             {/* Delete Confirmation Modal */}
-            {deleteTargetAd && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
-                    <div className="bg-surface rounded-3xl w-full max-w-md p-6 shadow-2xl border border-border-subtle text-right space-y-4" dir="rtl">
-                        <div className="w-12 h-12 rounded-2xl bg-error-subtle text-error flex items-center justify-center mx-auto">
-                            <Trash2 className="w-6 h-6" />
-                        </div>
-
-                        <div className="text-center space-y-1">
-                            <h3 className="text-base font-black text-foreground">
-                                حذف اقامتگاه اجاره موقت
-                            </h3>
-                            <p className="text-xs text-foreground-muted leading-relaxed">
-                                آیا از حذف اقامتگاه «<span className="font-bold text-foreground-secondary">{deleteTargetAd.title}</span>» اطمینان دارید؟ این عملیات غیرقابل بازگشت است.
-                            </p>
-                        </div>
-
-                        <div className="flex items-center gap-2 pt-2">
-                            <button
-                                type="button"
-                                onClick={confirmDelete}
-                                disabled={deleteMutation.isPending}
-                                className="flex-1 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5"
-                            >
-                                {deleteMutation.isPending ? (
-                                    <RefreshCw className="w-4 h-4 animate-spin" />
-                                ) : (
-                                    <Trash2 className="w-4 h-4" />
-                                )}
-                                <span>بله، حذف کن</span>
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setDeleteTargetAd(null)}
-                                disabled={deleteMutation.isPending}
-                                className="flex-1 py-2.5 bg-surface-secondary hover:bg-slate-200 text-foreground-secondary rounded-xl text-xs font-bold transition-colors"
-                            >
-                                انصراف
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            <DeleteConfirmModal
+                isOpen={Boolean(deleteTargetAd)}
+                onClose={() => setDeleteTargetAd(null)}
+                onConfirm={confirmDelete}
+                isLoading={deleteMutation.isPending}
+                title="حذف اقامتگاه اجاره موقت"
+                description={
+                    deleteTargetAd
+                        ? `آیا از حذف اقامتگاه «${deleteTargetAd.title}» اطمینان دارید؟ این عملیات غیرقابل بازگشت است.`
+                        : "آیا از حذف این اقامتگاه اطمینان دارید؟ این عملیات غیرقابل بازگشت است."
+                }
+            />
         </div>
     );
 }

@@ -38,6 +38,7 @@ import { toast } from "sonner";
 import { normalizeApiError } from "@/lib/api/error-handler";
 import AdminAdDetailModal from "./AdminAdDetailModal";
 import AdminAdRejectModal from "./AdminAdRejectModal";
+import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
 
 const STATUS_FILTERS = [
     { key: "ALL", label: "همه", badgeClass: "bg-info-subtle text-blue-800 border-info/30" },
@@ -678,41 +679,22 @@ export default function AdminOrgAdsTab() {
             )}
 
             {/* Delete Confirm Modal */}
-            {deleteTarget && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
-                    <div className="bg-surface rounded-3xl w-full max-w-md p-6 shadow-2xl border border-border-subtle text-right space-y-4" dir="rtl">
-                        <div className="w-12 h-12 rounded-2xl bg-error-subtle text-error flex items-center justify-center mx-auto">
-                            <Trash2 className="w-6 h-6" />
-                        </div>
-                        <div className="text-center space-y-1">
-                            <h3 className="text-base font-black text-foreground">حذف دائمی آگهی</h3>
-                            <p className="text-xs text-foreground-muted leading-relaxed">
-                                آیا از حذف دائمی آگهی «<span className="font-bold text-foreground-secondary">{deleteTarget.title}</span>» اطمینان دارید؟
-                                این عملیات قابل بازگشت نیست.
-                            </p>
-                        </div>
-                        <div className="flex items-center gap-2 pt-2">
-                            <button
-                                type="button"
-                                onClick={() => deleteMutation.mutate(deleteTarget.id)}
-                                disabled={deleteMutation.isPending}
-                                className="flex-1 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5"
-                            >
-                                {deleteMutation.isPending ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-                                حذف دائمی
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setDeleteTarget(null)}
-                                disabled={deleteMutation.isPending}
-                                className="flex-1 py-2.5 bg-surface-secondary hover:bg-slate-200 text-foreground-secondary rounded-xl text-xs font-bold transition-colors"
-                            >
-                                انصراف
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            <DeleteConfirmModal
+                isOpen={Boolean(deleteTarget)}
+                onClose={() => setDeleteTarget(null)}
+                onConfirm={() => {
+                    if (deleteTarget) {
+                        deleteMutation.mutate(deleteTarget.id);
+                    }
+                }}
+                isLoading={deleteMutation.isPending}
+                title="حذف دائمی آگهی"
+                description={
+                    deleteTarget
+                        ? `آیا از حذف دائمی آگهی «${deleteTarget.title}» اطمینان دارید؟ این عملیات قابل بازگشت نیست.`
+                        : "آیا از حذف دائمی این آگهی اطمینان دارید؟ این عملیات قابل بازگشت نیست."
+                }
+            />
         </div>
     );
 }

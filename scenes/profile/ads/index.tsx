@@ -40,6 +40,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useUserStatus } from "@/hooks/useUserStatus";
 import { AccountStatusBanner } from "@/components/ui/AccountStatusBanner";
+import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
 import { PromotionModal } from "@/components/promotions/PromotionModal";
 import { AdPublicationFeeModal } from "@/components/wallet/AdPublicationFeeModal";
 import { isInsufficientBalanceError, normalizeApiError } from "@/lib/api/error-handler";
@@ -1129,39 +1130,22 @@ export default function MyAdsScene() {
             </main>
 
             {/* Delete Confirmation Modal */}
-            {deleteTarget && (
-                <div role="dialog" aria-modal="true" aria-label="حذف دائمی آگهی" className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200">
-                    <div className="bg-surface rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-border-subtle animate-in zoom-in-95 duration-200">
-                        <div className="w-12 h-12 rounded-2xl bg-error-subtle text-error flex items-center justify-center mb-4">
-                            <Trash2 className="w-6 h-6" />
-                        </div>
-                        <h3 className="text-brand font-black text-lg mb-2">حذف دائمی آگهی</h3>
-                        <p className="text-secondary text-sm leading-relaxed mb-6">
-                            آیا از حذف آگهی <span className="font-bold text-brand">«{deleteTarget.title}»</span> اطمینان دارید؟ این عملیات غیرقابل بازگشت است.
-                        </p>
-                        <div className="flex items-center gap-3">
-                            <button
-                                onClick={() => setDeleteTarget(null)}
-                                disabled={deleteMutation.isPending}
-                                className="flex-1 py-2.5 px-4 rounded-xl border border-border-subtle text-secondary font-bold text-sm hover:bg-surface-secondary transition-colors disabled:opacity-50"
-                            >
-                                انصراف
-                            </button>
-                            <button
-                                onClick={() => deleteMutation.mutate(deleteTarget.adId)}
-                                disabled={deleteMutation.isPending}
-                                className="flex-1 py-2.5 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-sm flex items-center justify-center gap-1.5 transition-colors shadow-xs disabled:opacity-50"
-                            >
-                                {deleteMutation.isPending ? (
-                                    <Loader2 className="w-4 h-4 animate-spin" />
-                                ) : (
-                                    "حذف آگهی"
-                                )}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            <DeleteConfirmModal
+                isOpen={Boolean(deleteTarget)}
+                onClose={() => setDeleteTarget(null)}
+                onConfirm={() => {
+                    if (deleteTarget) {
+                        deleteMutation.mutate(deleteTarget.adId);
+                    }
+                }}
+                isLoading={deleteMutation.isPending}
+                title="حذف دائمی آگهی"
+                description={
+                    deleteTarget
+                        ? `آیا از حذف آگهی «${deleteTarget.title}» اطمینان دارید؟ این عملیات غیرقابل بازگشت است.`
+                        : "آیا از حذف این آگهی اطمینان دارید؟ این عملیات غیرقابل بازگشت است."
+                }
+            />
 
             {/* Archive Confirmation Modal */}
             {archiveTarget && (
