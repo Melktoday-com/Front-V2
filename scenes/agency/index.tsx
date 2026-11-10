@@ -7,6 +7,7 @@ import { PageSectionDivider } from "@/components/ui/PageSectionDivider";
 import { PaginationControls } from "@/components/ui/PaginationControls";
 import { useInfiniteAgencies } from "@/hooks/useAgencies";
 import { useGeoHierarchy } from "@/hooks/useGeoHierarchy";
+import { useShowcase } from "@/hooks/useShowcase";
 import { toPersianDigits } from "@/lib/utils";
 import { AgencySummary } from "@/types/api/agency.types";
 import { ArrowLeft, Building2, Home, Loader2 } from "lucide-react";
@@ -69,6 +70,7 @@ export default function AgencyScene() {
     }, [hasNextPage, isFetchingNextPage, fetchNextPage, agenciesData?.pages.length]);
 
     const { data: hierarchy } = useGeoHierarchy();
+    const { data: platformShowcase } = useShowcase("platform", "melktoday");
 
     const cityNameMap = useMemo(() => {
         if (!hierarchy) return {};
@@ -99,6 +101,14 @@ export default function AgencyScene() {
     const allLoadedAgencies = useMemo(() => {
         return agenciesData?.pages.flatMap((page) => page.agencies || []) || [];
     }, [agenciesData]);
+
+    const cleanSearch = (search || "").trim().toLowerCase();
+    const matchesPlatformSearch = startPage === 1 && (
+        !cleanSearch ||
+        ["ملک", "تودی", "پلتفرم", "رسمی", "melk", "today", "official"].some(
+            (k) => cleanSearch.includes(k) || k.includes(cleanSearch)
+        )
+    );
 
     // Pagination metrics
     const totalCount = agenciesData?.pages[0]?.total ?? 0;
@@ -189,13 +199,30 @@ export default function AgencyScene() {
                             <div key={i} className="h-50 bg-soft-bg animate-pulse rounded-[30px]" />
                         ))}
                     </div>
-                ) : allLoadedAgencies.length === 0 ? (
+                ) : allLoadedAgencies.length === 0 && !matchesPlatformSearch ? (
                     <div className="py-20 text-center space-y-4">
                         <div className="text-secondary-400 font-bold">آژانسی با این مشخصات یافت نشد</div>
                     </div>
                 ) : (
                     <div>
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-4 gap-y-6 items-stretch">
+                            {/* Official Platform Showcase Card (Displayed on Page 1) */}
+                            {matchesPlatformSearch && (
+                                <AgencyCard
+                                    key="platform-official-showcase"
+                                    id="platform"
+                                    name={platformShowcase?.header?.title || "ملک‌تودی (پلتفرم رسمی)"}
+                                    bio={platformShowcase?.about?.subtitle || platformShowcase?.about?.description || "صفحه رسمی و ویترین جامع املاک و اقامتگاه‌های گردشگری ملک‌تودی"}
+                                    isVerified={true}
+                                    rating={5}
+                                    logoUrl={platformShowcase?.header?.avatarUrl || "/apple-touch-icon.png"}
+                                    location="سراسر کشور"
+                                    href="/platform"
+                                    badge="پلتفرم رسمی"
+                                    isPlatform={true}
+                                />
+                            )}
+
                             {agenciesData?.pages.map((page, pageIndex) => {
                                 const pageAgencies = page.agencies || [];
                                 if (pageAgencies.length === 0 && pageIndex > 0) return null;

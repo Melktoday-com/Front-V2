@@ -190,6 +190,8 @@ export function useUpdatePlatformProfile() {
     onSuccess: () => {
       toast.success("تنظیمات پلتفرم با موفقیت ذخیره شد");
       queryClient.invalidateQueries({ queryKey: SHOWCASE_KEYS.platformProfile() });
+      queryClient.invalidateQueries({ queryKey: SHOWCASE_KEYS.showcase('platform', 'melktoday') });
+      queryClient.invalidateQueries({ queryKey: ['showcase'] });
     },
     onError: () => {
       toast.error("خطا در ذخیره تنظیمات پلتفرم");

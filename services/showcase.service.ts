@@ -201,7 +201,12 @@ export const showcaseService = {
   },
 
   async updatePlatformProfile(data: UpdatePlatformProfileRequest) {
-    const response = await apiClient.put('/platform/admin/profile', data);
+    const payload = {
+      ...data,
+      avatarUrl: data.avatarUrl || data.logoUrl,
+      logoUrl: data.logoUrl || data.avatarUrl,
+    };
+    const response = await apiClient.put('/platform/admin/profile', payload);
     return response.data;
   },
 };

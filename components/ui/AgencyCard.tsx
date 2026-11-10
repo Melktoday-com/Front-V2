@@ -1,7 +1,7 @@
 "use client";
 
 import { getMediaUrl, toPersianDigits } from "@/lib/utils";
-import { MapPin, Star, Verified } from "lucide-react";
+import { BadgeCheck, MapPin, ShieldCheck, Star, Verified } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -13,32 +13,61 @@ interface AgencyCardProps {
     isVerified: boolean;
     rating?: number | null;
     location?: string;
+    href?: string;
+    badge?: string;
+    isPlatform?: boolean;
 }
 
-export function AgencyCard({ id, name, bio, logoUrl, isVerified, rating, location }: AgencyCardProps) {
+export function AgencyCard({
+    id,
+    name,
+    bio,
+    logoUrl,
+    isVerified,
+    rating,
+    location,
+    href,
+    badge,
+    isPlatform,
+}: AgencyCardProps) {
     const slug = name.replace(/\s+/g, "-");
-    const href = `/agency/${id}/${encodeURIComponent(slug)}`;
+    const targetHref = href || `/agency/${id}/${encodeURIComponent(slug)}`;
 
     const resolvedLogoUrl = logoUrl ? getMediaUrl(logoUrl) : "/property-placeholder.svg";
 
     return (
-        <Link href={href}>
-            <div className="bg-surface rounded-2xl p-4 border border-soft-border hover:shadow-lg transition-all duration-300 group h-full flex flex-col">
+        <Link href={targetHref}>
+            <div className={`bg-surface rounded-2xl p-4 border transition-all duration-300 group h-full flex flex-col ${
+                isPlatform
+                    ? "border-primary/40 hover:border-primary hover:shadow-xl bg-gradient-to-b from-primary/5 via-surface to-surface"
+                    : "border-soft-border hover:shadow-lg"
+            }`}>
                 <div className="flex gap-3">
-                    <div className="relative w-12 h-12 lg:w-14 lg:h-14 rounded-xl overflow-hidden bg-soft-bg shrink-0 border border-soft-border group-hover:border-primary/30 transition-colors">
+                    <div className={`relative w-12 h-12 lg:w-14 lg:h-14 rounded-xl overflow-hidden shrink-0 border transition-colors ${
+                        isPlatform
+                            ? "bg-brand border-primary/40 p-1.5 flex items-center justify-center"
+                            : "bg-soft-bg border-soft-border group-hover:border-primary/30"
+                    }`}>
                         <Image
                             src={resolvedLogoUrl}
                             alt={name}
                             fill
-                            className="object-cover"
+                            className={isPlatform ? "object-contain p-1" : "object-cover"}
                         />
                     </div>
 
                     <div className="flex-1 space-y-1 min-w-0">
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-1.5 flex-wrap">
                             <h3 className="text-brand font-black text-sm lg:text-base truncate">{name}</h3>
-                            {isVerified && (
+                            {isPlatform ? (
+                                <BadgeCheck className="w-4 h-4 text-info fill-blue-600 text-white shrink-0" />
+                            ) : isVerified ? (
                                 <Verified className="w-4 h-4 text-primary shrink-0" />
+                            ) : null}
+                            {badge && (
+                                <span className="text-[9px] font-black px-1.5 py-0.5 rounded-md bg-info-subtle text-info border border-info/30">
+                                    {badge}
+                                </span>
                             )}
                         </div>
 

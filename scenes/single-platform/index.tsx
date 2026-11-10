@@ -14,11 +14,14 @@ import {
   useToggleLikePost,
 } from "@/hooks/useShowcase";
 import { useAuth } from "@/hooks/useAuth";
+import { useAdminPermissions } from "@/hooks/useAdminPermissions";
 import { Button } from "@/components/ui/Button";
 import {
   BadgeCheck,
   Calendar,
+  Camera,
   ChevronRight,
+  Edit3,
   Eye,
   Globe,
   Headphones,
@@ -79,6 +82,9 @@ export default function SinglePlatformScene() {
   const router = useRouter();
   const handleBack = useSafeBack("/");
   const { user } = useAuth();
+  const { isSuperAdmin, hasPermission } = useAdminPermissions();
+  const canManagePlatform = isSuperAdmin || hasPermission("posts.view") || hasPermission("posts.edit");
+
   const [activeTab, setActiveTab] = useState<"posts" | "ads" | "about">("posts");
   const [selectedPost, setSelectedPost] = useState<UnifiedPost | null>(null);
 
@@ -145,12 +151,23 @@ export default function SinglePlatformScene() {
           >
             <ChevronRight className="w-5 h-5" />
           </button>
-          <button
-            onClick={handleShare}
-            className="p-2.5 rounded-2xl bg-black/40 backdrop-blur-md text-white hover:bg-black/60 transition-colors"
-          >
-            <Share2 className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            {canManagePlatform && (
+              <Link
+                href="/admin/platform"
+                className="px-3.5 py-2 rounded-2xl bg-black/50 backdrop-blur-md text-white hover:bg-black/75 text-xs font-bold flex items-center gap-1.5 transition-all border border-white/20 shadow-md"
+              >
+                <Camera className="w-4 h-4 text-primary" />
+                <span>ویرایش کاور و لوگو</span>
+              </Link>
+            )}
+            <button
+              onClick={handleShare}
+              className="p-2.5 rounded-2xl bg-black/40 backdrop-blur-md text-white hover:bg-black/60 transition-colors"
+            >
+              <Share2 className="w-5 h-5" />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -161,7 +178,7 @@ export default function SinglePlatformScene() {
           <div className="flex flex-col sm:flex-row items-center sm:items-end justify-between gap-6">
             <div className="flex flex-col sm:flex-row items-center gap-5 text-center sm:text-right">
               {/* Logo */}
-              <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-brand border border-soft-border/40 shadow-md overflow-hidden shrink-0 flex items-center justify-center p-3">
+              <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-brand border border-soft-border/40 shadow-md overflow-hidden shrink-0 flex items-center justify-center p-3 group">
                 {header?.avatarUrl ? (
                   <Image src={getMediaUrl(header.avatarUrl)} alt="Logo" fill className="object-contain p-2" />
                 ) : (
@@ -170,6 +187,16 @@ export default function SinglePlatformScene() {
                     alt="MELKTODAY"
                     className="w-full h-auto object-contain"
                   />
+                )}
+                {canManagePlatform && (
+                  <Link
+                    href="/admin/platform"
+                    title="تغییر لوگوی رسمی پلتفرم"
+                    className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white text-[10px] font-bold gap-1 cursor-pointer"
+                  >
+                    <Camera className="w-4 h-4 text-primary" />
+                    <span>تغییر لوگو</span>
+                  </Link>
                 )}
               </div>
 
@@ -203,8 +230,17 @@ export default function SinglePlatformScene() {
               </div>
             </div>
 
-            {/* Action Buttons: Chat & Follow */}
+            {/* Action Buttons: Chat, Follow & Admin Manage */}
             <div className="w-full sm:w-auto flex flex-col sm:flex-row items-center gap-2.5">
+              {canManagePlatform && (
+                <Link
+                  href="/admin/platform"
+                  className="w-full sm:w-auto h-11 px-5 rounded-2xl font-bold text-xs bg-slate-900 text-white hover:bg-slate-800 flex items-center justify-center gap-2 shadow-xs transition-all border border-slate-700"
+                >
+                  <Edit3 className="w-4 h-4 text-primary" />
+                  <span>مدیریت ویترین پلتفرم</span>
+                </Link>
+              )}
               <Button
                 variant="outline"
                 onClick={() => {

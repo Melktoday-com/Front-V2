@@ -164,6 +164,7 @@ export interface UpdatePlatformProfileRequest {
   subtitle?: string;
   description?: string;
   logoUrl?: string;
+  avatarUrl?: string;
   coverUrl?: string;
   phone?: string;
   email?: string;

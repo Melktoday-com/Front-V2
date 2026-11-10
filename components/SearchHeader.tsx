@@ -478,8 +478,11 @@ export function SearchHeader({ isInitialOpen }: SearchHeaderProps) {
                                                 </div>
                                                 <div className="grid gap-1">
                                                     {profiles.map((doc) => {
+                                                        const isPlatform = doc.ownerType === "PLATFORM" || doc.id === "platform" || doc.slug === "platform";
                                                         const isAgency = doc.ownerType === "AGENCY";
-                                                        const href = isAgency
+                                                        const href = isPlatform
+                                                            ? "/platform"
+                                                            : isAgency
                                                             ? `/agency/showcase/${doc.slug || doc.id}`
                                                             : `/host/${doc.slug || doc.id}`;
                                                         return (
@@ -499,7 +502,7 @@ export function SearchHeader({ isInitialOpen }: SearchHeaderProps) {
                                                                                 {doc.displayName}
                                                                             </span>
                                                                             <span className="text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 rounded-full bg-soft-bg text-secondary font-medium shrink-0">
-                                                                                {isAgency ? "دفتر املاک" : "میزبان"}
+                                                                                {isPlatform ? "پلتفرم رسمی" : isAgency ? "دفتر املاک" : "میزبان"}
                                                                             </span>
                                                                         </div>
                                                                         <span className="text-[10px] sm:text-[11px] text-secondary truncate">

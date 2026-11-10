@@ -39,6 +39,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
+import MediaIconUpload from "@/components/admin/MediaIconUpload";
 import { toPersianDigits, getMediaUrl, getMediaPosterUrl, cn } from "@/lib/utils";
 
 export default function AdminPlatformScene() {
@@ -83,6 +84,8 @@ export default function AdminPlatformScene() {
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
   const [description, setDescription] = useState("");
+  const [logoUrl, setLogoUrl] = useState("");
+  const [coverUrl, setCoverUrl] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [address, setAddress] = useState("");
@@ -96,6 +99,8 @@ export default function AdminPlatformScene() {
       setTitle(profile.title || "");
       setSubtitle(profile.subtitle || "");
       setDescription(profile.description || "");
+      setLogoUrl(profile.logoUrl || profile.avatarUrl || profile.header?.avatarUrl || "");
+      setCoverUrl(profile.coverUrl || profile.header?.coverUrl || "");
       setPhone(profile.phone || "");
       setEmail(profile.email || "");
       setAddress(profile.address || "");
@@ -112,6 +117,9 @@ export default function AdminPlatformScene() {
       title,
       subtitle,
       description,
+      logoUrl,
+      avatarUrl: logoUrl,
+      coverUrl,
       phone,
       email,
       address,
@@ -207,7 +215,33 @@ export default function AdminPlatformScene() {
           مشخصات و شبکه‌های اجتماعی رسمی
         </h2>
 
-        <form onSubmit={handleSaveProfile} className="space-y-5">
+        <form onSubmit={handleSaveProfile} className="space-y-6">
+          {/* Section: Platform Showcase Media (Logo & Cover) */}
+          <div className="space-y-3 pb-2 border-b border-soft-border/60">
+            <label className="block text-xs font-black text-brand">
+              تصاویر ویترین رسمی پلتفرم (لوگو و بنر سربرگ)
+            </label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="p-3.5 rounded-xl bg-soft-bg/30 border border-soft-border/60">
+                <MediaIconUpload
+                  label="لوگو یا نشان رسمی پلتفرم (آواتار ویترین)"
+                  helperText="فرمت: مربع با کیفیت بالا (SVG, PNG, WebP)"
+                  value={logoUrl}
+                  onChange={(mediaId) => setLogoUrl(mediaId)}
+                />
+              </div>
+
+              <div className="p-3.5 rounded-xl bg-soft-bg/30 border border-soft-border/60">
+                <MediaIconUpload
+                  label="تصویر بنر سربرگ (کاور بالای صفحه رسمی)"
+                  helperText="فرمت: افقی با نسبت ۱۶:۹"
+                  value={coverUrl}
+                  onChange={(mediaId) => setCoverUrl(mediaId)}
+                />
+              </div>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold text-brand mb-1.5">عنوان رسمی پلتفرم</label>

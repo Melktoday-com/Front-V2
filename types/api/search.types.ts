@@ -105,7 +105,7 @@ export interface TemporaryRentalSearchDocument {
   updatedAt: string;
 }
 
-export type ProfileOwnerType = 'HOST' | 'AGENCY';
+export type ProfileOwnerType = 'HOST' | 'AGENCY' | 'PLATFORM';
 
 /**
  * Public Search Document for Host & Agency Profiles

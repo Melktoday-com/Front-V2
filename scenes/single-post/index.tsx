@@ -99,7 +99,7 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
         name: post.publisher?.name || "ملک‌تودی (پلتفرم رسمی)",
         badge: "پلتفرم رسمی",
         link: "/platform",
-        logoUrl: post.publisher?.logoUrl || post.publisher?.avatarUrl || "/logo.svg",
+        logoUrl: post.publisher?.logoUrl || post.publisher?.avatarUrl || "/apple-touch-icon.png",
         type: PUBLISHER_TYPES.PLATFORM,
         isVerified: true,
       };
@@ -323,7 +323,7 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
                       return (
                         <video
                           key={currentMedia.id}
-                          src={currentMedia.url}
+                          src={currentMedia.url.includes("#t=") ? currentMedia.url : `${currentMedia.url}#t=0.5`}
                           poster={currentMedia.posterUrl}
                           controls
                           playsInline
@@ -753,6 +753,10 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
                       alt={publisherInfo.name}
                       className="w-full h-full object-cover"
                     />
+                  ) : publisherInfo.type === "PLATFORM" ? (
+                    <ShieldCheck className="w-6 h-6 text-brand" />
+                  ) : publisherInfo.type === "HOST" ? (
+                    <Hotel className="w-6 h-6 text-success" />
                   ) : (
                     <Building2 className="w-6 h-6 text-brand" />
                   )}
