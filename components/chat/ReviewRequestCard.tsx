@@ -8,6 +8,7 @@ import { toast } from "sonner";
 
 interface ReviewRequestCardProps {
     messageId: string;
+    conversationId?: string;
     metadata?: {
         isReviewRequest?: boolean;
         targetType?: "agency" | "temporary-rent";
@@ -15,6 +16,7 @@ interface ReviewRequestCardProps {
         targetTitle?: string;
         rating?: number;
         comment?: string;
+        isSubmitted?: boolean;
     } | null;
     isMine: boolean;
     conversationSubjectType?: string;
@@ -23,6 +25,7 @@ interface ReviewRequestCardProps {
 
 export function ReviewRequestCard({
     messageId,
+    conversationId,
     metadata,
     isMine,
     conversationSubjectType,
@@ -44,8 +47,13 @@ export function ReviewRequestCard({
     const targetTitle: string =
         metadata?.targetTitle || (targetType === "temporary-rent" ? "میزبان اقامتگاه" : "مشاور املاک");
 
-    // Load persisted submitted status from localStorage
+    // Load persisted submitted status from metadata or localStorage
     useEffect(() => {
+        if (metadata?.isSubmitted) {
+            setIsSubmitted(true);
+            setSavedRating(metadata.rating || 5);
+            return;
+        }
         try {
             const saved = localStorage.getItem(`melktoday_review_${messageId}`);
             if (saved) {
@@ -56,7 +64,7 @@ export function ReviewRequestCard({
         } catch {
             // ignore
         }
-    }, [messageId]);
+    }, [messageId, metadata?.isSubmitted, metadata?.rating]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -77,6 +85,8 @@ export function ReviewRequestCard({
                 targetId,
                 rating,
                 comment: comment.trim() || undefined,
+                conversationId,
+                messageId,
             });
 
             toast.success("دیدگاه و امتیاز شما با موفقیت در ویترین کارشناس ثبت شد.");

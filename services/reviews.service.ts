@@ -19,6 +19,8 @@ export const reviewsService = {
         targetType: 'agency' | 'temporary-rent';
         rating: number;
         comment?: string;
+        conversationId?: string;
+        messageId?: string;
     }) {
         const response = await apiClient.post('/reviews', data);
         return response.data;
