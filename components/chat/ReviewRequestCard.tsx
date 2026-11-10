@@ -2,13 +2,14 @@
 
 import { cn } from "@/lib/utils";
 import { reviewsService } from "@/services/reviews.service";
-import { CheckCircle2, MessageSquare, Send, Sparkles, Star } from "lucide-react";
+import { CheckCircle2, MessageSquare, Send, Sparkles, Star, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 interface ReviewRequestCardProps {
     messageId: string;
     conversationId?: string;
+    createdAt?: string | Date;
     metadata?: {
         isReviewRequest?: boolean;
         targetType?: "agency" | "temporary-rent";
@@ -21,15 +22,18 @@ interface ReviewRequestCardProps {
     isMine: boolean;
     conversationSubjectType?: string;
     conversationSubjectId?: string;
+    onDelete?: (messageId: string) => void;
 }
 
 export function ReviewRequestCard({
     messageId,
     conversationId,
+    createdAt,
     metadata,
     isMine,
     conversationSubjectType,
     conversationSubjectId,
+    onDelete,
 }: ReviewRequestCardProps) {
     const [rating, setRating] = useState<number>(0);
     const [hoverRating, setHoverRating] = useState<number>(0);
@@ -108,8 +112,54 @@ export function ReviewRequestCard({
         }
     };
 
+    const MESSAGE_RETRACT_WINDOW_MS = 60 * 60 * 1000;
+    const isWithinRetract = createdAt
+        ? Date.now() - new Date(createdAt).getTime() <= MESSAGE_RETRACT_WINDOW_MS
+        : true;
+    const isAlreadySubmitted = Boolean(metadata?.isSubmitted);
+    const canHostDelete = isMine && !isAlreadySubmitted && isWithinRetract && Boolean(onDelete);
+
     // If viewer is the agent/landlord who sent the request
     if (isMine) {
+        if (isAlreadySubmitted) {
+            return (
+                <div className="w-full max-w-sm bg-success-subtle/30 rounded-3xl border border-success/30/70 p-4 sm:p-5 shadow-xs space-y-3 text-right font-medium my-1">
+                    <div className="flex items-center justify-between gap-2 border-b border-success/30 pb-2.5">
+                        <div className="flex items-center gap-2 text-success">
+                            <div className="p-1.5 rounded-xl bg-success-subtle text-success">
+                                <CheckCircle2 className="w-4 h-4" />
+                            </div>
+                            <span className="text-xs font-black">نظر مخاطب ثبت شد</span>
+                        </div>
+                        <span className="text-[10px] font-bold text-success bg-success-subtle px-2 py-0.5 rounded-md">
+                            تکمیل‌شده
+                        </span>
+                    </div>
+
+                    <div className="space-y-1.5">
+                        {metadata?.rating ? (
+                            <div className="flex items-center gap-1 justify-start py-0.5 dir-ltr">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                    <Star
+                                        key={star}
+                                        className={cn(
+                                            "w-4 h-4",
+                                            star <= (metadata.rating || 5)
+                                                ? "fill-amber-400 text-amber-400"
+                                                : "fill-gray-100 text-gray-300"
+                                        )}
+                                    />
+                                ))}
+                            </div>
+                        ) : null}
+                        <p className="text-[11px] text-secondary leading-relaxed">
+                            مخاطب نظر و امتیاز خود را درباره این گفتگو ثبت کرد و در ویترین شما منتشر شد.
+                        </p>
+                    </div>
+                </div>
+            );
+        }
+
         return (
             <div className="w-full max-w-sm bg-gradient-to-br from-amber-50/50 via-white to-white rounded-3xl border border-warning/30/70 p-4 sm:p-5 shadow-xs space-y-3 text-right font-medium my-1">
                 <div className="flex items-center justify-between gap-2 border-b border-warning/30 pb-2.5">
@@ -132,6 +182,22 @@ export function ReviewRequestCard({
                         کاربر پس از پایان گفتگو می‌تواند امتیاز و دیدگاه خود را درباره عملکرد شما ثبت نماید تا در بخش نظرات ویترین نمایش داده شود.
                     </p>
                 </div>
+
+                {canHostDelete && (
+                    <div className="pt-2 border-t border-warning/20 flex justify-end">
+                        <button
+                            type="button"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onDelete?.(messageId);
+                            }}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-error/10 hover:bg-error/20 text-error text-xs font-bold transition-all cursor-pointer shadow-2xs"
+                        >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            <span>حذف درخواست</span>
+                        </button>
+                    </div>
+                )}
             </div>
         );
     }

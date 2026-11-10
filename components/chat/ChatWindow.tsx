@@ -512,6 +512,9 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
                     const isMine = msg.senderId === me?.userId;
                     const isWithinRetract =
                         Date.now() - new Date(msg.createdAt).getTime() <= MESSAGE_RETRACT_WINDOW_MS;
+                    const isReviewReq =
+                        msg.type === "POLL" || Boolean((msg.metadata as any)?.isReviewRequest);
+                    const isReviewSubmitted = Boolean((msg.metadata as any)?.isSubmitted);
                     const canEdit =
                         isMine &&
                         !msg.isDeleted &&
@@ -520,7 +523,8 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
                     const canDelete =
                         isMine &&
                         !msg.isDeleted &&
-                        isWithinRetract;
+                        isWithinRetract &&
+                        (!isReviewReq || !isReviewSubmitted);
                     const canReply = !msg.isDeleted;
                     const canCopy = Boolean(msg.content && !msg.isDeleted);
                     const hasAnyAction = canReply || canEdit || canCopy || canDelete;
@@ -664,13 +668,16 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
                                     />
                                 </div>
                             ) : msg.type === "POLL" || (msg.metadata as any)?.isReviewRequest ? (
-                                <div onClick={(e) => e.stopPropagation()}>
+                                <div>
                                     <ReviewRequestCard
                                         messageId={msg.id}
+                                        conversationId={conversationId}
+                                        createdAt={msg.createdAt}
                                         metadata={msg.metadata as any}
                                         isMine={isMine}
                                         conversationSubjectType={conversation?.subjectType}
                                         conversationSubjectId={conversation?.subjectId}
+                                        onDelete={handleDelete}
                                     />
                                 </div>
                             ) : (
