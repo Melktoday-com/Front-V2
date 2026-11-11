@@ -17,6 +17,7 @@ import {
     ReplyMetadata,
 } from "@/services/chat.service";
 import { mediaService } from "@/services/media.service";
+import { SendIcon } from "@/assets/icons";
 import {
     ArrowRight,
     Building2,
@@ -29,7 +30,6 @@ import {
     Loader2,
     MessageCircle,
     Reply,
-    Send,
     Star,
     Trash2,
     User,
@@ -927,7 +927,7 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
                                 ) : editingMessage ? (
                                     <Check className="w-4 h-4 stroke-[2.5]" />
                                 ) : (
-                                    <Send className="w-4 h-4 rotate-180" />
+                                    <SendIcon className="w-4 h-4" />
                                 )}
                             </button>
                         </div>
