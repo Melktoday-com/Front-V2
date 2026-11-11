@@ -24,6 +24,7 @@ import {
   Video,
   X,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useMemo, useRef, useState } from "react";
@@ -65,7 +66,7 @@ function ExplorePostCard({
     >
       <Link href={`/posts/${encodeURIComponent(post.slug || post.id)}`} className="block w-full h-full">
         {/* Main Cover Image */}
-        <img
+        <Image
           src={coverUrl}
           alt={post.title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 select-none"
@@ -108,10 +109,12 @@ function ExplorePostCard({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5 text-xs font-bold text-slate-200">
               {publisherLogo ? (
-                <img
+                <Image
                   src={getMediaUrl(publisherLogo)}
                   alt={publisherName}
                   className="w-4 h-4 rounded-full object-cover shrink-0"
+                  width={16}
+                  height={16}
                 />
               ) : null}
               {post.publisherType === PUBLISHER_TYPES.PLATFORM && <ShieldCheck className="w-3.5 h-3.5 text-accent shrink-0" />}
