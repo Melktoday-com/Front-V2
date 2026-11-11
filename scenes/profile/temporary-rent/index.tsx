@@ -15,7 +15,7 @@ import {
 } from "@/hooks/useTemporaryRent";
 import { useUserStatus } from "@/hooks/useUserStatus";
 import { normalizeApiError } from "@/lib/api/error-handler";
-import { cn, formatCurrency, getMediaUrl, toEnglishDigits, toOnlyDigits, toPersianDigits } from "@/lib/utils";
+import { cleanUpdatePayload, cn, formatCurrency, getMediaUrl, toEnglishDigits, toOnlyDigits, toPersianDigits } from "@/lib/utils";
 import { showcaseService } from "@/services/showcase.service";
 import type { UnifiedPost } from "@/types/api/post.types";
 import { UpdateHostProfileRequest } from "@/types/api/showcase.types";
@@ -914,7 +914,8 @@ export default function TemporaryRentPanelScene() {
                                 toast.info("تغییری برای ذخیره ثبت نشده است.");
                                 return;
                             }
-                            updateHostMutation.mutate(settingsForm as UpdateHostProfileRequest, {
+                            const payload = cleanUpdatePayload(settingsForm, initialFormValues);
+                            updateHostMutation.mutate(payload as UpdateHostProfileRequest, {
                                 onSuccess: () => {
                                     setIsEditing(false);
                                     queryClient.invalidateQueries({ queryKey: ["hosts"] });

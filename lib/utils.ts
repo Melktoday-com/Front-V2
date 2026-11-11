@@ -265,6 +265,61 @@ export function isPersianMatch(a: string | undefined | null, b: string | undefin
     return compactA === compactB || compactA.includes(compactB) || compactB.includes(compactA);
 }
 
+/**
+ * Cleans and filters payload before sending to update APIs (e.g. Agency or Host showcase profile).
+ * 
+ * Rules:
+ * 1. For `slug`: An empty slug (empty string, null, undefined, or whitespace) is NEVER sent.
+ *    Sending an empty slug causes backend unique key constraint failures (e.g. duplicate slug error).
+ *    If `slug` has a non-empty string, it is trimmed.
+ * 2. For any field: If the value is empty (empty string, null, undefined, or whitespace)
+ *    AND it was also empty in the initial API response (unchanged empty field),
+ *    it is omitted from the payload so unnecessary empty strings are not sent.
+ * 3. If a field previously had a non-empty value in the initial API response and the user
+ *    intentionally cleared it, it is kept (as empty string or trimmed) so the backend can clear it.
+ * 4. All string values are trimmed.
+ */
+export function cleanUpdatePayload<T extends Record<string, any>>(
+    formData: T,
+    initialValues?: Partial<T> | null
+): Partial<T> {
+    const payload: Partial<T> = {};
+
+    const isEmpty = (val: unknown): boolean => {
+        if (val === undefined || val === null) return true;
+        if (typeof val === "string" && val.trim() === "") return true;
+        return false;
+    };
+
+    for (const key of Object.keys(formData) as (keyof T)[]) {
+        const currentVal = formData[key];
+        const initialVal = initialValues ? initialValues[key] : undefined;
+
+        // Rule 1: slug is never sent if empty
+        if (key === "slug") {
+            if (!isEmpty(currentVal) && typeof currentVal === "string") {
+                payload[key] = currentVal.trim() as T[keyof T];
+            }
+            continue;
+        }
+
+        // Rule 2: If current value is empty AND initial value was also empty, omit it.
+        if (isEmpty(currentVal) && isEmpty(initialVal)) {
+            continue;
+        }
+
+        // Rule 3: If current value is string, trim it
+        if (typeof currentVal === "string") {
+            payload[key] = currentVal.trim() as T[keyof T];
+        } else {
+            payload[key] = currentVal;
+        }
+    }
+
+    return payload;
+}
+
+
 
 
 

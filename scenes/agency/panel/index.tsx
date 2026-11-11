@@ -7,7 +7,7 @@ import { useAgencyStats, useMyAgency } from "@/hooks/useAgencies";
 import { useAuth } from "@/hooks/useAuth";
 import { useSafeBack } from "@/hooks/useSafeBack";
 import { normalizeApiError } from "@/lib/api/error-handler";
-import { cn, getMediaPosterUrl, getMediaUrl, getSiteBaseUrl, toEnglishDigits, toOnlyDigits, toPersianDigits } from "@/lib/utils";
+import { cleanUpdatePayload, cn, getMediaPosterUrl, getMediaUrl, getSiteBaseUrl, toEnglishDigits, toOnlyDigits, toPersianDigits } from "@/lib/utils";
 import { agencyService } from "@/services/agency.service";
 import {
     AgencyPost,
@@ -675,7 +675,8 @@ export default function AgencyPanelScene() {
                                 toast.info("تغییری برای ذخیره ثبت نشده است.");
                                 return;
                             }
-                            updateShowcaseMutation.mutate(settingsForm);
+                            const payload = cleanUpdatePayload(settingsForm, initialFormValues);
+                            updateShowcaseMutation.mutate(payload);
                         }}
                         className="space-y-6"
                     >

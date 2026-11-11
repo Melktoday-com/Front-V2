@@ -165,7 +165,11 @@ export const showcaseService = {
   },
 
   async updateMyHostProfile(data: UpdateHostProfileRequest) {
-    const response = await apiClient.put('/hosts/my-profile', data);
+    const payload = { ...data };
+    if (typeof payload.slug === "string" && !payload.slug.trim()) {
+      delete payload.slug;
+    }
+    const response = await apiClient.put('/hosts/my-profile', payload);
     return response.data;
   },
 

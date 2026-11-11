@@ -46,7 +46,11 @@ export const agencyService = {
     },
 
     async updateAgency(agencyId: string, data: UpdateAgencyProfileRequest): Promise<void> {
-        await apiClient.patch(`/agencies/${agencyId}`, data);
+        const payload = { ...data };
+        if (typeof payload.slug === "string" && !payload.slug.trim()) {
+            delete payload.slug;
+        }
+        await apiClient.patch(`/agencies/${agencyId}`, payload);
     },
 
     async getAgencyStats(agencyId: string): Promise<AgencyStats> {
@@ -94,7 +98,11 @@ export const agencyService = {
     },
 
     async updateMyShowcase(data: UpdateAgencyProfileRequest): Promise<AgencyFull> {
-        const response = await apiClient.put<AgencyFull>("/agencies/my-showcase", data);
+        const payload = { ...data };
+        if (typeof payload.slug === "string" && !payload.slug.trim()) {
+            delete payload.slug;
+        }
+        const response = await apiClient.put<AgencyFull>("/agencies/my-showcase", payload);
         return response.data;
     },
 
