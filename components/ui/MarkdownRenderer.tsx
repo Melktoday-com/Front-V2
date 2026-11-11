@@ -85,12 +85,12 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
             const fullUrl = rawUrl ? getMediaUrl(rawUrl) : "";
             return (
               <figure key={idx} className="my-6 space-y-2">
-                <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-surface-secondary border border-border-subtle/80 shadow-xs">
+                <div className="relative w-full rounded-2xl overflow-hidden bg-surface-secondary border border-border-subtle/80 shadow-xs">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
+                  <Image
                     src={fullUrl}
                     alt={block.alt || "تصویر مقاله"}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-scale-down object-center"
                     loading="lazy"
                     onError={(e) => {
                       (e.target as HTMLImageElement).src = "/property-placeholder.svg";
