@@ -668,7 +668,7 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
                                     />
                                 </div>
                             ) : msg.type === "POLL" || (msg.metadata as any)?.isReviewRequest ? (
-                                <div>
+                                <div onClick={(e) => e.stopPropagation()}>
                                     <ReviewRequestCard
                                         messageId={msg.id}
                                         conversationId={conversationId}
