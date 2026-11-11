@@ -1,4 +1,4 @@
-import RulesScene from "@/scenes/rules";
+import PrivacyScene from "@/scenes/privacy";
 import { Metadata } from "next";
 import { Suspense } from "react";
 
@@ -12,12 +12,12 @@ export default function PrivacyPage() {
   return (
     <Suspense
       fallback={
-        <div className="p-12 text-center text-secondary font-bold">
+        <div className="p-12 text-center text-foreground-muted font-bold">
           در حال بارگذاری سیاست‌نامه حریم خصوصی...
         </div>
       }
     >
-      <RulesScene />
+      <PrivacyScene />
     </Suspense>
   );
 }

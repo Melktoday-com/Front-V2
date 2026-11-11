@@ -169,6 +169,18 @@ export function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/privacy" className="hover:text-primary transition-colors flex items-center gap-1.5 font-bold text-white">
+                  <ChevronLeft className="w-3 h-3 text-primary" />
+                  <span>سیاست و حریم خصوصی</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/faq" className="hover:text-primary transition-colors flex items-center gap-1.5 font-bold text-white">
+                  <ChevronLeft className="w-3 h-3 text-primary" />
+                  <span>سوالات متداول (FAQ)</span>
+                </Link>
+              </li>
+              <li>
                 <Link href="/ads/submit" className="hover:text-primary transition-colors flex items-center gap-1.5">
                   <ChevronLeft className="w-3 h-3 text-primary/70" />
                   <span>ثبت آگهی ملک</span>
@@ -319,13 +331,21 @@ export function Footer() {
             <span> می‌باشد.</span>
           </div>
 
-          <div className="flex items-center gap-3 sm:gap-4">
+          <div className="flex items-center gap-2.5 sm:gap-3.5 flex-wrap justify-center sm:justify-end">
             <Link href="/about" className="hover:text-accent transition-colors text-white/70">
               درباره ما
             </Link>
             <span className="text-white/20">•</span>
             <Link href="/rules" className="hover:text-accent transition-colors text-white/70">
               قوانین و مقررات
+            </Link>
+            <span className="text-white/20">•</span>
+            <Link href="/privacy" className="hover:text-accent transition-colors text-white/70">
+              حریم خصوصی
+            </Link>
+            <span className="text-white/20">•</span>
+            <Link href="/faq" className="hover:text-accent transition-colors text-white/70">
+              سوالات متداول
             </Link>
             <span className="text-white/20">•</span>
             <button
