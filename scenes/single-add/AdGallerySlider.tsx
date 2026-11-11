@@ -140,24 +140,8 @@ export function AdGallerySlider({
                     ))}
                 </Swiper>
 
-                {/* ── TOP RIGHT: CATEGORY & DECORATIVE BADGES ── */}
-                <div className="absolute top-4 right-4 flex items-center gap-1.5 z-20 pointer-events-none">
-                    {subcategoryTitle && (
-                        <span className="bg-brand/90 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-sm border border-white/10">
-                            {subcategoryTitle}
-                        </span>
-                    )}
-                    {categoryTitle && categoryTitle !== subcategoryTitle && (
-                        <span className="bg-black/50 backdrop-blur-md text-white/95 text-xs font-medium px-2.5 py-1.5 rounded-full border border-white/10">
-                            {categoryTitle}
-                        </span>
-                    )}
-                    {ad.isDecorativeImages && (
-                        <span className="bg-amber-600/90 backdrop-blur-md text-white text-xs font-bold px-2.5 py-1.5 rounded-full shadow-sm border border-white/10">
-                            تصاویر تزئینی است
-                        </span>
-                    )}
-                </div>
+
+
 
                 {/* ── TOP LEFT: INSTAGRAM STORY TRIGGER BUTTON ── */}
                 <div className="absolute top-4 left-4 z-20">
@@ -168,8 +152,7 @@ export function AdGallerySlider({
                         title="مشاهده به صورت استوری اینستاگرام"
                     >
                         <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/65 hover:bg-black/80 backdrop-blur-md text-white text-xs font-bold transition-colors">
-                            <Sparkles className="w-3.5 h-3.5 text-rose-400 animate-pulse" />
-                            <span>مشاهده استوری</span>
+
                             <Maximize2 className="w-3 h-3 text-white/80 mr-0.5" />
                         </div>
                     </button>
