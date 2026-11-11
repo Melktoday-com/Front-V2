@@ -16,6 +16,7 @@ import { adsService } from "@/services/ads.service";
 import { AdDetail, AdSummary, SubcategoryConfigResponse } from "@/types/api/ads.types";
 import { AdStatus } from "@/types/api/enums";
 import { useQuery } from "@tanstack/react-query";
+import { AdGallerySlider } from "./AdGallerySlider";
 import {
     Bed,
     Building,
@@ -140,7 +141,6 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
     const router = useRouter();
     const handleBack = useSafeBack("/");
     const [saved, setSaved] = useState(false);
-    const [activeImageIndex, setActiveImageIndex] = useState(0);
     const [showFullPhone, setShowFullPhone] = useState(false);
     const [isContactModalOpen, setIsContactModalOpen] = useState(false);
     const [isPromotionModalOpen, setIsPromotionModalOpen] = useState(false);
@@ -238,8 +238,6 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
             };
         });
     }, [ad?.mediaIds]);
-
-    const activeMedia = mediaItems[activeImageIndex] || mediaItems[0] || { id: "placeholder", url: "/property-placeholder.svg", isVideo: false, posterUrl: undefined };
 
     const handleChat = () => {
         if (!isLoggedIn) {
@@ -507,73 +505,20 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
                 </div>
             </div>
 
-            {/* Gallery Section */}
-            <section className="space-y-3">
-                <div className="relative w-full aspect-[16/10] sm:aspect-[16/8] rounded-3xl overflow-hidden bg-surface-secondary shadow-md">
-                    {activeMedia.isVideo ? (
-                        <video
-                            src={activeMedia.url}
-                            poster={activeMedia.posterUrl}
-                            controls
-                            playsInline
-                            className="w-full h-full object-cover"
-                        />
-                    ) : (
-                        <Image
-                            src={activeMedia.url}
-                            alt={ad.title}
-                            fill
-                            priority
-                            className="object-cover transition-opacity duration-300"
-                        />
-                    )}
-                    <div className="absolute top-4 right-4 flex items-center gap-1.5 z-10">
-                        {subcategoryTitle && (
-                            <span className="bg-brand/85 backdrop-blur-md text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">
-                                {subcategoryTitle}
-                            </span>
-                        )}
-                        {categoryTitle && categoryTitle !== subcategoryTitle && (
-                            <span className="bg-black/40 backdrop-blur-md text-white/90 text-xs font-medium px-2.5 py-1 rounded-full">
-                                {categoryTitle}
-                            </span>
-                        )}
-                        {ad.isDecorativeImages && (
-                            <span className="bg-amber-600/90 backdrop-blur-md text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">
-                                تصاویر تزئینی است
-                            </span>
-                        )}
-                    </div>
-                </div>
-
-                {/* Thumbnails */}
-                {mediaItems.length > 1 && (
-                    <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
-                        {mediaItems.map((media, idx) => (
-                            <button
-                                key={media.id || idx}
-                                onClick={() => setActiveImageIndex(idx)}
-                                className={cn(
-                                    "relative w-20 h-16 sm:w-24 sm:h-18 rounded-2xl overflow-hidden shrink-0 border-2 transition-all",
-                                    activeImageIndex === idx ? "border-primary scale-105 shadow-md" : "border-transparent opacity-70 hover:opacity-100"
-                                )}
-                            >
-                                {media.isVideo ? (
-                                    <div className="relative w-full h-full bg-slate-900 flex items-center justify-center">
-                                        {media.posterUrl && (
-                                            <Image src={media.posterUrl} alt={`ویدیو ${idx + 1}`} fill className="object-cover opacity-80" />
-                                        )}
-                                        <Play className="w-5 h-5 text-white fill-white relative z-10 drop-shadow" />
-                                        <span className="absolute bottom-1 right-1 text-[10px] text-white bg-black/60 px-1 rounded z-10">ویدیو</span>
-                                    </div>
-                                ) : (
-                                    <Image src={media.url} alt={`تصویر ${idx + 1}`} fill className="object-cover" />
-                                )}
-                            </button>
-                        ))}
-                    </div>
-                )}
-            </section>
+            {/* Gallery Section with Swiper & Instagram Story View */}
+            <AdGallerySlider
+                mediaItems={mediaItems}
+                ad={ad}
+                categoryTitle={categoryTitle}
+                subcategoryTitle={subcategoryTitle}
+                priceMain={priceMain}
+                priceSub={priceSub}
+                saved={saved}
+                onToggleSave={handleToggleSave}
+                onChat={handleChat}
+                onContactClick={() => setIsContactModalOpen(true)}
+                onShare={handleShare}
+            />
 
             {/* Main Content & Sidebar Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-6">

@@ -130,6 +130,7 @@ export function Sidebar() {
                                     "w-5 h-5",
                                     active ? "text-accent" : "text-foreground-secondary group-hover:text-primary"
                                 )}
+                                {...(item.href === "/explore" ? { active } : {})}
                             />
                             <span className="text-sm">{item.label}</span>
                         </Link>
@@ -385,7 +386,7 @@ function MobileNavContent() {
                         : "text-foreground-secondary hover:text-primary"
                 )}
             >
-                <ExploreIcon className="w-5 h-5" />
+                <ExploreIcon active={isExplore} className="w-5 h-5" />
             </Link>
 
             {/* 5. Profile */}

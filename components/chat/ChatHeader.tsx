@@ -47,10 +47,13 @@ export function ChatHeader() {
                                         : "text-secondary hover:text-brand hover:bg-soft-bg/50"
                                 )}
                             >
-                                <item.icon className={cn(
-                                    "w-4 h-4 md:w-5 h-5 transition-colors",
-                                    active ? "text-accent" : "text-secondary group-hover:text-accent"
-                                )} />
+                                <item.icon
+                                    className={cn(
+                                        "w-4 h-4 md:w-5 h-5 transition-colors",
+                                        active ? "text-accent" : "text-secondary group-hover:text-accent"
+                                    )}
+                                    {...(item.href === "/explore" ? { active } : {})}
+                                />
                                 <span className={cn(
                                     "font-bold text-sm",
                                     active ? "text-brand" : "text-secondary group-hover:text-brand"
