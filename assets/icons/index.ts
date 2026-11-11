@@ -1,6 +1,25 @@
 import React, { type ComponentProps } from "react";
+import exploreIcon from "./explore-icon.svg";
 import sendIcon from "./send-icon.svg";
 import temporaryRentIcon from "./temporary-rent-icon.png";
+
+export function ExploreIcon({ className, ...props }: ComponentProps<"svg">) {
+    return React.createElement(
+        "svg",
+        {
+            xmlns: "http://www.w3.org/2000/svg",
+            viewBox: "0 0 100 100",
+            fill: "currentColor",
+            className,
+            ...props,
+        },
+        React.createElement("path", {
+            d: "M95.5,25.2c0,0-3.1-14.8-16.5-20c-6.3-2.4-17.8-3.6-29.1-3.7C38.6,1.6,27.1,2.8,20.8,5.2c-13.4,5.2-16.5,20-16.5,20 c-2,8.4-2.7,16.9-2.6,24.4c-0.1,7.5,0.5,16.1,2.6,24.4c0,0,3.1,14.8,16.5,20c6.3,2.4,17.8,3.6,29.1,3.7c11.3-0.1,22.8-1.2,29.1-3.7 c13.4-5.2,16.5-20,16.5-20c2-8.4,2.7-16.9,2.6-24.4C98.2,42.1,97.5,33.6,95.5,25.2z M68.1,52.5L44.6,67.6c-0.7,0.5-1.5,0.7-2.4,0.7 c-0.7,0-1.4-0.2-2.1-0.5c-1.4-0.8-2.3-2.2-2.3-3.8V33.8c0-1.6,0.9-3.1,2.3-3.8c1.4-0.8,3.1-0.7,4.4,0.2l23.5,15.1 c1.3,0.8,2,2.2,2,3.7S69.4,51.7,68.1,52.5z",
+            fill: "currentColor",
+            fillRule: "nonzero",
+        })
+    );
+}
 
 export function SendIcon({ className, ...props }: ComponentProps<"svg">) {
     return React.createElement(
@@ -20,6 +39,4 @@ export function SendIcon({ className, ...props }: ComponentProps<"svg">) {
     );
 }
 
-export { sendIcon, temporaryRentIcon };
-
-
+export { exploreIcon, sendIcon, temporaryRentIcon };

@@ -10,7 +10,6 @@ import { RoleName, tryRoleNameFrom } from "@/types/access";
 import {
     Bell,
     Building2,
-    Compass,
     Heart,
     Home,
     Hotel,
@@ -23,6 +22,7 @@ import {
     ShieldCheck,
     User,
 } from "lucide-react";
+import { ExploreIcon } from "@/assets/icons";
 import Link from "next/link";
 import Image from "next/image";
 import { darkLogo } from "@/assets/branding";
@@ -33,7 +33,7 @@ import { toast } from "sonner";
 const navItems = [
     { icon: Home, label: "خانه", href: "/" },
     { icon: Search, label: "جستجو", href: "/ads" },
-    { icon: Compass, label: "کاوش", href: "/explore" },
+    { icon: ExploreIcon, label: "کاوش", href: "/explore" },
     { icon: Hotel, label: "اقامتگاه‌ها", href: "/temporary-rent" },
     { icon: Building2, label: "آژانس‌ها", href: "/agency" },
     { icon: Heart, label: "علاقه‌مندی‌ها", href: "/favorites" },
@@ -385,7 +385,7 @@ function MobileNavContent() {
                         : "text-foreground-secondary hover:text-primary"
                 )}
             >
-                <Compass className="w-5 h-5" />
+                <ExploreIcon className="w-5 h-5" />
             </Link>
 
             {/* 5. Profile */}

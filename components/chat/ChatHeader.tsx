@@ -1,7 +1,8 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { ChevronLeft, Compass, Home, Search, User } from "lucide-react";
+import { ChevronLeft, Home, Search, User } from "lucide-react";
+import { ExploreIcon } from "@/assets/icons";
 import { useSafeBack } from "@/hooks/useSafeBack";
 import Link from "next/link";
 import Image from "next/image";
@@ -15,7 +16,7 @@ export function ChatHeader() {
     const navItems = [
         { icon: Home, label: "خانه", href: "/" },
         { icon: Search, label: "آگهی‌ها", href: "/ads" },
-        { icon: Compass, label: "کاوش", href: "/explore" },
+        { icon: ExploreIcon, label: "کاوش", href: "/explore" },
         { icon: User, label: "پروفایل", href: "/profile" },
     ];
 
