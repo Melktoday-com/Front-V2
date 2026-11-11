@@ -1,5 +1,6 @@
 "use client";
 
+import { Badge } from "@/components/ui/Badge";
 import { PromotionModal } from "@/components/promotions/PromotionModal";
 import { PropertyCard } from "@/components/ui/PropertyCard";
 import { RentalMortgageCalculator } from "@/components/ads/RentalMortgageCalculator";
@@ -571,9 +572,14 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
                                 {ad.title}
                             </h1>
                             {ad.isDecorativeImages && (
-                                <span className="shrink-0 px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 text-xs font-bold">
-                                    تصاویر تزئینی است
-                                </span>
+                                <Badge
+                                    variant="info"
+                                    className="shrink-0 gap-1.5 px-3 py-1 text-xs font-bold cursor-default select-none shadow-2xs"
+                                    title="تصاویر به کار رفته در این آگهی جنبه نمایشی و نمونه دارند"
+                                >
+                                    <Sparkles className="w-3.5 h-3.5 shrink-0" />
+                                    <span>تصاویر تزئینی است</span>
+                                </Badge>
                             )}
                         </div>
 
