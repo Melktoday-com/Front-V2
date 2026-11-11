@@ -145,20 +145,22 @@ export default function TemporaryRentPanelScene() {
     const updateHostMutation = useUpdateHostProfile();
     const updateShowcaseStatusMutation = useUpdateHostShowcaseStatus();
 
-    const handleConfirmStatusToggle = async () => {
+    const handleConfirmStatusToggle = () => {
         if (!hostProfile) return;
         const newStatus = !hostProfile.isActive;
-        try {
-            await updateShowcaseStatusMutation.mutateAsync(newStatus);
-            toast.success(
-                newStatus
-                    ? "ویترین میزبان با موفقیت فعال شد. پست‌های شما منتشر شدند."
-                    : "ویترین میزبان غیرفعال شد. اقامتگاه‌ها به آرشیو منتقل شدند."
-            );
-            setIsStatusModalOpen(false);
-        } catch (err) {
-            toast.error(normalizeApiError(err).message || "خطا در تغییر وضعیت ویترین");
-        }
+        updateShowcaseStatusMutation.mutate(newStatus, {
+            onSuccess: () => {
+                toast.success(
+                    newStatus
+                        ? "ویترین میزبان با موفقیت فعال شد. پست‌های شما منتشر شدند."
+                        : "ویترین میزبان غیرفعال شد. اقامتگاه‌ها به آرشیو منتقل شدند."
+                );
+                setIsStatusModalOpen(false);
+            },
+            onError: (err: Error) => {
+                toast.error(normalizeApiError(err, "خطا در تغییر وضعیت ویترین"));
+            },
+        });
     };
 
     // Host Rentals (Temporary Rent Ads) query

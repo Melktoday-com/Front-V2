@@ -106,20 +106,22 @@ export default function AgencyPanelScene() {
     const { data: stats } = useAgencyStats(agency?.id || "");
     const updateShowcaseStatusMutation = useUpdateAgencyShowcaseStatus();
 
-    const handleConfirmStatusToggle = async () => {
+    const handleConfirmStatusToggle = () => {
         if (!agency) return;
         const newStatus = !agency.isActive;
-        try {
-            await updateShowcaseStatusMutation.mutateAsync(newStatus);
-            toast.success(
-                newStatus
-                    ? "ویترین املاک با موفقیت فعال شد. پست‌های شما منتشر شدند."
-                    : "ویترین املاک غیرفعال شد. آگهی‌ها به آرشیو منتقل شدند."
-            );
-            setIsStatusModalOpen(false);
-        } catch (err) {
-            toast.error(normalizeApiError(err).message || "خطا در تغییر وضعیت ویترین");
-        }
+        updateShowcaseStatusMutation.mutate(newStatus, {
+            onSuccess: () => {
+                toast.success(
+                    newStatus
+                        ? "ویترین املاک با موفقیت فعال شد. پست‌های شما منتشر شدند."
+                        : "ویترین املاک غیرفعال شد. آگهی‌ها به آرشیو منتقل شدند."
+                );
+                setIsStatusModalOpen(false);
+            },
+            onError: (err: Error) => {
+                toast.error(normalizeApiError(err, "خطا در تغییر وضعیت ویترین"));
+            },
+        });
     };
 
     // Settings form state
