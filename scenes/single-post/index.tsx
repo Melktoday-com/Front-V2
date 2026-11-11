@@ -630,7 +630,7 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
           {/* Hero Featured Media (Image / Video / Carousel) */}
           {mediaList.length > 0 && (
             <div className="space-y-3">
-              <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-slate-950 border border-border-subtle/80 shadow-xs flex items-center justify-center">
+              <div className="relative w-full rounded-2xl overflow-hidden bg-slate-950 border border-border-subtle/80 shadow-xs flex items-center justify-center">
                 {(() => {
                   const currentMedia = mediaList[activeSlide] || mediaList[0];
                   if (currentMedia.type === "VIDEO") {
@@ -669,7 +669,7 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
                       key={currentMedia.id}
                       src={currentMedia.url}
                       alt={post.title || `تصویر ${activeSlide + 1}`}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-scale-down object-center"
                     />
                   );
                 })()}

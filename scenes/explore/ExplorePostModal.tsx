@@ -24,6 +24,10 @@ import Image from "next/image";
 import Link from "next/link";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+import type { Swiper as SwiperType } from "swiper";
+import { Swiper, SwiperSlide } from "swiper/react";
+
+import "swiper/css";
 
 export interface ExplorePostModalProps {
   initialPostId: string | null;
@@ -65,6 +69,7 @@ function ExploreFeedItem({
   onLike: (e: React.MouseEvent, postId: string) => void;
 }) {
   const observerRef = usePostViewObserver(post.id);
+  const swiperRef = useRef<SwiperType | null>(null);
   const [activeSlide, setActiveSlide] = useState(0);
   const [videoErrorMap, setVideoErrorMap] = useState<Record<string, boolean>>({});
   const [showHeartBurst, setShowHeartBurst] = useState(false);
@@ -88,6 +93,13 @@ function ExploreFeedItem({
       posterUrl: getMediaPosterUrl(item),
     }));
   }, [post]);
+
+  useEffect(() => {
+    setActiveSlide(0);
+    if (swiperRef.current) {
+      swiperRef.current.slideTo(0, 0);
+    }
+  }, [post.id]);
 
   // Publisher details
   const publisherInfo = useMemo(() => {
@@ -176,16 +188,15 @@ function ExploreFeedItem({
   };
 
   const isDetailed = isDetailedArticle(post);
-  const currentMedia = mediaList[activeSlide] || mediaList[0];
 
   return (
     <article
       ref={observerRef}
       id={`explore-feed-post-${post.id}`}
-      className="bg-surface rounded-3xl border border-border-subtle shadow-sm overflow-hidden text-right transition-all scroll-mt-20"
+      className="bg-surface rounded-none sm:rounded-3xl border-y sm:border border-border-subtle shadow-none sm:shadow-sm overflow-hidden text-right transition-all scroll-mt-20"
       dir="rtl"
     >
-      {/* ── 1. POST HEADER (Publisher Info & Category) ───────────────────── */}
+      {/* ── 1. POST HEADER (Publisher Info) ─────────────────────────────── */}
       <div className="flex items-center justify-between p-3.5 sm:p-4 border-b border-border-subtle bg-surface">
         {publisherInfo && (
           <div className="flex items-center gap-2.5 min-w-0">
@@ -226,53 +237,87 @@ function ExploreFeedItem({
             </div>
           </div>
         )}
-
       </div>
 
-      {/* ── 2. MEDIA CAROUSEL (Images & Videos) ─────────────────────────── */}
-      <div className="relative aspect-square sm:aspect-4/5 w-full bg-slate-950 overflow-hidden flex items-center justify-center select-none group">
-        {mediaList.length > 0 && currentMedia ? (
-          <div
-            className="relative w-full h-full flex items-center justify-center cursor-pointer"
-            onDoubleClick={handleDoubleTap}
-          >
-            {currentMedia.type === "VIDEO" ? (
-              videoErrorMap[currentMedia.id] ? (
-                <div className="w-full h-full bg-slate-900 flex flex-col items-center justify-center p-6 text-center select-none text-white">
-                  <div className="w-12 h-12 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center mb-2">
-                    <Video className="w-6 h-6" />
+      {/* ── 2. MEDIA CAROUSEL (Images & Videos with Swiper) ──────────────── */}
+      <div className="relative aspect-square sm:aspect-4/5 w-full bg-slate-950 overflow-hidden select-none group">
+        {mediaList.length > 0 ? (
+          <div className="absolute inset-0">
+            <Swiper
+              dir="rtl"
+              slidesPerView={1}
+              spaceBetween={0}
+              threshold={5}
+              touchStartPreventDefault={false}
+              grabCursor={mediaList.length > 1}
+              allowTouchMove={mediaList.length > 1}
+              resistance={true}
+              resistanceRatio={0.6}
+              watchOverflow={true}
+              onBeforeInit={(swiper) => {
+                swiperRef.current = swiper;
+              }}
+              onSwiper={(swiper) => {
+                swiperRef.current = swiper;
+              }}
+              onSlideChange={(swiper) => {
+                setActiveSlide(swiper.activeIndex);
+                const container = swiper.el;
+                const videos = container?.querySelectorAll("video");
+                videos?.forEach((v) => {
+                  if (!v.paused) v.pause();
+                });
+              }}
+              className="w-full h-full"
+            >
+              {mediaList.map((media, idx) => (
+                <SwiperSlide key={media.id || idx} className="w-full h-full">
+                  <div
+                    className="relative w-full h-full flex items-center justify-center cursor-pointer select-none bg-slate-950"
+                    onDoubleClick={handleDoubleTap}
+                  >
+                    {media.type === "VIDEO" ? (
+                      videoErrorMap[media.id] ? (
+                        <div className="w-full h-full bg-slate-900 flex flex-col items-center justify-center p-6 text-center select-none text-white">
+                          <div className="w-12 h-12 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center mb-2">
+                            <Video className="w-6 h-6" />
+                          </div>
+                          <span className="text-sm font-bold">ویدئو در حال پردازش است</span>
+                          <span className="text-xs text-white/50 mt-1">
+                            لطفاً اندکی بعد صفحه را بازبینی فرمایید
+                          </span>
+                        </div>
+                      ) : (
+                        <video
+                          key={media.id}
+                          src={media.url}
+                          poster={media.posterUrl}
+                          controls
+                          playsInline
+                          preload="metadata"
+                          className="w-full h-full object-contain swiper-no-swiping"
+                          onError={() => {
+                            setVideoErrorMap((prev) => ({ ...prev, [media.id]: true }));
+                          }}
+                        />
+                      )
+                    ) : (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img
+                        key={media.id}
+                        src={media.url}
+                        alt={post.title || `تصویر ${idx + 1}`}
+                        draggable={false}
+                        className="w-full h-full object-contain select-none pointer-events-none"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = "/property-placeholder.svg";
+                        }}
+                      />
+                    )}
                   </div>
-                  <span className="text-sm font-bold">ویدئو در حال پردازش است</span>
-                  <span className="text-xs text-white/50 mt-1">
-                    لطفاً اندکی بعد صفحه را بازبینی فرمایید
-                  </span>
-                </div>
-              ) : (
-                <video
-                  key={currentMedia.id}
-                  src={currentMedia.url}
-                  poster={currentMedia.posterUrl}
-                  controls
-                  playsInline
-                  preload="metadata"
-                  className="w-full h-full object-contain"
-                  onError={() => {
-                    setVideoErrorMap((prev) => ({ ...prev, [currentMedia.id]: true }));
-                  }}
-                />
-              )
-            ) : (
-              /* eslint-disable-next-line @next/next/no-img-element */
-              <img
-                key={currentMedia.id}
-                src={currentMedia.url}
-                alt={post.title || `تصویر ${activeSlide + 1}`}
-                className="w-full h-full object-contain select-none"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = "/property-placeholder.svg";
-                }}
-              />
-            )}
+                </SwiperSlide>
+              ))}
+            </Swiper>
 
             {/* Double tap heart animation */}
             {showHeartBurst && (
@@ -283,7 +328,7 @@ function ExploreFeedItem({
 
             {/* Multi-image slide counter badge */}
             {mediaList.length > 1 && (
-              <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-xs font-bold shadow-xs z-20">
+              <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-xs font-bold shadow-xs z-20 pointer-events-none">
                 {toPersianDigits(activeSlide + 1)} / {toPersianDigits(mediaList.length)}
               </div>
             )}
@@ -296,7 +341,7 @@ function ExploreFeedItem({
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      setActiveSlide((s) => s - 1);
+                      swiperRef.current?.slidePrev();
                     }}
                     className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-surface/80 hover:bg-surface text-foreground flex items-center justify-center shadow-md transition-all z-20 cursor-pointer"
                     title="اسلاید قبلی"
@@ -310,7 +355,7 @@ function ExploreFeedItem({
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      setActiveSlide((s) => s + 1);
+                      swiperRef.current?.slideNext();
                     }}
                     className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-surface/80 hover:bg-surface text-foreground flex items-center justify-center shadow-md transition-all z-20 cursor-pointer"
                     title="اسلاید بعدی"
@@ -324,14 +369,14 @@ function ExploreFeedItem({
 
             {/* Slide Indicator Dots */}
             {mediaList.length > 1 && (
-              <div className="absolute bottom-3 inset-x-0 flex items-center justify-center gap-1.5 z-20">
+              <div className="absolute bottom-3 inset-x-0 flex items-center justify-center gap-1.5 z-20 pointer-events-auto">
                 {mediaList.map((_, dotIdx) => (
                   <button
                     key={dotIdx}
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      setActiveSlide(dotIdx);
+                      swiperRef.current?.slideTo(dotIdx);
                     }}
                     className={cn(
                       "h-1.5 rounded-full transition-all cursor-pointer",
@@ -549,7 +594,7 @@ export function ExplorePostModal({
       </div>
 
       {/* ── VERTICAL FEED STREAM (Scroll Down) ─────────────────────────── */}
-      <div className="max-w-xl mx-auto py-4 sm:py-6 px-3 sm:px-0 space-y-6 sm:space-y-8 pb-24">
+      <div className="max-w-xl mx-auto py-0 sm:py-6 px-0 space-y-3 sm:space-y-8 pb-24">
         {posts.map((post) => (
           <ExploreFeedItem
             key={post.id}
