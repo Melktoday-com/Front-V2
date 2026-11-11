@@ -20,6 +20,7 @@ import {
   ShieldCheck,
   Verified,
   Image as ImageIcon,
+  Video,
 } from "lucide-react";
 import Image from "next/image";
 import { PublisherType } from "@/types/api/post.types";
@@ -83,6 +84,7 @@ export function InstagramPostEditor({
   setLocationTag,
 }: InstagramPostEditorProps) {
   const [activeSlide, setActiveSlide] = useState(0);
+  const [videoErrorMap, setVideoErrorMap] = useState<Record<string, boolean>>({});
   const [showFullCaption, setShowFullCaption] = useState(false);
   const [isCustomCategory, setIsCustomCategory] = useState<boolean>(() => {
     return Boolean(category && !INSTAGRAM_CATEGORIES.includes(category));
@@ -368,15 +370,35 @@ export function InstagramPostEditor({
                   return (
                     <>
                       {isVideo ? (
-                        <video
-                          src={currentUrl}
-                          poster={getMediaPosterUrl(currentItem)}
-                          autoPlay
-                          loop
-                          muted
-                          playsInline
-                          className="w-full h-full object-cover select-none"
-                        />
+                        videoErrorMap[currentItem.id] ? (
+                          <div className="w-full h-full bg-slate-900 flex flex-col items-center justify-center p-4 text-center select-none">
+                            <div className="w-12 h-12 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center mb-2">
+                              <Video className="w-6 h-6" />
+                            </div>
+                            <span className="text-xs font-bold text-white/90">
+                              ویدئو در صف تبدیل و پردازش سرور است
+                            </span>
+                            <span className="text-[10px] text-white/50 mt-1">
+                              پس از اتمام پردازش به‌طور خودکار فعال می‌شود
+                            </span>
+                          </div>
+                        ) : (
+                          <video
+                            src={currentUrl}
+                            poster={getMediaPosterUrl(currentItem)}
+                            autoPlay
+                            loop
+                            muted
+                            playsInline
+                            className="w-full h-full object-cover select-none"
+                            onError={() => {
+                              setVideoErrorMap((prev) => ({
+                                ...prev,
+                                [currentItem.id]: true,
+                              }));
+                            }}
+                          />
+                        )
                       ) : (
                         /* eslint-disable-next-line @next/next/no-img-element */
                         <img

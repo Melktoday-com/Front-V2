@@ -36,6 +36,7 @@ import {
   AlertCircle,
   Edit3,
   Trash2,
+  Video,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -82,6 +83,7 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
 
   // Active slide index for Instagram style
   const [activeSlide, setActiveSlide] = useState(0);
+  const [videoErrorMap, setVideoErrorMap] = useState<Record<string, boolean>>({});
   const [showHeartBurst, setShowHeartBurst] = useState(false);
 
   // Viewport impression observer
@@ -320,6 +322,21 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
                   {(() => {
                     const currentMedia = mediaList[activeSlide] || mediaList[0];
                     if (currentMedia.type === "VIDEO") {
+                      if (videoErrorMap[currentMedia.id]) {
+                        return (
+                          <div className="w-full h-full bg-slate-900 flex flex-col items-center justify-center p-6 text-center select-none">
+                            <div className="w-12 h-12 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center mb-2">
+                              <Video className="w-6 h-6" />
+                            </div>
+                            <span className="text-sm font-bold text-white/90">
+                              ویدئو در حال پردازش یا آماده‌سازی است
+                            </span>
+                            <span className="text-xs text-white/50 mt-1">
+                              لطفاً چند لحظه دیگر صفحه را تازه‌سازی کنید
+                            </span>
+                          </div>
+                        );
+                      }
                       return (
                         <video
                           key={currentMedia.id}
@@ -329,6 +346,9 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
                           playsInline
                           preload="metadata"
                           className="w-full h-full object-cover"
+                          onError={() => {
+                            setVideoErrorMap((prev) => ({ ...prev, [currentMedia.id]: true }));
+                          }}
                         />
                       );
                     }
@@ -614,6 +634,21 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
                 {(() => {
                   const currentMedia = mediaList[activeSlide] || mediaList[0];
                   if (currentMedia.type === "VIDEO") {
+                    if (videoErrorMap[currentMedia.id]) {
+                      return (
+                        <div className="w-full h-full bg-slate-900 flex flex-col items-center justify-center p-6 text-center select-none">
+                          <div className="w-12 h-12 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center mb-2">
+                            <Video className="w-6 h-6" />
+                          </div>
+                          <span className="text-sm font-bold text-white/90">
+                            ویدئو در حال پردازش یا آماده‌سازی است
+                          </span>
+                          <span className="text-xs text-white/50 mt-1">
+                            لطفاً چند لحظه دیگر صفحه را تازه‌سازی کنید
+                          </span>
+                        </div>
+                      );
+                    }
                     return (
                       <video
                         key={currentMedia.id}
@@ -623,6 +658,9 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
                         playsInline
                         preload="metadata"
                         className="w-full h-full object-cover"
+                        onError={() => {
+                          setVideoErrorMap((prev) => ({ ...prev, [currentMedia.id]: true }));
+                        }}
                       />
                     );
                   }

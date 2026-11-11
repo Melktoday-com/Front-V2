@@ -17,9 +17,11 @@ import {
   Hotel,
   Layers,
   Loader2,
+  Play,
   Plus,
   Search,
   ShieldCheck,
+  Video,
   X,
 } from "lucide-react";
 import Link from "next/link";
@@ -39,14 +41,15 @@ function ExplorePostCard({
 }) {
   const observerRef = usePostViewObserver(post.id);
 
-  // Check format: multi-image, article, or single photo
+  // Determine cover image URL & media type
+  const firstMedia = post.mediaIds?.[0];
+  const coverUrl = firstMedia ? getMediaPosterUrl(firstMedia) : "/property-placeholder.svg";
+
+  // Check format: video, multi-image, article
   const mediaCount = post.mediaIds?.length || 0;
   const isMultiImage = mediaCount > 1;
   const isArticle = (post.content?.length || 0) > 400 || !!post.summary || post.category?.includes("مقاله");
-
-  // Determine cover image URL
-  const firstMedia = post.mediaIds?.[0];
-  const coverUrl = firstMedia ? getMediaPosterUrl(firstMedia) : "/property-placeholder.svg";
+  const isVideo = firstMedia?.type === "VIDEO" || post.mediaIds?.some((m) => m.type === "VIDEO");
 
   const publisher = post.publisher || post.agency;
   const publisherName =
@@ -72,8 +75,13 @@ function ExplorePostCard({
           }}
         />
 
-        {/* Top Badges (Multi-image or Article Indicator) */}
+        {/* Top Badges (Video, Multi-image or Article Indicator) */}
         <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 z-10 pointer-events-none">
+          {isVideo && (
+            <div className="p-1.5 rounded-lg bg-black/60 backdrop-blur-md text-white shadow-xs" title="ویدئو">
+              <Play className="w-3.5 h-3.5 fill-current ml-0.5" />
+            </div>
+          )}
           {isMultiImage && (
             <div className="p-1.5 rounded-lg bg-black/60 backdrop-blur-md text-white shadow-xs">
               <Layers className="w-3.5 h-3.5" />

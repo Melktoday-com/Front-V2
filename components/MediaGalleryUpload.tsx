@@ -28,6 +28,7 @@ export default function MediaGalleryUpload({
 }: MediaGalleryUploadProps) {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [localPreviews, setLocalPreviews] = useState<Record<string, string>>({});
+    const [videoErrors, setVideoErrors] = useState<Record<string, boolean>>({});
     const { mutateAsync: uploadMedia, isPending: isUploading } = useUploadMedia();
 
     // Revoke any local blob preview URLs when the component unmounts
@@ -137,6 +138,13 @@ export default function MediaGalleryUpload({
                 return next;
             });
         }
+        if (itemToRemove && videoErrors[itemToRemove.id]) {
+            setVideoErrors((prev) => {
+                const next = { ...prev };
+                delete next[itemToRemove.id];
+                return next;
+            });
+        }
         const updated = normalizedValue.filter((_, idx) => idx !== indexToRemove);
         onChange(updated);
     };
@@ -173,23 +181,42 @@ export default function MediaGalleryUpload({
                         >
                             {isVideo ? (
                                 <div className="w-full h-full relative bg-slate-900 flex items-center justify-center">
-                                    <video
-                                        src={localPreviews[item.id] || fullUrl}
-                                        poster={getMediaPosterUrl(item)}
-                                        className="w-full h-full object-cover"
-                                        muted
-                                        playsInline
-                                        preload="metadata"
-                                    />
-                                    <div className="absolute inset-0 bg-black/25 flex items-center justify-center pointer-events-none">
-                                        <div className="w-8 h-8 rounded-full bg-surface/80 backdrop-blur-xs flex items-center justify-center text-foreground shadow-sm">
-                                            <Play className="w-4 h-4 fill-current ml-0.5" />
+                                    {videoErrors[item.id] ? (
+                                        <div className="w-full h-full bg-linear-to-br from-slate-800 to-slate-950 flex flex-col items-center justify-center p-2 text-center select-none">
+                                            <div className="w-9 h-9 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center mb-1">
+                                                <Video className="w-4 h-4" />
+                                            </div>
+                                            <span className="text-[10px] font-bold text-white/90">
+                                                ویدئو بارگذاری شد
+                                            </span>
+                                            <span className="text-[9px] text-white/50 mt-0.5">
+                                                در صف پردازش
+                                            </span>
                                         </div>
-                                    </div>
-                                    <span className="absolute bottom-1.5 left-1.5 bg-black/60 backdrop-blur-xs text-white text-[9px] px-1.5 py-0.5 rounded-md flex items-center gap-1 font-medium">
-                                        <Video className="w-3 h-3 text-blue-400" />
-                                        ویدئو
-                                    </span>
+                                    ) : (
+                                        <>
+                                            <video
+                                                src={localPreviews[item.id] || fullUrl}
+                                                poster={getMediaPosterUrl(item)}
+                                                className="w-full h-full object-cover"
+                                                muted
+                                                playsInline
+                                                preload="metadata"
+                                                onError={() => {
+                                                    setVideoErrors((prev) => ({ ...prev, [item.id]: true }));
+                                                }}
+                                            />
+                                            <div className="absolute inset-0 bg-black/25 flex items-center justify-center pointer-events-none">
+                                                <div className="w-8 h-8 rounded-full bg-surface/80 backdrop-blur-xs flex items-center justify-center text-foreground shadow-sm">
+                                                    <Play className="w-4 h-4 fill-current ml-0.5" />
+                                                </div>
+                                            </div>
+                                            <span className="absolute bottom-1.5 left-1.5 bg-black/60 backdrop-blur-xs text-white text-[9px] px-1.5 py-0.5 rounded-md flex items-center gap-1 font-medium">
+                                                <Video className="w-3 h-3 text-blue-400" />
+                                                ویدئو
+                                            </span>
+                                        </>
+                                    )}
                                 </div>
                             ) : (
                                 /* eslint-disable-next-line @next/next/no-img-element */
