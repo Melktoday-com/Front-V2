@@ -170,9 +170,7 @@ export function AdGallerySlider({
 
                 {/* ── BOTTOM RIGHT: STORY CLICK HINT ── */}
                 <div className="hidden sm:flex absolute bottom-4 right-4 z-20 pointer-events-none">
-                    <div className="flex items-center gap-1 px-3 py-1 rounded-full bg-black/40 backdrop-blur-xs text-[11px] text-white/80 border border-white/10">
-                        <span>برای مشاهده استوری کلیک کنید</span>
-                    </div>
+
                 </div>
 
                 {/* ── NAVIGATION ARROWS (Chevrons) ── */}
