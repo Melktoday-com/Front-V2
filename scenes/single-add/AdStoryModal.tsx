@@ -1,6 +1,6 @@
 "use client";
 
-import { cn, toPersianDigits } from "@/lib/utils";
+import { cn, getMediaUrl, toPersianDigits } from "@/lib/utils";
 import { AdDetail } from "@/types/api/ads.types";
 import {
     Building2,
@@ -16,6 +16,7 @@ import {
     VolumeX,
     X,
 } from "lucide-react";
+import Image from "next/image";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 
 export interface AdStoryMediaItem {
@@ -287,7 +288,7 @@ function AdStoryModalInner({
 
     const publisher = ad.publisher;
     const publisherName = publisher?.name || ad.title;
-    const publisherAvatar = publisher?.avatar;
+    const publisherAvatar = getMediaUrl(publisher?.avatar);
     const isVideo = currentMedia.isVideo;
     const locationText = [ad.location?.city?.name, ad.location?.neighbourhood?.name]
         .filter(Boolean)
@@ -340,7 +341,7 @@ function AdStoryModalInner({
                 {/* ── AMBIENT BLURRED BACKDROP (Instagram Effect) ── */}
                 <div className="absolute inset-0 overflow-hidden pointer-events-none">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
+                    <Image
                         src={isVideo ? (currentMedia.posterUrl || currentMedia.url) : currentMedia.url}
                         alt=""
                         className="w-full h-full object-cover blur-3xl opacity-35 scale-125 transform"
@@ -383,7 +384,7 @@ function AdStoryModalInner({
                                 <div className="w-9 h-9 rounded-full bg-slate-900 overflow-hidden flex items-center justify-center">
                                     {publisherAvatar ? (
                                         // eslint-disable-next-line @next/next/no-img-element
-                                        <img
+                                        <Image
                                             src={publisherAvatar}
                                             alt={publisherName}
                                             className="w-full h-full object-cover"
@@ -481,7 +482,7 @@ function AdStoryModalInner({
                         />
                     ) : (
                         /* eslint-disable-next-line @next/next/no-img-element */
-                        <img
+                        <Image
                             key={currentMedia.id}
                             src={imageErrorMap[currentMedia.id] ? "/property-placeholder.svg" : currentMedia.url}
                             alt={ad.title}

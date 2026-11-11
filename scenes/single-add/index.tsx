@@ -833,7 +833,7 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
                             <div className="p-3.5 rounded-xl bg-surface-secondary/70 border border-border-subtle/70 space-y-3">
                                 <div className="flex items-center gap-3">
                                     {ad.publisher.avatar ? (
-                                        <img
+                                        <Image
                                             src={getMediaUrl(ad.publisher.avatar)}
                                             alt={ad.publisher.name}
                                             className="w-12 h-12 rounded-xl object-cover border border-border-subtle shadow-xs shrink-0"

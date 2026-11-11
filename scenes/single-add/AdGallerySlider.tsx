@@ -109,7 +109,7 @@ export function AdGallerySlider({
                                     <div className="relative w-full h-full flex items-center justify-center">
                                         {media.posterUrl && (
                                             /* eslint-disable-next-line @next/next/no-img-element */
-                                            <img
+                                            <Image
                                                 src={media.posterUrl}
                                                 alt={ad.title}
                                                 className="w-full h-full object-cover opacity-85 group-hover/slide:scale-102 transition-transform duration-500"
@@ -123,7 +123,7 @@ export function AdGallerySlider({
                                     </div>
                                 ) : (
                                     /* eslint-disable-next-line @next/next/no-img-element */
-                                    <img
+                                    <Image
                                         src={imageErrorMap[media.id] ? "/property-placeholder.svg" : media.url}
                                         alt={`${ad.title} - تصویر ${idx + 1}`}
                                         className="w-full h-full object-cover group-hover/slide:scale-102 transition-transform duration-500"
@@ -247,7 +247,7 @@ export function AdGallerySlider({
                                 </div>
                             ) : (
                                 /* eslint-disable-next-line @next/next/no-img-element */
-                                <img
+                                <Image
                                     src={imageErrorMap[media.id] ? "/property-placeholder.svg" : media.url}
                                     alt={`بندانگشتی ${idx + 1}`}
                                     className="w-full h-full object-cover"
