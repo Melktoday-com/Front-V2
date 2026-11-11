@@ -159,56 +159,7 @@ export default function FaqScene() {
           </div>
         </section>
 
-        {/* Category Pills Navigation */}
-        <section className="space-y-2">
-          <div className="flex items-center justify-between text-xs text-foreground-muted px-1">
-            <span className="font-medium">دسته‌بندی موضوعات:</span>
-            <span>{toPersianDigits(totalQuestionsCount)} پرسش و پاسخ</span>
-          </div>
 
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-            <button
-              onClick={() => setSelectedCategory("all")}
-              className={cn(
-                "px-3.5 py-2 rounded-xl text-xs font-medium shrink-0 transition-colors cursor-pointer",
-                selectedCategory === "all"
-                  ? "bg-primary text-primary-foreground font-bold"
-                  : "bg-surface border border-border/70 text-foreground-muted hover:text-foreground hover:bg-surface-secondary"
-              )}
-            >
-              همه دسته‌ها ({toPersianDigits(totalQuestionsCount)})
-            </button>
-
-            {FAQ_DATA.map((cat) => {
-              const IconComp = ICON_MAP[cat.icon] || HelpCircle;
-              const isSelected = selectedCategory === cat.id;
-
-              return (
-                <button
-                  key={cat.id}
-                  onClick={() => setSelectedCategory(cat.id)}
-                  className={cn(
-                    "inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-medium shrink-0 transition-colors cursor-pointer",
-                    isSelected
-                      ? "bg-primary text-primary-foreground font-bold"
-                      : "bg-surface border border-border/70 text-foreground-muted hover:text-foreground hover:bg-surface-secondary"
-                  )}
-                >
-                  <IconComp className="w-3.5 h-3.5 shrink-0" />
-                  <span>{cat.title}</span>
-                  <span
-                    className={cn(
-                      "text-[10px] px-1.5 py-0.2 rounded-full",
-                      isSelected ? "bg-white/20 text-white" : "bg-surface-secondary text-foreground-muted"
-                    )}
-                  >
-                    {toPersianDigits(cat.items.length)}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </section>
 
         {/* FAQ Accordion List */}
         <section className="space-y-6">
