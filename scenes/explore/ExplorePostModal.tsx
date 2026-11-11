@@ -539,9 +539,7 @@ export function ExplorePostModal({
             <span>بازگشت به کاوش</span>
           </button>
 
-          <span className="text-xs sm:text-sm font-black text-brand">
-            فید کاوش ملک‌تودی
-          </span>
+
 
           <button
             type="button"
