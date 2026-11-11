@@ -336,7 +336,7 @@ export default function AgencyPanelScene() {
                         <Building2 className="w-8 h-8" />
                     </div>
                     <div className="space-y-2">
-                        <h2 className="text-xl font-black text-brand tracking-tight">ورود به پنل آژانس</h2>
+                        <h2 className="text-xl font-black text-brand tracking-tight">ورود به پنل املاک</h2>
                         <p className="text-xs sm:text-sm text-secondary leading-relaxed">
                             برای مدیریت صفحه ویترین، ویرایش اطلاعات و انتشار مقالات، ابتدا وارد حساب کاربری خود شوید.
                         </p>

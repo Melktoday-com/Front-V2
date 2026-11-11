@@ -602,7 +602,7 @@ export default function ProfileScene() {
                         >
                             <div className="flex items-center gap-3">
                                 <Building2 className="w-5 h-5 text-primary" />
-                                <span className="text-brand font-bold text-sm">مدیریت آژانس من</span>
+                                <span className="text-brand font-bold text-sm">مدیریت املاک من</span>
                             </div>
                             <ChevronLeft className="w-4 h-4 text-secondary" />
                         </button>
@@ -626,7 +626,7 @@ export default function ProfileScene() {
                             >
                                 <div className="flex items-center gap-3">
                                     <ExternalLink className="w-5 h-5 text-primary" />
-                                    <span className="text-brand font-bold text-sm">ویترین عمومی آژانس</span>
+                                    <span className="text-brand font-bold text-sm">ویترین عمومی املاک</span>
                                 </div>
                                 <ChevronLeft className="w-4 h-4 text-secondary" />
                             </Link>
