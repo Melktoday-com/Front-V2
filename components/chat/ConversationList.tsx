@@ -8,6 +8,7 @@ import { Building2, MessageSquare, ShieldCheck, User } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
+import { formatConversationDate } from "./chat-date.utils";
 
 function ConversationListContent() {
     const { data: conversations, isLoading } = useConversations();
@@ -85,7 +86,7 @@ function ConversationListContent() {
                                     {conv.otherParticipant?.name || (otherId ? `کاربر ${otherId.slice(0, 4)}` : "کاربر ملک تودی")}
                                 </span>
                                 <span className="text-secondary text-[9px] font-bold opacity-60">
-                                    {conv.lastMessageAt ? new Date(conv.lastMessageAt).toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' }) : ''}
+                                    {formatConversationDate(conv.lastMessageAt)}
                                 </span>
                             </div>
                             <div className="flex items-center gap-1.5">

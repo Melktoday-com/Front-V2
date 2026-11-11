@@ -295,7 +295,7 @@ export default function SingleHostScene({ idOrSlug, initialData }: SingleHostSce
               {/* Avatar */}
               <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-soft-bg border border-soft-border/60 shadow-md overflow-hidden shrink-0">
                 {header.avatarUrl ? (
-                  <Image src={header.avatarUrl} alt={header.title} fill className="object-cover" />
+                  <Image src={getMediaUrl(header.avatarUrl)} alt={header.title} fill className="object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-teal-50 text-teal-600 font-black text-2xl">
                     {header.title.charAt(0)}

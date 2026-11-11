@@ -35,11 +35,17 @@ import {
     User,
     X,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
 import { ListingMessageCard } from "./ListingMessageCard";
 import { ReviewRequestCard } from "./ReviewRequestCard";
+import {
+    formatFullDateTime,
+    formatMessageDate,
+    formatMessageTime,
+    shouldShowDateSeparator,
+} from "./chat-date.utils";
 
 /**
  * Message retract / edit window: 1 hour in milliseconds
@@ -359,17 +365,6 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
         }
     };
 
-    const formatTime = (dateStr: string) => {
-        try {
-            return new Date(dateStr).toLocaleTimeString("fa-IR", {
-                hour: "2-digit",
-                minute: "2-digit",
-            });
-        } catch {
-            return "";
-        }
-    };
-
     const isServiceRole =
         activeRole === RoleName.Agent ||
         activeRole === RoleName.Landlord ||
@@ -509,6 +504,8 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
                 )}
 
                 {messages.map((msg: ChatMessage, idx) => {
+                    const prevMsg = idx > 0 ? messages[idx - 1] : null;
+                    const showDateDivider = shouldShowDateSeparator(msg.createdAt, prevMsg?.createdAt);
                     const isMine = msg.senderId === me?.userId;
                     const isWithinRetract =
                         Date.now() - new Date(msg.createdAt).getTime() <= MESSAGE_RETRACT_WINDOW_MS;
@@ -532,10 +529,18 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
                     const replyData = (msg.metadata as any)?.replyTo as ReplyMetadata | undefined;
 
                     return (
-                        <div
-                            id={`msg-${msg.id}`}
-                            key={msg.id || idx}
-                            data-message-bubble
+                        <Fragment key={msg.id || idx}>
+                            {showDateDivider && (
+                                <div className="flex justify-center py-1 select-none">
+                                    <span className="inline-flex items-center text-[11px] font-bold text-secondary/90 bg-surface border border-soft-border/80 px-3 py-1 rounded-full shadow-xs">
+                                        {formatMessageDate(msg.createdAt)}
+                                    </span>
+                                </div>
+                            )}
+
+                            <div
+                                id={`msg-${msg.id}`}
+                                data-message-bubble
                             onClick={() => {
                                 if (hasAnyAction) {
                                     setActiveMenuMessageId((curr) => (curr === msg.id ? null : msg.id));
@@ -778,14 +783,18 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
                             )}
 
                             {/* Timestamp & Status Indicator */}
-                            <span className="text-[9px] text-secondary mt-1 px-1 opacity-70 flex items-center gap-1 font-medium select-none">
-                                <span>{formatTime(msg.createdAt)}</span>
+                            <span
+                                title={formatFullDateTime(msg.createdAt)}
+                                className="text-[9px] text-secondary mt-1 px-1 opacity-70 flex items-center gap-1 font-medium select-none"
+                            >
+                                <span>{formatMessageTime(msg.createdAt)}</span>
                                 {msg.isEdited && <span className="text-[9px] text-secondary/80">(ویرایش شده)</span>}
                                 {isMine && <CheckCheck className="w-3 h-3 text-brand" />}
                             </span>
                         </div>
-                    );
-                })}
+                    </Fragment>
+                );
+            })}
             </div>
 
             {/* Unified Bottom Input Bar */}
