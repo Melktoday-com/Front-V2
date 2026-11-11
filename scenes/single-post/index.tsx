@@ -353,7 +353,7 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
                       );
                     }
                     return (
-                      <img
+                      <Image
                         key={currentMedia.id}
                         src={currentMedia.url}
                         alt={post.title || `اسلاید ${activeSlide + 1}`}
@@ -449,7 +449,7 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
                 >
                   <div className="relative w-11 h-11 rounded-full p-0.5 border border-primary bg-primary/10 shrink-0 overflow-hidden">
                     {publisherInfo.logoUrl ? (
-                      <img
+                      <Image
                         src={getMediaUrl(publisherInfo.logoUrl)}
                         alt={publisherInfo.name}
                         className="w-full h-full object-cover rounded-full"
@@ -580,7 +580,7 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
                 >
                   <div className="relative w-12 h-12 rounded-full p-0.5 border border-primary bg-primary/10 overflow-hidden shrink-0">
                     {publisherInfo.logoUrl ? (
-                      <img
+                      <Image
                         src={getMediaUrl(publisherInfo.logoUrl)}
                         alt={publisherInfo.name}
                         className="w-full h-full object-cover rounded-full"
@@ -665,7 +665,7 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
                     );
                   }
                   return (
-                    <img
+                    <Image
                       key={currentMedia.id}
                       src={currentMedia.url}
                       alt={post.title || `تصویر ${activeSlide + 1}`}
@@ -717,7 +717,7 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
                           : "border-border-subtle opacity-60 hover:opacity-100"
                       )}
                     >
-                      <img
+                      <Image
                         src={item.type === "VIDEO" ? item.posterUrl : item.url}
                         alt={`بند انگشتی ${idx + 1}`}
                         className="w-full h-full object-cover"
@@ -786,7 +786,7 @@ export default function SinglePostScene({ idOrSlug }: SinglePostSceneProps) {
               <div className="flex items-center gap-3 text-right">
                 <div className="w-12 h-12 rounded-2xl bg-surface border border-border-subtle flex items-center justify-center text-foreground-secondary font-bold text-xs shrink-0 overflow-hidden shadow-2xs">
                   {publisherInfo.logoUrl ? (
-                    <img
+                    <Image
                       src={getMediaUrl(publisherInfo.logoUrl)}
                       alt={publisherInfo.name}
                       className="w-full h-full object-cover"
