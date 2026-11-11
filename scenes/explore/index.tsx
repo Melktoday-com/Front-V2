@@ -29,6 +29,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+import { ExplorePostModal } from "./ExplorePostModal";
 
 /**
  * Individual Instagram-Style Explore Card with Viewport Observation
@@ -36,9 +37,11 @@ import { toast } from "sonner";
 function ExplorePostCard({
   post,
   onLike,
+  onSelect,
 }: {
   post: UnifiedPost;
   onLike: (e: React.MouseEvent, postId: string) => void;
+  onSelect: (post: UnifiedPost) => void;
 }) {
   const observerRef = usePostViewObserver(post.id);
 
@@ -60,104 +63,116 @@ function ExplorePostCard({
   const publisherLogo = publisher?.logoUrl || publisher?.avatarUrl;
 
   return (
-    <div
+    <article
       ref={observerRef}
-      className="group relative aspect-square rounded-2xl overflow-hidden bg-slate-900 border border-border-subtle/80 shadow-2xs hover:shadow-md transition-all duration-300"
+      role="button"
+      tabIndex={0}
+      onClick={() => onSelect(post)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onSelect(post);
+        }
+      }}
+      className="group relative aspect-square rounded-2xl overflow-hidden bg-slate-900 border border-border-subtle/80 shadow-2xs hover:shadow-md transition-all duration-300 cursor-pointer select-none text-right focus:outline-hidden focus:ring-2 focus:ring-primary/50"
+      aria-label={post.title}
     >
-      <Link href={`/posts/${encodeURIComponent(post.slug || post.id)}`} className="block w-full h-full">
-        {/* Main Cover Image */}
-        <Image
-          src={coverUrl}
-          alt={post.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 select-none"
-          loading="lazy"
-          onError={(e) => {
-            (e.target as HTMLImageElement).src = "/property-placeholder.svg";
-          }}
-        />
+      {/* Main Cover Image */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={coverUrl}
+        alt={post.title}
+        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 select-none"
+        loading="lazy"
+        onError={(e) => {
+          (e.target as HTMLImageElement).src = "/property-placeholder.svg";
+        }}
+      />
 
-        {/* Top Badges (Video, Multi-image or Article Indicator) */}
-        <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 z-10 pointer-events-none">
-          {isVideo && (
-            <div className="p-1.5 rounded-lg bg-black/60 backdrop-blur-md text-white shadow-xs" title="ویدئو">
-              <Play className="w-3.5 h-3.5 fill-current ml-0.5" />
-            </div>
-          )}
-          {isMultiImage && (
-            <div className="p-1.5 rounded-lg bg-black/60 backdrop-blur-md text-white shadow-xs">
-              <Layers className="w-3.5 h-3.5" />
-            </div>
-          )}
-          {isArticle && (
-            <div className="p-1.5 rounded-lg bg-black/60 backdrop-blur-md text-white shadow-xs">
-              <BookOpen className="w-3.5 h-3.5" />
-            </div>
-          )}
-        </div>
-
-        {/* Top Right: Category Pill */}
-        {post.category && (
-          <div className="absolute top-2.5 right-2.5 z-10 pointer-events-none">
-            <span className="px-2 py-0.5 rounded-md bg-black/50 backdrop-blur-md text-white text-[10px] font-bold">
-              {post.category}
-            </span>
+      {/* Top Badges (Video, Multi-image or Article Indicator) */}
+      <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 z-10 pointer-events-none">
+        {isVideo && (
+          <div className="p-1.5 rounded-lg bg-black/60 backdrop-blur-md text-white shadow-xs" title="ویدئو">
+            <Play className="w-3.5 h-3.5 fill-current ml-0.5" />
           </div>
         )}
-
-        {/* Hover / Touch Instagram Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-3.5 text-white z-20">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-200">
-              {publisherLogo ? (
-                <Image
-                  src={getMediaUrl(publisherLogo)}
-                  alt={publisherName}
-                  className="w-4 h-4 rounded-full object-cover shrink-0"
-                  width={16}
-                  height={16}
-                />
-              ) : null}
-              {post.publisherType === PUBLISHER_TYPES.PLATFORM && <ShieldCheck className="w-3.5 h-3.5 text-accent shrink-0" />}
-              {post.publisherType === PUBLISHER_TYPES.HOST && <Hotel className="w-3.5 h-3.5 text-emerald-400 shrink-0" />}
-              {post.publisherType === PUBLISHER_TYPES.AGENCY && <Building2 className="w-3.5 h-3.5 text-blue-400 shrink-0" />}
-              <span className="truncate max-w-[120px]">{publisherName}</span>
-              {publisher?.isVerified && (
-                <span className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0" title="تایید شده" />
-              )}
-            </div>
+        {isMultiImage && (
+          <div className="p-1.5 rounded-lg bg-black/60 backdrop-blur-md text-white shadow-xs">
+            <Layers className="w-3.5 h-3.5" />
           </div>
+        )}
+        {isArticle && (
+          <div className="p-1.5 rounded-lg bg-black/60 backdrop-blur-md text-white shadow-xs">
+            <BookOpen className="w-3.5 h-3.5" />
+          </div>
+        )}
+      </div>
 
-          <div className="space-y-2">
-            <p className="text-xs font-black line-clamp-2 leading-snug">
-              {post.title}
-            </p>
+      {/* Top Right: Category Pill */}
+      {post.category && (
+        <div className="absolute top-2.5 right-2.5 z-10 pointer-events-none">
+          <span className="px-2 py-0.5 rounded-md bg-black/50 backdrop-blur-md text-white text-[10px] font-bold">
+            {post.category}
+          </span>
+        </div>
+      )}
 
-            <div className="flex items-center justify-between pt-1 border-t border-white/20 text-[11px] font-bold">
-              {/* Like trigger button */}
-              <button
-                type="button"
-                onClick={(e) => onLike(e, post.id)}
-                className="flex items-center gap-1 hover:text-red-400 transition-colors"
-              >
-                <Heart
-                  className={cn(
-                    "w-3.5 h-3.5",
-                    post.hasLiked ? "text-error fill-red-500" : ""
-                  )}
-                />
-                <span>{toPersianDigits(post.likeCount || 0)}</span>
-              </button>
+      {/* Hover / Touch Instagram Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-3.5 text-white z-20">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-200">
+            {publisherLogo ? (
+              <Image
+                src={getMediaUrl(publisherLogo)}
+                alt={publisherName}
+                className="w-4 h-4 rounded-full object-cover shrink-0"
+                width={16}
+                height={16}
+              />
+            ) : null}
+            {post.publisherType === PUBLISHER_TYPES.PLATFORM && <ShieldCheck className="w-3.5 h-3.5 text-accent shrink-0" />}
+            {post.publisherType === PUBLISHER_TYPES.HOST && <Hotel className="w-3.5 h-3.5 text-emerald-400 shrink-0" />}
+            {post.publisherType === PUBLISHER_TYPES.AGENCY && <Building2 className="w-3.5 h-3.5 text-blue-400 shrink-0" />}
+            <span className="truncate max-w-[120px]">{publisherName}</span>
+            {publisher?.isVerified && (
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0" title="تایید شده" />
+            )}
+          </div>
+        </div>
 
-              {/* Views */}
-              <div className="flex items-center gap-1 text-slate-300">
-                <Eye className="w-3.5 h-3.5" />
-                <span>{toPersianDigits(post.viewCount || 0)}</span>
-              </div>
+        <div className="space-y-2">
+          <p className="text-xs font-black line-clamp-2 leading-snug">
+            {post.title}
+          </p>
+
+          <div className="flex items-center justify-between pt-1 border-t border-white/20 text-[11px] font-bold">
+            {/* Like trigger button */}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onLike(e, post.id);
+              }}
+              className="flex items-center gap-1 hover:text-red-400 transition-colors cursor-pointer"
+            >
+              <Heart
+                className={cn(
+                  "w-3.5 h-3.5",
+                  post.hasLiked ? "text-error fill-red-500" : ""
+                )}
+              />
+              <span>{toPersianDigits(post.likeCount || 0)}</span>
+            </button>
+
+            {/* Views */}
+            <div className="flex items-center gap-1 text-slate-300">
+              <Eye className="w-3.5 h-3.5" />
+              <span>{toPersianDigits(post.viewCount || 0)}</span>
             </div>
           </div>
         </div>
-      </Link>
-    </div>
+      </div>
+    </article>
   );
 }
 
@@ -244,6 +259,43 @@ export default function ExploreScene() {
   const allLoadedPosts = useMemo(() => {
     return postsData?.pages.flatMap((page) => page.items) || [];
   }, [postsData]);
+
+  // Selected post for Instagram Explore Single Post Viewer Modal
+  const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
+
+  const selectedPost = useMemo(() => {
+    if (!selectedPostId) return null;
+    return allLoadedPosts.find((p) => p.id === selectedPostId) || null;
+  }, [selectedPostId, allLoadedPosts]);
+
+  const selectedPostIndex = useMemo(() => {
+    if (!selectedPostId) return -1;
+    return allLoadedPosts.findIndex((p) => p.id === selectedPostId);
+  }, [selectedPostId, allLoadedPosts]);
+
+  const hasPrevPost = selectedPostIndex > 0;
+  const hasNextPost =
+    (selectedPostIndex >= 0 && selectedPostIndex < allLoadedPosts.length - 1) ||
+    (Boolean(hasNextPage) && (postsData?.pages.length ?? 0) < 7);
+
+  const handlePrevPost = () => {
+    if (selectedPostIndex > 0) {
+      setSelectedPostId(allLoadedPosts[selectedPostIndex - 1].id);
+    }
+  };
+
+  const handleNextPost = () => {
+    if (selectedPostIndex >= 0 && selectedPostIndex < allLoadedPosts.length - 1) {
+      setSelectedPostId(allLoadedPosts[selectedPostIndex + 1].id);
+    } else if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage().then((res) => {
+        const newItems = res.data?.pages.flatMap((page) => page.items) || [];
+        if (newItems.length > selectedPostIndex + 1) {
+          setSelectedPostId(newItems[selectedPostIndex + 1].id);
+        }
+      });
+    }
+  };
 
   const handlePageSelect = (targetPage: number) => {
     const isLoadedInCurrentBatch = loadedPages.includes(targetPage);
@@ -423,6 +475,7 @@ export default function ExploreScene() {
                     key={post.id}
                     post={post}
                     onLike={handleLike}
+                    onSelect={(p) => setSelectedPostId(p.id)}
                   />
                 ))}
               </React.Fragment>
@@ -464,6 +517,18 @@ export default function ExploreScene() {
           className="mb-8"
         />
       )}
+
+      {/* Instagram Explore Single Post Viewer Modal */}
+      <ExplorePostModal
+        post={selectedPost}
+        isOpen={Boolean(selectedPost)}
+        onClose={() => setSelectedPostId(null)}
+        onLike={handleLike}
+        onPrev={handlePrevPost}
+        onNext={handleNextPost}
+        hasPrev={hasPrevPost}
+        hasNext={hasNextPost}
+      />
 
     </div>
   );
