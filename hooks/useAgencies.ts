@@ -136,6 +136,19 @@ export const useRequestConsultation = () => {
     });
 };
 
+export const useUpdateAgencyShowcaseStatus = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (isActive: boolean) => agencyService.updateMyShowcaseStatus(isActive),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["my-agency"] });
+            queryClient.invalidateQueries({ queryKey: ["agency-posts"] });
+            queryClient.invalidateQueries({ queryKey: ["ads"] });
+            queryClient.invalidateQueries({ queryKey: ["my-ads"] });
+        },
+    });
+};
+
 export function useMyAgency() {
     const { user, activeRole } = useAuth();
 

@@ -173,6 +173,11 @@ export const showcaseService = {
     return response.data;
   },
 
+  async updateMyHostStatus(isActive: boolean): Promise<HostProfile> {
+    const response = await apiClient.patch<HostProfile>('/hosts/my-profile/status', { isActive });
+    return response.data;
+  },
+
   async getPublicHostProfile(idOrSlug: string) {
     try {
       const response = await apiClient.get<{

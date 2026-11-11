@@ -5,9 +5,10 @@ import { PromotionModal } from "@/components/promotions/PromotionModal";
 import { SubscriptionQuotaWidget } from "@/components/subscriptions/SubscriptionQuotaWidget";
 import { AccountStatusBanner } from "@/components/ui/AccountStatusBanner";
 import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
+import { ShowcaseStatusModal } from "@/components/ui/ShowcaseStatusModal";
 import { useAuth } from "@/hooks/useAuth";
 import { useSafeBack } from "@/hooks/useSafeBack";
-import { useHostProfile, useShowcasePosts, useUpdateHostProfile } from "@/hooks/useShowcase";
+import { useHostProfile, useShowcasePosts, useUpdateHostProfile, useUpdateHostShowcaseStatus } from "@/hooks/useShowcase";
 import {
     useDeleteTemporaryRent,
     usePublishTemporaryRent,
@@ -42,6 +43,8 @@ import {
     PenTool,
     Phone,
     Plus,
+    Power,
+    Loader2,
     Rocket,
     RotateCcw,
     Settings,
@@ -130,6 +133,7 @@ export default function TemporaryRentPanelScene() {
     const [activeTab, setActiveTab] = useState<Tab>("overview");
     const [copiedLink, setCopiedLink] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
+    const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
     const [rentalFilter, setRentalFilter] = useState<"all" | "published" | "draft">("all");
     const [promotingAd, setPromotingAd] = useState<{ id: string; title: string } | null>(null);
 
@@ -139,6 +143,23 @@ export default function TemporaryRentPanelScene() {
     // Host profile query & mutation
     const { data: hostProfile, isLoading: isLoadingHost } = useHostProfile();
     const updateHostMutation = useUpdateHostProfile();
+    const updateShowcaseStatusMutation = useUpdateHostShowcaseStatus();
+
+    const handleConfirmStatusToggle = async () => {
+        if (!hostProfile) return;
+        const newStatus = !hostProfile.isActive;
+        try {
+            await updateShowcaseStatusMutation.mutateAsync(newStatus);
+            toast.success(
+                newStatus
+                    ? "ویترین میزبان با موفقیت فعال شد. پست‌های شما منتشر شدند."
+                    : "ویترین میزبان غیرفعال شد. اقامتگاه‌ها به آرشیو منتقل شدند."
+            );
+            setIsStatusModalOpen(false);
+        } catch (err) {
+            toast.error(normalizeApiError(err).message || "خطا در تغییر وضعیت ویترین");
+        }
+    };
 
     // Host Rentals (Temporary Rent Ads) query
     const { data: adsResponse, isLoading: isLoadingRentals } = useTemporaryRentAds(
@@ -610,10 +631,10 @@ export default function TemporaryRentPanelScene() {
                         <div className="p-4 rounded-2xl bg-surface border border-soft-border/70 shadow-2xs space-y-1">
                             <span className="text-[11px] font-bold text-secondary flex items-center justify-between">
                                 <span>وضعیت میزبانی</span>
-                                <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                                <span className={cn("w-2 h-2 rounded-full", (hostProfile?.isActive && !isRestricted) ? "bg-emerald-500" : "bg-red-500")} />
                             </span>
-                            <div className="text-base sm:text-lg font-black text-success">
-                                {isRestricted ? "محدود شده" : "فعال و آنلاین"}
+                            <div className={cn("text-base sm:text-lg font-black", (hostProfile?.isActive && !isRestricted) ? "text-success" : "text-destructive")}>
+                                {isRestricted ? "محدود شده" : hostProfile?.isActive ? "فعال و آنلاین" : "غیرفعال"}
                             </div>
                         </div>
                     </div>
@@ -905,6 +926,52 @@ export default function TemporaryRentPanelScene() {
                                 </button>
                             )}
                         </div>
+                    </div>
+
+                    {/* Showcase Status Toggle Banner */}
+                    <div className="rounded-2xl border border-soft-border/70 p-4 sm:p-5 bg-surface flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div className="flex items-start sm:items-center gap-3">
+                            <div className={cn(
+                                "w-10 h-10 rounded-xl flex items-center justify-center shrink-0",
+                                hostProfile?.isActive ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" : "bg-red-500/10 text-red-600 dark:text-red-400"
+                            )}>
+                                <Power className="w-5 h-5" />
+                            </div>
+                            <div>
+                                <div className="flex items-center gap-2">
+                                    <h3 className="text-sm font-black text-brand">وضعیت نمایش ویترین میزبان</h3>
+                                    <span className={cn(
+                                        "text-[10px] font-black px-2 py-0.5 rounded-full",
+                                        hostProfile?.isActive ? "bg-emerald-500/10 text-emerald-600" : "bg-red-500/10 text-red-600"
+                                    )}>
+                                        {hostProfile?.isActive ? "فعال و آنلاین" : "غیرفعال"}
+                                    </span>
+                                </div>
+                                <p className="text-xs text-secondary mt-0.5">
+                                    {hostProfile?.isActive
+                                        ? "ویترین، اقامتگاه‌ها و مقالات شما در دسترس عموم کاربران قرار دارد."
+                                        : "ویترین شما غیرفعال است. اقامتگاه‌ها به آرشیو منتقل شده و مقالات از بخش کاوش مخفی هستند."}
+                                </p>
+                            </div>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => setIsStatusModalOpen(true)}
+                            disabled={updateShowcaseStatusMutation.isPending}
+                            className={cn(
+                                "px-4 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer inline-flex items-center justify-center gap-2 shrink-0 disabled:opacity-50",
+                                hostProfile?.isActive
+                                    ? "bg-red-500/10 hover:bg-red-500/20 text-red-600 border border-red-500/20"
+                                    : "bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs"
+                            )}
+                        >
+                            {updateShowcaseStatusMutation.isPending ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                                <Power className="w-4 h-4" />
+                            )}
+                            <span>{hostProfile?.isActive ? "غیرفعال‌سازی ویترین" : "فعال‌سازی مجدد ویترین"}</span>
+                        </button>
                     </div>
 
                     <form
@@ -1288,6 +1355,16 @@ export default function TemporaryRentPanelScene() {
                         ? `آیا از حذف پست «${postToDelete.title}» اطمینان دارید؟ این عملیات غیرقابل بازگشت است.`
                         : "آیا از حذف این پست اطمینان دارید؟ این عملیات غیرقابل بازگشت است."
                 }
+            />
+
+            {/* Showcase Deactivation / Reactivation Modal */}
+            <ShowcaseStatusModal
+                isOpen={isStatusModalOpen}
+                onClose={() => setIsStatusModalOpen(false)}
+                onConfirm={handleConfirmStatusToggle}
+                type="HOST"
+                isActivating={hostProfile ? !hostProfile.isActive : false}
+                isLoading={updateShowcaseStatusMutation.isPending}
             />
         </div>
     );

@@ -175,6 +175,20 @@ export function useUpdateHostProfile() {
   });
 }
 
+export function useUpdateHostShowcaseStatus() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (isActive: boolean) => showcaseService.updateMyHostStatus(isActive),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: SHOWCASE_KEYS.hostProfile() });
+      queryClient.invalidateQueries({ queryKey: ['temporary-rent-ads'] });
+      queryClient.invalidateQueries({ queryKey: ['showcase-posts'] });
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
+    },
+  });
+}
+
 export function usePlatformProfile() {
   return useQuery({
     queryKey: SHOWCASE_KEYS.platformProfile(),

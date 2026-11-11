@@ -106,6 +106,11 @@ export const agencyService = {
         return response.data;
     },
 
+    async updateMyShowcaseStatus(isActive: boolean): Promise<AgencyFull> {
+        const response = await apiClient.patch<AgencyFull>("/agencies/my-showcase/status", { isActive });
+        return response.data;
+    },
+
     async getPublicShowcase(idOrSlug: string): Promise<AgencyFull> {
         const response = await apiClient.get<AgencyFull>(`/agencies/showcase/${encodeURIComponent(idOrSlug)}`);
         return response.data;
