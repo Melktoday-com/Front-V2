@@ -260,42 +260,8 @@ export default function ExploreScene() {
     return postsData?.pages.flatMap((page) => page.items) || [];
   }, [postsData]);
 
-  // Selected post for Instagram Explore Single Post Viewer Modal
+  // Selected post ID to open the vertical scroll feed stream
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
-
-  const selectedPost = useMemo(() => {
-    if (!selectedPostId) return null;
-    return allLoadedPosts.find((p) => p.id === selectedPostId) || null;
-  }, [selectedPostId, allLoadedPosts]);
-
-  const selectedPostIndex = useMemo(() => {
-    if (!selectedPostId) return -1;
-    return allLoadedPosts.findIndex((p) => p.id === selectedPostId);
-  }, [selectedPostId, allLoadedPosts]);
-
-  const hasPrevPost = selectedPostIndex > 0;
-  const hasNextPost =
-    (selectedPostIndex >= 0 && selectedPostIndex < allLoadedPosts.length - 1) ||
-    (Boolean(hasNextPage) && (postsData?.pages.length ?? 0) < 7);
-
-  const handlePrevPost = () => {
-    if (selectedPostIndex > 0) {
-      setSelectedPostId(allLoadedPosts[selectedPostIndex - 1].id);
-    }
-  };
-
-  const handleNextPost = () => {
-    if (selectedPostIndex >= 0 && selectedPostIndex < allLoadedPosts.length - 1) {
-      setSelectedPostId(allLoadedPosts[selectedPostIndex + 1].id);
-    } else if (hasNextPage && !isFetchingNextPage) {
-      fetchNextPage().then((res) => {
-        const newItems = res.data?.pages.flatMap((page) => page.items) || [];
-        if (newItems.length > selectedPostIndex + 1) {
-          setSelectedPostId(newItems[selectedPostIndex + 1].id);
-        }
-      });
-    }
-  };
 
   const handlePageSelect = (targetPage: number) => {
     const isLoadedInCurrentBatch = loadedPages.includes(targetPage);
@@ -518,16 +484,16 @@ export default function ExploreScene() {
         />
       )}
 
-      {/* Instagram Explore Single Post Viewer Modal */}
+      {/* Instagram Explore Vertical Scroll Feed Overlay */}
       <ExplorePostModal
-        post={selectedPost}
-        isOpen={Boolean(selectedPost)}
+        initialPostId={selectedPostId}
+        isOpen={Boolean(selectedPostId)}
         onClose={() => setSelectedPostId(null)}
+        posts={allLoadedPosts}
         onLike={handleLike}
-        onPrev={handlePrevPost}
-        onNext={handleNextPost}
-        hasPrev={hasPrevPost}
-        hasNext={hasNextPost}
+        hasNextPage={Boolean(hasNextPage) && (postsData?.pages.length ?? 0) < 7}
+        isFetchingNextPage={isFetchingNextPage}
+        onFetchNextPage={() => fetchNextPage()}
       />
 
     </div>
