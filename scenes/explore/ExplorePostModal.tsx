@@ -227,11 +227,6 @@ function ExploreFeedItem({
           </div>
         )}
 
-        {post.category && (
-          <span className="px-2.5 py-1 rounded-full bg-surface-secondary text-foreground-secondary text-[10px] sm:text-[11px] font-bold shrink-0">
-            {post.category}
-          </span>
-        )}
       </div>
 
       {/* ── 2. MEDIA CAROUSEL (Images & Videos) ─────────────────────────── */}
