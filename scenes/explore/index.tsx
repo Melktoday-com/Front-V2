@@ -1,7 +1,5 @@
 "use client";
 
-import { PageSectionDivider } from "@/components/ui/PageSectionDivider";
-import { PaginationControls } from "@/components/ui/PaginationControls";
 import { useAuth } from "@/hooks/useAuth";
 import { useInfiniteExplorePosts, useLikePost } from "@/hooks/usePosts";
 import { usePostViewObserver } from "@/hooks/usePostViewObserver";
@@ -192,7 +190,6 @@ export default function ExploreScene() {
   const urlSearch = searchParams.get("search") || "";
   const [searchQuery, setSearchQuery] = useState(urlSearch);
   const [activeSearch, setActiveSearch] = useState(urlSearch);
-  const [startPage, setStartPage] = useState<number>(1);
 
   const observerTargetRef = useRef<HTMLDivElement | null>(null);
 
@@ -202,11 +199,10 @@ export default function ExploreScene() {
     if (s !== activeSearch) {
       setSearchQuery(s);
       setActiveSearch(s);
-      setStartPage(1);
     }
   }, [searchParams, activeSearch]);
 
-  // Fetch explore posts with infinite query (batching up to 7 pages)
+  // Fetch explore posts with continuous infinite query
   const {
     data: postsData,
     isLoading,
@@ -215,21 +211,15 @@ export default function ExploreScene() {
     fetchNextPage,
     isError,
     refetch,
-  } = useInfiniteExplorePosts(
-    {
-      limit: 16,
-      search: activeSearch || undefined,
-    },
-    { startPage, maxPages: 7 }
-  );
+  } = useInfiniteExplorePosts({
+    limit: 16,
+    search: activeSearch || undefined,
+  });
 
-  // Auto-scroll infinite scroll up to 7 pages per batch
+  // Auto-scroll infinite scroll
   useEffect(() => {
     const target = observerTargetRef.current;
     if (!target) return;
-
-    const currentBatchPageCount = postsData?.pages.length ?? 0;
-    if (currentBatchPageCount >= 7) return;
     if (!hasNextPage || isFetchingNextPage) return;
 
     const observer = new IntersectionObserver(
@@ -238,24 +228,16 @@ export default function ExploreScene() {
           fetchNextPage();
         }
       },
-      { rootMargin: "350px" }
+      { rootMargin: "450px" }
     );
 
     observer.observe(target);
     return () => {
       observer.disconnect();
     };
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage, postsData?.pages.length]);
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  // Pagination metrics
-  const totalCount = postsData?.pages[0]?.total ?? 0;
-  const limitPerPage = postsData?.pages[0]?.limit ?? 16;
-  const totalPages = postsData?.pages[0]?.totalPages ?? Math.ceil(totalCount / limitPerPage);
-  const lastLoadedPage = postsData?.pages[postsData.pages.length - 1]?.page ?? startPage;
-  const isBatchFinished = (postsData?.pages.length ?? 0) >= 7 || !hasNextPage;
-  const loadedPages = useMemo(() => postsData?.pages.map((p) => p.page) || [], [postsData]);
-
-  // Flatten posts across loaded pages in current batch
+  // Flatten posts across loaded pages
   const allLoadedPosts = useMemo(() => {
     return postsData?.pages.flatMap((page) => page.items) || [];
   }, [postsData]);
@@ -263,44 +245,10 @@ export default function ExploreScene() {
   // Selected post ID to open the vertical scroll feed stream
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
 
-  const handlePageSelect = (targetPage: number) => {
-    const isLoadedInCurrentBatch = loadedPages.includes(targetPage);
-    if (isLoadedInCurrentBatch) {
-      if (targetPage === startPage) {
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      } else {
-        const sectionElem = document.getElementById(`explore-page-section-${targetPage}`);
-        if (sectionElem) {
-          sectionElem.scrollIntoView({ behavior: "smooth", block: "start" });
-        }
-      }
-    } else {
-      setStartPage(targetPage);
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-  };
-
-  const handleNextPage = () => {
-    if (lastLoadedPage < totalPages) {
-      handlePageSelect(lastLoadedPage + 1);
-    }
-  };
-
-  const handlePrevPage = () => {
-    if (startPage > 1) {
-      handlePageSelect(Math.max(1, startPage - 7));
-    }
-  };
-
-  const handleScrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = searchQuery.trim();
     setActiveSearch(trimmed);
-    setStartPage(1);
 
     const params = new URLSearchParams(searchParams.toString());
     if (trimmed) {
@@ -314,7 +262,6 @@ export default function ExploreScene() {
   const handleClearSearch = () => {
     setSearchQuery("");
     setActiveSearch("");
-    setStartPage(1);
 
     const params = new URLSearchParams(searchParams.toString());
     params.delete("search");
@@ -356,7 +303,7 @@ export default function ExploreScene() {
             <button
               type="button"
               onClick={handleClearSearch}
-              className="absolute left-20 top-1/2 -translate-y-1/2 p-1 text-foreground-muted hover:text-foreground-secondary rounded-full hover:bg-slate-200 transition-colors"
+              className="absolute left-20 top-1/2 -translate-y-1/2 p-1 text-foreground-muted hover:text-foreground-secondary rounded-full hover:bg-slate-200 transition-colors cursor-pointer"
               title="پاک کردن جستجو"
             >
               <X className="w-3.5 h-3.5" />
@@ -364,7 +311,7 @@ export default function ExploreScene() {
           )}
           <button
             type="submit"
-            className="absolute left-2 top-1/2 -translate-y-1/2 px-4 py-1.5 rounded-xl bg-brand text-white text-xs font-bold hover:bg-brand/90 transition-all"
+            className="absolute left-2 top-1/2 -translate-y-1/2 px-4 py-1.5 rounded-xl bg-brand text-white text-xs font-bold hover:bg-brand/90 transition-all cursor-pointer"
           >
             جستجو
           </button>
@@ -382,7 +329,7 @@ export default function ExploreScene() {
       </div>
 
 
-      {/* ── INSTAGRAM-STYLE EXPLORE GRID WITH BATCHED INFINITE SCROLL ─── */}
+      {/* ── INSTAGRAM-STYLE CONTINUOUS INFINITE SCROLL EXPLORE GRID ──── */}
       {isLoading ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 sm:gap-4 pb-12">
           {Array.from({ length: 8 }).map((_, idx) => (
@@ -398,7 +345,7 @@ export default function ExploreScene() {
           <button
             type="button"
             onClick={() => refetch()}
-            className="px-4 py-2 rounded-xl bg-brand text-white text-xs font-bold hover:bg-brand/90 transition-colors"
+            className="px-4 py-2 rounded-xl bg-brand text-white text-xs font-bold hover:bg-brand/90 transition-colors cursor-pointer"
           >
             تلاش مجدد
           </button>
@@ -412,44 +359,25 @@ export default function ExploreScene() {
             <button
               type="button"
               onClick={handleClearSearch}
-              className="mt-2 px-4 py-2 bg-surface-secondary text-brand text-xs font-bold rounded-xl hover:bg-slate-200 transition-colors"
+              className="mt-2 px-4 py-2 bg-surface-secondary text-brand text-xs font-bold rounded-xl hover:bg-slate-200 transition-colors cursor-pointer"
             >
               پاک کردن جستجو
             </button>
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 sm:gap-4 pb-6">
-          {postsData?.pages.map((page, pageIndex) => {
-            const pagePosts = page.items;
-            if (pagePosts.length === 0 && pageIndex > 0) return null;
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 sm:gap-4 pb-8">
+          {allLoadedPosts.map((post) => (
+            <ExplorePostCard
+              key={post.id}
+              post={post}
+              onLike={handleLike}
+              onSelect={(p) => setSelectedPostId(p.id)}
+            />
+          ))}
 
-            return (
-              <React.Fragment key={`explore-page-${page.page}`}>
-                {/* Page Section Divider for page 2 onwards */}
-                {pageIndex > 0 && (
-                  <PageSectionDivider
-                    id={`explore-page-section-${page.page}`}
-                    page={page.page}
-                    count={pagePosts.length}
-                    itemLabel="پست"
-                  />
-                )}
-
-                {pagePosts.map((post) => (
-                  <ExplorePostCard
-                    key={post.id}
-                    post={post}
-                    onLike={handleLike}
-                    onSelect={(p) => setSelectedPostId(p.id)}
-                  />
-                ))}
-              </React.Fragment>
-            );
-          })}
-
-          {/* Infinite scroll sentinel (auto-loads up to 7 pages per batch) */}
-          {hasNextPage && (postsData?.pages.length ?? 0) < 7 && (
+          {/* Infinite scroll sentinel & loader */}
+          {hasNextPage && (
             <div
               ref={observerTargetRef}
               className="col-span-full py-8 flex flex-col items-center justify-center gap-2"
@@ -464,24 +392,13 @@ export default function ExploreScene() {
               )}
             </div>
           )}
-        </div>
-      )}
 
-      {/* Pagination Controls at the End of Batch */}
-      {!isLoading && allLoadedPosts.length > 0 && totalPages > 1 && isBatchFinished && (
-        <PaginationControls
-          startPage={startPage}
-          lastLoadedPage={lastLoadedPage}
-          totalPages={totalPages}
-          totalCount={totalCount}
-          itemLabel="پست"
-          loadedPages={loadedPages}
-          onPageSelect={handlePageSelect}
-          onPrevPage={handlePrevPage}
-          onNextPage={handleNextPage}
-          onScrollToTop={handleScrollToTop}
-          className="mb-8"
-        />
+          {!hasNextPage && allLoadedPosts.length > 16 && (
+            <div className="col-span-full py-8 text-center text-xs text-foreground-muted font-medium">
+              همه پست‌ها نمایش داده شدند
+            </div>
+          )}
+        </div>
       )}
 
       {/* Instagram Explore Vertical Scroll Feed Overlay */}
@@ -491,7 +408,7 @@ export default function ExploreScene() {
         onClose={() => setSelectedPostId(null)}
         posts={allLoadedPosts}
         onLike={handleLike}
-        hasNextPage={Boolean(hasNextPage) && (postsData?.pages.length ?? 0) < 7}
+        hasNextPage={Boolean(hasNextPage)}
         isFetchingNextPage={isFetchingNextPage}
         onFetchNextPage={() => fetchNextPage()}
       />
