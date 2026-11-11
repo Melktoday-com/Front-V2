@@ -261,13 +261,7 @@ export default function FaqScene() {
               <Phone className="w-3.5 h-3.5" />
               <span>تماس با پشتیبانی</span>
             </a>
-            <a
-              href="tel:09199173417"
-              className="inline-flex items-center gap-1.5 bg-surface hover:bg-surface-secondary text-foreground border border-border font-medium text-xs sm:text-sm px-4 py-2.5 rounded-xl transition-colors"
-            >
-              <Smartphone className="w-3.5 h-3.5 text-foreground-muted" />
-              <span>پیام‌رسان‌ها</span>
-            </a>
+
           </div>
         </section>
       </main>
