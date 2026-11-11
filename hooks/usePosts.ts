@@ -71,7 +71,7 @@ export const useInfiniteExplorePosts = (
   options: { startPage?: number; maxPages?: number } = {}
 ) => {
   const startPage = options.startPage ?? 1;
-  const maxPages = options.maxPages ?? 7;
+  const maxPages = options.maxPages;
 
   return useInfiniteQuery({
     queryKey: POSTS_QUERY_KEYS.exploreInfinite(params, startPage),
@@ -84,7 +84,7 @@ export const useInfiniteExplorePosts = (
     },
     initialPageParam: startPage,
     getNextPageParam: (lastPage, allPages) => {
-      if (allPages.length >= maxPages) {
+      if (maxPages !== undefined && allPages.length >= maxPages) {
         return undefined;
       }
       const totalPages = lastPage.totalPages || Math.ceil((lastPage.total || 0) / (lastPage.limit || 12));

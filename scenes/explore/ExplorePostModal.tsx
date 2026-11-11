@@ -1,11 +1,8 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import Image from "next/image";
-import Link from "next/link";
+import { usePostViewObserver } from "@/hooks/usePostViewObserver";
 import { cn, getMediaPosterUrl, getMediaUrl, toPersianDigits } from "@/lib/utils";
 import { PUBLISHER_TYPES, UnifiedPost } from "@/types/api/post.types";
-import { usePostViewObserver } from "@/hooks/usePostViewObserver";
 import {
   ArrowRight,
   Building2,
@@ -23,6 +20,9 @@ import {
   Video,
   X,
 } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 export interface ExplorePostModalProps {
@@ -168,7 +168,7 @@ function ExploreFeedItem({
           text: shareText,
           url: window.location.href,
         })
-        .catch(() => {});
+        .catch(() => { });
     } else if (navigator.clipboard) {
       navigator.clipboard.writeText(`${post.title}\n${window.location.href}`);
       toast.success("اطلاعات پست کپی شد.");
@@ -420,7 +420,7 @@ function ExploreFeedItem({
               </p>
             )}
 
-            <div className="pt-1">
+            <div className="pt-1 flex justify-center">
               <Link
                 href={`/posts/${encodeURIComponent(post.slug || post.id)}`}
                 className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary text-xs font-black transition-colors cursor-pointer group"
