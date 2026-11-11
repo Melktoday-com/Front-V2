@@ -577,7 +577,7 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
                                     className="shrink-0 gap-1.5 px-3 py-1 text-xs font-bold cursor-default select-none shadow-2xs"
                                     title="تصاویر به کار رفته در این آگهی جنبه نمایشی و نمونه دارند"
                                 >
-                                    <Sparkles className="w-3.5 h-3.5 shrink-0" />
+                                    
                                     <span>تصاویر تزئینی است</span>
                                 </Badge>
                             )}
