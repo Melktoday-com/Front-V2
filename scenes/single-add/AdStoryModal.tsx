@@ -12,6 +12,7 @@ import {
     Pause,
     Phone,
     Share2,
+    Sparkles,
     Volume2,
     VolumeX,
     X,
@@ -525,8 +526,12 @@ function AdStoryModalInner({
                                 {ad.title}
                             </h2>
                             {ad.isDecorativeImages && (
-                                <span className="text-[10px] font-bold bg-amber-500/80 text-white px-2 py-0.5 rounded-full shrink-0">
-                                    تزئینی
+                                <span
+                                    className="inline-flex items-center gap-1 text-[10px] font-bold bg-white/20 backdrop-blur-md text-white border border-white/20 px-2 py-0.5 rounded-full shrink-0 shadow-xs"
+                                    title="تصاویر جنبه نمایشی دارند"
+                                >
+                                    <Sparkles className="w-2.5 h-2.5 text-white/90" />
+                                    <span>تصاویر تزئینی</span>
                                 </span>
                             )}
                         </div>
