@@ -1,28 +1,32 @@
 "use client";
 
 import { CitySelector } from "@/components/CitySelector";
+import { KycModal, VerifiedKycData } from "@/components/common/KycModal";
 import { AccountStatusBanner } from "@/components/ui/AccountStatusBanner";
 import { useAuth } from "@/hooks/useAuth";
 import { useCityLookup } from "@/hooks/useCityLookup";
 import { useUserStatus } from "@/hooks/useUserStatus";
 import { normalizeApiError } from "@/lib/api/error-handler";
-import { cn, toEnglishDigits, toOnlyDigits } from "@/lib/utils";
+import { cn, toEnglishDigits, toOnlyDigits, toPersianDigits } from "@/lib/utils";
 import { showcaseService } from "@/services/showcase.service";
 import { userService } from "@/services/user.service";
+import { KYCStatus } from "@/types/api/enums";
 import { HostApplicationRequest } from "@/types/api/showcase.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowRight,
   Building2,
   CheckCircle,
+  CheckCircle2,
   Clock,
   FileCheck,
   Home,
   MapPin,
   RotateCcw,
+  ShieldAlert,
   ShieldCheck,
   UserCheck,
-  XCircle
+  XCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -32,7 +36,7 @@ import { toast } from "sonner";
 export default function HostApplyPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, isLoading: isAuthLoading } = useAuth();
   const { isRestricted } = useUserStatus();
   const queryClient = useQueryClient();
   const { getCityName } = useCityLookup();
@@ -41,6 +45,7 @@ export default function HostApplyPage() {
   const [selectedCityName, setSelectedCityName] = useState("");
   const [isReapplying, setIsReapplying] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [isKycModalOpen, setIsKycModalOpen] = useState(false);
 
   const [formData, setFormData] = useState<HostApplicationRequest>({
     fullName: "",
@@ -54,17 +59,45 @@ export default function HostApplyPage() {
     description: "",
   });
 
-  // Autofill user name and mobile if empty
+  // Query current user profile to verify KYC status
+  const {
+    data: userProfile,
+    isLoading: isProfileLoading,
+    refetch: refetchProfile,
+  } = useQuery({
+    queryKey: ["me"],
+    queryFn: () => userService.getMe(),
+    enabled: !!isLoggedIn,
+  });
+
+  const isKycVerified = userProfile?.kycStatus === KYCStatus.VERIFIED;
+
+  // Autofill user name, mobile and nationalCode from user profile or saved KYC data
   useEffect(() => {
     if (!isLoggedIn) return;
-    userService.getMe().then((me) => {
+
+    if (userProfile) {
+      const userFullName = `${userProfile.firstName || ""} ${userProfile.lastName || ""}`.trim();
       setFormData((prev) => ({
         ...prev,
-        fullName: prev.fullName || `${me.firstName || ''} ${me.lastName || ''}`.trim(),
-        mobileNumber: prev.mobileNumber || me.mobileNumber || '',
+        fullName: prev.fullName || userFullName,
+        mobileNumber: prev.mobileNumber || userProfile.mobileNumber || "",
       }));
-    }).catch(() => {/* ignore */ });
-  }, [isLoggedIn]);
+    }
+
+    try {
+      const saved = localStorage.getItem("melktoday_verified_kyc");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        const savedFullName = `${parsed.firstName || ""} ${parsed.lastName || ""}`.trim();
+        setFormData((prev) => ({
+          ...prev,
+          fullName: prev.fullName || savedFullName,
+          nationalCode: prev.nationalCode || parsed.nationalCode || "",
+        }));
+      }
+    } catch {}
+  }, [isLoggedIn, userProfile]);
 
   // Check existing landlord application
   const {
@@ -76,6 +109,16 @@ export default function HostApplyPage() {
     queryFn: () => showcaseService.getMyHostApplication(),
     enabled: !!isLoggedIn,
   });
+
+  useEffect(() => {
+    if (myApp) {
+      setFormData((prev) => ({
+        ...prev,
+        fullName: prev.fullName || myApp.fullName || "",
+        nationalCode: prev.nationalCode || myApp.nationalCode || "",
+      }));
+    }
+  }, [myApp]);
 
   const startEditing = () => {
     if (!myApp) return;
@@ -114,6 +157,17 @@ export default function HostApplyPage() {
     }
   }, [searchParams, myApp]);
 
+  // Handle successful KYC verification from modal
+  const handleKycSuccess = (verifiedData: VerifiedKycData) => {
+    setFormData((prev) => ({
+      ...prev,
+      fullName: `${verifiedData.firstName} ${verifiedData.lastName}`.trim(),
+      nationalCode: verifiedData.nationalCode,
+    }));
+    refetchProfile();
+    toast.success("احراز هویت شما با موفقیت تکمیل شد. اکنون مشخصات اقامتگاه خود را وارد فرمایید.");
+  };
+
   const submitMutation = useMutation({
     mutationFn: (payload: HostApplicationRequest) => showcaseService.applyForHost(payload),
     onSuccess: () => {
@@ -151,6 +205,13 @@ export default function HostApplyPage() {
       return;
     }
 
+    // 1. Mandatory KYC Gate
+    if (!isKycVerified) {
+      toast.error("برای ثبت درخواست میزبانی، ابتدا باید احراز هویت اولیه حساب خود را تکمیل فرمایید.");
+      setIsKycModalOpen(true);
+      return;
+    }
+
     if (!formData.fullName.trim()) {
       toast.error("لطفاً نام و نام خانوادگی را وارد کنید.");
       return;
@@ -182,6 +243,42 @@ export default function HostApplyPage() {
       submitMutation.mutate(formData);
     }
   };
+
+  // Unauthenticated State
+  if (!isAuthLoading && !isLoggedIn) {
+    return (
+      <div className="min-h-screen bg-surface-secondary py-20 px-4 flex items-center justify-center" dir="rtl">
+        <div className="bg-surface rounded-3xl p-8 border border-border-subtle max-w-md w-full text-center space-y-4 shadow-sm">
+          <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center mx-auto">
+            <Home className="w-7 h-7" />
+          </div>
+          <div className="space-y-1">
+            <h2 className="text-base font-black text-foreground">ورود به حساب کاربری</h2>
+            <p className="text-xs text-foreground-secondary leading-relaxed font-medium">
+              جهت ثبت درخواست میزبانی و معرفی اقامتگاه‌های روزانه خود در ملک‌تودی، ابتدا باید وارد حساب شوید.
+            </p>
+          </div>
+          <Link
+            href="/auth?redirect=/host/apply"
+            className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black transition-colors block shadow-sm"
+          >
+            ورود یا ثبت‌نام با شماره همراه
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (isAppLoading || isProfileLoading) {
+    return (
+      <div className="min-h-screen bg-surface-secondary py-16 px-4 flex items-center justify-center" dir="rtl">
+        <div className="flex flex-col items-center gap-3 text-foreground-muted">
+          <div className="w-8 h-8 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
+          <span className="text-xs font-bold">در حال بارگذاری اطلاعات میزبانی...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-surface-secondary pb-24 lg:pb-10 py-10 px-4 sm:px-6 lg:px-8" dir="rtl">
@@ -234,7 +331,7 @@ export default function HostApplyPage() {
             </div>
             <div>
               <h3 className="text-xs font-black text-foreground">احراز هویت معتبر</h3>
-              <p className="text-[11px] text-foreground-muted mt-0.5">تطبیق کدملی در سامانه شاهکار و اعطای نشان تایید</p>
+              <p className="text-[11px] text-foreground-muted mt-0.5">تطبیق کدملی در سامانه ثبت احوال و شاهکار</p>
             </div>
           </div>
 
@@ -244,13 +341,13 @@ export default function HostApplyPage() {
             </div>
             <div>
               <h3 className="text-xs font-black text-foreground">ارتباط مستقیم با مهمانان</h3>
-              <p className="text-[11px] text-foreground-muted mt-0.5">امکان دنبال‌شدن توسط مسافران و دریافت تماس مستقیم</p>
+              <p className="text-[11px] text-foreground-muted mt-0.5">امکان تماس و دنبال‌شدن مستقیم توسط مسافران</p>
             </div>
           </div>
         </div>
 
         {/* Application Status Banner (If already applied) */}
-        {!isAppLoading && myApp && !isReapplying && (
+        {myApp && !isReapplying && (
           <div
             className={cn(
               "rounded-2xl p-6 border shadow-sm space-y-4",
@@ -271,7 +368,7 @@ export default function HostApplyPage() {
                 </h2>
                 <p className="text-xs text-foreground-secondary leading-relaxed font-medium">
                   {myApp.status === "PENDING" &&
-                    "اطلاعات ارسالی شما در صف بررسی کارشناسان قرار دارد. نتیجه استعلام و بررسی معمولاً ظرف ۲۴ ساعت مشخص می‌شود."}
+                    "اطلاعات ارسالی شما در صف بررسی کارشناسان قرار دارد. نتیجه استعلام و بررسی ظرف ۲۴ ساعت مشخص می‌شود."}
                   {myApp.status === "APPROVED" &&
                     "نقش میزبانی برای حساب کاربری شما فعال است و می‌توانید اقامتگاه‌های خود را مدیریت نمایید."}
                   {myApp.status === "REJECTED" &&
@@ -304,7 +401,7 @@ export default function HostApplyPage() {
                     <button
                       type="button"
                       onClick={startEditing}
-                      className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold transition-colors shadow-sm flex items-center gap-1.5"
+                      className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold transition-colors shadow-sm flex items-center gap-1.5 cursor-pointer"
                     >
                       <RotateCcw className="w-3.5 h-3.5" />
                       <span>ویرایش اطلاعات درخواست</span>
@@ -313,7 +410,7 @@ export default function HostApplyPage() {
                     <button
                       type="button"
                       onClick={() => setIsEditing(false)}
-                      className="px-4 py-2 bg-surface border border-border-subtle text-foreground-muted hover:text-foreground rounded-xl text-xs font-bold transition-colors"
+                      className="px-4 py-2 bg-surface border border-border-subtle text-foreground-muted hover:text-foreground rounded-xl text-xs font-bold transition-colors cursor-pointer"
                     >
                       انصراف از ویرایش
                     </button>
@@ -323,8 +420,9 @@ export default function HostApplyPage() {
 
               {myApp.status === "REJECTED" && (
                 <button
+                  type="button"
                   onClick={() => setIsReapplying(true)}
-                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold transition-colors shadow-sm"
+                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold transition-colors shadow-sm cursor-pointer"
                 >
                   ارسال مجدد درخواست با اطلاعات اصلاح‌شده
                 </button>
@@ -333,169 +431,247 @@ export default function HostApplyPage() {
           </div>
         )}
 
-
-
         {/* Application Form */}
         {(isReapplying || isEditing || !myApp || myApp.status === "REJECTED") && (
-          <form onSubmit={handleSubmit} className="bg-surface rounded-3xl p-6 sm:p-8 border border-border-subtle shadow-sm space-y-6">
-            <div className="border-b border-border-subtle pb-4">
-              <h2 className="text-base font-black text-foreground">
-                {isEditing ? "ویرایش مشخصات درخواست میزبانی" : "مشخصات متقاضی و عنوان میزبانی"}
-              </h2>
-              <p className="text-xs text-foreground-muted mt-1">
-                اطلاعات هویتی با سامانه شاهکار تطبیق داده خواهد شد.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-foreground-secondary">نام و نام خانوادگی متقاضی *</label>
-                <input
-                  type="text"
-                  required
-                  value={formData.fullName}
-                  onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                  placeholder="مثال: علی رضایی"
-                  className="w-full p-3 bg-surface-secondary border border-border-subtle rounded-xl text-xs focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-foreground-secondary">کد ملی (۱۰ رقم) *</label>
-                <input
-                  type="text"
-                  required
-                  maxLength={10}
-                  value={formData.nationalCode}
-                  onChange={(e) => setFormData({ ...formData, nationalCode: toOnlyDigits(e.target.value) })}
-                  placeholder="مثال: 0012345678"
-                  className="w-full p-3 bg-surface-secondary border border-border-subtle rounded-xl text-xs font-mono focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-foreground-secondary">عنوان یا برند میزبانی *</label>
-                <input
-                  type="text"
-                  required
-                  value={formData.hostName}
-                  onChange={(e) => setFormData({ ...formData, hostName: e.target.value })}
-                  placeholder="مثال: اقامتگاه‌های ساحلی رضایی"
-                  className="w-full p-3 bg-surface-secondary border border-border-subtle rounded-xl text-xs focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
-                />
-              </div>
-
-              {/* City Selection Trigger - Proper Modal */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-foreground-secondary">شهر محل اقامتگاه *</label>
-                <button
-                  type="button"
-                  onClick={() => setIsCitySelectorOpen(true)}
-                  className="w-full flex items-center justify-between p-3 bg-surface-secondary border border-border-subtle rounded-xl text-xs hover:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-right group"
-                >
-                  <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-success shrink-0" />
-                    <span className={formData.cityId ? "font-bold text-foreground" : "text-foreground-muted"}>
-                      {selectedCityName || "انتخاب شهر اقامتگاه..."}
-                    </span>
+          <div className="space-y-6">
+            {/* Step 1: KYC Verification Gate (If not verified yet) */}
+            {!isKycVerified ? (
+              <div className="bg-surface p-6 sm:p-8 rounded-3xl border border-amber-500/30 bg-amber-500/5 shadow-xs space-y-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0 mt-0.5">
+                    <ShieldAlert className="w-5 h-5" />
                   </div>
-                  <span className="text-[11px] text-success font-medium group-hover:underline">
-                    {formData.cityId ? "تغییر شهر" : "انتخاب"}
-                  </span>
-                </button>
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-sm font-black text-foreground">گام اول: احراز هویت اولیه کاربر (الزامی)</h3>
+                      <span className="px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-700 text-[10px] font-black">
+                        تکمیل نشده
+                      </span>
+                    </div>
+                    <p className="text-xs text-foreground-secondary leading-relaxed">
+                      جهت امنیت مسافران و امکان ثبت اقامتگاه، ابتدا هویت شما (کد ملی و تاریخ تولد) با سامانه ثبت احوال تطبیق داده می‌شود.
+                      پس از تأیید، نام و کد ملی شما به‌صورت خودکار در فرم درخواست ثبت شده و نیازی به ورود مجدد اطلاعات تکراری نیست.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsKycModalOpen(true)}
+                    className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black transition-all shadow-md shadow-emerald-600/25 flex items-center gap-2 cursor-pointer"
+                  >
+                    <ShieldCheck className="w-4 h-4" />
+                    <span>تکمیل احراز هویت هوشمند و شروع درخواست</span>
+                  </button>
+                </div>
+              </div>
+            ) : (
+              /* Verified Badge Banner */
+              <div className="p-4 bg-emerald-500/10 border border-emerald-500/25 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                <div className="flex items-center gap-2.5 text-emerald-800">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+                  <div>
+                    <div className="font-black text-xs text-emerald-900">
+                      احراز هویت حساب کاربری تأیید شده است
+                    </div>
+                    <div className="text-[11px] text-emerald-700 mt-0.5">
+                      نام متقاضی: {formData.fullName}
+                      {formData.nationalCode ? ` (کد ملی: ${toPersianDigits(formData.nationalCode)})` : ""}
+                    </div>
+                  </div>
+                </div>
+                <span className="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-800 font-bold text-[10px] self-start sm:self-auto">
+                  ثبت احوال تأیید شده ✓
+                </span>
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="bg-surface rounded-3xl p-6 sm:p-8 border border-border-subtle shadow-sm space-y-6">
+              <div className="border-b border-border-subtle pb-4">
+                <h2 className="text-base font-black text-foreground">
+                  {isEditing ? "ویرایش مشخصات درخواست میزبانی" : "مشخصات متقاضی و اقامتگاه"}
+                </h2>
+                <p className="text-xs text-foreground-muted mt-1">
+                  مشخصات هویتی قفل شده و سایر اطلاعات را تکمیل فرمایید.
+                </p>
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-foreground-secondary">شماره همراه معتبر (به نام متقاضی) *</label>
-                <input
-                  type="text"
-                  required
-                  value={formData.mobileNumber}
-                  onChange={(e) => setFormData({ ...formData, mobileNumber: toOnlyDigits(e.target.value) })}
-                  placeholder="مثال: 09123456789"
-                  className="w-full p-3 bg-surface-secondary border border-border-subtle rounded-xl text-xs font-mono focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-foreground-secondary">نام و نام خانوادگی متقاضی *</label>
+                    {isKycVerified && <span className="text-[10px] text-emerald-600 font-bold">تأیید هویت شده ✓</span>}
+                  </div>
+                  <input
+                    type="text"
+                    required
+                    value={formData.fullName}
+                    onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                    disabled={isKycVerified}
+                    placeholder="مثال: علی رضایی"
+                    className={cn(
+                      "w-full p-3 border rounded-xl text-xs focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors",
+                      isKycVerified ? "bg-surface-secondary/70 border-emerald-500/30 text-foreground font-bold cursor-not-allowed" : "bg-surface-secondary border-border-subtle"
+                    )}
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-foreground-secondary">کد ملی (۱۰ رقم) *</label>
+                    {isKycVerified && <span className="text-[10px] text-emerald-600 font-bold">تأیید هویت شده ✓</span>}
+                  </div>
+                  <input
+                    type="text"
+                    required
+                    maxLength={10}
+                    value={formData.nationalCode}
+                    onChange={(e) => setFormData({ ...formData, nationalCode: toOnlyDigits(e.target.value) })}
+                    disabled={isKycVerified && Boolean(formData.nationalCode)}
+                    placeholder="مثال: 0012345678"
+                    className={cn(
+                      "w-full p-3 border rounded-xl text-xs font-mono focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors",
+                      isKycVerified && Boolean(formData.nationalCode)
+                        ? "bg-surface-secondary/70 border-emerald-500/30 text-foreground font-bold cursor-not-allowed"
+                        : "bg-surface-secondary border-border-subtle"
+                    )}
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-foreground-secondary">عنوان یا برند میزبانی *</label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.hostName}
+                    onChange={(e) => setFormData({ ...formData, hostName: e.target.value })}
+                    placeholder="مثال: ویلاهای ساحلی و کوهستانی رضایی"
+                    className="w-full p-3 bg-surface-secondary border border-border-subtle rounded-xl text-xs focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
+                  />
+                </div>
+
+                {/* City Selection Trigger */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-foreground-secondary">شهر محل اقامتگاه *</label>
+                  <button
+                    type="button"
+                    onClick={() => setIsCitySelectorOpen(true)}
+                    className="w-full flex items-center justify-between p-3 bg-surface-secondary border border-border-subtle rounded-xl text-xs hover:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-right group cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2">
+                      <MapPin className="w-4 h-4 text-success shrink-0" />
+                      <span className={formData.cityId ? "font-bold text-foreground" : "text-foreground-muted"}>
+                        {selectedCityName || "انتخاب شهر اقامتگاه..."}
+                      </span>
+                    </div>
+                    <span className="text-[11px] text-success font-medium group-hover:underline">
+                      {formData.cityId ? "تغییر شهر" : "انتخاب"}
+                    </span>
+                  </button>
+                </div>
+
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-foreground-secondary">شماره همراه متقاضی *</label>
+                    <span className="text-[10px] text-emerald-600 font-bold">شماره ثبت‌نامی ✓</span>
+                  </div>
+                  <input
+                    type="text"
+                    required
+                    value={formData.mobileNumber}
+                    onChange={(e) => setFormData({ ...formData, mobileNumber: toOnlyDigits(e.target.value) })}
+                    disabled={Boolean(userProfile?.mobileNumber)}
+                    placeholder="مثال: 09123456789"
+                    className={cn(
+                      "w-full p-3 border rounded-xl text-xs font-mono focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors",
+                      Boolean(userProfile?.mobileNumber)
+                        ? "bg-surface-secondary/70 border-emerald-500/30 text-foreground font-bold cursor-not-allowed"
+                        : "bg-surface-secondary border-border-subtle"
+                    )}
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-foreground-secondary">تلفن تماس ثابت یا پشتیبان</label>
+                  <input
+                    type="text"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: toEnglishDigits(e.target.value) })}
+                    placeholder="مثال: 01155223344"
+                    className="w-full p-3 bg-surface-secondary border border-border-subtle rounded-xl text-xs font-mono focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
+                  />
+                </div>
+
+                <div className="space-y-1.5 sm:col-span-2">
+                  <label className="text-xs font-bold text-foreground-secondary">تعداد تقریبی اقامتگاه‌های تحت مدیریت</label>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={formData.propertyCount}
+                    onChange={(e) => setFormData({ ...formData, propertyCount: parseInt(toOnlyDigits(e.target.value), 10) || 1 })}
+                    className="w-full p-3 bg-surface-secondary border border-border-subtle rounded-xl text-xs font-mono focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
+                  />
+                </div>
+
+                <div className="space-y-1.5 sm:col-span-2">
+                  <label className="text-xs font-bold text-foreground-secondary">آدرس اقامتگاه اصلی یا دفتر میزبان</label>
+                  <input
+                    type="text"
+                    value={formData.address}
+                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                    placeholder="مثال: رامسر، بلوار کازینو، کوچه یاس، پلاک ۱۰"
+                    className="w-full p-3 bg-surface-secondary border border-border-subtle rounded-xl text-xs focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
+                  />
+                </div>
+
+                <div className="space-y-1.5 sm:col-span-2">
+                  <label className="text-xs font-bold text-foreground-secondary">توضیحات و سوابق میزبانی</label>
+                  <textarea
+                    rows={3}
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    placeholder="توضیحاتی در مورد نوع اقامتگاه‌ها (ویلا، سوئیت، کلبه)، امکانات و تجربه میزبانی شما..."
+                    className="w-full p-3 bg-surface-secondary border border-border-subtle rounded-xl text-xs focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors resize-none"
+                  />
+                </div>
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-foreground-secondary">تلفن تماس ثابت یا پشتیبان</label>
-                <input
-                  type="text"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: toEnglishDigits(e.target.value) })}
-                  placeholder="مثال: 01155223344"
-                  className="w-full p-3 bg-surface-secondary border border-border-subtle rounded-xl text-xs font-mono focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
-                />
-              </div>
-
-              <div className="space-y-1.5 sm:col-span-2">
-                <label className="text-xs font-bold text-foreground-secondary">تعداد تقریبی اقامتگاه‌های تحت مدیریت</label>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  value={formData.propertyCount}
-                  onChange={(e) => setFormData({ ...formData, propertyCount: parseInt(toOnlyDigits(e.target.value), 10) || 1 })}
-                  className="w-full p-3 bg-surface-secondary border border-border-subtle rounded-xl text-xs font-mono focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
-                />
-              </div>
-
-              <div className="space-y-1.5 sm:col-span-2">
-                <label className="text-xs font-bold text-foreground-secondary">آدرس اقامتگاه اصلی یا دفتر میزبان</label>
-                <input
-                  type="text"
-                  value={formData.address}
-                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                  placeholder="مثال: رامسر، بلوار کازینو، پلاک ۱۰"
-                  className="w-full p-3 bg-surface-secondary border border-border-subtle rounded-xl text-xs focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
-                />
-              </div>
-
-              <div className="space-y-1.5 sm:col-span-2">
-                <label className="text-xs font-bold text-foreground-secondary">توضیحات و سوابق میزبانی</label>
-                <textarea
-                  rows={3}
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="توضیحاتی در مورد نوع اقامتگاه‌ها (ویلا، سوئیت، کلبه)، امکانات و تجربه میزبانی شما..."
-                  className="w-full p-3 bg-surface-secondary border border-border-subtle rounded-xl text-xs focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors resize-none"
-                />
-              </div>
-            </div>
-
-            <div className="pt-4 border-t border-border-subtle flex items-center justify-end gap-3">
-              {(isReapplying || isEditing) && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsReapplying(false);
-                    setIsEditing(false);
-                  }}
-                  className="px-4 py-3 bg-surface-secondary hover:bg-slate-200 text-foreground-secondary rounded-xl text-xs font-bold transition-colors"
-                >
-                  انصراف
-                </button>
-              )}
-              <button
-                type="submit"
-                disabled={isSaving}
-                className="flex-1 sm:flex-initial px-6 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black transition-colors shadow-sm flex items-center justify-center gap-2"
-              >
-                {isSaving ? (
-                  <span>در حال ذخیره و پردازش...</span>
-                ) : isEditing ? (
-                  <>
-                    <FileCheck className="w-4 h-4" />
-                    <span>بروزرسانی مشخصات درخواست میزبانی</span>
-                  </>
-                ) : (
-                  <>
-                    <FileCheck className="w-4 h-4" />
-                    <span>ثبت درخواست میزبانی و استعلام شاهکار</span>
-                  </>
+              <div className="pt-4 border-t border-border-subtle flex items-center justify-end gap-3">
+                {(isReapplying || isEditing) && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsReapplying(false);
+                      setIsEditing(false);
+                    }}
+                    className="px-4 py-3 bg-surface-secondary hover:bg-slate-200 text-foreground-secondary rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                  >
+                    انصراف
+                  </button>
                 )}
-              </button>
-            </div>
-          </form>
+                <button
+                  type="submit"
+                  disabled={isSaving}
+                  className="flex-1 sm:flex-initial px-6 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black transition-colors shadow-sm flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  {isSaving ? (
+                    <span>در حال ذخیره و پردازش...</span>
+                  ) : isEditing ? (
+                    <>
+                      <FileCheck className="w-4 h-4" />
+                      <span>بروزرسانی مشخصات درخواست میزبانی</span>
+                    </>
+                  ) : (
+                    <>
+                      <FileCheck className="w-4 h-4" />
+                      <span>ثبت درخواست میزبانی و استعلام هویت</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
         )}
       </div>
 
@@ -509,6 +685,18 @@ export default function HostApplyPage() {
           setIsCitySelectorOpen(false);
         }}
         currentCityId={formData.cityId}
+      />
+
+      {/* KYC Modal */}
+      <KycModal
+        isOpen={isKycModalOpen}
+        onClose={() => setIsKycModalOpen(false)}
+        onSuccess={handleKycSuccess}
+        initialFirstName={userProfile?.firstName || ""}
+        initialLastName={userProfile?.lastName || ""}
+        initialNationalCode={formData.nationalCode}
+        title="احراز هویت پیش از ثبت درخواست میزبانی"
+        subtitle="جهت فعال‌سازی عضویت میزبان، ابتدا مشخصات هویتی شما باید در سامانه ثبت احوال تأیید شود."
       />
     </div>
   );
