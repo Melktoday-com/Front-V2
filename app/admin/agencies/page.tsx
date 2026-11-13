@@ -29,6 +29,7 @@ import { toast } from "sonner";
 import { AgentApplicationResponse, AgencyFull } from "@/types/api/agency.types";
 import { normalizeApiError } from "@/lib/api/error-handler";
 import { getMediaUrl } from "@/lib/utils";
+import { JibitKycViewer } from "@/components/admin/JibitKycViewer";
 
 export default function AdminAgenciesPage() {
     const queryClient = useQueryClient();
@@ -296,7 +297,35 @@ export default function AdminAgenciesPage() {
                                                 <td className="py-4 px-6">
                                                     {(() => {
                                                         const kyc = app.kycDetails || app.jibitVerificationData;
-                                                        if (kyc?.matched !== undefined) {
+                                                        if (!kyc) return <span className="text-foreground-muted text-[11px]">-</span>;
+
+                                                        if (kyc.provider === "JIBIT_GUILD" || kyc.guildCode || kyc.senfCode) {
+                                                            if (kyc.verified) {
+                                                                if (kyc.nationalCodeMatched === false) {
+                                                                    return (
+                                                                        <span className="inline-flex items-center gap-1 text-amber-600 font-bold text-[11px]">
+                                                                            <AlertCircle className="w-3.5 h-3.5" />
+                                                                            <span>اصناف (عدم تطابق کدملی)</span>
+                                                                        </span>
+                                                                    );
+                                                                }
+                                                                return (
+                                                                    <span className="inline-flex items-center gap-1 text-success font-bold text-[11px]">
+                                                                        <CheckCircle className="w-3.5 h-3.5" />
+                                                                        <span>پروانه اصناف تأیید</span>
+                                                                    </span>
+                                                                );
+                                                            } else if (kyc.verified === false) {
+                                                                return (
+                                                                    <span className="inline-flex items-center gap-1 text-error font-bold text-[11px]">
+                                                                        <XCircle className="w-3.5 h-3.5" />
+                                                                        <span>خطا در استعلام اصناف</span>
+                                                                    </span>
+                                                                );
+                                                            }
+                                                        }
+
+                                                        if (kyc.matched !== undefined) {
                                                             return kyc.matched ? (
                                                                 <span className="inline-flex items-center gap-1 text-success font-bold text-[11px]">
                                                                     <CheckCircle className="w-3.5 h-3.5" />
@@ -309,7 +338,7 @@ export default function AdminAgenciesPage() {
                                                                 </span>
                                                             );
                                                         }
-                                                        if (kyc?.corporation) {
+                                                        if (kyc.corporation || kyc.verified) {
                                                             return (
                                                                 <span className="inline-flex items-center gap-1 text-success font-bold text-[11px]">
                                                                     <CheckCircle className="w-3.5 h-3.5" />
@@ -593,16 +622,17 @@ export default function AdminAgenciesPage() {
                             )}
                         </div>
 
-                        {/* Jibit Verification Banner */}
-                        <div className="p-4 bg-info-subtle/60 border border-info/30 rounded-2xl space-y-2">
-                            <div className="flex items-center gap-2 text-foreground font-bold text-xs">
-                                <ShieldAlert className="w-4 h-4 text-info" />
-                                <span>نتیجه استعلام احراز هویت هوشمند (سرویس جیبیت):</span>
-                            </div>
-                            <pre className="text-[11px] font-mono bg-surface p-3 rounded-xl border border-info/30/80 text-foreground-secondary overflow-x-auto">
-                                {JSON.stringify(selectedApp.kycDetails || selectedApp.jibitVerificationData || { message: "اطلاعات استعلام ثبت نشده است" }, null, 2)}
-                            </pre>
-                        </div>
+                        {/* Jibit Verification Component */}
+                        <JibitKycViewer
+                            kycDetails={selectedApp.kycDetails || selectedApp.jibitVerificationData}
+                            applicantInfo={{
+                                fullName: selectedApp.fullName,
+                                nationalCode: selectedApp.nationalCode,
+                                guildCode: selectedApp.guildCode,
+                                phone: selectedApp.phone,
+                                agentType: selectedApp.agentType,
+                            }}
+                        />
 
                         {/* Review Action Section */}
                         {selectedApp.status === "PENDING" && (
