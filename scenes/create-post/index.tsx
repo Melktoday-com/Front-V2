@@ -11,7 +11,7 @@ import { useMeProfile } from "@/hooks/useUser";
 import { cn, getMediaUrl, toPersianDigits } from "@/lib/utils";
 import { RoleName, tryRoleNameFrom } from "@/types/access";
 import type { MediaReference } from "@/types/api/media.types";
-import { PublisherType } from "@/types/api/post.types";
+import { PostType, PublisherType } from "@/types/api/post.types";
 import { HostProfile, ShowcaseHeader } from "@/types/api/showcase.types";
 import axios from "axios";
 import {
@@ -401,6 +401,7 @@ export default function CreatePostScene() {
               title: effectiveTitle,
               content: igCaption.trim() || effectiveTitle,
               category: igCategory || "معرفی ملک ویژه",
+              postType: PostType.SLIDE,
               mediaIds: igMedia,
               isPublished,
             },
@@ -435,6 +436,7 @@ export default function CreatePostScene() {
               content: medContent.trim(),
               slug: medSlug.trim() || undefined,
               category: medCategory || "تحلیل بازار مسکن",
+              postType: PostType.ARTICLE,
               mediaIds,
               isPublished,
             },
@@ -467,6 +469,7 @@ export default function CreatePostScene() {
           title: effectiveTitle,
           content: igCaption.trim() || effectiveTitle,
           category: igCategory || "معرفی ملک ویژه",
+          postType: PostType.SLIDE,
           mediaIds: igMedia,
           isPublished,
           isFeatured: false,
@@ -502,6 +505,7 @@ export default function CreatePostScene() {
           content: medContent.trim(),
           slug: medSlug.trim() || undefined,
           category: medCategory || "تحلیل بازار مسکن",
+          postType: PostType.ARTICLE,
           mediaIds,
           isPublished,
           isFeatured: false,

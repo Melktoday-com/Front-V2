@@ -12,6 +12,16 @@ export const PUBLISHER_TYPES = {
   PLATFORM: PublisherType.PLATFORM,
 } as const;
 
+export enum PostType {
+  SLIDE = 'SLIDE',
+  ARTICLE = 'ARTICLE',
+}
+
+export const POST_TYPES = {
+  SLIDE: PostType.SLIDE,
+  ARTICLE: PostType.ARTICLE,
+} as const;
+
 export interface PostPublisher {
   id: string;
   name: string;
@@ -33,6 +43,7 @@ export interface UnifiedPost {
   summary?: string;
   content: string;
   category?: string;
+  postType?: PostType;
   mediaIds: MediaReference[];
   isPublished: boolean;
   isFeatured: boolean;
@@ -61,6 +72,7 @@ export interface CreatePostRequest {
   summary?: string;
   content: string;
   category?: string;
+  postType?: PostType;
   mediaIds?: MediaReference[];
   isPublished?: boolean;
   isFeatured?: boolean;
@@ -72,6 +84,7 @@ export interface UpdatePostRequest {
   summary?: string;
   content?: string;
   category?: string;
+  postType?: PostType;
   mediaIds?: MediaReference[];
   isPublished?: boolean;
   isFeatured?: boolean;
