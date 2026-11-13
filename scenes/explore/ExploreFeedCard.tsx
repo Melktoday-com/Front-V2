@@ -47,12 +47,19 @@ export function isArticlePost(post: UnifiedPost): boolean {
   return false;
 }
 
+export type FeedCardLoadPriority = "active" | "preload" | "idle";
+
 interface ExploreFeedCardProps {
   post: UnifiedPost;
   onLike: (e: React.MouseEvent, postId: string) => void;
+  loadPriority?: FeedCardLoadPriority;
 }
 
-export function ExploreFeedCard({ post, onLike }: ExploreFeedCardProps) {
+export function ExploreFeedCard({
+  post,
+  onLike,
+  loadPriority = "active",
+}: ExploreFeedCardProps) {
   // Post view observer to count views when visible
   const viewObserverRef = usePostViewObserver(post.id);
 
@@ -61,7 +68,7 @@ export function ExploreFeedCard({ post, onLike }: ExploreFeedCardProps) {
   const videoRefs = useRef<Record<string, HTMLVideoElement | null>>({});
   const swiperRef = useRef<SwiperType | null>(null);
 
-  const [isInView, setIsInView] = useState(false);
+  const [isInView, setIsInView] = useState(loadPriority === "active");
   const [activeSlide, setActiveSlide] = useState(0);
   const [videoErrorMap, setVideoErrorMap] = useState<Record<string, boolean>>({});
   const [showHeartBurst, setShowHeartBurst] = useState(false);
@@ -76,7 +83,7 @@ export function ExploreFeedCard({ post, onLike }: ExploreFeedCardProps) {
     setLocalLikeCount(post.likeCount || 0);
   }, [post.hasLiked, post.likeCount]);
 
-  // Viewport IntersectionObserver: load heavy media only when in-view
+  // Viewport IntersectionObserver: track in-view visibility
   useEffect(() => {
     const el = cardContainerRef.current;
     if (!el || typeof IntersectionObserver === "undefined") {
@@ -100,7 +107,7 @@ export function ExploreFeedCard({ post, onLike }: ExploreFeedCardProps) {
         }
       },
       {
-        rootMargin: "250px 0px",
+        rootMargin: "300px 0px",
         threshold: 0.1,
       }
     );
@@ -122,7 +129,7 @@ export function ExploreFeedCard({ post, onLike }: ExploreFeedCardProps) {
     }));
   }, [post]);
 
-  // Publisher details
+  // Publisher details with link to showcase
   const publisherInfo = useMemo(() => {
     if (!post) return null;
 
@@ -131,8 +138,8 @@ export function ExploreFeedCard({ post, onLike }: ExploreFeedCardProps) {
       post.publisherId === "melktoday-official"
     ) {
       return {
-        name: post.publisher?.name || "ملک‌تودی (پلتفرم رسمی)",
-        badge: "پلتفرم رسمی",
+        name: post.publisher?.name || "ملک‌تودی | MelkToday",
+        link: "/platform",
         logoUrl: post.publisher?.logoUrl || post.publisher?.avatarUrl || "/apple-touch-icon.png",
         type: PUBLISHER_TYPES.PLATFORM,
         isVerified: true,
@@ -141,9 +148,10 @@ export function ExploreFeedCard({ post, onLike }: ExploreFeedCardProps) {
 
     if (post.publisherType === PUBLISHER_TYPES.HOST) {
       const host = post.publisher;
+      const hostSlugOrId = host?.slug || host?.id || post.agencyId || post.publisherId;
       return {
         name: host?.name || "میزبان اقامتگاه",
-        badge: "میزبان اقامتگاه",
+        link: hostSlugOrId ? `/host/${encodeURIComponent(hostSlugOrId)}` : "/temporary-rent",
         logoUrl: host?.logoUrl || host?.avatarUrl || null,
         type: PUBLISHER_TYPES.HOST,
         isVerified: host?.isVerified ?? false,
@@ -151,9 +159,13 @@ export function ExploreFeedCard({ post, onLike }: ExploreFeedCardProps) {
     }
 
     const agency = post.publisher || post.agency;
+    const agencySlugOrId =
+      agency?.slug || agency?.id || post.agencyId || post.publisherId;
     return {
       name: agency?.name || "آژانس املاک",
-      badge: "آژانس املاک",
+      link: agencySlugOrId
+        ? `/agency/showcase/${encodeURIComponent(agencySlugOrId)}`
+        : "/agency",
       logoUrl: agency?.logoUrl || agency?.avatarUrl || null,
       type: PUBLISHER_TYPES.AGENCY,
       isVerified: agency?.isVerified ?? true,
@@ -210,7 +222,6 @@ export function ExploreFeedCard({ post, onLike }: ExploreFeedCardProps) {
   };
 
   const isArticle = isArticlePost(post);
-  const isInstagram = !isArticle;
 
   // Instagram Caption Split logic
   const caption = post.content || "";
@@ -225,6 +236,11 @@ export function ExploreFeedCard({ post, onLike }: ExploreFeedCardProps) {
     }
   };
 
+  // Determine media mounting behavior based on load priority
+  const isPriorityActive = loadPriority === "active" || (isInView && loadPriority !== "idle");
+  const isPriorityPreload = loadPriority === "preload";
+  const firstMedia = mediaList[0];
+
   return (
     <article
       ref={setContainerRefs}
@@ -232,18 +248,23 @@ export function ExploreFeedCard({ post, onLike }: ExploreFeedCardProps) {
       className="bg-surface rounded-2xl sm:rounded-3xl border border-border-subtle shadow-xs overflow-hidden text-right transition-all select-none"
       dir="rtl"
     >
-      {/* ── 1. HEADER (Publisher Profile Info) ─────────────────────────── */}
+      {/* ── 1. HEADER (Publisher Profile Info: ONLY name & logo) ──────── */}
       <div className="flex items-center justify-between p-3 sm:p-4 border-b border-border-subtle bg-surface">
         {publisherInfo && (
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="relative w-10 h-10 rounded-full p-0.5 border border-primary bg-primary/10 shrink-0 overflow-hidden">
+          <Link
+            href={publisherInfo.link}
+            className="flex items-center gap-2.5 min-w-0 group/pub hover:opacity-85 transition-opacity"
+            onClick={(e) => e.stopPropagation()}
+            title={`مشاهده ویترین ${publisherInfo.name}`}
+          >
+            <div className="relative w-10 h-10 rounded-full p-0.5 border border-primary/25 bg-primary/5 shrink-0 overflow-hidden">
               {publisherInfo.logoUrl ? (
                 <Image
                   src={getMediaUrl(publisherInfo.logoUrl)}
                   alt={publisherInfo.name}
                   width={40}
                   height={40}
-                  className="w-full h-full object-cover rounded-full"
+                  className="w-full h-full object-cover rounded-full group-hover/pub:scale-105 transition-transform"
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center bg-surface-secondary text-foreground-secondary font-bold text-xs rounded-full">
@@ -259,161 +280,149 @@ export function ExploreFeedCard({ post, onLike }: ExploreFeedCardProps) {
             </div>
 
             <div className="min-w-0">
-              <div className="flex items-center gap-1">
-                <span className="text-xs sm:text-sm font-black text-brand truncate">
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs sm:text-sm font-black text-brand truncate group-hover/pub:text-primary transition-colors">
                   {publisherInfo.name}
                 </span>
                 {publisherInfo.isVerified && (
                   <Verified className="w-3.5 h-3.5 text-primary fill-primary/10 shrink-0" />
                 )}
               </div>
-              <span className="text-[10px] sm:text-[11px] font-bold text-foreground-muted">
-                {publisherInfo.badge}
-              </span>
             </div>
-          </div>
+          </Link>
         )}
 
-        {/* Post Type Badge */}
-        <div className="flex items-center gap-2">
-          {post.category && (
-            <span className="px-2.5 py-1 rounded-lg bg-surface-secondary text-[11px] font-bold text-foreground-secondary">
-              {post.category}
-            </span>
-          )}
-          {isArticle && (
-            <span className="px-2 py-0.5 rounded-md bg-primary/10 text-primary text-[10px] font-black">
-              مقاله
-            </span>
-          )}
-        </div>
+        {/* Left Side: Formatted Date */}
+        {formattedDate && (
+          <span className="text-[11px] font-medium text-foreground-muted select-none">
+            {formattedDate}
+          </span>
+        )}
       </div>
 
-      {/* ── 2. MEDIA CAROUSEL (Images & Videos with Viewport Observer) ──── */}
+      {/* ── 2. MEDIA CAROUSEL (Images & Videos with Viewport & Priority) ─ */}
       <div className="relative aspect-square sm:aspect-4/5 w-full bg-slate-950 overflow-hidden group">
         {mediaList.length > 0 ? (
           <div className="absolute inset-0">
-            <Swiper
-              dir="rtl"
-              slidesPerView={1}
-              spaceBetween={0}
-              threshold={5}
-              touchStartPreventDefault={false}
-              grabCursor={mediaList.length > 1}
-              allowTouchMove={mediaList.length > 1}
-              resistance={true}
-              resistanceRatio={0.6}
-              watchOverflow={true}
-              onBeforeInit={(swiper) => {
-                swiperRef.current = swiper;
-              }}
-              onSwiper={(swiper) => {
-                swiperRef.current = swiper;
-              }}
-              onSlideChange={(swiper) => {
-                setActiveSlide(swiper.activeIndex);
-                // Pause all videos when slide changes
-                Object.values(videoRefs.current).forEach((v) => {
-                  if (v && !v.paused) v.pause();
-                });
-              }}
-              className="w-full h-full"
-            >
-              {mediaList.map((media, idx) => {
-                const isCurrentSlide = idx === activeSlide;
-                const shouldLoadMedia = isInView && Math.abs(idx - activeSlide) <= 1;
+            {/* If card is idle, only render lightweight placeholder / poster */}
+            {!isPriorityActive && !isPriorityPreload ? (
+              <div className="w-full h-full relative">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={firstMedia?.posterUrl || firstMedia?.url || "/property-placeholder.svg"}
+                  alt={post.title}
+                  loading="lazy"
+                  className="w-full h-full object-cover"
+                />
+                {firstMedia?.type === "VIDEO" && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                    <div className="w-12 h-12 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-white">
+                      <Play className="w-5 h-5 fill-current ml-0.5" />
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : !isPriorityActive && isPriorityPreload ? (
+              /* Preload stage: eager load cover/first frame without mounting heavy video */
+              <div className="w-full h-full relative">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={firstMedia?.posterUrl || firstMedia?.url || "/property-placeholder.svg"}
+                  alt={post.title}
+                  loading="eager"
+                  className="w-full h-full object-cover"
+                />
+                {firstMedia?.type === "VIDEO" && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                    <div className="w-12 h-12 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-white">
+                      <Play className="w-5 h-5 fill-current ml-0.5" />
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              /* Active stage: mount interactive Swiper / Video player */
+              <Swiper
+                dir="rtl"
+                slidesPerView={1}
+                spaceBetween={0}
+                threshold={5}
+                onSwiper={(swiper) => {
+                  swiperRef.current = swiper;
+                }}
+                onSlideChange={(swiper) => {
+                  setActiveSlide(swiper.activeIndex);
+                  // Pause all videos when sliding away
+                  Object.values(videoRefs.current).forEach((v) => {
+                    if (v && !v.paused) v.pause();
+                  });
+                }}
+                className="w-full h-full select-none"
+              >
+                {mediaList.map((media, idx) => {
+                  const isVisibleSlide = Math.abs(idx - activeSlide) <= 1;
 
-                return (
-                  <SwiperSlide key={media.id || idx} className="w-full h-full">
-                    <div
-                      className="relative w-full h-full flex items-center justify-center select-none bg-slate-950 cursor-pointer"
-                      onDoubleClick={handleDoubleTap}
-                    >
+                  return (
+                    <SwiperSlide key={media.id} className="relative w-full h-full bg-slate-950">
                       {media.type === "VIDEO" ? (
-                        videoErrorMap[media.id] ? (
-                          <div className="w-full h-full bg-slate-900 flex flex-col items-center justify-center p-6 text-center select-none text-white">
-                            <div className="w-12 h-12 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center mb-2">
-                              <Video className="w-6 h-6" />
+                        <div
+                          className="relative w-full h-full flex items-center justify-center bg-black"
+                          onDoubleClick={handleDoubleTap}
+                        >
+                          {videoErrorMap[media.id] ? (
+                            <div className="flex flex-col items-center justify-center p-6 text-center text-slate-400 space-y-2">
+                              <Video className="w-8 h-8 opacity-40" />
+                              <p className="text-xs">خطا در بارگذاری ویدیو</p>
                             </div>
-                            <span className="text-sm font-bold">ویدئو در حال پردازش است</span>
-                            <span className="text-xs text-white/50 mt-1">
-                              لطفاً اندکی بعد صفحه را بازبینی فرمایید
-                            </span>
-                          </div>
-                        ) : isInView && isCurrentSlide ? (
-                          /* Active in-view video element */
-                          <video
-                            ref={(el) => {
-                              videoRefs.current[media.id] = el;
-                            }}
-                            key={media.id}
+                          ) : (
+                            <video
+                              ref={(el) => {
+                                videoRefs.current[media.id] = el;
+                              }}
+                              src={media.url}
+                              poster={media.posterUrl}
+                              controls
+                              playsInline
+                              preload={isVisibleSlide && isInView ? "metadata" : "none"}
+                              onError={() => {
+                                setVideoErrorMap((prev) => ({ ...prev, [media.id]: true }));
+                              }}
+                              className="w-full h-full object-contain bg-black"
+                            />
+                          )}
+                        </div>
+                      ) : (
+                        <div
+                          className="relative w-full h-full bg-slate-900 cursor-pointer"
+                          onDoubleClick={handleDoubleTap}
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
                             src={media.url}
-                            poster={media.posterUrl}
-                            controls
-                            playsInline
-                            preload="metadata"
-                            className="w-full h-full object-contain swiper-no-swiping"
-                            onError={() => {
-                              setVideoErrorMap((prev) => ({ ...prev, [media.id]: true }));
+                            alt={post.title}
+                            loading={isVisibleSlide ? "eager" : "lazy"}
+                            className="w-full h-full object-cover select-none"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = "/property-placeholder.svg";
                             }}
                           />
-                        ) : (
-                          /* Off-view or background slide: lightweight poster thumbnail */
-                          <div className="relative w-full h-full">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                              src={media.posterUrl || "/property-placeholder.svg"}
-                              alt={post.title}
-                              loading="lazy"
-                              className="w-full h-full object-contain select-none pointer-events-none"
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).src = "/property-placeholder.svg";
-                              }}
-                            />
-                            <div className="absolute inset-0 flex items-center justify-center bg-black/30 pointer-events-none">
-                              <div className="w-12 h-12 rounded-full bg-black/60 backdrop-blur-md text-white flex items-center justify-center shadow-md">
-                                <Play className="w-5 h-5 fill-current ml-0.5" />
-                              </div>
-                            </div>
-                          </div>
-                        )
-                      ) : (
-                        /* Image slide: prioritized in-view loading */
-                        /* eslint-disable-next-line @next/next/no-img-element */
-                        <img
-                          key={media.id}
-                          src={shouldLoadMedia ? media.url : media.posterUrl || "/property-placeholder.svg"}
-                          alt={post.title || `تصویر ${idx + 1}`}
-                          loading={idx === 0 ? "eager" : "lazy"}
-                          draggable={false}
-                          className="w-full h-full object-contain select-none pointer-events-none"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src = "/property-placeholder.svg";
-                          }}
-                        />
+                        </div>
                       )}
-                    </div>
-                  </SwiperSlide>
-                );
-              })}
-            </Swiper>
-
-            {/* Double tap heart animation */}
-            {showHeartBurst && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/20 pointer-events-none animate-in fade-in zoom-in duration-300 z-30">
-                <Heart className="w-24 h-24 text-error fill-red-500 drop-shadow-2xl" />
-              </div>
+                    </SwiperSlide>
+                  );
+                })}
+              </Swiper>
             )}
 
-            {/* Multi-image slide counter badge */}
+            {/* Slide Index Pill indicator (Top-Right) */}
             {mediaList.length > 1 && (
-              <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-xs font-bold shadow-xs z-20 pointer-events-none">
+              <div className="absolute top-3 right-3 z-20 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[11px] font-bold shadow-xs pointer-events-none">
                 {toPersianDigits(activeSlide + 1)} / {toPersianDigits(mediaList.length)}
               </div>
             )}
 
-            {/* Slide Navigation Chevrons inside media */}
-            {mediaList.length > 1 && (
+            {/* Navigation Arrows for Multi-image */}
+            {isPriorityActive && mediaList.length > 1 && (
               <>
                 {activeSlide > 0 && (
                   <button
@@ -422,13 +431,13 @@ export function ExploreFeedCard({ post, onLike }: ExploreFeedCardProps) {
                       e.stopPropagation();
                       swiperRef.current?.slidePrev();
                     }}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-surface/80 hover:bg-surface text-foreground flex items-center justify-center shadow-md transition-all z-20 cursor-pointer"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/50 hover:bg-black/75 text-white flex items-center justify-center transition-all cursor-pointer opacity-0 group-hover:opacity-100"
                     title="اسلاید قبلی"
-                    aria-label="اسلاید قبلی"
                   >
-                    <ChevronRight className="w-4 h-4" />
+                    <ChevronRight className="w-5 h-5" />
                   </button>
                 )}
+
                 {activeSlide < mediaList.length - 1 && (
                   <button
                     type="button"
@@ -436,48 +445,49 @@ export function ExploreFeedCard({ post, onLike }: ExploreFeedCardProps) {
                       e.stopPropagation();
                       swiperRef.current?.slideNext();
                     }}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-surface/80 hover:bg-surface text-foreground flex items-center justify-center shadow-md transition-all z-20 cursor-pointer"
+                    className="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/50 hover:bg-black/75 text-white flex items-center justify-center transition-all cursor-pointer opacity-0 group-hover:opacity-100"
                     title="اسلاید بعدی"
-                    aria-label="اسلاید بعدی"
                   >
-                    <ChevronLeft className="w-4 h-4" />
+                    <ChevronLeft className="w-5 h-5" />
                   </button>
                 )}
+
+                {/* Dot Pagination */}
+                <div className="absolute bottom-2.5 inset-x-0 z-20 flex items-center justify-center gap-1.5 pointer-events-none">
+                  {mediaList.map((_, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      aria-label={`اسلاید ${i + 1}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        swiperRef.current?.slideTo(i);
+                      }}
+                      className={cn(
+                        "h-1.5 rounded-full transition-all pointer-events-auto",
+                        i === activeSlide ? "w-5 bg-white" : "w-1.5 bg-white/50"
+                      )}
+                    />
+                  ))}
+                </div>
               </>
             )}
 
-            {/* Slide Indicator Dots */}
-            {mediaList.length > 1 && (
-              <div className="absolute bottom-3 inset-x-0 flex items-center justify-center gap-1.5 z-20 pointer-events-auto">
-                {mediaList.map((_, dotIdx) => (
-                  <button
-                    key={dotIdx}
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      swiperRef.current?.slideTo(dotIdx);
-                    }}
-                    className={cn(
-                      "h-1.5 rounded-full transition-all cursor-pointer",
-                      dotIdx === activeSlide
-                        ? "w-5 bg-white shadow-xs"
-                        : "w-1.5 bg-white/50 hover:bg-white/80"
-                    )}
-                    aria-label={`اسلاید ${dotIdx + 1}`}
-                  />
-                ))}
+            {/* Heart burst animation on double tap */}
+            {showHeartBurst && (
+              <div className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none">
+                <Heart className="w-20 h-20 fill-red-500 text-red-500 animate-ping opacity-90 drop-shadow-lg" />
               </div>
             )}
           </div>
         ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 p-8 text-center space-y-2 min-h-[260px]">
-            <Layers className="w-12 h-12 text-slate-500" />
+          <div className="absolute inset-0 flex items-center justify-center bg-slate-900 text-slate-500">
             <p className="text-xs font-bold">تصویری برای این پست ثبت نشده است.</p>
           </div>
         )}
       </div>
 
-      {/* ── 3. ACTION BAR (Like, Share, Views) ───────────────────────────── */}
+      {/* ── 3. ACTION BAR (Like, Share, Views) ─────────────────────────── */}
       <div className="p-3 sm:p-4 border-b border-border-subtle bg-surface flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           {/* Like Button */}
@@ -520,14 +530,14 @@ export function ExploreFeedCard({ post, onLike }: ExploreFeedCardProps) {
         </div>
       </div>
 
-      {/* ── 4. CAPTION & ARTICLE SECTION ─────────────────────────────────── */}
+      {/* ── 4. CAPTION & ARTICLE SECTION ───────────────────────────────── */}
       <div className="p-4 sm:p-5 space-y-2.5 bg-surface text-right select-text">
         <h3 className="text-sm sm:text-base font-black text-brand leading-snug">
           {post.title}
         </h3>
 
         {isArticle ? (
-          /* ARTICLE POST: Excerpt with 'مشاهده بیشتر' linking to single post page */
+          /* ARTICLE POST: Excerpt with 'مشاهده بیشتر و مطالعه مقاله' */
           <div className="space-y-3">
             {post.summary ? (
               <p className="text-xs sm:text-sm text-foreground-secondary leading-relaxed bg-surface-secondary/70 p-3 rounded-2xl border-r-3 border-primary">
@@ -568,14 +578,6 @@ export function ExploreFeedCard({ post, onLike }: ExploreFeedCardProps) {
             ) : (
               <p className="whitespace-pre-wrap">{caption}</p>
             )}
-          </div>
-        )}
-
-        {/* Date Timestamp */}
-        {formattedDate && (
-          <div className="flex items-center gap-1.5 text-[11px] text-foreground-muted pt-2 border-t border-border-subtle/60">
-            <Calendar className="w-3.5 h-3.5 text-foreground-muted" />
-            <span>{formattedDate}</span>
           </div>
         )}
       </div>

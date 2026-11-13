@@ -2,9 +2,15 @@
 
 import { useAuth } from "@/hooks/useAuth";
 import { useInfiniteExplorePosts, useLikePost } from "@/hooks/usePosts";
+import { cn } from "@/lib/utils";
 import { RoleName } from "@/types/access";
+import { UnifiedPost } from "@/types/api/post.types";
 import {
+  ArrowRight,
+  ChevronRight,
   Grid,
+  LayoutGrid,
+  List,
   Loader2,
   Plus,
   Search,
@@ -12,9 +18,10 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { ExploreFeedCard } from "./ExploreFeedCard";
+import { ExploreFeedCard, FeedCardLoadPriority } from "./ExploreFeedCard";
+import { ExploreGridCard } from "./ExploreGridCard";
 
 export default function ExploreScene() {
   const router = useRouter();
@@ -29,11 +36,21 @@ export default function ExploreScene() {
       activeRole === RoleName.Agent ||
       activeRole === RoleName.Landlord);
 
+  // ── URL Query Parameters ──────────────────────────────────────────
+  const viewParam = searchParams.get("view");
+  const isFeedMode = viewParam === "feed";
+  const urlPostId = searchParams.get("post");
+
   const urlSearch = searchParams.get("search") || "";
   const [searchQuery, setSearchQuery] = useState(urlSearch);
   const [activeSearch, setActiveSearch] = useState(urlSearch);
 
+  // ── Feed Viewport & Priority Loading State ────────────────────────
+  const [activeFeedPostId, setActiveFeedPostId] = useState<string | null>(urlPostId);
+  const [scrollDirection, setScrollDirection] = useState<"down" | "up" | "none">("none");
+  const lastActiveIndexRef = useRef<number>(-1);
   const observerTargetRef = useRef<HTMLDivElement | null>(null);
+  const initialScrollDoneRef = useRef<string | null>(null);
 
   // Sync url search param if changed externally
   useEffect(() => {
@@ -54,11 +71,11 @@ export default function ExploreScene() {
     isError,
     refetch,
   } = useInfiniteExplorePosts({
-    limit: 12,
+    limit: 16,
     search: activeSearch || undefined,
   });
 
-  // Auto-scroll infinite scroll
+  // Infinite scroll sentinel
   useEffect(() => {
     const target = observerTargetRef.current;
     if (!target) return;
@@ -70,7 +87,7 @@ export default function ExploreScene() {
           fetchNextPage();
         }
       },
-      { rootMargin: "450px" }
+      { rootMargin: "500px" }
     );
 
     observer.observe(target);
@@ -83,6 +100,139 @@ export default function ExploreScene() {
   const allLoadedPosts = useMemo(() => {
     return postsData?.pages.flatMap((page) => page.items) || [];
   }, [postsData]);
+
+  // ── Auto Scroll & Focus when in Feed Mode ──────────────────────────
+  useEffect(() => {
+    if (!isFeedMode || !urlPostId || allLoadedPosts.length === 0) return;
+    if (initialScrollDoneRef.current === urlPostId) return;
+
+    const targetEl = document.getElementById(`explore-feed-post-${urlPostId}`);
+    if (targetEl) {
+      initialScrollDoneRef.current = urlPostId;
+      setActiveFeedPostId(urlPostId);
+      // Slight delay to ensure DOM and layout calculation is ready
+      setTimeout(() => {
+        targetEl.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 60);
+    }
+  }, [isFeedMode, urlPostId, allLoadedPosts]);
+
+  // ── Feed Intersection Observer: Track active post & direction ──────
+  useEffect(() => {
+    if (!isFeedMode || typeof IntersectionObserver === "undefined") return;
+
+    const feedObserver = new IntersectionObserver(
+      (entries) => {
+        // Find entry with largest intersection ratio
+        const visibleEntries = entries.filter((e) => e.isIntersecting);
+        if (visibleEntries.length === 0) return;
+
+        visibleEntries.sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+        const topEntry = visibleEntries[0];
+        const postId = topEntry.target.getAttribute("data-post-id");
+        if (!postId) return;
+
+        const newIndex = allLoadedPosts.findIndex((p) => p.id === postId);
+        if (newIndex !== -1 && newIndex !== lastActiveIndexRef.current) {
+          const prevIndex = lastActiveIndexRef.current;
+          if (prevIndex !== -1) {
+            setScrollDirection(newIndex > prevIndex ? "down" : "up");
+          }
+          lastActiveIndexRef.current = newIndex;
+          setActiveFeedPostId(postId);
+
+          // Update URL query param quietly without page reload
+          if (typeof window !== "undefined") {
+            const params = new URLSearchParams(window.location.search);
+            params.set("view", "feed");
+            params.set("post", postId);
+            window.history.replaceState(null, "", `/explore?${params.toString()}`);
+          }
+        }
+      },
+      {
+        rootMargin: "-20% 0px -25% 0px",
+        threshold: [0.2, 0.5, 0.8],
+      }
+    );
+
+    // Observe all feed cards
+    allLoadedPosts.forEach((post) => {
+      const el = document.getElementById(`explore-feed-post-${post.id}`);
+      if (el) {
+        el.setAttribute("data-post-id", post.id);
+        feedObserver.observe(el);
+      }
+    });
+
+    return () => {
+      feedObserver.disconnect();
+    };
+  }, [isFeedMode, allLoadedPosts]);
+
+  // ── Load Priority Computation for each Feed Card ───────────────────
+  const getCardLoadPriority = useCallback(
+    (index: number): FeedCardLoadPriority => {
+      const activeId = activeFeedPostId || urlPostId;
+      const activeIdx = activeId
+        ? allLoadedPosts.findIndex((p) => p.id === activeId)
+        : 0;
+
+      const targetIdx = activeIdx !== -1 ? activeIdx : 0;
+
+      if (index === targetIdx) {
+        return "active"; // 1st priority: focused post itself
+      }
+
+      if (scrollDirection === "down") {
+        if (index === targetIdx + 1) return "preload"; // 2nd priority: next post
+        if (index === targetIdx - 1) return "preload"; // 3rd priority: previous post
+      } else if (scrollDirection === "up") {
+        if (index === targetIdx - 1) return "preload"; // 2nd priority: previous post
+        if (index === targetIdx + 1) return "preload"; // 3rd priority: next post
+      } else {
+        // Initial focus on targetIdx:
+        if (index === targetIdx + 1 || index === targetIdx - 1) {
+          return "preload";
+        }
+      }
+
+      return "idle";
+    },
+    [activeFeedPostId, urlPostId, allLoadedPosts, scrollDirection]
+  );
+
+  // ── Handlers ───────────────────────────────────────────────────────
+  const handleSelectPostFromGrid = (postId: string) => {
+    initialScrollDoneRef.current = null;
+    lastActiveIndexRef.current = allLoadedPosts.findIndex((p) => p.id === postId);
+    setActiveFeedPostId(postId);
+    setScrollDirection("none");
+
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("view", "feed");
+    params.set("post", postId);
+    router.push(`/explore?${params.toString()}`, { scroll: false });
+  };
+
+  const handleSwitchToGrid = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("view");
+    params.delete("post");
+    router.push(`/explore${params.toString() ? `?${params.toString()}` : ""}`, {
+      scroll: false,
+    });
+  };
+
+  const handleSwitchToFeed = () => {
+    const firstPostId = allLoadedPosts[0]?.id;
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("view", "feed");
+    if (firstPostId) {
+      params.set("post", firstPostId);
+    }
+    router.push(`/explore?${params.toString()}`, { scroll: false });
+  };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -119,10 +269,16 @@ export default function ExploreScene() {
   };
 
   return (
-    <div className="min-w-0 max-w-2xl mx-auto px-3 sm:px-4 pt-4 sm:pt-6 pb-28 lg:pb-12 space-y-6" dir="rtl">
-
-      {/* ── TOP ACTION & SEARCH BAR ────────────────────────────────────── */}
+    <div
+      className={cn(
+        "min-w-0 mx-auto px-3 sm:px-4 pt-4 sm:pt-6 pb-28 lg:pb-12 space-y-6 transition-all",
+        isFeedMode ? "max-w-2xl" : "max-w-6xl"
+      )}
+      dir="rtl"
+    >
+      {/* ── TOP ACTION BAR: Search, View Switcher & Create Post ─────── */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        {/* Search input */}
         <form onSubmit={handleSearchSubmit} className="relative flex-1">
           <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground-muted" />
           <input
@@ -155,38 +311,100 @@ export default function ExploreScene() {
           </button>
         </form>
 
-        {canCreatePost && (
-          <Link
-            href="/posts/create"
-            className="flex items-center justify-center gap-1.5 px-5 py-3 rounded-2xl bg-brand text-white text-xs font-bold hover:bg-brand/90 transition-all shrink-0 shadow-xs"
-          >
-            <Plus className="w-4 h-4 text-accent" />
-            <span>ایجاد پست جدید</span>
-          </Link>
-        )}
+        <div className="flex items-center gap-2 shrink-0">
+          {/* View Mode Toggle Buttons */}
+          <div className="flex items-center p-1 rounded-2xl bg-surface-secondary border border-border-subtle">
+            <button
+              type="button"
+              onClick={handleSwitchToGrid}
+              className={cn(
+                "flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer",
+                !isFeedMode
+                  ? "bg-surface text-brand shadow-xs"
+                  : "text-foreground-muted hover:text-foreground-secondary"
+              )}
+              title="نمای شبکه‌ای"
+            >
+              <LayoutGrid className="w-4 h-4" />
+              <span className="hidden sm:inline">شبکه‌ای</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleSwitchToFeed}
+              className={cn(
+                "flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer",
+                isFeedMode
+                  ? "bg-surface text-brand shadow-xs"
+                  : "text-foreground-muted hover:text-foreground-secondary"
+              )}
+              title="نمای تک‌ستونه فید"
+            >
+              <List className="w-4 h-4" />
+              <span className="hidden sm:inline">فید</span>
+            </button>
+          </div>
+
+          {/* Create Post Button */}
+          {canCreatePost && (
+            <Link
+              href="/posts/create"
+              className="flex items-center justify-center gap-1.5 px-4 sm:px-5 py-3 rounded-2xl bg-brand text-white text-xs font-bold hover:bg-brand/90 transition-all shrink-0 shadow-xs"
+            >
+              <Plus className="w-4 h-4 text-accent" />
+              <span className="hidden sm:inline">ایجاد پست جدید</span>
+            </Link>
+          )}
+        </div>
       </div>
 
-      {/* ── SINGLE COLUMN EXPLORE FEED ──────────────────────────────────── */}
-      {isLoading ? (
-        <div className="space-y-6 pb-12">
-          {Array.from({ length: 3 }).map((_, idx) => (
-            <div
-              key={idx}
-              className="rounded-2xl sm:rounded-3xl bg-surface border border-border-subtle p-4 space-y-3 animate-pulse"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-surface-secondary" />
-                <div className="space-y-1.5 flex-1">
-                  <div className="w-32 h-3.5 bg-surface-secondary rounded-md" />
-                  <div className="w-20 h-2.5 bg-surface-secondary rounded-md" />
-                </div>
-              </div>
-              <div className="aspect-square sm:aspect-4/5 w-full bg-surface-secondary rounded-2xl" />
-              <div className="h-4 bg-surface-secondary rounded-md w-3/4" />
-              <div className="h-3 bg-surface-secondary rounded-md w-1/2" />
-            </div>
-          ))}
+      {/* ── FEED MODE BACK BUTTON BAR ─────────────────────────────────── */}
+      {isFeedMode && (
+        <div className="flex items-center justify-between p-3 rounded-2xl bg-surface border border-border-subtle shadow-2xs">
+          <button
+            type="button"
+            onClick={handleSwitchToGrid}
+            className="inline-flex items-center gap-2 text-xs font-black text-brand hover:text-primary transition-colors cursor-pointer group"
+          >
+            <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+            <LayoutGrid className="w-4 h-4 text-primary" />
+            <span>بازگشت به نمای شبکه‌ای</span>
+          </button>
+
+          <span className="text-[11px] font-bold text-foreground-muted">
+            نمای تک‌ستونه فید
+          </span>
         </div>
+      )}
+
+      {/* ── CONTENT (Grid vs Feed) ────────────────────────────────────── */}
+      {isLoading ? (
+        isFeedMode ? (
+          <div className="space-y-6 pb-12">
+            {Array.from({ length: 3 }).map((_, idx) => (
+              <div
+                key={idx}
+                className="rounded-2xl sm:rounded-3xl bg-surface border border-border-subtle p-4 space-y-3 animate-pulse"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-surface-secondary" />
+                  <div className="w-32 h-3.5 bg-surface-secondary rounded-md" />
+                </div>
+                <div className="aspect-square sm:aspect-4/5 w-full bg-surface-secondary rounded-2xl" />
+                <div className="h-4 bg-surface-secondary rounded-md w-3/4" />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 sm:gap-4 pb-12">
+            {Array.from({ length: 8 }).map((_, idx) => (
+              <div
+                key={idx}
+                className="aspect-square rounded-2xl sm:rounded-3xl bg-surface-secondary animate-pulse border border-border-subtle/60"
+              />
+            ))}
+          </div>
+        )
       ) : isError ? (
         <div className="bg-surface p-8 rounded-3xl border border-border-subtle text-center space-y-4">
           <p className="text-xs font-bold text-error">خطا در دریافت فید کاوش.</p>
@@ -202,7 +420,9 @@ export default function ExploreScene() {
         <div className="bg-surface p-12 rounded-3xl border border-border-subtle text-center space-y-3">
           <Grid className="w-10 h-10 text-slate-300 mx-auto" />
           <p className="text-sm font-black text-brand">پستی با این مشخصات یافت نشد</p>
-          <p className="text-xs text-foreground-muted">می‌توانید عبارت جستجو را تغییر داده یا بررسی کنید.</p>
+          <p className="text-xs text-foreground-muted">
+            می‌توانید عبارت جستجو را تغییر داده یا بررسی کنید.
+          </p>
           {activeSearch && (
             <button
               type="button"
@@ -213,13 +433,15 @@ export default function ExploreScene() {
             </button>
           )}
         </div>
-      ) : (
+      ) : isFeedMode ? (
+        /* ── SINGLE-COLUMN FEED VIEW ───────────────────────────────── */
         <div className="space-y-6 sm:space-y-8 pb-8">
-          {allLoadedPosts.map((post) => (
+          {allLoadedPosts.map((post, index) => (
             <ExploreFeedCard
               key={post.id}
               post={post}
               onLike={handleLike}
+              loadPriority={getCardLoadPriority(index)}
             />
           ))}
 
@@ -240,14 +462,48 @@ export default function ExploreScene() {
             </div>
           )}
 
-          {!hasNextPage && allLoadedPosts.length > 8 && (
+          {!hasNextPage && allLoadedPosts.length > 6 && (
             <div className="py-8 text-center text-xs text-foreground-muted font-medium">
               همه پست‌ها نمایش داده شدند
             </div>
           )}
         </div>
-      )}
+      ) : (
+        /* ── GRID VIEW (DEFAULT) ───────────────────────────────────── */
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 sm:gap-4 pb-8">
+          {allLoadedPosts.map((post) => (
+            <ExploreGridCard
+              key={post.id}
+              post={post}
+              onSelect={handleSelectPostFromGrid}
+              onLike={handleLike}
+            />
+          ))}
 
+          {/* Infinite scroll sentinel & loader */}
+          {hasNextPage && (
+            <div
+              ref={observerTargetRef}
+              className="col-span-full py-8 flex flex-col items-center justify-center gap-2"
+            >
+              {isFetchingNextPage ? (
+                <div className="flex items-center gap-2 text-xs font-bold text-secondary bg-surface px-5 py-2.5 rounded-xl shadow-xs border border-border-subtle">
+                  <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                  <span>در حال بارگذاری پست‌های بیشتر...</span>
+                </div>
+              ) : (
+                <div className="h-6" />
+              )}
+            </div>
+          )}
+
+          {!hasNextPage && allLoadedPosts.length > 12 && (
+            <div className="col-span-full py-8 text-center text-xs text-foreground-muted font-medium">
+              همه پست‌ها نمایش داده شدند
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
