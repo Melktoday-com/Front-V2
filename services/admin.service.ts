@@ -486,6 +486,13 @@ export const adminService = {
         return response.data;
     },
 
+    reverifyAgencyApplication: async (applicationId: string) => {
+        const response = await api.post(
+            `/admin/agency-applications/${applicationId}/reverify`,
+        );
+        return response.data;
+    },
+
     listAdminAgencies: async (params: {
         agencyType?: string;
         verificationStatus?: string;

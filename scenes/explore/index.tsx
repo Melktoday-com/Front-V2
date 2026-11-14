@@ -456,24 +456,6 @@ export default function ExploreScene() {
         </div>
       </div>
 
-      {/* ── FEED MODE BACK BUTTON BAR (STICKY WITH BACKDROP BLUR) ───── */}
-      {isFeed && (
-        <div className="sticky top-2 sm:top-4 z-30 flex items-center justify-between p-2.5 sm:p-3 rounded-2xl bg-surface/90 backdrop-blur-md border border-border-subtle shadow-xs">
-          <button
-            type="button"
-            onClick={handleSwitchToGrid}
-            className="inline-flex items-center gap-2 text-xs font-black text-brand hover:text-primary transition-colors cursor-pointer group"
-          >
-            <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-            <LayoutGrid className="w-4 h-4 text-primary" />
-            <span>بازگشت به نمای شبکه‌ای</span>
-          </button>
-
-          <span className="text-[11px] font-bold text-foreground-muted">
-            نمای تک‌ستونه فید
-          </span>
-        </div>
-      )}
 
       {/* ── CONTENT (Grid vs Feed) ────────────────────────────────────── */}
       {isLoading ? (
