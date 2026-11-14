@@ -266,12 +266,8 @@ export default function AgencyApplyPage() {
         }
 
         if (agentType === "AGENCY") {
-            if (!formData.agencyName.trim()) {
-                toast.error("وارد کردن نام دفتر املاک الزامی است.");
-                return;
-            }
-            if (!formData.guildCode.trim() || formData.guildCode.trim().length < 4 || formData.guildCode.trim().length > 12) {
-                toast.error("شناسه صنفی یا شماره پروانه کسب باید بین ۴ تا ۱۲ رقم باشد.");
+            if (!formData.guildCode.trim() || formData.guildCode.trim().length !== 10) {
+                toast.error("شناسه صنفی وارد شده باید ۱۰ رقم معتبر سامانه نوین اصناف باشد.");
                 return;
             }
         }
@@ -290,7 +286,9 @@ export default function AgencyApplyPage() {
         };
 
         if (agentType === "AGENCY") {
-            payload.agencyName = formData.agencyName.trim();
+            if (formData.agencyName.trim()) {
+                payload.agencyName = formData.agencyName.trim();
+            }
             payload.guildCode = formData.guildCode.trim();
             payload.licenseNumber = formData.licenseNumber.trim() || undefined;
         }
@@ -486,6 +484,37 @@ export default function AgencyApplyPage() {
                                     </div>
                                 )}
                             </div>
+
+                            {/* Verified Guild License Details from Jibit */}
+                            {(() => {
+                                const kyc = (myApp.kycDetails || myApp.jibitVerificationData) as Record<string, any> | undefined;
+                                if (!kyc || (!kyc.unionName && !kyc.address && !kyc.boardTitle)) return null;
+                                return (
+                                    <div className="p-3.5 bg-blue-50/60 dark:bg-blue-950/20 border border-blue-200/60 dark:border-blue-900/40 rounded-2xl space-y-2 text-xs">
+                                        <div className="flex items-center gap-2 font-black text-blue-900 dark:text-blue-300">
+                                            <Building2 className="w-4 h-4 text-blue-600" />
+                                            <span>اطلاعات رسمی استعلام‌شده از اتاق اصناف:</span>
+                                        </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-foreground-secondary text-[11px]">
+                                            {kyc.boardTitle && (
+                                                <div><span className="font-bold text-foreground">عنوان تابلو:</span> {kyc.boardTitle}</div>
+                                            )}
+                                            {kyc.unionName && (
+                                                <div><span className="font-bold text-foreground">اتحادیه:</span> {kyc.unionName}</div>
+                                            )}
+                                            {kyc.isicName && (
+                                                <div><span className="font-bold text-foreground">رسته:</span> {kyc.isicName}</div>
+                                            )}
+                                            {kyc.postalCode && (
+                                                <div><span className="font-bold text-foreground">کد پستی:</span> <span className="font-mono">{toPersianDigits(kyc.postalCode)}</span></div>
+                                            )}
+                                            {kyc.address && (
+                                                <div className="sm:col-span-2"><span className="font-bold text-foreground">نشانی ثبتی:</span> {kyc.address}</div>
+                                            )}
+                                        </div>
+                                    </div>
+                                );
+                            })()}
 
                             {/* Admin note if rejected */}
                             {myApp.status === "REJECTED" && myApp.adminNote && (
@@ -713,35 +742,40 @@ export default function AgencyApplyPage() {
                                 {agentType === "AGENCY" && (
                                     <>
                                         <div className="space-y-1.5">
-                                            <label className="text-xs font-bold text-foreground-secondary">نام دفتر املاک *</label>
-                                            <input
-                                                type="text"
-                                                value={formData.agencyName}
-                                                onChange={(e) => setFormData({ ...formData, agencyName: e.target.value })}
-                                                placeholder="مثال: املاک رویال نیاوران"
-                                                className="w-full p-3 bg-surface-secondary border border-border-subtle rounded-xl text-xs focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-                                                required
-                                            />
-                                        </div>
-
-                                        <div className="space-y-1.5">
                                             <div className="flex items-center justify-between">
                                                 <label className="text-xs font-bold text-foreground-secondary">
-                                                    شناسه صنفی یا شماره پروانه کسب *
+                                                    شناسه صنفی ۱۰ رقمی (سامانه نوین اصناف) *
                                                 </label>
-                                                <span className="text-[11px] text-foreground-muted">۴ الی ۱۲ رقم</span>
+                                                <span className="text-[11px] font-bold text-blue-600 bg-blue-50 dark:bg-blue-950/40 px-2 py-0.5 rounded-md border border-blue-200 dark:border-blue-800">۱۰ رقم</span>
                                             </div>
                                             <input
                                                 type="text"
-                                                maxLength={12}
+                                                maxLength={10}
                                                 value={formData.guildCode}
                                                 onChange={(e) => setFormData({ ...formData, guildCode: toOnlyDigits(e.target.value) })}
-                                                placeholder="شناسه ۱۰ رقمی سامانه نوین اصناف یا شماره پروانه اتحادیه"
+                                                placeholder="مثال: ۰۴۶۸۰۹۷۲۴۹"
                                                 className="w-full p-3 bg-surface-secondary border border-border-subtle rounded-xl text-xs font-mono focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                                                 required
                                             />
                                             <p className="text-[11px] text-foreground-muted">
-                                                شناسه یکتای نوین اصناف (۱۰ رقم مانند ۰۴۶۸۰۹۷۴۴۹) یا شماره پروانه اتحادیه را وارد فرمایید.
+                                                شناسه یکتای ۱۰ رقمی پروانه کسب در سامانه نوین اصناف را وارد نمایید (مورد نیاز استعلام آنلاین جیبیت).
+                                            </p>
+                                        </div>
+
+                                        <div className="space-y-1.5">
+                                            <div className="flex items-center justify-between">
+                                                <label className="text-xs font-bold text-foreground-secondary">نام دفتر املاک</label>
+                                                <span className="text-[11px] text-foreground-muted">اختیاری</span>
+                                            </div>
+                                            <input
+                                                type="text"
+                                                value={formData.agencyName}
+                                                onChange={(e) => setFormData({ ...formData, agencyName: e.target.value })}
+                                                placeholder="مثال: املاک هادیزاده (یا خالی بگذارید تا از پروانه خوانده شود)"
+                                                className="w-full p-3 bg-surface-secondary border border-border-subtle rounded-xl text-xs focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                                            />
+                                            <p className="text-[11px] text-foreground-muted">
+                                                در صورت خالی گذاشتن، نام ثبت‌شده در پروانه کسب (عنوان تابلو) به‌صورت خودکار درج خواهد شد.
                                             </p>
                                         </div>
 
@@ -800,14 +834,30 @@ export default function AgencyApplyPage() {
                                 </div>
 
                                 <div className="space-y-1.5 sm:col-span-2">
-                                    <label className="text-xs font-bold text-foreground-secondary">آدرس دقیق {agentType === "AGENCY" ? "دفتر املاک" : "محل استقرار"}</label>
+                                    <div className="flex items-center justify-between">
+                                        <label className="text-xs font-bold text-foreground-secondary">
+                                            آدرس دقیق {agentType === "AGENCY" ? "دفتر املاک" : "محل استقرار"}
+                                        </label>
+                                        {agentType === "AGENCY" && (
+                                            <span className="text-[11px] text-foreground-muted">اختیاری</span>
+                                        )}
+                                    </div>
                                     <input
                                         type="text"
                                         value={formData.address}
                                         onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                                        placeholder="استان، شهر، خیابان، پلاک، طبقه و واحد..."
+                                        placeholder={
+                                            agentType === "AGENCY"
+                                                ? "در صورت خالی بودن، نشانی رسمی از استعلام اصناف ثبت می‌شود..."
+                                                : "استان، شهر، خیابان، پلاک، طبقه و واحد..."
+                                        }
                                         className="w-full p-3 bg-surface-secondary border border-border-subtle rounded-xl text-xs focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                                     />
+                                    {agentType === "AGENCY" && (
+                                        <p className="text-[11px] text-foreground-muted">
+                                            نیازی به ورود دستی نیست؛ آدرس رسمی و کد پستی ثبت‌شده در سامانه اصناف به‌صورت خودکار در پرونده شما ذخیره می‌شود.
+                                        </p>
+                                    )}
                                 </div>
 
                                 <div className="space-y-1.5 sm:col-span-2">
