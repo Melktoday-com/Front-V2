@@ -34,26 +34,29 @@ export default function ExploreScene() {
       activeRole === RoleName.Agent ||
       activeRole === RoleName.Landlord);
 
-  // ── URL Query Parameters ──────────────────────────────────────────
-  const viewParam = searchParams.get("view");
-  const isFeedMode = viewParam === "feed";
-  const urlPostId = searchParams.get("post");
+  // ── URL & Local View State ────────────────────────────────────────
+  const initialViewParam = searchParams.get("view");
+  const initialPostParam = searchParams.get("post");
+
+  const [viewMode, setViewMode] = useState<"grid" | "feed">(
+    initialViewParam === "feed" ? "feed" : "grid"
+  );
+  const [activeFeedPostId, setActiveFeedPostId] = useState<string | null>(initialPostParam);
+  const [scrollDirection, setScrollDirection] = useState<"down" | "up" | "none">("none");
 
   const urlSearch = searchParams.get("search") || "";
   const [searchQuery, setSearchQuery] = useState(urlSearch);
   const [activeSearch, setActiveSearch] = useState(urlSearch);
 
-  // ── Feed Viewport, Scroll & Priority State ─────────────────────────
-  const [activeFeedPostId, setActiveFeedPostId] = useState<string | null>(urlPostId);
-  const [scrollDirection, setScrollDirection] = useState<"down" | "up" | "none">("none");
+  // ── Refs for Smoothness & Precision ───────────────────────────────
   const lastActiveIndexRef = useRef<number>(-1);
   const gridScrollYRef = useRef<number>(0);
   const isObserverLockedRef = useRef<boolean>(true);
   const replaceStateTimerRef = useRef<NodeJS.Timeout | null>(null);
   const observerTargetRef = useRef<HTMLDivElement | null>(null);
-  const hasPerformedInitialFocusRef = useRef<string | null>(null);
+  const hasPerformedInitialMountScrollRef = useRef<boolean>(false);
 
-  // Sync url search param if changed externally
+  // Sync external search param changes
   useEffect(() => {
     const s = searchParams.get("search") || "";
     if (s !== activeSearch) {
@@ -61,6 +64,40 @@ export default function ExploreScene() {
       setActiveSearch(s);
     }
   }, [searchParams, activeSearch]);
+
+  // Handle browser Back / Forward buttons (popstate)
+  useEffect(() => {
+    const onPopState = () => {
+      if (typeof window === "undefined") return;
+      const sp = new URLSearchParams(window.location.search);
+      const vm = sp.get("view") === "feed" ? "feed" : "grid";
+      const postId = sp.get("post");
+
+      setViewMode(vm);
+      setActiveFeedPostId(postId);
+
+      if (vm === "feed" && postId) {
+        isObserverLockedRef.current = true;
+        setTimeout(() => {
+          const el = document.getElementById(`explore-feed-post-${postId}`);
+          if (el) {
+            el.scrollIntoView({ behavior: "instant", block: "start" });
+          }
+          setTimeout(() => {
+            isObserverLockedRef.current = false;
+          }, 150);
+        }, 30);
+      } else if (vm === "grid") {
+        isObserverLockedRef.current = true;
+        setTimeout(() => {
+          window.scrollTo({ top: gridScrollYRef.current, behavior: "instant" });
+        }, 30);
+      }
+    };
+
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
 
   // Fetch explore posts with continuous infinite query
   const {
@@ -102,33 +139,30 @@ export default function ExploreScene() {
     return postsData?.pages.flatMap((page) => page.items) || [];
   }, [postsData]);
 
-  // ── Instant Jump to Target Post (Eliminates showing from beginning) ─
+  // ── Initial Direct URL Mount (e.g. Refresh or Direct Link) ─────────
   useEffect(() => {
-    if (!isFeedMode || !urlPostId || allLoadedPosts.length === 0) return;
-    if (hasPerformedInitialFocusRef.current === urlPostId) return;
+    if (viewMode !== "feed" || !activeFeedPostId || allLoadedPosts.length === 0) return;
+    if (hasPerformedInitialMountScrollRef.current) return;
 
-    const targetEl = document.getElementById(`explore-feed-post-${urlPostId}`);
+    const targetEl = document.getElementById(`explore-feed-post-${activeFeedPostId}`);
     if (targetEl) {
-      hasPerformedInitialFocusRef.current = urlPostId;
+      hasPerformedInitialMountScrollRef.current = true;
       isObserverLockedRef.current = true;
-      setActiveFeedPostId(urlPostId);
-      lastActiveIndexRef.current = allLoadedPosts.findIndex((p) => p.id === urlPostId);
+      lastActiveIndexRef.current = allLoadedPosts.findIndex((p) => p.id === activeFeedPostId);
 
-      // Instant jump directly to target post so post #1 is NEVER shown
+      // Instant jump on initial direct page load
       targetEl.scrollIntoView({ behavior: "instant", block: "start" });
 
-      // Unlock observer only after DOM scroll has settled
       const timer = setTimeout(() => {
         isObserverLockedRef.current = false;
       }, 150);
-
       return () => clearTimeout(timer);
     }
-  }, [isFeedMode, urlPostId, allLoadedPosts]);
+  }, [viewMode, activeFeedPostId, allLoadedPosts]);
 
-  // ── Throttled Intersection Observer for Feed Scroll ────────────────
+  // ── Feed Scroll Observer: Tracks active post & debounces URL ───────
   useEffect(() => {
-    if (!isFeedMode || typeof IntersectionObserver === "undefined") return;
+    if (viewMode !== "feed" || typeof IntersectionObserver === "undefined") return;
 
     const feedObserver = new IntersectionObserver(
       (entries) => {
@@ -151,23 +185,23 @@ export default function ExploreScene() {
           lastActiveIndexRef.current = newIndex;
           setActiveFeedPostId(postId);
 
-          // Throttled URL sync to prevent main thread blocking while scrolling
+          // Debounced URL sync: no navigation, 0 re-render overhead
           if (replaceStateTimerRef.current) {
             clearTimeout(replaceStateTimerRef.current);
           }
           replaceStateTimerRef.current = setTimeout(() => {
             if (typeof window !== "undefined") {
-              const params = new URLSearchParams(window.location.search);
-              params.set("view", "feed");
-              params.set("post", postId);
-              window.history.replaceState(null, "", `/explore?${params.toString()}`);
+              const sp = new URLSearchParams(window.location.search);
+              sp.set("view", "feed");
+              sp.set("post", postId);
+              window.history.replaceState(null, "", `/explore?${sp.toString()}`);
             }
-          }, 120);
+          }, 180);
         }
       },
       {
         rootMargin: "-25% 0px -25% 0px",
-        threshold: 0.4,
+        threshold: 0.5,
       }
     );
 
@@ -185,12 +219,12 @@ export default function ExploreScene() {
         clearTimeout(replaceStateTimerRef.current);
       }
     };
-  }, [isFeedMode, allLoadedPosts]);
+  }, [viewMode, allLoadedPosts]);
 
-  // ── High Performance Load Priority Calculation ─────────────────────
+  // ── Ultra-Smooth Load Priority Calculation ─────────────────────────
   const getCardLoadPriority = useCallback(
     (index: number): FeedCardLoadPriority => {
-      const activeId = activeFeedPostId || urlPostId;
+      const activeId = activeFeedPostId || initialPostParam;
       const targetIdx = activeId
         ? allLoadedPosts.findIndex((p) => p.id === activeId)
         : 0;
@@ -198,7 +232,7 @@ export default function ExploreScene() {
       const resolvedTarget = targetIdx !== -1 ? targetIdx : 0;
 
       if (index === resolvedTarget) {
-        return "active";
+        return "active"; // Active in-view post loads first
       }
 
       if (scrollDirection === "down") {
@@ -215,26 +249,32 @@ export default function ExploreScene() {
 
       return "idle";
     },
-    [activeFeedPostId, urlPostId, allLoadedPosts, scrollDirection]
+    [activeFeedPostId, initialPostParam, allLoadedPosts, scrollDirection]
   );
 
-  // ── Switch Handlers ────────────────────────────────────────────────
+  // ── Switch Handlers (Instant & Glitch-Free) ─────────────────────────
   const handleSelectPostFromGrid = (postId: string) => {
-    // Record current grid scroll position to restore smoothly when going back
+    // 1. Remember exact grid scroll position
     gridScrollYRef.current = typeof window !== "undefined" ? window.scrollY : 0;
+
+    // 2. Lock observer to prevent jumping or resetting to post #1
     isObserverLockedRef.current = true;
-    hasPerformedInitialFocusRef.current = postId;
-    setActiveFeedPostId(postId);
+    hasPerformedInitialMountScrollRef.current = true;
     lastActiveIndexRef.current = allLoadedPosts.findIndex((p) => p.id === postId);
+    setActiveFeedPostId(postId);
     setScrollDirection("none");
+    setViewMode("feed");
 
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("view", "feed");
-    params.set("post", postId);
-    router.push(`/explore?${params.toString()}`, { scroll: false });
+    // 3. Update URL synchronously with pushState (No Next.js router scroll reset)
+    if (typeof window !== "undefined") {
+      const sp = new URLSearchParams(window.location.search);
+      sp.set("view", "feed");
+      sp.set("post", postId);
+      window.history.pushState(null, "", `/explore?${sp.toString()}`);
+    }
 
-    // Instantly jump to target post in next microtask
-    setTimeout(() => {
+    // 4. Instant positioning right onto target post before frame paint
+    requestAnimationFrame(() => {
       const targetEl = document.getElementById(`explore-feed-post-${postId}`);
       if (targetEl) {
         targetEl.scrollIntoView({ behavior: "instant", block: "start" });
@@ -242,24 +282,28 @@ export default function ExploreScene() {
       setTimeout(() => {
         isObserverLockedRef.current = false;
       }, 150);
-    }, 10);
+    });
   };
 
   const handleSwitchToGrid = () => {
     isObserverLockedRef.current = true;
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete("view");
-    params.delete("post");
-    router.push(`/explore${params.toString() ? `?${params.toString()}` : ""}`, {
-      scroll: false,
-    });
+    setViewMode("grid");
 
-    // Restore exact grid scroll position
-    setTimeout(() => {
+    // Update URL synchronously
+    if (typeof window !== "undefined") {
+      const sp = new URLSearchParams(window.location.search);
+      sp.delete("view");
+      sp.delete("post");
+      const newQuery = sp.toString();
+      window.history.pushState(null, "", `/explore${newQuery ? `?${newQuery}` : ""}`);
+    }
+
+    // Instantly restore exact grid position
+    requestAnimationFrame(() => {
       if (typeof window !== "undefined") {
         window.scrollTo({ top: gridScrollYRef.current, behavior: "instant" });
       }
-    }, 10);
+    });
   };
 
   const handleSwitchToFeed = () => {
@@ -274,22 +318,22 @@ export default function ExploreScene() {
     const trimmed = searchQuery.trim();
     setActiveSearch(trimmed);
 
-    const params = new URLSearchParams(searchParams.toString());
+    const sp = new URLSearchParams(searchParams.toString());
     if (trimmed) {
-      params.set("search", trimmed);
+      sp.set("search", trimmed);
     } else {
-      params.delete("search");
+      sp.delete("search");
     }
-    router.replace(`/explore${params.toString() ? `?${params.toString()}` : ""}`);
+    router.replace(`/explore${sp.toString() ? `?${sp.toString()}` : ""}`);
   };
 
   const handleClearSearch = () => {
     setSearchQuery("");
     setActiveSearch("");
 
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete("search");
-    router.replace(`/explore${params.toString() ? `?${params.toString()}` : ""}`);
+    const sp = new URLSearchParams(searchParams.toString());
+    sp.delete("search");
+    router.replace(`/explore${sp.toString() ? `?${sp.toString()}` : ""}`);
   };
 
   const handleLike = (e: React.MouseEvent, postId: string) => {
@@ -303,11 +347,13 @@ export default function ExploreScene() {
     likeMutation.mutate(postId);
   };
 
+  const isFeed = viewMode === "feed";
+
   return (
     <div
       className={cn(
         "min-w-0 mx-auto px-3 sm:px-4 pt-4 sm:pt-6 pb-28 lg:pb-12 space-y-6 transition-all",
-        isFeedMode ? "max-w-2xl" : "max-w-6xl"
+        isFeed ? "max-w-2xl" : "max-w-6xl"
       )}
       dir="rtl"
     >
@@ -354,7 +400,7 @@ export default function ExploreScene() {
               onClick={handleSwitchToGrid}
               className={cn(
                 "flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer",
-                !isFeedMode
+                !isFeed
                   ? "bg-surface text-brand shadow-xs"
                   : "text-foreground-muted hover:text-foreground-secondary"
               )}
@@ -369,7 +415,7 @@ export default function ExploreScene() {
               onClick={handleSwitchToFeed}
               className={cn(
                 "flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer",
-                isFeedMode
+                isFeed
                   ? "bg-surface text-brand shadow-xs"
                   : "text-foreground-muted hover:text-foreground-secondary"
               )}
@@ -394,7 +440,7 @@ export default function ExploreScene() {
       </div>
 
       {/* ── FEED MODE BACK BUTTON BAR ─────────────────────────────────── */}
-      {isFeedMode && (
+      {isFeed && (
         <div className="flex items-center justify-between p-3 rounded-2xl bg-surface border border-border-subtle shadow-2xs">
           <button
             type="button"
@@ -414,7 +460,7 @@ export default function ExploreScene() {
 
       {/* ── CONTENT (Grid vs Feed) ────────────────────────────────────── */}
       {isLoading ? (
-        isFeedMode ? (
+        isFeed ? (
           <div className="space-y-6 pb-12">
             {Array.from({ length: 3 }).map((_, idx) => (
               <div
@@ -471,7 +517,7 @@ export default function ExploreScene() {
       ) : (
         <>
           {/* ── SINGLE-COLUMN FEED VIEW ───────────────────────────────── */}
-          <div className={cn("space-y-6 sm:space-y-8 pb-8", !isFeedMode && "hidden")}>
+          <div className={cn("space-y-6 sm:space-y-8 pb-8", !isFeed && "hidden")}>
             {allLoadedPosts.map((post, index) => (
               <ExploreFeedCard
                 key={post.id}
@@ -482,7 +528,7 @@ export default function ExploreScene() {
             ))}
 
             {/* Infinite scroll sentinel & loader for Feed */}
-            {hasNextPage && isFeedMode && (
+            {hasNextPage && isFeed && (
               <div
                 ref={observerTargetRef}
                 className="py-8 flex flex-col items-center justify-center gap-2"
@@ -498,7 +544,7 @@ export default function ExploreScene() {
               </div>
             )}
 
-            {!hasNextPage && allLoadedPosts.length > 6 && isFeedMode && (
+            {!hasNextPage && allLoadedPosts.length > 6 && isFeed && (
               <div className="py-8 text-center text-xs text-foreground-muted font-medium">
                 همه پست‌ها نمایش داده شدند
               </div>
@@ -509,7 +555,7 @@ export default function ExploreScene() {
           <div
             className={cn(
               "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 sm:gap-4 pb-8",
-              isFeedMode && "hidden"
+              isFeed && "hidden"
             )}
           >
             {allLoadedPosts.map((post) => (
@@ -522,7 +568,7 @@ export default function ExploreScene() {
             ))}
 
             {/* Infinite scroll sentinel & loader for Grid */}
-            {hasNextPage && !isFeedMode && (
+            {hasNextPage && !isFeed && (
               <div
                 ref={observerTargetRef}
                 className="col-span-full py-8 flex flex-col items-center justify-center gap-2"
@@ -538,7 +584,7 @@ export default function ExploreScene() {
               </div>
             )}
 
-            {!hasNextPage && allLoadedPosts.length > 12 && !isFeedMode && (
+            {!hasNextPage && allLoadedPosts.length > 12 && !isFeed && (
               <div className="col-span-full py-8 text-center text-xs text-foreground-muted font-medium">
                 همه پست‌ها نمایش داده شدند
               </div>
