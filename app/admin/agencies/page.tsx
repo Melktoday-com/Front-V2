@@ -24,11 +24,13 @@ import {
     Briefcase,
     Phone,
     MapPin,
+    User,
+    CheckCircle2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { AgentApplicationResponse, AgencyFull } from "@/types/api/agency.types";
 import { normalizeApiError } from "@/lib/api/error-handler";
-import { getMediaUrl } from "@/lib/utils";
+import { cn, getMediaUrl, toPersianDigits } from "@/lib/utils";
 import { JibitKycViewer } from "@/components/admin/JibitKycViewer";
 
 export default function AdminAgenciesPage() {
@@ -564,19 +566,43 @@ export default function AdminAgenciesPage() {
 
             {/* Application Detail & Review Modal */}
             {selectedApp && (
-                <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-                    <div className="bg-surface rounded-3xl max-w-2xl w-full p-6 space-y-6 shadow-2xl border border-border-subtle my-8">
-                        {/* Modal Header */}
-                        <div className="flex items-center justify-between border-b border-border-subtle pb-4">
+                <div
+                    className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 md:p-6 overflow-hidden"
+                    onClick={() => setSelectedApp(null)}
+                >
+                    <div
+                        className="bg-surface rounded-3xl max-w-4xl w-full flex flex-col max-h-[90vh] shadow-2xl border border-border-subtle overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {/* Modal Header (Pinned) */}
+                        <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-border-subtle shrink-0 bg-surface">
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-2xl bg-info-subtle text-info flex items-center justify-center font-bold">
+                                <div className="w-10 h-10 rounded-2xl bg-info-subtle text-info flex items-center justify-center font-bold shrink-0">
                                     <FileCheck2 className="w-5 h-5" />
                                 </div>
                                 <div>
-                                    <h3 className="text-base font-black text-foreground">
-                                        بررسی درخواست عضویت {selectedApp.agentType === "AGENCY" ? "دفتر املاک" : "مشاور املاک"}
-                                    </h3>
-                                    <p className="text-xs text-foreground-muted font-medium">
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                        <h3 className="text-sm sm:text-base font-black text-foreground">
+                                            بررسی درخواست {selectedApp.agentType === "AGENCY" ? "دفتر املاک" : "مشاور املاک"}
+                                        </h3>
+                                        <span
+                                            className={cn(
+                                                "px-2 py-0.5 rounded-md text-[10px] font-bold",
+                                                selectedApp.status === "APPROVED"
+                                                    ? "bg-success-subtle text-success"
+                                                    : selectedApp.status === "REJECTED"
+                                                    ? "bg-error-subtle text-error"
+                                                    : "bg-warning-subtle text-warning"
+                                            )}
+                                        >
+                                            {selectedApp.status === "APPROVED"
+                                                ? "تأیید شده"
+                                                : selectedApp.status === "REJECTED"
+                                                ? "رد شده"
+                                                : "در انتظار بررسی"}
+                                        </span>
+                                    </div>
+                                    <p className="text-[11px] text-foreground-muted font-medium mt-0.5">
                                         ثبت شده در {new Date(selectedApp.createdAt).toLocaleDateString("fa-IR")}
                                     </p>
                                 </div>
@@ -584,157 +610,184 @@ export default function AdminAgenciesPage() {
                             <button
                                 type="button"
                                 onClick={() => setSelectedApp(null)}
-                                className="w-8 h-8 rounded-full bg-surface-secondary text-foreground-muted hover:bg-slate-200 flex items-center justify-center font-bold"
+                                className="w-8 h-8 rounded-full bg-surface-secondary text-foreground-muted hover:bg-slate-200 hover:text-foreground flex items-center justify-center font-bold transition-colors"
+                                aria-label="بستن"
                             >
                                 ✕
                             </button>
                         </div>
 
-                        {/* Details Grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                            <div className="p-3 bg-surface-secondary rounded-xl space-y-1">
-                                <span className="text-foreground-muted font-bold block">نام متقاضی:</span>
-                                <span className="font-bold text-foreground text-sm">{selectedApp.fullName}</span>
-                            </div>
-
-                            <div className="p-3 bg-surface-secondary rounded-xl space-y-1">
-                                <span className="text-foreground-muted font-bold block">نام دفتر املاک:</span>
-                                <span className="font-bold text-foreground text-sm">{selectedApp.agencyName || "-"}</span>
-                            </div>
-
-                            <div className="p-3 bg-surface-secondary rounded-xl space-y-1">
-                                <span className="text-foreground-muted font-bold block">کد ملی:</span>
-                                <span className="font-mono font-bold text-foreground">{selectedApp.nationalCode}</span>
-                            </div>
-
-                            <div className="p-3 bg-surface-secondary rounded-xl space-y-1">
-                                <span className="text-foreground-muted font-bold block">شناسه صنفی اصناف:</span>
-                                <span className="font-mono font-bold text-foreground">{selectedApp.guildCode || "-"}</span>
-                            </div>
-
-                            <div className="p-3 bg-surface-secondary rounded-xl space-y-1">
-                                <span className="text-foreground-muted font-bold block">شماره پروانه کسب:</span>
-                                <span className="font-mono font-bold text-foreground">{selectedApp.licenseNumber || "-"}</span>
-                            </div>
-
-                            <div className="p-3 bg-surface-secondary rounded-xl space-y-1">
-                                <span className="text-foreground-muted font-bold block">شماره تماس:</span>
-                                <span className="font-mono font-bold text-foreground">{selectedApp.phone || "-"}</span>
-                            </div>
-
-                            <div className="p-3 bg-surface-secondary rounded-xl space-y-1 md:col-span-2">
-                                <span className="text-foreground-muted font-bold block">آدرس:</span>
-                                <span className="text-foreground">{selectedApp.address || "-"}</span>
-                            </div>
-
-                            {selectedApp.description && (
-                                <div className="p-3 bg-surface-secondary rounded-xl space-y-1 md:col-span-2">
-                                    <span className="text-foreground-muted font-bold block">توضیحات و بیوگرافی:</span>
-                                    <p className="text-foreground-secondary leading-relaxed">{selectedApp.description}</p>
+                        {/* Modal Body (Scrollable) */}
+                        <div className="p-5 sm:p-6 overflow-y-auto space-y-4 flex-1 min-h-0">
+                            {/* Applicant Submitted Data Section */}
+                            <div className="bg-surface-secondary/60 rounded-2xl p-3.5 border border-border-subtle/80 space-y-2.5">
+                                <div className="text-[11px] font-bold text-foreground-muted flex items-center gap-1.5">
+                                    <User className="w-3.5 h-3.5" />
+                                    <span>اطلاعات ثبت‌شده در فرم درخواست</span>
                                 </div>
-                            )}
+
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
+                                    <div className="p-2 rounded-xl bg-surface/90 border border-border-subtle/60 space-y-0.5">
+                                        <span className="text-[10px] text-foreground-muted block">نام متقاضی:</span>
+                                        <span className="font-bold text-foreground truncate block">{selectedApp.fullName}</span>
+                                    </div>
+
+                                    <div className="p-2 rounded-xl bg-surface/90 border border-border-subtle/60 space-y-0.5">
+                                        <span className="text-[10px] text-foreground-muted block">نام دفتر املاک:</span>
+                                        <span className="font-bold text-foreground truncate block">{selectedApp.agencyName || "-"}</span>
+                                    </div>
+
+                                    <div className="p-2 rounded-xl bg-surface/90 border border-border-subtle/60 space-y-0.5">
+                                        <span className="text-[10px] text-foreground-muted block">کد ملی:</span>
+                                        <span className="font-mono font-bold text-foreground block">{toPersianDigits(selectedApp.nationalCode)}</span>
+                                    </div>
+
+                                    <div className="p-2 rounded-xl bg-surface/90 border border-border-subtle/60 space-y-0.5">
+                                        <span className="text-[10px] text-foreground-muted block">شناسه صنفی اعلامی:</span>
+                                        <span className="font-mono font-bold text-foreground block">
+                                            {selectedApp.guildCode ? toPersianDigits(selectedApp.guildCode) : "-"}
+                                        </span>
+                                    </div>
+
+                                    <div className="p-2 rounded-xl bg-surface/90 border border-border-subtle/60 space-y-0.5">
+                                        <span className="text-[10px] text-foreground-muted block">شماره پروانه کسب:</span>
+                                        <span className="font-mono font-bold text-foreground block">
+                                            {selectedApp.licenseNumber ? toPersianDigits(selectedApp.licenseNumber) : "-"}
+                                        </span>
+                                    </div>
+
+                                    <div className="p-2 rounded-xl bg-surface/90 border border-border-subtle/60 space-y-0.5">
+                                        <span className="text-[10px] text-foreground-muted block">شماره تماس:</span>
+                                        <span className="font-mono font-bold text-foreground block">
+                                            {selectedApp.phone ? toPersianDigits(selectedApp.phone) : "-"}
+                                        </span>
+                                    </div>
+
+                                    <div className="p-2 rounded-xl bg-surface/90 border border-border-subtle/60 space-y-0.5 col-span-2">
+                                        <span className="text-[10px] text-foreground-muted block">آدرس اعلامی:</span>
+                                        <span className="text-foreground truncate block text-xs" title={selectedApp.address || ""}>
+                                            {selectedApp.address || "-"}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {selectedApp.description && (
+                                    <div className="p-2 rounded-xl bg-surface/90 border border-border-subtle/60 text-xs">
+                                        <span className="text-[10px] text-foreground-muted block mb-0.5">توضیحات و بیوگرافی:</span>
+                                        <p className="text-foreground-secondary text-[11px] leading-relaxed">{selectedApp.description}</p>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Jibit Verification Component */}
+                            <JibitKycViewer
+                                kycDetails={selectedApp.kycDetails || selectedApp.jibitVerificationData}
+                                applicantInfo={{
+                                    fullName: selectedApp.fullName,
+                                    nationalCode: selectedApp.nationalCode,
+                                    guildCode: selectedApp.guildCode,
+                                    phone: selectedApp.phone,
+                                    agentType: selectedApp.agentType,
+                                }}
+                                onReverify={() => reverifyMutation.mutate(selectedApp.id)}
+                                isReverifying={reverifyMutation.isPending}
+                            />
                         </div>
 
-                        {/* Jibit Verification Component */}
-                        <JibitKycViewer
-                            kycDetails={selectedApp.kycDetails || selectedApp.jibitVerificationData}
-                            applicantInfo={{
-                                fullName: selectedApp.fullName,
-                                nationalCode: selectedApp.nationalCode,
-                                guildCode: selectedApp.guildCode,
-                                phone: selectedApp.phone,
-                                agentType: selectedApp.agentType,
-                            }}
-                            onReverify={() => reverifyMutation.mutate(selectedApp.id)}
-                            isReverifying={reverifyMutation.isPending}
-                        />
+                        {/* Modal Footer (Pinned Review Actions) */}
+                        <div className="p-4 sm:px-6 border-t border-border-subtle bg-surface-secondary/40 shrink-0">
+                            {selectedApp.status === "PENDING" && (
+                                <div className="space-y-3">
+                                    <div>
+                                        <label className="text-[11px] font-bold text-foreground-secondary block mb-1">
+                                            یادداشت ادمین (در صورت رد شدن، برای متقاضی نمایش داده می‌شود):
+                                        </label>
+                                        <textarea
+                                            value={adminNote}
+                                            onChange={(e) => setAdminNote(e.target.value)}
+                                            rows={2}
+                                            placeholder="توضیحات تکمیلی یا علت رد درخواست..."
+                                            className="w-full p-2.5 bg-surface border border-border-subtle rounded-xl text-xs focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 resize-none"
+                                        />
+                                    </div>
 
-                        {/* Review Action Section */}
-                        {selectedApp.status === "PENDING" && (
-                            <div className="space-y-4 pt-2 border-t border-border-subtle">
-                                <div>
-                                    <label className="text-xs font-bold text-foreground-secondary block mb-1.5">
-                                        یادداشت ادمین (در صورت رد شدن، برای متقاضی نمایش داده می‌شود):
-                                    </label>
-                                    <textarea
+                                    <div className="flex items-center gap-3">
+                                        <button
+                                            type="button"
+                                            onClick={() => reviewMutation.mutate({ id: selectedApp.id, status: "APPROVED" })}
+                                            disabled={reviewMutation.isPending}
+                                            className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black transition-colors shadow-sm disabled:opacity-50 flex items-center justify-center gap-1.5"
+                                        >
+                                            <CheckCircle2 className="w-4 h-4" />
+                                            <span>تأیید درخواست و فعال‌سازی نقش Agent</span>
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            onClick={() => reviewMutation.mutate({ id: selectedApp.id, status: "REJECTED", adminNote })}
+                                            disabled={reviewMutation.isPending}
+                                            className="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-black transition-colors shadow-sm disabled:opacity-50 flex items-center justify-center gap-1.5"
+                                        >
+                                            <XCircle className="w-4 h-4" />
+                                            <span>رد درخواست متقاضی</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {selectedApp.status === "APPROVED" && (
+                                <div className="flex flex-col sm:flex-row items-center gap-3">
+                                    <input
+                                        type="text"
                                         value={adminNote}
                                         onChange={(e) => setAdminNote(e.target.value)}
-                                        rows={3}
-                                        placeholder="توضیحات تکمیلی یا علت رد درخواست..."
-                                        className="w-full p-3 bg-surface-secondary border border-border-subtle rounded-xl text-xs focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                                        placeholder="علت لغو صلاحیت یا تعلیق دفتر املاک / مشاور..."
+                                        className="w-full sm:flex-1 p-2.5 bg-surface border border-rose-200 rounded-xl text-xs focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500"
                                     />
-                                </div>
-
-                                <div className="flex items-center gap-3">
                                     <button
                                         type="button"
-                                        onClick={() => reviewMutation.mutate({ id: selectedApp.id, status: "APPROVED" })}
+                                        onClick={() => {
+                                            if (
+                                                confirm(
+                                                    `آیا از لغو صلاحیت و تعلیق «${
+                                                        selectedApp.agencyName || selectedApp.fullName
+                                                    }» اطمینان دارید؟`
+                                                )
+                                            ) {
+                                                reviewMutation.mutate({ id: selectedApp.id, status: "REJECTED", adminNote });
+                                            }
+                                        }}
                                         disabled={reviewMutation.isPending}
-                                        className="flex-1 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black transition-colors shadow-sm"
+                                        className="w-full sm:w-auto py-2.5 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-black transition-colors shadow-sm shrink-0 flex items-center justify-center gap-1.5"
                                     >
-                                        تأیید درخواست و فعال‌سازی نقش Agent
-                                    </button>
-
-                                    <button
-                                        type="button"
-                                        onClick={() => reviewMutation.mutate({ id: selectedApp.id, status: "REJECTED", adminNote })}
-                                        disabled={reviewMutation.isPending}
-                                        className="flex-1 py-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-black transition-colors shadow-sm"
-                                    >
-                                        رد درخواست متقاضی
+                                        <XCircle className="w-4 h-4" />
+                                        <span>لغو تأیید و تعلیق</span>
                                     </button>
                                 </div>
-                            </div>
-                        )}
+                            )}
 
-                        {selectedApp.status === "APPROVED" && (
-                            <div className="space-y-4 pt-2 border-t border-border-subtle">
-                                <div>
-                                    <label className="text-xs font-bold text-error block mb-1.5">
-                                        علت لغو صلاحیت یا تعلیق (برای کاربر ثبت و نمایش داده می‌شود):
-                                    </label>
-                                    <textarea
-                                        value={adminNote}
-                                        onChange={(e) => setAdminNote(e.target.value)}
-                                        rows={3}
-                                        placeholder="توضیحات و دلیل تعلیق دفتر املاک / مشاور..."
-                                        className="w-full p-3 bg-surface-secondary border border-rose-200 rounded-xl text-xs focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500"
-                                    />
-                                </div>
-
+                            {selectedApp.status === "REJECTED" && (
                                 <button
                                     type="button"
                                     onClick={() => {
-                                        if (confirm(`آیا از لغو صلاحیت و تعلیق «${selectedApp.agencyName || selectedApp.fullName}» اطمینان دارید؟`)) {
-                                            reviewMutation.mutate({ id: selectedApp.id, status: "REJECTED", adminNote });
-                                        }
-                                    }}
-                                    disabled={reviewMutation.isPending}
-                                    className="w-full py-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-black transition-colors shadow-sm flex items-center justify-center gap-2"
-                                >
-                                    <XCircle className="w-4 h-4" />
-                                    <span>لغو تأیید، تعلیق املاک و عزل نقش مشاور</span>
-                                </button>
-                            </div>
-                        )}
-
-                        {selectedApp.status === "REJECTED" && (
-                            <div className="space-y-4 pt-2 border-t border-border-subtle">
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        if (confirm(`آیا از تأیید مجدد صلاحیت «${selectedApp.agencyName || selectedApp.fullName}» اطمینان دارید؟`)) {
+                                        if (
+                                            confirm(
+                                                `آیا از تأیید مجدد صلاحیت «${
+                                                    selectedApp.agencyName || selectedApp.fullName
+                                                }» اطمینان دارید؟`
+                                            )
+                                        ) {
                                             reviewMutation.mutate({ id: selectedApp.id, status: "APPROVED" });
                                         }
                                     }}
                                     disabled={reviewMutation.isPending}
-                                    className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black transition-colors shadow-sm flex items-center justify-center gap-2"
+                                    className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black transition-colors shadow-sm flex items-center justify-center gap-2"
                                 >
                                     <CheckCircle className="w-4 h-4" />
                                     <span>تأیید مجدد صلاحیت و فعال‌سازی نقش Agent</span>
                                 </button>
-                            </div>
-                        )}
+                            )}
+                        </div>
                     </div>
                 </div>
             )}

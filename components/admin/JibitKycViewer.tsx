@@ -276,7 +276,7 @@ export function JibitKycViewer({
     return (
         <div
             className={cn(
-                "p-4 rounded-2xl border space-y-4 bg-surface",
+                "p-3.5 sm:p-4 rounded-2xl border space-y-3 bg-surface",
                 className,
                 hasError
                     ? "border-rose-500/30 bg-rose-500/5"
@@ -286,19 +286,19 @@ export function JibitKycViewer({
             )}
         >
             {/* Header / Status Banner */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 border-b border-border-subtle/80">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 pb-2.5 border-b border-border-subtle/80">
                 <div className="flex items-center gap-2.5">
                     {hasError ? (
-                        <div className="w-9 h-9 rounded-xl bg-rose-500/10 text-rose-600 flex items-center justify-center shrink-0">
-                            <ShieldX className="w-5 h-5" />
+                        <div className="w-8 h-8 rounded-xl bg-rose-500/10 text-rose-600 flex items-center justify-center shrink-0">
+                            <ShieldX className="w-4 h-4" />
                         </div>
                     ) : nationalCodeMatched === false ? (
-                        <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
-                            <ShieldAlert className="w-5 h-5" />
+                        <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
+                            <ShieldAlert className="w-4 h-4" />
                         </div>
                     ) : (
-                        <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
-                            <ShieldCheck className="w-5 h-5" />
+                        <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
+                            <ShieldCheck className="w-4 h-4" />
                         </div>
                     )}
 
@@ -339,9 +339,9 @@ export function JibitKycViewer({
                             type="button"
                             onClick={onReverify}
                             disabled={isReverifying}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white transition-colors shadow-xs disabled:opacity-50"
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-blue-600 hover:bg-blue-700 text-white transition-colors shadow-xs disabled:opacity-50"
                         >
-                            <RefreshCw className={cn("w-3.5 h-3.5", isReverifying && "animate-spin")} />
+                            <RefreshCw className={cn("w-3 h-3", isReverifying && "animate-spin")} />
                             <span>{isReverifying ? "در حال استعلام..." : "استعلام مجدد از جیبیت"}</span>
                         </button>
                     )}
@@ -349,7 +349,7 @@ export function JibitKycViewer({
                     {licState !== "-" && (
                         <span
                             className={cn(
-                                "px-2.5 py-1 rounded-lg text-[10px] font-black border",
+                                "px-2 py-0.5 rounded-md text-[10px] font-black border",
                                 licState.includes("معتبر") || licState.includes("فعال") || licState === "ACTIVE"
                                     ? "bg-emerald-500/10 text-emerald-700 border-emerald-500/30"
                                     : "bg-rose-500/10 text-rose-700 border-rose-500/30"
@@ -362,7 +362,7 @@ export function JibitKycViewer({
                     {nationalCodeMatched !== null && (
                         <span
                             className={cn(
-                                "px-2.5 py-1 rounded-lg text-[10px] font-black border flex items-center gap-1",
+                                "px-2 py-0.5 rounded-md text-[10px] font-black border flex items-center gap-1",
                                 nationalCodeMatched
                                     ? "bg-emerald-500/10 text-emerald-700 border-emerald-500/30"
                                     : "bg-rose-500/10 text-rose-700 border-rose-500/30"
@@ -385,11 +385,11 @@ export function JibitKycViewer({
             </div>
 
             {/* Cross-Check Comparison Box */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 p-3 rounded-xl bg-surface-secondary/70 border border-border-subtle text-xs">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 p-2.5 rounded-xl bg-surface-secondary/70 border border-border-subtle text-xs">
                 {/* 1. National Code Match */}
-                <div className="space-y-1">
+                <div className="space-y-0.5">
                     <div className="text-[11px] text-foreground-muted flex items-center gap-1">
-                        <User className="w-3.5 h-3.5" />
+                        <User className="w-3 h-3" />
                         <span>تطابق کد ملی دارنده:</span>
                     </div>
                     <div className="flex items-center gap-1.5 font-mono">
@@ -397,12 +397,12 @@ export function JibitKycViewer({
                             {ownerNationalCode !== "-" ? toPersianDigits(ownerNationalCode) : "-"}
                         </span>
                         {nationalCodeMatched === true && (
-                            <span className="text-[10px] text-emerald-600 bg-emerald-500/10 px-1.5 py-0.5 rounded font-bold">
+                            <span className="text-[10px] text-emerald-600 bg-emerald-500/10 px-1 py-0.2 rounded font-bold">
                                 منطبق ✓
                             </span>
                         )}
                         {nationalCodeMatched === false && (
-                            <span className="text-[10px] text-rose-600 bg-rose-500/10 px-1.5 py-0.5 rounded font-bold">
+                            <span className="text-[10px] text-rose-600 bg-rose-500/10 px-1 py-0.2 rounded font-bold">
                                 مغایر ✕
                             </span>
                         )}
@@ -415,9 +415,9 @@ export function JibitKycViewer({
                 </div>
 
                 {/* 2. Guild Code Match */}
-                <div className="space-y-1">
+                <div className="space-y-0.5">
                     <div className="text-[11px] text-foreground-muted flex items-center gap-1">
-                        <Hash className="w-3.5 h-3.5" />
+                        <Hash className="w-3 h-3" />
                         <span>شناسه صنفی (۱۰ رقمی):</span>
                     </div>
                     <div className="font-mono font-bold text-foreground">
@@ -430,9 +430,9 @@ export function JibitKycViewer({
                 </div>
 
                 {/* 3. Owner & Board Name */}
-                <div className="space-y-1">
+                <div className="space-y-0.5">
                     <div className="text-[11px] text-foreground-muted flex items-center gap-1">
-                        <Building2 className="w-3.5 h-3.5" />
+                        <Building2 className="w-3 h-3" />
                         <span>نام صاحب پروانه:</span>
                     </div>
                     <div className="font-bold text-foreground truncate" title={ownerName}>
@@ -447,65 +447,65 @@ export function JibitKycViewer({
             </div>
 
             {/* Detailed License Information Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 text-xs">
-                <div className="p-2.5 rounded-xl bg-surface border border-border-subtle/80 space-y-0.5">
-                    <span className="text-[11px] text-foreground-muted block">عنوان تابلو / واحد:</span>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 text-xs">
+                <div className="p-2 rounded-xl bg-surface border border-border-subtle/80 space-y-0.5">
+                    <span className="text-[10px] text-foreground-muted block">عنوان تابلو / واحد:</span>
                     <span className="font-bold text-foreground text-xs block truncate" title={boardTitle}>
                         {boardTitle}
                     </span>
                 </div>
 
-                <div className="p-2.5 rounded-xl bg-surface border border-border-subtle/80 space-y-0.5">
-                    <span className="text-[11px] text-foreground-muted block">شماره شناسنامه:</span>
+                <div className="p-2 rounded-xl bg-surface border border-border-subtle/80 space-y-0.5">
+                    <span className="text-[10px] text-foreground-muted block">شماره شناسنامه:</span>
                     <span className="font-mono font-bold text-foreground text-xs block">
                         {identityNo !== "-" ? toPersianDigits(identityNo) : "-"}
                     </span>
                 </div>
 
-                <div className="p-2.5 rounded-xl bg-surface border border-border-subtle/80 space-y-0.5">
-                    <span className="text-[11px] text-foreground-muted block">اتحادیه صنف:</span>
+                <div className="p-2 rounded-xl bg-surface border border-border-subtle/80 space-y-0.5">
+                    <span className="text-[10px] text-foreground-muted block">اتحادیه صنف:</span>
                     <span className="font-bold text-foreground text-xs block truncate" title={unionName}>
                         {unionName}
                     </span>
                 </div>
 
-                <div className="p-2.5 rounded-xl bg-surface border border-border-subtle/80 space-y-0.5">
-                    <span className="text-[11px] text-foreground-muted block">رسته صنفی (ISIC):</span>
+                <div className="p-2 rounded-xl bg-surface border border-border-subtle/80 space-y-0.5">
+                    <span className="text-[10px] text-foreground-muted block">رسته صنفی (ISIC):</span>
                     <span className="font-bold text-foreground text-xs block truncate" title={conventName}>
                         {conventName}
                     </span>
                 </div>
 
-                <div className="p-2.5 rounded-xl bg-surface border border-border-subtle/80 space-y-0.5">
-                    <span className="text-[11px] text-foreground-muted block">نوع پروانه:</span>
+                <div className="p-2 rounded-xl bg-surface border border-border-subtle/80 space-y-0.5">
+                    <span className="text-[10px] text-foreground-muted block">نوع پروانه:</span>
                     <span className="font-bold text-foreground text-xs block">
                         {licType}
                     </span>
                 </div>
 
-                <div className="p-2.5 rounded-xl bg-surface border border-border-subtle/80 space-y-0.5">
-                    <span className="text-[11px] text-foreground-muted block">تاریخ صدور:</span>
+                <div className="p-2 rounded-xl bg-surface border border-border-subtle/80 space-y-0.5">
+                    <span className="text-[10px] text-foreground-muted block">تاریخ صدور:</span>
                     <span className="font-mono text-foreground text-xs block">
                         {licIssueDate !== "-" ? toPersianDigits(licIssueDate) : "-"}
                     </span>
                 </div>
 
-                <div className="p-2.5 rounded-xl bg-surface border border-border-subtle/80 space-y-0.5">
-                    <span className="text-[11px] text-foreground-muted block">تاریخ اعتبار / انقضا:</span>
+                <div className="p-2 rounded-xl bg-surface border border-border-subtle/80 space-y-0.5">
+                    <span className="text-[10px] text-foreground-muted block">تاریخ اعتبار / انقضا:</span>
                     <span className="font-mono text-foreground text-xs block">
                         {licExpireDate !== "-" ? toPersianDigits(licExpireDate) : "-"}
                     </span>
                 </div>
 
-                <div className="p-2.5 rounded-xl bg-surface border border-border-subtle/80 space-y-0.5">
-                    <span className="text-[11px] text-foreground-muted block">شماره تماس واحد:</span>
+                <div className="p-2 rounded-xl bg-surface border border-border-subtle/80 space-y-0.5">
+                    <span className="text-[10px] text-foreground-muted block">شماره تماس واحد:</span>
                     <span className="font-mono text-foreground text-xs block">
                         {phone !== "-" ? toPersianDigits(phone) : "-"}
                     </span>
                 </div>
 
-                <div className="p-2.5 rounded-xl bg-surface border border-border-subtle/80 space-y-0.5 col-span-2 sm:col-span-3 lg:col-span-4">
-                    <span className="text-[11px] text-foreground-muted block">نشانی و کد پستی واحد صنفی:</span>
+                <div className="p-2 rounded-xl bg-surface border border-border-subtle/80 space-y-0.5 col-span-2 sm:col-span-3 lg:col-span-4">
+                    <span className="text-[10px] text-foreground-muted block">نشانی و کد پستی واحد صنفی:</span>
                     <div className="text-foreground text-xs leading-relaxed">
                         <span>{address}</span>
                         {postalCode !== "-" && (
