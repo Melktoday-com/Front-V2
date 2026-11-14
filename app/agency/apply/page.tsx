@@ -8,7 +8,7 @@ import { normalizeApiError } from "@/lib/api/error-handler";
 import { cn, toEnglishDigits, toOnlyDigits, toPersianDigits } from "@/lib/utils";
 import { agencyService } from "@/services/agency.service";
 import { userService } from "@/services/user.service";
-import { AgentApplicationType, ApplyAgentRequest } from "@/types/api/agency.types";
+import { AgentApplicationType, ApplyAgentRequest, AgentGuildKycDetails } from "@/types/api/agency.types";
 import { KYCStatus } from "@/types/api/enums";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -485,35 +485,54 @@ export default function AgencyApplyPage() {
                                 )}
                             </div>
 
-                            {/* Verified Guild License Details from Jibit */}
+                            {/* Guild License KYC Status from Jibit */}
                             {(() => {
-                                const kyc = (myApp.kycDetails || myApp.jibitVerificationData) as Record<string, any> | undefined;
-                                if (!kyc || (!kyc.unionName && !kyc.address && !kyc.boardTitle)) return null;
-                                return (
-                                    <div className="p-3.5 bg-blue-50/60 dark:bg-blue-950/20 border border-blue-200/60 dark:border-blue-900/40 rounded-2xl space-y-2 text-xs">
-                                        <div className="flex items-center gap-2 font-black text-blue-900 dark:text-blue-300">
-                                            <Building2 className="w-4 h-4 text-blue-600" />
-                                            <span>اطلاعات رسمی استعلام‌شده از اتاق اصناف:</span>
+                                const kyc = (myApp.kycDetails || myApp.jibitVerificationData) as AgentGuildKycDetails | undefined;
+                                if (!kyc) return null;
+
+                                if (kyc.provider === "JIBIT_GUILD" && kyc.nationalCodeMatched === false) {
+                                    return (
+                                        <div className="p-4 bg-rose-50/70 dark:bg-rose-950/30 border border-rose-200/70 dark:border-rose-900/40 rounded-2xl space-y-1.5 text-xs text-rose-900 dark:text-rose-300">
+                                            <div className="flex items-center gap-2 font-black">
+                                                <ShieldAlert className="w-4 h-4 text-rose-600 shrink-0" />
+                                                <span>عدم تطابق پروانه کسب با کد ملی:</span>
+                                            </div>
+                                            <p className="text-[11px] leading-relaxed text-rose-800 dark:text-rose-400">
+                                                شناسه صنفی وارد شده با مشخصات هویتی کد ملی متقاضی ({toPersianDigits(myApp.nationalCode)}) همخوانی ندارد. لطفاً در صورت نیاز، شناسه صنفی ۱۰ رقمی متعلق به پروانه کسب خود را بررسی و اصلاح فرمایید.
+                                            </p>
                                         </div>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-foreground-secondary text-[11px]">
-                                            {kyc.boardTitle && (
-                                                <div><span className="font-bold text-foreground">عنوان تابلو:</span> {kyc.boardTitle}</div>
-                                            )}
-                                            {kyc.unionName && (
-                                                <div><span className="font-bold text-foreground">اتحادیه:</span> {kyc.unionName}</div>
-                                            )}
-                                            {kyc.isicName && (
-                                                <div><span className="font-bold text-foreground">رسته:</span> {kyc.isicName}</div>
-                                            )}
-                                            {kyc.postalCode && (
-                                                <div><span className="font-bold text-foreground">کد پستی:</span> <span className="font-mono">{toPersianDigits(kyc.postalCode)}</span></div>
-                                            )}
-                                            {kyc.address && (
-                                                <div className="sm:col-span-2"><span className="font-bold text-foreground">نشانی ثبتی:</span> {kyc.address}</div>
-                                            )}
+                                    );
+                                }
+
+                                if (kyc.nationalCodeMatched === true && (kyc.unionName || kyc.address || kyc.boardTitle)) {
+                                    return (
+                                        <div className="p-3.5 bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200/60 dark:border-emerald-900/40 rounded-2xl space-y-2 text-xs">
+                                            <div className="flex items-center gap-2 font-black text-emerald-900 dark:text-emerald-300">
+                                                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                                                <span>اطلاعات تأییدشده پروانه کسب از اتاق اصناف:</span>
+                                            </div>
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-foreground-secondary text-[11px]">
+                                                {kyc.boardTitle && (
+                                                    <div><span className="font-bold text-foreground">عنوان تابلو:</span> {kyc.boardTitle}</div>
+                                                )}
+                                                {kyc.unionName && (
+                                                    <div><span className="font-bold text-foreground">اتحادیه:</span> {kyc.unionName}</div>
+                                                )}
+                                                {kyc.isicName && (
+                                                    <div><span className="font-bold text-foreground">رسته:</span> {kyc.isicName}</div>
+                                                )}
+                                                {kyc.postalCode && (
+                                                    <div><span className="font-bold text-foreground">کد پستی:</span> <span className="font-mono">{toPersianDigits(kyc.postalCode)}</span></div>
+                                                )}
+                                                {kyc.address && (
+                                                    <div className="sm:col-span-2"><span className="font-bold text-foreground">نشانی ثبتی:</span> {kyc.address}</div>
+                                                )}
+                                            </div>
                                         </div>
-                                    </div>
-                                );
+                                    );
+                                }
+
+                                return null;
                             })()}
 
                             {/* Admin note if rejected */}
