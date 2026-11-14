@@ -353,8 +353,12 @@ export function ExploreFeedCard({
                 ref={carouselContainerRef}
                 dir="ltr"
                 onScroll={handleCarouselScroll}
-                className="w-full h-full flex overflow-x-auto snap-x snap-mandatory scrollbar-none select-none touch-pan-x"
-                style={{ scrollBehavior: "smooth" }}
+                className="w-full h-full flex overflow-x-auto snap-x snap-mandatory no-scrollbar [&::-webkit-scrollbar]:hidden select-none touch-pan-x"
+                style={{
+                  scrollBehavior: "smooth",
+                  scrollbarWidth: "none",
+                  msOverflowStyle: "none",
+                }}
               >
                 {mediaList.map((media, idx) => {
                   const isCurrent = idx === activeSlide;

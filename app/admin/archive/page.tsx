@@ -194,7 +194,7 @@ export default function AdminArchivePage() {
             <div className="bg-surface p-4 rounded-3xl border border-border-subtle/80 shadow-xs space-y-4">
                 <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
                     {/* Category tabs */}
-                    <div className="flex items-center gap-1.5 overflow-x-auto pb-2 md:pb-0 scrollbar-none text-xs font-bold">
+                    <div className="flex items-center gap-1.5 overflow-x-auto pb-2 md:pb-0 no-scrollbar [&::-webkit-scrollbar]:hidden text-xs font-bold">
                         <button
                             type="button"
                             onClick={() => {
