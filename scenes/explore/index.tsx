@@ -65,6 +65,26 @@ export default function ExploreScene() {
     }
   }, [searchParams, activeSearch]);
 
+  // Precise scroll calculation with optimal top breathing room for mobile and desktop
+  const scrollToPost = useCallback((postId: string): boolean => {
+    const el = document.getElementById(`explore-feed-post-${postId}`);
+    if (!el) return false;
+
+    // Mobile: 24px clean top breathing room (not stuck to screen top)
+    // Desktop: 76px offset (comfortably under the sticky back bar, fully visible card header)
+    const isMobile = typeof window !== "undefined" && window.innerWidth < 640;
+    const topOffset = isMobile ? 24 : 76;
+
+    const elTop = el.getBoundingClientRect().top + window.scrollY;
+    const targetY = Math.max(0, elTop - topOffset);
+
+    window.scrollTo({
+      top: targetY,
+      behavior: "instant",
+    });
+    return true;
+  }, []);
+
   // Handle browser Back / Forward buttons (popstate)
   useEffect(() => {
     const onPopState = () => {
@@ -79,25 +99,22 @@ export default function ExploreScene() {
       if (vm === "feed" && postId) {
         isObserverLockedRef.current = true;
         setTimeout(() => {
-          const el = document.getElementById(`explore-feed-post-${postId}`);
-          if (el) {
-            el.scrollIntoView({ behavior: "instant", block: "start" });
-          }
+          scrollToPost(postId);
           setTimeout(() => {
             isObserverLockedRef.current = false;
           }, 150);
-        }, 30);
+        }, 20);
       } else if (vm === "grid") {
         isObserverLockedRef.current = true;
         setTimeout(() => {
           window.scrollTo({ top: gridScrollYRef.current, behavior: "instant" });
-        }, 30);
+        }, 20);
       }
     };
 
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
-  }, []);
+  }, [scrollToPost]);
 
   // Fetch explore posts with continuous infinite query
   const {
@@ -144,21 +161,19 @@ export default function ExploreScene() {
     if (viewMode !== "feed" || !activeFeedPostId || allLoadedPosts.length === 0) return;
     if (hasPerformedInitialMountScrollRef.current) return;
 
-    const targetEl = document.getElementById(`explore-feed-post-${activeFeedPostId}`);
-    if (targetEl) {
-      hasPerformedInitialMountScrollRef.current = true;
-      isObserverLockedRef.current = true;
-      lastActiveIndexRef.current = allLoadedPosts.findIndex((p) => p.id === activeFeedPostId);
+    const timer = setTimeout(() => {
+      const success = scrollToPost(activeFeedPostId);
+      if (success) {
+        hasPerformedInitialMountScrollRef.current = true;
+        lastActiveIndexRef.current = allLoadedPosts.findIndex((p) => p.id === activeFeedPostId);
+        setTimeout(() => {
+          isObserverLockedRef.current = false;
+        }, 150);
+      }
+    }, 30);
 
-      // Instant jump on initial direct page load
-      targetEl.scrollIntoView({ behavior: "instant", block: "start" });
-
-      const timer = setTimeout(() => {
-        isObserverLockedRef.current = false;
-      }, 150);
-      return () => clearTimeout(timer);
-    }
-  }, [viewMode, activeFeedPostId, allLoadedPosts]);
+    return () => clearTimeout(timer);
+  }, [viewMode, activeFeedPostId, allLoadedPosts, scrollToPost]);
 
   // ── Feed Scroll Observer: Tracks active post & debounces URL ───────
   useEffect(() => {
@@ -273,15 +288,17 @@ export default function ExploreScene() {
       window.history.pushState(null, "", `/explore?${sp.toString()}`);
     }
 
-    // 4. Instant positioning right onto target post before frame paint
+    // 4. Instant precise positioning to target post with exact top breathing room
     requestAnimationFrame(() => {
-      const targetEl = document.getElementById(`explore-feed-post-${postId}`);
-      if (targetEl) {
-        targetEl.scrollIntoView({ behavior: "instant", block: "start" });
-      }
-      setTimeout(() => {
-        isObserverLockedRef.current = false;
-      }, 150);
+      scrollToPost(postId);
+
+      // Verify again on next frame in case layout paint shifted
+      requestAnimationFrame(() => {
+        scrollToPost(postId);
+        setTimeout(() => {
+          isObserverLockedRef.current = false;
+        }, 150);
+      });
     });
   };
 
@@ -439,9 +456,9 @@ export default function ExploreScene() {
         </div>
       </div>
 
-      {/* ── FEED MODE BACK BUTTON BAR ─────────────────────────────────── */}
+      {/* ── FEED MODE BACK BUTTON BAR (STICKY WITH BACKDROP BLUR) ───── */}
       {isFeed && (
-        <div className="flex items-center justify-between p-3 rounded-2xl bg-surface border border-border-subtle shadow-2xs">
+        <div className="sticky top-2 sm:top-4 z-30 flex items-center justify-between p-2.5 sm:p-3 rounded-2xl bg-surface/90 backdrop-blur-md border border-border-subtle shadow-xs">
           <button
             type="button"
             onClick={handleSwitchToGrid}

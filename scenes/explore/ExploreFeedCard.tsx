@@ -308,7 +308,7 @@ export function ExploreFeedCard({
       </div>
 
       {/* ── 2. ULTRA-PERFORMANT NATIVE MEDIA CAROUSEL (CSS Snap) ──────── */}
-      <div className="relative aspect-square sm:aspect-4/5 w-full bg-slate-950 overflow-hidden group">
+      <div className="relative aspect-square sm:aspect-4/5 sm:max-h-[520px] w-full bg-slate-950 overflow-hidden group">
         {mediaList.length > 0 ? (
           <div className="absolute inset-0">
             {/* If card is idle, only render lightweight placeholder / poster */}
