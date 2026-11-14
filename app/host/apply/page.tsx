@@ -152,7 +152,7 @@ export default function HostApplyPage() {
   }, [formData.cityId, selectedCityName, getCityName]);
 
   useEffect(() => {
-    if (searchParams.get("edit") === "true" && myApp && myApp.status === "PENDING") {
+    if ((searchParams.get("edit") === "true" || searchParams.get("reapply") === "true") && myApp) {
       startEditing();
     }
   }, [searchParams, myApp]);
@@ -421,7 +421,7 @@ export default function HostApplyPage() {
               {myApp.status === "REJECTED" && (
                 <button
                   type="button"
-                  onClick={() => setIsReapplying(true)}
+                  onClick={startEditing}
                   className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold transition-colors shadow-sm cursor-pointer"
                 >
                   ارسال مجدد درخواست با اطلاعات اصلاح‌شده

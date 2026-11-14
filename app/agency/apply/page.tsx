@@ -507,7 +507,7 @@ export default function AgencyApplyPage() {
                                 ) : myApp.status === "REJECTED" ? (
                                     <button
                                         type="button"
-                                        onClick={() => setIsReapplying(true)}
+                                        onClick={startEditing}
                                         className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-black transition-colors shadow-sm flex items-center gap-2 cursor-pointer"
                                     >
                                         <RotateCcw className="w-4 h-4" />

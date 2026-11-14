@@ -207,11 +207,11 @@ export function ExploreFeedCard({
     }
   };
 
-  // High performance slide scroll handler (LTR container for bulletproof cross-browser scrollLeft)
+  // High performance slide scroll handler (natural RTL container)
   const handleCarouselScroll = useCallback(() => {
     const el = carouselContainerRef.current;
     if (!el) return;
-    const scrollLeft = el.scrollLeft;
+    const scrollLeft = Math.abs(el.scrollLeft);
     const width = el.clientWidth || 1;
     const index = Math.round(scrollLeft / width);
     setActiveSlide(Math.max(0, Math.min(index, mediaList.length - 1)));
@@ -220,8 +220,17 @@ export function ExploreFeedCard({
   const scrollToSlide = (index: number) => {
     const el = carouselContainerRef.current;
     if (!el) return;
-    const width = el.clientWidth;
-    el.scrollTo({ left: index * width, behavior: "smooth" });
+    const targetChild = el.children[index] as HTMLElement | undefined;
+    if (targetChild && typeof targetChild.scrollIntoView === "function") {
+      targetChild.scrollIntoView({
+        behavior: "smooth",
+        inline: "start",
+        block: "nearest",
+      });
+    } else {
+      const width = el.clientWidth || 1;
+      el.scrollTo({ left: -index * width, behavior: "smooth" });
+    }
     setActiveSlide(index);
   };
 
