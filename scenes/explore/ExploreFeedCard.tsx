@@ -5,13 +5,11 @@ import { cn, getMediaPosterUrl, getMediaUrl, toPersianDigits } from "@/lib/utils
 import { POST_TYPES, PostType, PUBLISHER_TYPES, UnifiedPost } from "@/types/api/post.types";
 import {
   Building2,
-  Calendar,
   ChevronLeft,
   ChevronRight,
   Eye,
   Heart,
   Hotel,
-  Layers,
   Play,
   Share2,
   ShieldCheck,
@@ -20,12 +18,8 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import type { Swiper as SwiperType } from "swiper";
-import { Swiper, SwiperSlide } from "swiper/react";
-
-import "swiper/css";
 
 interface NormalizedMediaItem {
   id: string;
@@ -35,7 +29,7 @@ interface NormalizedMediaItem {
 }
 
 /**
- * Checks if a post is an article type (either explicitly from backend or based on content length/summary)
+ * Checks if a post is an article type (explicitly from backend or based on length/summary)
  */
 export function isArticlePost(post: UnifiedPost): boolean {
   if (post.postType === PostType.ARTICLE) return true;
@@ -60,17 +54,14 @@ export function ExploreFeedCard({
   onLike,
   loadPriority = "active",
 }: ExploreFeedCardProps) {
-  // Post view observer to count views when visible
   const viewObserverRef = usePostViewObserver(post.id);
-
-  // Observer for in-view media loading to eliminate scrolling lag
   const cardContainerRef = useRef<HTMLDivElement | null>(null);
-  const videoRefs = useRef<Record<string, HTMLVideoElement | null>>({});
-  const swiperRef = useRef<SwiperType | null>(null);
+  const carouselContainerRef = useRef<HTMLDivElement | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
 
   const [isInView, setIsInView] = useState(loadPriority === "active");
   const [activeSlide, setActiveSlide] = useState(0);
-  const [videoErrorMap, setVideoErrorMap] = useState<Record<string, boolean>>({});
+  const [videoError, setVideoError] = useState(false);
   const [showHeartBurst, setShowHeartBurst] = useState(false);
   const [isCaptionExpanded, setIsCaptionExpanded] = useState(false);
 
@@ -83,7 +74,7 @@ export function ExploreFeedCard({
     setLocalLikeCount(post.likeCount || 0);
   }, [post.hasLiked, post.likeCount]);
 
-  // Viewport IntersectionObserver: track in-view visibility
+  // Viewport IntersectionObserver: auto-pause video when scrolling out
   useEffect(() => {
     const el = cardContainerRef.current;
     if (!el || typeof IntersectionObserver === "undefined") {
@@ -97,17 +88,12 @@ export function ExploreFeedCard({
         const visible = Boolean(entry && entry.isIntersecting);
         setIsInView(visible);
 
-        // Auto pause any playing video when scrolling out of view
-        if (!visible) {
-          Object.values(videoRefs.current).forEach((v) => {
-            if (v && !v.paused) {
-              v.pause();
-            }
-          });
+        if (!visible && videoRef.current && !videoRef.current.paused) {
+          videoRef.current.pause();
         }
       },
       {
-        rootMargin: "300px 0px",
+        rootMargin: "200px 0px",
         threshold: 0.1,
       }
     );
@@ -221,6 +207,24 @@ export function ExploreFeedCard({
     }
   };
 
+  // High performance slide scroll handler (LTR container for bulletproof cross-browser scrollLeft)
+  const handleCarouselScroll = useCallback(() => {
+    const el = carouselContainerRef.current;
+    if (!el) return;
+    const scrollLeft = el.scrollLeft;
+    const width = el.clientWidth || 1;
+    const index = Math.round(scrollLeft / width);
+    setActiveSlide(Math.max(0, Math.min(index, mediaList.length - 1)));
+  }, [mediaList.length]);
+
+  const scrollToSlide = (index: number) => {
+    const el = carouselContainerRef.current;
+    if (!el) return;
+    const width = el.clientWidth;
+    el.scrollTo({ left: index * width, behavior: "smooth" });
+    setActiveSlide(index);
+  };
+
   const isArticle = isArticlePost(post);
 
   // Instagram Caption Split logic
@@ -236,7 +240,6 @@ export function ExploreFeedCard({
     }
   };
 
-  // Determine media mounting behavior based on load priority
   const isPriorityActive = loadPriority === "active" || (isInView && loadPriority !== "idle");
   const isPriorityPreload = loadPriority === "preload";
   const firstMedia = mediaList[0];
@@ -245,6 +248,10 @@ export function ExploreFeedCard({
     <article
       ref={setContainerRefs}
       id={`explore-feed-post-${post.id}`}
+      style={{
+        contentVisibility: "auto",
+        containIntrinsicSize: "0 600px",
+      }}
       className="bg-surface rounded-2xl sm:rounded-3xl border border-border-subtle shadow-xs overflow-hidden text-right transition-all select-none"
       dir="rtl"
     >
@@ -300,7 +307,7 @@ export function ExploreFeedCard({
         )}
       </div>
 
-      {/* ── 2. MEDIA CAROUSEL (Images & Videos with Viewport & Priority) ─ */}
+      {/* ── 2. ULTRA-PERFORMANT NATIVE MEDIA CAROUSEL (CSS Snap) ──────── */}
       <div className="relative aspect-square sm:aspect-4/5 w-full bg-slate-950 overflow-hidden group">
         {mediaList.length > 0 ? (
           <div className="absolute inset-0">
@@ -341,52 +348,41 @@ export function ExploreFeedCard({
                 )}
               </div>
             ) : (
-              /* Active stage: mount interactive Swiper / Video player */
-              <Swiper
-                dir="rtl"
-                slidesPerView={1}
-                spaceBetween={0}
-                threshold={5}
-                onSwiper={(swiper) => {
-                  swiperRef.current = swiper;
-                }}
-                onSlideChange={(swiper) => {
-                  setActiveSlide(swiper.activeIndex);
-                  // Pause all videos when sliding away
-                  Object.values(videoRefs.current).forEach((v) => {
-                    if (v && !v.paused) v.pause();
-                  });
-                }}
-                className="w-full h-full select-none"
+              /* Active stage: hardware-accelerated CSS scroll-snap carousel */
+              <div
+                ref={carouselContainerRef}
+                dir="ltr"
+                onScroll={handleCarouselScroll}
+                className="w-full h-full flex overflow-x-auto snap-x snap-mandatory scrollbar-none select-none touch-pan-x"
+                style={{ scrollBehavior: "smooth" }}
               >
                 {mediaList.map((media, idx) => {
-                  const isVisibleSlide = Math.abs(idx - activeSlide) <= 1;
+                  const isCurrent = idx === activeSlide;
 
                   return (
-                    <SwiperSlide key={media.id} className="relative w-full h-full bg-slate-950">
+                    <div
+                      key={media.id}
+                      className="w-full h-full shrink-0 snap-center snap-always relative bg-slate-950 flex items-center justify-center"
+                    >
                       {media.type === "VIDEO" ? (
                         <div
                           className="relative w-full h-full flex items-center justify-center bg-black"
                           onDoubleClick={handleDoubleTap}
                         >
-                          {videoErrorMap[media.id] ? (
+                          {videoError ? (
                             <div className="flex flex-col items-center justify-center p-6 text-center text-slate-400 space-y-2">
                               <Video className="w-8 h-8 opacity-40" />
                               <p className="text-xs">خطا در بارگذاری ویدیو</p>
                             </div>
                           ) : (
                             <video
-                              ref={(el) => {
-                                videoRefs.current[media.id] = el;
-                              }}
+                              ref={isCurrent ? videoRef : undefined}
                               src={media.url}
                               poster={media.posterUrl}
                               controls
                               playsInline
-                              preload={isVisibleSlide && isInView ? "metadata" : "none"}
-                              onError={() => {
-                                setVideoErrorMap((prev) => ({ ...prev, [media.id]: true }));
-                              }}
+                              preload={isCurrent && isInView ? "metadata" : "none"}
+                              onError={() => setVideoError(true)}
                               className="w-full h-full object-contain bg-black"
                             />
                           )}
@@ -400,7 +396,7 @@ export function ExploreFeedCard({
                           <img
                             src={media.url}
                             alt={post.title}
-                            loading={isVisibleSlide ? "eager" : "lazy"}
+                            loading={idx === 0 || isCurrent ? "eager" : "lazy"}
                             className="w-full h-full object-cover select-none"
                             onError={(e) => {
                               (e.target as HTMLImageElement).src = "/property-placeholder.svg";
@@ -408,10 +404,10 @@ export function ExploreFeedCard({
                           />
                         </div>
                       )}
-                    </SwiperSlide>
+                    </div>
                   );
                 })}
-              </Swiper>
+              </div>
             )}
 
             {/* Slide Index Pill indicator (Top-Right) */}
@@ -429,12 +425,12 @@ export function ExploreFeedCard({
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      swiperRef.current?.slidePrev();
+                      scrollToSlide(activeSlide - 1);
                     }}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/50 hover:bg-black/75 text-white flex items-center justify-center transition-all cursor-pointer opacity-0 group-hover:opacity-100"
+                    className="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/50 hover:bg-black/75 text-white flex items-center justify-center transition-all cursor-pointer opacity-0 group-hover:opacity-100"
                     title="اسلاید قبلی"
                   >
-                    <ChevronRight className="w-5 h-5" />
+                    <ChevronLeft className="w-5 h-5" />
                   </button>
                 )}
 
@@ -443,12 +439,12 @@ export function ExploreFeedCard({
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      swiperRef.current?.slideNext();
+                      scrollToSlide(activeSlide + 1);
                     }}
-                    className="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/50 hover:bg-black/75 text-white flex items-center justify-center transition-all cursor-pointer opacity-0 group-hover:opacity-100"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/50 hover:bg-black/75 text-white flex items-center justify-center transition-all cursor-pointer opacity-0 group-hover:opacity-100"
                     title="اسلاید بعدی"
                   >
-                    <ChevronLeft className="w-5 h-5" />
+                    <ChevronRight className="w-5 h-5" />
                   </button>
                 )}
 
@@ -461,7 +457,7 @@ export function ExploreFeedCard({
                       aria-label={`اسلاید ${i + 1}`}
                       onClick={(e) => {
                         e.stopPropagation();
-                        swiperRef.current?.slideTo(i);
+                        scrollToSlide(i);
                       }}
                       className={cn(
                         "h-1.5 rounded-full transition-all pointer-events-auto",

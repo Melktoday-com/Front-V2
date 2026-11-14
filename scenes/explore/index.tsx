@@ -4,9 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useInfiniteExplorePosts, useLikePost } from "@/hooks/usePosts";
 import { cn } from "@/lib/utils";
 import { RoleName } from "@/types/access";
-import { UnifiedPost } from "@/types/api/post.types";
 import {
-  ArrowRight,
   ChevronRight,
   Grid,
   LayoutGrid,
@@ -45,12 +43,15 @@ export default function ExploreScene() {
   const [searchQuery, setSearchQuery] = useState(urlSearch);
   const [activeSearch, setActiveSearch] = useState(urlSearch);
 
-  // ── Feed Viewport & Priority Loading State ────────────────────────
+  // ── Feed Viewport, Scroll & Priority State ─────────────────────────
   const [activeFeedPostId, setActiveFeedPostId] = useState<string | null>(urlPostId);
   const [scrollDirection, setScrollDirection] = useState<"down" | "up" | "none">("none");
   const lastActiveIndexRef = useRef<number>(-1);
+  const gridScrollYRef = useRef<number>(0);
+  const isObserverLockedRef = useRef<boolean>(true);
+  const replaceStateTimerRef = useRef<NodeJS.Timeout | null>(null);
   const observerTargetRef = useRef<HTMLDivElement | null>(null);
-  const initialScrollDoneRef = useRef<string | null>(null);
+  const hasPerformedInitialFocusRef = useRef<string | null>(null);
 
   // Sync url search param if changed externally
   useEffect(() => {
@@ -87,7 +88,7 @@ export default function ExploreScene() {
           fetchNextPage();
         }
       },
-      { rootMargin: "500px" }
+      { rootMargin: "600px" }
     );
 
     observer.observe(target);
@@ -101,29 +102,38 @@ export default function ExploreScene() {
     return postsData?.pages.flatMap((page) => page.items) || [];
   }, [postsData]);
 
-  // ── Auto Scroll & Focus when in Feed Mode ──────────────────────────
+  // ── Instant Jump to Target Post (Eliminates showing from beginning) ─
   useEffect(() => {
     if (!isFeedMode || !urlPostId || allLoadedPosts.length === 0) return;
-    if (initialScrollDoneRef.current === urlPostId) return;
+    if (hasPerformedInitialFocusRef.current === urlPostId) return;
 
     const targetEl = document.getElementById(`explore-feed-post-${urlPostId}`);
     if (targetEl) {
-      initialScrollDoneRef.current = urlPostId;
+      hasPerformedInitialFocusRef.current = urlPostId;
+      isObserverLockedRef.current = true;
       setActiveFeedPostId(urlPostId);
-      // Slight delay to ensure DOM and layout calculation is ready
-      setTimeout(() => {
-        targetEl.scrollIntoView({ behavior: "smooth", block: "start" });
-      }, 60);
+      lastActiveIndexRef.current = allLoadedPosts.findIndex((p) => p.id === urlPostId);
+
+      // Instant jump directly to target post so post #1 is NEVER shown
+      targetEl.scrollIntoView({ behavior: "instant", block: "start" });
+
+      // Unlock observer only after DOM scroll has settled
+      const timer = setTimeout(() => {
+        isObserverLockedRef.current = false;
+      }, 150);
+
+      return () => clearTimeout(timer);
     }
   }, [isFeedMode, urlPostId, allLoadedPosts]);
 
-  // ── Feed Intersection Observer: Track active post & direction ──────
+  // ── Throttled Intersection Observer for Feed Scroll ────────────────
   useEffect(() => {
     if (!isFeedMode || typeof IntersectionObserver === "undefined") return;
 
     const feedObserver = new IntersectionObserver(
       (entries) => {
-        // Find entry with largest intersection ratio
+        if (isObserverLockedRef.current) return;
+
         const visibleEntries = entries.filter((e) => e.isIntersecting);
         if (visibleEntries.length === 0) return;
 
@@ -141,22 +151,26 @@ export default function ExploreScene() {
           lastActiveIndexRef.current = newIndex;
           setActiveFeedPostId(postId);
 
-          // Update URL query param quietly without page reload
-          if (typeof window !== "undefined") {
-            const params = new URLSearchParams(window.location.search);
-            params.set("view", "feed");
-            params.set("post", postId);
-            window.history.replaceState(null, "", `/explore?${params.toString()}`);
+          // Throttled URL sync to prevent main thread blocking while scrolling
+          if (replaceStateTimerRef.current) {
+            clearTimeout(replaceStateTimerRef.current);
           }
+          replaceStateTimerRef.current = setTimeout(() => {
+            if (typeof window !== "undefined") {
+              const params = new URLSearchParams(window.location.search);
+              params.set("view", "feed");
+              params.set("post", postId);
+              window.history.replaceState(null, "", `/explore?${params.toString()}`);
+            }
+          }, 120);
         }
       },
       {
-        rootMargin: "-20% 0px -25% 0px",
-        threshold: [0.2, 0.5, 0.8],
+        rootMargin: "-25% 0px -25% 0px",
+        threshold: 0.4,
       }
     );
 
-    // Observe all feed cards
     allLoadedPosts.forEach((post) => {
       const el = document.getElementById(`explore-feed-post-${post.id}`);
       if (el) {
@@ -167,32 +181,34 @@ export default function ExploreScene() {
 
     return () => {
       feedObserver.disconnect();
+      if (replaceStateTimerRef.current) {
+        clearTimeout(replaceStateTimerRef.current);
+      }
     };
   }, [isFeedMode, allLoadedPosts]);
 
-  // ── Load Priority Computation for each Feed Card ───────────────────
+  // ── High Performance Load Priority Calculation ─────────────────────
   const getCardLoadPriority = useCallback(
     (index: number): FeedCardLoadPriority => {
       const activeId = activeFeedPostId || urlPostId;
-      const activeIdx = activeId
+      const targetIdx = activeId
         ? allLoadedPosts.findIndex((p) => p.id === activeId)
         : 0;
 
-      const targetIdx = activeIdx !== -1 ? activeIdx : 0;
+      const resolvedTarget = targetIdx !== -1 ? targetIdx : 0;
 
-      if (index === targetIdx) {
-        return "active"; // 1st priority: focused post itself
+      if (index === resolvedTarget) {
+        return "active";
       }
 
       if (scrollDirection === "down") {
-        if (index === targetIdx + 1) return "preload"; // 2nd priority: next post
-        if (index === targetIdx - 1) return "preload"; // 3rd priority: previous post
+        if (index === resolvedTarget + 1) return "preload";
+        if (index === resolvedTarget - 1) return "preload";
       } else if (scrollDirection === "up") {
-        if (index === targetIdx - 1) return "preload"; // 2nd priority: previous post
-        if (index === targetIdx + 1) return "preload"; // 3rd priority: next post
+        if (index === resolvedTarget - 1) return "preload";
+        if (index === resolvedTarget + 1) return "preload";
       } else {
-        // Initial focus on targetIdx:
-        if (index === targetIdx + 1 || index === targetIdx - 1) {
+        if (index === resolvedTarget + 1 || index === resolvedTarget - 1) {
           return "preload";
         }
       }
@@ -202,36 +218,55 @@ export default function ExploreScene() {
     [activeFeedPostId, urlPostId, allLoadedPosts, scrollDirection]
   );
 
-  // ── Handlers ───────────────────────────────────────────────────────
+  // ── Switch Handlers ────────────────────────────────────────────────
   const handleSelectPostFromGrid = (postId: string) => {
-    initialScrollDoneRef.current = null;
-    lastActiveIndexRef.current = allLoadedPosts.findIndex((p) => p.id === postId);
+    // Record current grid scroll position to restore smoothly when going back
+    gridScrollYRef.current = typeof window !== "undefined" ? window.scrollY : 0;
+    isObserverLockedRef.current = true;
+    hasPerformedInitialFocusRef.current = postId;
     setActiveFeedPostId(postId);
+    lastActiveIndexRef.current = allLoadedPosts.findIndex((p) => p.id === postId);
     setScrollDirection("none");
 
     const params = new URLSearchParams(searchParams.toString());
     params.set("view", "feed");
     params.set("post", postId);
     router.push(`/explore?${params.toString()}`, { scroll: false });
+
+    // Instantly jump to target post in next microtask
+    setTimeout(() => {
+      const targetEl = document.getElementById(`explore-feed-post-${postId}`);
+      if (targetEl) {
+        targetEl.scrollIntoView({ behavior: "instant", block: "start" });
+      }
+      setTimeout(() => {
+        isObserverLockedRef.current = false;
+      }, 150);
+    }, 10);
   };
 
   const handleSwitchToGrid = () => {
+    isObserverLockedRef.current = true;
     const params = new URLSearchParams(searchParams.toString());
     params.delete("view");
     params.delete("post");
     router.push(`/explore${params.toString() ? `?${params.toString()}` : ""}`, {
       scroll: false,
     });
+
+    // Restore exact grid scroll position
+    setTimeout(() => {
+      if (typeof window !== "undefined") {
+        window.scrollTo({ top: gridScrollYRef.current, behavior: "instant" });
+      }
+    }, 10);
   };
 
   const handleSwitchToFeed = () => {
     const firstPostId = allLoadedPosts[0]?.id;
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("view", "feed");
     if (firstPostId) {
-      params.set("post", firstPostId);
+      handleSelectPostFromGrid(firstPostId);
     }
-    router.push(`/explore?${params.toString()}`, { scroll: false });
   };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -278,7 +313,7 @@ export default function ExploreScene() {
     >
       {/* ── TOP ACTION BAR: Search, View Switcher & Create Post ─────── */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        {/* Search input */}
+        {/* Search Input */}
         <form onSubmit={handleSearchSubmit} className="relative flex-1">
           <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground-muted" />
           <input
@@ -433,76 +468,83 @@ export default function ExploreScene() {
             </button>
           )}
         </div>
-      ) : isFeedMode ? (
-        /* ── SINGLE-COLUMN FEED VIEW ───────────────────────────────── */
-        <div className="space-y-6 sm:space-y-8 pb-8">
-          {allLoadedPosts.map((post, index) => (
-            <ExploreFeedCard
-              key={post.id}
-              post={post}
-              onLike={handleLike}
-              loadPriority={getCardLoadPriority(index)}
-            />
-          ))}
-
-          {/* Infinite scroll sentinel & loader */}
-          {hasNextPage && (
-            <div
-              ref={observerTargetRef}
-              className="py-8 flex flex-col items-center justify-center gap-2"
-            >
-              {isFetchingNextPage ? (
-                <div className="flex items-center gap-2 text-xs font-bold text-secondary bg-surface px-5 py-2.5 rounded-xl shadow-xs border border-border-subtle">
-                  <Loader2 className="w-4 h-4 animate-spin text-primary" />
-                  <span>در حال بارگذاری پست‌های بیشتر...</span>
-                </div>
-              ) : (
-                <div className="h-6" />
-              )}
-            </div>
-          )}
-
-          {!hasNextPage && allLoadedPosts.length > 6 && (
-            <div className="py-8 text-center text-xs text-foreground-muted font-medium">
-              همه پست‌ها نمایش داده شدند
-            </div>
-          )}
-        </div>
       ) : (
-        /* ── GRID VIEW (DEFAULT) ───────────────────────────────────── */
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 sm:gap-4 pb-8">
-          {allLoadedPosts.map((post) => (
-            <ExploreGridCard
-              key={post.id}
-              post={post}
-              onSelect={handleSelectPostFromGrid}
-              onLike={handleLike}
-            />
-          ))}
+        <>
+          {/* ── SINGLE-COLUMN FEED VIEW ───────────────────────────────── */}
+          <div className={cn("space-y-6 sm:space-y-8 pb-8", !isFeedMode && "hidden")}>
+            {allLoadedPosts.map((post, index) => (
+              <ExploreFeedCard
+                key={post.id}
+                post={post}
+                onLike={handleLike}
+                loadPriority={getCardLoadPriority(index)}
+              />
+            ))}
 
-          {/* Infinite scroll sentinel & loader */}
-          {hasNextPage && (
-            <div
-              ref={observerTargetRef}
-              className="col-span-full py-8 flex flex-col items-center justify-center gap-2"
-            >
-              {isFetchingNextPage ? (
-                <div className="flex items-center gap-2 text-xs font-bold text-secondary bg-surface px-5 py-2.5 rounded-xl shadow-xs border border-border-subtle">
-                  <Loader2 className="w-4 h-4 animate-spin text-primary" />
-                  <span>در حال بارگذاری پست‌های بیشتر...</span>
-                </div>
-              ) : (
-                <div className="h-6" />
-              )}
-            </div>
-          )}
+            {/* Infinite scroll sentinel & loader for Feed */}
+            {hasNextPage && isFeedMode && (
+              <div
+                ref={observerTargetRef}
+                className="py-8 flex flex-col items-center justify-center gap-2"
+              >
+                {isFetchingNextPage ? (
+                  <div className="flex items-center gap-2 text-xs font-bold text-secondary bg-surface px-5 py-2.5 rounded-xl shadow-xs border border-border-subtle">
+                    <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                    <span>در حال بارگذاری پست‌های بیشتر...</span>
+                  </div>
+                ) : (
+                  <div className="h-6" />
+                )}
+              </div>
+            )}
 
-          {!hasNextPage && allLoadedPosts.length > 12 && (
-            <div className="col-span-full py-8 text-center text-xs text-foreground-muted font-medium">
-              همه پست‌ها نمایش داده شدند
-            </div>
-          )}
-        </div>
+            {!hasNextPage && allLoadedPosts.length > 6 && isFeedMode && (
+              <div className="py-8 text-center text-xs text-foreground-muted font-medium">
+                همه پست‌ها نمایش داده شدند
+              </div>
+            )}
+          </div>
+
+          {/* ── GRID VIEW (DEFAULT) ───────────────────────────────────── */}
+          <div
+            className={cn(
+              "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 sm:gap-4 pb-8",
+              isFeedMode && "hidden"
+            )}
+          >
+            {allLoadedPosts.map((post) => (
+              <ExploreGridCard
+                key={post.id}
+                post={post}
+                onSelect={handleSelectPostFromGrid}
+                onLike={handleLike}
+              />
+            ))}
+
+            {/* Infinite scroll sentinel & loader for Grid */}
+            {hasNextPage && !isFeedMode && (
+              <div
+                ref={observerTargetRef}
+                className="col-span-full py-8 flex flex-col items-center justify-center gap-2"
+              >
+                {isFetchingNextPage ? (
+                  <div className="flex items-center gap-2 text-xs font-bold text-secondary bg-surface px-5 py-2.5 rounded-xl shadow-xs border border-border-subtle">
+                    <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                    <span>در حال بارگذاری پست‌های بیشتر...</span>
+                  </div>
+                ) : (
+                  <div className="h-6" />
+                )}
+              </div>
+            )}
+
+            {!hasNextPage && allLoadedPosts.length > 12 && !isFeedMode && (
+              <div className="col-span-full py-8 text-center text-xs text-foreground-muted font-medium">
+                همه پست‌ها نمایش داده شدند
+              </div>
+            )}
+          </div>
+        </>
       )}
     </div>
   );
