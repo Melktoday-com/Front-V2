@@ -115,6 +115,193 @@ export interface ApplyAgentRequest {
     description?: string;
 }
 
+export interface CorporationLocation {
+    id?: string;
+    title?: string;
+    code?: string;
+}
+
+export interface CorporationOrganization {
+    id?: string;
+    title?: string;
+    nationalCode?: string;
+    province?: CorporationLocation;
+    city?: CorporationLocation;
+}
+
+export interface CorporationVehicle {
+    vehicleOwnershipType?: string;
+    fuelTypes?: string[];
+    vehicleType?: string;
+    vin?: string;
+    chassisNumber?: string;
+    motorNumber?: string;
+    productionYear?: string;
+    plaqueNumber?: string;
+}
+
+export interface CorporationSenf {
+    title?: string;
+    senfCode?: string;
+    phoneNumber?: string;
+    faxNumber?: string;
+    email?: string;
+    postalCode?: string;
+    address?: string;
+    website?: string;
+    province?: CorporationLocation;
+    city?: CorporationLocation;
+    plaque?: string;
+    bluePlaque?: string;
+    fuelTypes?: string[];
+    vehicle?: CorporationVehicle;
+}
+
+export interface CorporationBusinessInfo {
+    isic?: string;
+    isicName?: string;
+    isicTitle?: string;
+    type?: string;
+    jobType?: string;
+}
+
+export interface CorporationCompanyInfo {
+    title?: string;
+    nationalCode?: string;
+    registrationNumber?: string;
+}
+
+export interface CorporationLicense {
+    id?: string;
+    status?: string;
+    title?: string;
+    issueDate?: string;
+    expirationDate?: string;
+    duration?: string;
+    holderType?: string;
+    licenseType?: string;
+    requestType?: string;
+    licenseDescription?: string;
+    organizationInfo?: CorporationOrganization;
+    organization?: CorporationOrganization;
+    senf?: CorporationSenf;
+    businessInfo?: CorporationBusinessInfo;
+    companyInfo?: CorporationCompanyInfo;
+    expiredNotifiedDate?: string;
+}
+
+export interface CorporationUserInfo {
+    id?: string;
+    firstName?: string;
+    lastName?: string;
+    fatherName?: string;
+    nationalCode?: string;
+    birthDate?: string;
+    identificationNumber?: string;
+    mobileNumber?: string;
+    gender?: string;
+    religion?: string;
+    militaryServiceStatus?: string;
+    education?: string;
+    married?: boolean;
+    foreigner?: boolean;
+    houseHold?: boolean;
+    avatar?: string;
+    hasTobaccoLicense?: boolean;
+}
+
+export interface CorporationIdentityInfo {
+    code?: string;
+    senfCode?: string;
+    userInfo?: CorporationUserInfo;
+    licenses?: CorporationLicense[];
+    licIssueDate?: string;
+    licExpireDate?: string;
+    licType?: string;
+    licTime?: string;
+    address?: string;
+    bluePlaque?: string;
+    registeredPlaque?: string;
+    postalCode?: string;
+    area?: number;
+    unionName?: string;
+    unionId?: number;
+    guildId?: number;
+    conventId?: number;
+    conventName?: string;
+    cityId?: number;
+    boardTitle?: string;
+    corporateIdentity?: string;
+    licState?: string;
+    tel?: string;
+    isic?: string;
+    companyNationalCode?: string;
+    isicName?: string;
+    hcLicenseRequestTypeName?: string;
+    hasExpireLetter?: string;
+    expireLetterDate?: string;
+    firstName?: string;
+    lastName?: string;
+    fatherName?: string;
+    nationalCode?: string;
+    isMale?: string;
+    mobile?: string;
+    typeName?: string;
+    typeCode?: string;
+    birthDate?: string;
+    identityNo?: string;
+    identificationNumber?: string;
+    country?: string;
+    religion?: string;
+    militaryState?: string;
+    educationLevel?: string;
+    providerTrackerId?: string;
+}
+
+export interface BaseAgentKycDetails {
+    verified?: boolean;
+    provider?: string;
+    matched?: boolean;
+    guildCode?: string;
+    senfCode?: string;
+    identityNo?: string;
+    nationalCode?: string;
+    nationalCodeMatched?: boolean;
+    ownerName?: string;
+    boardTitle?: string;
+    unionName?: string;
+    conventName?: string;
+    isic?: string;
+    isicName?: string;
+    licState?: string;
+    licType?: string;
+    licTime?: string;
+    licIssueDate?: string;
+    licExpireDate?: string;
+    address?: string;
+    postalCode?: string;
+    tel?: string;
+    area?: number;
+    mobileNumber?: string;
+    info?: CorporationIdentityInfo;
+    corporation?: CorporationIdentityInfo;
+    checkedAt?: string;
+    reason?: string;
+    error?: string;
+    fallback?: string;
+    message?: string;
+}
+
+export type AgentGuildKycDetails = BaseAgentKycDetails & {
+    provider?: "JIBIT_GUILD" | string;
+};
+
+export type AgentShahkarKycDetails = BaseAgentKycDetails & {
+    provider?: "JIBIT_SHAHKAR" | string;
+};
+
+export type AgentKycDetails = BaseAgentKycDetails;
+
 export interface AgentApplicationResponse {
     id: string;
     userId: string;
@@ -134,8 +321,8 @@ export interface AgentApplicationResponse {
     adminNote?: string;
     reviewedBy?: string;
     reviewedAt?: string;
-    jibitVerificationData?: JsonObject;
-    kycDetails?: JsonObject;
+    jibitVerificationData?: AgentKycDetails | JsonObject;
+    kycDetails?: AgentKycDetails | JsonObject;
     createdAt: string;
     updatedAt: string;
 }

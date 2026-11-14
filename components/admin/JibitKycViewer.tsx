@@ -1,32 +1,31 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import {
     ShieldCheck,
     ShieldAlert,
     ShieldX,
     CheckCircle2,
     XCircle,
-    AlertTriangle,
-    ChevronDown,
-    ChevronUp,
-    Copy,
-    Check,
     Building2,
     User,
-    Calendar,
-    Phone,
-    MapPin,
-    FileText,
-    Hash,
     BadgeCheck,
     Clock,
+    RefreshCw,
+    Hash,
 } from "lucide-react";
 import { cn, toPersianDigits } from "@/lib/utils";
-import { toast } from "sonner";
+import type {
+    AgentGuildKycDetails,
+    AgentShahkarKycDetails,
+    AgentKycDetails,
+    CorporationIdentityInfo,
+    CorporationLicense,
+    CorporationUserInfo,
+} from "@/types/api/agency.types";
 
 export interface JibitKycViewerProps {
-    kycDetails?: Record<string, any> | null;
+    kycDetails?: AgentGuildKycDetails | AgentShahkarKycDetails | AgentKycDetails | null;
     applicantInfo?: {
         fullName?: string;
         nationalCode?: string;
@@ -34,19 +33,24 @@ export interface JibitKycViewerProps {
         phone?: string;
         agentType?: string;
     };
+    onReverify?: () => void;
+    isReverifying?: boolean;
     className?: string;
 }
 
-export function JibitKycViewer({ kycDetails, applicantInfo, className }: JibitKycViewerProps) {
-    const [showRawJson, setShowRawJson] = useState(false);
-    const [copied, setCopied] = useState(false);
-
+export function JibitKycViewer({
+    kycDetails,
+    applicantInfo,
+    onReverify,
+    isReverifying,
+    className,
+}: JibitKycViewerProps) {
     // If no KYC data at all
     if (!kycDetails || Object.keys(kycDetails).length === 0 || kycDetails.message) {
         return (
             <div
                 className={cn(
-                    "p-4 rounded-2xl border border-dashed border-border-subtle bg-surface-secondary/50 text-center space-y-2",
+                    "p-4 rounded-2xl border border-dashed border-border-subtle bg-surface-secondary/50 text-center space-y-3",
                     className
                 )}
             >
@@ -54,28 +58,61 @@ export function JibitKycViewer({ kycDetails, applicantInfo, className }: JibitKy
                     <Clock className="w-4 h-4" />
                 </div>
                 <div className="text-xs font-bold text-foreground">اطلاعات استعلام جیبیت ثبت نشده است</div>
-                <p className="text-[11px] text-foreground-muted">
+                <p className="text-[11px] text-foreground-muted max-w-md mx-auto">
                     استعلام هوشمند برای این درخواست هنوز انجام نشده یا اطلاعات در پایگاه داده ذخیره نگردیده است.
                 </p>
+                {onReverify && (
+                    <div className="pt-1">
+                        <button
+                            type="button"
+                            onClick={onReverify}
+                            disabled={isReverifying}
+                            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white transition-colors shadow-xs disabled:opacity-50"
+                        >
+                            <RefreshCw className={cn("w-3.5 h-3.5", isReverifying && "animate-spin")} />
+                            <span>{isReverifying ? "در حال استعلام از جیبیت..." : "انجام استعلام برخط جیبیت"}</span>
+                        </button>
+                    </div>
+                )}
             </div>
         );
     }
 
     const provider = kycDetails.provider || (kycDetails.matched !== undefined ? "JIBIT_SHAHKAR" : "JIBIT_GUILD");
-    const isShahkar = provider === "JIBIT_SHAHKAR" || (kycDetails.matched !== undefined && !kycDetails.guildCode && !kycDetails.boardTitle);
+    const isShahkar =
+        provider === "JIBIT_SHAHKAR" ||
+        (kycDetails.matched !== undefined && !kycDetails.guildCode && !kycDetails.boardTitle);
 
     // Extract Guild / Corporation Fields
-    const info = (kycDetails.info || {}) as Record<string, any>;
-    const raw = (info.raw || {}) as Record<string, any>;
-    const userInfo = (info.userInfo || raw.userInfo || {}) as Record<string, any>;
-    const firstLicense = (info.licenses?.[0] || raw.licenses?.[0] || {}) as Record<string, any>;
-    const businessInfo = (firstLicense.businessInfo || {}) as Record<string, any>;
+    const info: CorporationIdentityInfo = kycDetails.info || {};
+    const userInfo: CorporationUserInfo = info.userInfo || {};
+    const firstLicense: CorporationLicense = info.licenses?.[0] || {};
+    const businessInfo = firstLicense.businessInfo || {};
+
+    const applicantNationalCode = applicantInfo?.nationalCode?.trim();
+
+    const ownerFirstName = userInfo.firstName || info.firstName || "";
+    const ownerLastName = userInfo.lastName || info.lastName || "";
+    const ownerFullName = (ownerFirstName || ownerLastName)
+        ? `${ownerFirstName} ${ownerLastName}`.trim()
+        : null;
+
+    const ownerNationalCode =
+        kycDetails.nationalCode ||
+        userInfo.nationalCode ||
+        info.nationalCode ||
+        applicantNationalCode ||
+        "-";
+
+    // If info.code matches applicant nationalCode, ignore it as guildCode
+    const infoCode = info.code;
+    const isInfoCodeNationalId =
+        Boolean(infoCode && applicantNationalCode && infoCode === applicantNationalCode);
 
     const guildCode =
         kycDetails.guildCode ||
-        info.guildCode ||
-        info.code ||
-        firstLicense.licenseNumber ||
+        (!isInfoCodeNationalId && infoCode ? infoCode : undefined) ||
+        firstLicense.id ||
         applicantInfo?.guildCode ||
         "-";
 
@@ -83,7 +120,6 @@ export function JibitKycViewer({ kycDetails, applicantInfo, className }: JibitKy
         kycDetails.senfCode ||
         info.senfCode ||
         firstLicense.senf?.senfCode ||
-        raw.senfCode ||
         "-";
 
     const isRealEstateSenfCode = String(senfCode).trim() === "5900";
@@ -91,21 +127,14 @@ export function JibitKycViewer({ kycDetails, applicantInfo, className }: JibitKy
     const boardTitle =
         kycDetails.boardTitle ||
         info.boardTitle ||
-        firstLicense.boardTitle ||
+        firstLicense.senf?.title ||
+        firstLicense.title ||
         "-";
 
-    const ownerFirstName = userInfo.firstName || info.firstName || "";
-    const ownerLastName = userInfo.lastName || info.lastName || "";
     const ownerName =
         kycDetails.ownerName ||
-        (ownerFirstName || ownerLastName ? `${ownerFirstName} ${ownerLastName}`.trim() : null) ||
-        info.name ||
-        "-";
-
-    const ownerNationalCode =
-        kycDetails.nationalCode ||
-        userInfo.nationalCode ||
-        info.nationalCode ||
+        ownerFullName ||
+        applicantInfo?.fullName ||
         "-";
 
     const identityNo =
@@ -113,18 +142,20 @@ export function JibitKycViewer({ kycDetails, applicantInfo, className }: JibitKy
         userInfo.identificationNumber ||
         info.identificationNumber ||
         info.identityNo ||
-        firstLicense.identityNo ||
         "-";
 
     const unionName =
         kycDetails.unionName ||
         firstLicense.organization?.title ||
+        firstLicense.organizationInfo?.title ||
         info.unionName ||
         "-";
 
     const conventName =
         kycDetails.conventName ||
         kycDetails.isicName ||
+        businessInfo.isicName ||
+        businessInfo.isicTitle ||
         firstLicense.senf?.title ||
         info.isicName ||
         info.conventName ||
@@ -144,37 +175,37 @@ export function JibitKycViewer({ kycDetails, applicantInfo, className }: JibitKy
 
     const licIssueDate =
         kycDetails.licIssueDate ||
-        firstLicense.licenseIssueDate ||
+        firstLicense.issueDate ||
         info.licIssueDate ||
         "-";
 
     const licExpireDate =
         kycDetails.licExpireDate ||
-        firstLicense.licenseExpireDate ||
+        firstLicense.expirationDate ||
         info.licExpireDate ||
         "-";
 
     const address =
         kycDetails.address ||
-        businessInfo.address?.fullAddress ||
+        firstLicense.senf?.address ||
         info.address ||
         "-";
 
     const postalCode =
         kycDetails.postalCode ||
-        businessInfo.address?.postalCode ||
+        firstLicense.senf?.postalCode ||
         info.postalCode ||
         "-";
 
     const phone =
-        kycDetails.phone ||
-        businessInfo.phone ||
-        info.phone ||
+        kycDetails.tel ||
+        firstLicense.senf?.phoneNumber ||
+        info.tel ||
+        applicantInfo?.phone ||
         "-";
 
     // Matching Status
     const isVerified = Boolean(kycDetails.verified);
-    const applicantNationalCode = applicantInfo?.nationalCode?.trim();
     const cleanOwnerNationalCode = ownerNationalCode !== "-" ? String(ownerNationalCode).trim() : null;
 
     const nationalCodeMatched =
@@ -184,24 +215,23 @@ export function JibitKycViewer({ kycDetails, applicantInfo, className }: JibitKy
             ? applicantNationalCode === cleanOwnerNationalCode
             : null;
 
-    const handleCopy = () => {
-        navigator.clipboard.writeText(JSON.stringify(kycDetails, null, 2));
-        setCopied(true);
-        toast.success("داده‌های JSON در کلیپ‌بورد کپی شد");
-        setTimeout(() => setCopied(false), 2000);
-    };
-
     // ── SHAHKAR VIEW (Consultants) ───────────────────────────────────────────
     if (isShahkar) {
         const isMatched = Boolean(kycDetails.matched);
         return (
-            <div className={cn("p-4 rounded-2xl border space-y-3 bg-surface", className, isMatched ? "border-emerald-500/30 bg-emerald-500/5" : "border-rose-500/30 bg-rose-500/5")}>
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
+            <div
+                className={cn(
+                    "p-4 rounded-2xl border space-y-3 bg-surface",
+                    className,
+                    isMatched ? "border-emerald-500/30 bg-emerald-500/5" : "border-rose-500/30 bg-rose-500/5"
+                )}
+            >
+                <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5">
                         {isMatched ? (
-                            <ShieldCheck className="w-5 h-5 text-emerald-600" />
+                            <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0" />
                         ) : (
-                            <ShieldAlert className="w-5 h-5 text-rose-600" />
+                            <ShieldAlert className="w-5 h-5 text-rose-600 shrink-0" />
                         )}
                         <div>
                             <div className="text-xs font-black text-foreground">
@@ -214,42 +244,27 @@ export function JibitKycViewer({ kycDetails, applicantInfo, className }: JibitKy
                             </div>
                         </div>
                     </div>
-                    <span
-                        className={cn(
-                            "px-2.5 py-1 rounded-lg text-[10px] font-black",
-                            isMatched ? "bg-emerald-500/15 text-emerald-700" : "bg-rose-500/15 text-rose-700"
-                        )}
-                    >
-                        {isMatched ? "شاهکار تأیید" : "شاهکار نامنطبق"}
-                    </span>
-                </div>
-
-                {/* Raw JSON toggle */}
-                <div className="pt-2 border-t border-border-subtle/60">
-                    <button
-                        type="button"
-                        onClick={() => setShowRawJson(!showRawJson)}
-                        className="flex items-center gap-1.5 text-[11px] font-bold text-foreground-muted hover:text-foreground transition-colors"
-                    >
-                        {showRawJson ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                        <span>مشاهده داده‌های خام استعلام جیبیت (JSON)</span>
-                    </button>
-
-                    {showRawJson && (
-                        <div className="mt-2 relative">
+                    <div className="flex items-center gap-2">
+                        {onReverify && (
                             <button
                                 type="button"
-                                onClick={handleCopy}
-                                className="absolute top-2 left-2 z-10 p-1.5 rounded-lg bg-surface-secondary text-foreground-muted hover:text-foreground text-[10px] flex items-center gap-1 border border-border-subtle"
+                                onClick={onReverify}
+                                disabled={isReverifying}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-bold bg-surface-secondary hover:bg-slate-200 text-foreground-secondary transition-colors disabled:opacity-50"
                             >
-                                {copied ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
-                                <span>{copied ? "کپی شد" : "کپی"}</span>
+                                <RefreshCw className={cn("w-3.5 h-3.5", isReverifying && "animate-spin")} />
+                                <span>{isReverifying ? "در حال استعلام..." : "استعلام مجدد شاهکار"}</span>
                             </button>
-                            <pre className="text-[11px] font-mono bg-surface-secondary p-3 rounded-xl border border-border-subtle text-foreground-secondary overflow-x-auto max-h-60 leading-relaxed text-left" dir="ltr">
-                                {JSON.stringify(kycDetails, null, 2)}
-                            </pre>
-                        </div>
-                    )}
+                        )}
+                        <span
+                            className={cn(
+                                "px-2.5 py-1 rounded-lg text-[10px] font-black",
+                                isMatched ? "bg-emerald-500/15 text-emerald-700" : "bg-rose-500/15 text-rose-700"
+                            )}
+                        >
+                            {isMatched ? "شاهکار تأیید" : "شاهکار نامنطبق"}
+                        </span>
+                    </div>
                 </div>
             </div>
         );
@@ -259,9 +274,19 @@ export function JibitKycViewer({ kycDetails, applicantInfo, className }: JibitKy
     const hasError = !isVerified || Boolean(kycDetails.error);
 
     return (
-        <div className={cn("p-4 rounded-2xl border space-y-4 bg-surface", className, hasError ? "border-rose-500/30 bg-rose-500/5" : nationalCodeMatched === false ? "border-amber-500/30 bg-amber-500/5" : "border-emerald-500/30 bg-emerald-500/5")}>
+        <div
+            className={cn(
+                "p-4 rounded-2xl border space-y-4 bg-surface",
+                className,
+                hasError
+                    ? "border-rose-500/30 bg-rose-500/5"
+                    : nationalCodeMatched === false
+                    ? "border-amber-500/30 bg-amber-500/5"
+                    : "border-emerald-500/30 bg-emerald-500/5"
+            )}
+        >
             {/* Header / Status Banner */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pb-3 border-b border-border-subtle/80">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 border-b border-border-subtle/80">
                 <div className="flex items-center gap-2.5">
                     {hasError ? (
                         <div className="w-9 h-9 rounded-xl bg-rose-500/10 text-rose-600 flex items-center justify-center shrink-0">
@@ -278,7 +303,7 @@ export function JibitKycViewer({ kycDetails, applicantInfo, className }: JibitKy
                     )}
 
                     <div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                             <span className="text-xs font-black text-foreground">
                                 استعلام پروانه کسب اتاق اصناف (سرویس جیبیت)
                             </span>
@@ -307,26 +332,42 @@ export function JibitKycViewer({ kycDetails, applicantInfo, className }: JibitKy
                     </div>
                 </div>
 
-                {/* Status Badges */}
-                <div className="flex items-center gap-2 self-start sm:self-auto">
+                {/* Status Badges & Re-verify Action */}
+                <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
+                    {onReverify && (
+                        <button
+                            type="button"
+                            onClick={onReverify}
+                            disabled={isReverifying}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white transition-colors shadow-xs disabled:opacity-50"
+                        >
+                            <RefreshCw className={cn("w-3.5 h-3.5", isReverifying && "animate-spin")} />
+                            <span>{isReverifying ? "در حال استعلام..." : "استعلام مجدد از جیبیت"}</span>
+                        </button>
+                    )}
+
                     {licState !== "-" && (
-                        <span className={cn(
-                            "px-2.5 py-1 rounded-lg text-[10px] font-black border",
-                            licState.includes("معتبر") || licState.includes("فعال") || licState === "ACTIVE"
-                                ? "bg-emerald-500/10 text-emerald-700 border-emerald-500/30"
-                                : "bg-rose-500/10 text-rose-700 border-rose-500/30"
-                        )}>
+                        <span
+                            className={cn(
+                                "px-2.5 py-1 rounded-lg text-[10px] font-black border",
+                                licState.includes("معتبر") || licState.includes("فعال") || licState === "ACTIVE"
+                                    ? "bg-emerald-500/10 text-emerald-700 border-emerald-500/30"
+                                    : "bg-rose-500/10 text-rose-700 border-rose-500/30"
+                            )}
+                        >
                             وضعیت پروانه: {licState}
                         </span>
                     )}
 
                     {nationalCodeMatched !== null && (
-                        <span className={cn(
-                            "px-2.5 py-1 rounded-lg text-[10px] font-black border flex items-center gap-1",
-                            nationalCodeMatched
-                                ? "bg-emerald-500/10 text-emerald-700 border-emerald-500/30"
-                                : "bg-rose-500/10 text-rose-700 border-rose-500/30"
-                        )}>
+                        <span
+                            className={cn(
+                                "px-2.5 py-1 rounded-lg text-[10px] font-black border flex items-center gap-1",
+                                nationalCodeMatched
+                                    ? "bg-emerald-500/10 text-emerald-700 border-emerald-500/30"
+                                    : "bg-rose-500/10 text-rose-700 border-rose-500/30"
+                            )}
+                        >
                             {nationalCodeMatched ? (
                                 <>
                                     <CheckCircle2 className="w-3 h-3" />
@@ -474,39 +515,6 @@ export function JibitKycViewer({ kycDetails, applicantInfo, className }: JibitKy
                         )}
                     </div>
                 </div>
-            </div>
-
-            {/* Accordion / Collapsible Raw JSON */}
-            <div className="pt-2 border-t border-border-subtle/70">
-                <div className="flex items-center justify-between">
-                    <button
-                        type="button"
-                        onClick={() => setShowRawJson(!showRawJson)}
-                        className="flex items-center gap-1.5 text-[11px] font-bold text-foreground-muted hover:text-foreground transition-colors"
-                    >
-                        {showRawJson ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                        <span>مشاهده داده‌های خام استعلام جیبیت (JSON)</span>
-                    </button>
-
-                    {showRawJson && (
-                        <button
-                            type="button"
-                            onClick={handleCopy}
-                            className="px-2.5 py-1 rounded-lg bg-surface-secondary hover:bg-surface-tertiary text-foreground-secondary text-[11px] font-bold flex items-center gap-1.5 border border-border-subtle transition-colors"
-                        >
-                            {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                            <span>{copied ? "کپی شد" : "کپی JSON"}</span>
-                        </button>
-                    )}
-                </div>
-
-                {showRawJson && (
-                    <div className="mt-2.5">
-                        <pre className="text-[11px] font-mono bg-surface-secondary p-3 rounded-xl border border-border-subtle text-foreground-secondary overflow-x-auto max-h-72 leading-relaxed text-left" dir="ltr">
-                            {JSON.stringify(kycDetails, null, 2)}
-                        </pre>
-                    </div>
-                )}
             </div>
         </div>
     );

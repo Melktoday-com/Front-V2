@@ -95,6 +95,19 @@ export default function AdminAgenciesPage() {
         },
     });
 
+    // Re-verify Jibit Trade License / Shahkar mutation
+    const reverifyMutation = useMutation({
+        mutationFn: (applicationId: string) => adminService.reverifyAgencyApplication(applicationId),
+        onSuccess: (data: AgentApplicationResponse) => {
+            toast.success("استعلام از جیبیت با موفقیت به‌روزرسانی شد.");
+            setSelectedApp(data);
+            queryClient.invalidateQueries({ queryKey: ["admin", "agency-applications"] });
+        },
+        onError: (err: Error) => {
+            toast.error(normalizeApiError(err, "خطا در استعلام مجدد از جیبیت."));
+        },
+    });
+
     // Toggle active status mutation
     const toggleActiveMutation = useMutation({
         mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) =>
@@ -632,6 +645,8 @@ export default function AdminAgenciesPage() {
                                 phone: selectedApp.phone,
                                 agentType: selectedApp.agentType,
                             }}
+                            onReverify={() => reverifyMutation.mutate(selectedApp.id)}
+                            isReverifying={reverifyMutation.isPending}
                         />
 
                         {/* Review Action Section */}
