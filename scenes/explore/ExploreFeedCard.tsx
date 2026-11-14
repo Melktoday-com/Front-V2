@@ -322,16 +322,20 @@ export function ExploreFeedCard({
           <div className="absolute inset-0">
             {/* If card is idle, only render lightweight placeholder / poster */}
             {!isPriorityActive && !isPriorityPreload ? (
-              <div className="w-full h-full relative">
+              <div
+                className="w-full h-full relative"
+                style={{ touchAction: "pan-y pan-x" }}
+              >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={firstMedia?.posterUrl || firstMedia?.url || "/property-placeholder.svg"}
                   alt={post.title}
                   loading="lazy"
-                  className="w-full h-full object-cover"
+                  draggable={false}
+                  className="w-full h-full object-cover select-none pointer-events-none"
                 />
                 {firstMedia?.type === "VIDEO" && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/20 pointer-events-none">
                     <div className="w-12 h-12 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-white">
                       <Play className="w-5 h-5 fill-current ml-0.5" />
                     </div>
@@ -340,16 +344,20 @@ export function ExploreFeedCard({
               </div>
             ) : !isPriorityActive && isPriorityPreload ? (
               /* Preload stage: eager load cover/first frame without mounting heavy video */
-              <div className="w-full h-full relative">
+              <div
+                className="w-full h-full relative"
+                style={{ touchAction: "pan-y pan-x" }}
+              >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={firstMedia?.posterUrl || firstMedia?.url || "/property-placeholder.svg"}
                   alt={post.title}
                   loading="eager"
-                  className="w-full h-full object-cover"
+                  draggable={false}
+                  className="w-full h-full object-cover select-none pointer-events-none"
                 />
                 {firstMedia?.type === "VIDEO" && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/20 pointer-events-none">
                     <div className="w-12 h-12 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-white">
                       <Play className="w-5 h-5 fill-current ml-0.5" />
                     </div>
@@ -357,16 +365,17 @@ export function ExploreFeedCard({
                 )}
               </div>
             ) : (
-              /* Active stage: hardware-accelerated CSS scroll-snap carousel */
+              /* Active stage: hardware-accelerated CSS scroll-snap carousel (natural RTL) */
               <div
                 ref={carouselContainerRef}
-                dir="ltr"
+                dir="rtl"
                 onScroll={handleCarouselScroll}
-                className="w-full h-full flex overflow-x-auto snap-x snap-mandatory no-scrollbar [&::-webkit-scrollbar]:hidden select-none touch-pan-x"
+                className="w-full h-full flex overflow-x-auto snap-x snap-mandatory no-scrollbar [&::-webkit-scrollbar]:hidden select-none touch-manipulation"
                 style={{
                   scrollBehavior: "smooth",
                   scrollbarWidth: "none",
                   msOverflowStyle: "none",
+                  touchAction: "pan-y pan-x",
                 }}
               >
                 {mediaList.map((media, idx) => {
@@ -375,12 +384,14 @@ export function ExploreFeedCard({
                   return (
                     <div
                       key={media.id}
-                      className="w-full h-full shrink-0 snap-center snap-always relative bg-slate-950 flex items-center justify-center"
+                      className="w-full h-full shrink-0 snap-center snap-always relative bg-slate-950 flex items-center justify-center select-none"
+                      style={{ touchAction: "pan-y pan-x" }}
                     >
                       {media.type === "VIDEO" ? (
                         <div
-                          className="relative w-full h-full flex items-center justify-center bg-black"
+                          className="relative w-full h-full flex items-center justify-center bg-black select-none"
                           onDoubleClick={handleDoubleTap}
+                          style={{ touchAction: "pan-y pan-x" }}
                         >
                           {videoError ? (
                             <div className="flex flex-col items-center justify-center p-6 text-center text-slate-400 space-y-2">
@@ -396,21 +407,24 @@ export function ExploreFeedCard({
                               playsInline
                               preload={isCurrent && isInView ? "metadata" : "none"}
                               onError={() => setVideoError(true)}
+                              style={{ touchAction: "pan-y pan-x" }}
                               className="w-full h-full object-contain bg-black"
                             />
                           )}
                         </div>
                       ) : (
                         <div
-                          className="relative w-full h-full bg-slate-900 cursor-pointer"
+                          className="relative w-full h-full bg-slate-900 cursor-pointer select-none"
                           onDoubleClick={handleDoubleTap}
+                          style={{ touchAction: "pan-y pan-x" }}
                         >
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
                             src={media.url}
                             alt={post.title}
                             loading={idx === 0 || isCurrent ? "eager" : "lazy"}
-                            className="w-full h-full object-cover select-none"
+                            draggable={false}
+                            className="w-full h-full object-cover select-none pointer-events-none"
                             onError={(e) => {
                               (e.target as HTMLImageElement).src = "/property-placeholder.svg";
                             }}
@@ -430,23 +444,10 @@ export function ExploreFeedCard({
               </div>
             )}
 
-            {/* Navigation Arrows for Multi-image */}
+            {/* Navigation Arrows for Multi-image (Persian RTL: Next is Left, Previous is Right) */}
             {isPriorityActive && mediaList.length > 1 && (
               <>
-                {activeSlide > 0 && (
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      scrollToSlide(activeSlide - 1);
-                    }}
-                    className="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/50 hover:bg-black/75 text-white flex items-center justify-center transition-all cursor-pointer opacity-0 group-hover:opacity-100"
-                    title="اسلاید قبلی"
-                  >
-                    <ChevronLeft className="w-5 h-5" />
-                  </button>
-                )}
-
+                {/* Next Slide: forward in RTL = to the LEFT, ChevronLeft */}
                 {activeSlide < mediaList.length - 1 && (
                   <button
                     type="button"
@@ -454,15 +455,35 @@ export function ExploreFeedCard({
                       e.stopPropagation();
                       scrollToSlide(activeSlide + 1);
                     }}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/50 hover:bg-black/75 text-white flex items-center justify-center transition-all cursor-pointer opacity-0 group-hover:opacity-100"
+                    className="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/50 hover:bg-black/75 text-white flex items-center justify-center transition-all cursor-pointer opacity-0 group-hover:opacity-100 shadow-sm"
                     title="اسلاید بعدی"
+                    aria-label="اسلاید بعدی"
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </button>
+                )}
+
+                {/* Previous Slide: backward in RTL = to the RIGHT, ChevronRight */}
+                {activeSlide > 0 && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      scrollToSlide(activeSlide - 1);
+                    }}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/50 hover:bg-black/75 text-white flex items-center justify-center transition-all cursor-pointer opacity-0 group-hover:opacity-100 shadow-sm"
+                    title="اسلاید قبلی"
+                    aria-label="اسلاید قبلی"
                   >
                     <ChevronRight className="w-5 h-5" />
                   </button>
                 )}
 
-                {/* Dot Pagination */}
-                <div className="absolute bottom-2.5 inset-x-0 z-20 flex items-center justify-center gap-1.5 pointer-events-none">
+                {/* Dot Pagination in RTL */}
+                <div
+                  className="absolute bottom-2.5 inset-x-0 z-20 flex items-center justify-center gap-1.5 pointer-events-none"
+                  dir="rtl"
+                >
                   {mediaList.map((_, i) => (
                     <button
                       key={i}
@@ -473,8 +494,8 @@ export function ExploreFeedCard({
                         scrollToSlide(i);
                       }}
                       className={cn(
-                        "h-1.5 rounded-full transition-all pointer-events-auto",
-                        i === activeSlide ? "w-5 bg-white" : "w-1.5 bg-white/50"
+                        "h-1.5 rounded-full transition-all pointer-events-auto cursor-pointer",
+                        i === activeSlide ? "w-5 bg-white" : "w-1.5 bg-white/50 hover:bg-white/75"
                       )}
                     />
                   ))}
