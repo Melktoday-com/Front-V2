@@ -543,7 +543,33 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
             }
 
             const resolvedPriceModelKey = activePriceModel?.key || formData.categoryPath?.businessModelKey;
-            const resolvedPricingValues = (formData.pricingValues as Record<string, number | boolean | string>) || {};
+            const rawPricing = (formData.pricingValues as Record<string, number | boolean | string>) || {};
+            const resolvedPricingValues: Record<string, number | boolean | string> = { ...rawPricing };
+
+            const isRentalCategory =
+                resolvedPriceModelKey === "HYBRID_RENT_DEPOSIT" ||
+                resolvedPriceModelKey === "FULL_RENTAL_DEPOSIT" ||
+                formData.categoryPath?.categoryKey?.includes("rental");
+
+            if (isRentalCategory) {
+                const isTicked = Boolean(resolvedPricingValues.isConvertible || resolvedPricingValues.convertible);
+                if (isTicked) {
+                    resolvedPricingValues.isConvertible = true;
+                    // Proportional values for backend based on user input
+                    const dep = Number(resolvedPricingValues.depositPrice) || 0;
+                    const rent = Number(resolvedPricingValues.monthlyRent) || 0;
+                    resolvedPricingValues.conversionRate = 3; // 3% monthly rate (عرف ۳۰ هزار تومان به ازای هر میلیون)
+                    if (dep > 0) {
+                        resolvedPricingValues.minDeposit = Math.max(0, Math.round((dep * 0.5) / 1_000_000) * 1_000_000);
+                    } else if (rent > 0) {
+                        resolvedPricingValues.minDeposit = 0;
+                    }
+                } else {
+                    resolvedPricingValues.isConvertible = false;
+                    delete resolvedPricingValues.conversionRate;
+                    delete resolvedPricingValues.minDeposit;
+                }
+            }
 
             if (adminMode) {
                 const payload: AdminCreateAdRequest = {
@@ -686,6 +712,10 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
         // Validate pricing fields
         if (activePriceModel) {
             for (const field of activePriceModel.pricingFields) {
+                const isConvertibleField = field.key === "isConvertible" || field.key === "convertible";
+                if (isConvertibleField || field.key === "conversionRate" || field.key === "minDeposit") {
+                    continue;
+                }
                 const val = formData.pricingValues?.[field.key];
                 const isUnset = val === undefined || val === null || String(val).trim() === "";
 
@@ -1461,13 +1491,18 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                             <p className="text-xs font-bold text-text-light">شرایط مالی:</p>
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                                 {activePriceModel.pricingFields.map((f) => {
+                                                    if (f.key === "conversionRate" || f.key === "minDeposit") return null;
                                                     const val = formData.pricingValues?.[f.key];
                                                     if (val === undefined || val === null || val === "") return null;
 
-                                                    const isBool = f.fieldType === "BOOLEAN" || typeof val === "boolean" || val === "true" || val === "false";
+                                                    const isConvertibleField = f.key === "isConvertible" || f.key === "convertible";
+                                                    const isBool = f.fieldType === "BOOLEAN" || isConvertibleField || typeof val === "boolean" || val === "true" || val === "false";
                                                     let displayValue: string;
 
-                                                    if (isBool) {
+                                                    if (isConvertibleField) {
+                                                        const isTrue = val === true || val === "true" || val === 1 || val === "1";
+                                                        displayValue = isTrue ? "دارد (ودیعه و اجاره قابل تبدیل)" : "ندارد (غیر قابل تبدیل)";
+                                                    } else if (isBool) {
                                                         const isTrue = val === true || val === "true" || val === 1 || val === "1";
                                                         const isQuestion = f.label.includes("آیا") || f.label.includes("؟") || f.label.includes("?");
                                                         displayValue = isQuestion ? (isTrue ? "بله" : "خیر") : (isTrue ? "دارد" : "ندارد");
@@ -1487,7 +1522,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
 
                                                     return (
                                                         <div key={f.key} className="flex justify-between p-2.5 bg-surface rounded-xl border border-border-subtle/60 text-xs">
-                                                            <span className="text-text-light">{f.label}:</span>
+                                                            <span className="text-text-light">{isConvertibleField ? "قابلیت تبدیل:" : `${f.label}:`}</span>
                                                             <span className="font-bold text-brand">
                                                                 {displayValue}
                                                             </span>

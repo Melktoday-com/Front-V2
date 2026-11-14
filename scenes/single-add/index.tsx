@@ -3,7 +3,6 @@
 import { Badge } from "@/components/ui/Badge";
 import { PromotionModal } from "@/components/promotions/PromotionModal";
 import { PropertyCard } from "@/components/ui/PropertyCard";
-import { RentalMortgageCalculator } from "@/components/ads/RentalMortgageCalculator";
 import { useAd, useAdContact, useAds } from "@/hooks/useAds";
 import { useAuth } from "@/hooks/useAuth";
 import { useCategoryLookup } from "@/hooks/useCategoryLookup";
@@ -642,6 +641,24 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
                                         </span>
                                     </div>
                                 )}
+                                {pricing.isConvertible !== undefined && (
+                                    <div className="flex items-center justify-between p-3 rounded-xl bg-surface border border-border-subtle/60">
+                                        <span className="text-text-light">قابلیت تبدیل:</span>
+                                        <span className={cn(
+                                            "font-bold text-xs sm:text-sm flex items-center gap-1.5",
+                                            Boolean(pricing.isConvertible) ? "text-emerald-600 dark:text-emerald-400" : "text-text-light"
+                                        )}>
+                                            {Boolean(pricing.isConvertible) ? (
+                                                <>
+                                                    <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                                                    <span>ودیعه و اجاره قابل تبدیل است</span>
+                                                </>
+                                            ) : (
+                                                <span>غیر قابل تبدیل</span>
+                                            )}
+                                        </span>
+                                    </div>
+                                )}
                                 {pricing.prepaidMonths !== undefined && (
                                     <div className="flex items-center justify-between p-3 rounded-xl bg-surface border border-border-subtle/60">
                                         <span className="text-text-light">پیش‌پرداخت اجاره:</span>
@@ -691,14 +708,6 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
                                     </div>
                                 )}
                             </div>
-
-                            {/* Rental Mortgage Converter Calculator (Item 16) */}
-                            {pricing.depositPrice !== undefined && pricing.monthlyRent !== undefined && (
-                                <RentalMortgageCalculator
-                                    depositPrice={Number(pricing.depositPrice)}
-                                    monthlyRent={Number(pricing.monthlyRent)}
-                                />
-                            )}
                         </div>
                     )}
 

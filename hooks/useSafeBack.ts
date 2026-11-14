@@ -2,7 +2,11 @@
 
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef } from "react";
-import { MELK_NAV_COUNT_KEY } from "@/components/providers/NavigationHistoryTracker";
+import {
+    getInAppHistoryStack,
+    isStandalonePwa,
+    MELK_NAV_COUNT_KEY
+} from "@/components/providers/NavigationHistoryTracker";
 
 /**
  * Checks whether the current tab session has navigable in-app history.
@@ -15,6 +19,23 @@ export function hasInAppHistory(): boolean {
         return false;
     }
 
+    // Standalone PWA mode with stack <= 1 has no previous in-app page to return to
+    const stack = getInAppHistoryStack();
+    if (isStandalonePwa() && stack.length <= 1) {
+        return false;
+    }
+
+    // If tracked stack has more than 1 entry, there is confirmed in-app history
+    if (stack.length > 1) {
+        return true;
+    }
+
+    // If stack has exactly 1 entry, the user landed here as their entry page
+    if (stack.length === 1) {
+        return false;
+    }
+
+    // Fallback if stack was empty or storage was restricted
     try {
         const navCount = parseInt(sessionStorage.getItem(MELK_NAV_COUNT_KEY) || "0", 10);
         const isSameOriginReferrer =
@@ -37,7 +58,7 @@ export function hasInAppHistory(): boolean {
 /**
  * Hook to provide a reliable "back" navigation handler.
  *
- * If the browser has no history (direct link, fresh tab, external referrer)
+ * If the browser has no history (direct link, fresh tab, external referrer, PWA launch)
  * or if calling `router.back()` results in a no-op (nothing happens),
  * it automatically falls back to navigating to the landing page (`/`)
  * or the specified fallback URL.
@@ -98,14 +119,14 @@ export function useSafeBack(defaultFallbackUrl: string = "/") {
                 return;
             }
 
-            // 3. Safety net: If no popstate was fired and URL hasn't changed within 150ms,
+            // 3. Safety net: If no popstate was fired and URL hasn't changed within 300ms,
             // router.back() was a no-op (e.g. browser is at the start of history stack).
             timeoutRef.current = setTimeout(() => {
                 window.removeEventListener("popstate", onPopState);
                 if (!didNavigate && window.location.href === initialUrl) {
                     router.push(fallback);
                 }
-            }, 150);
+            }, 300);
         },
         [router, defaultFallbackUrl]
     );

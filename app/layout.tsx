@@ -74,7 +74,6 @@ export const metadata: Metadata = {
   },
   description: "سامانه هوشمند خرید، فروش، رهن و اجاره املاک و مستغلات",
   applicationName: "ملک تودی",
-  manifest: "/site.webmanifest",
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },

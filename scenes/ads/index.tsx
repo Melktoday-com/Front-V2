@@ -1030,9 +1030,11 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
         rentPrice?: string | number;
         rentPriceLabel?: string;
         unit?: string;
+        isConvertible?: boolean;
     } => {
         const pricing = ad.pricing;
         if (!pricing) return { price: "توافقی" };
+        const isConvertible = Boolean(pricing.isConvertible);
         const dep = pricing.depositPrice ?? pricing.mortgagePrice ?? pricing.deposit;
         const rent = pricing.monthlyRent ?? pricing.rentPrice ?? pricing.monthly_rent;
         if (dep !== undefined && rent !== undefined) {
@@ -1041,6 +1043,7 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                 priceLabel: "ودیعه",
                 rentPrice: Number(rent) > 0 ? Number(rent) : "توافقی",
                 rentPriceLabel: "اجاره ماهانه",
+                isConvertible,
             };
         }
         if (pricing.totalPrice !== undefined || pricing.price !== undefined) {
@@ -1049,13 +1052,13 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
         }
         if (dep !== undefined) {
             const depNum = Number(dep);
-            return { price: depNum > 0 ? depNum : "توافقی", priceLabel: "ودیعه" };
+            return { price: depNum > 0 ? depNum : "توافقی", priceLabel: "ودیعه", isConvertible };
         }
         if (rent !== undefined) {
             const rentNum = Number(rent);
-            return { price: rentNum > 0 ? rentNum : "توافقی", priceLabel: "اجاره ماهانه" };
+            return { price: rentNum > 0 ? rentNum : "توافقی", priceLabel: "اجاره ماهانه", isConvertible };
         }
-        return { price: "توافقی" };
+        return { price: "توافقی", isConvertible };
     };
 
     // Map center: based on city coordinates or ads; decoupled from zone selection count to avoid disruptive viewport resets
@@ -1633,6 +1636,7 @@ export default function AdsScene({ initialViewMode = "split" }: AdsSceneProps) {
                                                     priceLabel={pricing.priceLabel}
                                                     rentPrice={pricing.rentPrice}
                                                     rentPriceLabel={pricing.rentPriceLabel}
+                                                    isConvertible={pricing.isConvertible}
                                                     unit={pricing.unit}
                                                     location={ad.location || ''}
                                                     image={

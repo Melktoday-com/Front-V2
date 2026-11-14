@@ -2,7 +2,7 @@
 
 import { cn, toPersianDigits, toEnglishDigits, getMediaUrl, getMediaPosterUrl } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns-jalali";
-import { ChevronLeft, Clock, MapPin, Play, ShieldCheck, Sparkles, Zap } from "lucide-react";
+import { Check, ChevronLeft, Clock, MapPin, Play, ShieldCheck, Sparkles, Zap } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -94,6 +94,7 @@ interface PropertyCardProps {
     isUrgent?: boolean;
     isLadder?: boolean;
     isFeatured?: boolean;
+    isConvertible?: boolean;
     ladderIcon?: React.ReactNode;
     urgentIcon?: React.ReactNode;
     publisher?: {
@@ -134,6 +135,7 @@ export function PropertyCard({
     isUrgent = false,
     isLadder = false,
     isFeatured = false,
+    isConvertible = false,
     ladderIcon,
     urgentIcon,
     publisher,
@@ -388,6 +390,11 @@ export function PropertyCard({
                     {/* Bottom Row: Price & Action */}
                     <div className="mt-1 pt-1 border-t border-border-subtle/50 flex items-end justify-between gap-1">
                         <div className="flex flex-col min-w-0">
+                            {isConvertible && (
+                                <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 leading-none mb-0.5">
+                                    قابل تبدیل
+                                </span>
+                            )}
                             {priceItems.map((item, idx) => (
                                 <div key={idx} className={cn("flex flex-col min-w-0", idx > 0 && "mt-0.5")}>
                                     {item.label && (
@@ -528,6 +535,12 @@ export function PropertyCard({
                 {/* Bottom row: Price on right, Location on left (opposite) */}
                 <div className="mt-auto pt-2 flex items-end justify-between gap-1.5">
                     <div className="flex flex-col min-w-0">
+                        {isConvertible && (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800/50 w-fit mb-1">
+                                <Check className="w-2.5 h-2.5" />
+                                قابل تبدیل
+                            </span>
+                        )}
                         {priceItems.map((item, idx) => (
                             <div key={idx} className={cn("flex flex-col min-w-0", idx > 0 && "mt-1")}>
                                 {item.label && (

@@ -51,14 +51,20 @@ export const DynamicPricingFields: React.FC<DynamicPricingFieldsProps> = ({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {priceModel.pricingFields.map((field) => {
+                    const isConvertibleField = field.key === "isConvertible" || field.key === "convertible";
+                    // Backend-only fields: hide conversion rate and minimum deposit from frontend
+                    if (field.key === "conversionRate" || field.key === "minDeposit") {
+                        return null;
+                    }
+
                     const rawVal = values[field.key];
                     const numVal = Number(rawVal || 0);
                     const isTomanUnit = !field.unit || field.unit === "تومان";
-                    const persianPreview = field.fieldType === "NUMBER" && isTomanUnit && numVal > 0
+                    const persianPreview = field.fieldType === "NUMBER" && isTomanUnit && numVal > 0 && !isConvertibleField
                         ? numberToPersianWords(numVal)
                         : null;
 
-                    if (field.fieldType === "BOOLEAN") {
+                    if (field.fieldType === "BOOLEAN" || isConvertibleField) {
                         return (
                             <div
                                 key={field.key}
@@ -69,14 +75,12 @@ export const DynamicPricingFields: React.FC<DynamicPricingFieldsProps> = ({
                                         htmlFor={`pricing_${field.key}`}
                                         className="text-xs font-bold text-brand block cursor-pointer"
                                     >
-                                        {field.label}
+                                        {isConvertibleField ? "ودیعه و اجاره قابل تبدیل باشد" : field.label}
                                         {field.required && <span className="text-error mr-1">*</span>}
                                     </label>
-                                    {field.helpText && (
-                                        <p className="text-[11px] text-text-light mt-0.5">
-                                            {field.helpText}
-                                        </p>
-                                    )}
+                                    <p className="text-[11px] text-text-light mt-0.5">
+                                        {field.helpText || (isConvertibleField ? "امکان توافق با متقاضی برای تغییر نسبت ودیعه و اجاره ماهیانه وجود دارد." : undefined)}
+                                    </p>
                                 </div>
                                 <input
                                     id={`pricing_${field.key}`}
