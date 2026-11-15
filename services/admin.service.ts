@@ -89,7 +89,14 @@ export const adminService = {
         return response.data;
     },
 
-    listUsers: async (params: { page?: number; limit?: number; search?: string }): Promise<ListUsersResponse> => {
+    listUsers: async (params: {
+        page?: number;
+        limit?: number;
+        search?: string;
+        status?: string;
+        role?: string;
+        sort?: string;
+    }): Promise<ListUsersResponse> => {
         const response = await api.get<ListUsersResponse>("/admin/users", { params });
         return response.data;
     },
@@ -499,6 +506,7 @@ export const adminService = {
         isActive?: boolean;
         cityId?: string;
         search?: string;
+        sort?: string;
         page?: number;
         limit?: number;
     } = {}): Promise<AdminAgenciesListResponse> => {

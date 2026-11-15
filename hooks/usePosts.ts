@@ -43,6 +43,7 @@ export const useAdminPosts = (
     publisherType?: PublisherType;
     publisherId?: string;
     isPublished?: boolean;
+    sort?: string;
   } = {},
   options: { enabled?: boolean } = {}
 ) => {

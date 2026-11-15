@@ -3,6 +3,7 @@
 import { useAds } from "@/hooks/useAds";
 import { useAuth } from "@/hooks/useAuth";
 import { useCategoryLookup } from "@/hooks/useCategoryLookup";
+import { useDebounce } from "@/hooks/useDebounce";
 import { formatPrice, toPersianDigits, getMediaUrl, getMediaPosterUrl } from "@/lib/utils";
 import { adminService } from "@/services/admin.service";
 import { adsService } from "@/services/ads.service";
@@ -33,7 +34,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { normalizeApiError } from "@/lib/api/error-handler";
 import AdminAdDetailModal from "./AdminAdDetailModal";
@@ -56,8 +57,14 @@ export default function AdminOrgAdsTab() {
     // Filters
     const [selectedStatus, setSelectedStatus] = useState<string>("ALL");
     const [searchTerm, setSearchTerm] = useState<string>("");
+    const debouncedSearch = useDebounce(searchTerm.trim(), 400);
+    const [selectedSort, setSelectedSort] = useState<string>("createdAt_DESC");
     const [page, setPage] = useState<number>(1);
     const limit = 15;
+
+    useEffect(() => {
+        setPage(1);
+    }, [debouncedSearch, selectedStatus, selectedSort]);
 
     // Modals
     const [detailModalAdId, setDetailModalAdId] = useState<string | null>(null);
@@ -69,18 +76,26 @@ export default function AdminOrgAdsTab() {
         const p: {
             ownerId?: string;
             status?: string;
+            search?: string;
+            sort?: string;
             page: number;
             limit: number;
         } = {
             ownerId: adminId,
             page,
             limit,
+            sort: selectedSort,
         };
         if (selectedStatus !== "ALL") {
             p.status = selectedStatus;
+        } else {
+            p.status = "ALL";
+        }
+        if (debouncedSearch) {
+            p.search = debouncedSearch;
         }
         return p;
-    }, [adminId, selectedStatus, page, limit]);
+    }, [adminId, selectedStatus, debouncedSearch, selectedSort, page, limit]);
 
     const { data: adsData, isLoading, isFetching, refetch } = useAds(
         queryParams,
@@ -145,17 +160,9 @@ export default function AdminOrgAdsTab() {
         await rejectMutation.mutateAsync({ id: rejectTarget.id, reason, note });
     };
 
-    // Client-side text filter
-    const filteredItems = useMemo(() => {
-        if (!adsData?.items) return [];
-        if (!searchTerm.trim()) return adsData.items;
-        const term = searchTerm.toLowerCase().trim();
-        return adsData.items.filter((item) => {
-            const titleMatch = item.title?.toLowerCase().includes(term);
-            const idMatch = item.adId?.toLowerCase().includes(term);
-            return titleMatch || idMatch;
-        });
-    }, [adsData?.items, searchTerm]);
+    // Server-side filtered items
+    const items = useMemo(() => adsData?.items || [], [adsData?.items]);
+    const filteredItems = items;
 
     const totalPages = Math.ceil((adsData?.total || 0) / limit) || 1;
 
@@ -384,6 +391,23 @@ export default function AdminOrgAdsTab() {
                                 <X className="w-3.5 h-3.5" />
                             </button>
                         )}
+                    </div>
+                    {/* Sort Filter */}
+                    <div className="w-full sm:w-48">
+                        <select
+                            value={selectedSort}
+                            onChange={(e) => {
+                                setSelectedSort(e.target.value);
+                                setPage(1);
+                            }}
+                            className="w-full px-3 py-2.5 bg-surface-secondary border border-border-subtle rounded-xl text-xs text-foreground-secondary focus:outline-hidden focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all cursor-pointer font-bold"
+                        >
+                            <option value="createdAt_DESC">جدیدترین آگهی‌ها</option>
+                            <option value="createdAt_ASC">قدیمی‌ترین آگهی‌ها</option>
+                            <option value="updatedAt_DESC">آخرین بروزرسانی</option>
+                            <option value="title_ASC">عنوان: الف تا ی</option>
+                            <option value="title_DESC">عنوان: ی تا الف</option>
+                        </select>
                     </div>
                     <button
                         type="button"

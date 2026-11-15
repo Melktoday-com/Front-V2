@@ -82,6 +82,7 @@ export interface ListAdsQuery {
     subcategoryKey?: string;
     businessModelKey?: string;
     ownerId?: string;
+    sort?: string;
 }
 
 export interface PaginatedResponse<T> {

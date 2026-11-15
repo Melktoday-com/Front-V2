@@ -94,6 +94,8 @@ export const ticketingService = {
         if (params?.topicId) queryParams.topicId = params.topicId;
         if (params?.status) queryParams.status = params.status;
         if (params?.requesterId) queryParams.requesterId = params.requesterId;
+        if (params?.search) queryParams.search = params.search;
+        if (params?.sort) queryParams.sort = params.sort;
         if (params?.limit !== undefined) queryParams.limit = params.limit;
         if (params?.offset !== undefined) queryParams.offset = params.offset;
 

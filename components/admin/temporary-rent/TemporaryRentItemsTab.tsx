@@ -35,7 +35,8 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { useDebounce } from "@/hooks/useDebounce";
 import { toast } from "sonner";
 import TemporaryRentItemDetailModal from "./TemporaryRentItemDetailModal";
 import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
@@ -87,8 +88,14 @@ export default function TemporaryRentItemsTab() {
     const [selectedStatus, setSelectedStatus] = useState<string>("PENDING_APPROVAL");
     const [selectedCityId, setSelectedCityId] = useState<string>("");
     const [searchTerm, setSearchTerm] = useState<string>("");
+    const debouncedSearch = useDebounce(searchTerm.trim(), 400);
+    const [selectedSort, setSelectedSort] = useState<string>("updatedAt_DESC");
     const [page, setPage] = useState<number>(1);
     const limit = 15;
+
+    useEffect(() => {
+        setPage(1);
+    }, [debouncedSearch, selectedStatus, selectedCityId, selectedSort]);
 
     // Modals
     const [detailModalAdId, setDetailModalAdId] = useState<string | null>(null);
@@ -96,18 +103,31 @@ export default function TemporaryRentItemsTab() {
 
     // Queries
     const queryParams = useMemo(() => {
-        const p: { status?: string; cityId?: string; page: number; limit: number } = {
+        const p: {
+            status?: string;
+            cityId?: string;
+            search?: string;
+            sort?: string;
+            page: number;
+            limit: number;
+        } = {
             page,
             limit,
+            sort: selectedSort,
         };
         if (selectedStatus !== "ALL") {
             p.status = selectedStatus;
+        } else {
+            p.status = "ALL";
         }
         if (selectedCityId) {
             p.cityId = selectedCityId;
         }
+        if (debouncedSearch) {
+            p.search = debouncedSearch;
+        }
         return p;
-    }, [selectedStatus, selectedCityId, page, limit]);
+    }, [selectedStatus, selectedCityId, debouncedSearch, selectedSort, page, limit]);
 
     const {
         data: adsData,
@@ -164,20 +184,9 @@ export default function TemporaryRentItemsTab() {
         }
     };
 
-    // Client-side text filter on the current page items
-    const filteredItems = useMemo(() => {
-        if (!adsData?.items) return [];
-        if (!searchTerm.trim()) return adsData.items;
-
-        const term = searchTerm.toLowerCase().trim();
-        return adsData.items.filter((item) => {
-            const titleMatch = item.title?.toLowerCase().includes(term);
-            const idMatch = item.id?.toLowerCase().includes(term);
-            const ownerMatch = item.ownerId?.toLowerCase().includes(term);
-            const cityMatch = item.cityName?.toLowerCase().includes(term);
-            return titleMatch || idMatch || ownerMatch || cityMatch;
-        });
-    }, [adsData?.items, searchTerm]);
+    // Server-side filtered items
+    const items = useMemo(() => adsData?.items || [], [adsData?.items]);
+    const filteredItems = items;
 
     const totalPages = Math.ceil((adsData?.total || 0) / limit) || 1;
 
@@ -361,7 +370,7 @@ export default function TemporaryRentItemsTab() {
                     </div>
 
                     {/* City Selector Filter */}
-                    <div className="w-full sm:w-60">
+                    <div className="w-full sm:w-48">
                         <select
                             value={selectedCityId}
                             onChange={(e) => {
@@ -376,6 +385,24 @@ export default function TemporaryRentItemsTab() {
                                     {city.name}
                                 </option>
                             ))}
+                        </select>
+                    </div>
+
+                    {/* Sort Selector */}
+                    <div className="w-full sm:w-48">
+                        <select
+                            value={selectedSort}
+                            onChange={(e) => {
+                                setSelectedSort(e.target.value);
+                                setPage(1);
+                            }}
+                            className="w-full px-3 py-2.5 bg-surface-secondary border border-border-subtle rounded-xl text-xs text-foreground-secondary focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all cursor-pointer font-bold"
+                        >
+                            <option value="updatedAt_DESC">آخرین بروزرسانی</option>
+                            <option value="createdAt_DESC">جدیدترین اقامتگاه‌ها</option>
+                            <option value="createdAt_ASC">قدیمی‌ترین اقامتگاه‌ها</option>
+                            <option value="title_ASC">عنوان: الف تا ی</option>
+                            <option value="title_DESC">عنوان: ی تا الف</option>
                         </select>
                     </div>
 

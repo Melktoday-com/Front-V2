@@ -106,6 +106,7 @@ export class HttpPostAdapter implements IPostPort {
       publisherType?: PublisherType;
       publisherId?: string;
       isPublished?: boolean;
+      sort?: string;
     } = {},
   ): Promise<PostsListResponse> {
     const response = await apiClient.get<PostsListResponse>('/posts/admin/all', {

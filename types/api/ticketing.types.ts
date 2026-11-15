@@ -89,6 +89,8 @@ export interface ListAdminTicketsParams extends ListTicketsParams {
     topicId?: string;
     status?: TicketStatus;
     requesterId?: string;
+    search?: string;
+    sort?: string;
 }
 
 export const TICKET_STATUS_CONFIG: Record<TicketStatus, {

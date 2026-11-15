@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   useAdminPosts,
@@ -54,9 +54,14 @@ export default function AdminPostsScene() {
   const [statusFilter, setStatusFilter] = useState<StatusFilterType>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const debouncedSearch = useDebounce(searchQuery, 400);
+  const [sortFilter, setSortFilter] = useState<string>("createdAt_DESC");
   const [page, setPage] = useState(1);
   const [togglingPostId, setTogglingPostId] = useState<string | null>(null);
   const [deletingPostId, setDeletingPostId] = useState<string | null>(null);
+
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch, publisherFilter, statusFilter, sortFilter]);
 
   const isPublishedParam =
     statusFilter === "published" ? true : statusFilter === "draft" ? false : undefined;
@@ -71,6 +76,7 @@ export default function AdminPostsScene() {
     publisherType: publisherTypeParam,
     isPublished: isPublishedParam,
     search: debouncedSearch.trim() || undefined,
+    sort: sortFilter,
     page,
     limit: 12,
   });
@@ -294,31 +300,53 @@ export default function AdminPostsScene() {
             </button>
           </div>
 
-          {/* Search Input */}
-          <div className="relative min-w-[280px]">
-            <Search className="w-4 h-4 absolute right-3.5 top-1/2 -translate-y-1/2 text-secondary/60" />
-            <input
-              type="text"
-              placeholder="جستجو در عنوان یا متن مطالب..."
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setPage(1);
-              }}
-              className="w-full pr-10 pl-8 py-2 border border-soft-border rounded-xl bg-soft-bg text-xs font-bold text-brand focus:bg-surface outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-            />
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={() => {
-                  setSearchQuery("");
+          {/* Search & Sort Controls */}
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs font-bold text-secondary">مرتب‌سازی:</span>
+              <select
+                value={sortFilter}
+                onChange={(e) => {
+                  setSortFilter(e.target.value);
                   setPage(1);
                 }}
-                className="absolute left-2.5 top-1/2 -translate-y-1/2 text-secondary hover:text-brand cursor-pointer"
+                className="px-2.5 py-2 border border-soft-border rounded-xl bg-soft-bg text-xs font-bold text-brand focus:bg-surface outline-none cursor-pointer"
               >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
+                <option value="createdAt_DESC">جدیدترین مطالب</option>
+                <option value="createdAt_ASC">قدیمی‌ترین مطالب</option>
+                <option value="views_DESC">پربازدیدترین</option>
+                <option value="likes_DESC">محبوب‌ترین</option>
+                <option value="title_ASC">عنوان: الف تا ی</option>
+                <option value="title_DESC">عنوان: ی تا الف</option>
+              </select>
+            </div>
+
+            {/* Search Input */}
+            <div className="relative min-w-[240px]">
+              <Search className="w-4 h-4 absolute right-3.5 top-1/2 -translate-y-1/2 text-secondary/60" />
+              <input
+                type="text"
+                placeholder="جستجو در عنوان یا متن مطالب..."
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setPage(1);
+                }}
+                className="w-full pr-10 pl-8 py-2 border border-soft-border rounded-xl bg-soft-bg text-xs font-bold text-brand focus:bg-surface outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchQuery("");
+                    setPage(1);
+                  }}
+                  className="absolute left-2.5 top-1/2 -translate-y-1/2 text-secondary hover:text-brand cursor-pointer"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>

@@ -35,7 +35,8 @@ import {
     Tag,
     User,
 } from "lucide-react";
-import React, { useId, useState } from "react";
+import React, { useEffect, useId, useState } from "react";
+import { useDebounce } from "@/hooks/useDebounce";
 import { toast } from "sonner";
 
 export default function AdminTicketsPage() {
@@ -50,13 +51,20 @@ export default function AdminTicketsPage() {
     const [selectedStatus, setSelectedStatus] = useState<TicketStatus | "ALL">("ALL");
     const [selectedTopicId, setSelectedTopicId] = useState<string>("ALL");
     const [searchQuery, setSearchQuery] = useState("");
+    const debouncedSearch = useDebounce(searchQuery.trim(), 400);
+    const [selectedSort, setSelectedSort] = useState<string>("created_at_desc");
     const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
     const [replyBody, setReplyBody] = useState("");
     const [page, setPage] = useState(1);
     const limit = 20;
 
+    useEffect(() => {
+        setPage(1);
+    }, [debouncedSearch, selectedStatus, selectedTopicId, selectedSort]);
+
     const statusFilterId = useId();
     const topicFilterId = useId();
+    const sortFilterId = useId();
 
     // Topics query for filtering
     const { data: topics } = useAllTicketTopics(canView);
@@ -71,6 +79,8 @@ export default function AdminTicketsPage() {
         {
             status: selectedStatus === "ALL" ? undefined : selectedStatus,
             topicId: selectedTopicId === "ALL" ? undefined : selectedTopicId,
+            search: debouncedSearch || undefined,
+            sort: selectedSort,
             limit,
             offset: (page - 1) * limit,
         },
@@ -178,15 +188,8 @@ export default function AdminTicketsPage() {
         );
     }
 
-    const filteredTickets = (ticketsData?.tickets || []).filter((t) => {
-        if (!searchQuery.trim()) return true;
-        const q = searchQuery.trim().toLowerCase();
-        return (
-            t.subject.toLowerCase().includes(q) ||
-            t.requesterId.toLowerCase().includes(q) ||
-            (t.topicLabel && t.topicLabel.toLowerCase().includes(q))
-        );
-    });
+    const tickets = ticketsData?.tickets || [];
+    const filteredTickets = tickets;
 
     return (
         <div className="p-6 lg:p-8 space-y-6" dir="rtl">
@@ -266,6 +269,25 @@ export default function AdminTicketsPage() {
                                 {TICKET_STATUS_CONFIG[st].label}
                             </option>
                         ))}
+                    </select>
+                </div>
+
+                {/* Sort Filter */}
+                <div className="flex items-center gap-2">
+                    <label
+                        htmlFor={sortFilterId}
+                        className="text-xs font-bold text-secondary flex items-center gap-1"
+                    >
+                        <span>مرتب‌سازی:</span>
+                    </label>
+                    <select
+                        id={sortFilterId}
+                        value={selectedSort}
+                        onChange={(e) => setSelectedSort(e.target.value)}
+                        className="px-3 py-2 rounded-2xl border border-soft-border text-xs font-bold bg-surface outline-none focus:border-primary cursor-pointer"
+                    >
+                        <option value="created_at_desc">جدیدترین تیکت‌ها</option>
+                        <option value="created_at_asc">قدیمی‌ترین تیکت‌ها</option>
                     </select>
                 </div>
 
@@ -378,6 +400,31 @@ export default function AdminTicketsPage() {
                             })
                         )}
                     </div>
+
+                    {/* Pagination Controls */}
+                    {ticketsData && ticketsData.total > limit && (
+                        <div className="pt-3 mt-2 border-t border-soft-border flex items-center justify-between text-xs">
+                            <button
+                                type="button"
+                                disabled={page === 1}
+                                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                                className="px-2.5 py-1 rounded-lg border border-soft-border disabled:opacity-40 hover:bg-soft-bg cursor-pointer font-bold"
+                            >
+                                قبلی
+                            </button>
+                            <span className="text-secondary font-bold">
+                                صفحه {toPersianDigits(page)} از {toPersianDigits(Math.ceil(ticketsData.total / limit))}
+                            </span>
+                            <button
+                                type="button"
+                                disabled={page * limit >= ticketsData.total}
+                                onClick={() => setPage((p) => p + 1)}
+                                className="px-2.5 py-1 rounded-lg border border-soft-border disabled:opacity-40 hover:bg-soft-bg cursor-pointer font-bold"
+                            >
+                                بعدی
+                            </button>
+                        </div>
+                    )}
                 </div>
 
                 {/* Left: Ticket Detail & Message History (Detail) */}

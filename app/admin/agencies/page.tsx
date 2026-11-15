@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { adminService } from "@/services/admin.service";
@@ -30,7 +30,8 @@ import {
 import { toast } from "sonner";
 import { AgentApplicationResponse, AgencyFull } from "@/types/api/agency.types";
 import { normalizeApiError } from "@/lib/api/error-handler";
-import { cn, getMediaUrl, toPersianDigits } from "@/lib/utils";
+import { cn, getMediaUrl, toPersianDigits, toEnglishDigits } from "@/lib/utils";
+import { useDebounce } from "@/hooks/useDebounce";
 import { JibitKycViewer } from "@/components/admin/JibitKycViewer";
 
 export default function AdminAgenciesPage() {
@@ -46,7 +47,14 @@ export default function AdminAgenciesPage() {
 
     // Agencies filters
     const [searchQuery, setSearchQuery] = useState<string>("");
+    const debouncedAgencySearch = useDebounce(searchQuery.trim(), 400);
+    const [agencySort, setAgencySort] = useState<string>("createdAt_DESC");
     const [agencyTypeFilter, setAgencyTypeFilter] = useState<string>("ALL");
+    const [agencyPage, setAgencyPage] = useState<number>(1);
+
+    useEffect(() => {
+        setAgencyPage(1);
+    }, [debouncedAgencySearch, agencySort, agencyTypeFilter]);
 
     // Queries
     const {
@@ -69,11 +77,14 @@ export default function AdminAgenciesPage() {
         refetch: refetchAgencies,
         isFetching: isAgenciesFetching,
     } = useQuery({
-        queryKey: ["admin", "agencies", agencyTypeFilter, searchQuery],
+        queryKey: ["admin", "agencies", agencyTypeFilter, debouncedAgencySearch, agencySort, agencyPage],
         queryFn: () =>
             adminService.listAdminAgencies({
                 agencyType: agencyTypeFilter === "ALL" ? undefined : agencyTypeFilter,
-                search: searchQuery.trim() || undefined,
+                search: debouncedAgencySearch || undefined,
+                sort: agencySort,
+                page: agencyPage,
+                limit: 15,
             }),
     });
 
@@ -127,12 +138,26 @@ export default function AdminAgenciesPage() {
     const filteredApplications = useMemo(() => {
         if (!appSearchQuery.trim()) return applications;
         const q = appSearchQuery.toLowerCase().trim();
-        return applications.filter((app) =>
-            (app.fullName && app.fullName.toLowerCase().includes(q)) ||
-            (app.agencyName && app.agencyName.toLowerCase().includes(q)) ||
-            (app.phone && app.phone.includes(q)) ||
-            (app.nationalCode && app.nationalCode.includes(q))
-        );
+        const qEnglish = toEnglishDigits(q);
+        return applications.filter((app) => {
+            const matchesText =
+                (app.fullName && app.fullName.toLowerCase().includes(q)) ||
+                (app.agencyName && app.agencyName.toLowerCase().includes(q)) ||
+                (app.address && app.address.toLowerCase().includes(q));
+
+            const phoneNorm = app.phone ? toEnglishDigits(app.phone) : "";
+            const nationalCodeNorm = app.nationalCode ? toEnglishDigits(app.nationalCode) : "";
+            const guildCodeNorm = app.guildCode ? toEnglishDigits(app.guildCode) : "";
+            const licenseNumberNorm = app.licenseNumber ? toEnglishDigits(app.licenseNumber) : "";
+
+            const matchesDigits =
+                (phoneNorm && phoneNorm.includes(qEnglish)) ||
+                (nationalCodeNorm && nationalCodeNorm.includes(qEnglish)) ||
+                (guildCodeNorm && guildCodeNorm.includes(qEnglish)) ||
+                (licenseNumberNorm && licenseNumberNorm.includes(qEnglish));
+
+            return Boolean(matchesText || matchesDigits);
+        });
     }, [applications, appSearchQuery]);
     const agencies = agenciesData?.items || [];
 
@@ -439,24 +464,40 @@ export default function AdminAgenciesPage() {
                             />
                         </div>
 
-                        <div className="flex items-center gap-2 w-full sm:w-auto">
-                            <span className="text-xs font-bold text-foreground-muted">نوع:</span>
-                            {["ALL", "AGENCY", "CONSULTANT"].map((tp) => (
-                                <button
-                                    key={tp}
-                                    type="button"
-                                    onClick={() => setAgencyTypeFilter(tp)}
-                                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
-                                        agencyTypeFilter === tp
-                                            ? "bg-blue-600 text-white"
-                                            : "bg-surface-secondary text-foreground-secondary hover:bg-slate-200"
-                                    }`}
+                        <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                            <div className="flex items-center gap-1.5">
+                                <span className="text-xs font-bold text-foreground-muted">نوع:</span>
+                                {["ALL", "AGENCY", "CONSULTANT"].map((tp) => (
+                                    <button
+                                        key={tp}
+                                        type="button"
+                                        onClick={() => setAgencyTypeFilter(tp)}
+                                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
+                                            agencyTypeFilter === tp
+                                                ? "bg-blue-600 text-white"
+                                                : "bg-surface-secondary text-foreground-secondary hover:bg-slate-200"
+                                        }`}
+                                    >
+                                        {tp === "ALL" && "همه"}
+                                        {tp === "AGENCY" && "دفاتر املاک"}
+                                        {tp === "CONSULTANT" && "مشاورین املاک"}
+                                    </button>
+                                ))}
+                            </div>
+
+                            <div className="flex items-center gap-1.5 mr-auto sm:mr-0">
+                                <span className="text-xs font-bold text-foreground-muted">مرتب‌سازی:</span>
+                                <select
+                                    value={agencySort}
+                                    onChange={(e) => setAgencySort(e.target.value)}
+                                    className="px-2.5 py-1.5 bg-surface-secondary border border-border-subtle rounded-lg text-xs font-semibold text-foreground focus:ring-2 focus:ring-blue-500/20 outline-none transition cursor-pointer"
                                 >
-                                    {tp === "ALL" && "همه"}
-                                    {tp === "AGENCY" && "دفاتر املاک"}
-                                    {tp === "CONSULTANT" && "مشاورین املاک"}
-                                </button>
-                            ))}
+                                    <option value="createdAt_DESC">جدیدترین</option>
+                                    <option value="createdAt_ASC">قدیمی‌ترین</option>
+                                    <option value="name_ASC">نام: الف تا ی</option>
+                                    <option value="name_DESC">نام: ی تا الف</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
 
@@ -559,6 +600,31 @@ export default function AdminAgenciesPage() {
                                     </tbody>
                                 </table>
                             </div>
+
+                            {/* Agencies Pagination */}
+                            {agenciesData && (agenciesData.totalPages > 1 || agenciesData.total > 15) && (
+                                <div className="p-4 bg-surface-secondary border-t border-border-subtle flex justify-between items-center text-sm">
+                                    <button
+                                        type="button"
+                                        disabled={agencyPage === 1}
+                                        onClick={() => setAgencyPage((p) => Math.max(1, p - 1))}
+                                        className="px-3 py-1 bg-surface border border-border-subtle rounded-md disabled:opacity-50 hover:bg-slate-200 cursor-pointer text-xs font-bold"
+                                    >
+                                        قبلی
+                                    </button>
+                                    <span className="text-foreground-secondary text-xs font-bold">
+                                        صفحه {toPersianDigits(agencyPage)} از {toPersianDigits(agenciesData.totalPages || 1)} ({toPersianDigits(agenciesData.total)} مورد)
+                                    </span>
+                                    <button
+                                        type="button"
+                                        disabled={agencyPage >= (agenciesData.totalPages || 1)}
+                                        onClick={() => setAgencyPage((p) => p + 1)}
+                                        className="px-3 py-1 bg-surface border border-border-subtle rounded-md disabled:opacity-50 hover:bg-slate-200 cursor-pointer text-xs font-bold"
+                                    >
+                                        بعدی
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>

@@ -16,11 +16,15 @@ import {
     Loader2,
     Search,
     X,
+    Filter,
+    ArrowUpDown,
+    ArrowUp,
+    ArrowDown,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
+import { cn, toPersianDigits } from "@/lib/utils";
 
 export default function AdminUsersPage() {
     const router = useRouter();
@@ -28,6 +32,9 @@ export default function AdminUsersPage() {
     const [page, setPage] = useState(1);
     const [searchQuery, setSearchQuery] = useState("");
     const debouncedSearch = useDebounce(searchQuery.trim(), 400);
+    const [selectedStatus, setSelectedStatus] = useState<string>("ALL");
+    const [selectedRole, setSelectedRole] = useState<string>("ALL");
+    const [selectedSort, setSelectedSort] = useState<string>("createdAt_DESC");
 
     const [selectedUserForHistory, setSelectedUserForHistory] = useState<AdminUser | null>(null);
     const [moderationRecord, setModerationRecord] = useState<ModerationHistoryResponseDto | null>(null);
@@ -49,12 +56,15 @@ export default function AdminUsersPage() {
 
     useEffect(() => {
         setPage(1);
-    }, [debouncedSearch]);
+    }, [debouncedSearch, selectedStatus, selectedRole, selectedSort]);
 
     const { data, isLoading } = useAdminUsers({
         page,
         limit: 10,
         search: debouncedSearch || undefined,
+        status: selectedStatus === "ALL" ? undefined : selectedStatus,
+        role: selectedRole === "ALL" ? undefined : selectedRole,
+        sort: selectedSort,
     });
 
     const banMutation = useMutation({
@@ -122,30 +132,78 @@ export default function AdminUsersPage() {
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-bold text-foreground">مدیریت کاربران</h1>
-                    <p className="text-foreground-muted">مشاهده، بررسی و مدیریت دسترسی‌های کاربران سیستم</p>
+            <div className="flex flex-col gap-4">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h1 className="text-2xl font-bold text-foreground">مدیریت کاربران</h1>
+                        <p className="text-foreground-muted">مشاهده، بررسی و مدیریت دسترسی‌های کاربران سیستم</p>
+                    </div>
+
+                    <div className="relative w-full md:w-80">
+                        <Search className="w-4 h-4 absolute right-3.5 top-1/2 -translate-y-1/2 text-foreground-muted pointer-events-none" />
+                        <input
+                            type="text"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder="جستجو بر اساس نام یا شماره..."
+                            className="w-full pr-10 pl-9 py-2.5 bg-surface border border-border-subtle rounded-xl text-sm font-medium text-foreground focus:ring-2 focus:ring-primary/20 outline-none transition"
+                        />
+                        {searchQuery && (
+                            <button
+                                type="button"
+                                onClick={() => setSearchQuery("")}
+                                className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground-muted hover:text-foreground p-0.5"
+                            >
+                                <X className="w-3.5 h-3.5" />
+                            </button>
+                        )}
+                    </div>
                 </div>
 
-                <div className="relative w-full md:w-80">
-                    <Search className="w-4 h-4 absolute right-3.5 top-1/2 -translate-y-1/2 text-foreground-muted pointer-events-none" />
-                    <input
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="جستجو بر اساس نام یا شماره..."
-                        className="w-full pr-10 pl-9 py-2.5 bg-surface border border-border-subtle rounded-xl text-sm font-medium text-foreground focus:ring-2 focus:ring-primary/20 outline-none transition"
-                    />
-                    {searchQuery && (
-                        <button
-                            type="button"
-                            onClick={() => setSearchQuery("")}
-                            className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground-muted hover:text-foreground p-0.5"
+                {/* Filter and Sort Bar */}
+                <div className="flex flex-wrap items-center gap-3 p-3 bg-surface rounded-2xl border border-border-subtle">
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-foreground-muted">
+                        <Filter className="w-3.5 h-3.5" />
+                        <span>فیلترها:</span>
+                    </div>
+
+                    <select
+                        value={selectedStatus}
+                        onChange={(e) => setSelectedStatus(e.target.value)}
+                        className="px-3 py-1.5 bg-surface-secondary border border-border-subtle rounded-xl text-xs font-semibold text-foreground focus:ring-2 focus:ring-primary/20 outline-none transition cursor-pointer"
+                    >
+                        <option value="ALL">همه وضعیت‌ها</option>
+                        <option value="ACTIVE">فعال</option>
+                        <option value="SUSPENDED">معلق</option>
+                        <option value="BLOCKED">مسدود</option>
+                    </select>
+
+                    <select
+                        value={selectedRole}
+                        onChange={(e) => setSelectedRole(e.target.value)}
+                        className="px-3 py-1.5 bg-surface-secondary border border-border-subtle rounded-xl text-xs font-semibold text-foreground focus:ring-2 focus:ring-primary/20 outline-none transition cursor-pointer"
+                    >
+                        <option value="ALL">همه نقش‌ها</option>
+                        <option value="user">کاربر عادی</option>
+                        <option value="agent">مشاور املاک</option>
+                        <option value="landlord">میزبان اقامتگاه</option>
+                        <option value="admin">ادمین</option>
+                        <option value="super-admin">مدیر ارشد</option>
+                    </select>
+
+                    <div className="mr-auto flex items-center gap-2">
+                        <span className="text-xs font-bold text-foreground-muted">مرتب‌سازی:</span>
+                        <select
+                            value={selectedSort}
+                            onChange={(e) => setSelectedSort(e.target.value)}
+                            className="px-3 py-1.5 bg-surface-secondary border border-border-subtle rounded-xl text-xs font-semibold text-foreground focus:ring-2 focus:ring-primary/20 outline-none transition cursor-pointer"
                         >
-                            <X className="w-3.5 h-3.5" />
-                        </button>
-                    )}
+                            <option value="createdAt_DESC">جدیدترین عضویت</option>
+                            <option value="createdAt_ASC">قدیمی‌ترین عضویت</option>
+                            <option value="name_ASC">نام: الف تا ی</option>
+                            <option value="name_DESC">نام: ی تا الف</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
@@ -153,11 +211,39 @@ export default function AdminUsersPage() {
                 <table className="w-full text-right">
                     <thead className="bg-surface-secondary text-foreground-secondary text-sm">
                         <tr>
-                            <th className="px-6 py-4 font-semibold">نام و نام خانوادگی</th>
+                            <th
+                                onClick={() => setSelectedSort(prev => prev === "name_ASC" ? "name_DESC" : "name_ASC")}
+                                className="px-6 py-4 font-semibold cursor-pointer hover:text-foreground select-none transition-colors"
+                            >
+                                <div className="flex items-center gap-1.5">
+                                    <span>نام و نام خانوادگی</span>
+                                    {selectedSort === "name_ASC" ? (
+                                        <ArrowUp className="w-3.5 h-3.5 text-primary" />
+                                    ) : selectedSort === "name_DESC" ? (
+                                        <ArrowDown className="w-3.5 h-3.5 text-primary" />
+                                    ) : (
+                                        <ArrowUpDown className="w-3.5 h-3.5 text-foreground-muted" />
+                                    )}
+                                </div>
+                            </th>
                             <th className="px-6 py-4 font-semibold">شماره تماس</th>
                             <th className="px-6 py-4 font-semibold">نقش‌ها</th>
                             <th className="px-6 py-4 font-semibold">وضعیت</th>
-                            <th className="px-6 py-4 font-semibold">تاریخ عضویت</th>
+                            <th
+                                onClick={() => setSelectedSort(prev => prev === "createdAt_DESC" ? "createdAt_ASC" : "createdAt_DESC")}
+                                className="px-6 py-4 font-semibold cursor-pointer hover:text-foreground select-none transition-colors"
+                            >
+                                <div className="flex items-center gap-1.5">
+                                    <span>تاریخ عضویت</span>
+                                    {selectedSort === "createdAt_DESC" ? (
+                                        <ArrowDown className="w-3.5 h-3.5 text-primary" />
+                                    ) : selectedSort === "createdAt_ASC" ? (
+                                        <ArrowUp className="w-3.5 h-3.5 text-primary" />
+                                    ) : (
+                                        <ArrowUpDown className="w-3.5 h-3.5 text-foreground-muted" />
+                                    )}
+                                </div>
+                            </th>
                             <th className="px-6 py-4 font-semibold text-center">عملیات</th>
                         </tr>
                     </thead>
@@ -263,20 +349,22 @@ export default function AdminUsersPage() {
                     </tbody>
                 </table>
 
-                {/* Pagination (Simplified) */}
+                {/* Pagination */}
                 <div className="p-4 bg-surface-secondary border-t border-border-subtle flex justify-between items-center text-sm">
                     <button
                         disabled={page === 1}
                         onClick={() => setPage(p => p - 1)}
-                        className="px-3 py-1 bg-surface border border-border-subtle rounded-md disabled:opacity-50"
+                        className="px-3 py-1 bg-surface border border-border-subtle rounded-md disabled:opacity-50 hover:bg-surface-secondary cursor-pointer"
                     >
                         قبلی
                     </button>
-                    <span className="text-foreground-secondary">صفحه {page}</span>
+                    <span className="text-foreground-secondary text-xs font-bold">
+                        صفحه {toPersianDigits(page)} {data?.total !== undefined ? `از ${toPersianDigits(Math.max(1, Math.ceil(data.total / 10)))} (${toPersianDigits(data.total)} کاربر)` : ""}
+                    </span>
                     <button
-                        disabled={!data || data.items.length < 10}
+                        disabled={!data || (data.total !== undefined ? page * 10 >= data.total : data.items.length < 10)}
                         onClick={() => setPage(p => p + 1)}
-                        className="px-3 py-1 bg-surface border border-border-subtle rounded-md disabled:opacity-50"
+                        className="px-3 py-1 bg-surface border border-border-subtle rounded-md disabled:opacity-50 hover:bg-surface-secondary cursor-pointer"
                     >
                         بعدی
                     </button>

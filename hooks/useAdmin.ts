@@ -1,7 +1,14 @@
 import { adminService } from "@/services/admin.service";
 import { useQuery } from "@tanstack/react-query";
 
-export function useAdminUsers(params: { page?: number; limit?: number; search?: string }) {
+export function useAdminUsers(params: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    status?: string;
+    role?: string;
+    sort?: string;
+}) {
     return useQuery({
         queryKey: ["admin", "users", params],
         queryFn: () => adminService.listUsers(params),

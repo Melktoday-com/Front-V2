@@ -34,6 +34,8 @@ export interface ListTemporaryRentQuery {
     ownerId?: string;
     status?: string;
     cityId?: string;
+    search?: string;
+    sort?: string;
     page?: number;
     limit?: number;
 }
