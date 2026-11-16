@@ -419,7 +419,7 @@ export default function ProfileScene() {
                     </p>
                 </div>
                 <Button
-                    onClick={() => router.push("/auth?redirect=/profile")}
+                    onClick={() => router.replace("/auth?redirect=/profile")}
                     className="w-full h-12 rounded-2xl font-bold"
                 >
                     ورود به حساب

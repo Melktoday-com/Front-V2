@@ -46,7 +46,7 @@ export const AccessGuard: React.FC<AccessGuardProps> = ({
         if (!isLoggedIn) {
             toast.info("برای دسترسی به این بخش، لطفاً ابتدا وارد حساب کاربری خود شوید.");
             const redirectUrl = pathname ? `/auth?redirect=${encodeURIComponent(pathname)}` : "/auth";
-            router.push(redirectUrl);
+            router.replace(redirectUrl);
             return;
         }
 
@@ -71,17 +71,17 @@ export const AccessGuard: React.FC<AccessGuardProps> = ({
                             });
                             window.location.reload();
                         } else {
-                            router.push(redirectTo);
+                            router.replace(redirectTo);
                         }
                     }).catch(() => {
-                        router.push(redirectTo);
+                        router.replace(redirectTo);
                     }).finally(() => {
                         setIsSwitchingRole(false);
                     });
                     return;
                 }
 
-                router.push(redirectTo);
+                router.replace(redirectTo);
                 return;
             }
         }
@@ -90,7 +90,7 @@ export const AccessGuard: React.FC<AccessGuardProps> = ({
         if (permissions && permissions.length > 0) {
             const hasAllPermissions = permissions.every(p => hasPermission(p));
             if (!hasAllPermissions) {
-                router.push(redirectTo);
+                router.replace(redirectTo);
                 return;
             }
         }

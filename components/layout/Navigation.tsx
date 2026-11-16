@@ -391,7 +391,7 @@ function MobileNavContent() {
 
             {/* 5. Profile */}
             <Link
-                href={isLoggedIn ? "/profile" : "/auth"}
+                href="/profile"
                 aria-label="حساب کاربری"
                 className={cn(
                     "flex flex-col items-center justify-center w-11 h-11 rounded-full transition-all",
