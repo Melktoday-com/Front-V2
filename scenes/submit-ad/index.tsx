@@ -43,6 +43,7 @@ import {
     Wallet
 } from "lucide-react";
 import dynamic from "next/dynamic";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -293,7 +294,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
             label: cat.displayName,
             description: cat.description,
             icon: cat.icon ? (
-                <img
+                <Image
                     src={getMediaUrl(cat.icon)}
                     alt=""
                     className="w-5 h-5 object-contain rounded p-0.5 bg-surface-secondary border border-border-subtle shrink-0"
@@ -329,7 +330,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
             value: sub.key,
             label: sub.displayName,
             icon: sub.icon ? (
-                <img
+                <Image
                     src={getMediaUrl(sub.icon)}
                     alt=""
                     className="w-4 h-4 object-contain rounded shrink-0"

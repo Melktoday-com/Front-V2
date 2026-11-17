@@ -63,7 +63,7 @@ export function ExploreGridCard({ post, onSelect }: ExploreGridCardProps) {
     >
       {/* ── Main Cover Image ─────────────────────────────────────────── */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
+      <Image
         src={coverUrl}
         alt={post.title}
         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 select-none"

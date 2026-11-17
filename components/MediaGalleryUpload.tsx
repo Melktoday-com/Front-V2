@@ -6,6 +6,7 @@ import { getMediaUrl, getMediaPosterUrl } from '@/lib/utils';
 import type { MediaReference, ExistingMediaType } from '@/types/api/media.types';
 import { Loader2, ImagePlus, X, Play, Video } from 'lucide-react';
 import { toast } from 'sonner';
+import Image from 'next/image';
 
 interface MediaGalleryUploadProps {
     value?: MediaReference[];
@@ -220,7 +221,7 @@ export default function MediaGalleryUpload({
                                 </div>
                             ) : (
                                 /* eslint-disable-next-line @next/next/no-img-element */
-                                <img
+                                <Image
                                     src={fullUrl}
                                     alt={`تصویر ${idx + 1}`}
                                     className="w-full h-full object-cover"

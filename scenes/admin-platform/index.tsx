@@ -41,6 +41,7 @@ import { toast } from "sonner";
 import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
 import MediaIconUpload from "@/components/admin/MediaIconUpload";
 import { toPersianDigits, getMediaUrl, getMediaPosterUrl, cn } from "@/lib/utils";
+import Image from "next/image";
 
 export default function AdminPlatformScene() {
   const router = useRouter();
@@ -497,7 +498,7 @@ export default function AdminPlatformScene() {
                     const firstMedia = post.mediaIds?.[0];
                     if (firstMedia) {
                       return (
-                        <img
+                        <Image
                           src={getMediaPosterUrl(firstMedia)}
                           alt={post.title}
                           className="w-16 h-16 rounded-xl object-cover border border-soft-border flex-shrink-0"

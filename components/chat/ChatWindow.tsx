@@ -46,6 +46,7 @@ import {
     formatMessageTime,
     shouldShowDateSeparator,
 } from "./chat-date.utils";
+import Image from "next/image";
 
 /**
  * Message retract / edit window: 1 hour in milliseconds
@@ -448,7 +449,7 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
                     )}
                     <div className="w-10 h-10 bg-soft-bg rounded-2xl flex items-center justify-center text-brand overflow-hidden border border-soft-border shrink-0">
                         {otherParticipant?.avatar ? (
-                            <img
+                            <Image
                                 src={getMediaUrl(otherParticipant.avatar)}
                                 alt={otherParticipant.name || "User"}
                                 className="w-full h-full object-cover"
@@ -763,7 +764,7 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
                                                     onClick={(e) => e.stopPropagation()}
                                                     className="block max-w-xs max-h-72 rounded-xl overflow-hidden group relative"
                                                 >
-                                                    <img
+                                                    <Image
                                                         src={getMediaUrl(id)}
                                                         alt="Chat Attachment"
                                                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"

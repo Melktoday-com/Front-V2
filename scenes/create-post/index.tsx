@@ -37,6 +37,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import Image from "next/image";
 
 type PostFormat = "instagram" | "medium";
 
@@ -969,7 +970,7 @@ export default function CreatePostScene() {
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-surface-secondary flex items-center justify-center text-foreground-secondary shrink-0 font-black text-xs overflow-hidden">
                           {pub.avatarUrl ? (
-                            <img
+                            <Image
                               src={getMediaUrl(pub.avatarUrl)}
                               alt={pub.name}
                               className="w-full h-full object-cover"
@@ -1339,7 +1340,7 @@ export default function CreatePostScene() {
                       <div className="flex items-center gap-2">
                         <div className="w-8 h-8 rounded-full bg-surface-secondary border border-primary/20 overflow-hidden flex items-center justify-center text-foreground-secondary text-xs font-bold">
                           {activePublisher.avatarUrl ? (
-                            <img
+                            <Image
                               src={getMediaUrl(activePublisher.avatarUrl)}
                               alt={activePublisher.name}
                               className="w-full h-full object-cover"
@@ -1357,7 +1358,7 @@ export default function CreatePostScene() {
 
                     <div className="relative aspect-square w-full bg-slate-900 overflow-hidden">
                       {igMedia.length > 0 ? (
-                        <img
+                        <Image
                           src={getMediaUrl(igMedia[0])}
                           alt="اسلاید اول"
                           className="w-full h-full object-cover"
@@ -1386,7 +1387,7 @@ export default function CreatePostScene() {
                   <div className="bg-surface rounded-2xl border border-border-subtle p-5 space-y-4 shadow-xs">
                     {medFeaturedImage && (
                       <div className="aspect-video w-full rounded-xl overflow-hidden bg-surface-secondary">
-                        <img
+                        <Image
                           src={getMediaUrl(medFeaturedImage)}
                           alt="تصویر شاخص"
                           className="w-full h-full object-cover"

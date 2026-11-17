@@ -738,7 +738,7 @@ export default function ResidenceDetailScene({ initialData }: ResidenceDetailSce
                     <div className="p-4 rounded-2xl bg-surface-secondary/70 border border-border-subtle/70 flex items-center justify-between gap-3">
                         <div className="flex items-center gap-3">
                             {hostAvatar ? (
-                                <img
+                                <Image
                                     src={getMediaUrl(hostAvatar)}
                                     alt={hostName}
                                     className="w-12 h-12 rounded-xl object-cover border border-border-subtle shadow-xs shrink-0"

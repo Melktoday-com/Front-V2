@@ -37,6 +37,7 @@ import {
 import { toast } from "sonner";
 import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
 import { toPersianDigits, getMediaPosterUrl, cn } from "@/lib/utils";
+import Image from "next/image";
 
 type PublisherFilterType = "ALL" | PublisherType;
 type StatusFilterType = "all" | "published" | "draft";
@@ -381,7 +382,7 @@ export default function AdminPostsScene() {
                     const firstMedia = post.mediaIds?.[0];
                     if (firstMedia) {
                       return (
-                        <img
+                        <Image
                           src={getMediaPosterUrl(firstMedia)}
                           alt={post.title}
                           className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border border-soft-border shrink-0 bg-slate-100"

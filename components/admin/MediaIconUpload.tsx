@@ -3,6 +3,7 @@
 import { useUploadMedia } from '@/hooks/useMedia';
 import { getMediaUrl } from '@/lib/utils';
 import { ImagePlus, Loader2, RefreshCw, Trash2 } from 'lucide-react';
+import Image from 'next/image';
 import React, { useRef } from 'react';
 import { toast } from 'sonner';
 
@@ -90,7 +91,7 @@ export default function MediaIconUpload({
                     <div className="flex items-center gap-3 min-w-0">
                         <div className="w-12 h-12 rounded-xl bg-surface border border-border-subtle p-1 flex items-center justify-center shrink-0 shadow-xs overflow-hidden">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
+                            <Image
                                 src={fullImageUrl}
                                 alt="پیش‌نمایش آیکون"
                                 className="w-full h-full object-contain"

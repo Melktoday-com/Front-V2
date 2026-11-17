@@ -272,7 +272,7 @@ export default function SingleAgencyScene({ initialData }: SingleAgencySceneProp
                 {/* Cover Banner */}
                 <div className="h-36 sm:h-52 w-full bg-gradient-to-r from-slate-800 via-blue-900 to-indigo-900 relative">
                     {agency.coverUrl && (
-                        <img
+                        <Image
                             src={getMediaUrl(agency.coverUrl)}
                             alt={agency.agencyName || agency.name}
                             className="w-full h-full object-cover"
@@ -296,7 +296,7 @@ export default function SingleAgencyScene({ initialData }: SingleAgencySceneProp
                         <div className="relative">
                             <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl border border-soft-border/60 shadow-md bg-surface overflow-hidden flex items-center justify-center font-black text-2xl text-brand">
                                 {agency.logoUrl ? (
-                                    <img
+                                    <Image
                                         src={getMediaUrl(agency.logoUrl)}
                                         alt={agency.agencyName || agency.name}
                                         className="w-full h-full object-cover"
@@ -734,7 +734,7 @@ export default function SingleAgencyScene({ initialData }: SingleAgencySceneProp
                                     >
                                         {/* Cover Image or Fallback */}
                                         {firstMedia ? (
-                                            <img
+                                            <Image
                                                 src={getMediaPosterUrl(firstMedia)}
                                                 alt={post.title}
                                                 className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
@@ -815,7 +815,7 @@ export default function SingleAgencyScene({ initialData }: SingleAgencySceneProp
                                     >
                                         {firstMedia && (
                                             <div className="h-44 sm:h-36 sm:w-48 rounded-xl sm:rounded-2xl overflow-hidden bg-surface-secondary shrink-0 relative">
-                                                <img
+                                                <Image
                                                     src={getMediaPosterUrl(firstMedia)}
                                                     alt={post.title}
                                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"

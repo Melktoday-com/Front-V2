@@ -9,6 +9,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { formatConversationDate } from "./chat-date.utils";
+import Image from "next/image";
 
 function ConversationListContent() {
     const { data: conversations, isLoading } = useConversations();
@@ -60,7 +61,7 @@ function ConversationListContent() {
                              bg-soft-bg flex items-center justify-center border
                               border-soft-border overflow-hidden shrink-0">
                                 {conv.otherParticipant?.avatar ? (
-                                    <img
+                                    <Image
                                         src={getMediaUrl(conv.otherParticipant.avatar)}
                                         alt={conv.otherParticipant.name || "User"}
                                         className="w-full h-full object-cover"

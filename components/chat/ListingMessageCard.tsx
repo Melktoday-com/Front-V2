@@ -3,6 +3,7 @@
 import { cn, formatAdPrice, getMediaUrl, toPersianDigits } from "@/lib/utils";
 import { ListingMetadata } from "@/services/chat.service";
 import { Building2, ExternalLink, Home, Hotel } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 
 interface ListingMessageCardProps {
@@ -49,7 +50,7 @@ export function ListingMessageCard({ metadata, mediaIds }: ListingMessageCardPro
             {/* Image Thumbnail */}
             <div className="relative w-full sm:w-20 h-24 sm:h-20 rounded-xl bg-soft-bg overflow-hidden shrink-0 border border-soft-border flex items-center justify-center">
                 {imageUrl ? (
-                    <img
+                    <Image
                         src={imageUrl}
                         alt={title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"

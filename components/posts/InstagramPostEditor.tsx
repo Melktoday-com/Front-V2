@@ -401,7 +401,7 @@ export function InstagramPostEditor({
                         )
                       ) : (
                         /* eslint-disable-next-line @next/next/no-img-element */
-                        <img
+                        <Image
                           src={currentUrl}
                           alt={`اسلاید ${activeSlide + 1}`}
                           className="w-full h-full object-cover select-none"

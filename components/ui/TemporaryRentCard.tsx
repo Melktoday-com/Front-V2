@@ -214,7 +214,7 @@ export function TemporaryRentCard({
                         <div className="mt-1 flex items-center">
                             <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-surface-secondary border border-border-subtle/60 text-[10px] text-text-main font-bold">
                                 {publisher.avatar ? (
-                                    <img
+                                    <Image
                                         src={publisher.avatar}
                                         alt={publisher.name}
                                         className="w-3.5 h-3.5 rounded-full object-cover shrink-0"

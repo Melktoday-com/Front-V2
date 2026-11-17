@@ -337,7 +337,7 @@ export function MediumPostEditor({
         {featuredImageUrl ? (
           <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-slate-900 border border-border-subtle shadow-xs group">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <Image
               src={getMediaUrl(featuredImageUrl)}
               alt="تصویر شاخص مقاله"
               className="w-full h-full object-cover"
@@ -790,7 +790,7 @@ export function MediumPostEditor({
               {featuredImageUrl && (
                 <div className="relative aspect-video w-full rounded-3xl overflow-hidden bg-surface-secondary border border-border-subtle shadow-sm">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
+                  <Image
                     src={getMediaUrl(featuredImageUrl)}
                     alt={title}
                     className="w-full h-full object-cover"
@@ -823,7 +823,7 @@ export function MediumPostEditor({
                 {featuredImageUrl && (
                   <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-surface-secondary border border-border-subtle mb-4">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
+                    <Image
                       src={getMediaUrl(featuredImageUrl)}
                       alt={title}
                       className="w-full h-full object-cover"

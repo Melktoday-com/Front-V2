@@ -327,7 +327,7 @@ export function ExploreFeedCard({
                 style={{ touchAction: "pan-y pan-x" }}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                <Image
                   src={firstMedia?.posterUrl || firstMedia?.url || "/property-placeholder.svg"}
                   alt={post.title}
                   loading="lazy"
@@ -349,7 +349,7 @@ export function ExploreFeedCard({
                 style={{ touchAction: "pan-y pan-x" }}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                <Image
                   src={firstMedia?.posterUrl || firstMedia?.url || "/property-placeholder.svg"}
                   alt={post.title}
                   loading="eager"
@@ -419,7 +419,7 @@ export function ExploreFeedCard({
                           style={{ touchAction: "pan-y pan-x" }}
                         >
                           {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
+                          <Image
                             src={media.url}
                             alt={post.title}
                             loading={idx === 0 || isCurrent ? "eager" : "lazy"}

@@ -385,7 +385,7 @@ function renderInlineFormatting(text: string): React.ReactNode[] {
         tokens.push(
           <span key={keyIndex++} className="inline-block my-2 w-full">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <Image
               src={fullUrl}
               alt={imgMatch[1]}
               className="rounded-xl max-h-96 mx-auto object-cover border border-border-subtle"

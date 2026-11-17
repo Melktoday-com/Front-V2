@@ -517,7 +517,7 @@ export function PropertyCard({
                                 className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-surface-secondary hover:bg-surface-secondary border border-border-subtle/60 text-[10px] text-text-main font-bold transition-colors cursor-pointer"
                             >
                                 {publisher.avatar ? (
-                                    <img
+                                    <Image
                                         src={publisher.avatar}
                                         alt={publisher.name}
                                         className="w-3.5 h-3.5 rounded-full object-cover shrink-0"

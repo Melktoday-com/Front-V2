@@ -35,6 +35,7 @@ import SubcategoryAttributesEditor, {
 } from "@/components/admin/SubcategoryAttributesEditor";
 import { getMediaUrl } from "@/lib/utils";
 import { normalizeApiError } from "@/lib/api/error-handler";
+import Image from "next/image";
 
 export default function TemporaryRentCategoriesTab() {
     const queryClient = useQueryClient();
@@ -385,7 +386,7 @@ export default function TemporaryRentCategoriesTab() {
                                     </button>
 
                                     {category.icon ? (
-                                        <img
+                                        <Image
                                             src={getMediaUrl(category.icon)}
                                             alt=""
                                             className="w-10 h-10 rounded-xl object-contain bg-surface-secondary p-1 border border-border-subtle"
@@ -464,7 +465,7 @@ export default function TemporaryRentCategoriesTab() {
                                                 >
                                                     <div className="flex items-center gap-2.5">
                                                         {sub.icon ? (
-                                                            <img
+                                                            <Image
                                                                 src={getMediaUrl(sub.icon)}
                                                                 alt=""
                                                                 className="w-8 h-8 rounded-lg object-contain bg-surface-secondary border border-border-subtle"

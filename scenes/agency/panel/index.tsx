@@ -1289,7 +1289,7 @@ export default function AgencyPanelScene() {
                                             {/* Media Thumbnail */}
                                             {firstMedia ? (
                                                 <div className="h-40 w-full rounded-xl overflow-hidden bg-soft-bg relative">
-                                                    <img
+                                                    <Image
                                                         src={getMediaPosterUrl(firstMedia)}
                                                         alt={post.title}
                                                         className="w-full h-full object-cover"

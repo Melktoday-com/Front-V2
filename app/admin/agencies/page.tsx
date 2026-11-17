@@ -1,38 +1,35 @@
 "use client";
 
-import React, { useEffect, useState, useMemo } from "react";
-import Link from "next/link";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { JibitKycViewer } from "@/components/admin/JibitKycViewer";
+import { useDebounce } from "@/hooks/useDebounce";
+import { normalizeApiError } from "@/lib/api/error-handler";
+import { cn, getMediaUrl, toEnglishDigits, toPersianDigits } from "@/lib/utils";
 import { adminService } from "@/services/admin.service";
+import { AgencyFull, AgentApplicationResponse } from "@/types/api/agency.types";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-    Building2,
-    UserCheck,
-    Clock,
-    CheckCircle,
-    XCircle,
-    Search,
-    Filter,
-    Eye,
-    ShieldAlert,
-    ExternalLink,
-    RefreshCw,
     AlertCircle,
-    FileCheck2,
-    ToggleLeft,
-    ToggleRight,
     Award,
     Briefcase,
-    Phone,
-    MapPin,
-    User,
+    Building2,
+    CheckCircle,
     CheckCircle2,
+    Clock,
+    ExternalLink,
+    Eye,
+    FileCheck2,
+    RefreshCw,
+    Search,
+    ToggleLeft,
+    ToggleRight,
+    User,
+    UserCheck,
+    XCircle
 } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { AgentApplicationResponse, AgencyFull } from "@/types/api/agency.types";
-import { normalizeApiError } from "@/lib/api/error-handler";
-import { cn, getMediaUrl, toPersianDigits, toEnglishDigits } from "@/lib/utils";
-import { useDebounce } from "@/hooks/useDebounce";
-import { JibitKycViewer } from "@/components/admin/JibitKycViewer";
 
 export default function AdminAgenciesPage() {
     const queryClient = useQueryClient();
@@ -199,11 +196,10 @@ export default function AdminAgenciesPage() {
                 <button
                     type="button"
                     onClick={() => setCurrentTab("applications")}
-                    className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black transition-all ${
-                        currentTab === "applications"
+                    className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black transition-all ${currentTab === "applications"
                             ? "bg-surface text-foreground shadow-sm ring-1 ring-slate-200"
                             : "text-foreground-secondary hover:text-foreground hover:bg-surface/50"
-                    }`}
+                        }`}
                 >
                     <UserCheck className="w-4 h-4 text-info" />
                     <span>درخواست‌های عضویت ({applications.length})</span>
@@ -212,11 +208,10 @@ export default function AdminAgenciesPage() {
                 <button
                     type="button"
                     onClick={() => setCurrentTab("agencies")}
-                    className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black transition-all ${
-                        currentTab === "agencies"
+                    className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black transition-all ${currentTab === "agencies"
                             ? "bg-surface text-foreground shadow-sm ring-1 ring-slate-200"
                             : "text-foreground-secondary hover:text-foreground hover:bg-surface/50"
-                    }`}
+                        }`}
                 >
                     <Briefcase className="w-4 h-4 text-indigo-600" />
                     <span>املاک و مشاوران ثبت‌شده ({agencies.length})</span>
@@ -235,11 +230,10 @@ export default function AdminAgenciesPage() {
                                     key={st}
                                     type="button"
                                     onClick={() => setAppStatus(st)}
-                                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
-                                        appStatus === st
+                                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${appStatus === st
                                             ? "bg-blue-600 text-white"
                                             : "bg-surface-secondary text-foreground-secondary hover:bg-slate-200"
-                                    }`}
+                                        }`}
                                 >
                                     {st === "ALL" && "همه"}
                                     {st === "PENDING" && "در انتظار بررسی"}
@@ -267,11 +261,10 @@ export default function AdminAgenciesPage() {
                                     key={tp}
                                     type="button"
                                     onClick={() => setAppType(tp)}
-                                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
-                                        appType === tp
+                                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${appType === tp
                                             ? "bg-slate-800 text-white"
                                             : "bg-surface-secondary text-foreground-secondary hover:bg-slate-200"
-                                    }`}
+                                        }`}
                                 >
                                     {tp === "ALL" && "همه"}
                                     {tp === "CONSULTANT" && "مشاور املاک"}
@@ -318,11 +311,10 @@ export default function AdminAgenciesPage() {
                                                     )}
                                                 </td>
                                                 <td className="py-4 px-6">
-                                                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold ${
-                                                        app.agentType === "AGENCY"
+                                                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold ${app.agentType === "AGENCY"
                                                             ? "bg-purple-50 text-purple-700"
                                                             : "bg-info-subtle text-info"
-                                                    }`}>
+                                                        }`}>
                                                         {app.agentType === "AGENCY" ? <Building2 className="w-3 h-3" /> : <Award className="w-3 h-3" />}
                                                         <span>{app.agentType === "AGENCY" ? "دفتر املاک" : "مشاور املاک"}</span>
                                                     </span>
@@ -472,11 +464,10 @@ export default function AdminAgenciesPage() {
                                         key={tp}
                                         type="button"
                                         onClick={() => setAgencyTypeFilter(tp)}
-                                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
-                                            agencyTypeFilter === tp
+                                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${agencyTypeFilter === tp
                                                 ? "bg-blue-600 text-white"
                                                 : "bg-surface-secondary text-foreground-secondary hover:bg-slate-200"
-                                        }`}
+                                            }`}
                                     >
                                         {tp === "ALL" && "همه"}
                                         {tp === "AGENCY" && "دفاتر املاک"}
@@ -535,7 +526,7 @@ export default function AdminAgenciesPage() {
                                                     <div className="flex items-center gap-3">
                                                         <div className="w-9 h-9 rounded-xl bg-surface-secondary border border-border-subtle flex items-center justify-center font-bold text-foreground-secondary shrink-0 overflow-hidden">
                                                             {agency.logoUrl ? (
-                                                                <img src={getMediaUrl(agency.logoUrl)} alt={agency.agencyName} className="w-full h-full object-cover" />
+                                                                <Image src={getMediaUrl(agency.logoUrl)} alt={agency.agencyName ?? ""} className="w-full h-full object-cover" />
                                                             ) : (
                                                                 agency.agencyName?.slice(0, 1) || "A"
                                                             )}
@@ -547,11 +538,10 @@ export default function AdminAgenciesPage() {
                                                     </div>
                                                 </td>
                                                 <td className="py-4 px-6">
-                                                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold ${
-                                                        agency.agencyType === "AGENCY"
+                                                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold ${agency.agencyType === "AGENCY"
                                                             ? "bg-purple-50 text-purple-700"
                                                             : "bg-info-subtle text-info"
-                                                    }`}>
+                                                        }`}>
                                                         {agency.agencyType === "AGENCY" ? "دفتر املاک" : "مشاور املاک"}
                                                     </span>
                                                 </td>
@@ -562,11 +552,10 @@ export default function AdminAgenciesPage() {
                                                     {agency.mobile || agency.phone || "-"}
                                                 </td>
                                                 <td className="py-4 px-6">
-                                                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold ${
-                                                        agency.verificationStatus === "VERIFIED"
+                                                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold ${agency.verificationStatus === "VERIFIED"
                                                             ? "bg-success-subtle text-success"
                                                             : "bg-warning-subtle text-warning"
-                                                    }`}>
+                                                        }`}>
                                                         {agency.verificationStatus === "VERIFIED" ? "تأیید رسمی" : "در انتظار تأیید"}
                                                     </span>
                                                 </td>
@@ -575,11 +564,10 @@ export default function AdminAgenciesPage() {
                                                         type="button"
                                                         onClick={() => toggleActiveMutation.mutate({ id: agency.id, isActive: !agency.isActive })}
                                                         disabled={toggleActiveMutation.isPending}
-                                                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold transition-colors ${
-                                                            agency.isActive
+                                                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold transition-colors ${agency.isActive
                                                                 ? "bg-success-subtle text-success hover:bg-success-subtle"
                                                                 : "bg-error-subtle text-error hover:bg-error-subtle"
-                                                        }`}
+                                                            }`}
                                                     >
                                                         {agency.isActive ? <ToggleRight className="w-4 h-4 text-success" /> : <ToggleLeft className="w-4 h-4 text-error" />}
                                                         <span>{agency.isActive ? "فعال" : "معلق"}</span>
@@ -657,15 +645,15 @@ export default function AdminAgenciesPage() {
                                                 selectedApp.status === "APPROVED"
                                                     ? "bg-success-subtle text-success"
                                                     : selectedApp.status === "REJECTED"
-                                                    ? "bg-error-subtle text-error"
-                                                    : "bg-warning-subtle text-warning"
+                                                        ? "bg-error-subtle text-error"
+                                                        : "bg-warning-subtle text-warning"
                                             )}
                                         >
                                             {selectedApp.status === "APPROVED"
                                                 ? "تأیید شده"
                                                 : selectedApp.status === "REJECTED"
-                                                ? "رد شده"
-                                                : "در انتظار بررسی"}
+                                                    ? "رد شده"
+                                                    : "در انتظار بررسی"}
                                         </span>
                                     </div>
                                     <p className="text-[11px] text-foreground-muted font-medium mt-0.5">
@@ -815,8 +803,7 @@ export default function AdminAgenciesPage() {
                                         onClick={() => {
                                             if (
                                                 confirm(
-                                                    `آیا از لغو صلاحیت و تعلیق «${
-                                                        selectedApp.agencyName || selectedApp.fullName
+                                                    `آیا از لغو صلاحیت و تعلیق «${selectedApp.agencyName || selectedApp.fullName
                                                     }» اطمینان دارید؟`
                                                 )
                                             ) {
@@ -838,8 +825,7 @@ export default function AdminAgenciesPage() {
                                     onClick={() => {
                                         if (
                                             confirm(
-                                                `آیا از تأیید مجدد صلاحیت «${
-                                                    selectedApp.agencyName || selectedApp.fullName
+                                                `آیا از تأیید مجدد صلاحیت «${selectedApp.agencyName || selectedApp.fullName
                                                 }» اطمینان دارید؟`
                                             )
                                         ) {
