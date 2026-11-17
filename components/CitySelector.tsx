@@ -1,6 +1,7 @@
 "use client";
 
 import { useInfiniteGeoHierarchy } from "@/hooks/useGeoHierarchy";
+import { requestPushPermission } from "@/platform/push";
 import { cn } from "@/lib/utils";
 import { geoService } from "@/services/geo.service";
 import { useQuery } from "@tanstack/react-query";
@@ -87,6 +88,7 @@ export function CitySelector({ isOpen, onClose, onSelect, currentCityId }: CityS
         name: string;
         centerPoint?: { latitude: number; longitude: number };
     }) => {
+        requestPushPermission().catch(console.error);
         onSelect(city);
     }, [onSelect]);
 

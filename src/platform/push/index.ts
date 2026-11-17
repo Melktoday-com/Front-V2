@@ -35,6 +35,12 @@ export function isValidInternalRoute(url: string | undefined): boolean {
   return /^\/[a-zA-Z0-9_\-\/\?=&%#.]*$/.test(trimmed);
 }
 
+export async function requestPushPermission(): Promise<boolean> {
+  if (!isNativePlatform()) return false;
+  const status = await PushNotifications.requestPermissions();
+  return status.receive === 'granted';
+}
+
 /**
  * Initializes native push notification registration and registers event listeners idempotently.
  */
