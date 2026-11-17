@@ -73,6 +73,7 @@ export interface AdSummary {
 
 export interface ListAdsQuery {
     status?: AdStatus | string;
+    provinceId?: string | number;
     cityId?: string;
     search?: string;
     page?: number;

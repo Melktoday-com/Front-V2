@@ -33,6 +33,7 @@ export interface TemporaryRentAdSummary {
 export interface ListTemporaryRentQuery {
     ownerId?: string;
     status?: string;
+    provinceId?: string | number;
     cityId?: string;
     search?: string;
     sort?: string;
