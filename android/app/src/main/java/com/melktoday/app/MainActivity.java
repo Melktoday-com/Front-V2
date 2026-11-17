@@ -66,14 +66,14 @@ public class MainActivity extends BridgeActivity {
     }
 
     @Override
-    protected void onPause() {
+    public void onPause() {
         super.onPause();
         // Flush cookies to persistent disk storage to preserve JWT session across app kills
         CookieManager.getInstance().flush();
     }
 
     @Override
-    protected void onStop() {
+    public void onStop() {
         super.onStop();
         CookieManager.getInstance().flush();
     }

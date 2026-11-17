@@ -3,6 +3,7 @@ import { CityProvider } from "@/components/providers/CityProvider";
 import { GlobalModalManager } from "@/components/providers/GlobalModalManager";
 import { MapTileCacheInitializer } from "@/components/providers/MapTileCacheInitializer";
 import { NavigationHistoryTracker } from "@/components/providers/NavigationHistoryTracker";
+import { PlatformInitializer } from "@/components/providers/PlatformInitializer";
 import { QueryProvider } from "@/components/providers/QueryProvider";
 import { TicketFloatingWidget } from "@/components/ticketing/TicketFloatingWidget";
 import { WelcomePackageModal } from "@/components/subscriptions/WelcomePackageModal";
@@ -139,6 +140,7 @@ export default function RootLayout({
       >
         <QueryProvider>
           <CityProvider>
+            <PlatformInitializer />
             <MapTileCacheInitializer />
             <NavigationHistoryTracker />
             <Sidebar />

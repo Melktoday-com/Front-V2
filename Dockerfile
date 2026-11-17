@@ -1,5 +1,9 @@
 
-FROM node:24-alpine AS deps
+# Use mirror to avoid Docker Hub 403 Forbidden geoblock on deployment servers.
+# Can be overridden with --build-arg DOCKER_REGISTRY=...
+ARG DOCKER_REGISTRY="docker.arvancloud.ir/"
+
+FROM ${DOCKER_REGISTRY}library/node:24-alpine AS deps
 
 WORKDIR /app
 
@@ -22,7 +26,7 @@ RUN set -eux; \
   npm ci --no-audit --no-fund
 
 
-FROM node:24-alpine AS builder
+FROM ${DOCKER_REGISTRY}library/node:24-alpine AS builder
 
 WORKDIR /app
 
@@ -40,7 +44,7 @@ RUN npm run build
 RUN npm prune --omit=dev
 
 
-FROM node:24-alpine AS production
+FROM ${DOCKER_REGISTRY}library/node:24-alpine AS production
 
 WORKDIR /app
 

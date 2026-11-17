@@ -7,6 +7,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { MapContainer, Marker, TileLayer, useMap, useMapEvents } from "react-leaflet";
 import { toast } from "sonner";
 import { cn, toPersianDigits } from "@/lib/utils";
+import { getCurrentPosition } from "@/src/platform/location";
 
 // Leaflet default icon fix for Next.js SSR using local self-hosted assets
 const DefaultIcon = L.icon({
@@ -190,59 +191,33 @@ export default function MapPicker({
         mapRef.current = map;
     }, []);
 
-    // Get current location via browser Geolocation API
-    const handleGetCurrentLocation = () => {
-        if (typeof window === "undefined" || !navigator.geolocation) {
-            toast.error("مرورگر شما از دریافت موقعیت مکانی پشتیبانی نمی‌کند.");
-            return;
-        }
-
+    // Get current location via Platform Geolocation API (Native GPS or Web Fallback)
+    const handleGetCurrentLocation = async () => {
         setIsLocating(true);
-        navigator.geolocation.getCurrentPosition(
-            (pos) => {
-                const lat = pos.coords.latitude;
-                const lng = pos.coords.longitude;
-
-                handlePositionChange(lat, lng);
-
-                if (mapRef.current) {
-                    mapRef.current.flyTo([lat, lng], 16, {
-                        duration: 1.5,
-                    });
-                }
-
-                toast.success("موقعیت مکانی فعلی شما با موفقیت شناسایی و روی نقشه تنظیم شد");
-                setIsLocating(false);
-            },
-            (err) => {
-                setIsLocating(false);
-                switch (err.code) {
-                    case err.PERMISSION_DENIED:
-                        toast.error(
-                            "دسترسی به موقعیت مکانی رد شد. لطفاً در تنظیمات مرورگر اجازه دسترسی به موقعیت را فعال نمایید."
-                        );
-                        break;
-                    case err.POSITION_UNAVAILABLE:
-                        toast.error(
-                            "اطلاعات موقعیت مکانی در دسترس نیست. لطفاً GPS دستگاه خود را روشن کنید."
-                        );
-                        break;
-                    case err.TIMEOUT:
-                        toast.error(
-                            "زمان درخواست دریافت موقعیت مکانی به پایان رسید. لطفاً مجدداً امتحان کنید."
-                        );
-                        break;
-                    default:
-                        toast.error("خطا در دریافت موقعیت مکانی کاربر.");
-                        break;
-                }
-            },
-            {
+        try {
+            const pos = await getCurrentPosition({
                 enableHighAccuracy: true,
                 timeout: 12000,
                 maximumAge: 0,
+            });
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
+
+            handlePositionChange(lat, lng);
+
+            if (mapRef.current) {
+                mapRef.current.flyTo([lat, lng], 16, {
+                    duration: 1.5,
+                });
             }
-        );
+
+            toast.success("موقعیت مکانی فعلی شما با موفقیت شناسایی و روی نقشه تنظیم شد");
+        } catch (err: unknown) {
+            const errorMsg = err instanceof Error ? err.message : "خطا در دریافت موقعیت مکانی کاربر.";
+            toast.error(errorMsg);
+        } finally {
+            setIsLocating(false);
+        }
     };
 
     // Reset view to city center
