@@ -1077,73 +1077,86 @@ export default function ResidenceDetailScene({ initialData }: ResidenceDetailSce
                             </button>
                         </div>
 
-                        {!contactInfo?.phoneNumber ? (
-                            <div className="space-y-4">
-                                <div className="p-4 bg-warning-subtle/70 border border-warning/30 rounded-2xl flex items-start gap-3">
-                                    <ShieldAlert className="w-5 h-5 text-warning shrink-0 mt-0.5" />
-                                    <div className="text-xs">
-                                        <h5 className="font-black text-amber-950 mb-1">شماره تماس مخفی شده است</h5>
-                                        <p className="text-amber-900/80 leading-relaxed">
-                                            به درخواست میزبان و جهت حفظ حریم خصوصی، شماره تلفن مستقیم مخفی شده است. شما می‌توانید از طریق چت آنلاین با ایشان در ارتباط باشید.
-                                        </p>
-                                    </div>
-                                </div>
-                                <button
-                                    onClick={() => {
-                                        setIsContactModalOpen(false);
-                                        handleChat();
-                                    }}
-                                    disabled={chatMutation.isPending}
-                                    className="w-full py-3.5 bg-brand hover:bg-brand/90 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center justify-center gap-2 cursor-pointer"
-                                >
-                                    <MessageCircle className="w-4 h-4" />
-                                    <span>ارسال پیام در چت آنلاین</span>
-                                </button>
-                            </div>
-                        ) : (
-                            <div className="space-y-4">
-                                <div className="p-4 bg-surface-secondary border border-border-subtle rounded-2xl flex items-center justify-between">
-                                    <div>
-                                        <span className="text-[11px] text-text-light block mb-0.5">شماره تماس مستقیم:</span>
-                                        <span className="text-lg font-black text-brand tracking-widest font-mono" dir="ltr">
-                                            {toPersianDigits(contactInfo.phoneNumber)}
-                                        </span>
-                                    </div>
-                                    <button
-                                        onClick={() => {
-                                            if (navigator.clipboard) {
-                                                navigator.clipboard.writeText(contactInfo.phoneNumber);
-                                                toast.success("شماره تماس در کلیپ‌بورد کپی شد");
-                                            }
-                                        }}
-                                        className="p-2.5 bg-surface border border-border-subtle text-brand rounded-xl hover:bg-surface-secondary transition shadow-xs cursor-pointer"
-                                        title="کپی شماره"
-                                    >
-                                        <Copy className="w-4 h-4" />
-                                    </button>
-                                </div>
+                        {(() => {
+                            const phoneNum = contactInfo?.phoneNumber || contactInfo?.mobileNumber;
+                            const isHidden = contactInfo?.phoneHidden;
 
-                                <div className="flex items-center gap-2.5 pt-2">
-                                    <a
-                                        href={`tel:${contactInfo.phoneNumber}`}
-                                        className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center justify-center gap-2 cursor-pointer text-center"
-                                    >
-                                        <Phone className="w-4 h-4" />
-                                        <span>تماس تلفنی</span>
-                                    </a>
-                                    <button
-                                        onClick={() => {
-                                            setIsContactModalOpen(false);
-                                            handleChat();
-                                        }}
-                                        className="flex-1 py-3 border border-border-subtle hover:bg-surface-secondary text-brand font-bold text-xs rounded-xl transition flex items-center justify-center gap-2 cursor-pointer"
-                                    >
-                                        <MessageCircle className="w-4 h-4" />
-                                        <span>ارسال پیام آنلاین</span>
-                                    </button>
+                            if (isHidden || !phoneNum) {
+                                return (
+                                    <div className="space-y-4">
+                                        <div className="p-4 bg-warning-subtle/70 border border-warning/30 rounded-2xl flex items-start gap-3">
+                                            <ShieldAlert className="w-5 h-5 text-warning shrink-0 mt-0.5" />
+                                            <div className="text-xs">
+                                                <h5 className="font-black text-amber-950 mb-1">
+                                                    {isHidden ? "شماره تماس مخفی شده است" : "شماره تماس ثبت نشده است"}
+                                                </h5>
+                                                <p className="text-amber-900/80 leading-relaxed">
+                                                    {isHidden
+                                                        ? "به درخواست میزبان و جهت حفظ حریم خصوصی، شماره تلفن مستقیم مخفی شده است. شما می‌توانید از طریق چت آنلاین با ایشان در ارتباط باشید."
+                                                        : "شماره تماس مستقیمی برای این اقامتگاه ثبت نشده است. شما می‌توانید از طریق چت آنلاین با میزبان در ارتباط باشید."}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={() => {
+                                                setIsContactModalOpen(false);
+                                                handleChat();
+                                            }}
+                                            disabled={chatMutation.isPending}
+                                            className="w-full py-3.5 bg-brand hover:bg-brand/90 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center justify-center gap-2 cursor-pointer"
+                                        >
+                                            <MessageCircle className="w-4 h-4" />
+                                            <span>ارسال پیام در چت آنلاین</span>
+                                        </button>
+                                    </div>
+                                );
+                            }
+
+                            return (
+                                <div className="space-y-4">
+                                    <div className="p-4 bg-surface-secondary border border-border-subtle rounded-2xl flex items-center justify-between">
+                                        <div>
+                                            <span className="text-[11px] text-text-light block mb-0.5">شماره تماس مستقیم:</span>
+                                            <span className="text-lg font-black text-brand tracking-widest font-mono" dir="ltr">
+                                                {toPersianDigits(phoneNum)}
+                                            </span>
+                                        </div>
+                                        <button
+                                            onClick={() => {
+                                                if (navigator.clipboard) {
+                                                    navigator.clipboard.writeText(phoneNum);
+                                                    toast.success("شماره تماس در کلیپ‌بورد کپی شد");
+                                                }
+                                            }}
+                                            className="p-2.5 bg-surface border border-border-subtle text-brand rounded-xl hover:bg-surface-secondary transition shadow-xs cursor-pointer"
+                                            title="کپی شماره"
+                                        >
+                                            <Copy className="w-4 h-4" />
+                                        </button>
+                                    </div>
+
+                                    <div className="flex items-center gap-2.5 pt-2">
+                                        <a
+                                            href={`tel:${phoneNum}`}
+                                            className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center justify-center gap-2 cursor-pointer text-center"
+                                        >
+                                            <Phone className="w-4 h-4" />
+                                            <span>تماس تلفنی</span>
+                                        </a>
+                                        <button
+                                            onClick={() => {
+                                                setIsContactModalOpen(false);
+                                                handleChat();
+                                            }}
+                                            className="flex-1 py-3 border border-border-subtle hover:bg-surface-secondary text-brand font-bold text-xs rounded-xl transition flex items-center justify-center gap-2 cursor-pointer"
+                                        >
+                                            <MessageCircle className="w-4 h-4" />
+                                            <span>ارسال پیام آنلاین</span>
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
-                        )}
+                            );
+                        })()}
                     </div>
                 </div>
             )}

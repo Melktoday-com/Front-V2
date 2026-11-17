@@ -3,7 +3,7 @@
 import { useTemporaryRentAdDetail } from "@/hooks/useTemporaryRent";
 import { formatPrice, toPersianDigits, getMediaUrl, getMediaPosterUrl } from "@/lib/utils";
 import { temporaryRentService } from "@/services/temporary-rent.service";
-import type { TemporaryRentPricingReadModel } from "@/types/api/temporary-rent.types";
+import type { TemporaryRentContactInfo, TemporaryRentPricingReadModel } from "@/types/api/temporary-rent.types";
 
 function getTemporaryRentPriceDisplay(pricing?: TemporaryRentPricingReadModel | null): { label: string; formatted: string; hasCurrency: boolean } {
     if (!pricing) return { label: "قیمت", formatted: "توافقی", hasCurrency: false };
@@ -93,7 +93,7 @@ export default function TemporaryRentItemDetailModal({
     isPublishing = false,
 }: TemporaryRentItemDetailModalProps) {
     const [activeImageIndex, setActiveImageIndex] = useState(0);
-    const [contactInfo, setContactInfo] = useState<{ phoneNumber?: string; ownerName?: string } | null>(null);
+    const [contactInfo, setContactInfo] = useState<TemporaryRentContactInfo | null>(null);
     const [isLoadingContact, setIsLoadingContact] = useState(false);
 
     const { data: ad, isLoading } = useTemporaryRentAdDetail(adId || "");
@@ -407,7 +407,7 @@ export default function TemporaryRentItemDetailModal({
                                         <div className="flex items-center gap-2 bg-surface px-4 py-2 rounded-xl border border-success/30">
                                             <Phone className="w-4 h-4 text-success" />
                                             <span className="text-xs font-black text-foreground font-mono" dir="ltr">
-                                                {contactInfo.phoneNumber}
+                                                {contactInfo.phoneNumber || contactInfo.mobileNumber || "شماره ثبت نشده"}
                                             </span>
                                             {contactInfo.ownerName && (
                                                 <span className="text-xs text-foreground-muted font-bold mr-2">

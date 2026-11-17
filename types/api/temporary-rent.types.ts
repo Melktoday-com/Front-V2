@@ -149,8 +149,13 @@ export interface TemporaryRentListResponse {
 }
 
 export interface TemporaryRentContactInfo {
-    phoneNumber: string;
+    adId?: string;
+    ownerId?: string;
+    phoneNumber?: string | null;
+    mobileNumber?: string | null;
+    phoneHidden?: boolean;
     ownerName?: string;
+    chatAvailable?: boolean;
 }
 
 export interface TemporaryRentSubcategory {
