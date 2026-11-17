@@ -158,226 +158,226 @@ export const HomeScene = () => {
             )}
 
             {/* Featured Properties */}
-            <section className="container mx-auto px-4">
-                <SectionHeader
-                    title="آگهی‌های نردبان شده و فوری"
-                    subtitle="منتخب آگهی‌های ملکی"
-                    link={selectedCity.id ? `/ads?isFeatured=true&cityId=${selectedCity.id}&cityName=${encodeURIComponent(selectedCity.name)}` : "/ads?isFeatured=true"}
-                />
-                {isFeaturedLoading ? (
-                    <div className="flex gap-4 overflow-hidden">
-                        {[1, 2, 3].map((i) => (
-                            <div key={i} className="min-w-[180px] aspect-square bg-surface-secondary animate-pulse rounded-2xl" />
-                        ))}
-                    </div>
-                ) : featuredError ? (
-                    <ErrorState onRetry={refetchFeatured} />
-                ) : !featuredAds.length ? (
-                    <EmptyState message="در حال حاضر آگهی برتری در این شهر ثبت نشده است" />
-                ) : (
-                    <Slider>
-                        {featuredAds.map((property: AdSummary) => {
-                            const effectiveId = property.adId;
-                            const adPrice = getHomeAdPrice(property.pricing);
-                            const isUrgent = Boolean(property.isUrgent);
-                            const isLadder = Boolean(property.isLadder);
-                            const isFeatured = Boolean(property.isFeatured);
+            {(isFeaturedLoading || featuredError || featuredAds.length > 0) && (
+                <section className="container mx-auto px-4">
+                    <SectionHeader
+                        title="آگهی‌های نردبان شده و فوری"
+                        subtitle="منتخب آگهی‌های ملکی"
+                        link={selectedCity.id ? `/ads?isFeatured=true&cityId=${selectedCity.id}&cityName=${encodeURIComponent(selectedCity.name)}` : "/ads?isFeatured=true"}
+                    />
+                    {isFeaturedLoading ? (
+                        <div className="flex gap-4 overflow-hidden">
+                            {[1, 2, 3].map((i) => (
+                                <div key={i} className="min-w-[180px] aspect-square bg-surface-secondary animate-pulse rounded-2xl" />
+                            ))}
+                        </div>
+                    ) : featuredError ? (
+                        <ErrorState onRetry={refetchFeatured} />
+                    ) : (
+                        <Slider>
+                            {featuredAds.map((property: AdSummary) => {
+                                const effectiveId = property.adId;
+                                const adPrice = getHomeAdPrice(property.pricing);
+                                const isUrgent = Boolean(property.isUrgent);
+                                const isLadder = Boolean(property.isLadder);
+                                const isFeatured = Boolean(property.isFeatured);
 
-                            return (
-                                <PropertyCard
-                                    key={effectiveId}
-                                    id={effectiveId}
-                                    adId={effectiveId}
-                                    variant="vertical"
-                                    href={`/ads/${effectiveId}`}
-                                    title={property.title}
-                                    price={adPrice.price}
-                                    unit={adPrice.unit}
-                                    location={selectedCity.name}
-                                    image={getMediaPosterUrl(property.mediaIds?.[0])}
-                                    isVideo={property.mediaIds?.[0]?.type === "VIDEO"}
-                                    category={
-                                        property.subcategoryTitle ||
-                                        property.subcategory?.label ||
-                                        property.categoryPath?.subcategoryTitle ||
-                                        property.categoryTitle ||
-                                        property.category?.label ||
-                                        property.categoryPath?.categoryTitle ||
-                                        ""
-                                    }
-                                    className="w-[210px] lg:w-[250px]"
-                                    area={getFloorArea(property) ?? undefined}
-                                    rooms={
-                                        property.rooms ??
-                                        (typeof property.attributes?.rooms === "number"
-                                            ? property.attributes.rooms
-                                            : typeof property.attributes?.rooms_count === "number"
-                                                ? property.attributes.rooms_count
-                                                : undefined)
-                                    }
-                                    date={isLadder ? (property.updatedAt || property.createdAt) : property.createdAt}
-                                    isUrgent={isUrgent}
-                                    isLadder={isLadder}
-                                    isFeatured={isFeatured}
-                                    isSaved={property.isSaved ?? isAdSaved(effectiveId)}
-                                    onToggleSave={(id) => toggleSaveAdMutation.mutateAsync(id)}
-                                />
-                            );
-                        })}
-                    </Slider>
-                )}
-            </section>
+                                return (
+                                    <PropertyCard
+                                        key={effectiveId}
+                                        id={effectiveId}
+                                        adId={effectiveId}
+                                        variant="vertical"
+                                        href={`/ads/${effectiveId}`}
+                                        title={property.title}
+                                        price={adPrice.price}
+                                        unit={adPrice.unit}
+                                        location={selectedCity.name}
+                                        image={getMediaPosterUrl(property.mediaIds?.[0])}
+                                        isVideo={property.mediaIds?.[0]?.type === "VIDEO"}
+                                        category={
+                                            property.subcategoryTitle ||
+                                            property.subcategory?.label ||
+                                            property.categoryPath?.subcategoryTitle ||
+                                            property.categoryTitle ||
+                                            property.category?.label ||
+                                            property.categoryPath?.categoryTitle ||
+                                            ""
+                                        }
+                                        className="w-[210px] lg:w-[250px]"
+                                        area={getFloorArea(property) ?? undefined}
+                                        rooms={
+                                            property.rooms ??
+                                            (typeof property.attributes?.rooms === "number"
+                                                ? property.attributes.rooms
+                                                : typeof property.attributes?.rooms_count === "number"
+                                                    ? property.attributes.rooms_count
+                                                    : undefined)
+                                        }
+                                        date={isLadder ? (property.updatedAt || property.createdAt) : property.createdAt}
+                                        isUrgent={isUrgent}
+                                        isLadder={isLadder}
+                                        isFeatured={isFeatured}
+                                        isSaved={property.isSaved ?? isAdSaved(effectiveId)}
+                                        onToggleSave={(id) => toggleSaveAdMutation.mutateAsync(id)}
+                                    />
+                                );
+                            })}
+                        </Slider>
+                    )}
+                </section>
+            )}
 
             {/* Top Agencies */}
-            <section className="container mx-auto px-4">
-                <SectionHeader
-                    title="دفاتر املاک"
-                    subtitle="همکاری با معتبرترین دفاتر املاک و مشاوران"
-                    link={selectedCity.id ? `/agency?cityId=${selectedCity.id}&cityName=${selectedCity.name}` : "/agency"}
-                />
-                {isAgenciesLoading ? (
-                    <div className="flex gap-4 overflow-hidden">
-                        {[1, 2, 3, 4, 5, 6].map((i) => (
-                            <div key={i} className="min-w-32 h-40 bg-surface-secondary animate-pulse rounded-xl" />
-                        ))}
-                    </div>
-                ) : agencyError ? (
-                    <ErrorState onRetry={refetchAgencies} />
-                ) : !topAgencies.length ? (
-                    <EmptyState message="در حال حاضر آژانسی در این شهر ثبت نشده است" />
-                ) : (
-                    <Slider>
-                        {topAgencies.map((agency: { id: string; name: string; image: string; listingsCount: number }) => (
-                            <Link key={agency.id} href={`/agency/${agency.id}`} className="block">
-                                <AgentAvatar name={agency.name} image={agency.image} />
-                            </Link>
-                        ))}
-                    </Slider>
-                )}
-            </section>
+            {(isAgenciesLoading || agencyError || topAgencies.length > 0) && (
+                <section className="container mx-auto px-4">
+                    <SectionHeader
+                        title="دفاتر املاک"
+                        subtitle="همکاری با معتبرترین دفاتر املاک و مشاوران"
+                        link={selectedCity.id ? `/agency?cityId=${selectedCity.id}&cityName=${selectedCity.name}` : "/agency"}
+                    />
+                    {isAgenciesLoading ? (
+                        <div className="flex gap-4 overflow-hidden">
+                            {[1, 2, 3, 4, 5, 6].map((i) => (
+                                <div key={i} className="min-w-32 h-40 bg-surface-secondary animate-pulse rounded-xl" />
+                            ))}
+                        </div>
+                    ) : agencyError ? (
+                        <ErrorState onRetry={refetchAgencies} />
+                    ) : (
+                        <Slider>
+                            {topAgencies.map((agency: { id: string; name: string; image: string; listingsCount: number }) => (
+                                <Link key={agency.id} href={`/agency/${agency.id}`} className="block">
+                                    <AgentAvatar name={agency.name} image={agency.image} />
+                                </Link>
+                            ))}
+                        </Slider>
+                    )}
+                </section>
+            )}
 
             {/* Temporary Rentals */}
-            <section className="container mx-auto px-4">
-                <SectionHeader
-                    title="اقامتگاه‌های نردبان شده و فوری"
-                    subtitle="بهترین گزینه برای اجاره روزانه و سفرهای کوتاه"
-                    link="/temporary-rent"
-                />
-                {isTempRentLoading ? (
-                    <div className="flex gap-4 overflow-hidden">
-                        {[1, 2, 3, 4].map((i) => (
-                            <div key={i} className="min-w-72 h-64 bg-surface-secondary animate-pulse rounded-xl" />
-                        ))}
-                    </div>
-                ) : tempRentError ? (
-                    <ErrorState onRetry={refetchTempRent} />
-                ) : !tempRentData?.items.length ? (
-                    <EmptyState message="در حال حاضر اقامتگاه روزانه‌ای در این شهر ثبت نشده است" />
-                ) : (
-                    <Slider>
-                        {tempRentData.items.map((property: TemporaryRentAdSummary) => {
-                            const trPrice = getHomeTemporaryRentPrice(property.pricing);
-                            const isUrgent = Boolean(property.isUrgent);
-                            const isLadder = Boolean(property.isLadder);
-                            const isFeatured = Boolean(property.isFeatured);
-                            return (
-                                <PropertyCard
-                                    key={property.id}
-                                    id={property.id}
-                                    adId={property.id}
-                                    variant="vertical"
-                                    href={`/temporary-rent/${property.id}`}
-                                    title={property.title}
-                                    price={trPrice.amount}
-                                    unit={trPrice.unit}
-                                    location={selectedCity.name}
-                                    image={getMediaPosterUrl(property.mediaIds?.[0])}
-                                    isVideo={property.mediaIds?.[0]?.type === "VIDEO"}
-                                    category="اجاره روزانه"
-                                    className="w-[210px] lg:w-[250px]"
-                                    date={isLadder ? (property.updatedAt || property.createdAt) : property.createdAt}
-                                    isUrgent={isUrgent}
-                                    isLadder={isLadder}
-                                    isFeatured={isFeatured}
-                                    isSaved={property.isSaved ?? isTemporaryRentSaved(property.id)}
-                                    onToggleSave={(id) => toggleSaveTempMutation.mutateAsync(id)}
-                                />
-                            );
-                        })}
-                    </Slider>
-                )}
-            </section>
+            {(isTempRentLoading || tempRentError || (tempRentData?.items && tempRentData.items.length > 0)) && (
+                <section className="container mx-auto px-4">
+                    <SectionHeader
+                        title="اقامتگاه‌های نردبان شده و فوری"
+                        subtitle="بهترین گزینه برای اجاره روزانه و سفرهای کوتاه"
+                        link="/temporary-rent"
+                    />
+                    {isTempRentLoading ? (
+                        <div className="flex gap-4 overflow-hidden">
+                            {[1, 2, 3, 4].map((i) => (
+                                <div key={i} className="min-w-72 h-64 bg-surface-secondary animate-pulse rounded-xl" />
+                            ))}
+                        </div>
+                    ) : tempRentError ? (
+                        <ErrorState onRetry={refetchTempRent} />
+                    ) : (
+                        <Slider>
+                            {tempRentData!.items.map((property: TemporaryRentAdSummary) => {
+                                const trPrice = getHomeTemporaryRentPrice(property.pricing);
+                                const isUrgent = Boolean(property.isUrgent);
+                                const isLadder = Boolean(property.isLadder);
+                                const isFeatured = Boolean(property.isFeatured);
+                                return (
+                                    <PropertyCard
+                                        key={property.id}
+                                        id={property.id}
+                                        adId={property.id}
+                                        variant="vertical"
+                                        href={`/temporary-rent/${property.id}`}
+                                        title={property.title}
+                                        price={trPrice.amount}
+                                        unit={trPrice.unit}
+                                        location={selectedCity.name}
+                                        image={getMediaPosterUrl(property.mediaIds?.[0])}
+                                        isVideo={property.mediaIds?.[0]?.type === "VIDEO"}
+                                        category="اجاره روزانه"
+                                        className="w-[210px] lg:w-[250px]"
+                                        date={isLadder ? (property.updatedAt || property.createdAt) : property.createdAt}
+                                        isUrgent={isUrgent}
+                                        isLadder={isLadder}
+                                        isFeatured={isFeatured}
+                                        isSaved={property.isSaved ?? isTemporaryRentSaved(property.id)}
+                                        onToggleSave={(id) => toggleSaveTempMutation.mutateAsync(id)}
+                                    />
+                                );
+                            })}
+                        </Slider>
+                    )}
+                </section>
+            )}
 
             {/* Latest Listings */}
-            <section className="container mx-auto px-4">
-                <SectionHeader
-                    title="تازه ترین‌ها"
-                    subtitle="جدیدترین آگهی‌های منطقه شما"
-                    link={selectedCity.id ? `/ads?cityId=${selectedCity.id}&cityName=${encodeURIComponent(selectedCity.name)}` : "/ads"}
-                />
-                {isRecentLoading ? (
-                    <div className="flex gap-4 overflow-hidden">
-                        {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-                            <div key={i} className="min-w-[180px] aspect-square bg-surface-secondary animate-pulse rounded-2xl" />
-                        ))}
-                    </div>
-                ) : recentError ? (
-                    <ErrorState onRetry={refetchRecent} />
-                ) : !recentAds.length ? (
-                    <EmptyState message="در حال حاضر آگهی جدیدی در این شهر ثبت نشده است" />
-                ) : (
-                    <Slider>
-                        {recentAds.map((property: AdSummary) => {
-                            const effectiveId = property.adId;
-                            const adPrice = getHomeAdPrice(property.pricing);
-                            const isUrgent = Boolean(property.isUrgent);
-                            const isLadder = Boolean(property.isLadder);
-                            const isFeatured = Boolean(property.isFeatured);
+            {(isRecentLoading || recentError || recentAds.length > 0) && (
+                <section className="container mx-auto px-4">
+                    <SectionHeader
+                        title="تازه ترین‌ها"
+                        subtitle="جدیدترین آگهی‌های منطقه شما"
+                        link={selectedCity.id ? `/ads?cityId=${selectedCity.id}&cityName=${encodeURIComponent(selectedCity.name)}` : "/ads"}
+                    />
+                    {isRecentLoading ? (
+                        <div className="flex gap-4 overflow-hidden">
+                            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                                <div key={i} className="min-w-[180px] aspect-square bg-surface-secondary animate-pulse rounded-2xl" />
+                            ))}
+                        </div>
+                    ) : recentError ? (
+                        <ErrorState onRetry={refetchRecent} />
+                    ) : (
+                        <Slider>
+                            {recentAds.map((property: AdSummary) => {
+                                const effectiveId = property.adId;
+                                const adPrice = getHomeAdPrice(property.pricing);
+                                const isUrgent = Boolean(property.isUrgent);
+                                const isLadder = Boolean(property.isLadder);
+                                const isFeatured = Boolean(property.isFeatured);
 
-                            return (
-                                <PropertyCard
-                                    key={effectiveId}
-                                    id={effectiveId}
-                                    adId={effectiveId}
-                                    variant="vertical"
-                                    href={`/ads/${effectiveId}`}
-                                    title={property.title}
-                                    price={adPrice.price}
-                                    unit={adPrice.unit}
-                                    location={selectedCity.name}
-                                    image={getMediaPosterUrl(property.mediaIds?.[0])}
-                                    isVideo={property.mediaIds?.[0]?.type === "VIDEO"}
-                                    category={
-                                        property.subcategoryTitle ||
-                                        property.subcategory?.label ||
-                                        property.categoryPath?.subcategoryTitle ||
-                                        property.categoryTitle ||
-                                        property.category?.label ||
-                                        property.categoryPath?.categoryTitle ||
-                                        ""
-                                    }
-                                    className="w-[210px] lg:w-[250px]"
-                                    area={getFloorArea(property) ?? undefined}
-                                    rooms={
-                                        property.rooms ??
-                                        (typeof property.attributes?.rooms === "number"
-                                            ? property.attributes.rooms
-                                            : typeof property.attributes?.rooms_count === "number"
-                                                ? property.attributes.rooms_count
-                                                : undefined)
-                                    }
-                                    date={isLadder ? (property.updatedAt || property.createdAt) : property.createdAt}
-                                    isUrgent={isUrgent}
-                                    isLadder={isLadder}
-                                    isFeatured={isFeatured}
-                                    isSaved={property.isSaved ?? isAdSaved(effectiveId)}
-                                    onToggleSave={(id) => toggleSaveAdMutation.mutateAsync(id)}
-                                />
-                            );
-                        })}
-                    </Slider>
-                )}
-            </section>
+                                return (
+                                    <PropertyCard
+                                        key={effectiveId}
+                                        id={effectiveId}
+                                        adId={effectiveId}
+                                        variant="vertical"
+                                        href={`/ads/${effectiveId}`}
+                                        title={property.title}
+                                        price={adPrice.price}
+                                        unit={adPrice.unit}
+                                        location={selectedCity.name}
+                                        image={getMediaPosterUrl(property.mediaIds?.[0])}
+                                        isVideo={property.mediaIds?.[0]?.type === "VIDEO"}
+                                        category={
+                                            property.subcategoryTitle ||
+                                            property.subcategory?.label ||
+                                            property.categoryPath?.subcategoryTitle ||
+                                            property.categoryTitle ||
+                                            property.category?.label ||
+                                            property.categoryPath?.categoryTitle ||
+                                            ""
+                                        }
+                                        className="w-[210px] lg:w-[250px]"
+                                        area={getFloorArea(property) ?? undefined}
+                                        rooms={
+                                            property.rooms ??
+                                            (typeof property.attributes?.rooms === "number"
+                                                ? property.attributes.rooms
+                                                : typeof property.attributes?.rooms_count === "number"
+                                                    ? property.attributes.rooms_count
+                                                    : undefined)
+                                        }
+                                        date={isLadder ? (property.updatedAt || property.createdAt) : property.createdAt}
+                                        isUrgent={isUrgent}
+                                        isLadder={isLadder}
+                                        isFeatured={isFeatured}
+                                        isSaved={property.isSaved ?? isAdSaved(effectiveId)}
+                                        onToggleSave={(id) => toggleSaveAdMutation.mutateAsync(id)}
+                                    />
+                                );
+                            })}
+                        </Slider>
+                    )}
+                </section>
+            )}
 
             {/* Footer */}
             <Footer />
