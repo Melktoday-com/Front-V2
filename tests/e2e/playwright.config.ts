@@ -4,7 +4,7 @@ export default defineConfig({
   testDir: "./",
   timeout: 30000,
   use: {
-    baseURL: process.env.BASE_URL || "http://localhost:3008",
+    baseURL: process.env.BASE_URL || "https://melktoday.com",
     headless: true,
     ...devices["Pixel 5"],
   },
