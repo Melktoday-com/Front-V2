@@ -5,6 +5,7 @@ import { useCity } from "@/components/providers/CityProvider";
 import { EmptyState, ErrorState } from "@/components/ui/StatusStates";
 import { TemporaryRentCard } from "@/components/ui/TemporaryRentCard";
 import { useDebounce } from "@/hooks/useDebounce";
+import { useFavorites, useToggleSaveTemporaryRent } from "@/hooks/useFavorites";
 import { useSearchTemporaryRentals } from "@/hooks/useSearch";
 import { useTemporaryRentAds } from "@/hooks/useTemporaryRent";
 import { cn, toPersianDigits } from "@/lib/utils";
@@ -38,6 +39,8 @@ export default function TemporaryRentScene() {
     const [guestCount, setGuestCount] = useState<number | null>(null);
 
     const debouncedSearch = useDebounce(search, 250);
+    const { isTemporaryRentSaved } = useFavorites();
+    const toggleSaveMutation = useToggleSaveTemporaryRent();
 
     const {
         data: searchData,
@@ -89,6 +92,8 @@ export default function TemporaryRentScene() {
                 category: ad.taxonomy?.subcategoryName || ad.taxonomy?.categoryName,
                 isUrgent: Boolean(ad.isUrgent),
                 isLadder: Boolean(ad.isLadder),
+                rating: ad.rating ? Number(ad.rating) : (ad.attributes?.number?.rating ? Number(ad.attributes.number.rating) : (ad.attributes?.rating ? Number(ad.attributes.rating) : undefined)),
+                publisher: ad.publisher,
             }));
         }
 
@@ -104,6 +109,8 @@ export default function TemporaryRentScene() {
                 category: ad.subcategoryTitle || ad.categoryTitle,
                 isUrgent: Boolean(ad.isUrgent),
                 isLadder: Boolean(ad.isLadder),
+                rating: ad.rating ? Number(ad.rating) : (ad.attributes?.rating ? Number(ad.attributes.rating) : undefined),
+                publisher: ad.publisher,
             }));
         }
 
@@ -155,9 +162,9 @@ export default function TemporaryRentScene() {
                 ) : null}
 
                 {isLoading ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
                         {Array.from({ length: 8 }).map((_, i) => (
-                            <div key={i} className="aspect-[4/3] bg-surface-secondary animate-pulse rounded-2xl" />
+                            <div key={i} className="h-32 sm:h-auto sm:aspect-[4/3] bg-surface-secondary animate-pulse rounded-2xl" />
                         ))}
                     </div>
                 ) : error ? (
@@ -173,7 +180,7 @@ export default function TemporaryRentScene() {
                         />
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
                         {filteredItems.map((ad) => (
                             <TemporaryRentCard
                                 key={ad.id}
@@ -187,6 +194,10 @@ export default function TemporaryRentScene() {
                                 category={ad.category}
                                 isUrgent={ad.isUrgent}
                                 isLadder={ad.isLadder}
+                                rating={ad.rating}
+                                publisher={ad.publisher}
+                                isSaved={isTemporaryRentSaved(ad.id)}
+                                onToggleSave={(id) => toggleSaveMutation.mutateAsync(id)}
                             />
                         ))}
                     </div>
