@@ -1441,7 +1441,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                 <h2 className="text-lg font-black text-brand">بازبینی و تایید آگهی</h2>
                                 <div className="bg-surface-secondary/80 rounded-2xl p-6 space-y-4 border border-border-subtle text-sm">
                                     {adminMode && (
-                                        <div className="flex justify-between pb-2 border-b border-border-subtle/50">
+                                        <div className="flex flex-col sm:flex-row sm:justify-between pb-2 border-b border-border-subtle/50">
                                             <span className="text-text-light">نوع مالکیت آگهی:</span>
                                             <span className="font-bold text-brand">
                                                 {adminOwnership.isPlatform
@@ -1450,15 +1450,15 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                             </span>
                                         </div>
                                     )}
-                                    <div className="flex justify-between pb-2 border-b border-border-subtle/50">
+                                    <div className="flex flex-col sm:flex-row sm:justify-between pb-2 border-b border-border-subtle/50">
                                         <span className="text-text-light">عنوان آگهی:</span>
                                         <span className="font-bold text-brand text-left">{formData.title}</span>
                                     </div>
-                                    <div className="flex justify-between pb-2 border-b border-border-subtle/50">
+                                    <div className="flex flex-col sm:flex-row sm:justify-between pb-2 border-b border-border-subtle/50">
                                         <span className="text-text-light">شهر و منطقه:</span>
                                         <span className="font-bold text-brand">{cityName}</span>
                                     </div>
-                                    <div className="flex justify-between pb-2 border-b border-border-subtle/50">
+                                    <div className="flex flex-col sm:flex-row sm:justify-between pb-2 border-b border-border-subtle/50">
                                         <span className="text-text-light">محله (تطبیق هوشمند نقشه):</span>
                                         <span className="font-bold text-brand">
                                             {isDetectingZone ? (
@@ -1473,13 +1473,13 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                             )}
                                         </span>
                                     </div>
-                                    <div className="flex justify-between pb-2 border-b border-border-subtle/50">
+                                    <div className="flex flex-col sm:flex-row sm:justify-between pb-2 border-b border-border-subtle/50">
                                         <span className="text-text-light">دسته‌بندی:</span>
                                         <span className="font-bold text-brand">
                                             {subcatConfig?.subcategory?.categoryDisplayName || formData.categoryPath?.categoryKey} / {subcatConfig?.subcategory?.displayName || formData.categoryPath?.subcategoryKey}
                                         </span>
                                     </div>
-                                    <div className="flex justify-between pb-2 border-b border-border-subtle/50">
+                                    <div className="flex flex-col sm:flex-row sm:justify-between pb-2 border-b border-border-subtle/50">
                                         <span className="text-text-light">مدل معامله:</span>
                                         <span className="font-bold text-primary">
                                             {activePriceModel?.displayName || formData.categoryPath?.businessModelKey}
@@ -1522,7 +1522,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                                     }
 
                                                     return (
-                                                        <div key={f.key} className="flex justify-between p-2.5 bg-surface rounded-xl border border-border-subtle/60 text-xs">
+                                                        <div key={f.key} className="flex flex-col sm:flex-row sm:justify-between p-2.5 bg-surface rounded-xl border border-border-subtle/60 text-xs">
                                                             <span className="text-text-light">{isConvertibleField ? "قابلیت تبدیل:" : `${f.label}:`}</span>
                                                             <span className="font-bold text-brand">
                                                                 {displayValue}
@@ -1542,7 +1542,7 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                                     </div>
 
                                     {formData.mediaIds && formData.mediaIds.length > 0 && (
-                                        <div className="flex justify-between items-center pt-2 border-t border-border-subtle/50">
+                                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center pt-2 border-t border-border-subtle/50">
                                             <span className="text-text-light">رسانه‌های ضمیمه:</span>
                                             <div className="flex items-center gap-2">
                                                 {formData.isDecorativeImages && (
