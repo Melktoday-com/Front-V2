@@ -38,7 +38,7 @@ function AdminTemporaryRentContent() {
                         </div>
                         <div>
                             <h1 className="text-xl font-black text-foreground">
-                                مدیریت اجاره موقت و روزانه
+                                مدیریت اجاره روزانه
                             </h1>
                             <p className="text-xs font-medium text-foreground-muted">
                                 نظارت بر آگهی‌های اقامتگاه، بررسی و تایید، دسته‌بندی‌ها و مدل‌های قیمت‌گذاری
@@ -114,7 +114,7 @@ export default function AdminTemporaryRentPage() {
             fallback={
                 <div className="py-20 flex flex-col items-center justify-center gap-3 text-foreground-muted">
                     <RefreshCw className="w-6 h-6 animate-spin text-success" />
-                    <span className="text-xs font-bold">در حال بارگذاری بخش مدیریت اجاره موقت...</span>
+                    <span className="text-xs font-bold">در حال بارگذاری بخش مدیریت اجاره روزانه...</span>
                 </div>
             }
         >

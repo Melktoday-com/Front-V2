@@ -324,7 +324,7 @@ export default function TemporaryRentItemsTab() {
                 >
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-xs font-bold text-foreground-muted">کل آیتم‌های اجاره موقت</p>
+                            <p className="text-xs font-bold text-foreground-muted">کل آیتم‌های اجاره روزانه</p>
                             <h3 className="text-2xl font-black text-foreground mt-1">
                                 {toPersianDigits(adsData?.total ?? 0)}
                             </h3>
@@ -895,7 +895,7 @@ export default function TemporaryRentItemsTab() {
                 onClose={() => setDeleteTargetAd(null)}
                 onConfirm={confirmDelete}
                 isLoading={deleteMutation.isPending}
-                title="حذف اقامتگاه اجاره موقت"
+                title="حذف اقامتگاه اجاره روزانه"
                 description={
                     deleteTargetAd
                         ? `آیا از حذف اقامتگاه «${deleteTargetAd.title}» اطمینان دارید؟ این عملیات غیرقابل بازگشت است.`

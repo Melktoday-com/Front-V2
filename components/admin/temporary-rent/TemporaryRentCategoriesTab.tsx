@@ -316,7 +316,7 @@ export default function TemporaryRentCategoriesTab() {
                 <div>
                     <h1 className="text-2xl font-black text-foreground flex items-center gap-2">
                         <Calendar className="w-7 h-7 text-success" />
-                        مدیریت دسته‌بندی‌های اجاره موقت و اقامتگاه
+                        مدیریت دسته‌بندی‌های اجاره روزانه و اقامتگاه
                     </h1>
                     <p className="text-foreground-muted mt-1 text-xs">
                         ساختار دسته‌بندی‌ها و اقامتگاه‌های روزانه، الگوهای قیمت‌گذاری و فیلدهای داینامیک

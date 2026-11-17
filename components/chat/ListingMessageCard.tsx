@@ -1,8 +1,8 @@
 "use client";
 
-import { cn, formatAdPrice, getMediaUrl, toPersianDigits } from "@/lib/utils";
+import { cn, formatAdPrice, getMediaUrl } from "@/lib/utils";
 import { ListingMetadata } from "@/services/chat.service";
-import { Building2, ExternalLink, Home, Hotel } from "lucide-react";
+import { Building2, ExternalLink, Hotel } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -11,10 +11,14 @@ interface ListingMessageCardProps {
     mediaIds?: string[] | null;
 }
 
-export function ListingMessageCard({ metadata, mediaIds }: ListingMessageCardProps) {
-    const isRental = metadata?.subjectType === 'RENTAL';
+export function ListingMessageCard({
+    metadata,
+    mediaIds,
+}: ListingMessageCardProps) {
+    const isRental = metadata?.subjectType === "RENTAL";
     const subjectId = metadata?.subjectId;
-    const title = metadata?.title || (isRental ? "واحد اقامتی اجاره موقت" : "آگهی ملک");
+    const title =
+        metadata?.title || (isRental ? "واحد اقامتی اجاره روزانه" : "آگهی ملک");
     const href = subjectId
         ? isRental
             ? `/temporary-rent/${subjectId}`
@@ -23,22 +27,31 @@ export function ListingMessageCard({ metadata, mediaIds }: ListingMessageCardPro
 
     const firstImageId =
         (mediaIds && mediaIds.length > 0 && mediaIds[0]) ||
-        (metadata?.mediaIds && metadata.mediaIds.length > 0 && metadata.mediaIds[0]) ||
+        (metadata?.mediaIds &&
+            metadata.mediaIds.length > 0 &&
+            metadata.mediaIds[0]) ||
         metadata?.image;
 
     const imageUrl = firstImageId ? getMediaUrl(firstImageId) : null;
 
-    let priceDisplay: string = "توافقی";
+    let priceDisplay = "توافقی";
     if (metadata?.price) {
-        if (typeof metadata.price === 'number' || typeof metadata.price === 'string') {
+        if (
+            typeof metadata.price === "number" ||
+            typeof metadata.price === "string"
+        ) {
             priceDisplay = formatAdPrice(metadata.price);
-        } else if (typeof metadata.price === 'object') {
+        } else if (typeof metadata.price === "object") {
             if (metadata.price.totalPrice) {
                 priceDisplay = formatAdPrice(metadata.price.totalPrice);
             } else if (metadata.price.rentPrice || metadata.price.depositPrice) {
-                const deposit = metadata.price.depositPrice ? `رهن: ${formatAdPrice(metadata.price.depositPrice)}` : '';
-                const rent = metadata.price.rentPrice ? `اجاره: ${formatAdPrice(metadata.price.rentPrice)}` : '';
-                priceDisplay = [deposit, rent].filter(Boolean).join(' | ') || "توافقی";
+                const deposit = metadata.price.depositPrice
+                    ? `رهن: ${formatAdPrice(metadata.price.depositPrice)}`
+                    : "";
+                const rent = metadata.price.rentPrice
+                    ? `اجاره: ${formatAdPrice(metadata.price.rentPrice)}`
+                    : "";
+                priceDisplay = [deposit, rent].filter(Boolean).join(" | ") || "توافقی";
             } else if (metadata.price.weekdayPrice) {
                 priceDisplay = `هر شب: ${formatAdPrice(metadata.price.weekdayPrice)}`;
             }
@@ -57,18 +70,20 @@ export function ListingMessageCard({ metadata, mediaIds }: ListingMessageCardPro
                     />
                 ) : (
                     <div className="text-secondary/40 flex flex-col items-center justify-center gap-1">
-                        {isRental ? <Hotel className="w-6 h-6" /> : <Building2 className="w-6 h-6" />}
+                        {isRental ? (
+                            <Hotel className="w-6 h-6" />
+                        ) : (
+                            <Building2 className="w-6 h-6" />
+                        )}
                     </div>
                 )}
                 <span
                     className={cn(
                         "absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded-md text-[9px] font-black uppercase shadow-xs",
-                        isRental
-                            ? "bg-purple-600 text-white"
-                            : "bg-brand text-white"
+                        isRental ? "bg-purple-600 text-white" : "bg-brand text-white",
                     )}
                 >
-                    {isRental ? "اجاره موقت" : "آگهی ملک"}
+                    {isRental ? "اجاره روزانه" : "آگهی ملک"}
                 </span>
             </div>
 

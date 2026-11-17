@@ -389,7 +389,7 @@ export default function ResidenceDetailScene({ initialData }: ResidenceDetailSce
             case "EVENT_VENUE_RENT":
                 return "اجاره برگزاری مراسم و رویداد";
             default:
-                return "اجاره موقت و روزانه";
+                return "اجاره روزانه";
         }
     };
 

@@ -468,7 +468,7 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
                             {conversation?.subjectType === "AGENCY" ? (
                                 "مشاور املاک"
                             ) : conversation?.subjectType === "RENTAL" ? (
-                                "میزبان اجاره موقت"
+                                "میزبان اجاره روزانه"
                             ) : (
                                 <>
                                     <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />

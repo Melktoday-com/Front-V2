@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 import { attachTelemetry } from './helpers/auth';
 
 test.describe('Flow 7: Temporary Rent & Host Lifecycle UI Test', () => {
@@ -13,7 +13,7 @@ test.describe('Flow 7: Temporary Rent & Host Lifecycle UI Test', () => {
 
       // Header validation
       const heading = page.locator('h1');
-      await expect(heading).toContainText('مدیریت اجاره موقت');
+      await expect(heading).toContainText('مدیریت اجاره روزانه');
 
       // Create new accommodation button
       const createBtn = page.locator('a[href="/admin/temporary-rent/create"]').first();

@@ -38,10 +38,10 @@ const typeLabels: Record<GlobalArchiveEntityType, { label: string; icon: React.C
         badge: "آگهی فروش/رهن",
     },
     TEMPORARY_RENT_AD: {
-        label: "اجاره موقت",
+        label: "اجاره روزانه",
         icon: Calendar,
         color: "text-success bg-success-subtle border-success/30",
-        badge: "اقامتگاه / موقت",
+        badge: "اقامتگاه / رزرو روزانه",
     },
     CATEGORY: {
         label: "دسته‌بندی اصلی",
@@ -56,16 +56,16 @@ const typeLabels: Record<GlobalArchiveEntityType, { label: string; icon: React.C
         badge: "زیردسته ملک",
     },
     TEMPORARY_RENT_CATEGORY: {
-        label: "دسته اجاره موقت",
+        label: "دسته اجاره روزانه",
         icon: FolderTree,
         color: "text-teal-600 bg-teal-50 border-teal-200",
-        badge: "دسته موقت",
+        badge: "دسته روزانه",
     },
     TEMPORARY_RENT_SUBCATEGORY: {
-        label: "زیردسته موقت",
+        label: "زیردسته روزانه",
         icon: Layers,
         color: "text-purple-600 bg-purple-50 border-purple-200",
-        badge: "زیردسته موقت",
+        badge: "زیردسته روزانه",
     },
     POST: {
         label: "محتوا / پست",
@@ -235,7 +235,7 @@ export default function AdminArchivePage() {
                                     : "bg-success-subtle text-success hover:bg-success-subtle"
                             }`}
                         >
-                            اجاره موقت ({toPersianDigits(counts.temporaryRentAds)})
+                            اجاره روزانه ({toPersianDigits(counts.temporaryRentAds)})
                         </button>
                         <button
                             type="button"

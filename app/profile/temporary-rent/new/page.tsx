@@ -3,7 +3,7 @@ import { Metadata } from "next";
 
 export const metadata: Metadata = {
     title: "ثبت اقامتگاه جدید | ملک تودی",
-    description: "ثبت آگهی جدید اجاره موقت در ملک تودی",
+    description: "ثبت آگهی جدید اجاره روزانه در ملک تودی",
 };
 
 export default function CreateTemporaryRentPage() {

@@ -39,12 +39,12 @@ import {
     ImageIcon,
     Info,
     LayoutDashboard,
+    Loader2,
     MapPin,
     PenTool,
     Phone,
     Plus,
     Power,
-    Loader2,
     Rocket,
     RotateCcw,
     Settings,
@@ -52,8 +52,7 @@ import {
     Smartphone,
     Star,
     Trash2,
-    Users,
-    X,
+    Users
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -434,7 +433,7 @@ export default function TemporaryRentPanelScene() {
                                     )}
                                 </div>
                                 <span className="text-[10px] text-secondary font-medium hidden md:block">
-                                    مدیریت اقامتگاه‌ها و ویترین اجاره موقت
+                                    مدیریت اقامتگاه‌ها و ویترین اجاره روزانه
                                 </span>
                             </div>
                         </div>
@@ -672,7 +671,7 @@ export default function TemporaryRentPanelScene() {
                             <div>
                                 <h2 className="text-base sm:text-lg font-black text-brand">اقامتگاه‌های ثبت‌شده</h2>
                                 <p className="text-[11px] text-secondary">
-                                    مدیریت وضعیت، قیمت‌گذاری و ارتقای اقامتگاه‌های اجاره موقت
+                                    مدیریت وضعیت، قیمت‌گذاری و ارتقای اقامتگاه‌های اجاره روزانه
                                 </p>
                             </div>
                         </div>
@@ -743,7 +742,7 @@ export default function TemporaryRentPanelScene() {
                             <div className="space-y-1 max-w-sm mx-auto">
                                 <h4 className="text-sm font-black text-brand">اقامتگاهی در این بخش یافت نشد</h4>
                                 <p className="text-xs text-secondary">
-                                    همین حالا اولین آگهی اجاره موقت خود را ثبت کرده و میزبانی را آغاز کنید.
+                                    همین حالا اولین آگهی اجاره روزانه خود را ثبت کرده و میزبانی را آغاز کنید.
                                 </p>
                             </div>
                             <div className="pt-1">

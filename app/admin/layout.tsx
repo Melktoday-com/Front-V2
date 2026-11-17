@@ -57,7 +57,7 @@ const sidebarItems: SidebarItem[] = [
     { name: "ارتقا آگهی", href: "/admin/promotions", icon: Zap, requiredPermissions: ["promotions.manage"] },
     { name: "کمپین‌ها", href: "/admin/campaigns", icon: BarChart3, requiredPermissions: ["promotions.manage"] },
     { name: "مناطق جغرافیایی", href: "/admin/geo", icon: Map, requiredPermissions: ["geo.manage"] },
-    { name: "اجاره موقت و روزانه", href: "/admin/temporary-rent", icon: Calendar, requiredPermissions: ["temporary_rent.view"] },
+    { name: "اجاره روزانه", href: "/admin/temporary-rent", icon: Calendar, requiredPermissions: ["temporary_rent.view"] },
     { name: "مدیریت پست‌ها و مقالات", href: "/admin/posts", icon: Newspaper, requiredPermissions: ["posts.view"] },
     { name: "صفحه رسمی پلتفرم", href: "/admin/platform", icon: Globe, requiredPermissions: ["posts.view"] },
     { name: "گزارش‌ها", href: "/admin/reports", icon: AlertTriangle, requiredPermissions: ["reports.manage"] },

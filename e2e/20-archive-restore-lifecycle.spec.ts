@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 import { attachTelemetry } from './helpers/auth';
 
 test.describe('Flow 20: Comprehensive Archive & Restore Lifecycle Tests', () => {
@@ -18,7 +18,7 @@ test.describe('Flow 20: Comprehensive Archive & Restore Lifecycle Tests', () => 
     const tabs = [
       'همه آیتم‌ها',
       'آگهی‌های ملک',
-      'اجاره موقت',
+      'اجاره روزانه',
       'دسته‌بندی‌ها',
       'زیردسته‌ها',
       'مطالب و پست‌ها',

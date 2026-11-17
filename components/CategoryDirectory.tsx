@@ -27,7 +27,7 @@ export interface CategoryDirectoryProps {
 const STATIC_TEMPORARY_RENT_CATEGORY: DirectoryCategoryItem = {
     id: "temporary_rent",
     key: "temporary_rent",
-    displayName: "اقامتگاه",
+    displayName: "اجاره روزانه",
     icon: temporaryRentIcon,
 };
 
@@ -57,10 +57,10 @@ export function CategoryDirectory({
             return categories.map((c) =>
                 c.key === "temporary_rent"
                     ? {
-                          ...c,
-                          displayName: c.displayName || STATIC_TEMPORARY_RENT_CATEGORY.displayName,
-                          icon: c.icon || STATIC_TEMPORARY_RENT_CATEGORY.icon,
-                      }
+                        ...c,
+                        displayName: c.displayName || STATIC_TEMPORARY_RENT_CATEGORY.displayName,
+                        icon: c.icon || STATIC_TEMPORARY_RENT_CATEGORY.icon,
+                    }
                     : c
             );
         }

@@ -100,7 +100,7 @@ function ConversationListContent() {
                                 )}>
                                     {conv.subjectType === 'AGENCY' ? 'آژانس' :
                                         conv.subjectType === 'SUPPORT' ? 'پشتیبانی' :
-                                            conv.subjectType === 'RENTAL' ? 'اجاره موقت' :
+                                            conv.subjectType === 'RENTAL' ? 'اجاره روزانه' : 
                                                 'آگهی'}
                                 </span>
                                 <p className="text-secondary text-[10px] truncate opacity-70">
