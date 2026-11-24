@@ -8,7 +8,7 @@ import { SearchHeader } from "@/components/SearchHeader";
 import { SectionHeader } from "@/components/SectionHeader";
 import { PropertyCard } from "@/components/ui/PropertyCard";
 import { Slider } from "@/components/ui/Slider";
-import { EmptyState, ErrorState } from "@/components/ui/StatusStates";
+import { ErrorState } from "@/components/ui/StatusStates";
 import { useAds, useCategories } from "@/hooks/useAds";
 import { useAgencies } from "@/hooks/useAgencies";
 import { useFavorites, useToggleSaveAd, useToggleSaveTemporaryRent } from "@/hooks/useFavorites";
@@ -227,40 +227,11 @@ export const HomeScene = () => {
                     )}
                 </section>
             )}
-
-            {/* Top Agencies */}
-            {(isAgenciesLoading || agencyError || topAgencies.length > 0) && (
-                <section className="container mx-auto px-4">
-                    <SectionHeader
-                        title="دفاتر املاک"
-                        subtitle="همکاری با معتبرترین دفاتر املاک و مشاوران"
-                        link={selectedCity.id ? `/agency?cityId=${selectedCity.id}&cityName=${selectedCity.name}` : "/agency"}
-                    />
-                    {isAgenciesLoading ? (
-                        <div className="flex gap-4 overflow-hidden">
-                            {[1, 2, 3, 4, 5, 6].map((i) => (
-                                <div key={i} className="min-w-32 h-40 bg-surface-secondary animate-pulse rounded-xl" />
-                            ))}
-                        </div>
-                    ) : agencyError ? (
-                        <ErrorState onRetry={refetchAgencies} />
-                    ) : (
-                        <Slider>
-                            {topAgencies.map((agency: { id: string; name: string; image: string; listingsCount: number }) => (
-                                <Link key={agency.id} href={`/agency/${agency.id}`} className="block">
-                                    <AgentAvatar name={agency.name} image={agency.image} />
-                                </Link>
-                            ))}
-                        </Slider>
-                    )}
-                </section>
-            )}
-
             {/* Temporary Rentals */}
             {(isTempRentLoading || tempRentError || (tempRentData?.items && tempRentData.items.length > 0)) && (
                 <section className="container mx-auto px-4">
                     <SectionHeader
-                        title="اقامتگاه‌های نردبان شده و فوری"
+                        title="آگهی‌های اجاره روزانه"
                         subtitle="بهترین گزینه برای اجاره روزانه و سفرهای کوتاه"
                         link="/temporary-rent"
                     />
@@ -307,6 +278,35 @@ export const HomeScene = () => {
                     )}
                 </section>
             )}
+            {/* Top Agencies */}
+            {(isAgenciesLoading || agencyError || topAgencies.length > 0) && (
+                <section className="container mx-auto px-4">
+                    <SectionHeader
+                        title="پروفایل املاک"
+                        subtitle="همکاری با معتبرترین دفاتر املاک و مشاوران"
+                        link={selectedCity.id ? `/agency?cityId=${selectedCity.id}&cityName=${selectedCity.name}` : "/agency"}
+                    />
+                    {isAgenciesLoading ? (
+                        <div className="flex gap-4 overflow-hidden">
+                            {[1, 2, 3, 4, 5, 6].map((i) => (
+                                <div key={i} className="min-w-32 h-40 bg-surface-secondary animate-pulse rounded-xl" />
+                            ))}
+                        </div>
+                    ) : agencyError ? (
+                        <ErrorState onRetry={refetchAgencies} />
+                    ) : (
+                        <Slider>
+                            {topAgencies.map((agency: { id: string; name: string; image: string; listingsCount: number }) => (
+                                <Link key={agency.id} href={`/agency/${agency.id}`} className="block">
+                                    <AgentAvatar name={agency.name} image={agency.image} />
+                                </Link>
+                            ))}
+                        </Slider>
+                    )}
+                </section>
+            )}
+
+
 
             {/* Latest Listings */}
             {(isRecentLoading || recentError || recentAds.length > 0) && (
