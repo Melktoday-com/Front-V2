@@ -12,12 +12,14 @@ import { ErrorState } from "@/components/ui/StatusStates";
 import { useAds, useCategories } from "@/hooks/useAds";
 import { useAgencies } from "@/hooks/useAgencies";
 import { useFavorites, useToggleSaveAd, useToggleSaveTemporaryRent } from "@/hooks/useFavorites";
+import { useSearchProfiles } from "@/hooks/useSearch";
 import { useTemporaryRentAds } from "@/hooks/useTemporaryRent";
 import { getFloorArea } from "@/lib/location";
 import { formatPrice, getMediaPosterUrl } from "@/lib/utils";
 import { TemporaryRentAdSummary } from "@/services/temporary-rent.service";
 import { AdSummary } from "@/types/api/ads.types";
 import { AgencySummary } from "@/types/api/agency.types";
+import { ProfileSearchDocument } from "@/types/api/search.types";
 import { TemporaryRentPricingReadModel } from "@/types/api/temporary-rent.types";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
@@ -138,6 +140,29 @@ export const HomeScene = () => {
             listingsCount: 0, // Backend currently doesn't provide this in list view
         }));
     }, [agencyData]);
+
+    const {
+        data: hostsData,
+        isLoading: isHostsLoading,
+        error: hostsError,
+        refetch: refetchHosts,
+    } = useSearchProfiles(
+        {
+            ownerType: "HOST",
+            cityId: selectedCity.id || undefined,
+            limit: 10,
+        },
+        !!selectedCity.id
+    );
+
+    const topHosts = useMemo(() => {
+        return (hostsData?.hits || []).map((host: ProfileSearchDocument) => ({
+            id: host.id,
+            slug: host.slug,
+            name: host.displayName || "میزبان",
+            image: host.avatarUrl || "/property-placeholder.svg",
+        }));
+    }, [hostsData]);
 
     return (
         <div className="flex flex-col gap-8 sm:gap-10 pt-4 sm:pt-6">
@@ -299,6 +324,34 @@ export const HomeScene = () => {
                             {topAgencies.map((agency: { id: string; name: string; image: string; listingsCount: number }) => (
                                 <Link key={agency.id} href={`/agency/${agency.id}`} className="block">
                                     <AgentAvatar name={agency.name} image={agency.image} />
+                                </Link>
+                            ))}
+                        </Slider>
+                    )}
+                </section>
+            )}
+
+            {/* Top Hosts */}
+            {(isHostsLoading || hostsError || topHosts.length > 0) && (
+                <section className="container mx-auto px-4">
+                    <SectionHeader
+                        title="پروفایل میزبان‌ها"
+                        subtitle="میزبانان برتر اقامتگاه‌ها و ویلاها"
+                        link={selectedCity.id ? `/temporary-rent?cityId=${selectedCity.id}&cityName=${encodeURIComponent(selectedCity.name)}` : "/temporary-rent"}
+                    />
+                    {isHostsLoading ? (
+                        <div className="flex gap-4 overflow-hidden">
+                            {[1, 2, 3, 4, 5, 6].map((i) => (
+                                <div key={i} className="min-w-32 h-40 bg-surface-secondary animate-pulse rounded-xl" />
+                            ))}
+                        </div>
+                    ) : hostsError ? (
+                        <ErrorState onRetry={refetchHosts} />
+                    ) : (
+                        <Slider>
+                            {topHosts.map((host: { id: string; slug: string | null; name: string; image: string }) => (
+                                <Link key={host.id} href={`/host/${host.slug || host.id}`} className="block">
+                                    <AgentAvatar name={host.name} image={host.image} />
                                 </Link>
                             ))}
                         </Slider>
