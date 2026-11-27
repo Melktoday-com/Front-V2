@@ -34,6 +34,7 @@ export default function AdminUsersPage() {
     const debouncedSearch = useDebounce(searchQuery.trim(), 400);
     const [selectedStatus, setSelectedStatus] = useState<string>("ALL");
     const [selectedRole, setSelectedRole] = useState<string>("ALL");
+    const [selectedRegistrationSource, setSelectedRegistrationSource] = useState<string>("ALL");
     const [selectedSort, setSelectedSort] = useState<string>("createdAt_DESC");
 
     const [selectedUserForHistory, setSelectedUserForHistory] = useState<AdminUser | null>(null);
@@ -56,7 +57,7 @@ export default function AdminUsersPage() {
 
     useEffect(() => {
         setPage(1);
-    }, [debouncedSearch, selectedStatus, selectedRole, selectedSort]);
+    }, [debouncedSearch, selectedStatus, selectedRole, selectedRegistrationSource, selectedSort]);
 
     const { data, isLoading } = useAdminUsers({
         page,
@@ -64,6 +65,7 @@ export default function AdminUsersPage() {
         search: debouncedSearch || undefined,
         status: selectedStatus === "ALL" ? undefined : selectedStatus,
         role: selectedRole === "ALL" ? undefined : selectedRole,
+        registrationSource: selectedRegistrationSource === "ALL" ? undefined : selectedRegistrationSource,
         sort: selectedSort,
     });
 
@@ -191,6 +193,16 @@ export default function AdminUsersPage() {
                         <option value="super-admin">مدیر ارشد</option>
                     </select>
 
+                    <select
+                        value={selectedRegistrationSource}
+                        onChange={(e) => setSelectedRegistrationSource(e.target.value)}
+                        className="px-3 py-1.5 bg-surface-secondary border border-border-subtle rounded-xl text-xs font-semibold text-foreground focus:ring-2 focus:ring-primary/20 outline-none transition cursor-pointer"
+                    >
+                        <option value="ALL">همه نوع حساب‌ها</option>
+                        <option value="SELF_REGISTERED">کاربران واقعی (ثبت‌نام مستقیم)</option>
+                        <option value="ADMIN_AD_IMPORT">مالکان آگهی (ایمپورت‌شده)</option>
+                    </select>
+
                     <div className="mr-auto flex items-center gap-2">
                         <span className="text-xs font-bold text-foreground-muted">مرتب‌سازی:</span>
                         <select
@@ -250,10 +262,26 @@ export default function AdminUsersPage() {
                     <tbody className="divide-y divide-gray-100">
                         {isLoading ? (
                             <tr><td colSpan={6} className="p-10 text-center">در حال بارگزاری...</td></tr>
-                        ) : data?.items.map((user: AdminUser) => (
+                        ) : data?.items.map((user: AdminUser) => {
+                            const isImportedAdOwner = user.registrationSource === "ADMIN_AD_IMPORT";
+                            const displayName = !isImportedAdOwner
+                                ? [user.firstName, user.lastName].filter(Boolean).join(" ").trim() || "بدون نام"
+                                : [user.firstName, user.lastName]
+                                      .filter((part) => part && part !== "premium-panel" && part !== "personal")
+                                      .join(" ")
+                                      .trim() || "مالک آگهی (بدون نام)";
+
+                            return (
                             <tr key={user.id} className="hover:bg-surface-secondary transition-colors text-sm">
                                 <td className="px-6 py-4 font-medium text-foreground">
-                                    {user.firstName ? `${user.firstName} ${user.lastName}` : "بدون نام"}
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                        <span>{displayName}</span>
+                                        {isImportedAdOwner && (
+                                            <span className="bg-surface-secondary text-foreground-muted text-[10px] px-2 py-0.5 rounded-full border border-border-subtle">
+                                                ایمپورت آگهی
+                                            </span>
+                                        )}
+                                    </div>
                                 </td>
                                 <td className="px-6 py-4 text-foreground-secondary font-mono" dir="ltr">
                                     {user.mobileNumber}
@@ -345,7 +373,8 @@ export default function AdminUsersPage() {
                                     </div>
                                 </td>
                             </tr>
-                        ))}
+                            );
+                        })}
                     </tbody>
                 </table>
 

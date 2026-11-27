@@ -1,14 +1,11 @@
 "use client";
 
 import { useAdminPermissions } from "@/hooks/useAdminPermissions";
-import { useAdminUsers, usePendingCampaigns, usePendingPromotions } from "@/hooks/useAdmin";
+import { useAdminUserStats, usePendingCampaigns, usePendingPromotions } from "@/hooks/useAdmin";
 import { useAds } from "@/hooks/useAds";
 import { cn, toPersianDigits } from "@/lib/utils";
 import { adminService } from "@/services/admin.service";
-import { walletService } from "@/services/wallet.service";
-import { AdminUser } from "@/types/api/admin.types";
-import { WalletTransaction } from "@/types/api/wallet.types";
-import { AdStatus, TransactionStatus } from "@/types/api/enums";
+import { AdStatus } from "@/types/api/enums";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
     AlertTriangle,
@@ -26,7 +23,7 @@ import {
     Zap,
 } from "lucide-react";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 interface StatsCardProps {
     title: string;
@@ -120,17 +117,23 @@ export default function AdminDashboard() {
     const [isRefreshing, setIsRefreshing] = useState(false);
     const { isSuperAdmin, hasPermission } = useAdminPermissions();
 
+    const canViewUsers = isSuperAdmin || hasPermission("users.view") || hasPermission("users.manage");
+    const canViewAds = isSuperAdmin || hasPermission("ads.view");
     const canManageReports = isSuperAdmin || hasPermission("reports.manage");
     const canManagePromotions = isSuperAdmin || hasPermission("promotions.manage");
+    const canManageWallet = isSuperAdmin || hasPermission("wallet.manage");
 
-    // 1. Live Users Data
-    const { data: usersData, isLoading: isLoadingUsers } = useAdminUsers({ page: 1, limit: 100 });
+    // 1. Live Authoritative Users Summary (Server-side Tehran timezone, separates real users from ad-import stubs)
+    const { data: userStats, isLoading: isLoadingUsers } = useAdminUserStats(canViewUsers);
 
     // 2. Live Pending Ads Data
-    const { data: pendingAdsData, isLoading: isLoadingAds } = useAds({
-        status: AdStatus.PENDING_APPROVAL,
-        limit: 1,
-    });
+    const { data: pendingAdsData, isLoading: isLoadingAds } = useAds(
+        {
+            status: AdStatus.PENDING_APPROVAL,
+            limit: 1,
+        },
+        { enabled: canViewAds },
+    );
 
     // 3. Live Pending Reports Data (guarded by permission)
     const { data: pendingReportsData, isLoading: isLoadingReports } = useQuery({
@@ -145,28 +148,17 @@ export default function AdminDashboard() {
     // 5. Live Pending Campaigns Data (guarded by permission)
     const { data: pendingCampaignsData } = usePendingCampaigns({}, canManagePromotions);
 
-    // 6. Live Wallet Transactions Data
-    const { data: transactionsData, isLoading: isLoadingTransactions } = useQuery({
-        queryKey: ["admin", "wallet", "transactions"],
-        queryFn: () => walletService.getTransactions(1, 50),
+    // 6. Live Platform Financial Summary (guarded by permission)
+    const { data: financialSummary, isLoading: isLoadingTransactions } = useQuery({
+        queryKey: ["admin", "wallet", "summary"],
+        queryFn: () => adminService.getFinancialSummary(),
+        enabled: canManageWallet,
     });
 
-    // Date calculations for today (00:00:00)
-    const today = useMemo(() => {
-        const d = new Date();
-        d.setHours(0, 0, 0, 0);
-        return d;
-    }, []);
-
     // Users metrics
-    const usersList: AdminUser[] = usersData?.items || [];
-    const totalUsers = usersData?.total ?? usersList.length;
-    const newUsersToday = useMemo(() => {
-        return usersList.filter((u: AdminUser) => {
-            if (!u.createdAt) return false;
-            return new Date(u.createdAt) >= today;
-        }).length;
-    }, [usersList, today]);
+    const registeredUsers = userStats?.registeredUsers ?? 0;
+    const importedAdOwnerUsers = userStats?.importedAdOwnerUsers ?? 0;
+    const newUsersToday = userStats?.newUsersToday ?? 0;
 
     // Pending Ads metrics
     const pendingAdsCount = pendingAdsData?.total ?? 0;
@@ -181,22 +173,9 @@ export default function AdminDashboard() {
 
     const pendingCampaignsCount = pendingCampaignsData?.items?.length ?? 0;
 
-    // Today's Payments & Transactions metrics
-    const transactionsList: WalletTransaction[] = transactionsData?.transactions || transactionsData?.items || [];
-    const { todayPaymentsAmount, todayPaymentsCount } = useMemo(() => {
-        const todayTx = transactionsList.filter((tx: WalletTransaction) => {
-            if (!tx.createdAt) return false;
-            const isTodayTx = new Date(tx.createdAt) >= today;
-            const isSuccess = tx.status === TransactionStatus.COMPLETED;
-            return isTodayTx && isSuccess;
-        });
-
-        const total = todayTx.reduce((sum: number, tx: WalletTransaction) => sum + Number(tx.amount || 0), 0);
-        return {
-            todayPaymentsAmount: total,
-            todayPaymentsCount: todayTx.length,
-        };
-    }, [transactionsList, today]);
+    // Today's Platform Credits & Transactions metrics
+    const todayPaymentsAmount = Number(financialSummary?.todayCredits || 0);
+    const todayPaymentsCount = financialSummary?.todayTransactionsCount ?? 0;
 
     const handleRefresh = async () => {
         setIsRefreshing(true);
@@ -236,11 +215,15 @@ export default function AdminDashboard() {
                     icon={Users}
                     color="bg-info-subtle text-info"
                     description={
-                        totalUsers > 0
-                            ? `${toPersianDigits(totalUsers)} کاربر کل سیستم`
-                            : "درحال جمع‌آوری آمار"
+                        !canViewUsers
+                            ? "عدم دسترسی مشاهده آمار کاربران"
+                            : userStats
+                                ? importedAdOwnerUsers > 0
+                                    ? `${toPersianDigits(registeredUsers)} کاربر واقعی · ${toPersianDigits(importedAdOwnerUsers)} مالک آگهی`
+                                    : `${toPersianDigits(registeredUsers)} کاربر کل سیستم`
+                                : "درحال جمع‌آوری آمار"
                     }
-                    isLoading={isLoadingUsers}
+                    isLoading={canViewUsers && isLoadingUsers}
                     href="/admin/users"
                 />
 

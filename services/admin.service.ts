@@ -31,6 +31,7 @@ import {
     ReviewAgentApplicationRequest,
     AdminAgenciesListResponse,
     ListUsersResponse,
+    AdminUserStatsSummary,
     AdminReport,
     ListPendingPromotionsResponse,
     ListPendingCampaignsResponse,
@@ -96,8 +97,16 @@ export const adminService = {
         status?: string;
         role?: string;
         sort?: string;
+        registrationSource?: string;
     }): Promise<ListUsersResponse> => {
         const response = await api.get<ListUsersResponse>("/admin/users", { params });
+        return response.data;
+    },
+
+    getUserStatsSummary: async (timezone = "Asia/Tehran"): Promise<AdminUserStatsSummary> => {
+        const response = await api.get<AdminUserStatsSummary>("/admin/users/summary", {
+            params: { timezone },
+        });
         return response.data;
     },
 

@@ -1,17 +1,30 @@
 import { adminService } from "@/services/admin.service";
 import { useQuery } from "@tanstack/react-query";
 
-export function useAdminUsers(params: {
-    page?: number;
-    limit?: number;
-    search?: string;
-    status?: string;
-    role?: string;
-    sort?: string;
-}) {
+export function useAdminUsers(
+    params: {
+        page?: number;
+        limit?: number;
+        search?: string;
+        status?: string;
+        role?: string;
+        sort?: string;
+        registrationSource?: string;
+    },
+    enabled: boolean = true,
+) {
     return useQuery({
         queryKey: ["admin", "users", params],
         queryFn: () => adminService.listUsers(params),
+        enabled,
+    });
+}
+
+export function useAdminUserStats(enabled: boolean = true) {
+    return useQuery({
+        queryKey: ["admin", "users", "summary"],
+        queryFn: () => adminService.getUserStatsSummary("Asia/Tehran"),
+        enabled,
     });
 }
 

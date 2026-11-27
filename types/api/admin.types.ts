@@ -172,6 +172,8 @@ export interface UpdateGeoZoneRequest {
     parentZoneId?: string | null;
 }
 
+export type RegistrationSource = 'SELF_REGISTERED' | 'ADMIN_AD_IMPORT' | 'ADMIN_CREATED';
+
 export interface AdminUser {
     id: string;
     mobileNumber: string;
@@ -179,7 +181,24 @@ export interface AdminUser {
     lastName?: string;
     status: UserStatus;
     roles: string[];
+    registrationSource?: RegistrationSource;
     createdAt: string;
+}
+
+export interface AdminUserStatsSummary {
+    totalUsers: number;
+    registeredUsers: number;
+    importedAdOwnerUsers: number;
+    newUsersToday: number;
+    newImportedUsersToday: number;
+    authenticatedUsers: number;
+    newUsersLast7Days: number;
+    newUsersLast30Days: number;
+    activeUsers: number;
+    suspendedUsers: number;
+    blockedUsers: number;
+    inactiveUsers: number;
+    timezone: string;
 }
 
 export interface ListUsersResponse {
