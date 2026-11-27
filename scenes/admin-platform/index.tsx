@@ -119,7 +119,6 @@ export default function AdminPlatformScene() {
       subtitle,
       description,
       logoUrl,
-      avatarUrl: logoUrl,
       coverUrl,
       phone,
       email,
@@ -501,6 +500,9 @@ export default function AdminPlatformScene() {
                         <Image
                           src={getMediaPosterUrl(firstMedia)}
                           alt={post.title}
+                          width={64}
+                          height={64}
+                          unoptimized
                           className="w-16 h-16 rounded-xl object-cover border border-soft-border flex-shrink-0"
                         />
                       );

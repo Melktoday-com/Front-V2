@@ -207,8 +207,8 @@ export function useUpdatePlatformProfile() {
       queryClient.invalidateQueries({ queryKey: SHOWCASE_KEYS.showcase('platform', 'melktoday') });
       queryClient.invalidateQueries({ queryKey: ['showcase'] });
     },
-    onError: () => {
-      toast.error("خطا در ذخیره تنظیمات پلتفرم");
+    onError: (err: Error) => {
+      toast.error(getErrorMessage(err, "خطا در ذخیره تنظیمات پلتفرم"));
     },
   });
 }

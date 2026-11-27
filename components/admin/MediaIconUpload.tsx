@@ -90,10 +90,12 @@ export default function MediaIconUpload({
                 <div className="flex items-center justify-between p-2.5 bg-surface-secondary/80 border border-border-subtle rounded-2xl hover:border-border transition-all">
                     <div className="flex items-center gap-3 min-w-0">
                         <div className="w-12 h-12 rounded-xl bg-surface border border-border-subtle p-1 flex items-center justify-center shrink-0 shadow-xs overflow-hidden">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
                             <Image
                                 src={fullImageUrl}
                                 alt="پیش‌نمایش آیکون"
+                                width={48}
+                                height={48}
+                                unoptimized
                                 className="w-full h-full object-contain"
                                 onError={(e) => {
                                     (e.target as HTMLImageElement).style.display = 'none';

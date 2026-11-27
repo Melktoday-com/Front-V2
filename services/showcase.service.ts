@@ -210,10 +210,11 @@ export const showcaseService = {
   },
 
   async updatePlatformProfile(data: UpdatePlatformProfileRequest) {
-    const payload = {
-      ...data,
-      avatarUrl: data.avatarUrl || data.logoUrl,
-      logoUrl: data.logoUrl || data.avatarUrl,
+    const { avatarUrl, ...rest } = data;
+    const resolvedLogoUrl = rest.logoUrl ?? avatarUrl;
+    const payload: Omit<UpdatePlatformProfileRequest, 'avatarUrl'> = {
+      ...rest,
+      ...(resolvedLogoUrl !== undefined ? { logoUrl: resolvedLogoUrl } : {}),
     };
     const response = await apiClient.put('/platform/admin/profile', payload);
     return response.data;
