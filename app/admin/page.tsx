@@ -300,9 +300,7 @@ export default function AdminDashboard() {
                                     <h3 className="text-base sm:text-lg font-black text-brand">
                                         آمار تفکیکی کاربران سیستم
                                     </h3>
-                                    <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-soft-bg text-secondary border border-soft-border">
-                                        منطقه زمانی: تهران
-                                    </span>
+       
                                 </div>
                                 <p className="text-xs text-secondary mt-0.5">
                                     تفکیک کاربران واقعی ثبت‌نام‌کرده از حساب‌های مالکان آگهی‌های ایمپورت‌شده
