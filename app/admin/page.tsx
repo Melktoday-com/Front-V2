@@ -431,29 +431,6 @@ export default function AdminDashboard() {
                                 </div>
                             </div>
 
-                            {/* Composition Progress Bar */}
-                            {totalUsers > 0 && (
-                                <div className="space-y-2 pt-1">
-                                    <div className="flex items-center justify-between text-[11px] font-bold text-secondary">
-                                        <span>نسبت ترکیب حساب‌های جدول کاربران ({toPersianDigits(totalUsers.toLocaleString("fa-IR"))} رکورد)</span>
-                                        <span>
-                                            {toPersianDigits(registeredUsers)} واقعی / {toPersianDigits(importedAdOwnerUsers.toLocaleString("fa-IR"))} ایمپورت آگهی
-                                        </span>
-                                    </div>
-                                    <div className="h-2.5 w-full rounded-full bg-surface-secondary overflow-hidden flex">
-                                        <div
-                                            className="h-full bg-primary transition-all duration-500"
-                                            style={{ width: `${Math.max(registeredUsers > 0 ? 2 : 0, registeredPercentage)}%` }}
-                                            title={`کاربران واقعی: ${registeredUsers}`}
-                                        />
-                                        <div
-                                            className="h-full bg-warning/60 transition-all duration-500"
-                                            style={{ width: `${Math.max(0, 100 - Math.max(registeredUsers > 0 ? 2 : 0, registeredPercentage))}%` }}
-                                            title={`مالکان آگهی ایمپورت‌شده: ${importedAdOwnerUsers}`}
-                                        />
-                                    </div>
-                                </div>
-                            )}
                         </>
                     )}
                 </section>
