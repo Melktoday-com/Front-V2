@@ -31,7 +31,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 interface AdminAdDetailModalProps {
@@ -84,6 +84,11 @@ export default function AdminAdDetailModal({
     const { data: ad, isLoading } = useAd(adId || "");
     const { getCityName } = useCityLookup();
     const { getCategoryPathLabel } = useCategoryLookup();
+
+    useEffect(() => {
+        setContactInfo(null);
+        setActiveImageIndex(0);
+    }, [adId, isOpen]);
 
     const mediaItems = useMemo(() => {
         return (ad?.mediaIds || []).map((m, idx) => {
@@ -421,12 +426,45 @@ export default function AdminAdDetailModal({
                                         </button>
                                     ) : (
                                         <div className="flex items-center gap-3 bg-surface px-4 py-2 rounded-xl border border-info/30">
-                                            <div className="flex items-center gap-1.5">
-                                                <Phone className="w-4 h-4 text-info" />
-                                                <span className="text-xs font-black text-foreground font-mono" dir="ltr">
-                                                    {contactInfo.mobileNumber}
-                                                </span>
-                                            </div>
+                                            {(() => {
+                                                const resolvedPhone = contactInfo.phoneNumber || contactInfo.mobileNumber;
+                                                return (
+                                                    <>
+                                                        <div className="flex items-center gap-1.5">
+                                                            <Phone className="w-4 h-4 text-info" />
+                                                            {resolvedPhone ? (
+                                                                <span className="text-xs font-black text-foreground font-mono" dir="ltr">
+                                                                    {resolvedPhone}
+                                                                </span>
+                                                            ) : (
+                                                                <span className="text-xs font-bold text-foreground-muted">
+                                                                    {contactInfo.phoneHidden
+                                                                        ? "نمایش شماره توسط مالک محدود شده است"
+                                                                        : "شماره تماس ثبت نشده است"}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        {resolvedPhone && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    navigator.clipboard.writeText(resolvedPhone);
+                                                                    toast.success("شماره تماس مالک کپی شد");
+                                                                }}
+                                                                className="text-foreground-muted hover:text-info p-0.5 transition-colors"
+                                                                title="کپی شماره تماس"
+                                                            >
+                                                                <Copy className="w-3.5 h-3.5" />
+                                                            </button>
+                                                        )}
+                                                        {contactInfo.phoneHidden && resolvedPhone && (
+                                                            <span className="text-[10px] font-bold bg-warning-subtle text-warning px-2 py-0.5 rounded-md">
+                                                                مخفی برای عموم
+                                                            </span>
+                                                        )}
+                                                    </>
+                                                );
+                                            })()}
                                             {contactInfo.email && (
                                                 <div className="flex items-center gap-1 text-foreground-muted text-xs border-r border-border-subtle pr-3">
                                                     <Mail className="w-3.5 h-3.5" />

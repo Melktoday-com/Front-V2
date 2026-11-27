@@ -62,7 +62,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 interface TemporaryRentItemDetailModalProps {
@@ -97,6 +97,11 @@ export default function TemporaryRentItemDetailModal({
     const [isLoadingContact, setIsLoadingContact] = useState(false);
 
     const { data: ad, isLoading } = useTemporaryRentAdDetail(adId || "");
+
+    useEffect(() => {
+        setContactInfo(null);
+        setActiveImageIndex(0);
+    }, [adId, isOpen]);
 
     const mediaItems = useMemo(() => {
         return (ad?.mediaIds || []).map((m, idx) => {

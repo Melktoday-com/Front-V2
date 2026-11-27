@@ -191,38 +191,51 @@ export function AdminOwnershipSelector({
                         <label className="block text-xs font-bold text-foreground mb-1.5">
                             شماره تماس مالک (موبایل) <span className="text-error">*</span>
                         </label>
-                        <div className="relative">
-                            <input
-                                type="tel"
-                                dir="ltr"
-                                placeholder="09123456789"
-                                value={value.phoneNumber}
-                                onChange={(e) => {
-                                    const val = toEnglishDigits(e.target.value);
-                                    onChange({
-                                        ...value,
-                                        phoneNumber: val,
-                                        isUserFound: undefined,
-                                        foundUserName: undefined,
-                                    });
-                                }}
-                                onBlur={() => {
-                                    if (value.phoneNumber.trim().length >= 10) {
-                                        checkUser(value.phoneNumber);
-                                    }
-                                }}
-                                className={cn(
-                                    "w-full px-3.5 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:ring-2 font-mono pl-10",
-                                    activeColorClasses.ring
-                                )}
-                            />
-                            <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
-                                {isChecking ? (
-                                    <Loader2 className="w-4 h-4 text-foreground-muted animate-spin" />
-                                ) : (
-                                    <Phone className="w-4 h-4 text-foreground-muted" />
-                                )}
+                        <div className="flex items-center gap-2">
+                            <div className="relative flex-1">
+                                <input
+                                    type="tel"
+                                    dir="ltr"
+                                    placeholder="09123456789"
+                                    value={value.phoneNumber}
+                                    onChange={(e) => {
+                                        const val = toEnglishDigits(e.target.value);
+                                        onChange({
+                                            ...value,
+                                            phoneNumber: val,
+                                            isUserFound: undefined,
+                                            foundUserName: undefined,
+                                        });
+                                    }}
+                                    onBlur={() => {
+                                        if (value.phoneNumber.trim().length >= 10) {
+                                            checkUser(value.phoneNumber);
+                                        }
+                                    }}
+                                    className={cn(
+                                        "w-full px-3.5 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:ring-2 font-mono pl-10",
+                                        activeColorClasses.ring
+                                    )}
+                                />
+                                <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+                                    {isChecking ? (
+                                        <Loader2 className="w-4 h-4 text-foreground-muted animate-spin" />
+                                    ) : (
+                                        <Phone className="w-4 h-4 text-foreground-muted" />
+                                    )}
+                                </div>
                             </div>
+                            <button
+                                type="button"
+                                onClick={() => checkUser(value.phoneNumber)}
+                                disabled={isChecking || value.phoneNumber.trim().length < 10}
+                                className={cn(
+                                    "px-4 py-2.5 rounded-xl text-xs font-bold transition-all shrink-0 disabled:opacity-50 cursor-pointer",
+                                    activeColorClasses.button
+                                )}
+                            >
+                                {isChecking ? "در حال بررسی..." : "استعلام"}
+                            </button>
                         </div>
                         <p className="text-[11px] text-foreground-muted mt-1">
                             شماره موبایل را وارد کرده و برای بررسی دکمه استعلام را بزنید یا فیلد را ترک نمایید.
