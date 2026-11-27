@@ -11,13 +11,17 @@ import {
     AlertTriangle,
     ArrowUpRight,
     BarChart3,
+    CalendarDays,
     Check,
     Clock,
+    Database,
     FileText,
     LucideIcon,
     Map,
     RefreshCw,
+    ShieldCheck,
     TrendingUp,
+    UserCheck,
     Users,
     Wallet,
     Zap,
@@ -156,9 +160,20 @@ export default function AdminDashboard() {
     });
 
     // Users metrics
+    const totalUsers = userStats?.totalUsers ?? 0;
     const registeredUsers = userStats?.registeredUsers ?? 0;
     const importedAdOwnerUsers = userStats?.importedAdOwnerUsers ?? 0;
     const newUsersToday = userStats?.newUsersToday ?? 0;
+    const newImportedUsersToday = userStats?.newImportedUsersToday ?? 0;
+    const authenticatedUsers = userStats?.authenticatedUsers ?? 0;
+    const newUsersLast7Days = userStats?.newUsersLast7Days ?? 0;
+    const newUsersLast30Days = userStats?.newUsersLast30Days ?? 0;
+    const activeUsers = userStats?.activeUsers ?? 0;
+    const suspendedUsers = userStats?.suspendedUsers ?? 0;
+    const blockedUsers = userStats?.blockedUsers ?? 0;
+    const inactiveUsers = userStats?.inactiveUsers ?? 0;
+    const registeredPercentage = totalUsers > 0 ? Math.round((registeredUsers / totalUsers) * 1000) / 10 : 0;
+    const importedPercentage = totalUsers > 0 ? Math.round((importedAdOwnerUsers / totalUsers) * 1000) / 10 : 0;
 
     // Pending Ads metrics
     const pendingAdsCount = pendingAdsData?.total ?? 0;
@@ -210,7 +225,7 @@ export default function AdminDashboard() {
             {/* Stats Grid - Connected to Real Data */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                 <StatsCard
-                    title="کاربران جدید (امروز)"
+                    title="ثبت‌نام واقعی (امروز)"
                     value={toPersianDigits(newUsersToday)}
                     icon={Users}
                     color="bg-info-subtle text-info"
@@ -218,9 +233,7 @@ export default function AdminDashboard() {
                         !canViewUsers
                             ? "عدم دسترسی مشاهده آمار کاربران"
                             : userStats
-                                ? importedAdOwnerUsers > 0
-                                    ? `${toPersianDigits(registeredUsers)} کاربر واقعی · ${toPersianDigits(importedAdOwnerUsers)} مالک آگهی`
-                                    : `${toPersianDigits(registeredUsers)} کاربر کل سیستم`
+                                ? `${toPersianDigits(registeredUsers)} کاربر واقعی از ${toPersianDigits(totalUsers)} کل`
                                 : "درحال جمع‌آوری آمار"
                     }
                     isLoading={canViewUsers && isLoadingUsers}
@@ -273,6 +286,180 @@ export default function AdminDashboard() {
                     href="/admin/wallet"
                 />
             </div>
+
+            {/* Detailed Users Breakdown Panel */}
+            {canViewUsers && (
+                <section className="bg-surface rounded-2xl border border-soft-border p-5 sm:p-6 shadow-xs space-y-5">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-soft-border">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2.5 rounded-xl bg-info-subtle text-info shrink-0">
+                                <UserCheck size={20} />
+                            </div>
+                            <div>
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    <h3 className="text-base sm:text-lg font-black text-brand">
+                                        آمار تفکیکی کاربران سیستم
+                                    </h3>
+                                    <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-soft-bg text-secondary border border-soft-border">
+                                        منطقه زمانی: تهران
+                                    </span>
+                                </div>
+                                <p className="text-xs text-secondary mt-0.5">
+                                    تفکیک کاربران واقعی ثبت‌نام‌کرده از حساب‌های مالکان آگهی‌های ایمپورت‌شده
+                                </p>
+                            </div>
+                        </div>
+
+                        <Link
+                            href="/admin/users"
+                            className="inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:underline self-start sm:self-auto"
+                        >
+                            <span>مشاهده و فیلتر کاربران</span>
+                            <ArrowUpRight size={14} />
+                        </Link>
+                    </div>
+
+                    {isLoadingUsers ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                            {[1, 2, 3, 4].map((idx) => (
+                                <div key={idx} className="h-32 bg-surface-secondary animate-pulse rounded-xl" />
+                            ))}
+                        </div>
+                    ) : (
+                        <>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                                {/* 1. Real Registered & Authenticated Users */}
+                                <div className="rounded-xl border border-soft-border bg-soft-bg/60 p-4 flex flex-col justify-between space-y-3">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-xs font-bold text-secondary">کاربران واقعی سیستم</span>
+                                        <span className="p-1.5 rounded-lg bg-info-subtle text-info">
+                                            <Users size={15} />
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <div className="flex items-baseline gap-2">
+                                            <span className="text-2xl font-black text-brand">
+                                                {toPersianDigits(registeredUsers.toLocaleString("fa-IR"))}
+                                            </span>
+                                            <span className="text-[11px] font-bold text-info">
+                                                ({toPersianDigits(registeredPercentage)}٪ کل)
+                                            </span>
+                                        </div>
+                                        <p className="text-xs text-secondary mt-1">
+                                            {toPersianDigits(authenticatedUsers.toLocaleString("fa-IR"))} کاربر دارای سابقه ورود (OTP)
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* 2. Growth Windows (Today / 7d / 30d) */}
+                                <div className="rounded-xl border border-soft-border bg-soft-bg/60 p-4 flex flex-col justify-between space-y-3">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-xs font-bold text-secondary">رشد ثبت‌نام واقعی</span>
+                                        <span className="p-1.5 rounded-lg bg-success-subtle text-success">
+                                            <CalendarDays size={15} />
+                                        </span>
+                                    </div>
+                                    <div className="grid grid-cols-3 gap-2 text-center">
+                                        <div className="rounded-lg bg-surface p-2 border border-soft-border">
+                                            <span className="block text-[10px] text-secondary font-bold">امروز</span>
+                                            <span className="text-base font-black text-brand">
+                                                {toPersianDigits(newUsersToday)}
+                                            </span>
+                                        </div>
+                                        <div className="rounded-lg bg-surface p-2 border border-soft-border">
+                                            <span className="block text-[10px] text-secondary font-bold">۷ روز اخیر</span>
+                                            <span className="text-base font-black text-brand">
+                                                {toPersianDigits(newUsersLast7Days)}
+                                            </span>
+                                        </div>
+                                        <div className="rounded-lg bg-surface p-2 border border-soft-border">
+                                            <span className="block text-[10px] text-secondary font-bold">۳۰ روز اخیر</span>
+                                            <span className="text-base font-black text-brand">
+                                                {toPersianDigits(newUsersLast30Days)}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* 3. Imported Ad-Owner Accounts */}
+                                <div className="rounded-xl border border-soft-border bg-soft-bg/60 p-4 flex flex-col justify-between space-y-3">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-xs font-bold text-secondary">مالکان آگهی (ایمپورت‌شده)</span>
+                                        <span className="p-1.5 rounded-lg bg-warning-subtle text-warning">
+                                            <Database size={15} />
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <div className="flex items-baseline gap-2">
+                                            <span className="text-2xl font-black text-brand">
+                                                {toPersianDigits(importedAdOwnerUsers.toLocaleString("fa-IR"))}
+                                            </span>
+                                            <span className="text-[11px] font-bold text-secondary">
+                                                ({toPersianDigits(importedPercentage)}٪ کل)
+                                            </span>
+                                        </div>
+                                        <p className="text-xs text-secondary mt-1">
+                                            ایمپورت امروز: {toPersianDigits(newImportedUsersToday)} · کل رکوردها: {toPersianDigits(totalUsers.toLocaleString("fa-IR"))}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* 4. Account Moderation Statuses */}
+                                <div className="rounded-xl border border-soft-border bg-soft-bg/60 p-4 flex flex-col justify-between space-y-3">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-xs font-bold text-secondary">وضعیت حساب‌های سیستم</span>
+                                        <span className="p-1.5 rounded-lg bg-surface-secondary text-foreground-muted">
+                                            <ShieldCheck size={15} />
+                                        </span>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-2 text-xs">
+                                        <div className="flex items-center justify-between rounded-lg bg-success-subtle text-success px-2.5 py-1.5 font-bold">
+                                            <span>فعال</span>
+                                            <span>{toPersianDigits(activeUsers.toLocaleString("fa-IR"))}</span>
+                                        </div>
+                                        <div className="flex items-center justify-between rounded-lg bg-warning-subtle text-warning px-2.5 py-1.5 font-bold">
+                                            <span>معلق</span>
+                                            <span>{toPersianDigits(suspendedUsers.toLocaleString("fa-IR"))}</span>
+                                        </div>
+                                        <div className="flex items-center justify-between rounded-lg bg-error-subtle text-error px-2.5 py-1.5 font-bold">
+                                            <span>مسدود</span>
+                                            <span>{toPersianDigits(blockedUsers.toLocaleString("fa-IR"))}</span>
+                                        </div>
+                                        <div className="flex items-center justify-between rounded-lg bg-surface-secondary text-foreground-muted px-2.5 py-1.5 font-bold">
+                                            <span>غیرفعال</span>
+                                            <span>{toPersianDigits(inactiveUsers.toLocaleString("fa-IR"))}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Composition Progress Bar */}
+                            {totalUsers > 0 && (
+                                <div className="space-y-2 pt-1">
+                                    <div className="flex items-center justify-between text-[11px] font-bold text-secondary">
+                                        <span>نسبت ترکیب حساب‌های جدول کاربران ({toPersianDigits(totalUsers.toLocaleString("fa-IR"))} رکورد)</span>
+                                        <span>
+                                            {toPersianDigits(registeredUsers)} واقعی / {toPersianDigits(importedAdOwnerUsers.toLocaleString("fa-IR"))} ایمپورت آگهی
+                                        </span>
+                                    </div>
+                                    <div className="h-2.5 w-full rounded-full bg-surface-secondary overflow-hidden flex">
+                                        <div
+                                            className="h-full bg-primary transition-all duration-500"
+                                            style={{ width: `${Math.max(registeredUsers > 0 ? 2 : 0, registeredPercentage)}%` }}
+                                            title={`کاربران واقعی: ${registeredUsers}`}
+                                        />
+                                        <div
+                                            className="h-full bg-warning/60 transition-all duration-500"
+                                            style={{ width: `${Math.max(0, 100 - Math.max(registeredUsers > 0 ? 2 : 0, registeredPercentage))}%` }}
+                                            title={`مالکان آگهی ایمپورت‌شده: ${importedAdOwnerUsers}`}
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                        </>
+                    )}
+                </section>
+            )}
 
             {/* Quick Actions with Live Pending Badges */}
             <div className="space-y-4">
