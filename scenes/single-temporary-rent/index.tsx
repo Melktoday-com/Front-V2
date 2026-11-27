@@ -140,19 +140,45 @@ export default function ResidenceDetailScene({ initialData }: ResidenceDetailSce
     const { getCityName } = useCityLookup();
     const cityName = residence?.cityName || getCityName(residence?.cityId);
 
-    const hostIdentifier = residence?.owner?.slug || residence?.publisher?.slug || residence?.owner?.id || residence?.ownerId;
-    const { data: hostShowcase } = useShowcase("host", hostIdentifier || "");
+    // Never look up a host showcase using an agency slug; fall back to ownerId so dual-role owners still resolve to their host profile.
+    const hostLookupIdentifier =
+        residence?.owner?.slug ||
+        (residence?.publisher?.type === "host" ? residence.publisher.slug : undefined) ||
+        residence?.owner?.id ||
+        residence?.ownerId ||
+        "";
+    const { data: hostShowcase } = useShowcase("host", hostLookupIdentifier);
 
-    const hostName = hostShowcase?.header?.title || residence?.owner?.fullName || residence?.publisher?.name || "میزبان ملک تودی";
-    const hostAvatar = hostShowcase?.header?.avatarUrl || residence?.owner?.avatarUrl || residence?.publisher?.avatar;
-    const isHostVerified = hostShowcase?.header?.isVerified ?? true;
-    const hostSlug = hostShowcase?.header?.slug || residence?.owner?.slug || residence?.publisher?.slug || hostIdentifier;
-    const isAgencyPublisher = residence?.publisher?.type === "agency";
-    const hostShowcaseUrl = hostSlug
-        ? isAgencyPublisher
+    const hasResolvedHostShowcase = Boolean(hostShowcase?.header);
+    const isHostPublisher = hasResolvedHostShowcase || residence?.publisher?.type === "host";
+    const isAgencyFallback = !isHostPublisher && residence?.publisher?.type === "agency";
+
+    const hostName =
+        hostShowcase?.header?.title ||
+        (isAgencyFallback ? residence?.publisher?.name : undefined) ||
+        residence?.owner?.fullName ||
+        (residence?.publisher?.type === "host" ? residence?.publisher?.name : undefined) ||
+        "میزبان ملک تودی";
+    const hostAvatar =
+        hostShowcase?.header?.avatarUrl ||
+        (isAgencyFallback ? residence?.publisher?.avatar : undefined) ||
+        residence?.owner?.avatarUrl ||
+        (residence?.publisher?.type === "host" ? residence?.publisher?.avatar : undefined);
+    const isHostVerified =
+        hostShowcase?.header?.isVerified ?? residence?.publisher?.isVerified ?? false;
+    const hostSlug =
+        hostShowcase?.header?.slug ||
+        hostShowcase?.header?.id ||
+        (isAgencyFallback ? residence?.publisher?.slug : undefined) ||
+        residence?.owner?.slug ||
+        (residence?.publisher?.type === "host" ? residence?.publisher?.slug : undefined) ||
+        hostLookupIdentifier;
+    const hostShowcaseUrl = hostSlug && (isHostPublisher || isAgencyFallback)
+        ? isAgencyFallback
             ? `/agency/showcase/${hostSlug}`
             : `/host/${hostSlug}`
         : undefined;
+    const publisherRoleLabel = isAgencyFallback ? "آژانس / مشاور املاک" : "میزبان اقامتگاه";
 
     const { data: similarResidences } = useTemporaryRentAds(
         {
@@ -757,7 +783,7 @@ export default function ResidenceDetailScene({ initialData }: ResidenceDetailSce
                                         </span>
                                     )}
                                 </div>
-                                <span className="text-[11px] text-foreground-muted block mt-0.5">میزبان اقامتگاه</span>
+                                <span className="text-[11px] text-foreground-muted block mt-0.5">{publisherRoleLabel}</span>
                             </div>
                         </div>
                         {hostShowcaseUrl && (
