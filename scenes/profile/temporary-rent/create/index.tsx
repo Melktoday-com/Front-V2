@@ -16,7 +16,7 @@ import { useSafeBack } from "@/hooks/useSafeBack";
 import { useTemporaryRentAdDetail } from "@/hooks/useTemporaryRent";
 import { useUserStatus } from "@/hooks/useUserStatus";
 import { normalizeApiError } from "@/lib/api/error-handler";
-import { cn, formatPrice, formatPriceWords, getMediaUrl, toPersianDigits } from "@/lib/utils";
+import { cn, formatPrice, formatPriceWords, getMediaUrl, sanitizePricingPayload, toPersianDigits } from "@/lib/utils";
 import { adminService } from "@/services/admin.service";
 import { geoService } from "@/services/geo.service";
 import { temporaryRentService } from "@/services/temporary-rent.service";
@@ -578,9 +578,16 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
                 throw new Error("بارگذاری حداقل یک تصویر برای ثبت اقامتگاه الزامی است");
             }
 
-            const resolvedNightlyPrice = pricingValues.nightlyPrice
-                ? Number(pricingValues.nightlyPrice)
-                : formData.nightlyPrice || 1000000;
+            const allowedPricingKeys = activePriceModel?.pricingFields?.map((f) => f.key);
+            const sanitizedPricing = sanitizePricingPayload(pricingValues, allowedPricingKeys);
+
+            const resolvedNightlyPrice = Number(
+                sanitizedPricing.nightlyPrice ??
+                sanitizedPricing.midweekNightlyPrice ??
+                sanitizedPricing.eventBasePrice ??
+                formData.nightlyPrice ??
+                1000000
+            );
             const resolvedMaxGuests = formData.attributes?.max_guests
                 ? Number(formData.attributes.max_guests)
                 : formData.maxGuests || 2;
@@ -604,7 +611,7 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
                     maxGuests: resolvedMaxGuests,
                     availabilityWindow: formData.availabilityWindow!,
                     priceModelKey: formData.priceModelKey || "DAILY_RENT_STANDARD",
-                    pricing: pricingValues as any,
+                    pricing: sanitizedPricing as any,
                     attributes: formData.attributes as any,
                     latitude: formData.latitude || 35.6892,
                     longitude: formData.longitude || 51.389,
@@ -622,7 +629,7 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
                     title: formData.title,
                     description: formData.description,
                     priceModelKey: formData.priceModelKey,
-                    pricing: pricingValues as any,
+                    pricing: sanitizedPricing as any,
                     attributes: formData.attributes,
                     mediaIds: formData.mediaIds,
                     maxGuests: resolvedMaxGuests,
@@ -645,7 +652,7 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
                 maxGuests: resolvedMaxGuests,
                 availabilityWindow: formData.availabilityWindow!,
                 priceModelKey: formData.priceModelKey || "DAILY_RENT_STANDARD",
-                pricing: pricingValues as any,
+                pricing: sanitizedPricing as any,
                 attributes: formData.attributes,
                 latitude: formData.latitude || 35.6892,
                 longitude: formData.longitude || 51.389,
@@ -654,17 +661,15 @@ export default function CreateTemporaryRentScene({ adminMode = false }: CreateTe
 
             const created = await temporaryRentService.createDraft(payload);
             const createdId = created.adId;
+            activeAdIdRef.current = createdId;
+            setActiveAdId(createdId);
 
             // Direct publish for authenticated host/agent (Task 18)
             try {
                 await temporaryRentService.publish(createdId);
             } catch (pubErr) {
                 console.warn("Direct publish fallback to submitForReview:", pubErr);
-                try {
-                    await temporaryRentService.submitForReview(createdId);
-                } catch {
-                    // Ignore review submission error if already handled
-                }
+                await temporaryRentService.submitForReview(createdId);
             }
 
             return { adId: createdId, isUpdate: false };

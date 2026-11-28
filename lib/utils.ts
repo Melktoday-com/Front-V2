@@ -319,6 +319,39 @@ export function cleanUpdatePayload<T extends Record<string, any>>(
     return payload;
 }
 
+export type PricingFieldInput = number | boolean | string | null | undefined;
+
+/**
+ * Sanitizes dynamic pricing values before sending them to backend DTOs:
+ * - Drops undefined, null, NaN, and empty/whitespace-only strings so numeric DTOs
+ *   never coerce "" into 0 and trip @Min(1) constraints.
+ * - Drops stale keys belonging to previously selected price models when allowedKeys is provided.
+ */
+export function sanitizePricingPayload<T extends Record<string, PricingFieldInput>>(
+    rawPricing: T,
+    allowedKeys?: readonly string[],
+): Record<string, number | boolean | string> {
+    const allowed = allowedKeys ? new Set(allowedKeys) : null;
+    const cleaned: Record<string, number | boolean | string> = {};
+
+    for (const [key, val] of Object.entries(rawPricing)) {
+        if (allowed && !allowed.has(key)) continue;
+        if (val === undefined || val === null) continue;
+        if (typeof val === "string") {
+            const trimmed = val.trim();
+            if (trimmed === "") continue;
+            cleaned[key] = trimmed;
+            continue;
+        }
+        if (typeof val === "number" && isNaN(val)) continue;
+        if (typeof val === "number" || typeof val === "boolean") {
+            cleaned[key] = val;
+        }
+    }
+
+    return cleaned;
+}
+
 
 
 

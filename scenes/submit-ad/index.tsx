@@ -18,7 +18,7 @@ import { useSafeBack } from "@/hooks/useSafeBack";
 import { useEntitlements } from "@/hooks/useSubscription";
 import { useUserStatus } from "@/hooks/useUserStatus";
 import { isInsufficientBalanceError, normalizeApiError } from "@/lib/api/error-handler";
-import { cn, formatPrice, getMediaUrl, toPersianDigits } from "@/lib/utils";
+import { cn, formatPrice, getMediaUrl, sanitizePricingPayload, toPersianDigits } from "@/lib/utils";
 import { adminService } from "@/services/admin.service";
 import { adsService } from "@/services/ads.service";
 import { geoService } from "@/services/geo.service";
@@ -545,18 +545,15 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
 
             const resolvedPriceModelKey = activePriceModel?.key || formData.categoryPath?.businessModelKey;
             const rawPricing = (formData.pricingValues as Record<string, number | boolean | string>) || {};
-            const resolvedPricingValues: Record<string, number | boolean | string> = { ...rawPricing };
+            const allowedPricingKeys = activePriceModel?.pricingFields?.map((f) => f.key);
+            const resolvedPricingValues = sanitizePricingPayload(rawPricing, allowedPricingKeys);
+            delete resolvedPricingValues.convertible;
 
-            const isRentalCategory =
-                resolvedPriceModelKey === "HYBRID_RENT_DEPOSIT" ||
-                resolvedPriceModelKey === "FULL_RENTAL_DEPOSIT" ||
-                formData.categoryPath?.categoryKey?.includes("rental");
-
-            if (isRentalCategory) {
-                const isTicked = Boolean(resolvedPricingValues.isConvertible || resolvedPricingValues.convertible);
+            // Only HYBRID_RENT_DEPOSIT supports conversionRate/minDeposit; FULL_RENTAL_DEPOSIT only accepts isConvertible; PURE_RENTAL accepts neither.
+            if (resolvedPriceModelKey === "HYBRID_RENT_DEPOSIT") {
+                const isTicked = Boolean(rawPricing.isConvertible || rawPricing.convertible);
+                resolvedPricingValues.isConvertible = isTicked;
                 if (isTicked) {
-                    resolvedPricingValues.isConvertible = true;
-                    // Proportional values for backend based on user input
                     const dep = Number(resolvedPricingValues.depositPrice) || 0;
                     const rent = Number(resolvedPricingValues.monthlyRent) || 0;
                     resolvedPricingValues.conversionRate = 3; // 3% monthly rate (عرف ۳۰ هزار تومان به ازای هر میلیون)
@@ -566,10 +563,18 @@ export default function SubmitAdScene({ adminMode = false }: SubmitAdSceneProps)
                         resolvedPricingValues.minDeposit = 0;
                     }
                 } else {
-                    resolvedPricingValues.isConvertible = false;
                     delete resolvedPricingValues.conversionRate;
                     delete resolvedPricingValues.minDeposit;
                 }
+            } else if (resolvedPriceModelKey === "FULL_RENTAL_DEPOSIT") {
+                const isTicked = Boolean(rawPricing.isConvertible || rawPricing.convertible);
+                resolvedPricingValues.isConvertible = isTicked;
+                delete resolvedPricingValues.conversionRate;
+                delete resolvedPricingValues.minDeposit;
+            } else {
+                delete resolvedPricingValues.isConvertible;
+                delete resolvedPricingValues.conversionRate;
+                delete resolvedPricingValues.minDeposit;
             }
 
             if (adminMode) {
