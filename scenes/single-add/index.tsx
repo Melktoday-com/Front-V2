@@ -153,7 +153,7 @@ export default function SingleAdScene({ adId, initialData }: SingleAdSceneProps 
 
     const isOwner = isLoggedIn && !!user?.userId && user?.userId === ad?.ownerId;
     const isPublished = ad?.status === AdStatus.PUBLISHED || (ad?.status as string) === "PUBLISHED";
-    const isPromoted = Boolean(ad?.isFeatured);
+    const isPromoted = Boolean(ad?.isUrgent || ad?.isLadder || ad?.isFeatured);
     const isEligibleForPromotion = isOwner && isPublished;
     const isRegularUser = !ad?.publisher || ad?.publisher?.type === "user" || ad?.publisher?.type === "platform";
 
