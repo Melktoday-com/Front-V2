@@ -168,6 +168,7 @@ export function useUpdateHostProfile() {
     onSuccess: () => {
       toast.success("پروفایل میزبان با موفقیت به‌روزرسانی شد");
       queryClient.invalidateQueries({ queryKey: SHOWCASE_KEYS.hostProfile() });
+      queryClient.invalidateQueries({ queryKey: ['search-profiles'] });
     },
     onError: (err: Error) => {
       toast.error(getErrorMessage(err, "خطا در به‌روزرسانی پروفایل میزبان"));

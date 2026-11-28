@@ -1,12 +1,14 @@
 "use client";
 
 import MediaIconUpload from "@/components/admin/MediaIconUpload";
+import { CitySelector } from "@/components/CitySelector";
 import { PromotionModal } from "@/components/promotions/PromotionModal";
 import { SubscriptionQuotaWidget } from "@/components/subscriptions/SubscriptionQuotaWidget";
 import { AccountStatusBanner } from "@/components/ui/AccountStatusBanner";
 import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
 import { ShowcaseStatusModal } from "@/components/ui/ShowcaseStatusModal";
 import { useAuth } from "@/hooks/useAuth";
+import { useCityLookup } from "@/hooks/useCityLookup";
 import { useSafeBack } from "@/hooks/useSafeBack";
 import { useHostProfile, useShowcasePosts, useUpdateHostProfile, useUpdateHostShowcaseStatus } from "@/hooks/useShowcase";
 import {
@@ -132,9 +134,11 @@ export default function TemporaryRentPanelScene() {
     const [activeTab, setActiveTab] = useState<Tab>("overview");
     const [copiedLink, setCopiedLink] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
+    const [isCitySelectorOpen, setIsCitySelectorOpen] = useState(false);
     const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
     const [rentalFilter, setRentalFilter] = useState<"all" | "published" | "draft">("all");
     const [promotingAd, setPromotingAd] = useState<{ id: string; title: string } | null>(null);
+    const { getCityName } = useCityLookup();
 
     const swiperRef = useRef<SwiperType | null>(null);
     const isManualScrollingRef = useRef(false);
@@ -247,6 +251,7 @@ export default function TemporaryRentPanelScene() {
         hostName: "",
         slug: "",
         bio: "",
+        cityId: "",
         avatarUrl: "",
         coverUrl: "",
         phone: "",
@@ -260,6 +265,7 @@ export default function TemporaryRentPanelScene() {
             hostName: hostProfile.hostName || hostProfile.title || "",
             slug: hostProfile.slug || "",
             bio: hostProfile.bio || "",
+            cityId: hostProfile.cityId || "",
             avatarUrl: hostProfile.avatarUrl || "",
             coverUrl: hostProfile.coverUrl || "",
             phone: hostProfile.phone || "",
@@ -1110,7 +1116,7 @@ export default function TemporaryRentPanelScene() {
                                 <span>اطلاعات تماس و موقعیت</span>
                             </h3>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                                 <div className="space-y-1.5">
                                     <label className="text-xs font-bold text-brand block flex items-center gap-1.5">
                                         <Smartphone className="w-3.5 h-3.5 text-secondary" />
@@ -1153,7 +1159,34 @@ export default function TemporaryRentPanelScene() {
                                     />
                                 </div>
 
-                                <div className="space-y-1.5 sm:col-span-2 md:col-span-1">
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-bold text-brand block flex items-center gap-1.5">
+                                        <MapPin className="w-3.5 h-3.5 text-secondary" />
+                                        <span>شهر فعالیت میزبان</span>
+                                    </label>
+                                    <button
+                                        type="button"
+                                        disabled={!isEditing}
+                                        onClick={() => setIsCitySelectorOpen(true)}
+                                        className={cn(
+                                            "w-full px-3.5 py-2.5 rounded-xl text-xs sm:text-sm flex items-center justify-between transition-all text-right",
+                                            isEditing
+                                                ? "bg-surface border border-soft-border/80 hover:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 text-brand cursor-pointer"
+                                                : "bg-soft-bg/40 border border-soft-border/50 text-secondary cursor-not-allowed"
+                                        )}
+                                    >
+                                        <span className={settingsForm.cityId ? "font-bold text-brand" : "text-secondary"}>
+                                            {settingsForm.cityId ? getCityName(settingsForm.cityId, "انتخاب شهر...") : "انتخاب شهر فعالیت..."}
+                                        </span>
+                                        {isEditing && (
+                                            <span className="text-[11px] font-bold text-primary">
+                                                {settingsForm.cityId ? "تغییر" : "انتخاب"}
+                                            </span>
+                                        )}
+                                    </button>
+                                </div>
+
+                                <div className="space-y-1.5">
                                     <label className="text-xs font-bold text-brand block flex items-center gap-1.5">
                                         <MapPin className="w-3.5 h-3.5 text-secondary" />
                                         <span>محدوده یا نشانی اقامتگاه</span>
@@ -1366,6 +1399,16 @@ export default function TemporaryRentPanelScene() {
                 type="HOST"
                 isActivating={hostProfile ? !hostProfile.isActive : false}
                 isLoading={updateShowcaseStatusMutation.isPending}
+            />
+
+            <CitySelector
+                isOpen={isCitySelectorOpen}
+                onClose={() => setIsCitySelectorOpen(false)}
+                onSelect={(city) => {
+                    setSettingsForm((prev) => ({ ...prev, cityId: city.id }));
+                    setIsCitySelectorOpen(false);
+                }}
+                currentCityId={settingsForm.cityId}
             />
         </div>
     );
